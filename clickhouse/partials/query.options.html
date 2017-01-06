@@ -1,0 +1,72 @@
+<section class="grafana-metric-options">
+	<div class="gf-form-group">
+		<div class="gf-form-inline">
+			<div class="gf-form">
+				<span class="gf-form-label"><i class="fa fa-wrench"></i></span>
+				<span class="gf-form-label width-11">Group by time interval</span>
+				<input type="text" class="gf-form-input" ng-model="ctrl.panelCtrl.panel.interval" ng-blur="ctrl.panelCtrl.refresh();"
+				spellcheck='false' placeholder="example: >10s">
+				<span class="gf-form-label"><i class="fa fa-question-circle" bs-tooltip="'Set a low limit by having a greater sign: example: >60s'" data-placement="right"></i></span>
+			</div>
+		</div>
+
+        <div class="gf-form-inline">
+            <div class="gf-form">
+				<span class="gf-form-label width-10">
+					<a ng-click="ctrl.panelCtrl.toggleEditorHelp(1);" bs-tooltip="'click to show helpful info'" data-placement="bottom">
+                        <i class="fa fa-info-circle"></i>
+                        &nbsp;patterns
+                    </a>
+				</span>
+                <span class="gf-form-label width-10">
+					<a ng-click="ctrl.panelCtrl.toggleEditorHelp(2);" bs-tooltip="'click to show helpful info'" data-placement="bottom">
+                        <i class="fa fa-info-circle"></i>
+                        &nbsp;funcs
+                    </a>
+				</span>
+            </div>
+        </div>
+	</div>
+</section>
+
+<div class="editor-row">
+    <div class="pull-left">
+        <div class="grafana-info-box span6" ng-if="ctrl.panelCtrl.editorHelpIndex === 1">
+            <h5>Available patterns</h5>
+            <ul>
+                <li><b>$timeCol</b> - replaced with Date:Col value from QueryBuilder</li>
+                <li><b>$dateTimeCol</b> - replaced with DateTime:Col value from QueryBuilder</li>
+                <li><b>$from</b> - replaced with timestamp/1000 value of selected "Time Range:From"</li>
+                <li><b>$to</b> - replaced with timestamp/1000 value of selected "Time Range:To"</li>
+                <li><b>$interval</b> - replaced with selected "Group by time interval" value (as number of seconds)</li>
+                <li>
+                    <b>$timeFilter</b> - replaced with currently selected "Time Range". <br/>
+                    Require Date:Col and DateTime:Col to be selected
+                </li>
+                <li>
+                    <b>$timeSeries</b> - replaced with special ClickHouse construction to convert results as time-series data. Use it as "SELECT $timeSeries...". <br/>
+                    Require DateTime:Col to be selected
+                </li>
+            </ul>
+        </div>
+
+        <div class="grafana-info-box span6" ng-if="ctrl.panelCtrl.editorHelpIndex === 2">
+            <h5>Available functions</h5>
+            <h6>Only one function per query allowed</h6>
+            <ul>
+                <li>
+                    <b>$rate(cols...)</b> - function to convert query results as "change rate per interval". <br/>
+                    Example usage: $rate(countIf(Type = 200) * 60 AS good, countIf(Type != 200) * 60 AS bad) FROM requests
+                </li>
+                <li>
+                    <b>$columns(key, value)</b> - function to query values as array of [key, value], where key would be used as label.<br/>
+                    Example usage: $columns(Type, count(*) c) FROM requests
+                </li>
+                <li>
+                    <b>$rateColumns(key, value)</b> - is an combination of $columns and $rate.<br/>
+                    Example usage: $rateColumns(Type, count(*) c) FROM requests
+                </li>
+            </ul>
+        </div>
+    </div>
+</div>

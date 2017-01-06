@@ -1,0 +1,101 @@
+<query-editor-row query-ctrl="ctrl" can-collapse="true" has-text-edit-mode="true">
+
+	<div class="gf-form" ng-if="ctrl.target.rawQuery">
+		<textarea rows="7" class="gf-form-input" ng-model="ctrl.target.query" spellcheck="false" ng-blur="ctrl.refresh()"></textarea>
+	</div>
+
+	<div ng-if="!ctrl.target.rawQuery">
+
+		<div class="gf-form-inline">
+			<div class="gf-form">
+				<label class="gf-form-label query-keyword width-7">FROM</label>
+
+				<metric-segment segment="ctrl.databaseSegment" get-options="ctrl.getDatabaseSegments()" on-change="ctrl.databaseChanged()"></metric-segment>
+				<metric-segment segment="ctrl.tableSegment" get-options="ctrl.getTableSegments()" on-change="ctrl.tableChanged()"></metric-segment>
+			</div>
+
+			<div class="gf-form">
+				<label class="gf-form-label query-keyword">WHERE</label>
+			</div>
+
+			<div class="gf-form" ng-repeat="segment in ctrl.tagSegments">
+				<metric-segment segment="segment" get-options="ctrl.getTagsOrValues(segment, $index)" on-change="ctrl.tagSegmentUpdated(segment, $index)"></metric-segment>
+			</div>
+
+			<div class="gf-form gf-form--grow">
+				<div class="gf-form-label gf-form-label--grow"></div>
+			</div>
+		</div>
+
+		<div class="gf-form-inline">
+			<div class="gf-form">
+				<label class="gf-form-label query-keyword width-7">
+					<span>Date:Col</span>
+				</label>
+			</div>
+
+			<div class="gf-form">
+				<metric-segment segment="ctrl.dateColDataTypeSegment" get-options="ctrl.getDateColDataTypeSegments()" on-change="ctrl.dateColDataTypeChanged()"></metric-segment>
+			</div>
+
+            <div class="gf-form">
+                <label class="gf-form-label query-keyword width-7">
+                    <span>DateTime:Col</span>
+                </label>
+            </div>
+
+            <div class="gf-form">
+                <metric-segment segment="ctrl.dateTimeColDataTypeSegment" get-options="ctrl.getDateTimeColDataTypeSegments()" on-change="ctrl.dateTimeColDataTypeChanged()"></metric-segment>
+            </div>
+
+            <div class="gf-form gf-form--grow">
+                <div class="gf-form-label gf-form-label--grow"></div>
+            </div>
+		</div>
+
+		<div class="gf-form-inline" ng-repeat="selectParts in ctrl.queryModel.selectModels">
+			<div class="gf-form">
+				<label class="gf-form-label query-keyword width-7">
+					<span ng-show="$index === 0">SELECT</span>
+				</label>
+			</div>
+
+			<div class="gf-form" ng-repeat="part in selectParts">
+				<sql-query-part-editor
+														class="gf-form-label query-part"
+														part="part"
+														remove-action="ctrl.removeSelectPart(selectParts, part)"
+                                                        part-updated="ctrl.refreshQuery()"
+														get-options="ctrl.getPartOptions(part)">
+				</sql-query-part-editor>
+			</div>
+
+			<div class="gf-form">
+				<label class="dropdown"
+								dropdown-typeahead="ctrl.selectMenu"
+								dropdown-typeahead-on-select="ctrl.addSelectPart(selectParts, $item, $subItem)">
+				</label>
+			</div>
+
+			<div class="gf-form gf-form--grow">
+				<div class="gf-form-label gf-form-label--grow"></div>
+			</div>
+		</div>
+
+	</div>
+
+	<div class="gf-form-inline" ng-if="ctrl.target.rawQuery">
+		<div class="gf-form gf-form--grow">
+			<label class="gf-form-label query-keyword width-5">Query</label>
+			<input type="text" readonly="true" class="gf-form-label gf-form-label--grow" ng-model="ctrl.target.compiledQuery" spellcheck='false' placeholder="Actual query request">
+		</div>
+	</div>
+
+    <div class="gf-form-inline" ng-if="!ctrl.target.rawQuery">
+        <div class="gf-form gf-form--grow">
+            <label class="gf-form-label query-keyword width-5">Query</label>
+            <input type="text" class="gf-form-label gf-form-label--grow" ng-model="ctrl.target.query" spellcheck='false' placeholder="Query">
+        </div>
+    </div>
+
+</query-editor-row>

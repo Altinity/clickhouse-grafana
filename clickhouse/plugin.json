@@ -1,0 +1,20 @@
+{
+  "type": "datasource",
+  "name": "ClickHouse",
+  "id": "clickhouse",
+
+  "metrics": true,
+  "annotations": false,
+  "alerting": false,
+
+  "info": {
+    "description": "ClickHouse data source for Grafana",
+    "author": {
+      "name": "Vertamedia"
+    },
+    "logos": {
+      "small": "img/clickhouse_logo.svg",
+      "large": "img/clickhouse_logo.svg"
+    }
+  }
+}

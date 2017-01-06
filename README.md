@@ -68,7 +68,7 @@ A description of macros is available from an interface by clicking on the info-b
 
 Plugin supports the following functions:
 
-###### $rate(cols...) - converts query results as "change rate per interval"
+##### $rate(cols...) - converts query results as "change rate per interval"
 
 Example usage: $rate(countIf(Type = 200) * 60 AS good, countIf(Type != 200) * 60 AS bad) FROM requests
 
@@ -92,7 +92,7 @@ FROM
 ```
 
 
-###### $columns(key, value) - query values as array of [key, value], where key would be used as label
+##### $columns(key, value) - query values as array of [key, value], where key will be used as label
 
 Example usage: $columns(OSName, count(*) c) FROM requests
 
@@ -126,7 +126,7 @@ This will help to build the next graph:
 ![req_by_os image](https://cloud.githubusercontent.com/assets/2902918/21719222/2feabf30-d425-11e6-9042-9d290ef07884.png)
 
 
-###### $rateColumns(key, value) - is a combination of $columns and $rate
+##### $rateColumns(key, value) - is a combination of $columns and $rate
 
 Example usage: $rateColumns(OS, count(*) c) FROM requests
 
@@ -181,9 +181,9 @@ Since we developed this plugin only for internal needs we don't have some of Gra
 * Annotations
 * Labels
 
-We know that code quality needs a tons of improvements and unit-tests. We would continue working on this. 
+We know that code quality needs a tons of improvements and unit-tests. We will continue working on this. 
 If you have any idea for an improvement or found a bug do not hesitate to open an issue or submit a pull request. 
-We would appreciate any help from the community which would make working with such amazing products as ClickHouse and Grafana more convenient.
+We will appreciate any help from the community which will make working with such amazing products as ClickHouse and Grafana more convenient.
 
 
 Plugin creation was inspired by great [grafana-sqldb-datasource](https://github.com/sraoss/grafana-sqldb-datasource)

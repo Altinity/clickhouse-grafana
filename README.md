@@ -17,7 +17,7 @@ Features:
 ### Access to CH via HTTP
 Page configuration is standard
 
-[config image](/)
+![config image](https://cloud.githubusercontent.com/assets/2902918/21719219/2fc6aa78-d425-11e6-83c0-ad92e068ff4e.png)
 
 
 There is a small feature - ClickHouse treats HTTP Basic Authentication credentials as a database user and will try to run queries using its name.
@@ -26,7 +26,7 @@ There is a small feature - ClickHouse treats HTTP Basic Authentication credentia
 
 Plugin supports Query Builder:
 
-[query editor image](/)
+![query editor image](https://cloud.githubusercontent.com/assets/2902918/21719220/2fddcde8-d425-11e6-8b54-1d8609d9d1cd.png)
 
 Here you have to set database, table, WHERE-condition (if needed), 
 Date:Col ([EventDate](https://clickhouse.yandex/reference_en.html#Date) column required for [MergeTree](https://clickhouse.yandex/reference_en.html#MergeTree) engine), 
@@ -40,7 +40,7 @@ Part "Query" displays a current automatically built query based on previously se
 
 Raw Editor allows custom SQL queries to be written:
 
-[raw editor image](/)
+![raw editor image](https://cloud.githubusercontent.com/assets/2902918/21719221/2fea14e0-d425-11e6-9211-5e842169eef3.png)
 
 
 Raw Editor is represented by textarea because sometimes we need to display large queries. Also, it helps to save query formatting in order to understand its structure. 
@@ -123,7 +123,7 @@ ORDER BY t ASC
 
 This will help to build the next graph:
 
-[req_by_os image](/)
+![req_by_os image](https://cloud.githubusercontent.com/assets/2902918/21719222/2feabf30-d425-11e6-9042-9d290ef07884.png)
 
 
 ###### $rateColumns(key, value) - is a combination of $columns and $rate

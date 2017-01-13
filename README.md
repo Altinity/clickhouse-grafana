@@ -2,7 +2,10 @@
 
 ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.yandex) as a backend database.  
 
-Features:
+### Quick start
+Copy contents of a [clickhouse](https://github.com/Vertamedia/clickhouse-grafana/tree/master/clickhouse) folder to your [Grafana plugin directory](http://docs.grafana.org/plugins/installation/#grafana-plugin-directory). Restart Grafana, check datasources list at http://your.grafana.instance/datasources/new, choose ClickHouse option.
+
+### Features:
 
  * Access to CH via HTTP
  * Query Builder

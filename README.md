@@ -33,7 +33,7 @@ Plugin supports Query Builder:
 
 Here you have to set database, table, WHERE-condition (if needed), 
 Date:Col ([EventDate](https://clickhouse.yandex/reference_en.html#Date) column required for [MergeTree](https://clickhouse.yandex/reference_en.html#MergeTree) engine), 
-DateTime:Col ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime) column is required only for our needs), selected columns.
+DateTime:Col ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime) column is required for macros and functions), selected columns.
 
 *// DateTime:Col is required for our time-based macros and funcs, because all analytics is based on these values*
 

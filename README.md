@@ -2,7 +2,10 @@
 
 ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.yandex) as a backend database.  
 
-Features:
+### Quick start
+Copy contents of a [clickhouse](https://github.com/Vertamedia/clickhouse-grafana/tree/master/clickhouse) folder to your [Grafana plugin directory](http://docs.grafana.org/plugins/installation/#grafana-plugin-directory). Restart Grafana, check datasources list at http://your.grafana.instance/datasources/new, choose ClickHouse option.
+
+### Features:
 
  * Access to CH via HTTP
  * Query Builder
@@ -17,7 +20,7 @@ Features:
 ### Access to CH via HTTP
 Page configuration is standard
 
-[config image](/)
+![config image](https://cloud.githubusercontent.com/assets/2902918/21719219/2fc6aa78-d425-11e6-83c0-ad92e068ff4e.png)
 
 
 There is a small feature - ClickHouse treats HTTP Basic Authentication credentials as a database user and will try to run queries using its name.
@@ -26,11 +29,11 @@ There is a small feature - ClickHouse treats HTTP Basic Authentication credentia
 
 Plugin supports Query Builder:
 
-[query editor image](/)
+![query editor image](https://cloud.githubusercontent.com/assets/2902918/21719220/2fddcde8-d425-11e6-8b54-1d8609d9d1cd.png)
 
 Here you have to set database, table, WHERE-condition (if needed), 
 Date:Col ([EventDate](https://clickhouse.yandex/reference_en.html#Date) column required for [MergeTree](https://clickhouse.yandex/reference_en.html#MergeTree) engine), 
-DateTime:Col ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime) column is required only for our needs), selected columns.
+DateTime:Col ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime) column is required for macros and functions), selected columns.
 
 *// DateTime:Col is required for our time-based macros and funcs, because all analytics is based on these values*
 
@@ -40,7 +43,7 @@ Part "Query" displays a current automatically built query based on previously se
 
 Raw Editor allows custom SQL queries to be written:
 
-[raw editor image](/)
+![raw editor image](https://cloud.githubusercontent.com/assets/2902918/21719221/2fea14e0-d425-11e6-9211-5e842169eef3.png)
 
 
 Raw Editor is represented by textarea because sometimes we need to display large queries. Also, it helps to save query formatting in order to understand its structure. 
@@ -68,7 +71,7 @@ A description of macros is available from an interface by clicking on the info-b
 
 Plugin supports the following functions:
 
-###### $rate(cols...) - converts query results as "change rate per interval"
+##### $rate(cols...) - converts query results as "change rate per interval"
 
 Example usage: $rate(countIf(Type = 200) * 60 AS good, countIf(Type != 200) * 60 AS bad) FROM requests
 
@@ -92,7 +95,7 @@ FROM
 ```
 
 
-###### $columns(key, value) - query values as array of [key, value], where key would be used as label
+##### $columns(key, value) - query values as array of [key, value], where key will be used as label
 
 Example usage: $columns(OSName, count(*) c) FROM requests
 
@@ -123,10 +126,10 @@ ORDER BY t ASC
 
 This will help to build the next graph:
 
-[req_by_os image](/)
+![req_by_os image](https://cloud.githubusercontent.com/assets/2902918/21719222/2feabf30-d425-11e6-9042-9d290ef07884.png)
 
 
-###### $rateColumns(key, value) - is a combination of $columns and $rate
+##### $rateColumns(key, value) - is a combination of $columns and $rate
 
 Example usage: $rateColumns(OS, count(*) c) FROM requests
 
@@ -181,9 +184,9 @@ Since we developed this plugin only for internal needs we don't have some of Gra
 * Annotations
 * Labels
 
-We know that code quality needs a tons of improvements and unit-tests. We would continue working on this. 
+We know that code quality needs a tons of improvements and unit-tests. We will continue working on this. 
 If you have any idea for an improvement or found a bug do not hesitate to open an issue or submit a pull request. 
-We would appreciate any help from the community which would make working with such amazing products as ClickHouse and Grafana more convenient.
+We will appreciate any help from the community which will make working with such amazing products as ClickHouse and Grafana more convenient.
 
 
 Plugin creation was inspired by great [grafana-sqldb-datasource](https://github.com/sraoss/grafana-sqldb-datasource)

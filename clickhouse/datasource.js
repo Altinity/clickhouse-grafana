@@ -7,9 +7,8 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
         this.name = instanceSettings.name;
         this.supportMetrics = true;
         this.responseParser = new response_parser_1.default();
-        this.basicAuth = instanceSettings.jsonData.basicAuth;
         this.url = instanceSettings.url;
-        this.withCredentials = instanceSettings.jsonData.withCredentials;
+        this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
         this._request = function (query) {
             var options = {
                 method: 'GET',
@@ -83,7 +82,11 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
         };
         this._seriesQuery = function (query) {
             query = query.replace(/(?:\r\n|\r|\n|  )/g, ' ');
-            return this._request('/?query=' + encodeURIComponent(query) + '%20FORMAT%20JSON&add_http_cors_header=1');
+            query = encodeURIComponent(query) + '%20FORMAT%20JSON';
+            if (this.addCorsHeader) {
+                query += "&add_http_cors_header=1";
+            }
+            return this._request('/?query=' + query);
         };
         this.targetContainsTemplate = function (target) {
             return templateSrv.variableExists(target.expr);

@@ -14,9 +14,8 @@ export function ClickHouseDatasource(instanceSettings, $q, backendSrv, templateS
     this.name = instanceSettings.name;
     this.supportMetrics = true;
     this.responseParser = new ResponseParser();
-    this.basicAuth = instanceSettings.jsonData.basicAuth;
     this.url = instanceSettings.url;
-    this.withCredentials = instanceSettings.jsonData.withCredentials;
+    this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
 
     this._request = function (query) {
         var options:any = {
@@ -100,7 +99,11 @@ export function ClickHouseDatasource(instanceSettings, $q, backendSrv, templateS
 
     this._seriesQuery = function (query) {
         query = query.replace(/(?:\r\n|\r|\n|  )/g, ' ');
-        return this._request('/?query=' + encodeURIComponent(query) + '%20FORMAT%20JSON&add_http_cors_header=1');
+        query = encodeURIComponent(query) + '%20FORMAT%20JSON';
+        if (this.addCorsHeader) {
+            query += "&add_http_cors_header=1"
+        }
+        return this._request('/?query=' + query);
     };
 
     this.targetContainsTemplate = function(target) {

@@ -1,4 +1,4 @@
-///<reference path="app/headers/common.d.ts" />
+///<reference path="../../../headers/common.d.ts" />
 System.register(['lodash', './sql_series', './sql_query', './response_parser'], function(exports_1) {
     var lodash_1, sql_series_1, sql_query_1, response_parser_1;
     /** @ngInject */
@@ -67,7 +67,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
         this.metricFindQuery = function (query) {
             var interpolated;
             try {
-                interpolated = templateSrv.replace(query, null, 'regex');
+                interpolated = templateSrv.replace(query, {}, sql_query_1.default.interpolateQueryExpr);
             }
             catch (err) {
                 return $q.reject(err);

@@ -1,5 +1,4 @@
-///<reference path="app/headers/common.d.ts" />
-
+///<reference path="../../../headers/common.d.ts" />
 import './query_part_editor';
 
 import angular from 'angular';
@@ -13,19 +12,19 @@ import appEvents from 'app/core/app_events';
 class SqlQueryCtrl extends QueryCtrl {
     static templateUrl = 'partials/query.editor.html';
 
-    queryModel:SqlQuery;
-    queryBuilder:any;
-    databaseSegment:any;
-    dateColDataTypeSegment:any;
-    dateTimeColDataTypeSegment:any;
-    tagSegments:any[];
-    selectMenu:any;
-    tableSegment:any;
-    removeTagFilterSegment:any;
-    matchOperators:any;
-    panel:any;
-    datasource:any;
-    target:any;
+    queryModel: SqlQuery;
+    queryBuilder: any;
+    databaseSegment: any;
+    dateColDataTypeSegment: any;
+    dateTimeColDataTypeSegment: any;
+    tagSegments: any[];
+    selectMenu: any;
+    tableSegment: any;
+    removeTagFilterSegment: any;
+    matchOperators: any;
+    panel: any;
+    datasource: any;
+    target: any;
 
     /** @ngInject **/
     constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
@@ -116,7 +115,7 @@ class SqlQueryCtrl extends QueryCtrl {
         this.refreshQuery();
     }
 
-    querySegment(type:string) {
+    querySegment(type: string) {
         var query = this.queryBuilder.buildExploreQuery(type);
         return this.datasource.metricFindQuery(query)
             .then(this.transformToSegments(false))
@@ -124,7 +123,7 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     getDatabaseSegments() {
-        return this.querySegment('DATABASES')
+        return this.querySegment('DATABASES');
     }
 
     databaseChanged() {
@@ -153,19 +152,19 @@ class SqlQueryCtrl extends QueryCtrl {
     toggleEditorMode() {
         var self = this;
         var modelQuery = this.queryModel.render(true);
-        if (this.target.rawQuery && this.target.query != modelQuery) {
+        if (this.target.rawQuery && this.target.query !== modelQuery) {
             appEvents.emit('confirm-modal', {
                 title: 'Query Alert',
                 text: 'Query was changed manually. Toggling to Edit Mode would drop changes. Continue?',
                 icon: 'fa-exclamation',
                 yesText: 'Continue',
                 onConfirm: function(){
-                    self._toggleEditorMode()
+                    self._toggleEditorMode();
                 }
             });
-            return false
+            return false;
         }
-        this._toggleEditorMode()
+        this._toggleEditorMode();
     }
 
     _toggleEditorMode() {
@@ -285,7 +284,7 @@ class SqlQueryCtrl extends QueryCtrl {
         }
 
         this.rebuildTargetTagConditions();
-        this.refreshQuery()
+        this.refreshQuery();
     }
 
     rebuildTargetTagConditions() {

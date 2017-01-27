@@ -1,4 +1,4 @@
-///<reference path="app/headers/common.d.ts" />
+///<reference path="../../../headers/common.d.ts" />
 System.register(['lodash'], function(exports_1) {
     var lodash_1;
     var index, categories, QueryPartDef, QueryPart;

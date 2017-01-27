@@ -1,4 +1,4 @@
-///<reference path="app/headers/common.d.ts" />
+///<reference path="../../../headers/common.d.ts" />
 System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(exports_1) {
     var lodash_1, query_part_1, dateMath;
     var SqlQuery;
@@ -127,7 +127,7 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
                     query = SqlQuery.columns(query);
                     query = SqlQuery.rateColumns(query);
                     query = SqlQuery.rate(query);
-                    query = this.templateSrv.replace(query, options.scopedVars);
+                    query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     this.target.compiledQuery = query
                         .replace(/\$timeSeries/g, '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000')
                         .replace(/\$timeFilter/g, timeFilter)
@@ -140,13 +140,13 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
                 };
                 // $columns(query)
                 SqlQuery.columns = function (query) {
-                    if (query.slice(0, 9) == '$columns(') {
+                    if (query.slice(0, 9) === '$columns(') {
                         var fromIndex = SqlQuery._fromIndex(query);
                         var args = query.slice(9, fromIndex)
                             .trim() // rm spaces
                             .slice(0, -1) // cut ending brace
                             .split(','); // extract arguments
-                        if (args.length != 2) {
+                        if (args.length !== 2) {
                             throw { message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + args.join(', ') };
                         }
                         query = SqlQuery._columns(args[0], args[1], query.slice(fromIndex));
@@ -154,7 +154,7 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
                     return query;
                 };
                 SqlQuery._columns = function (key, value, fromQuery) {
-                    if (key.slice(-1) == ')' || value.slice(-1) == ')') {
+                    if (key.slice(-1) === ')' || value.slice(-1) === ')') {
                         throw { message: 'Some of passed arguments are without aliases: ' + key + ', ' + value };
                     }
                     var keyAlias = key.trim().split(' ').pop(), valueAlias = value.trim().split(' ').pop();
@@ -175,13 +175,13 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
                 };
                 // $rateColumns(query)
                 SqlQuery.rateColumns = function (query) {
-                    if (query.slice(0, 13) == '$rateColumns(') {
+                    if (query.slice(0, 13) === '$rateColumns(') {
                         var fromIndex = SqlQuery._fromIndex(query);
                         var args = query.slice(13, fromIndex)
                             .trim() // rm spaces
                             .slice(0, -1) // cut ending brace
                             .split(','); // extract arguments
-                        if (args.length != 2) {
+                        if (args.length !== 2) {
                             throw { message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + args.join(', ') };
                         }
                         query = SqlQuery._columns(args[0], args[1], query.slice(fromIndex));
@@ -195,7 +195,7 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
                 };
                 // $rate(query)
                 SqlQuery.rate = function (query) {
-                    if (query.slice(0, 6) == '$rate(') {
+                    if (query.slice(0, 6) === '$rate(') {
                         var fromIndex = SqlQuery._fromIndex(query);
                         var args = query.slice(6, fromIndex)
                             .trim() // rm spaces
@@ -210,7 +210,7 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
                 };
                 SqlQuery._fromIndex = function (query) {
                     var fromIndex = query.toLowerCase().indexOf('from');
-                    if (fromIndex == -1) {
+                    if (fromIndex === -1) {
                         throw { message: 'Could not find FROM-statement at: ' + query };
                     }
                     return fromIndex;
@@ -218,7 +218,7 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
                 SqlQuery._rate = function (args, fromQuery) {
                     var aliases = [];
                     lodash_1.default.each(args, function (arg) {
-                        if (arg.slice(-1) == ')') {
+                        if (arg.slice(-1) === ')') {
                             throw { message: 'Argument "' + arg + '" cant be used without alias' };
                         }
                         aliases.push(arg.trim().split(' ').pop());
@@ -240,7 +240,7 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
                         ')';
                 };
                 SqlQuery._applyTimeFilter = function (query) {
-                    if (query.toLowerCase().indexOf('where') != -1) {
+                    if (query.toLowerCase().indexOf('where') !== -1) {
                         query = query.replace(/where/i, 'WHERE $timeFilter AND ');
                     }
                     else {
@@ -269,6 +269,25 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
                         return 1;
                     }
                     return Math.ceil(interval / 1000);
+                };
+                SqlQuery.interpolateQueryExpr = function (value, variable, defaultFormatFn) {
+                    // if no multi or include all do not regexEscape
+                    if (!variable.multi && !variable.includeAll) {
+                        return value;
+                    }
+                    if (typeof value === 'string') {
+                        return SqlQuery.clickhouseEscape(value);
+                    }
+                    var escapedValues = lodash_1.default.map(value, SqlQuery.clickhouseEscape);
+                    return escapedValues.join(',');
+                };
+                SqlQuery.clickhouseEscape = function (value) {
+                    if (value.match(/^\d+$/) || value.match(/^\d+\.\d+$/)) {
+                        return value;
+                    }
+                    else {
+                        return "'" + value.replace(/[\\']/g, '\\$&') + "'";
+                    }
                 };
                 SqlQuery.REGEX_COLUMNS = /(?:\s*(?=\w+\.|.*as\s+|distinct\s+|)(\*|\w+|(?:,|\s+)|\w+\([a-z*]+\))(?=\s*(?=,|$)))/ig;
                 return SqlQuery;

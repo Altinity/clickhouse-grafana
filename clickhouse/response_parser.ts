@@ -1,5 +1,4 @@
-///<reference path="app/headers/common.d.ts" />
-
+///<reference path="../../../headers/common.d.ts" />
 import _ from 'lodash';
 
 export default class ResponseParser {
@@ -8,13 +7,17 @@ export default class ResponseParser {
     if (!results || results.data.length === 0) { return []; }
 
     var sqlResults = results.data;
-    var res = {};
+    var res = [], v;
     _.each(sqlResults, row => {
         _.each(row, value => {
             if (_.isArray(value) || _.isOb) {
-              addUnique(res, value[0]);
+              v = value[0];
             } else {
-              addUnique(res, value);
+              v = value;
+            }
+
+            if ( res.indexOf( v ) === -1 ) {
+                res.push(v);
             }
         });
     });
@@ -23,8 +26,4 @@ export default class ResponseParser {
       return { text: value};
     });
   }
-}
-
-function addUnique(arr, value) {
-  arr[value] = value;
 }

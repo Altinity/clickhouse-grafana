@@ -1,4 +1,4 @@
-/// <reference path="app/headers/common.d.ts" />
+/// <reference path="../../../../../public/app/headers/common.d.ts" />
 import SqlQuery from './sql_query';
 import { QueryCtrl } from 'app/plugins/sdk';
 declare class SqlQueryCtrl extends QueryCtrl {

@@ -20,8 +20,7 @@ function (_, TableModel) {
       return timeSeries;
     }
       // timeCol have to be the first column always
-      var timeCol = self.meta[0], metrics = {}, intervals = [];
-      var t, v;
+      var timeCol = self.meta[0], metrics = {}, intervals = [], t;
     _.each(self.series, function(serie) {
         t = self._formatValue(serie[timeCol.name]);
         intervals.push(t);
@@ -39,11 +38,17 @@ function (_, TableModel) {
         });
     });
 
+      var nullInterval;
       _.each(metrics, function(v, k) {
           var datapoints = [];
-          _.each(intervals, function(interval) {
+          _.each(intervals, function(interval, i) {
               if (metrics[k][interval] === null) { // avoid zero values in case of runningDifference()
                   delete metrics[k][interval];
+                  nullInterval = interval;
+                  return;
+              }
+
+              if (interval === nullInterval) {
                   return;
               }
 

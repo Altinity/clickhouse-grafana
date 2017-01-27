@@ -1,4 +1,3 @@
-///<reference path="app/headers/common.d.ts" />
 System.register(['./query_part_editor', 'angular', 'lodash', './query_builder', './sql_query', './query_part', 'app/plugins/sdk', 'app/core/app_events'], function(exports_1) {
     var __extends = (this && this.__extends) || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -133,7 +132,7 @@ System.register(['./query_part_editor', 'angular', 'lodash', './query_builder', 
                 SqlQueryCtrl.prototype.toggleEditorMode = function () {
                     var self = this;
                     var modelQuery = this.queryModel.render(true);
-                    if (this.target.rawQuery && this.target.query != modelQuery) {
+                    if (this.target.rawQuery && this.target.query !== modelQuery) {
                         app_events_1.default.emit('confirm-modal', {
                             title: 'Query Alert',
                             text: 'Query was changed manually. Toggling to Edit Mode would drop changes. Continue?',

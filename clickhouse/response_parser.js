@@ -1,10 +1,6 @@
-///<reference path="app/headers/common.d.ts" />
 System.register(['lodash'], function(exports_1) {
     var lodash_1;
     var ResponseParser;
-    function addUnique(arr, value) {
-        arr[value] = value;
-    }
     return {
         setters:[
             function (lodash_1_1) {
@@ -19,14 +15,17 @@ System.register(['lodash'], function(exports_1) {
                         return [];
                     }
                     var sqlResults = results.data;
-                    var res = {};
+                    var res = [], v;
                     lodash_1.default.each(sqlResults, function (row) {
                         lodash_1.default.each(row, function (value) {
                             if (lodash_1.default.isArray(value) || lodash_1.default.isOb) {
-                                addUnique(res, value[0]);
+                                v = value[0];
                             }
                             else {
-                                addUnique(res, value);
+                                v = value;
+                            }
+                            if (res.indexOf(v) === -1) {
+                                res.push(v);
                             }
                         });
                     });

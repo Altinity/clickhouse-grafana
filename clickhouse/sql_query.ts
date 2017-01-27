@@ -1,4 +1,4 @@
-///<reference path="app/headers/common.d.ts" />
+///<reference path="../../../headers/common.d.ts" />
 
 import _ from 'lodash';
 import queryPart from './query_part';
@@ -98,7 +98,7 @@ export default class SqlQuery {
     return database + table;
   }
 
- render(rebuild:boolean) {
+ render(rebuild: boolean) {
     var target = this.target;
     if (target.rawQuery && !rebuild) {
         return target.query;
@@ -145,7 +145,7 @@ export default class SqlQuery {
         query = SqlQuery.columns(query);
         query = SqlQuery.rateColumns(query);
         query = SqlQuery.rate(query);
-        query = this.templateSrv.replace(query, options.scopedVars);
+        query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
         this.target.compiledQuery = query
                     .replace(/\$timeSeries/g, '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000')
                     .replace(/\$timeFilter/g, timeFilter)
@@ -154,30 +154,30 @@ export default class SqlQuery {
                     .replace(/\$timeCol/g, this.target.dateColDataType)
                     .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
                     .replace(/\$interval/g, interval);
-        return this.target.compiledQuery
+        return this.target.compiledQuery;
     }
 
     // $columns(query)
-    static columns(query:string) : string {
-        if (query.slice(0, 9) == '$columns(') {
+    static columns(query: string): string {
+        if (query.slice(0, 9) === '$columns(') {
             var fromIndex = SqlQuery._fromIndex(query);
             var args = query.slice(9,fromIndex)
                 .trim() // rm spaces
                 .slice(0, -1) // cut ending brace
                 .split(','); // extract arguments
 
-            if (args.length != 2) {
+            if (args.length !== 2) {
                 throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + args.join(', ')};
             }
 
             query = SqlQuery._columns(args[0], args[1], query.slice(fromIndex));
         }
 
-        return query
+        return query;
     }
 
-    static _columns(key:string, value:string, fromQuery:string) : string {
-        if (key.slice(-1) == ')' || value.slice(-1) == ')') {
+    static _columns(key: string, value: string, fromQuery: string): string {
+        if (key.slice(-1) === ')' || value.slice(-1) === ')') {
             throw {message: 'Some of passed arguments are without aliases: ' + key + ', ' + value};
         }
 
@@ -201,15 +201,15 @@ export default class SqlQuery {
 
 
     // $rateColumns(query)
-    static rateColumns(query:string) : string {
-        if (query.slice(0, 13) == '$rateColumns(') {
+    static rateColumns(query: string): string {
+        if (query.slice(0, 13) === '$rateColumns(') {
             var fromIndex = SqlQuery._fromIndex(query);
             var args = query.slice(13,fromIndex)
                 .trim() // rm spaces
                 .slice(0, -1) // cut ending brace
                 .split(','); // extract arguments
 
-            if (args.length != 2) {
+            if (args.length !== 2) {
                 throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + args.join(', ')};
             }
 
@@ -221,12 +221,12 @@ export default class SqlQuery {
                     ')';
         }
 
-        return query
+        return query;
     }
 
     // $rate(query)
-    static rate(query:string) : string {
-        if (query.slice(0, 6) == '$rate(') {
+    static rate(query: string): string {
+        if (query.slice(0, 6) === '$rate(') {
             var fromIndex = SqlQuery._fromIndex(query);
             var args = query.slice(6,fromIndex)
                 .trim() // rm spaces
@@ -240,24 +240,24 @@ export default class SqlQuery {
             query = SqlQuery._rate(args, query.slice(fromIndex));
         }
 
-        return query
+        return query;
     }
 
-    static _fromIndex(query:string) : number {
+    static _fromIndex(query: string): number {
         var fromIndex = query.toLowerCase().indexOf('from');
-        if (fromIndex == -1) {
+        if (fromIndex === -1) {
             throw {message: 'Could not find FROM-statement at: ' + query};
         }
-        return fromIndex
+        return fromIndex;
     }
 
-    static _rate(args, fromQuery:string) : string {
+    static _rate(args, fromQuery: string): string {
         var aliases = [];
         _.each(args, function(arg){
-            if (arg.slice(-1) == ')') {
+            if (arg.slice(-1) === ')') {
                 throw {message: 'Argument "' + arg + '" cant be used without alias'};
             }
-            aliases.push(arg.trim().split(' ').pop())
+            aliases.push(arg.trim().split(' ').pop());
         });
 
         var rateColums = [];
@@ -278,17 +278,17 @@ export default class SqlQuery {
             ')';
     }
 
-    static _applyTimeFilter(query:string) : string {
-        if ( query.toLowerCase().indexOf('where') != -1 ) {
+    static _applyTimeFilter(query: string): string {
+        if ( query.toLowerCase().indexOf('where') !== -1 ) {
             query = query.replace(/where/i, 'WHERE $timeFilter AND ');
         } else {
             query += ' WHERE $timeFilter';
         }
 
-        return query
+        return query;
     }
 
-    static getTimeFilter(isToNow) : string {
+    static getTimeFilter(isToNow): string {
         if (isToNow) {
             return '$timeCol >= toDate($from) AND $dateTimeCol >= toDateTime($from)';
 
@@ -307,12 +307,34 @@ export default class SqlQuery {
     }
 
 
-    static convertInterval(interval:number) {
+    static convertInterval(interval: number) {
         if (interval < 1000) {
-            return 1
+            return 1;
         }
         return Math.ceil(interval / 1000);
     }
 
     public static REGEX_COLUMNS = /(?:\s*(?=\w+\.|.*as\s+|distinct\s+|)(\*|\w+|(?:,|\s+)|\w+\([a-z*]+\))(?=\s*(?=,|$)))/ig;
+
+    static interpolateQueryExpr (value, variable, defaultFormatFn) {
+        // if no multi or include all do not regexEscape
+        if (!variable.multi && !variable.includeAll) {
+            return value;
+        }
+
+        if (typeof value === 'string') {
+            return SqlQuery.clickhouseEscape(value);
+        }
+
+        var escapedValues = _.map(value, SqlQuery.clickhouseEscape);
+        return escapedValues.join(',');
+    }
+
+    static clickhouseEscape(value) {
+        if (value.match(/^\d+$/) || value.match(/^\d+\.\d+$/)){
+            return value;
+        }else{
+            return "'" + value.replace(/[\\']/g, '\\$&') + "'";
+        }
+    }
 }

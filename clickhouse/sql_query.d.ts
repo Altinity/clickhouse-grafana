@@ -1,4 +1,4 @@
-/// <reference path="app/headers/common.d.ts" />
+/// <reference path="../../../../../public/app/headers/common.d.ts" />
 export default class SqlQuery {
     target: any;
     selectModels: any[];
@@ -27,4 +27,6 @@ export default class SqlQuery {
     static convertTimestamp(date: any): number;
     static convertInterval(interval: number): number;
     static REGEX_COLUMNS: RegExp;
+    static interpolateQueryExpr(value: any, variable: any, defaultFormatFn: any): any;
+    static clickhouseEscape(value: any): any;
 }

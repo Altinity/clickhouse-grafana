@@ -1,7 +1,9 @@
-System.register(['lodash', 'test/lib/common', './../sql_series'], function(exports_1) {
+System.register(["lodash", "test/lib/common", "./../sql_series"], function (exports_1, context_1) {
+    "use strict";
+    var __moduleName = context_1 && context_1.id;
     var lodash_1, common_1, sql_series_1;
     return {
-        setters:[
+        setters: [
             function (lodash_1_1) {
                 lodash_1 = lodash_1_1;
             },
@@ -10,8 +12,9 @@ System.register(['lodash', 'test/lib/common', './../sql_series'], function(expor
             },
             function (sql_series_1_1) {
                 sql_series_1 = sql_series_1_1;
-            }],
-        execute: function() {
+            }
+        ],
+        execute: function () {
             common_1.describe("clickhouse sql series:", function () {
                 common_1.describe("SELECT $timeseries response", function () {
                     var response = {
@@ -107,6 +110,6 @@ System.register(['lodash', 'test/lib/common', './../sql_series'], function(expor
                 });
             });
         }
-    }
+    };
 });
 //# sourceMappingURL=datasource_specs.js.map

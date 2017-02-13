@@ -1,7 +1,7 @@
 ///<reference path="../../../headers/common.d.ts" />
-System.register(['lodash'], function(exports_1) {
-    var lodash_1;
-    var index, categories, QueryPartDef, QueryPart;
+System.register(["lodash"], function (exports_1, context_1) {
+    "use strict";
+    var __moduleName = context_1 && context_1.id;
     function functionRenderer(part, innerExpr) {
         var str = part.def.type + '(';
         var parameters = lodash_1.default.map(part.params, function (value, index) {
@@ -46,12 +46,14 @@ System.register(['lodash'], function(exports_1) {
         });
         query.selectModels.push(parts);
     }
+    var lodash_1, index, categories, QueryPartDef, QueryPart;
     return {
-        setters:[
+        setters: [
             function (lodash_1_1) {
                 lodash_1 = lodash_1_1;
-            }],
-        execute: function() {
+            }
+        ],
+        execute: function () {///<reference path="../../../headers/common.d.ts" />
             index = [];
             categories = {
                 Aggregations: [],
@@ -72,7 +74,7 @@ System.register(['lodash'], function(exports_1) {
                     options.category.push(index[options.type]);
                 };
                 return QueryPartDef;
-            })();
+            }());
             // Aggregations
             QueryPartDef.register({
                 type: 'count',
@@ -179,8 +181,8 @@ System.register(['lodash'], function(exports_1) {
                     this.text = text;
                 };
                 return QueryPart;
-            })();
-            exports_1("default",{
+            }());
+            exports_1("default", {
                 create: function (part) {
                     return new QueryPart(part);
                 },
@@ -189,6 +191,6 @@ System.register(['lodash'], function(exports_1) {
                 },
             });
         }
-    }
+    };
 });
 //# sourceMappingURL=query_part.js.map

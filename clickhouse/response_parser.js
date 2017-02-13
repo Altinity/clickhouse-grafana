@@ -1,12 +1,14 @@
-System.register(['lodash'], function(exports_1) {
-    var lodash_1;
-    var ResponseParser;
+System.register(["lodash"], function (exports_1, context_1) {
+    "use strict";
+    var __moduleName = context_1 && context_1.id;
+    var lodash_1, ResponseParser;
     return {
-        setters:[
+        setters: [
             function (lodash_1_1) {
                 lodash_1 = lodash_1_1;
-            }],
-        execute: function() {
+            }
+        ],
+        execute: function () {
             ResponseParser = (function () {
                 function ResponseParser() {
                 }
@@ -34,9 +36,9 @@ System.register(['lodash'], function(exports_1) {
                     });
                 };
                 return ResponseParser;
-            })();
+            }());
             exports_1("default", ResponseParser);
         }
-    }
+    };
 });
 //# sourceMappingURL=response_parser.js.map

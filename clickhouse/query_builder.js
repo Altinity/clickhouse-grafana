@@ -38,7 +38,7 @@ function (_) {
       query = 'SELECT name ' +
               'FROM system.columns ' +
               'WHERE database = \'' + this.target.database + '\' AND ' +
-                    'table = \'' + this.target.table + '\' ' +
+              'table = \'' + this.target.table + '\' ' +
               'ORDER BY name';
       return query;
 
@@ -67,20 +67,19 @@ function (_) {
       return query;
 
     } else if (type === 'DATE_TIME') {
-        query = 'SELECT name ' +
+      query = 'SELECT name ' +
             'FROM system.columns ' +
             'WHERE database = \'' + this.target.database + '\' AND ' +
             'table = \'' + this.target.table + '\' AND ' +
             'type = \'DateTime\' ' +
             'ORDER BY name';
-        return query;
+      return query;
 
     } else if (type === 'DATABASES') {
       query = 'SELECT name ' +
               'FROM system.databases ' +
               'ORDER BY name';
       return query;
-
     }
 
     if (table) {

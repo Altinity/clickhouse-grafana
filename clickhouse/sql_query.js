@@ -1,9 +1,10 @@
 ///<reference path="../../../headers/common.d.ts" />
-System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(exports_1) {
-    var lodash_1, query_part_1, dateMath;
-    var SqlQuery;
+System.register(["lodash", "./query_part", "app/core/utils/datemath"], function (exports_1, context_1) {
+    "use strict";
+    var __moduleName = context_1 && context_1.id;
+    var lodash_1, query_part_1, dateMath, SqlQuery;
     return {
-        setters:[
+        setters: [
             function (lodash_1_1) {
                 lodash_1 = lodash_1_1;
             },
@@ -12,8 +13,9 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
             },
             function (dateMath_1) {
                 dateMath = dateMath_1;
-            }],
-        execute: function() {
+            }
+        ],
+        execute: function () {///<reference path="../../../headers/common.d.ts" />
             SqlQuery = (function () {
                 /** @ngInject */
                 function SqlQuery(target, templateSrv, options) {
@@ -289,11 +291,11 @@ System.register(['lodash', './query_part', 'app/core/utils/datemath'], function(
                         return "'" + value.replace(/[\\']/g, '\\$&') + "'";
                     }
                 };
-                SqlQuery.REGEX_COLUMNS = /(?:\s*(?=\w+\.|.*as\s+|distinct\s+|)(\*|\w+|(?:,|\s+)|\w+\([a-z*]+\))(?=\s*(?=,|$)))/ig;
                 return SqlQuery;
-            })();
+            }());
+            SqlQuery.REGEX_COLUMNS = /(?:\s*(?=\w+\.|.*as\s+|distinct\s+|)(\*|\w+|(?:,|\s+)|\w+\([a-z*]+\))(?=\s*(?=,|$)))/ig;
             exports_1("default", SqlQuery);
         }
-    }
+    };
 });
 //# sourceMappingURL=sql_query.js.map

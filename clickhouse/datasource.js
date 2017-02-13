@@ -1,6 +1,7 @@
 ///<reference path="../../../headers/common.d.ts" />
-System.register(['lodash', './sql_series', './sql_query', './response_parser'], function(exports_1) {
-    var lodash_1, sql_series_1, sql_query_1, response_parser_1;
+System.register(["lodash", "./sql_series", "./sql_query", "./response_parser"], function (exports_1, context_1) {
+    "use strict";
+    var __moduleName = context_1 && context_1.id;
     /** @ngInject */
     function ClickHouseDatasource(instanceSettings, $q, backendSrv, templateSrv) {
         this.type = 'clickhouse';
@@ -93,8 +94,9 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
         };
     }
     exports_1("ClickHouseDatasource", ClickHouseDatasource);
+    var lodash_1, sql_series_1, sql_query_1, response_parser_1;
     return {
-        setters:[
+        setters: [
             function (lodash_1_1) {
                 lodash_1 = lodash_1_1;
             },
@@ -106,9 +108,10 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
             },
             function (response_parser_1_1) {
                 response_parser_1 = response_parser_1_1;
-            }],
-        execute: function() {
+            }
+        ],
+        execute: function () {///<reference path="../../../headers/common.d.ts" />
         }
-    }
+    };
 });
 //# sourceMappingURL=datasource.js.map

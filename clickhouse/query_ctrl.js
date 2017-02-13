@@ -1,14 +1,16 @@
-System.register(['./query_part_editor', 'angular', 'lodash', './query_builder', './sql_query', './query_part', 'app/plugins/sdk', 'app/core/app_events'], function(exports_1) {
+System.register(["./query_part_editor", "angular", "lodash", "./query_builder", "./sql_query", "./query_part", "app/plugins/sdk", "app/core/app_events"], function (exports_1, context_1) {
+    "use strict";
     var __extends = (this && this.__extends) || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var angular_1, lodash_1, query_builder_1, sql_query_1, query_part_1, sdk_1, app_events_1;
-    var SqlQueryCtrl;
+    var __moduleName = context_1 && context_1.id;
+    var angular_1, lodash_1, query_builder_1, sql_query_1, query_part_1, sdk_1, app_events_1, SqlQueryCtrl;
     return {
-        setters:[
-            function (_1) {},
+        setters: [
+            function (_1) {
+            },
             function (angular_1_1) {
                 angular_1 = angular_1_1;
             },
@@ -29,46 +31,48 @@ System.register(['./query_part_editor', 'angular', 'lodash', './query_builder', 
             },
             function (app_events_1_1) {
                 app_events_1 = app_events_1_1;
-            }],
-        execute: function() {
+            }
+        ],
+        execute: function () {
             SqlQueryCtrl = (function (_super) {
                 __extends(SqlQueryCtrl, _super);
                 /** @ngInject **/
                 function SqlQueryCtrl($scope, $injector, templateSrv, $q, uiSegmentSrv) {
-                    _super.call(this, $scope, $injector);
-                    this.templateSrv = templateSrv;
-                    this.$q = $q;
-                    this.uiSegmentSrv = uiSegmentSrv;
-                    this.matchOperators = { 'match': 'REGEXP', 'not': 'NOT REGEXP' };
-                    this.queryModel = new sql_query_1.default(this.target, templateSrv, this.panel.scopedVars);
-                    this.queryBuilder = new query_builder_1.default(this.target);
-                    this.databaseSegment = uiSegmentSrv.newSegment(this.target.database || { fake: true, value: '-- database --' });
-                    this.tableSegment = uiSegmentSrv.newSegment(this.target.table || { fake: true, value: '-- table --' });
-                    this.dateColDataTypeSegment = uiSegmentSrv.newSegment(this.target.dateColDataType || { fake: true, value: '-- date : col --' });
-                    this.dateTimeColDataTypeSegment = uiSegmentSrv.newSegment(this.target.dateTimeColDataType || { fake: true, value: '-- dateTime : col --' });
-                    this.tagSegments = [];
-                    for (var _i = 0, _a = this.target.tags; _i < _a.length; _i++) {
+                    var _this = _super.call(this, $scope, $injector) || this;
+                    _this.templateSrv = templateSrv;
+                    _this.$q = $q;
+                    _this.uiSegmentSrv = uiSegmentSrv;
+                    _this.matchOperators = { 'match': 'REGEXP', 'not': 'NOT REGEXP' };
+                    _this.queryModel = new sql_query_1.default(_this.target, templateSrv, _this.panel.scopedVars);
+                    _this.queryBuilder = new query_builder_1.default(_this.target);
+                    _this.databaseSegment = uiSegmentSrv.newSegment(_this.target.database || { fake: true, value: '-- database --' });
+                    _this.tableSegment = uiSegmentSrv.newSegment(_this.target.table || { fake: true, value: '-- table --' });
+                    _this.dateColDataTypeSegment = uiSegmentSrv.newSegment(_this.target.dateColDataType || { fake: true, value: '-- date : col --' });
+                    _this.dateTimeColDataTypeSegment = uiSegmentSrv.newSegment(_this.target.dateTimeColDataType || { fake: true, value: '-- dateTime : col --' });
+                    _this.tagSegments = [];
+                    for (var _i = 0, _a = _this.target.tags; _i < _a.length; _i++) {
                         var tag = _a[_i];
                         if (!tag.operator) {
                             if (/^\/.*\/$/.test(tag.value)) {
-                                tag.operator = this.matchOperators.match;
+                                tag.operator = _this.matchOperators.match;
                             }
                             else {
                                 tag.operator = '=';
                             }
                         }
                         if (tag.condition) {
-                            this.tagSegments.push(uiSegmentSrv.newCondition(tag.condition));
+                            _this.tagSegments.push(uiSegmentSrv.newCondition(tag.condition));
                         }
-                        this.tagSegments.push(uiSegmentSrv.newKey(tag.key));
-                        this.tagSegments.push(uiSegmentSrv.newOperator(tag.operator));
-                        this.tagSegments.push(uiSegmentSrv.newKeyValue(tag.value));
+                        _this.tagSegments.push(uiSegmentSrv.newKey(tag.key));
+                        _this.tagSegments.push(uiSegmentSrv.newOperator(tag.operator));
+                        _this.tagSegments.push(uiSegmentSrv.newKeyValue(tag.value));
                     }
-                    this.fixTagSegments();
-                    this.buildSelectMenu();
-                    this.removeTagFilterSegment = uiSegmentSrv.newSegment({
+                    _this.fixTagSegments();
+                    _this.buildSelectMenu();
+                    _this.removeTagFilterSegment = uiSegmentSrv.newSegment({
                         fake: true, value: '-- remove tag filter --'
                     });
+                    return _this;
                 }
                 SqlQueryCtrl.prototype.buildSelectMenu = function () {
                     var categories = query_part_1.default.getCategories();
@@ -302,11 +306,11 @@ System.register(['./query_part_editor', 'angular', 'lodash', './query_builder', 
                 SqlQueryCtrl.prototype.getCollapsedText = function () {
                     return this.queryModel.render(false);
                 };
-                SqlQueryCtrl.templateUrl = 'partials/query.editor.html';
                 return SqlQueryCtrl;
-            })(sdk_1.QueryCtrl);
+            }(sdk_1.QueryCtrl));
+            SqlQueryCtrl.templateUrl = 'partials/query.editor.html';
             exports_1("SqlQueryCtrl", SqlQueryCtrl);
         }
-    }
+    };
 });
 //# sourceMappingURL=query_ctrl.js.map

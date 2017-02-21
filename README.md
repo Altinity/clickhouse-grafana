@@ -69,11 +69,22 @@ A description of macros is available from an interface by clicking on the info-b
 
 ### Functions
 
+Those functions are just templates of SQL queries and you can check the final query at Raw SQL Editor mode. 
+If some additional complexity is needed - just copy raw sql into textarea and make according changes. Remember that macros are still available to use. 
+
+There are some limits in function use because of poor query analysis:
+* Both Date:Col and DateTime:col must be set in Query Builder
+* Query must begins from function name
+* Only one function can be used per query
+
 Plugin supports the following functions:
 
 ##### $rate(cols...) - converts query results as "change rate per interval"
 
-Example usage: $rate(countIf(Type = 200) * 60 AS good, countIf(Type != 200) * 60 AS bad) FROM requests
+Example usage: 
+```
+$rate(countIf(Type = 200) * 60 AS good, countIf(Type != 200) * 60 AS bad) FROM requests
+```
 
 Query will be transformed into:
 ```
@@ -97,7 +108,10 @@ FROM
 
 ##### $columns(key, value) - query values as array of [key, value], where key will be used as label
 
-Example usage: $columns(OSName, count(*) c) FROM requests
+Example usage: 
+```
+$columns(OSName, count(*) c) FROM requests
+```
 
 Query will be transformed into:
 ```
@@ -131,7 +145,10 @@ This will help to build the next graph:
 
 ##### $rateColumns(key, value) - is a combination of $columns and $rate
 
-Example usage: $rateColumns(OS, count(*) c) FROM requests
+Example usage: 
+```
+$rateColumns(OS, count(*) c) FROM requests
+```
 
 Query will be transformed into:
 ```
@@ -163,17 +180,6 @@ FROM
 ) 
 
 ```
-
-
-There are some limits in function use because of poor query analysis:
-* Both Date:Col and DateTime:col must be set in Query Builder
-* Query must begins from function name
-* Only one function can be used per query
-
-Those functions are just templates of SQL queries and you can check the final query at Raw SQL Editor mode. 
-If some additional complexity is needed - just copy raw sql into textarea and make according changes. Remember that macros are still available to use. 
-
-It will probably be changed in future to allow combinations and usage in custom places of query.
 
 
 ### Contribute

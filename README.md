@@ -69,7 +69,7 @@ A description of macros is available from an interface by clicking on the info-b
 
 ### Functions
 
-Those functions are just templates of SQL queries and you can check the final query at Raw SQL Editor mode. 
+Functions are just templates of SQL queries and you can check the final query at [Raw SQL Editor mode](https://github.com/Vertamedia/clickhouse-grafana/blob/master/README.md#raw-sql-editor). 
 If some additional complexity is needed - just copy raw sql into textarea and make according changes. Remember that macros are still available to use. 
 
 There are some limits in function use because of poor query analysis:
@@ -77,9 +77,11 @@ There are some limits in function use because of poor query analysis:
 * Query must begins from function name
 * Only one function can be used per query
 
+
+
 Plugin supports the following functions:
 
-##### $rate(cols...) - converts query results as "change rate per interval"
+#### $rate(cols...) - converts query results as "change rate per interval"
 
 Example usage: 
 ```
@@ -104,9 +106,9 @@ FROM
     ORDER BY t ASC
 ) 
 ```
+---
 
-
-##### $columns(key, value) - query values as array of [key, value], where key will be used as label
+#### $columns(key, value) - query values as array of [key, value], where key will be used as label
 
 Example usage: 
 ```
@@ -142,8 +144,9 @@ This will help to build the next graph:
 
 ![req_by_os image](https://cloud.githubusercontent.com/assets/2902918/21719222/2feabf30-d425-11e6-9042-9d290ef07884.png)
 
+---
 
-##### $rateColumns(key, value) - is a combination of $columns and $rate
+#### $rateColumns(key, value) - is a combination of $columns and $rate
 
 Example usage: 
 ```

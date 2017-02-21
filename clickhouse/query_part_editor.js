@@ -14,7 +14,7 @@ function (angular, _, $) {
                           ' class="input-mini tight-form-func-param"></input>';
       return {
         restrict: 'E',
-        templateUrl: 'public/app/plugins/datasource/clickhouse/partials/query_part.html',
+        templateUrl: 'public/plugins/clickhouse/partials/query_part.html',
         scope: {
           part: "=",
           removeAction: "&",

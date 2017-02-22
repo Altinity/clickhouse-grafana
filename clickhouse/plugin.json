@@ -1,20 +1,29 @@
 {
+  "id": "vertamedia-clickhouse-datasource",
   "type": "datasource",
   "name": "ClickHouse",
-  "id": "clickhouse",
 
   "metrics": true,
   "annotations": false,
   "alerting": false,
 
   "info": {
-    "description": "ClickHouse data source for Grafana",
+    "description": "ClickHouse datasource for Grafana",
     "author": {
-      "name": "Vertamedia"
+      "name": "Vertamedia",
+      "url": "https://vertamedia.com/"
     },
+    "keywords": ["clickhouse"],
     "logos": {
       "small": "img/clickhouse_logo.svg",
       "large": "img/clickhouse_logo.svg"
-    }
+    },
+    "links": [
+      {
+        "name": "GitHub",
+        "url": "https://github.com/Vertamedia/clickhouse-grafana"
+      }
+    ],
+    "version": "0.0.1"
   }
 }

@@ -1,5 +1,4 @@
 /// <reference path="../../../../../public/app/headers/common.d.ts" />
-import './query_part_editor';
 import SqlQuery from './sql_query';
 import { QueryCtrl } from 'app/plugins/sdk';
 declare class SqlQueryCtrl extends QueryCtrl {
@@ -12,39 +11,37 @@ declare class SqlQueryCtrl extends QueryCtrl {
     databaseSegment: any;
     dateColDataTypeSegment: any;
     dateTimeColDataTypeSegment: any;
-    tagSegments: any[];
-    selectMenu: any;
     tableSegment: any;
-    removeTagFilterSegment: any;
-    matchOperators: any;
     panel: any;
     datasource: any;
     target: any;
+    resolutions: any;
+    scanner: any;
+    tableLoading: boolean;
+    datetimeLoading: boolean;
+    dateLoading: boolean;
+    editMode: boolean;
+    textareaHeight: any;
     /** @ngInject **/
     constructor($scope: any, $injector: any, templateSrv: any, $q: any, uiSegmentSrv: any);
-    buildSelectMenu(): void;
-    addSelectPart(selectParts: any, cat: any, subitem: any): void;
-    removeSelectPart(selectParts: any, part: any): void;
-    fixTagSegments(): void;
-    tableChanged(): void;
-    querySegment(type: string): any;
+    fakeSegment(value: any): any;
     getDatabaseSegments(): any;
     databaseChanged(): void;
+    getTableSegments(): any;
+    tableChanged(): void;
     getDateColDataTypeSegments(): any;
     dateColDataTypeChanged(): void;
     getDateTimeColDataTypeSegments(): any;
     dateTimeColDataTypeChanged(): void;
     toggleEditorMode(): boolean;
     _toggleEditorMode(): void;
-    refreshQuery(): void;
-    getTableSegments(): any;
-    getPartOptions(part: any): any;
+    toggleEdit(e: any, editMode: boolean): void;
+    formatQuery(): void;
+    toQueryMode(): void;
+    getScanner(): any;
     handleQueryError(err: any): any[];
-    transformToSegments(addTemplateVars: any): (results: any) => any;
-    getTagsOrValues(segment: any, index: any): any;
-    tagSegmentUpdated(segment: any, index: any): void;
-    rebuildTargetTagConditions(): void;
-    getTagValueOperator(tagValue: any, tagOperator: any): any;
+    querySegment(type: string): any;
+    applySegment(dst: any, src: any): void;
     getCollapsedText(): any;
 }
 export { SqlQueryCtrl };

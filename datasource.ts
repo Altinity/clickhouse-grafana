@@ -60,15 +60,17 @@ export function ClickHouseDatasource(instanceSettings, $q, backendSrv, templateS
 
         return $q.all(allQueryPromise).then((responses): any => {
             var result = [];
-            _.each(responses, (response, index) => {
+            _.each(responses, (response) => {
                 if (!response || !response.rows) {
                     return;
                 }
-                var target = options.targets[index];
+
                 var sqlSeries = new SqlSeries({
                     series: response.data,
                     meta: response.meta,
-                    table: target.table,
+                    tillNow: options.rangeRaw.to === 'now',
+                    from: SqlQuery.convertTimestamp(options.range.from),
+                    to: SqlQuery.convertTimestamp(options.range.to)
                 });
                 _.each(sqlSeries.getTimeSeries(), (data) => {
                     result.push(data);

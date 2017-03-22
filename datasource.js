@@ -48,15 +48,16 @@ System.register(["lodash", "./sql_series", "./sql_query", "./response_parser"], 
             });
             return $q.all(allQueryPromise).then(function (responses) {
                 var result = [];
-                lodash_1.default.each(responses, function (response, index) {
+                lodash_1.default.each(responses, function (response) {
                     if (!response || !response.rows) {
                         return;
                     }
-                    var target = options.targets[index];
                     var sqlSeries = new sql_series_1.default({
                         series: response.data,
                         meta: response.meta,
-                        table: target.table,
+                        tillNow: options.rangeRaw.to === 'now',
+                        from: sql_query_1.default.convertTimestamp(options.range.from),
+                        to: sql_query_1.default.convertTimestamp(options.range.to)
                     });
                     lodash_1.default.each(sqlSeries.getTimeSeries(), function (data) {
                         result.push(data);

@@ -102,10 +102,10 @@ System.register(["lodash", "test/lib/common", "./../sql_series"], function (expo
                         common_1.expect(lodash_1.default.size(timeSeries)).to.be(4);
                     });
                     common_1.it("should get three datapoints", function () {
-                        common_1.expect(lodash_1.default.size(timeSeries[0].datapoints)).to.be(3);
-                        common_1.expect(lodash_1.default.size(timeSeries[1].datapoints)).to.be(3);
-                        common_1.expect(lodash_1.default.size(timeSeries[2].datapoints)).to.be(3);
-                        common_1.expect(lodash_1.default.size(timeSeries[3].datapoints)).to.be(3);
+                        common_1.expect(lodash_1.default.size(timeSeries[0].datapoints)).to.be(4);
+                        common_1.expect(lodash_1.default.size(timeSeries[1].datapoints)).to.be(4);
+                        common_1.expect(lodash_1.default.size(timeSeries[2].datapoints)).to.be(4);
+                        common_1.expect(lodash_1.default.size(timeSeries[3].datapoints)).to.be(4);
                     });
                 });
             });

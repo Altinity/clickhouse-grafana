@@ -100,10 +100,10 @@ describe("clickhouse sql series:", () => {
         });
 
         it("should get three datapoints", () => {
-            expect(_.size(timeSeries[0].datapoints)).to.be(3);
-            expect(_.size(timeSeries[1].datapoints)).to.be(3);
-            expect(_.size(timeSeries[2].datapoints)).to.be(3);
-            expect(_.size(timeSeries[3].datapoints)).to.be(3);
+            expect(_.size(timeSeries[0].datapoints)).to.be(4);
+            expect(_.size(timeSeries[1].datapoints)).to.be(4);
+            expect(_.size(timeSeries[2].datapoints)).to.be(4);
+            expect(_.size(timeSeries[3].datapoints)).to.be(4);
         });
     });
 

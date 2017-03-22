@@ -1,13 +1,13 @@
 ///<reference path="../../../headers/common.d.ts" />
-import './query_part_editor';
 
 import angular from 'angular';
+import $ from 'jquery';
 import _ from 'lodash';
 import SqlQueryBuilder from './query_builder';
 import SqlQuery from './sql_query';
-import queryPart from './query_part';
 import {QueryCtrl} from 'app/plugins/sdk';
 import appEvents from 'app/core/app_events';
+import Scanner from './scanner';
 
 class SqlQueryCtrl extends QueryCtrl {
     static templateUrl = 'partials/query.editor.html';
@@ -17,20 +17,21 @@ class SqlQueryCtrl extends QueryCtrl {
     databaseSegment: any;
     dateColDataTypeSegment: any;
     dateTimeColDataTypeSegment: any;
-    tagSegments: any[];
-    selectMenu: any;
     tableSegment: any;
-    removeTagFilterSegment: any;
-    matchOperators: any;
     panel: any;
     datasource: any;
     target: any;
+    resolutions: any;
+    scanner: any;
+    tableLoading: boolean;
+    datetimeLoading: boolean;
+    dateLoading: boolean;
+    editMode: boolean;
+    textareaHeight: any;
 
     /** @ngInject **/
     constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
         super($scope, $injector);
-
-        this.matchOperators = {'match': 'REGEXP', 'not': 'NOT REGEXP'};
 
         this.queryModel = new SqlQuery(this.target, templateSrv, this.panel.scopedVars);
         this.queryBuilder = new SqlQueryBuilder(this.target);
@@ -51,75 +52,18 @@ class SqlQueryCtrl extends QueryCtrl {
             this.target.dateTimeColDataType || {fake: true, value: '-- dateTime : col --'}
         );
 
-        this.tagSegments = [];
-        for (let tag of this.target.tags) {
-            if (!tag.operator) {
-                if (/^\/.*\/$/.test(tag.value)) {
-                    tag.operator = this.matchOperators.match;
-                } else {
-                    tag.operator = '=';
-                }
-            }
-
-            if (tag.condition) {
-                this.tagSegments.push(uiSegmentSrv.newCondition(tag.condition));
-            }
-
-            this.tagSegments.push(uiSegmentSrv.newKey(tag.key));
-            this.tagSegments.push(uiSegmentSrv.newOperator(tag.operator));
-            this.tagSegments.push(uiSegmentSrv.newKeyValue(tag.value));
-        }
-
-        this.fixTagSegments();
-        this.buildSelectMenu();
-        this.removeTagFilterSegment = uiSegmentSrv.newSegment({
-            fake: true, value: '-- remove tag filter --'
+        this.resolutions = _.map([1,2,3,4,5,10], function(f) {
+            return {factor: f, label: '1/' + f};
         });
+
+        this.target.intervalFactor = this.target.intervalFactor || 1;
+        this.target.query = this.target.query || "SELECT $timeSeries as t, count(*) FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
+        this.target.formattedQuery = this.target.formattedQuery || this.target.query;
+        this.scanner = new Scanner(this.target.query);
     }
 
-    buildSelectMenu() {
-        var categories = queryPart.getCategories();
-        this.selectMenu = _.reduce(categories, function (memo, cat, key) {
-            var menu = {
-                text: key,
-                submenu: cat.map(item => {
-                    return {text: item.type, value: item.type};
-                }),
-            };
-            memo.push(menu);
-            return memo;
-        }, []);
-    }
-
-    addSelectPart(selectParts, cat, subitem) {
-        this.queryModel.addSelectPart(selectParts, subitem.value);
-        this.refreshQuery();
-    }
-
-    removeSelectPart(selectParts, part) {
-        this.queryModel.removeSelectPart(selectParts, part);
-        this.refreshQuery();
-    }
-
-    fixTagSegments() {
-        var count = this.tagSegments.length;
-        var lastSegment = this.tagSegments[Math.max(count - 1, 0)];
-
-        if (!lastSegment || lastSegment.type !== 'plus-button') {
-            this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-        }
-    }
-
-    tableChanged() {
-        this.target.table = this.tableSegment.value;
-        this.refreshQuery();
-    }
-
-    querySegment(type: string) {
-        var query = this.queryBuilder.buildExploreQuery(type);
-        return this.datasource.metricFindQuery(query)
-            .then(this.transformToSegments(false))
-            .catch(this.handleQueryError.bind(this));
+    fakeSegment(value) {
+        return this.uiSegmentSrv.newSegment({fake: true, value: value});
     }
 
     getDatabaseSegments() {
@@ -128,34 +72,79 @@ class SqlQueryCtrl extends QueryCtrl {
 
     databaseChanged() {
         this.target.database = this.databaseSegment.value;
-        this.refreshQuery();
+        this.applySegment(this.tableSegment, this.fakeSegment('-- table : col --'));
+        this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
+        this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
+    }
+
+    getTableSegments() {
+        var target = this.target;
+        target.tableLoading = true;
+        return this.querySegment('TABLES').then(function(response){
+            target.tableLoading = false;
+            return response;
+        });
+    }
+
+    tableChanged() {
+        this.target.table = this.tableSegment.value;
+        this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
+        this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
+
+        var self = this;
+        this.getDateColDataTypeSegments().then(function(segments) {
+            if (segments.length === 0) {
+                return;
+            }
+            self.applySegment(self.dateColDataTypeSegment, segments[0]);
+            self.dateColDataTypeChanged();
+        });
+        this.getDateTimeColDataTypeSegments().then(function(segments) {
+            if (segments.length === 0) {
+                return;
+            }
+            self.applySegment(self.dateTimeColDataTypeSegment, segments[0]);
+            self.dateTimeColDataTypeChanged();
+        });
     }
 
     getDateColDataTypeSegments() {
-        return this.querySegment('DATE');
+        var target = this.target;
+        target.dateLoading = true;
+        return this.querySegment('DATE').then(function(response){
+            target.dateLoading = false;
+            return response;
+        });
     }
 
     dateColDataTypeChanged() {
         this.target.dateColDataType = this.dateColDataTypeSegment.value;
-        this.refreshQuery();
     }
 
     getDateTimeColDataTypeSegments() {
-        return this.querySegment('DATE_TIME');
+        var target = this.target;
+        target.datetimeLoading = true;
+        return this.querySegment('DATE_TIME').then(function(response){
+            target.datetimeLoading = false;
+            return response;
+        });
     }
 
     dateTimeColDataTypeChanged() {
         this.target.dateTimeColDataType = this.dateTimeColDataTypeSegment.value;
-        this.refreshQuery();
     }
 
     toggleEditorMode() {
         var self = this;
-        var modelQuery = this.queryModel.render(true);
-        if (this.target.rawQuery && this.target.query !== modelQuery) {
+        if ( (this.target.rawQuery === undefined || !this.target.rawQuery) &&
+            (this.databaseSegment.fake ||
+            this.tableSegment.fake ||
+            this.dateTimeColDataTypeSegment.fake ||
+            this.dateColDataTypeSegment.fake)
+        ) {
             appEvents.emit('confirm-modal', {
                 title: 'Query Alert',
-                text: 'Query was changed manually. Toggling to Edit Mode would drop changes. Continue?',
+                text: 'Some of required for macros query settings are undefined. Continue?',
                 icon: 'fa-exclamation',
                 yesText: 'Continue',
                 onConfirm: function(){
@@ -164,26 +153,44 @@ class SqlQueryCtrl extends QueryCtrl {
             });
             return false;
         }
-        this._toggleEditorMode();
+        self._toggleEditorMode();
     }
 
     _toggleEditorMode() {
         this.target.rawQuery = !this.target.rawQuery;
-        this.refreshQuery();
     }
 
-    refreshQuery() {
-        this.target.query = this.queryModel.render(false);
-    }
-
-    getTableSegments() {
-        return this.querySegment('TABLES');
-    }
-
-    getPartOptions(part) {
-        if (part.def.type === 'field') {
-            return this.querySegment('TAG_KEYS');
+    toggleEdit(e: any, editMode: boolean) {
+        if (editMode) {
+            this.editMode = true;
+            this.textareaHeight = "height: " + $(e.currentTarget).outerHeight() + "px;";
+            return;
         }
+
+        this.target.formattedQuery = this.getScanner().Highlight();
+        if ( this.editMode === true ) {
+            this.editMode = false;
+            this.refresh();
+        }
+    }
+
+    formatQuery() {
+        this.target.query = this.getScanner().Format();
+        this.toggleEdit({}, false);
+    }
+
+    toQueryMode() {
+        this.target.formattedQuery = this.getScanner().Highlight();
+        this.toggleEditorMode();
+        this.refresh();
+    }
+
+    getScanner() {
+        if (this.scanner.raw() !== this.target.query) {
+            this.scanner = new Scanner(this.target.query);
+        }
+
+        return this.scanner;
     }
 
     handleQueryError(err) {
@@ -191,147 +198,21 @@ class SqlQueryCtrl extends QueryCtrl {
         return [];
     }
 
-    transformToSegments(addTemplateVars) {
-        return (results) => {
-            var segments = _.map(results, segment => {
-                return this.uiSegmentSrv.newSegment({value: segment.text, expandable: segment.expandable});
-            });
-
-            if (addTemplateVars) {
-                for (let variable of this.templateSrv.variables) {
-                    segments.unshift(this.uiSegmentSrv.newSegment({
-                        type: 'template', value: '/^$' + variable.name + '$/', expandable: true
-                    }));
-                    segments.unshift(this.uiSegmentSrv.newSegment({
-                        type: 'template', value: '$' + variable.name, expandable: true
-                    }));
-                }
-            }
-
-            return segments;
-        };
-    }
-
-    getTagsOrValues(segment, index) {
-        if (segment.type === 'condition') {
-            return this.$q.when([
-                this.uiSegmentSrv.newSegment('AND'), this.uiSegmentSrv.newSegment('OR')
-            ]);
-        }
-        if (segment.type === 'operator') {
-            var nextValue = this.tagSegments[index + 1].value;
-            if (/^\/.*\/$/.test(nextValue)) {
-                return this.$q.when(this.uiSegmentSrv.newOperators([
-                    this.matchOperators.match, this.matchOperators.not
-                ]));
-            } else {
-                return this.$q.when(this.uiSegmentSrv.newOperators([
-                    '=', '<>', '<', '>', 'in'
-                ]));
-            }
-        }
-
-        var query;
-        if (segment.type === 'key' || segment.type === 'plus-button') {
-            query = this.queryBuilder.buildExploreQuery('TAG_KEYS');
-        } else if (segment.type === 'value') {
-            return this.$q.when([
-                this.uiSegmentSrv.newSegment(0)
-            ]);
-        }
-
+    querySegment(type: string) {
+        var query = this.queryBuilder.buildExploreQuery(type);
         return this.datasource.metricFindQuery(query)
-            .then(this.transformToSegments(false))
-            .then(results => {
-                if (segment.type === 'key') {
-                    results.splice(0, 0, angular.copy(this.removeTagFilterSegment));
-                }
-                return results;
-            })
+            .then(this.uiSegmentSrv.transformToSegments(false))
             .catch(this.handleQueryError.bind(this));
     }
 
-    tagSegmentUpdated(segment, index) {
-        this.tagSegments[index] = segment;
-
-        // handle remove tag condition
-        if (segment.value === this.removeTagFilterSegment.value) {
-            this.tagSegments.splice(index, 3);
-            if (this.tagSegments.length === 0) {
-                this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-            } else if (this.tagSegments.length > 2) {
-                this.tagSegments.splice(Math.max(index - 1, 0), 1);
-                if (this.tagSegments[this.tagSegments.length - 1].type !== 'plus-button') {
-                    this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-                }
-            }
-        } else {
-            if (segment.type === 'plus-button') {
-                if (index > 2) {
-                    this.tagSegments.splice(index, 0, this.uiSegmentSrv.newCondition('AND'));
-                }
-                this.tagSegments.push(this.uiSegmentSrv.newOperator('='));
-                this.tagSegments.push(this.uiSegmentSrv.newFake(
-                    'set value', 'value', 'query-segment-value'
-                ));
-                segment.type = 'key';
-                segment.cssClass = 'query-segment-key';
-            }
-
-            if ((index + 1) === this.tagSegments.length) {
-                this.tagSegments.push(this.uiSegmentSrv.newPlusButton());
-            }
-        }
-
-        this.rebuildTargetTagConditions();
-        this.refreshQuery();
-    }
-
-    rebuildTargetTagConditions() {
-        var tags = [];
-        var tagIndex = 0;
-        var tagOperator = "";
-
-        _.each(this.tagSegments, (segment2, index) => {
-            if (segment2.type === 'key') {
-                if (tags.length === 0) {
-                    tags.push({});
-                }
-                tags[tagIndex].key = segment2.value;
-            } else if (segment2.type === 'value') {
-                tagOperator = this.getTagValueOperator(segment2.value, tags[tagIndex].operator);
-                if (tagOperator) {
-                    this.tagSegments[index - 1] = this.uiSegmentSrv.newOperator(tagOperator);
-                    tags[tagIndex].operator = tagOperator;
-                }
-                tags[tagIndex].value = segment2.value;
-            } else if (segment2.type === 'condition') {
-                tags.push({condition: segment2.value});
-                tagIndex += 1;
-            } else if (segment2.type === 'operator') {
-                tags[tagIndex].operator = segment2.value;
-            }
-        });
-
-        this.target.tags = tags;
-        this.refreshQuery();
-    }
-
-    getTagValueOperator(tagValue, tagOperator) {
-        if (tagOperator !== this.matchOperators.match &&
-            tagOperator !== this.matchOperators.not &&
-            /^\/.*\/$/.test(tagValue)) {
-            return this.matchOperators.match;
-
-        } else if ((tagOperator === this.matchOperators.match ||
-            tagOperator === this.matchOperators.not) &&
-            /^(?!\/.*\/$)/.test(tagValue)) {
-            return '=';
-        }
+    applySegment(dst, src) {
+        dst.value = src.value;
+        dst.html = src.html || src.value;
+        dst.fake = src.fake === undefined ? false : src.fake;
     }
 
     getCollapsedText() {
-        return this.queryModel.render(false);
+        return this.target.query;
     }
 }
 

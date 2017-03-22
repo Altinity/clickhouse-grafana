@@ -8,8 +8,9 @@ Copy files to your [Grafana plugin directory](http://docs.grafana.org/plugins/in
 ### Features:
 
  * Access to CH via HTTP
- * Query Builder
+ * Query setup
  * Raw SQL editor
+ * SQL syntax highlighting 
  * Macros support
  * Additional functions
  * Templates
@@ -25,31 +26,31 @@ Page configuration is standard
 
 There is a small feature - ClickHouse treats HTTP Basic Authentication credentials as a database user and will try to run queries using its name.
 
-### Query Builder
+### Query setup
 
-Plugin supports Query Builder:
+Query setup interface:
 
-![query editor image](https://cloud.githubusercontent.com/assets/2902918/21719220/2fddcde8-d425-11e6-8b54-1d8609d9d1cd.png)
+![query editor image](https://cloud.githubusercontent.com/assets/2902918/24203791/5dc44d38-0f1f-11e7-9905-6deb8b28fbe4.png)
 
-Here you have to set database, table, WHERE-condition (if needed), 
-Date:Col ([EventDate](https://clickhouse.yandex/reference_en.html#Date) column required for [MergeTree](https://clickhouse.yandex/reference_en.html#MergeTree) engine), 
-DateTime:Col ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime) column is required for macros and functions), selected columns.
+First row `FROM` contains two options: database and table. Table values depends on selected database.
+Second row contains:
+* Date:Col ([EventDate](https://clickhouse.yandex/reference_en.html#Date) column required for [MergeTree](https://clickhouse.yandex/reference_en.html#MergeTree) engine), 
+* DateTime:Col ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime) column is required for macros and functions), selected columns.
 
+*// Plugin will try to detect date columns automatically *
 *// DateTime:Col is required for our time-based macros and funcs, because all analytics is based on these values*
 
-Part "Query" displays a current automatically built query based on previously selected values. Feel free to edit it according to your needs.
+Button `Go to Query` is just a toggler to Raw SQL Editor
 
 ### Raw SQL Editor
 
 Raw Editor allows custom SQL queries to be written:
 
-![raw editor image](https://cloud.githubusercontent.com/assets/2902918/21719221/2fea14e0-d425-11e6-9211-5e842169eef3.png)
+![raw editor image](https://cloud.githubusercontent.com/assets/2902918/24203787/5a5da7ac-0f1f-11e7-911b-4da7cc4ddb2a.png)
 
 
 Raw Editor is represented by textarea because sometimes we need to display large queries. Also, it helps to save query formatting in order to understand its structure. 
 Under the textarea you can find a raw query (all macros and functions have already been replaced) which will be sent directly to ClickHouse. 
-
-Remember, Raw Editor and Query Builder are incompatible which means that it is impossible to make changes in Raw Editor and switch to Query Builder - all changes will be overridden. There is a special confirmation window for such cases.
 
 ### Macros
 
@@ -189,7 +190,7 @@ FROM
 
 Since we developed this plugin only for internal needs we don't have some of Grafana's features:
 
-* Alerts
+* Alerts (this feature requires additional changes at backend and can't be solved by js-plugin)
 * Annotations
 * Labels
 

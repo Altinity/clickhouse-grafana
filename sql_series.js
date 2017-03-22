@@ -1,6 +1,5 @@
 define([
-  'lodash',
-  'app/core/table_model'
+  'lodash'
 ],
 function (_) {
   'use strict';
@@ -8,7 +7,9 @@ function (_) {
   function SqlSeries(options) {
     this.series = options.series;
     this.meta = options.meta;
-    this.table = options.table;
+    this.tillNow = options.tillNow;
+    this.from = options.from;
+    this.to = options.to;
   }
 
   var p = SqlSeries.prototype;
@@ -28,7 +29,6 @@ function (_) {
 
         // rm time value from series
         delete serie[timeCol.name];
-
         _.each(serie, function(val, key) {
             if (_.isArray(val)) {
               _.each(val, function(arr) {
@@ -39,31 +39,56 @@ function (_) {
             }
           });
       });
-
-    var nullInterval;
     _.each(metrics, function(v, k) {
         var datapoints = [];
         _.each(intervals, function(interval) {
-            if (metrics[k][interval] === null) { // avoid zero values in case of runningDifference()
-              delete metrics[k][interval];
-              nullInterval = interval;
-              return;
-            }
-
-            if (interval === nullInterval) {
-              return;
-            }
-
-            if (metrics[k][interval] === undefined) {
+            if (metrics[k][interval] === undefined || metrics[k][interval] === null) {
               metrics[k][interval] = 0;
             }
             datapoints.push([self._formatValue(metrics[k][interval]), interval]);
           });
-        timeSeries.push({target: k, datapoints: datapoints});
+        timeSeries.push({target: k, datapoints: self.extrapolate(datapoints)});
       });
 
     return timeSeries;
   };
+
+  p.extrapolate = function(datapoints) {
+      if (!this.tillNow || datapoints.length < 10) {
+        return datapoints;
+      }
+
+      // Duration between first/last samples and boundary of range.
+      var durationToStart = datapoints[0][1]/1000 - this.from,
+          durationToEnd = this.to - datapoints[datapoints.length-1][1]/1000;
+
+      // If the first/last samples are close to the boundaries of the range,
+      // extrapolate the result.
+      var sampledInterval = (datapoints[datapoints.length-1][1] - datapoints[0][1])/1000,
+          averageDurationBetweenSamples = sampledInterval / (datapoints.length-1);
+
+      var diff;
+      // close to left border and value is 0 because of runningDifference function
+      if (durationToStart < averageDurationBetweenSamples && datapoints[0][0] === 0) {
+        diff = ((datapoints[1][0] - datapoints[2][0]) / datapoints[1][0]) * 0.1;
+        diff %= 1;
+        if (isNaN(diff)) {
+          diff = 0;
+        }
+        datapoints[0][0] = datapoints[1][0] * (1 + diff);
+      }
+
+      if (durationToEnd < averageDurationBetweenSamples) {
+        diff = ((datapoints[datapoints.length-2][0] - datapoints[datapoints.length-3][0]) / datapoints[datapoints.length-2][0]) * 0.1;
+        diff %= 1;
+        if (isNaN(diff)) {
+          diff = 0;
+        }
+        datapoints[datapoints.length-1][0] = datapoints[datapoints.length-2][0] * (1 + diff);
+      }
+
+      return datapoints;
+    };
 
   p._formatValue = function(value) {
     var v_numeric = Number(value);

@@ -1,12 +1,14 @@
 ///<reference path="../../../headers/common.d.ts" />
 
 import _ from 'lodash';
-import queryPart from './query_part';
 import * as dateMath from 'app/core/utils/datemath';
+import moment from 'moment';
+import Scanner from './scanner';
+
+var durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
 
 export default class SqlQuery {
   target: any;
-  selectModels: any[];
   queryBuilder: any;
   templateSrv: any;
   options: any;
@@ -23,138 +25,40 @@ export default class SqlQuery {
       {type: 'field', params: ['*']},
       {type: 'count', params: []},
     ]];
-    this.updateProjection();
-  }
-
-  updateProjection() {
-    this.selectModels = _.map(this.target.targetLists, function(parts: any) {
-      return _.map(parts, queryPart.create);
-    });
-  }
-
-  updatePersistedParts() {
-    this.target.targetLists = _.map(this.selectModels, function(selectParts) {
-      return _.map(selectParts, function(part: any) {
-        return {type: part.def.type, params: part.params};
-      });
-    });
-  }
-
-  removeSelect(index: number) {
-    this.target.targetLists.splice(index, 1);
-    this.updateProjection();
-  }
-
-  removeSelectPart(selectParts, part) {
-    // if we remove the field remove the whole statement
-    if (part.def.type === 'field') {
-      if (this.selectModels.length > 1) {
-        var modelsIndex = _.indexOf(this.selectModels, selectParts);
-        this.selectModels.splice(modelsIndex, 1);
-      }
-    } else {
-      var partIndex = _.indexOf(selectParts, part);
-      selectParts.splice(partIndex, 1);
-    }
-
-    this.updatePersistedParts();
-  }
-
-  addSelectPart(selectParts, type) {
-    var partModel = queryPart.create({type: type});
-    partModel.def.addStrategy(selectParts, partModel, this);
-    this.updatePersistedParts();
-  }
-
-  private static renderTagCondition(tag, index) {
-    var str = "";
-    var operator = tag.operator;
-    var value = tag.value;
-    if (index > 0) {
-      str = (tag.condition || 'AND') + ' ';
-    }
-
-    if (!operator) {
-      if (/^\/.*\/$/.test(value)) {
-        operator = '=~';
-      } else {
-        operator = '=';
-      }
-    }
-
-    return str + tag.key + ' ' + operator + ' ' + value;
-  }
-
-  getTableAndDatabase() {
-    var database = this.target.database;
-    var table = this.target.table || 'table';
-
-    if (database !== 'default') {
-      database = this.target.database + '.';
-    } else {
-      database = "";
-    }
-
-    return database + table;
-  }
-
- render(rebuild: boolean) {
-    var target = this.target;
-    if (target.rawQuery && !rebuild) {
-        return target.query;
-    }
-
-    var query = 'SELECT $timeSeries as t, ',
-        i, j,
-        targetList = '';
-    for (i = 0; i < this.selectModels.length; i++) {
-      let parts = this.selectModels[i];
-      var selectText = "";
-      for (j = 0; j < parts.length; j++) {
-        let part = parts[j];
-        selectText = part.render(selectText);
-      }
-      if (i > 0) {
-        targetList += ', ';
-      }
-      targetList += selectText;
-    }
-
-    query += targetList;
-    query += ' FROM ' + this.getTableAndDatabase() + ' WHERE ';
-    var conditions = _.map(target.tags, (tag, index) => {
-      return SqlQuery.renderTagCondition(tag, index);
-    });
-    query += conditions.join(' ');
-    query += (conditions.length > 0 ? ' AND ' : '') + '$timeFilter';
-    query += ' GROUP BY t ORDER BY t';
-    return query.trim();
   }
 
     replace(options?) {
-        var query = this.render(false),
-            // hack to query additional left data-point
-            from = SqlQuery.convertTimestamp(
-                this.options.range.from
-                    .subtract(this.options.intervalMs>60000 ? this.options.intervalMs : 60000, 'ms')
-            ),
+        var query = this.target.query,
+            scanner = new Scanner(query),
+            ast = scanner.toAST(),
+            from = SqlQuery.convertTimestamp(this.options.range.from),
             to = SqlQuery.convertTimestamp(this.options.range.to),
-            timeFilter = SqlQuery.getTimeFilter((this.options.rangeRaw.to === 'now')),
-            interval = SqlQuery.convertInterval(this.options.intervalMs);
+            timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'),
+            i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
+            interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
 
-        query = SqlQuery.columns(query);
-        query = SqlQuery.rateColumns(query);
-        query = SqlQuery.rate(query);
+        if (ast.hasOwnProperty('$columns') && !_.isEmpty(ast.$columns)) {
+            query = SqlQuery.columns(query);
+        } else if (ast.hasOwnProperty('$rateColumns') && !_.isEmpty(ast.$rateColumns)) {
+            query = SqlQuery.rateColumns(query);
+        } else if (ast.hasOwnProperty('$rate') && !_.isEmpty(ast.$rate)) {
+            query = SqlQuery.rate(query, ast);
+        }
+        //query = SqlQuery.columns(query);
+        //query = SqlQuery.rateColumns(query);
+        //query = SqlQuery.rate(query);
+
         query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
-        this.target.compiledQuery = query
+        this.target.rawQuery = query
                     .replace(/\$timeSeries/g, '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000')
                     .replace(/\$timeFilter/g, timeFilter)
+                    .replace(/\$table/g, this.target.database + '.' + this.target.table)
                     .replace(/\$from/g, from)
                     .replace(/\$to/g, to)
                     .replace(/\$timeCol/g, this.target.dateColDataType)
                     .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
                     .replace(/\$interval/g, interval);
-        return this.target.compiledQuery;
+        return this.target.rawQuery;
     }
 
     // $columns(query)
@@ -182,9 +86,17 @@ export default class SqlQuery {
         }
 
         var keyAlias = key.trim().split(' ').pop(),
-            valueAlias = value.trim().split(' ').pop();
+            valueAlias = value.trim().split(' ').pop(),
+            havingIndex = fromQuery.toLowerCase().indexOf('having'),
+            having = "";
+
+        if (havingIndex !== -1) {
+            having = fromQuery.slice(havingIndex, fromQuery.length);
+            fromQuery = fromQuery.slice(0, havingIndex);
+        }
         fromQuery = SqlQuery._applyTimeFilter(fromQuery);
-        return 'SELECT ' + '' +
+
+        return 'SELECT ' +
             't' +
             ', groupArray((' + keyAlias + ', ' + valueAlias + ')) as groupArr' +
             ' FROM (' +
@@ -193,6 +105,7 @@ export default class SqlQuery {
                 ', ' + value + ' ' +
                 fromQuery +
                 ' GROUP BY t, ' + keyAlias +
+                ' ' + having +
                 ' ORDER BY t, ' + keyAlias +
                 ') ' +
             'GROUP BY t ' +
@@ -225,19 +138,14 @@ export default class SqlQuery {
     }
 
     // $rate(query)
-    static rate(query: string): string {
+    static rate(query: string, ast: any): string {
         if (query.slice(0, 6) === '$rate(') {
             var fromIndex = SqlQuery._fromIndex(query);
-            var args = query.slice(6,fromIndex)
-                .trim() // rm spaces
-                .slice(0, -1) // cut ending brace
-                .split(','); // extract arguments
-
-            if (args.length < 1) {
-                throw {message: 'Amount of arguments must be > 0 for $rate func. Parsed arguments are: ' + args.join(', ')};
+            if (ast.$rate.length < 1) {
+                throw {message: 'Amount of arguments must be > 0 for $rate func. Parsed arguments are: ' + ast.$rate.join(', ')};
             }
 
-            query = SqlQuery._rate(args, query.slice(fromIndex));
+            query = SqlQuery._rate(ast.$rate, query.slice(fromIndex));
         }
 
         return query;
@@ -307,11 +215,15 @@ export default class SqlQuery {
     }
 
 
-    static convertInterval(interval: number) {
-        if (interval < 1000) {
-            return 1;
+    static convertInterval(interval, intervalFactor) {
+        var m = interval.match(durationSplitRegexp);
+        var dur = moment.duration(parseInt(m[1]), m[2]);
+        var sec = dur.asSeconds();
+        if (sec < 1) {
+            sec = 1;
         }
-        return Math.ceil(interval / 1000);
+
+        return Math.ceil(sec * intervalFactor);
     }
 
     public static REGEX_COLUMNS = /(?:\s*(?=\w+\.|.*as\s+|distinct\s+|)(\*|\w+|(?:,|\s+)|\w+\([a-z*]+\))(?=\s*(?=,|$)))/ig;

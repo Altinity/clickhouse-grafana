@@ -1,21 +1,25 @@
 ///<reference path="../../../headers/common.d.ts" />
-System.register(["lodash", "./query_part", "app/core/utils/datemath"], function (exports_1, context_1) {
+System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], function (exports_1, context_1) {
     "use strict";
     var __moduleName = context_1 && context_1.id;
-    var lodash_1, query_part_1, dateMath, SqlQuery;
+    var lodash_1, dateMath, moment_1, scanner_1, durationSplitRegexp, SqlQuery;
     return {
         setters: [
             function (lodash_1_1) {
                 lodash_1 = lodash_1_1;
             },
-            function (query_part_1_1) {
-                query_part_1 = query_part_1_1;
-            },
             function (dateMath_1) {
                 dateMath = dateMath_1;
+            },
+            function (moment_1_1) {
+                moment_1 = moment_1_1;
+            },
+            function (scanner_1_1) {
+                scanner_1 = scanner_1_1;
             }
         ],
         execute: function () {///<reference path="../../../headers/common.d.ts" />
+            durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
             SqlQuery = (function () {
                 /** @ngInject */
                 function SqlQuery(target, templateSrv, options) {
@@ -28,117 +32,32 @@ System.register(["lodash", "./query_part", "app/core/utils/datemath"], function 
                             { type: 'field', params: ['*'] },
                             { type: 'count', params: [] },
                         ]];
-                    this.updateProjection();
                 }
-                SqlQuery.prototype.updateProjection = function () {
-                    this.selectModels = lodash_1.default.map(this.target.targetLists, function (parts) {
-                        return lodash_1.default.map(parts, query_part_1.default.create);
-                    });
-                };
-                SqlQuery.prototype.updatePersistedParts = function () {
-                    this.target.targetLists = lodash_1.default.map(this.selectModels, function (selectParts) {
-                        return lodash_1.default.map(selectParts, function (part) {
-                            return { type: part.def.type, params: part.params };
-                        });
-                    });
-                };
-                SqlQuery.prototype.removeSelect = function (index) {
-                    this.target.targetLists.splice(index, 1);
-                    this.updateProjection();
-                };
-                SqlQuery.prototype.removeSelectPart = function (selectParts, part) {
-                    // if we remove the field remove the whole statement
-                    if (part.def.type === 'field') {
-                        if (this.selectModels.length > 1) {
-                            var modelsIndex = lodash_1.default.indexOf(this.selectModels, selectParts);
-                            this.selectModels.splice(modelsIndex, 1);
-                        }
-                    }
-                    else {
-                        var partIndex = lodash_1.default.indexOf(selectParts, part);
-                        selectParts.splice(partIndex, 1);
-                    }
-                    this.updatePersistedParts();
-                };
-                SqlQuery.prototype.addSelectPart = function (selectParts, type) {
-                    var partModel = query_part_1.default.create({ type: type });
-                    partModel.def.addStrategy(selectParts, partModel, this);
-                    this.updatePersistedParts();
-                };
-                SqlQuery.renderTagCondition = function (tag, index) {
-                    var str = "";
-                    var operator = tag.operator;
-                    var value = tag.value;
-                    if (index > 0) {
-                        str = (tag.condition || 'AND') + ' ';
-                    }
-                    if (!operator) {
-                        if (/^\/.*\/$/.test(value)) {
-                            operator = '=~';
-                        }
-                        else {
-                            operator = '=';
-                        }
-                    }
-                    return str + tag.key + ' ' + operator + ' ' + value;
-                };
-                SqlQuery.prototype.getTableAndDatabase = function () {
-                    var database = this.target.database;
-                    var table = this.target.table || 'table';
-                    if (database !== 'default') {
-                        database = this.target.database + '.';
-                    }
-                    else {
-                        database = "";
-                    }
-                    return database + table;
-                };
-                SqlQuery.prototype.render = function (rebuild) {
-                    var target = this.target;
-                    if (target.rawQuery && !rebuild) {
-                        return target.query;
-                    }
-                    var query = 'SELECT $timeSeries as t, ', i, j, targetList = '';
-                    for (i = 0; i < this.selectModels.length; i++) {
-                        var parts = this.selectModels[i];
-                        var selectText = "";
-                        for (j = 0; j < parts.length; j++) {
-                            var part = parts[j];
-                            selectText = part.render(selectText);
-                        }
-                        if (i > 0) {
-                            targetList += ', ';
-                        }
-                        targetList += selectText;
-                    }
-                    query += targetList;
-                    query += ' FROM ' + this.getTableAndDatabase() + ' WHERE ';
-                    var conditions = lodash_1.default.map(target.tags, function (tag, index) {
-                        return SqlQuery.renderTagCondition(tag, index);
-                    });
-                    query += conditions.join(' ');
-                    query += (conditions.length > 0 ? ' AND ' : '') + '$timeFilter';
-                    query += ' GROUP BY t ORDER BY t';
-                    return query.trim();
-                };
                 SqlQuery.prototype.replace = function (options) {
-                    var query = this.render(false), 
-                    // hack to query additional left data-point
-                    from = SqlQuery.convertTimestamp(this.options.range.from
-                        .subtract(this.options.intervalMs > 60000 ? this.options.intervalMs : 60000, 'ms')), to = SqlQuery.convertTimestamp(this.options.range.to), timeFilter = SqlQuery.getTimeFilter((this.options.rangeRaw.to === 'now')), interval = SqlQuery.convertInterval(this.options.intervalMs);
-                    query = SqlQuery.columns(query);
-                    query = SqlQuery.rateColumns(query);
-                    query = SqlQuery.rate(query);
+                    var query = this.target.query, scanner = new scanner_1.default(query), ast = scanner.toAST(), from = SqlQuery.convertTimestamp(this.options.range.from), to = SqlQuery.convertTimestamp(this.options.range.to), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
+                    if (ast.hasOwnProperty('$columns') && !lodash_1.default.isEmpty(ast.$columns)) {
+                        query = SqlQuery.columns(query);
+                    }
+                    else if (ast.hasOwnProperty('$rateColumns') && !lodash_1.default.isEmpty(ast.$rateColumns)) {
+                        query = SqlQuery.rateColumns(query);
+                    }
+                    else if (ast.hasOwnProperty('$rate') && !lodash_1.default.isEmpty(ast.$rate)) {
+                        query = SqlQuery.rate(query, ast);
+                    }
+                    //query = SqlQuery.columns(query);
+                    //query = SqlQuery.rateColumns(query);
+                    //query = SqlQuery.rate(query);
                     query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
-                    this.target.compiledQuery = query
+                    this.target.rawQuery = query
                         .replace(/\$timeSeries/g, '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000')
                         .replace(/\$timeFilter/g, timeFilter)
+                        .replace(/\$table/g, this.target.database + '.' + this.target.table)
                         .replace(/\$from/g, from)
                         .replace(/\$to/g, to)
                         .replace(/\$timeCol/g, this.target.dateColDataType)
                         .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
                         .replace(/\$interval/g, interval);
-                    return this.target.compiledQuery;
+                    return this.target.rawQuery;
                 };
                 // $columns(query)
                 SqlQuery.columns = function (query) {
@@ -159,9 +78,13 @@ System.register(["lodash", "./query_part", "app/core/utils/datemath"], function 
                     if (key.slice(-1) === ')' || value.slice(-1) === ')') {
                         throw { message: 'Some of passed arguments are without aliases: ' + key + ', ' + value };
                     }
-                    var keyAlias = key.trim().split(' ').pop(), valueAlias = value.trim().split(' ').pop();
+                    var keyAlias = key.trim().split(' ').pop(), valueAlias = value.trim().split(' ').pop(), havingIndex = fromQuery.toLowerCase().indexOf('having'), having = "";
+                    if (havingIndex !== -1) {
+                        having = fromQuery.slice(havingIndex, fromQuery.length);
+                        fromQuery = fromQuery.slice(0, havingIndex);
+                    }
                     fromQuery = SqlQuery._applyTimeFilter(fromQuery);
-                    return 'SELECT ' + '' +
+                    return 'SELECT ' +
                         't' +
                         ', groupArray((' + keyAlias + ', ' + valueAlias + ')) as groupArr' +
                         ' FROM (' +
@@ -170,6 +93,7 @@ System.register(["lodash", "./query_part", "app/core/utils/datemath"], function 
                         ', ' + value + ' ' +
                         fromQuery +
                         ' GROUP BY t, ' + keyAlias +
+                        ' ' + having +
                         ' ORDER BY t, ' + keyAlias +
                         ') ' +
                         'GROUP BY t ' +
@@ -196,17 +120,13 @@ System.register(["lodash", "./query_part", "app/core/utils/datemath"], function 
                     return query;
                 };
                 // $rate(query)
-                SqlQuery.rate = function (query) {
+                SqlQuery.rate = function (query, ast) {
                     if (query.slice(0, 6) === '$rate(') {
                         var fromIndex = SqlQuery._fromIndex(query);
-                        var args = query.slice(6, fromIndex)
-                            .trim() // rm spaces
-                            .slice(0, -1) // cut ending brace
-                            .split(','); // extract arguments
-                        if (args.length < 1) {
-                            throw { message: 'Amount of arguments must be > 0 for $rate func. Parsed arguments are: ' + args.join(', ') };
+                        if (ast.$rate.length < 1) {
+                            throw { message: 'Amount of arguments must be > 0 for $rate func. Parsed arguments are: ' + ast.$rate.join(', ') };
                         }
-                        query = SqlQuery._rate(args, query.slice(fromIndex));
+                        query = SqlQuery._rate(ast.$rate, query.slice(fromIndex));
                     }
                     return query;
                 };
@@ -266,11 +186,14 @@ System.register(["lodash", "./query_part", "app/core/utils/datemath"], function 
                     }
                     return Math.ceil(date.valueOf() / 1000);
                 };
-                SqlQuery.convertInterval = function (interval) {
-                    if (interval < 1000) {
-                        return 1;
+                SqlQuery.convertInterval = function (interval, intervalFactor) {
+                    var m = interval.match(durationSplitRegexp);
+                    var dur = moment_1.default.duration(parseInt(m[1]), m[2]);
+                    var sec = dur.asSeconds();
+                    if (sec < 1) {
+                        sec = 1;
                     }
-                    return Math.ceil(interval / 1000);
+                    return Math.ceil(sec * intervalFactor);
                 };
                 SqlQuery.interpolateQueryExpr = function (value, variable, defaultFormatFn) {
                     // if no multi or include all do not regexEscape

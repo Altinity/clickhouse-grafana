@@ -3,6 +3,10 @@
 ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.yandex) as a backend database.  
 
 ### Quick start
+Install from [grafana.net](https://grafana.net/plugins/vertamedia-clickhouse-datasource)
+
+OR
+
 Copy files to your [Grafana plugin directory](http://docs.grafana.org/plugins/installation/#grafana-plugin-directory). Restart Grafana, check datasources list at http://your.grafana.instance/datasources/new, choose ClickHouse option.
 
 ### Features:

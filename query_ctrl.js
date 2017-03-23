@@ -1,5 +1,5 @@
 ///<reference path="../../../headers/common.d.ts" />
-System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plugins/sdk", "app/core/app_events", "./scanner"], function (exports_1, context_1) {
+System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plugins/sdk", "./scanner"], function (exports_1, context_1) {
     "use strict";
     var __extends = (this && this.__extends) || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
@@ -7,7 +7,7 @@ System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plug
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
     var __moduleName = context_1 && context_1.id;
-    var jquery_1, lodash_1, query_builder_1, sql_query_1, sdk_1, app_events_1, scanner_1, SqlQueryCtrl;
+    var jquery_1, lodash_1, query_builder_1, sql_query_1, sdk_1, scanner_1, SqlQueryCtrl;
     return {
         setters: [
             function (jquery_1_1) {
@@ -24,9 +24,6 @@ System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plug
             },
             function (sdk_1_1) {
                 sdk_1 = sdk_1_1;
-            },
-            function (app_events_1_1) {
-                app_events_1 = app_events_1_1;
             },
             function (scanner_1_1) {
                 scanner_1 = scanner_1_1;
@@ -119,26 +116,6 @@ System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plug
                     this.target.dateTimeColDataType = this.dateTimeColDataTypeSegment.value;
                 };
                 SqlQueryCtrl.prototype.toggleEditorMode = function () {
-                    var self = this;
-                    if ((this.target.rawQuery === undefined || !this.target.rawQuery) &&
-                        (this.databaseSegment.fake ||
-                            this.tableSegment.fake ||
-                            this.dateTimeColDataTypeSegment.fake ||
-                            this.dateColDataTypeSegment.fake)) {
-                        app_events_1.default.emit('confirm-modal', {
-                            title: 'Query Alert',
-                            text: 'Some of required for macros query settings are undefined. Continue?',
-                            icon: 'fa-exclamation',
-                            yesText: 'Continue',
-                            onConfirm: function () {
-                                self._toggleEditorMode();
-                            }
-                        });
-                        return false;
-                    }
-                    self._toggleEditorMode();
-                };
-                SqlQueryCtrl.prototype._toggleEditorMode = function () {
                     this.target.rawQuery = !this.target.rawQuery;
                 };
                 SqlQueryCtrl.prototype.toggleEdit = function (e, editMode) {

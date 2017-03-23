@@ -135,28 +135,6 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     toggleEditorMode() {
-        var self = this;
-        if ( (this.target.rawQuery === undefined || !this.target.rawQuery) &&
-            (this.databaseSegment.fake ||
-            this.tableSegment.fake ||
-            this.dateTimeColDataTypeSegment.fake ||
-            this.dateColDataTypeSegment.fake)
-        ) {
-            appEvents.emit('confirm-modal', {
-                title: 'Query Alert',
-                text: 'Some of required for macros query settings are undefined. Continue?',
-                icon: 'fa-exclamation',
-                yesText: 'Continue',
-                onConfirm: function(){
-                    self._toggleEditorMode();
-                }
-            });
-            return false;
-        }
-        self._toggleEditorMode();
-    }
-
-    _toggleEditorMode() {
         this.target.rawQuery = !this.target.rawQuery;
     }
 

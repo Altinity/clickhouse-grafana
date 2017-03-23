@@ -33,8 +33,7 @@ declare class SqlQueryCtrl extends QueryCtrl {
     dateColDataTypeChanged(): void;
     getDateTimeColDataTypeSegments(): any;
     dateTimeColDataTypeChanged(): void;
-    toggleEditorMode(): boolean;
-    _toggleEditorMode(): void;
+    toggleEditorMode(): void;
     toggleEdit(e: any, editMode: boolean): void;
     formatQuery(): void;
     toQueryMode(): void;

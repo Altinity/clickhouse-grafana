@@ -93,7 +93,7 @@ function (_) {
         r += this.wrapWithColor('cornflowerblue');
       } else if (isString(this.token)) {
         r += this.wrapWithColor('lightgreen');
-      } else if (isCond(this.token)) {
+      } else if (isCond(this.token) || isBinary(this.token)) {
         r += this.wrapWithColor('yellow');
       } else {
         r += this.token;
@@ -355,7 +355,7 @@ function (_) {
       powerIntRe = "\\d+e\\d+",
       floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+",
       stringRe = "('[^']*')|(`[^`]*`)",
-      binaryOpRe = "=>|\\|\\||>=|<=|==|!=|[-+/%*=<>\\.]",
+      binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|[-+/%*=<>\\.!]",
       statementRe = "(select|from|where|having|order by|group by|limit|format|prewhere|union all)",
       joinsRe = "(any inner join|any left join|all inner join|all left join"+
           "|global any inner join|global any left join|global all inner join|global all left join)",
@@ -365,9 +365,9 @@ function (_) {
       closureRe = "[\\(\\)]",
       specCharsRe = "[,?:]",
       macroRe = "\\$\\w+",
-      skipSpaceRe = "[\\(\\.]",
+      skipSpaceRe = "[\\(\\.!]",
 
-      builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|ucase|lcase|mid|round|rank|now|" +
+      builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
           "coalesce|ifnull|isnull|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
           "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +
           "toRelativeYearNum|toTime|toStartOfHour|toStartOfFiveMinute|toStartOfMinute|toStartOfYear|" +
@@ -394,7 +394,7 @@ function (_) {
           "OSHierarchy|SEToRoot|SEIn|SEHierarchy|dictGetUInt8|dictGetUInt16|dictGetUInt32|" +
           "dictGetUInt64|dictGetInt8|dictGetInt16|dictGetInt32|dictGetInt64|dictGetFloat32|" +
           "dictGetFloat64|dictGetDate|dictGetDateTime|dictGetString|dictGetHierarchy|dictHas|dictIsIn|" +
-          "argMin|argMax|uniqCombined|uniqHLL12|uniqExact|groupArray|groupUniqArray|quantile|" +
+          "argMin|argMax|uniqCombined|uniqHLL12|uniqExact|uniqExactIf|groupArray|groupUniqArray|quantile|" +
           "quantileDeterministic|quantileTiming|quantileTimingWeighted|quantileExact|" +
           "quantileExactWeighted|quantileTDigest|median|quantiles|varSamp|varPop|stddevSamp|stddevPop|" +
           "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|countIf|avgIf|" +
@@ -402,7 +402,7 @@ function (_) {
           "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
           "uniqArrayIf|sumArrayIf|uniq)\\b",
       operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
-          "when|else|end|type|left|right|on|outer|desc|asc|union|primary|key|" +
+          "when|else|end|type|left|right|on|outer|desc|asc|union|primary|key|between|" +
           "foreign|not|references|default|null|inner|cross|natural|database|" +
           "attach|detach|describe|optimize|prewhere|totals|databases|processlist|show|format|using|global|in)\\b",
       dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
@@ -425,7 +425,8 @@ function (_) {
       condOnlyRe = new RegExp("^(?:" + condRe + ")$", 'i'),
       numOnlyRe = new RegExp("^(?:" + [powerIntRe, intRe, floatRe].join("|") + ")$"),
       stringOnlyRe = new RegExp("^(?:" + stringRe + ")$"),
-      skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$");
+      skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$"),
+      binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");
 
   var tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe,stringRe, powerIntRe, intRe,
     floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
@@ -494,6 +495,10 @@ function (_) {
 
   function isString(token) {
     return stringOnlyRe.test(token);
+  }
+
+  function isBinary(token) {
+    return binaryOnlyRe.test(token);
   }
 
   function toAST(s) {

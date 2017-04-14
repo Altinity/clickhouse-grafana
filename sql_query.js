@@ -34,19 +34,23 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                         ]];
                 }
                 SqlQuery.prototype.replace = function (options) {
-                    var query = this.target.query, scanner = new scanner_1.default(query), ast = scanner.toAST(), from = SqlQuery.convertTimestamp(this.options.range.from), to = SqlQuery.convertTimestamp(this.options.range.to), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
-                    if (ast.hasOwnProperty('$columns') && !lodash_1.default.isEmpty(ast.$columns)) {
-                        query = SqlQuery.columns(query);
+                    var query = this.target.query, scanner = new scanner_1.default(query), from = SqlQuery.convertTimestamp(this.options.range.from), to = SqlQuery.convertTimestamp(this.options.range.to), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
+                    var ast;
+                    try {
+                        ast = scanner.toAST();
+                        if (ast.hasOwnProperty('$columns') && !lodash_1.default.isEmpty(ast.$columns)) {
+                            query = SqlQuery.columns(query);
+                        }
+                        else if (ast.hasOwnProperty('$rateColumns') && !lodash_1.default.isEmpty(ast.$rateColumns)) {
+                            query = SqlQuery.rateColumns(query);
+                        }
+                        else if (ast.hasOwnProperty('$rate') && !lodash_1.default.isEmpty(ast.$rate)) {
+                            query = SqlQuery.rate(query, ast);
+                        }
                     }
-                    else if (ast.hasOwnProperty('$rateColumns') && !lodash_1.default.isEmpty(ast.$rateColumns)) {
-                        query = SqlQuery.rateColumns(query);
+                    catch (err) {
+                        console.log("Parse error: ", err);
                     }
-                    else if (ast.hasOwnProperty('$rate') && !lodash_1.default.isEmpty(ast.$rate)) {
-                        query = SqlQuery.rate(query, ast);
-                    }
-                    //query = SqlQuery.columns(query);
-                    //query = SqlQuery.rateColumns(query);
-                    //query = SqlQuery.rate(query);
                     query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     this.target.rawQuery = query
                         .replace(/\$timeSeries/g, '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000')
@@ -56,7 +60,8 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                         .replace(/\$to/g, to)
                         .replace(/\$timeCol/g, this.target.dateColDataType)
                         .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
-                        .replace(/\$interval/g, interval);
+                        .replace(/\$interval/g, interval)
+                        .replace(/(?:\r\n|\r|\n)/g, ' ');
                     return this.target.rawQuery;
                 };
                 // $columns(query)
@@ -65,12 +70,12 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                         var fromIndex = SqlQuery._fromIndex(query);
                         var args = query.slice(9, fromIndex)
                             .trim() // rm spaces
-                            .slice(0, -1) // cut ending brace
-                            .split(','); // extract arguments
-                        if (args.length !== 2) {
-                            throw { message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + args.join(', ') };
+                            .slice(0, -1), // cut ending brace
+                        scanner = new scanner_1.default(args), ast = scanner.toAST();
+                        if (ast.root.length !== 2) {
+                            throw { message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + ast.root.join(', ') };
                         }
-                        query = SqlQuery._columns(args[0], args[1], query.slice(fromIndex));
+                        query = SqlQuery._columns(ast.root[0], ast.root[1], query.slice(fromIndex));
                     }
                     return query;
                 };
@@ -94,10 +99,10 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                         fromQuery +
                         ' GROUP BY t, ' + keyAlias +
                         ' ' + having +
-                        ' ORDER BY t, ' + keyAlias +
+                        ' ORDER BY t' +
                         ') ' +
                         'GROUP BY t ' +
-                        'ORDER BY t ';
+                        'ORDER BY t';
                 };
                 // $rateColumns(query)
                 SqlQuery.rateColumns = function (query) {
@@ -105,12 +110,12 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                         var fromIndex = SqlQuery._fromIndex(query);
                         var args = query.slice(13, fromIndex)
                             .trim() // rm spaces
-                            .slice(0, -1) // cut ending brace
-                            .split(','); // extract arguments
-                        if (args.length !== 2) {
-                            throw { message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + args.join(', ') };
+                            .slice(0, -1), // cut ending brace
+                        scanner = new scanner_1.default(args), ast = scanner.toAST();
+                        if (ast.root.length !== 2) {
+                            throw { message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + ast.root.join(', ') };
                         }
-                        query = SqlQuery._columns(args[0], args[1], query.slice(fromIndex));
+                        query = SqlQuery._columns(ast.root[0], ast.root[1], query.slice(fromIndex));
                         query = 'SELECT t' +
                             ', arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
                             ' FROM (' +
@@ -201,13 +206,26 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                         return value;
                     }
                     if (typeof value === 'string') {
-                        return SqlQuery.clickhouseEscape(value);
+                        return SqlQuery.clickhouseEscape(value, variable);
                     }
-                    var escapedValues = lodash_1.default.map(value, SqlQuery.clickhouseEscape);
+                    var escapedValues = lodash_1.default.map(value, function (v) {
+                        return SqlQuery.clickhouseEscape(v, variable);
+                    });
                     return escapedValues.join(',');
                 };
-                SqlQuery.clickhouseEscape = function (value) {
-                    if (value.match(/^\d+$/) || value.match(/^\d+\.\d+$/)) {
+                SqlQuery.clickhouseEscape = function (value, variable) {
+                    var isDigit = true;
+                    // if at least one of options is not digit
+                    lodash_1.default.each(variable.options, function (opt) {
+                        if (opt.value === '$__all') {
+                            return true;
+                        }
+                        if (!opt.value.match(/^\d+$/) && !opt.value.match(/^\d+\.\d+$/)) {
+                            isDigit = false;
+                            return false;
+                        }
+                    });
+                    if (isDigit) {
                         return value;
                     }
                     else {

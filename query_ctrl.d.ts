@@ -37,6 +37,8 @@ declare class SqlQueryCtrl extends QueryCtrl {
     toggleEdit(e: any, editMode: boolean): void;
     formatQuery(): void;
     toQueryMode(): void;
+    format(): any;
+    highlight(): any;
     getScanner(): any;
     handleQueryError(err: any): any[];
     querySegment(type: string): any;

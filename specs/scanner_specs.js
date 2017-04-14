@@ -16,7 +16,7 @@ System.register(["test/lib/common", "./../scanner"], function (exports_1, contex
                 common_1.describe("highlight", function () {
                     var query = "SELECT $timeSeries as t, count(*) FROM $table WHERE $timeFilter GROUP BY t ORDER BY t", expectedHighlight = '<font color="darkorange">SELECT</font> <font color="darkcyan">' +
                         '$timeSeries</font> <font color="darkorange">as</font> t, <font color="navajowhite">' +
-                        'count</font>(*) <font color="darkorange">FROM</font> <font color="darkcyan">$table' +
+                        'count</font>(<font color="yellow">*</font>) <font color="darkorange">FROM</font> <font color="darkcyan">$table' +
                         '</font> <font color="darkorange">WHERE</font> <font color="darkcyan">$timeFilter' +
                         '</font> <font color="darkorange">GROUP BY</font> t <font color="darkorange">ORDER BY</font> t';
                     var scanner = new scanner_1.default(query);

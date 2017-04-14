@@ -30,23 +30,24 @@ export default class SqlQuery {
     replace(options?) {
         var query = this.target.query,
             scanner = new Scanner(query),
-            ast = scanner.toAST(),
             from = SqlQuery.convertTimestamp(this.options.range.from),
             to = SqlQuery.convertTimestamp(this.options.range.to),
             timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'),
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
 
-        if (ast.hasOwnProperty('$columns') && !_.isEmpty(ast.$columns)) {
-            query = SqlQuery.columns(query);
-        } else if (ast.hasOwnProperty('$rateColumns') && !_.isEmpty(ast.$rateColumns)) {
-            query = SqlQuery.rateColumns(query);
-        } else if (ast.hasOwnProperty('$rate') && !_.isEmpty(ast.$rate)) {
-            query = SqlQuery.rate(query, ast);
+        try {
+            var ast = scanner.toAST();
+            if (ast.hasOwnProperty('$columns') && !_.isEmpty(ast.$columns)) {
+                query = SqlQuery.columns(query);
+            } else if (ast.hasOwnProperty('$rateColumns') && !_.isEmpty(ast.$rateColumns)) {
+                query = SqlQuery.rateColumns(query);
+            } else if (ast.hasOwnProperty('$rate') && !_.isEmpty(ast.$rate)) {
+                query = SqlQuery.rate(query, ast);
+            }
+        } catch (err) {
+            console.log("Parse error: ", err);
         }
-        //query = SqlQuery.columns(query);
-        //query = SqlQuery.rateColumns(query);
-        //query = SqlQuery.rate(query);
 
         query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
         this.target.rawQuery = query
@@ -57,7 +58,8 @@ export default class SqlQuery {
                     .replace(/\$to/g, to)
                     .replace(/\$timeCol/g, this.target.dateColDataType)
                     .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
-                    .replace(/\$interval/g, interval);
+                    .replace(/\$interval/g, interval)
+                    .replace(/(?:\r\n|\r|\n)/g, ' ');
         return this.target.rawQuery;
     }
 
@@ -67,14 +69,15 @@ export default class SqlQuery {
             var fromIndex = SqlQuery._fromIndex(query);
             var args = query.slice(9,fromIndex)
                 .trim() // rm spaces
-                .slice(0, -1) // cut ending brace
-                .split(','); // extract arguments
+                .slice(0, -1), // cut ending brace
+                scanner = new Scanner(args),
+                ast = scanner.toAST();
 
-            if (args.length !== 2) {
-                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + args.join(', ')};
+            if (ast.root.length !== 2) {
+                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + ast.root.join(', ')};
             }
 
-            query = SqlQuery._columns(args[0], args[1], query.slice(fromIndex));
+            query = SqlQuery._columns(ast.root[0], ast.root[1], query.slice(fromIndex));
         }
 
         return query;
@@ -106,12 +109,11 @@ export default class SqlQuery {
                 fromQuery +
                 ' GROUP BY t, ' + keyAlias +
                 ' ' + having +
-                ' ORDER BY t, ' + keyAlias +
+                ' ORDER BY t' +
                 ') ' +
             'GROUP BY t ' +
-            'ORDER BY t ';
+            'ORDER BY t';
     }
-
 
     // $rateColumns(query)
     static rateColumns(query: string): string {
@@ -119,14 +121,15 @@ export default class SqlQuery {
             var fromIndex = SqlQuery._fromIndex(query);
             var args = query.slice(13,fromIndex)
                 .trim() // rm spaces
-                .slice(0, -1) // cut ending brace
-                .split(','); // extract arguments
+                .slice(0, -1), // cut ending brace
+                scanner = new Scanner(args),
+                ast = scanner.toAST();
 
-            if (args.length !== 2) {
-                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + args.join(', ')};
+            if (ast.root.length !== 2) {
+                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' +  ast.root.join(', ')};
             }
 
-            query = SqlQuery._columns(args[0], args[1], query.slice(fromIndex));
+            query = SqlQuery._columns( ast.root[0],  ast.root[1], query.slice(fromIndex));
             query = 'SELECT t' +
                     ', arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
                     ' FROM (' +
@@ -235,17 +238,32 @@ export default class SqlQuery {
         }
 
         if (typeof value === 'string') {
-            return SqlQuery.clickhouseEscape(value);
+            return SqlQuery.clickhouseEscape(value, variable);
         }
 
-        var escapedValues = _.map(value, SqlQuery.clickhouseEscape);
+        var escapedValues = _.map(value, function(v){
+            return SqlQuery.clickhouseEscape(v, variable);
+        });
         return escapedValues.join(',');
     }
 
-    static clickhouseEscape(value) {
-        if (value.match(/^\d+$/) || value.match(/^\d+\.\d+$/)){
+    static clickhouseEscape(value, variable) {
+        var isDigit = true;
+        // if at least one of options is not digit
+        _.each(variable.options, function(opt){
+            if (opt.value === '$__all') {
+                return true;
+            }
+
+            if (!opt.value.match(/^\d+$/) && !opt.value.match(/^\d+\.\d+$/)) {
+                isDigit = false;
+                return false;
+            }
+        });
+
+        if (isDigit) {
             return value;
-        }else{
+        } else {
             return "'" + value.replace(/[\\']/g, '\\$&') + "'";
         }
     }

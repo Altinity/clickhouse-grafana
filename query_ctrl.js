@@ -124,20 +124,38 @@ System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plug
                         this.textareaHeight = "height: " + jquery_1.default(e.currentTarget).outerHeight() + "px;";
                         return;
                     }
-                    this.target.formattedQuery = this.getScanner().Highlight();
+                    this.target.formattedQuery = this.highlight();
                     if (this.editMode === true) {
                         this.editMode = false;
                         this.refresh();
                     }
                 };
                 SqlQueryCtrl.prototype.formatQuery = function () {
-                    this.target.query = this.getScanner().Format();
+                    this.target.query = this.format();
                     this.toggleEdit({}, false);
                 };
                 SqlQueryCtrl.prototype.toQueryMode = function () {
-                    this.target.formattedQuery = this.getScanner().Highlight();
+                    this.target.formattedQuery = this.highlight();
                     this.toggleEditorMode();
                     this.refresh();
+                };
+                SqlQueryCtrl.prototype.format = function () {
+                    try {
+                        return this.getScanner().Format();
+                    }
+                    catch (err) {
+                        console.log("Parse error: ", err);
+                        return this.getScanner().raw();
+                    }
+                };
+                SqlQueryCtrl.prototype.highlight = function () {
+                    try {
+                        return this.getScanner().Highlight();
+                    }
+                    catch (err) {
+                        console.log("Parse error: ", err);
+                        return this.getScanner().raw();
+                    }
                 };
                 SqlQueryCtrl.prototype.getScanner = function () {
                     if (this.scanner.raw() !== this.target.query) {

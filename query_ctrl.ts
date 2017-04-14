@@ -145,7 +145,7 @@ class SqlQueryCtrl extends QueryCtrl {
             return;
         }
 
-        this.target.formattedQuery = this.getScanner().Highlight();
+        this.target.formattedQuery = this.highlight();
         if ( this.editMode === true ) {
             this.editMode = false;
             this.refresh();
@@ -153,14 +153,32 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     formatQuery() {
-        this.target.query = this.getScanner().Format();
+        this.target.query = this.format();
         this.toggleEdit({}, false);
     }
 
     toQueryMode() {
-        this.target.formattedQuery = this.getScanner().Highlight();
+        this.target.formattedQuery = this.highlight();
         this.toggleEditorMode();
         this.refresh();
+    }
+
+    format() {
+        try {
+            return this.getScanner().Format();
+        } catch (err) {
+            console.log("Parse error: ", err);
+            return this.getScanner().raw();
+        }
+    }
+
+    highlight() {
+        try {
+            return this.getScanner().Highlight();
+        } catch (err) {
+            console.log("Parse error: ", err);
+            return this.getScanner().raw();
+        }
     }
 
     getScanner() {

@@ -41,8 +41,9 @@ Second row contains:
 * Date:Col ([EventDate](https://clickhouse.yandex/reference_en.html#Date) column required for [MergeTree](https://clickhouse.yandex/reference_en.html#MergeTree) engine), 
 * DateTime:Col ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime) column is required for macros and functions), selected columns.
 
-* // Plugin will try to detect date columns automatically *
-* // DateTime:Col is required for our time-based macros and funcs, because all analytics is based on these values*
+> Plugin will try to detect date columns automatically
+
+> DateTime:Col is required for our time-based macros and funcs, because all analytics is based on these values
 
 Button `Go to Query` is just a toggler to Raw SQL Editor
 

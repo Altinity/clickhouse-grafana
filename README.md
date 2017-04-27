@@ -41,8 +41,9 @@ Second row contains:
 * Date:Col ([EventDate](https://clickhouse.yandex/reference_en.html#Date) column required for [MergeTree](https://clickhouse.yandex/reference_en.html#MergeTree) engine), 
 * DateTime:Col ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime) column is required for macros and functions), selected columns.
 
-*// Plugin will try to detect date columns automatically *
-*// DateTime:Col is required for our time-based macros and funcs, because all analytics is based on these values*
+> Plugin will try to detect date columns automatically
+
+> DateTime:Col is required for our time-based macros and funcs, because all analytics is based on these values
 
 Button `Go to Query` is just a toggler to Raw SQL Editor
 
@@ -189,6 +190,86 @@ FROM
 
 ```
 
+### Working with panels
+
+#### Piechart (https://grafana.com/plugins/grafana-piechart-panel)
+
+Remember that piechart plugin is not welcome for using in grafana - see https://grafana.com/blog/2015/12/04/friends-dont-let-friends-abuse-pie-charts
+
+![top5things](https://cloud.githubusercontent.com/assets/2902918/25392562/9fadb202-29e1-11e7-95ca-5b0d2921c592.png)
+
+To create "Top 5" diagram we will need two queries: one for 'Top 5' rows and one for 'Other' row.
+
+Top5:
+```
+SELECT
+    1, /* fake timestamp value */
+    groupArray((UserName,  Reqs))
+FROM
+(
+    SELECT
+        UserName,
+        sum(Reqs) AS Reqs
+    FROM requests
+    GROUP BY UserName
+    ORDER BY Reqs desc
+    LIMIT 5
+)
+```
+
+Other:
+```
+SELECT
+    1, /* fake timestamp value */
+    tuple(tuple('Other',  sum(Reqs)))
+FROM
+(
+    SELECT
+        UserName,
+        sum(Reqs) AS Reqs
+    FROM requests
+    GROUP BY UserName
+    ORDER BY Reqs desc
+    LIMIT 5,10000000000000 /* select some ridiculous number after first 5 */
+)
+```
+
+### Table (https://grafana.com/plugins/table)
+
+There are no any tricks in displaying time-series data. But to display some summary we will need to fake timestamp data:
+
+```
+SELECT
+    rand() Time, /* fake timestamp value */
+    UserName,
+    sum(Reqs) as Reqs
+FROM requests
+GROUP BY
+    UserName
+ORDER BY 
+    Reqs
+```
+
+Better to hide `Time` column at `Options` tab while editing panel
+
+
+### Vertical histogram (https://grafana.com/plugins/graph)
+
+![vertical histogram](https://cloud.githubusercontent.com/assets/2902918/25392561/9f3777e0-29e1-11e7-8b23-2ea9ae46a029.png)
+
+To make vertical histogram from graph panel we will need to edit some settings:
+* Display -> Draw Modes -> Bars
+* Axes -> X-Axis -> Mode -> Series
+
+And use next query:
+```
+$columns(
+    Size,
+    sum(Items) Items)
+FROM some_table
+```
+
+// It is also possible to use query without macros
 
 ### Contribute
 

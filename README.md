@@ -25,7 +25,7 @@ Copy files to your [Grafana plugin directory](http://docs.grafana.org/plugins/in
 ### Access to CH via HTTP
 Page configuration is standard
 
-![config image](https://cloud.githubusercontent.com/assets/2902918/21719219/2fc6aa78-d425-11e6-83c0-ad92e068ff4e.png)
+![settings](https://cloud.githubusercontent.com/assets/2902918/25473216/3ebd20fc-2b37-11e7-9743-fbbf2c5bdd3f.png)
 
 
 There is a small feature - ClickHouse treats HTTP Basic Authentication credentials as a database user and will try to run queries using its name.

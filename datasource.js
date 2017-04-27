@@ -10,11 +10,19 @@ System.register(["lodash", "./sql_series", "./sql_query", "./response_parser"], 
         this.responseParser = new response_parser_1.default();
         this.url = instanceSettings.url;
         this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
+        this.usePOST = instanceSettings.jsonData.usePOST;
         this._request = function (query) {
             var options = {
-                method: 'GET',
-                url: this.url + query,
+                url: this.url
             };
+            if (this.usePOST) {
+                options.method = 'POST';
+                options.data = query;
+            }
+            else {
+                options.method = 'GET';
+                options.url += '/?query=' + encodeURIComponent(query);
+            }
             if (this.basicAuth || this.withCredentials) {
                 options.withCredentials = true;
             }
@@ -83,12 +91,12 @@ System.register(["lodash", "./sql_series", "./sql_query", "./response_parser"], 
             });
         };
         this._seriesQuery = function (query) {
-            query = query.replace(/(?:\r\n|\r|\n|  )/g, ' ');
-            query = encodeURIComponent(query) + '%20FORMAT%20JSON';
+            query = query.replace(/(?:\r\n|\r|\n)/g, ' ');
+            query += ' FORMAT JSON';
             if (this.addCorsHeader) {
                 query += "&add_http_cors_header=1";
             }
-            return this._request('/?query=' + query);
+            return this._request(query);
         };
         this.targetContainsTemplate = function (target) {
             return templateSrv.variableExists(target.expr);

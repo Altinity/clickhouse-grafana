@@ -15,12 +15,20 @@ export function ClickHouseDatasource(instanceSettings, $q, backendSrv, templateS
     this.responseParser = new ResponseParser();
     this.url = instanceSettings.url;
     this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
+    this.usePOST = instanceSettings.jsonData.usePOST;
 
     this._request = function (query) {
         var options: any = {
-            method: 'GET',
-            url: this.url + query,
+            url: this.url
         };
+
+        if (this.usePOST) {
+            options.method = 'POST';
+            options.data = query;
+        } else {
+            options.method = 'GET';
+            options.url += '/?query=' + encodeURIComponent(query);
+        }
 
         if (this.basicAuth || this.withCredentials) {
             options.withCredentials = true;
@@ -100,12 +108,13 @@ export function ClickHouseDatasource(instanceSettings, $q, backendSrv, templateS
     };
 
     this._seriesQuery = function (query) {
-        query = query.replace(/(?:\r\n|\r|\n|  )/g, ' ');
-        query = encodeURIComponent(query) + '%20FORMAT%20JSON';
+        query = query.replace(/(?:\r\n|\r|\n)/g, ' ');
+        query += ' FORMAT JSON';
         if (this.addCorsHeader) {
             query += "&add_http_cors_header=1";
         }
-        return this._request('/?query=' + query);
+
+        return this._request(query);
     };
 
     this.targetContainsTemplate = function(target) {

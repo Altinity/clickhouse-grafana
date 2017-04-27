@@ -211,5 +211,4 @@ class SqlQueryCtrl extends QueryCtrl {
         return this.target.query;
     }
 }
-
 export {SqlQueryCtrl};

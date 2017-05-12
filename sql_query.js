@@ -27,11 +27,6 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                     this.templateSrv = templateSrv;
                     this.options = options;
                     target.resultFormat = 'time_series';
-                    target.tags = target.tags || [];
-                    target.targetLists = target.targetLists || [[
-                            { type: 'field', params: ['*'] },
-                            { type: 'count', params: [] },
-                        ]];
                 }
                 SqlQuery.prototype.replace = function (options) {
                     var query = this.target.query, scanner = new scanner_1.default(query), from = SqlQuery.convertTimestamp(this.options.range.from), to = SqlQuery.convertTimestamp(this.options.range.to), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);

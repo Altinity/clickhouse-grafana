@@ -170,4 +170,54 @@ describe("scanner:", () => {
         });
     });
 
+
+  describe("AST case 4", () => {
+    var query = "SELECT LogTime, Entity, Message FROM $table " +
+        "ANY LEFT JOIN (SELECT * FROM default.log_events) USING EventCode " +
+        "WHERE $timeFilter ORDER BY LogTime DESC LIMIT $__limit",
+      scanner = new Scanner(query);
+
+    var expectedAST = {
+      "root": [
+      ],
+      "select": [
+        "LogTime",
+        "Entity",
+        "Message"
+      ],
+      "from": [
+        "$table"
+      ],
+      "join": {
+        "type": "ANY LEFT JOIN",
+        "source": {
+          "root": [
+          ],
+          "select": [
+            "*"
+          ],
+          "from": [
+            "default.log_events"
+          ]
+        },
+        "using": [
+          "EventCode"
+        ]
+      },
+      "where": [
+        "$timeFilter"
+      ],
+      "order by": [
+        "LogTime DESC"
+      ],
+      "limit": [
+        "$__limit"
+      ]
+    };
+
+    it("expects equality", () => {
+      expect(scanner.toAST()).to.eql(expectedAST);
+    });
+  });
+
 });

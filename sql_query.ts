@@ -20,11 +20,6 @@ export default class SqlQuery {
     this.options = options;
 
     target.resultFormat = 'time_series';
-    target.tags = target.tags || [];
-    target.targetLists = target.targetLists || [[
-      {type: 'field', params: ['*']},
-      {type: 'count', params: []},
-    ]];
   }
 
     replace(options?) {

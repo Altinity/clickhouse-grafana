@@ -53,6 +53,7 @@ function (_) {
       }
       return true;
     }
+
     return false;
   };
 
@@ -216,6 +217,10 @@ function (_) {
           }
 
           if (isStatement(this.token)) {
+            if (argument !== '') {
+              ast[rootToken].push(argument);
+              argument = '';
+            }
             rootToken = this.token.toLowerCase();
             ast[rootToken] = [];
             break;
@@ -238,6 +243,7 @@ function (_) {
       ast[rootToken].push(argument);
     }
     this.AST = ast;
+    console.log(JSON.stringify(ast))
     return ast;
   };
 

@@ -1,4 +1,4 @@
-///<reference path="../../../headers/common.d.ts" />
+///<reference path="../../../headers/common.d.ts" />app/core
 System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plugins/sdk", "./scanner"], function (exports_1, context_1) {
     "use strict";
     var __extends = (this && this.__extends) || function (d, b) {
@@ -29,7 +29,7 @@ System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plug
                 scanner_1 = scanner_1_1;
             }
         ],
-        execute: function () {///<reference path="../../../headers/common.d.ts" />
+        execute: function () {///<reference path="../../../headers/common.d.ts" />app/core
             SqlQueryCtrl = (function (_super) {
                 __extends(SqlQueryCtrl, _super);
                 /** @ngInject **/

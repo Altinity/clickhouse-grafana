@@ -243,7 +243,6 @@ function (_) {
       ast[rootToken].push(argument);
     }
     this.AST = ast;
-    console.log(JSON.stringify(ast))
     return ast;
   };
 

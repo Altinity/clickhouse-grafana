@@ -1,4 +1,4 @@
-///<reference path="../../../headers/common.d.ts" />
+///<reference path="../../../headers/common.d.ts" />app/core
 
 import angular from 'angular';
 import $ from 'jquery';
@@ -6,7 +6,6 @@ import _ from 'lodash';
 import SqlQueryBuilder from './query_builder';
 import SqlQuery from './sql_query';
 import {QueryCtrl} from 'app/plugins/sdk';
-import appEvents from 'app/core/app_events';
 import Scanner from './scanner';
 
 class SqlQueryCtrl extends QueryCtrl {
@@ -56,8 +55,9 @@ class SqlQueryCtrl extends QueryCtrl {
             return {factor: f, label: '1/' + f};
         });
 
+        this.target.round = this.target.round || "0s";
         this.target.intervalFactor = this.target.intervalFactor || 1;
-        this.target.query = this.target.query || "SELECT $timeSeries as t, count(*) FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
+        this.target.query = this.target.query || "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
         this.target.formattedQuery = this.target.formattedQuery || this.target.query;
         this.scanner = new Scanner(this.target.query);
     }

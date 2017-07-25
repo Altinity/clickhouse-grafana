@@ -25,7 +25,7 @@ export default class SqlQuery {
     replace(options?) {
         var query = this.target.query,
             scanner = new Scanner(query),
-            from = SqlQuery.convertTimestamp(this.options.range.from),
+            from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)),
             to = SqlQuery.convertTimestamp(this.options.range.to),
             timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'),
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
@@ -204,17 +204,35 @@ export default class SqlQuery {
     }
 
     // date is a moment object
-    static convertTimestamp(date) {
-        //return date.format("'Y-MM-DD HH:mm:ss'")
+    static convertTimestamp(date: any) {
+        //retu1rn date.format("'Y-MM-DD HH:mm:ss'")
         if (_.isString(date)) {
             date = dateMath.parse(date, true);
         }
+
         return Math.ceil(date.valueOf() / 1000);
     }
 
+    static round(date: any, round: string): any {
+        if (round === "" || round === undefined || round === "0s" ) {
+          return date;
+        }
+
+        if (_.isString(date)) {
+          date = dateMath.parse(date, true);
+        }
+
+        let coeff = 1000 * SqlQuery.convertInterval(round, 1);
+        let rounded = Math.floor(date.valueOf() / coeff) * coeff;
+        return moment(rounded);
+    }
 
     static convertInterval(interval, intervalFactor) {
         var m = interval.match(durationSplitRegexp);
+        if (m === null) {
+          throw {message: 'Received duration is invalid: ' + interval};
+        }
+
         var dur = moment.duration(parseInt(m[1]), m[2]);
         var sec = dur.asSeconds();
         if (sec < 1) {
@@ -223,8 +241,6 @@ export default class SqlQuery {
 
         return Math.ceil(sec * intervalFactor);
     }
-
-    public static REGEX_COLUMNS = /(?:\s*(?=\w+\.|.*as\s+|distinct\s+|)(\*|\w+|(?:,|\s+)|\w+\([a-z*]+\))(?=\s*(?=,|$)))/ig;
 
     static interpolateQueryExpr (value, variable, defaultFormatFn) {
         // if no multi or include all do not regexEscape
@@ -250,7 +266,7 @@ export default class SqlQuery {
                 return true;
             }
 
-            if (!opt.value.match(/^\d+$/) && !opt.value.match(/^\d+\.\d+$/)) {
+            if (!opt.value.match(/^\d+$/)) {
                 isDigit = false;
                 return false;
             }

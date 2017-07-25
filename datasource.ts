@@ -53,6 +53,7 @@ export function ClickHouseDatasource(instanceSettings, $q, backendSrv, templateS
     };
 
     this.query = function (options) {
+        let self = this;
         var queries = [], q;
 
         _.map(options.targets, (target) => {

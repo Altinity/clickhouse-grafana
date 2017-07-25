@@ -99,9 +99,23 @@
         </div>
 
         <div class="gf-form">
+          <label class="gf-form-label width-5">Round</label>
+          <input type="text" class="gf-form-input max-width-5" ng-model="ctrl.target.round"
+                 data-placement="right"
+                 spellcheck='false'
+                 placeholder="0s"
+                 data-min-length=0 data-items=100
+                 ng-model-onblur
+                 ng-change="ctrl.refresh()"/>
+          <info-popover mode="right-absolute">
+            Set rounding for `left` interval border. For example, set to 1m to avoid seconds
+          </info-popover>
+        </div>
+
+        <div class="gf-form">
             <label class="gf-form-label width-6">
                 <info-popover mode="right-absolute">
-                    Experimental feature: format sql query as CH do.
+                    Experimental feature: format SQL query as CH do.
                 </info-popover>
                 <a ng-click="ctrl.formatQuery()" role="menuitem">
                     Format
@@ -113,5 +127,4 @@
             <div class="gf-form-label gf-form-label--grow"></div>
         </div>
     </div>
-
 </query-editor-row>

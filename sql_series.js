@@ -54,7 +54,7 @@ function (_) {
   };
 
   p.extrapolate = function(datapoints) {
-      if (!this.tillNow || datapoints.length < 10) {
+      if (datapoints.length < 10 || (!this.tillNow && datapoints[0][0] !== 0)) {
         return datapoints;
       }
 

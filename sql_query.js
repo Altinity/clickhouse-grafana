@@ -29,7 +29,7 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                     target.resultFormat = 'time_series';
                 }
                 SqlQuery.prototype.replace = function (options) {
-                    var query = this.target.query, scanner = new scanner_1.default(query), from = SqlQuery.convertTimestamp(this.options.range.from), to = SqlQuery.convertTimestamp(this.options.range.to), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
+                    var query = this.target.query, scanner = new scanner_1.default(query), from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)), to = SqlQuery.convertTimestamp(this.options.range.to), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
                     try {
                         var ast = scanner.toAST();
                         if (ast.hasOwnProperty('$columns') && !lodash_1.default.isEmpty(ast.$columns)) {
@@ -179,14 +179,28 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                 };
                 // date is a moment object
                 SqlQuery.convertTimestamp = function (date) {
-                    //return date.format("'Y-MM-DD HH:mm:ss'")
+                    //retu1rn date.format("'Y-MM-DD HH:mm:ss'")
                     if (lodash_1.default.isString(date)) {
                         date = dateMath.parse(date, true);
                     }
                     return Math.ceil(date.valueOf() / 1000);
                 };
+                SqlQuery.round = function (date, round) {
+                    if (round === "" || round === undefined || round === "0s") {
+                        return date;
+                    }
+                    if (lodash_1.default.isString(date)) {
+                        date = dateMath.parse(date, true);
+                    }
+                    var coeff = 1000 * SqlQuery.convertInterval(round, 1);
+                    var rounded = Math.floor(date.valueOf() / coeff) * coeff;
+                    return moment_1.default(rounded);
+                };
                 SqlQuery.convertInterval = function (interval, intervalFactor) {
                     var m = interval.match(durationSplitRegexp);
+                    if (m === null) {
+                        throw { message: 'Received duration is invalid: ' + interval };
+                    }
                     var dur = moment_1.default.duration(parseInt(m[1]), m[2]);
                     var sec = dur.asSeconds();
                     if (sec < 1) {
@@ -214,7 +228,7 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                         if (opt.value === '$__all') {
                             return true;
                         }
-                        if (!opt.value.match(/^\d+$/) && !opt.value.match(/^\d+\.\d+$/)) {
+                        if (!opt.value.match(/^\d+$/)) {
                             isDigit = false;
                             return false;
                         }
@@ -228,7 +242,6 @@ System.register(["lodash", "app/core/utils/datemath", "moment", "./scanner"], fu
                 };
                 return SqlQuery;
             }());
-            SqlQuery.REGEX_COLUMNS = /(?:\s*(?=\w+\.|.*as\s+|distinct\s+|)(\*|\w+|(?:,|\s+)|\w+\([a-z*]+\))(?=\s*(?=,|$)))/ig;
             exports_1("default", SqlQuery);
         }
     };

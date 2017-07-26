@@ -44,6 +44,7 @@ System.register(["lodash", "./sql_series", "./sql_query", "./response_parser"], 
         };
         this.query = function (options) {
             var _this = this;
+            var self = this;
             var queries = [], q;
             lodash_1.default.map(options.targets, function (target) {
                 if (!target.hide && target.query) {

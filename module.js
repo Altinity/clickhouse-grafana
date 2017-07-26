@@ -17,23 +17,23 @@ System.register(["./datasource", "./query_ctrl"], function (exports_1, context_1
             SqlConfigCtrl = (function () {
                 function SqlConfigCtrl() {
                 }
+                SqlConfigCtrl.templateUrl = 'partials/config.html';
                 return SqlConfigCtrl;
             }());
-            SqlConfigCtrl.templateUrl = 'partials/config.html';
             exports_1("ConfigCtrl", SqlConfigCtrl);
             SqlQueryOptionsCtrl = (function () {
                 function SqlQueryOptionsCtrl() {
                 }
+                SqlQueryOptionsCtrl.templateUrl = 'partials/query.options.html';
                 return SqlQueryOptionsCtrl;
             }());
-            SqlQueryOptionsCtrl.templateUrl = 'partials/query.options.html';
             exports_1("QueryOptionsCtrl", SqlQueryOptionsCtrl);
             SqlAnnotationsQueryCtrl = (function () {
                 function SqlAnnotationsQueryCtrl() {
                 }
+                SqlAnnotationsQueryCtrl.templateUrl = 'partials/annotations.editor.html';
                 return SqlAnnotationsQueryCtrl;
             }());
-            SqlAnnotationsQueryCtrl.templateUrl = 'partials/annotations.editor.html';
             exports_1("AnnotationsQueryCtrl", SqlAnnotationsQueryCtrl);
         }
     };

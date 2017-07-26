@@ -1,11 +1,16 @@
 ///<reference path="../../../headers/common.d.ts" />app/core
 System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plugins/sdk", "./scanner"], function (exports_1, context_1) {
     "use strict";
-    var __extends = (this && this.__extends) || function (d, b) {
-        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
-        function __() { this.constructor = d; }
-        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-    };
+    var __extends = (this && this.__extends) || (function () {
+        var extendStatics = Object.setPrototypeOf ||
+            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
+            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
+        return function (d, b) {
+            extendStatics(d, b);
+            function __() { this.constructor = d; }
+            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+        };
+    })();
     var __moduleName = context_1 && context_1.id;
     var jquery_1, lodash_1, query_builder_1, sql_query_1, sdk_1, scanner_1, SqlQueryCtrl;
     return {
@@ -47,8 +52,9 @@ System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plug
                     _this.resolutions = lodash_1.default.map([1, 2, 3, 4, 5, 10], function (f) {
                         return { factor: f, label: '1/' + f };
                     });
+                    _this.target.round = _this.target.round || "0s";
                     _this.target.intervalFactor = _this.target.intervalFactor || 1;
-                    _this.target.query = _this.target.query || "SELECT $timeSeries as t, count(*) FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
+                    _this.target.query = _this.target.query || "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
                     _this.target.formattedQuery = _this.target.formattedQuery || _this.target.query;
                     _this.scanner = new scanner_1.default(_this.target.query);
                     return _this;
@@ -181,9 +187,9 @@ System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plug
                 SqlQueryCtrl.prototype.getCollapsedText = function () {
                     return this.target.query;
                 };
+                SqlQueryCtrl.templateUrl = 'partials/query.editor.html';
                 return SqlQueryCtrl;
             }(sdk_1.QueryCtrl));
-            SqlQueryCtrl.templateUrl = 'partials/query.editor.html';
             exports_1("SqlQueryCtrl", SqlQueryCtrl);
         }
     };

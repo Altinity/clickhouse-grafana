@@ -21,6 +21,7 @@ class SqlQueryCtrl extends QueryCtrl {
     datasource: any;
     target: any;
     resolutions: any;
+    round: any;
     scanner: any;
     tableLoading: boolean;
     datetimeLoading: boolean;

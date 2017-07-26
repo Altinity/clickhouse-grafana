@@ -433,7 +433,7 @@ function (_) {
       skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$"),
       binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");
 
-  var tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe,stringRe, powerIntRe, intRe,
+  var tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, intRe,
     floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
   var highlightTokenRe = [operatorRe, macroFuncRe, joinsRe, builtInFuncRe, dataTypeRe, wsRe, commentRe, powerIntRe, idRe, stringRe, intRe,
     floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");

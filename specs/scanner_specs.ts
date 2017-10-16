@@ -1,5 +1,4 @@
-import _ from 'lodash';
-import {describe, beforeEach, it, sinon, expect} from 'test/lib/common';
+import {describe, it, expect} from 'test/lib/common';
 import Scanner from './../scanner';
 
 describe("scanner:", () => {

@@ -55,13 +55,13 @@ module.exports = function(grunt) {
                     emitDecoratorMetadata: true,
                     experimentalDecorators: true,
                     sourceMap: true,
-                    noImplicitAny: false,
+                    noImplicitAny: false
                 }
             }
         },
 
         watch: {
-            files: ['src/**/*.ts', 'src/**/*.html', 'src/**/*.css', 'src/img/*.*', 'src/plugin.json', 'README.md'],
+            files: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.html', 'src/**/*.css', 'src/img/*.*', 'src/plugin.json', 'README.md'],
             tasks: ['default'],
             options: {
                 debounceDelay: 250

@@ -1,10 +1,9 @@
 <query-editor-row query-ctrl="ctrl" can-collapse="true" has-text-edit-mode="true">
 
 	<div class="gf-form" ng-if="ctrl.target.rawQuery">
-		<textarea rows="7" class="gf-form-input gf-form--grow" style = "{{ctrl.textareaHeight}}"
+        <textarea rows="7" class="gf-form-input gf-form--grow" style = "{{ctrl.textareaHeight}}"
                   ng-if="ctrl.editMode" ng-model="ctrl.target.query" give-focus="true" spellcheck="false" ng-blur="ctrl.toggleEdit($event, false)"></textarea>
         <div class="gf-form-input" ng-if="!ctrl.editMode" ng-bind-html="ctrl.target.formattedQuery" ng-click="ctrl.toggleEdit($event, true)"></div>
-
 	</div>
 
 	<div ng-if="!ctrl.target.rawQuery">

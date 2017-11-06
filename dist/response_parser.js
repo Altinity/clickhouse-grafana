@@ -1,14 +1,12 @@
-System.register(["lodash"], function (exports_1, context_1) {
-    "use strict";
-    var __moduleName = context_1 && context_1.id;
-    var lodash_1, ResponseParser;
+System.register(['lodash'], function(exports_1) {
+    var lodash_1;
+    var ResponseParser;
     return {
-        setters: [
+        setters:[
             function (lodash_1_1) {
                 lodash_1 = lodash_1_1;
-            }
-        ],
-        execute: function () {
+            }],
+        execute: function() {
             ResponseParser = (function () {
                 function ResponseParser() {
                 }
@@ -20,7 +18,7 @@ System.register(["lodash"], function (exports_1, context_1) {
                     var res = [], v;
                     lodash_1.default.each(sqlResults, function (row) {
                         lodash_1.default.each(row, function (value) {
-                            if (lodash_1.default.isArray(value) || lodash_1.default.isOb) {
+                            if (lodash_1.default.isArray(value) || lodash_1.default.isObject(value)) {
                                 v = value[0];
                             }
                             else {
@@ -36,9 +34,9 @@ System.register(["lodash"], function (exports_1, context_1) {
                     });
                 };
                 return ResponseParser;
-            }());
+            })();
             exports_1("default", ResponseParser);
         }
-    };
+    }
 });
 //# sourceMappingURL=response_parser.js.map

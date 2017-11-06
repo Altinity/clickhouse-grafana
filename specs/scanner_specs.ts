@@ -1,5 +1,6 @@
-import {describe, it, expect} from 'test/lib/common';
-import Scanner from './../scanner';
+
+import {describe, it, expect} from './lib/common';
+import Scanner from '../src/scanner';
 
 describe("scanner:", () => {
     describe("highlight", () => {

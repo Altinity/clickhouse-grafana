@@ -1,39 +1,43 @@
-define([
-    'lodash'
-  ],
-  function (_) {
-    'use strict';
+import _ from 'lodash';
 
-    function Scanner(s) {
+export default class Scanner{
+    token: any;
+    AST: any;
+    skipSpace: boolean;
+    re: any;
+
+    _sOriginal: any;
+    _s: any;
+
+    /** @ngInject */
+    constructor(s) {
       this._sOriginal = s;
       this.token = null;
       this.AST = {};
     }
 
-    var s = Scanner.prototype;
-
-    s.raw = function() {
+    raw () {
       return this._sOriginal;
     };
 
-    s.expect = function (token) {
+    expect(token) {
       this.expectNext();
       if (!this.isToken(token)) {
         throw("expecting [" + token + "], but got [" + this.token + "] at [" + this._s + "]");
       }
     };
 
-    s.isToken = function (token) {
+    isToken(token) {
       return _.toUpper(token) === _.toUpper(this.token);
     };
 
-    s.expectNext = function () {
+    expectNext() {
       if (!this.next()) {
         throw("expecting additional token at the end of query [" + this._sOriginal + "]");
       }
     };
 
-    s.prev = function () {
+    prev() {
       if (this.token === null) {
         throw("BUG: prev called on empty token");
       }
@@ -41,7 +45,7 @@ define([
       this.token = null;
     };
 
-    s.next = function () {
+    next() {
       while (this._next()) {
         if (this.skipSpace && isWS(this.token)) {
           // skip whitespace
@@ -57,7 +61,7 @@ define([
       return false;
     };
 
-    s._next = function () {
+    _next() {
       if (this._s.length === 0) {
         return false;
       }
@@ -71,11 +75,11 @@ define([
       return true;
     };
 
-    s.Format = function () {
+    Format() {
       return print(this.toAST());
     };
 
-    s.Highlight = function () {
+    Highlight() {
       this._s = this._sOriginal;
       var r = '';
       this.skipSpace = false;
@@ -106,13 +110,13 @@ define([
       return htmlQuery;
     };
 
-    s.wrapWithColor = function (color) {
+    wrapWithColor(color) {
       return '<font color="' + color + '">' +
         this.token +
         '</font>';
     };
 
-    s.toAST = function () {
+    toAST() {
       this._s = this._sOriginal;
       this.skipSpace = true;
       this.re = new RegExp("^(?:" + tokenRe + ")", 'i');
@@ -152,7 +156,7 @@ define([
           subQuery = betweenBraces(this._s);
           subAST = toAST(subQuery);
           if (isSet(subAST, 'root')) {
-            ast[func] = subAST.root.map(function(item) {
+            ast[func] = subAST['root'].map(function(item) {
               return item;
             });
           } else {
@@ -173,7 +177,7 @@ define([
             subQuery = betweenBraces(this._s);
             subAST = toAST(subQuery);
             if (isSet(subAST, 'root')) {
-              argument += ' (' + subAST.root.map(function(item) {
+              argument += ' (' + subAST['root'].map(function(item) {
                   return item;
                 });
               argument = argument + ')';
@@ -245,134 +249,28 @@ define([
       this.AST = ast;
       return ast;
     };
+  }
 
-    // see https://clickhouse.yandex/reference_ru.html#SELECT
-    function print(AST, tab) {
-      var result = '';
-      tab = !tab ? '' : tab;
-
-      if (isSet(AST, '$rate')) {
-        result += tab + '$rate(';
-        result += printItems(AST.$rate, tab, ',') + ')';
-      }
-
-      if (isSet(AST, '$columns')) {
-        result += tab + '$columns(';
-        result += printItems(AST.$columns, tab, ',') + ')';
-      }
-
-      if (isSet(AST,'$rateColumns')) {
-        result += tab + '$rateColumns(';
-        result += printItems(AST.$rateColumns, tab, ',') + ')';
-      }
-
-      if (isSet(AST, 'select')) {
-        result += tab + 'SELECT';
-        result += printItems(AST.select, tab, ',');
-      }
-
-      if (isSet(AST, 'from')) {
-        result += newLine + tab + 'FROM';
-        result += printItems(AST.from, tab);
-      }
-
-      if (isSet(AST, 'join')) {
-        result += tab + newLine + AST.join.type.toUpperCase()  +
-          printItems(AST.join.source, tab) +
-          ' USING ' + printItems(AST.join.using, tab, ',');
-      }
-
-      if (isSet(AST, 'prewhere')) {
-        result += newLine + tab + 'PREWHERE';
-        result += printItems(AST.prewhere, tab);
-      }
-
-      if (isSet(AST, 'where')) {
-        result += newLine + tab + 'WHERE';
-        result += printItems(AST.where, tab);
-      }
-
-      if (isSet(AST,'group by')) {
-        result += newLine + tab + 'GROUP BY';
-        result += printItems(AST['group by'], tab, ',');
-      }
-
-      if (isSet(AST, 'having')) {
-        result += newLine + tab + 'HAVING';
-        result += printItems(AST.having, tab);
-      }
-
-      if (isSet(AST, 'order by')) {
-        result += newLine + tab + 'ORDER BY';
-        result += printItems(AST['order by'], tab, ',');
-      }
-
-      if (isSet(AST, 'limit')) {
-        result += newLine + tab + 'LIMIT';
-        result += printItems(AST.limit, tab);
-      }
-
-      if (isSet(AST, 'union all')) {
-        result += newLine + tab + 'UNION ALL';
-        result += printItems(AST['union all'], tab);
-      }
-
-      if (isSet(AST, 'format')) {
-        result += newLine + tab + 'FORMAT';
-        result += printItems(AST.format, tab);
-      }
-
-      return result;
-    }
-
-    var tabSize = '    ', // 4 spaces
-      newLine = '\n';
-
-    function printItems(items, tab, separator) {
-      var result = '';
-      tab = !tab ? '' : tab;
-      separator = !separator ? '' : separator;
-
-      if (_.isArray(items)) {
-        if (items.length === 1) {
-          result += ' ' + items[0];
-        } else {
-          result += newLine;
-          items.forEach(function(item, i) {
-            result += tab + tabSize + item;
-            if (i !== items.length - 1) {
-              result += separator;
-              result += newLine;
-            }
-          });
-        }
-      } else {
-        result = newLine + '(' + newLine + print(items, tab + tabSize) + newLine + ')';
-      }
-
-      return result;
-    }
-
-    var wsRe = "\\s+",
-      commentRe = "--[^\n]*|/\\*(?:[^*]|\\*[^/])*\\*/",
-      idRe = "[a-zA-Z_][a-zA-Z_0-9]*",
-      intRe = "\\d+",
-      powerIntRe = "\\d+e\\d+",
-      floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+",
-      stringRe = "('[^']*')|(`[^`]*`)",
-      binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|[-+/%*=<>\\.!]",
-      statementRe = "(select|from|where|having|order by|group by|limit|format|prewhere|union all)",
-      joinsRe = "(any inner join|any left join|all inner join|all left join"+
+var wsRe = "\\s+",
+    commentRe = "--[^\n]*|/\\*(?:[^*]|\\*[^/])*\\*/",
+    idRe = "[a-zA-Z_][a-zA-Z_0-9]*",
+    intRe = "\\d+",
+    powerIntRe = "\\d+e\\d+",
+    floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+",
+    stringRe = "('[^']*')|(`[^`]*`)",
+    binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|[-+/%*=<>\\.!]",
+    statementRe = "(select|from|where|having|order by|group by|limit|format|prewhere|union all)",
+    joinsRe = "(any inner join|any left join|all inner join|all left join"+
         "|global any inner join|global any left join|global all inner join|global all left join)",
-      macroFuncRe = "(\\$rateColumns|\\$rate|\\$columns)",
-      condRe = "\\b(or|and)\\b",
-      inRe = "\\b(global in|global not in|not in|in)\\b",
-      closureRe = "[\\(\\)]",
-      specCharsRe = "[,?:]",
-      macroRe = "\\$[A-Za-z0-9_$]+",
-      skipSpaceRe = "[\\(\\.!]",
+    macroFuncRe = "(\\$rateColumns|\\$rate|\\$columns)",
+    condRe = "\\b(or|and)\\b",
+    inRe = "\\b(global in|global not in|not in|in)\\b",
+    closureRe = "[\\(\\)]",
+    specCharsRe = "[,?:]",
+    macroRe = "\\$[A-Za-z0-9_$]+",
+    skipSpaceRe = "[\\(\\.!]",
 
-      builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
+    builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
         "coalesce|ifnull|isnull|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
         "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +
         "toRelativeYearNum|toTime|toStartOfHour|toStartOfFiveMinute|toStartOfMinute|toStartOfYear|" +
@@ -406,138 +304,237 @@ define([
         "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
         "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
         "uniqArrayIf|sumArrayIf|uniq)\\b",
-      operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
+    operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
         "when|else|end|type|left|right|on|outer|desc|asc|union|primary|key|between|" +
         "foreign|not|references|default|null|inner|cross|natural|database|" +
         "attach|detach|describe|optimize|prewhere|totals|databases|processlist|show|format|using|global|in)\\b",
-      dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
+    dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
         "money|real|number|integer|" +
         "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +
         "array|tuple|string)\\b",
 
-      wsOnlyRe = new RegExp("^(?:" + wsRe + ")$"),
-      commentOnlyRe = new RegExp("^(?:" + commentRe + ")$"),
-      idOnlyRe = new RegExp("^(?:" + idRe + ")$"),
-      closureOnlyRe = new RegExp("^(?:" + closureRe + ")$"),
-      macroFuncOnlyRe = new RegExp("^(?:" + macroFuncRe + ")$"),
-      statementOnlyRe = new RegExp("^(?:" + statementRe + ")$", 'i'),
-      joinsOnlyRe = new RegExp("^(?:" + joinsRe + ")$", 'i'),
-      operatorOnlyRe = new RegExp("^(?:" + operatorRe + ")$", 'i'),
-      dataTypeOnlyRe = new RegExp("^(?:" + dataTypeRe + ")$"),
-      builtInFuncOnlyRe = new RegExp("^(?:"+ builtInFuncRe +")$"),
-      macroOnlyRe = new RegExp("^(?:" + macroRe + ")$", 'i'),
-      inOnlyRe = new RegExp("^(?:" + inRe + ")$", 'i'),
-      condOnlyRe = new RegExp("^(?:" + condRe + ")$", 'i'),
-      numOnlyRe = new RegExp("^(?:" + [powerIntRe, intRe, floatRe].join("|") + ")$"),
-      stringOnlyRe = new RegExp("^(?:" + stringRe + ")$"),
-      skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$"),
-      binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");
+    wsOnlyRe = new RegExp("^(?:" + wsRe + ")$"),
+    commentOnlyRe = new RegExp("^(?:" + commentRe + ")$"),
+    idOnlyRe = new RegExp("^(?:" + idRe + ")$"),
+    closureOnlyRe = new RegExp("^(?:" + closureRe + ")$"),
+    macroFuncOnlyRe = new RegExp("^(?:" + macroFuncRe + ")$"),
+    statementOnlyRe = new RegExp("^(?:" + statementRe + ")$", 'i'),
+    joinsOnlyRe = new RegExp("^(?:" + joinsRe + ")$", 'i'),
+    operatorOnlyRe = new RegExp("^(?:" + operatorRe + ")$", 'i'),
+    dataTypeOnlyRe = new RegExp("^(?:" + dataTypeRe + ")$"),
+    builtInFuncOnlyRe = new RegExp("^(?:"+ builtInFuncRe +")$"),
+    macroOnlyRe = new RegExp("^(?:" + macroRe + ")$", 'i'),
+    inOnlyRe = new RegExp("^(?:" + inRe + ")$", 'i'),
+    condOnlyRe = new RegExp("^(?:" + condRe + ")$", 'i'),
+    numOnlyRe = new RegExp("^(?:" + [powerIntRe, intRe, floatRe].join("|") + ")$"),
+    stringOnlyRe = new RegExp("^(?:" + stringRe + ")$"),
+    skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$"),
+    binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");
 
-    var tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, intRe,
-      floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
-    var highlightTokenRe = [operatorRe, macroFuncRe, joinsRe, builtInFuncRe, dataTypeRe, wsRe, commentRe, powerIntRe, idRe, stringRe, intRe,
-      floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
+var tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, intRe,
+    floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
+var highlightTokenRe = [operatorRe, macroFuncRe, joinsRe, builtInFuncRe, dataTypeRe, wsRe, commentRe, powerIntRe, idRe, stringRe, intRe,
+    floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
 
-    function isSkipSpace(token) {
-      return skipSpaceOnlyRe.test(token);
+function isSkipSpace(token) {
+    return skipSpaceOnlyRe.test(token);
+}
+
+function isCond(token) {
+    return condOnlyRe.test(token);
+}
+
+function isIn(token) {
+    return inOnlyRe.test(token);
+}
+
+function isJoin(token) {
+    return joinsOnlyRe.test(token);
+}
+
+function isWS(token) {
+    return wsOnlyRe.test(token);
+}
+
+function isMacroFunc(token) {
+    return macroFuncOnlyRe.test(token);
+}
+
+function isMacro(token) {
+    return macroOnlyRe.test(token);
+}
+
+function isComment(token) {
+    return commentOnlyRe.test(token);
+}
+
+function isID(token) {
+    return idOnlyRe.test(token);
+}
+
+function isStatement(token) {
+    return statementOnlyRe.test(token);
+}
+
+function isOperator(token) {
+    return operatorOnlyRe.test(token);
+}
+
+function isDataType(token) {
+    return dataTypeOnlyRe.test(token);
+}
+
+function isBuiltInFunc(token) {
+    return builtInFuncOnlyRe.test(token);
+}
+
+function isClosureChars(token) {
+    return closureOnlyRe.test(token);
+}
+
+function isNum(token) {
+    return numOnlyRe.test(token);
+}
+
+function isString(token) {
+    return stringOnlyRe.test(token);
+}
+
+function isBinary(token) {
+    return binaryOnlyRe.test(token);
+}
+
+var tabSize = '    ', // 4 spaces
+    newLine = '\n';
+
+function printItems(items, tab = '', separator = '') {
+    var result = '';
+    if (_.isArray(items)) {
+        if (items.length === 1) {
+            result += ' ' + items[0];
+        } else {
+            result += newLine;
+            items.forEach(function(item, i) {
+                result += tab + tabSize + item;
+                if (i !== items.length - 1) {
+                    result += separator;
+                    result += newLine;
+                }
+            });
+        }
+    } else {
+        result = newLine + '(' + newLine + print(items, tab + tabSize) + newLine + ')';
     }
 
-    function isCond(token) {
-      return condOnlyRe.test(token);
-    }
+    return result;
+}
 
-    function isIn(token) {
-      return inOnlyRe.test(token);
-    }
+function toAST(s) {
+    var scanner = new Scanner(s);
+    return scanner.toAST();
+}
 
-    function isJoin(token) {
-      return joinsOnlyRe.test(token);
-    }
+function isSet(obj, prop) {
+    return obj.hasOwnProperty(prop) && !_.isEmpty(obj[prop]);
+}
 
-    function isWS(token) {
-      return wsOnlyRe.test(token);
-    }
+function isClosured(argument) {
+    return (argument.match(/\(/g) || []).length === (argument.match(/\)/g) || []).length;
+}
 
-    function isMacroFunc(token) {
-      return macroFuncOnlyRe.test(token);
-    }
-
-    function isMacro(token) {
-      return macroOnlyRe.test(token);
-    }
-
-    function isComment(token) {
-      return commentOnlyRe.test(token);
-    }
-
-    function isID(token) {
-      return idOnlyRe.test(token);
-    }
-
-    function isStatement(token) {
-      return statementOnlyRe.test(token);
-    }
-
-    function isOperator(token) {
-      return operatorOnlyRe.test(token);
-    }
-
-    function isDataType(token) {
-      return dataTypeOnlyRe.test(token);
-    }
-
-    function isBuiltInFunc(token) {
-      return builtInFuncOnlyRe.test(token);
-    }
-
-    function isClosureChars(token) {
-      return closureOnlyRe.test(token);
-    }
-
-    function isNum(token) {
-      return numOnlyRe.test(token);
-    }
-
-    function isString(token) {
-      return stringOnlyRe.test(token);
-    }
-
-    function isBinary(token) {
-      return binaryOnlyRe.test(token);
-    }
-
-    function toAST(s) {
-      var scanner = new Scanner(s);
-      return scanner.toAST();
-    }
-
-    function isSet(obj, prop) {
-      return obj.hasOwnProperty(prop) && !_.isEmpty(obj[prop]);
-    }
-
-    function isClosured(argument) {
-      return (argument.match(/\(/g) || []).length === (argument.match(/\)/g) || []).length;
-    }
-
-    function betweenBraces(query){
-      var openBraces = 1, subQuery = '';
-      for (var i = 0; i < query.length; i++) {
+function betweenBraces(query){
+    var openBraces = 1, subQuery = '';
+    for (var i = 0; i < query.length; i++) {
         if (query.charAt(i) === '(') {
-          openBraces++;
+            openBraces++;
         }
 
         if (query.charAt(i) === ')') {
-          if (openBraces === 1) {
-            subQuery = query.substring(0, i);
-            break;
-          }
+            if (openBraces === 1) {
+                subQuery = query.substring(0, i);
+                break;
+            }
 
-          openBraces--;
+            openBraces--;
         }
-      }
-
-      return subQuery;
     }
 
-    return Scanner;
-  });
+    return subQuery;
+}
+
+// see https://clickhouse.yandex/reference_ru.html#SELECT
+function print(AST, tab = '') {
+    var result = '';
+    if (isSet(AST, '$rate')) {
+        result += tab + '$rate(';
+        result += printItems(AST.$rate, tab, ',') + ')';
+    }
+
+    if (isSet(AST, '$columns')) {
+        result += tab + '$columns(';
+        result += printItems(AST.$columns, tab, ',') + ')';
+    }
+
+    if (isSet(AST,'$rateColumns')) {
+        result += tab + '$rateColumns(';
+        result += printItems(AST.$rateColumns, tab, ',') + ')';
+    }
+
+    if (isSet(AST, 'select')) {
+        result += tab + 'SELECT';
+        result += printItems(AST.select, tab, ',');
+    }
+
+    if (isSet(AST, 'from')) {
+        result += newLine + tab + 'FROM';
+        result += printItems(AST.from, tab);
+    }
+
+    if (isSet(AST, 'join')) {
+        result += tab + newLine + AST.join.type.toUpperCase()  +
+            printItems(AST.join.source, tab) +
+            ' USING ' + printItems(AST.join.using, tab, ',');
+    }
+
+    if (isSet(AST, 'prewhere')) {
+        result += newLine + tab + 'PREWHERE';
+        result += printItems(AST.prewhere, tab);
+    }
+
+    if (isSet(AST, 'where')) {
+        result += newLine + tab + 'WHERE';
+        result += printItems(AST.where, tab);
+    }
+
+    if (isSet(AST,'group by')) {
+        result += newLine + tab + 'GROUP BY';
+        result += printItems(AST['group by'], tab, ',');
+    }
+
+    if (isSet(AST, 'having')) {
+        result += newLine + tab + 'HAVING';
+        result += printItems(AST.having, tab);
+    }
+
+    if (isSet(AST, 'order by')) {
+        result += newLine + tab + 'ORDER BY';
+        result += printItems(AST['order by'], tab, ',');
+    }
+
+    if (isSet(AST, 'limit')) {
+        result += newLine + tab + 'LIMIT';
+        result += printItems(AST.limit, tab);
+    }
+
+    if (isSet(AST, 'union all')) {
+        result += newLine + tab + 'UNION ALL';
+        result += printItems(AST['union all'], tab);
+    }
+
+    if (isSet(AST, 'format')) {
+        result += newLine + tab + 'FORMAT';
+        result += printItems(AST.format, tab);
+    }
+
+    return result;
+}

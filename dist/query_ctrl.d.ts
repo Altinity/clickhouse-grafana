@@ -1,9 +1,7 @@
-/// <reference path="../../../../../public/app/headers/common.d.ts" />
+/// <reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 import SqlQuery from './sql_query';
 import { QueryCtrl } from 'app/plugins/sdk';
 declare class SqlQueryCtrl extends QueryCtrl {
-    private templateSrv;
-    private $q;
     private uiSegmentSrv;
     static templateUrl: string;
     queryModel: SqlQuery;
@@ -23,7 +21,7 @@ declare class SqlQueryCtrl extends QueryCtrl {
     editMode: boolean;
     textareaHeight: any;
     /** @ngInject **/
-    constructor($scope: any, $injector: any, templateSrv: any, $q: any, uiSegmentSrv: any);
+    constructor($scope: any, $injector: any, templateSrv: any, uiSegmentSrv: any);
     fakeSegment(value: any): any;
     getDatabaseSegments(): any;
     databaseChanged(): void;

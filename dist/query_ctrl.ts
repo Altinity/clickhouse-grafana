@@ -1,6 +1,5 @@
-///<reference path="../../../headers/common.d.ts" />app/core
+///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 
-import angular from 'angular';
 import $ from 'jquery';
 import _ from 'lodash';
 import SqlQueryBuilder from './query_builder';
@@ -21,7 +20,6 @@ class SqlQueryCtrl extends QueryCtrl {
     datasource: any;
     target: any;
     resolutions: any;
-    round: any;
     scanner: any;
     tableLoading: boolean;
     datetimeLoading: boolean;
@@ -30,7 +28,7 @@ class SqlQueryCtrl extends QueryCtrl {
     textareaHeight: any;
 
     /** @ngInject **/
-    constructor($scope, $injector, private templateSrv, private $q, private uiSegmentSrv) {
+    constructor($scope, $injector, templateSrv, private uiSegmentSrv) {
         super($scope, $injector);
 
         this.queryModel = new SqlQuery(this.target, templateSrv, this.panel.scopedVars);

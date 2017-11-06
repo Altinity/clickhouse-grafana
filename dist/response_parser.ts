@@ -1,4 +1,4 @@
-///<reference path="../../../headers/common.d.ts" />
+///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 import _ from 'lodash';
 
 export default class ResponseParser {
@@ -10,7 +10,7 @@ export default class ResponseParser {
     var res = [], v;
     _.each(sqlResults, row => {
         _.each(row, value => {
-            if (_.isArray(value) || _.isOb) {
+            if (_.isArray(value) || _.isObject(value)) {
               v = value[0];
             } else {
               v = value;

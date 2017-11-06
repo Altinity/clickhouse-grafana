@@ -1,20 +1,14 @@
-///<reference path="../../../headers/common.d.ts" />app/core
-System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plugins/sdk", "./scanner"], function (exports_1, context_1) {
-    "use strict";
-    var __extends = (this && this.__extends) || (function () {
-        var extendStatics = Object.setPrototypeOf ||
-            ({ __proto__: [] } instanceof Array && function (d, b) { d.__proto__ = b; }) ||
-            function (d, b) { for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p]; };
-        return function (d, b) {
-            extendStatics(d, b);
-            function __() { this.constructor = d; }
-            d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
-        };
-    })();
-    var __moduleName = context_1 && context_1.id;
-    var jquery_1, lodash_1, query_builder_1, sql_query_1, sdk_1, scanner_1, SqlQueryCtrl;
+///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
+System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plugins/sdk', './scanner'], function(exports_1) {
+    var __extends = (this && this.__extends) || function (d, b) {
+        for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
+        function __() { this.constructor = d; }
+        d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
+    };
+    var jquery_1, lodash_1, query_builder_1, sql_query_1, sdk_1, scanner_1;
+    var SqlQueryCtrl;
     return {
-        setters: [
+        setters:[
             function (jquery_1_1) {
                 jquery_1 = jquery_1_1;
             },
@@ -32,32 +26,28 @@ System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plug
             },
             function (scanner_1_1) {
                 scanner_1 = scanner_1_1;
-            }
-        ],
-        execute: function () {///<reference path="../../../headers/common.d.ts" />app/core
+            }],
+        execute: function() {
             SqlQueryCtrl = (function (_super) {
                 __extends(SqlQueryCtrl, _super);
                 /** @ngInject **/
-                function SqlQueryCtrl($scope, $injector, templateSrv, $q, uiSegmentSrv) {
-                    var _this = _super.call(this, $scope, $injector) || this;
-                    _this.templateSrv = templateSrv;
-                    _this.$q = $q;
-                    _this.uiSegmentSrv = uiSegmentSrv;
-                    _this.queryModel = new sql_query_1.default(_this.target, templateSrv, _this.panel.scopedVars);
-                    _this.queryBuilder = new query_builder_1.default(_this.target);
-                    _this.databaseSegment = uiSegmentSrv.newSegment(_this.target.database || { fake: true, value: '-- database --' });
-                    _this.tableSegment = uiSegmentSrv.newSegment(_this.target.table || { fake: true, value: '-- table --' });
-                    _this.dateColDataTypeSegment = uiSegmentSrv.newSegment(_this.target.dateColDataType || { fake: true, value: '-- date : col --' });
-                    _this.dateTimeColDataTypeSegment = uiSegmentSrv.newSegment(_this.target.dateTimeColDataType || { fake: true, value: '-- dateTime : col --' });
-                    _this.resolutions = lodash_1.default.map([1, 2, 3, 4, 5, 10], function (f) {
+                function SqlQueryCtrl($scope, $injector, templateSrv, uiSegmentSrv) {
+                    _super.call(this, $scope, $injector);
+                    this.uiSegmentSrv = uiSegmentSrv;
+                    this.queryModel = new sql_query_1.default(this.target, templateSrv, this.panel.scopedVars);
+                    this.queryBuilder = new query_builder_1.default(this.target);
+                    this.databaseSegment = uiSegmentSrv.newSegment(this.target.database || { fake: true, value: '-- database --' });
+                    this.tableSegment = uiSegmentSrv.newSegment(this.target.table || { fake: true, value: '-- table --' });
+                    this.dateColDataTypeSegment = uiSegmentSrv.newSegment(this.target.dateColDataType || { fake: true, value: '-- date : col --' });
+                    this.dateTimeColDataTypeSegment = uiSegmentSrv.newSegment(this.target.dateTimeColDataType || { fake: true, value: '-- dateTime : col --' });
+                    this.resolutions = lodash_1.default.map([1, 2, 3, 4, 5, 10], function (f) {
                         return { factor: f, label: '1/' + f };
                     });
-                    _this.target.round = _this.target.round || "0s";
-                    _this.target.intervalFactor = _this.target.intervalFactor || 1;
-                    _this.target.query = _this.target.query || "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
-                    _this.target.formattedQuery = _this.target.formattedQuery || _this.target.query;
-                    _this.scanner = new scanner_1.default(_this.target.query);
-                    return _this;
+                    this.target.round = this.target.round || "0s";
+                    this.target.intervalFactor = this.target.intervalFactor || 1;
+                    this.target.query = this.target.query || "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
+                    this.target.formattedQuery = this.target.formattedQuery || this.target.query;
+                    this.scanner = new scanner_1.default(this.target.query);
                 }
                 SqlQueryCtrl.prototype.fakeSegment = function (value) {
                     return this.uiSegmentSrv.newSegment({ fake: true, value: value });
@@ -189,9 +179,9 @@ System.register(["jquery", "lodash", "./query_builder", "./sql_query", "app/plug
                 };
                 SqlQueryCtrl.templateUrl = 'partials/query.editor.html';
                 return SqlQueryCtrl;
-            }(sdk_1.QueryCtrl));
+            })(sdk_1.QueryCtrl);
             exports_1("SqlQueryCtrl", SqlQueryCtrl);
         }
-    };
+    }
 });
 //# sourceMappingURL=query_ctrl.js.map

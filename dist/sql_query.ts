@@ -1,4 +1,4 @@
-///<reference path="../../../headers/common.d.ts" />
+///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 
 import _ from 'lodash';
 import * as dateMath from 'app/core/utils/datemath';
@@ -33,11 +33,11 @@ export default class SqlQuery {
 
         try {
             var ast = scanner.toAST();
-            if (ast.hasOwnProperty('$columns') && !_.isEmpty(ast.$columns)) {
+            if (ast.hasOwnProperty('$columns') && !_.isEmpty(ast['$columns'])) {
                 query = SqlQuery.columns(query);
-            } else if (ast.hasOwnProperty('$rateColumns') && !_.isEmpty(ast.$rateColumns)) {
+            } else if (ast.hasOwnProperty('$rateColumns') && !_.isEmpty(ast['$rateColumns'])) {
                 query = SqlQuery.rateColumns(query);
-            } else if (ast.hasOwnProperty('$rate') && !_.isEmpty(ast.$rate)) {
+            } else if (ast.hasOwnProperty('$rate') && !_.isEmpty(ast['$rate'])) {
                 query = SqlQuery.rate(query, ast);
             }
         } catch (err) {
@@ -67,12 +67,13 @@ export default class SqlQuery {
                 .slice(0, -1), // cut ending brace
                 scanner = new Scanner(args),
                 ast = scanner.toAST();
+            var root = ast['root'];
 
-            if (ast.root.length !== 2) {
-                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + ast.root.join(', ')};
+            if (root.length !== 2) {
+                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + root.join(', ')};
             }
 
-            query = SqlQuery._columns(ast.root[0], ast.root[1], query.slice(fromIndex));
+            query = SqlQuery._columns(root[0], root[1], query.slice(fromIndex));
         }
 
         return query;
@@ -119,12 +120,13 @@ export default class SqlQuery {
                 .slice(0, -1), // cut ending brace
                 scanner = new Scanner(args),
                 ast = scanner.toAST();
+            var root = ast['root'];
 
-            if (ast.root.length !== 2) {
-                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' +  ast.root.join(', ')};
+            if (root.length !== 2) {
+                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' +  root.join(', ')};
             }
 
-            query = SqlQuery._columns( ast.root[0],  ast.root[1], query.slice(fromIndex));
+            query = SqlQuery._columns(root[0], root[1], query.slice(fromIndex));
             query = 'SELECT t' +
                     ', arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
                     ' FROM (' +
@@ -143,7 +145,7 @@ export default class SqlQuery {
                 throw {message: 'Amount of arguments must be > 0 for $rate func. Parsed arguments are: ' + ast.$rate.join(', ')};
             }
 
-            query = SqlQuery._rate(ast.$rate, query.slice(fromIndex));
+            query = SqlQuery._rate(ast['$rate'], query.slice(fromIndex));
         }
 
         return query;
@@ -261,7 +263,7 @@ export default class SqlQuery {
     static clickhouseEscape(value, variable) {
         var isDigit = true;
         // if at least one of options is not digit
-        _.each(variable.options, function(opt){
+        _.each(variable.options, function(opt): boolean{
             if (opt.value === '$__all') {
                 return true;
             }
@@ -270,6 +272,7 @@ export default class SqlQuery {
                 isDigit = false;
                 return false;
             }
+            return true
         });
 
         if (isDigit) {

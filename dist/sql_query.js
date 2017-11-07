@@ -27,7 +27,6 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     target.resultFormat = 'time_series';
                 }
                 SqlQuery.prototype.replace = function (options) {
-                    debugger;
                     var query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME', from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)), to = SqlQuery.convertTimestamp(this.options.range.to), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
                     try {
                         var ast = scanner.toAST();

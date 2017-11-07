@@ -22,7 +22,7 @@ export default class SqlQuery {
     target.resultFormat = 'time_series';
   }
 
-    replace(options?) {debugger
+    replace(options?) {
         var query = this.target.query,
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME',

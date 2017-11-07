@@ -22,12 +22,14 @@ export default class SqlQuery {
     target.resultFormat = 'time_series';
   }
 
-    replace(options?) {
+    replace(options?) {debugger
         var query = this.target.query,
             scanner = new Scanner(query),
+            dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME',
             from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)),
             to = SqlQuery.convertTimestamp(this.options.range.to),
-            timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'),
+            timeSeries = SqlQuery.getTimeSeries(dateTimeType),
+            timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType),
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
 
@@ -46,12 +48,12 @@ export default class SqlQuery {
 
         query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
         this.target.rawQuery = query
-                    .replace(/\$timeSeries/g, '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000')
+                    .replace(/\$timeSeries/g, timeSeries)
                     .replace(/\$timeFilter/g, timeFilter)
                     .replace(/\$table/g, this.target.database + '.' + this.target.table)
                     .replace(/\$from/g, from)
                     .replace(/\$to/g, to)
-                    .replace(/\$timeCol/g, this.target.dateColDataType)
+                    .replace(/\$dateCol/g, this.target.dateColDataType)
                     .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
                     .replace(/\$interval/g, interval)
                     .replace(/(?:\r\n|\r|\n)/g, ' ');
@@ -196,18 +198,30 @@ export default class SqlQuery {
         return query;
     }
 
-    static getTimeFilter(isToNow): string {
-        if (isToNow) {
-            return '$timeCol >= toDate($from) AND $dateTimeCol >= toDateTime($from)';
-
-        } else {
-            return '$timeCol BETWEEN toDate($from) AND toDate($to) AND $dateTimeCol BETWEEN toDateTime($from) AND toDateTime($to)';
+    static getTimeSeries(dateTimeType: string): string {
+        if (dateTimeType === 'DATETIME') {
+            return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
         }
+        return '(intDiv($dateTimeCol, $interval) * $interval) * 1000'
+    }
+
+    static getTimeFilter(isToNow: boolean, dateTimeType: string): string {
+        var convertFn = function (t: string): string {
+            if (dateTimeType === 'DATETIME') {
+                return 'toDateTime('+ t +')';
+            }
+            return t
+        };
+
+        if (isToNow) {
+            return '$dateCol >= toDate($from) AND $dateTimeCol >= ' + convertFn('$from');
+        }
+        return '$dateCol BETWEEN toDate($from) AND toDate($to) AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
     }
 
     // date is a moment object
     static convertTimestamp(date: any) {
-        //retu1rn date.format("'Y-MM-DD HH:mm:ss'")
+        //return date.format("'Y-MM-DD HH:mm:ss'")
         if (_.isString(date)) {
             date = dateMath.parse(date, true);
         }

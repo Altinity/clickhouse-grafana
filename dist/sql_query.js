@@ -27,7 +27,8 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     target.resultFormat = 'time_series';
                 }
                 SqlQuery.prototype.replace = function (options) {
-                    var query = this.target.query, scanner = new scanner_1.default(query), from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)), to = SqlQuery.convertTimestamp(this.options.range.to), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now'), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
+                    debugger;
+                    var query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME', from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)), to = SqlQuery.convertTimestamp(this.options.range.to), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
                     try {
                         var ast = scanner.toAST();
                         if (ast.hasOwnProperty('$columns') && !lodash_1.default.isEmpty(ast['$columns'])) {
@@ -45,12 +46,12 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     }
                     query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     this.target.rawQuery = query
-                        .replace(/\$timeSeries/g, '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000')
+                        .replace(/\$timeSeries/g, timeSeries)
                         .replace(/\$timeFilter/g, timeFilter)
                         .replace(/\$table/g, this.target.database + '.' + this.target.table)
                         .replace(/\$from/g, from)
                         .replace(/\$to/g, to)
-                        .replace(/\$timeCol/g, this.target.dateColDataType)
+                        .replace(/\$dateCol/g, this.target.dateColDataType)
                         .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
                         .replace(/\$interval/g, interval)
                         .replace(/(?:\r\n|\r|\n)/g, ' ');
@@ -169,17 +170,27 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     }
                     return query;
                 };
-                SqlQuery.getTimeFilter = function (isToNow) {
+                SqlQuery.getTimeSeries = function (dateTimeType) {
+                    if (dateTimeType === 'DATETIME') {
+                        return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
+                    }
+                    return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
+                };
+                SqlQuery.getTimeFilter = function (isToNow, dateTimeType) {
+                    var convertFn = function (t) {
+                        if (dateTimeType === 'DATETIME') {
+                            return 'toDateTime(' + t + ')';
+                        }
+                        return t;
+                    };
                     if (isToNow) {
-                        return '$timeCol >= toDate($from) AND $dateTimeCol >= toDateTime($from)';
+                        return '$dateCol >= toDate($from) AND $dateTimeCol >= ' + convertFn('$from');
                     }
-                    else {
-                        return '$timeCol BETWEEN toDate($from) AND toDate($to) AND $dateTimeCol BETWEEN toDateTime($from) AND toDateTime($to)';
-                    }
+                    return '$dateCol BETWEEN toDate($from) AND toDate($to) AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
                 };
                 // date is a moment object
                 SqlQuery.convertTimestamp = function (date) {
-                    //retu1rn date.format("'Y-MM-DD HH:mm:ss'")
+                    //return date.format("'Y-MM-DD HH:mm:ss'")
                     if (lodash_1.default.isString(date)) {
                         date = dateMath.parse(date, true);
                     }

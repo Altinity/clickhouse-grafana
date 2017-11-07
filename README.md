@@ -34,16 +34,16 @@ There is a small feature - ClickHouse treats HTTP Basic Authentication credentia
 
 Query setup interface:
 
-![query editor image](https://cloud.githubusercontent.com/assets/2902918/24203791/5dc44d38-0f1f-11e7-9905-6deb8b28fbe4.png)
+![query editor image](https://user-images.githubusercontent.com/2902918/32498037-2e9df438-c3d7-11e7-90de-73957c20cf6d.png)
 
 First row `FROM` contains two options: database and table. Table values depends on selected database.
-Second row contains:
-* Date:Col ([EventDate](https://clickhouse.yandex/reference_en.html#Date) column required for [MergeTree](https://clickhouse.yandex/reference_en.html#MergeTree) engine), 
-* DateTime:Col ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime) column is required for macros and functions), selected columns.
+Second row contains selectors for time filtering:
+* Column:Date ([EventDate](https://clickhouse.yandex/reference_en.html#Date)) - is mandatory for [MergeTree](https://clickhouse.yandex/reference_en.html#MergeTree) tables
+* Column:DateTime ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime)) or Column:TimeStamp (UInt32).
 
 > Plugin will try to detect date columns automatically
 
-> DateTime:Col is required for our time-based macros and funcs, because all analytics is based on these values
+> Column:DateTime or Column:TimeStamp are required for time-based macros and functions, because all analytics is based on these values
 
 Button `Go to Query` is just a toggler to Raw SQL Editor
 
@@ -62,14 +62,14 @@ Under the textarea you can find a raw query (all macros and functions have alrea
 Plugin supports the following marcos:
 
 * $timeCol - replaced with Date:Col value from Query Builder
-* $dateTimeCol - replaced with DateTime:Col value from Query Builder
+* $dateTimeCol - replaced with Column:DateTime or Column:TimeStamp value from Query Builder
 * $from - replaced with timestamp/1000 value of selected "Time Range:From"
 * $to - replaced with timestamp/1000 value of selected "Time Range:To"
 * $interval - replaced with selected "Group by time interval" value (as a number of seconds)
 * $timeFilter - replaced with currently selected "Time Range". 
-  Require Date:Col and DateTime:Col to be selected
+  Require Column:Date and Column:DateTime or Column:TimeStamp to be selected
 * $timeSeries - replaced with special ClickHouse construction to convert results as time-series data. Use it as "SELECT $timeSeries...". 
-Require DateTime:Col to be selected
+Require Column:DateTime or Column:TimeStamp to be selected
 
 A description of macros is available from an interface by clicking on the info-button
 
@@ -79,7 +79,7 @@ Functions are just templates of SQL queries and you can check the final query at
 If some additional complexity is needed - just copy raw sql into textarea and make according changes. Remember that macros are still available to use. 
 
 There are some limits in function use because of poor query analysis:
-* Both Date:Col and DateTime:col must be set in Query Builder
+* Column:Date and Column:DateTime or Column:TimeStamp must be set in Query Builder
 * Query must begins from function name
 * Only one function can be used per query
 

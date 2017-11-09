@@ -13,19 +13,24 @@ class SqlQueryCtrl extends QueryCtrl {
     queryModel: SqlQuery;
     queryBuilder: any;
     databaseSegment: any;
+
+    dateTimeType: any;
     dateColDataTypeSegment: any;
     dateTimeColDataTypeSegment: any;
     tableSegment: any;
+
     panel: any;
     datasource: any;
     target: any;
     resolutions: any;
     scanner: any;
+    editMode: boolean;
+    textareaHeight: any;
+    dateTimeTypeOptions: any;
+
     tableLoading: boolean;
     datetimeLoading: boolean;
     dateLoading: boolean;
-    editMode: boolean;
-    textareaHeight: any;
 
     /** @ngInject **/
     constructor($scope, $injector, templateSrv, private uiSegmentSrv) {
@@ -54,6 +59,12 @@ class SqlQueryCtrl extends QueryCtrl {
             return {factor: f, label: '1/' + f};
         });
 
+        this.dateTimeTypeOptions =  [
+            {text: 'Column:DateTime', value: 'DATETIME'},
+            {text: 'Column:TimeStamp', value: 'TIMESTAMP'},
+        ];
+
+        this.target.dateTimeType = this.target.dateTimeType || this.dateTimeTypeOptions[0].value;
         this.target.round = this.target.round || "0s";
         this.target.intervalFactor = this.target.intervalFactor || 1;
         this.target.query = this.target.query || "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
@@ -120,10 +131,21 @@ class SqlQueryCtrl extends QueryCtrl {
         this.target.dateColDataType = this.dateColDataTypeSegment.value;
     }
 
+    dateTimeTypeChanged() {
+        var self = this;
+        this.getDateTimeColDataTypeSegments().then(function(segments) {
+            if (segments.length === 0) {
+                return;
+            }
+            self.applySegment(self.dateTimeColDataTypeSegment, segments[0]);
+            self.dateTimeColDataTypeChanged();
+        });
+    }
+
     getDateTimeColDataTypeSegments() {
         var target = this.target;
         target.datetimeLoading = true;
-        return this.querySegment('DATE_TIME').then(function(response){
+        return this.querySegment(target.dateTimeType).then(function(response){
             target.datetimeLoading = false;
             return response;
         });

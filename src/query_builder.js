@@ -16,36 +16,42 @@ function () {
   p.buildExploreQuery = function(type) {
     var query;
 
-    if (type === 'TABLES') {
-      query = 'SELECT name ' +
-              'FROM system.tables ' +
-              'WHERE database = \'' + this.target.database + '\' ' +
-              'ORDER BY name';
-      return query;
-
-    } else if (type === 'DATE') {
-      query = 'SELECT name ' +
-              'FROM system.columns ' +
-              'WHERE database = \'' + this.target.database + '\' AND ' +
-                    'table = \'' + this.target.table + '\' AND ' +
-                    'type = \'Date\' ' +
-              'ORDER BY name';
-      return query;
-
-    } else if (type === 'DATE_TIME') {
-      query = 'SELECT name ' +
-            'FROM system.columns ' +
-            'WHERE database = \'' + this.target.database + '\' AND ' +
-            'table = \'' + this.target.table + '\' AND ' +
-            'type = \'DateTime\' ' +
-            'ORDER BY name';
-      return query;
-
-    } else if (type === 'DATABASES') {
-      query = 'SELECT name ' +
-              'FROM system.databases ' +
-              'ORDER BY name';
-      return query;
+    switch (type){
+        case 'TABLES':
+            query = 'SELECT name ' +
+                'FROM system.tables ' +
+                'WHERE database = \'' + this.target.database + '\' ' +
+                'ORDER BY name';
+            break;
+        case 'DATE':
+            query = 'SELECT name ' +
+                'FROM system.columns ' +
+                'WHERE database = \'' + this.target.database + '\' AND ' +
+                'table = \'' + this.target.table + '\' AND ' +
+                'type = \'Date\' ' +
+                'ORDER BY name';
+            break;
+        case 'DATETIME':
+            query = 'SELECT name ' +
+                'FROM system.columns ' +
+                'WHERE database = \'' + this.target.database + '\' AND ' +
+                'table = \'' + this.target.table + '\' AND ' +
+                'type = \'DateTime\' ' +
+                'ORDER BY name';
+            break;
+        case 'TIMESTAMP':
+            query = 'SELECT name ' +
+                'FROM system.columns ' +
+                'WHERE database = \'' + this.target.database + '\' AND ' +
+                'table = \'' + this.target.table + '\' AND ' +
+                'type = \'UInt32\' ' +
+                'ORDER BY name';
+            break;
+        case 'DATABASES':
+            query = 'SELECT name ' +
+                'FROM system.databases ' +
+                'ORDER BY name';
+            break;
     }
 
     return query;

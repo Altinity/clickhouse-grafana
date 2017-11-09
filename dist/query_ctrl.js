@@ -43,6 +43,11 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                     this.resolutions = lodash_1.default.map([1, 2, 3, 4, 5, 10], function (f) {
                         return { factor: f, label: '1/' + f };
                     });
+                    this.dateTimeTypeOptions = [
+                        { text: 'Column:DateTime', value: 'DATETIME' },
+                        { text: 'Column:TimeStamp', value: 'TIMESTAMP' },
+                    ];
+                    this.target.dateTimeType = this.target.dateTimeType || this.dateTimeTypeOptions[0].value;
                     this.target.round = this.target.round || "0s";
                     this.target.intervalFactor = this.target.intervalFactor || 1;
                     this.target.query = this.target.query || "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
@@ -100,10 +105,20 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                 SqlQueryCtrl.prototype.dateColDataTypeChanged = function () {
                     this.target.dateColDataType = this.dateColDataTypeSegment.value;
                 };
+                SqlQueryCtrl.prototype.dateTimeTypeChanged = function () {
+                    var self = this;
+                    this.getDateTimeColDataTypeSegments().then(function (segments) {
+                        if (segments.length === 0) {
+                            return;
+                        }
+                        self.applySegment(self.dateTimeColDataTypeSegment, segments[0]);
+                        self.dateTimeColDataTypeChanged();
+                    });
+                };
                 SqlQueryCtrl.prototype.getDateTimeColDataTypeSegments = function () {
                     var target = this.target;
                     target.datetimeLoading = true;
-                    return this.querySegment('DATE_TIME').then(function (response) {
+                    return this.querySegment(target.dateTimeType).then(function (response) {
                         target.datetimeLoading = false;
                         return response;
                     });

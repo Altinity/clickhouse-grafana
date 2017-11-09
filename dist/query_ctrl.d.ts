@@ -7,6 +7,7 @@ declare class SqlQueryCtrl extends QueryCtrl {
     queryModel: SqlQuery;
     queryBuilder: any;
     databaseSegment: any;
+    dateTimeType: any;
     dateColDataTypeSegment: any;
     dateTimeColDataTypeSegment: any;
     tableSegment: any;
@@ -15,11 +16,12 @@ declare class SqlQueryCtrl extends QueryCtrl {
     target: any;
     resolutions: any;
     scanner: any;
+    editMode: boolean;
+    textareaHeight: any;
+    dateTimeTypeOptions: any;
     tableLoading: boolean;
     datetimeLoading: boolean;
     dateLoading: boolean;
-    editMode: boolean;
-    textareaHeight: any;
     /** @ngInject **/
     constructor($scope: any, $injector: any, templateSrv: any, uiSegmentSrv: any);
     fakeSegment(value: any): any;
@@ -29,6 +31,7 @@ declare class SqlQueryCtrl extends QueryCtrl {
     tableChanged(): void;
     getDateColDataTypeSegments(): any;
     dateColDataTypeChanged(): void;
+    dateTimeTypeChanged(): void;
     getDateTimeColDataTypeSegments(): any;
     dateTimeColDataTypeChanged(): void;
     toggleEditorMode(): void;

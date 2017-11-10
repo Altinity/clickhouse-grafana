@@ -135,7 +135,7 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                         this.textareaHeight = "height: " + jquery_1.default(e.currentTarget).outerHeight() + "px;";
                         return;
                     }
-                    this.target.formattedQuery = this.highlight();
+                    // this.target.formattedQuery = this.highlight();
                     if (this.editMode === true) {
                         this.editMode = false;
                         this.refresh();
@@ -146,7 +146,7 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                     this.toggleEdit({}, false);
                 };
                 SqlQueryCtrl.prototype.toQueryMode = function () {
-                    this.target.formattedQuery = this.highlight();
+                    // this.target.formattedQuery = this.highlight();
                     this.toggleEditorMode();
                     this.refresh();
                 };
@@ -159,15 +159,14 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                         return this.getScanner().raw();
                     }
                 };
-                SqlQueryCtrl.prototype.highlight = function () {
-                    try {
-                        return this.getScanner().Highlight();
-                    }
-                    catch (err) {
-                        console.log("Parse error: ", err);
-                        return this.getScanner().raw();
-                    }
-                };
+                /* highlight() {
+                     try {
+                         return this.getScanner().Highlight();
+                     } catch (err) {
+                         console.log("Parse error: ", err);
+                         return this.getScanner().raw();
+                     }
+                 }*/
                 SqlQueryCtrl.prototype.getScanner = function () {
                     if (this.scanner.raw() !== this.target.query) {
                         this.scanner = new scanner_1.default(this.target.query);

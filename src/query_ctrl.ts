@@ -166,7 +166,7 @@ class SqlQueryCtrl extends QueryCtrl {
             return;
         }
 
-        this.target.formattedQuery = this.highlight();
+        // this.target.formattedQuery = this.highlight();
         if ( this.editMode === true ) {
             this.editMode = false;
             this.refresh();
@@ -179,7 +179,7 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     toQueryMode() {
-        this.target.formattedQuery = this.highlight();
+        // this.target.formattedQuery = this.highlight();
         this.toggleEditorMode();
         this.refresh();
     }
@@ -193,14 +193,14 @@ class SqlQueryCtrl extends QueryCtrl {
         }
     }
 
-    highlight() {
+   /* highlight() {
         try {
             return this.getScanner().Highlight();
         } catch (err) {
             console.log("Parse error: ", err);
             return this.getScanner().raw();
         }
-    }
+    }*/
 
     getScanner() {
         if (this.scanner.raw() !== this.target.query) {

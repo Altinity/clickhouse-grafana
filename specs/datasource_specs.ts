@@ -1,6 +1,6 @@
 import _ from 'lodash';
-import {describe, beforeEach, it, sinon, expect} from 'test/lib/common';
-import SqlSeries from './../sql_series';
+import {describe, it, expect} from './lib/common';
+import SqlSeries from '../src/sql_series';
 
 describe("clickhouse sql series:", () => {
     describe("SELECT $timeseries response", () => {
@@ -42,7 +42,7 @@ describe("clickhouse sql series:", () => {
             meta: response.meta,
             table: '',
         });
-        var timeSeries = sqlSeries.getTimeSeries();
+        var timeSeries = sqlSeries.toTimeSeries();
         it("expects two results", () => {
             expect(_.size(timeSeries)).to.be(2);
         });
@@ -93,7 +93,7 @@ describe("clickhouse sql series:", () => {
             meta: response.meta,
             table: '',
         });
-        var timeSeries = sqlSeries.getTimeSeries();
+        var timeSeries = sqlSeries.toTimeSeries();
 
         it("expects four results", () => {
             expect(_.size(timeSeries)).to.be(4);

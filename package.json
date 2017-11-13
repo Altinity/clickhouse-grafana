@@ -1,0 +1,38 @@
+{
+    "name": "vertamedia-clickhouse",
+    "version": "1.0.0",
+    "description": "ClickHouse datasource for Grafana",
+    "scripts": {
+        "build": "grunt",
+        "test": "./node_modules/karma/bin/karma start"
+    },
+    "author": "Vertamedia",
+    "license": "MIT",
+    "dependencies": {
+        "lodash": "^4.17.4",
+        "moment": "^2.18.1",
+        "q": "^1.5.0",
+        "systemjs": "^0.19.47"
+    },
+    "devDependencies": {
+        "@types/lodash": "^4.14.74",
+        "grafana-sdk-mocks": "github:grafana/grafana-sdk-mocks",
+        "grunt": "^1.0.1",
+        "grunt-contrib-clean": "^1.1.0",
+        "grunt-contrib-copy": "^1.0.0",
+        "grunt-contrib-watch": "^1.0.0",
+        "grunt-typescript": "^0.8.0",
+        "mocha": "^1.0",
+        "karma": "^1.7.0",
+        "karma-chrome-launcher": "^2.2.0",
+        "karma-expect": "^1.1.3",
+        "karma-mocha": "^1.3.0",
+        "karma-phantomjs-launcher": "^1.0.4",
+        "karma-sinon": "^1.0.5",
+        "karma-systemjs": "^0.16.0",
+        "load-grunt-tasks": "3.5.2",
+        "plugin-typescript": "^7.1.0",
+        "sinon": "^3.2.1",
+        "systemjs-plugin-css": "^0.1.35"
+    }
+}

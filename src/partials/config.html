@@ -1,0 +1,21 @@
+<datasource-http-settings current="ctrl.current" suggest-url="http://localhost:8123">
+</datasource-http-settings>
+
+<h3 class="page-heading">Additional</h3>
+
+<div class="gf-form-inline">
+    <gf-form-switch class="gf-form"
+                    ng-model='ctrl.current.jsonData.addCorsHeader'
+                    label="Add CORS flag to requests" tooltip="Whether 'add_http_cors_header=1' parameter should be attached to requests. Remember that read-only users cannot override this setting."
+                    checked="ctrl.current.jsonData.addCorsHeader" label-class="width-18" switch-class="max-width-6">
+    </gf-form-switch>
+
+</div>
+
+<div class="gf-form-inline">
+    <gf-form-switch class="gf-form"
+                    ng-model='ctrl.current.jsonData.usePOST'
+                    label="Use POST method to send queries" tooltip="Remember that it's possible to change data via POST requests. Better to avoid using POST method if you connecting not as Read-Only user."
+                    checked="ctrl.current.jsonData.usePOST" label-class="width-18" switch-class="max-width-6">
+    </gf-form-switch>
+</div>

@@ -2,22 +2,23 @@
 
 import $ from 'jquery';
 import _ from 'lodash';
-import SqlQueryBuilder from './query_builder';
 import SqlQuery from './sql_query';
 import {QueryCtrl} from 'app/plugins/sdk';
 import Scanner from './scanner';
+
+const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
 
 class SqlQueryCtrl extends QueryCtrl {
     static templateUrl = 'partials/query.editor.html';
 
     queryModel: SqlQuery;
-    queryBuilder: any;
     databaseSegment: any;
 
     dateTimeType: any;
     dateColDataTypeSegment: any;
     dateTimeColDataTypeSegment: any;
     tableSegment: any;
+    formats: any[];
 
     panel: any;
     datasource: any;
@@ -37,7 +38,6 @@ class SqlQueryCtrl extends QueryCtrl {
         super($scope, $injector);
 
         this.queryModel = new SqlQuery(this.target, templateSrv, this.panel.scopedVars);
-        this.queryBuilder = new SqlQueryBuilder(this.target);
 
         this.databaseSegment = uiSegmentSrv.newSegment(
             this.target.database || {fake: true, value: '-- database --'}
@@ -64,58 +64,25 @@ class SqlQueryCtrl extends QueryCtrl {
             {text: 'Column:TimeStamp', value: 'TIMESTAMP'},
         ];
 
+        this.formats = [
+            {text: 'Time series', value: 'time_series'},
+            {text: 'Table', value: 'table'},
+        ];
+
+        this.target.format = this.target.format || 'time_series';
         this.target.dateTimeType = this.target.dateTimeType || this.dateTimeTypeOptions[0].value;
         this.target.round = this.target.round || "0s";
         this.target.intervalFactor = this.target.intervalFactor || 1;
-        this.target.query = this.target.query || "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
+        this.target.query = this.target.query || defaultQuery;
         this.target.formattedQuery = this.target.formattedQuery || this.target.query;
         this.scanner = new Scanner(this.target.query);
+        if (this.target.query === defaultQuery) {
+            this.target.query = this.format();
+        }
     }
 
     fakeSegment(value) {
         return this.uiSegmentSrv.newSegment({fake: true, value: value});
-    }
-
-    getDatabaseSegments() {
-        return this.querySegment('DATABASES');
-    }
-
-    databaseChanged() {
-        this.target.database = this.databaseSegment.value;
-        this.applySegment(this.tableSegment, this.fakeSegment('-- table : col --'));
-        this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
-        this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
-    }
-
-    getTableSegments() {
-        var target = this.target;
-        target.tableLoading = true;
-        return this.querySegment('TABLES').then(function(response){
-            target.tableLoading = false;
-            return response;
-        });
-    }
-
-    tableChanged() {
-        this.target.table = this.tableSegment.value;
-        this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
-        this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
-
-        var self = this;
-        this.getDateColDataTypeSegments().then(function(segments) {
-            if (segments.length === 0) {
-                return;
-            }
-            self.applySegment(self.dateColDataTypeSegment, segments[0]);
-            self.dateColDataTypeChanged();
-        });
-        this.getDateTimeColDataTypeSegments().then(function(segments) {
-            if (segments.length === 0) {
-                return;
-            }
-            self.applySegment(self.dateTimeColDataTypeSegment, segments[0]);
-            self.dateTimeColDataTypeChanged();
-        });
     }
 
     getDateColDataTypeSegments() {
@@ -173,6 +140,48 @@ class SqlQueryCtrl extends QueryCtrl {
         }
     }
 
+    getDatabaseSegments() {
+        return this.querySegment('DATABASES');
+    }
+
+    databaseChanged() {
+        this.target.database = this.databaseSegment.value;
+        this.applySegment(this.tableSegment, this.fakeSegment('-- table : col --'));
+        this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
+        this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
+    }
+
+    getTableSegments() {
+        var target = this.target;
+        target.tableLoading = true;
+        return this.querySegment('TABLES').then(function(response){
+            target.tableLoading = false;
+            return response;
+        });
+    }
+
+    tableChanged() {
+        this.target.table = this.tableSegment.value;
+        this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
+        this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
+
+        var self = this;
+        this.getDateColDataTypeSegments().then(function(segments) {
+            if (segments.length === 0) {
+                return;
+            }
+            self.applySegment(self.dateColDataTypeSegment, segments[0]);
+            self.dateColDataTypeChanged();
+        });
+        this.getDateTimeColDataTypeSegments().then(function(segments) {
+            if (segments.length === 0) {
+                return;
+            }
+            self.applySegment(self.dateTimeColDataTypeSegment, segments[0]);
+            self.dateTimeColDataTypeChanged();
+        });
+    }
+
     formatQuery() {
         this.target.query = this.format();
         this.toggleEdit({}, false);
@@ -206,7 +215,6 @@ class SqlQueryCtrl extends QueryCtrl {
         if (this.scanner.raw() !== this.target.query) {
             this.scanner = new Scanner(this.target.query);
         }
-
         return this.scanner;
     }
 
@@ -216,7 +224,7 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     querySegment(type: string) {
-        var query = this.queryBuilder.buildExploreQuery(type);
+        var query = this.buildExploreQuery(type);
         return this.datasource.metricFindQuery(query)
             .then(this.uiSegmentSrv.transformToSegments(false))
             .catch(this.handleQueryError.bind(this));
@@ -228,8 +236,52 @@ class SqlQueryCtrl extends QueryCtrl {
         dst.fake = src.fake === undefined ? false : src.fake;
     }
 
-    getCollapsedText() {
-        return this.target.query;
-    }
+    buildExploreQuery(type) {
+        var query;
+        switch (type){
+            case 'TABLES':
+                query = 'SELECT name ' +
+                    'FROM system.tables ' +
+                    'WHERE database = \'' + this.target.database + '\' ' +
+                    'ORDER BY name';
+                break;
+            case 'DATE':
+                query = 'SELECT name ' +
+                    'FROM system.columns ' +
+                    'WHERE database = \'' + this.target.database + '\' AND ' +
+                    'table = \'' + this.target.table + '\' AND ' +
+                    'type = \'Date\' ' +
+                    'ORDER BY name';
+                break;
+            case 'DATETIME':
+                query = 'SELECT name ' +
+                    'FROM system.columns ' +
+                    'WHERE database = \'' + this.target.database + '\' AND ' +
+                    'table = \'' + this.target.table + '\' AND ' +
+                    'type = \'DateTime\' ' +
+                    'ORDER BY name';
+                break;
+            case 'TIMESTAMP':
+                query = 'SELECT name ' +
+                    'FROM system.columns ' +
+                    'WHERE database = \'' + this.target.database + '\' AND ' +
+                    'table = \'' + this.target.table + '\' AND ' +
+                    'type = \'UInt32\' ' +
+                    'ORDER BY name';
+                break;
+            case 'DATABASES':
+                query = 'SELECT name ' +
+                    'FROM system.databases ' +
+                    'ORDER BY name';
+                break;
+        }
+
+        return query;
+    };
+
+
+    // partial handlers
+
+
 }
 export {SqlQueryCtrl};

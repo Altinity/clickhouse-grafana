@@ -6,7 +6,9 @@ export default class SqlSeries {
     to: any;
     /** @ngInject */
     constructor(options: any);
-    getTimeSeries(): any[];
+    toTable(): any;
+    toTimeSeries(): any;
     extrapolate(datapoints: any): any;
-    _formatValue(value: any): number;
+    _toJSType(type: any): string;
+    _formatValue(value: any): any;
 }

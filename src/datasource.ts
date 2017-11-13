@@ -92,9 +92,12 @@ export class ClickHouseDatasource {
             return this._seriesQuery(query);
         });
 
+
         return this.$q.all(allQueryPromise).then((responses): any => {
-            var result = [];
+            var result = [], i = 0;
             _.each(responses, (response) => {
+                var target = options.targets[i];
+                i++;
                 if (!response || !response.rows) {
                     return;
                 }
@@ -106,9 +109,15 @@ export class ClickHouseDatasource {
                     from: SqlQuery.convertTimestamp(options.range.from),
                     to: SqlQuery.convertTimestamp(options.range.to)
                 });
-                _.each(sqlSeries.getTimeSeries(), (data) => {
-                    result.push(data);
-                });
+                if (target.format === 'table') {
+                    _.each(sqlSeries.toTable(), (data) => {
+                        result.push(data);
+                    });
+                } else {
+                    _.each(sqlSeries.toTimeSeries(), (data) => {
+                        result.push(data);
+                    });
+                }
             });
             return {data: result};
         });

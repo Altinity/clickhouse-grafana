@@ -16,7 +16,31 @@ System.register(['lodash'], function(exports_1) {
                     this.from = options.from;
                     this.to = options.to;
                 }
-                SqlSeries.prototype.getTimeSeries = function () {
+                SqlSeries.prototype.toTable = function () {
+                    var self = this, data = [];
+                    if (this.series.length === 0) {
+                        return data;
+                    }
+                    var columns = [];
+                    lodash_1.default.each(self.meta, function (col) {
+                        columns.push({ "text": col.name, "type": self._toJSType(col.type) });
+                    });
+                    var rows = [];
+                    lodash_1.default.each(self.series, function (ser) {
+                        var r = [];
+                        lodash_1.default.each(ser, function (v) {
+                            r.push(v);
+                        });
+                        rows.push(r);
+                    });
+                    data.push({
+                        "columns": columns,
+                        "rows": rows,
+                        "type": "table"
+                    });
+                    return data;
+                };
+                SqlSeries.prototype.toTimeSeries = function () {
                     var self = this, timeSeries = [];
                     if (self.series.length === 0) {
                         return timeSeries;
@@ -82,13 +106,28 @@ System.register(['lodash'], function(exports_1) {
                     return datapoints;
                 };
                 ;
+                SqlSeries.prototype._toJSType = function (type) {
+                    switch (type) {
+                        case 'UInt8':
+                        case 'UInt16':
+                        case 'UInt32':
+                        case 'UInt64':
+                        case 'Int8':
+                        case 'Int16':
+                        case 'Int32':
+                        case 'Int64':
+                            return "number";
+                        default:
+                            return "string";
+                    }
+                };
                 SqlSeries.prototype._formatValue = function (value) {
-                    var v_numeric = Number(value);
-                    if (!isNaN(value)) {
-                        return v_numeric;
+                    var numeric = Number(value);
+                    if (isNaN(numeric)) {
+                        return value;
                     }
                     else {
-                        return parseFloat(value);
+                        return numeric;
                     }
                 };
                 ;

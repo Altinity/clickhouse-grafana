@@ -18,8 +18,6 @@ export default class SqlQuery {
     this.target = target;
     this.templateSrv = templateSrv;
     this.options = options;
-
-    target.resultFormat = 'time_series';
   }
 
     replace(options?) {

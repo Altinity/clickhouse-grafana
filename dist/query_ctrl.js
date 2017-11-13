@@ -1,12 +1,12 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
-System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plugins/sdk', './scanner'], function(exports_1) {
+System.register(['jquery', 'lodash', './sql_query', 'app/plugins/sdk', './scanner'], function(exports_1) {
     var __extends = (this && this.__extends) || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
         function __() { this.constructor = d; }
         d.prototype = b === null ? Object.create(b) : (__.prototype = b.prototype, new __());
     };
-    var jquery_1, lodash_1, query_builder_1, sql_query_1, sdk_1, scanner_1;
-    var SqlQueryCtrl;
+    var jquery_1, lodash_1, sql_query_1, sdk_1, scanner_1;
+    var defaultQuery, SqlQueryCtrl;
     return {
         setters:[
             function (jquery_1_1) {
@@ -14,9 +14,6 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
             },
             function (lodash_1_1) {
                 lodash_1 = lodash_1_1;
-            },
-            function (query_builder_1_1) {
-                query_builder_1 = query_builder_1_1;
             },
             function (sql_query_1_1) {
                 sql_query_1 = sql_query_1_1;
@@ -28,6 +25,7 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                 scanner_1 = scanner_1_1;
             }],
         execute: function() {
+            defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
             SqlQueryCtrl = (function (_super) {
                 __extends(SqlQueryCtrl, _super);
                 /** @ngInject **/
@@ -35,7 +33,6 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                     _super.call(this, $scope, $injector);
                     this.uiSegmentSrv = uiSegmentSrv;
                     this.queryModel = new sql_query_1.default(this.target, templateSrv, this.panel.scopedVars);
-                    this.queryBuilder = new query_builder_1.default(this.target);
                     this.databaseSegment = uiSegmentSrv.newSegment(this.target.database || { fake: true, value: '-- database --' });
                     this.tableSegment = uiSegmentSrv.newSegment(this.target.table || { fake: true, value: '-- table --' });
                     this.dateColDataTypeSegment = uiSegmentSrv.newSegment(this.target.dateColDataType || { fake: true, value: '-- date : col --' });
@@ -47,52 +44,23 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                         { text: 'Column:DateTime', value: 'DATETIME' },
                         { text: 'Column:TimeStamp', value: 'TIMESTAMP' },
                     ];
+                    this.formats = [
+                        { text: 'Time series', value: 'time_series' },
+                        { text: 'Table', value: 'table' },
+                    ];
+                    this.target.format = this.target.format || 'time_series';
                     this.target.dateTimeType = this.target.dateTimeType || this.dateTimeTypeOptions[0].value;
                     this.target.round = this.target.round || "0s";
                     this.target.intervalFactor = this.target.intervalFactor || 1;
-                    this.target.query = this.target.query || "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
+                    this.target.query = this.target.query || defaultQuery;
                     this.target.formattedQuery = this.target.formattedQuery || this.target.query;
                     this.scanner = new scanner_1.default(this.target.query);
+                    if (this.target.query === defaultQuery) {
+                        this.target.query = this.format();
+                    }
                 }
                 SqlQueryCtrl.prototype.fakeSegment = function (value) {
                     return this.uiSegmentSrv.newSegment({ fake: true, value: value });
-                };
-                SqlQueryCtrl.prototype.getDatabaseSegments = function () {
-                    return this.querySegment('DATABASES');
-                };
-                SqlQueryCtrl.prototype.databaseChanged = function () {
-                    this.target.database = this.databaseSegment.value;
-                    this.applySegment(this.tableSegment, this.fakeSegment('-- table : col --'));
-                    this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
-                    this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
-                };
-                SqlQueryCtrl.prototype.getTableSegments = function () {
-                    var target = this.target;
-                    target.tableLoading = true;
-                    return this.querySegment('TABLES').then(function (response) {
-                        target.tableLoading = false;
-                        return response;
-                    });
-                };
-                SqlQueryCtrl.prototype.tableChanged = function () {
-                    this.target.table = this.tableSegment.value;
-                    this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
-                    this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
-                    var self = this;
-                    this.getDateColDataTypeSegments().then(function (segments) {
-                        if (segments.length === 0) {
-                            return;
-                        }
-                        self.applySegment(self.dateColDataTypeSegment, segments[0]);
-                        self.dateColDataTypeChanged();
-                    });
-                    this.getDateTimeColDataTypeSegments().then(function (segments) {
-                        if (segments.length === 0) {
-                            return;
-                        }
-                        self.applySegment(self.dateTimeColDataTypeSegment, segments[0]);
-                        self.dateTimeColDataTypeChanged();
-                    });
                 };
                 SqlQueryCtrl.prototype.getDateColDataTypeSegments = function () {
                     var target = this.target;
@@ -141,6 +109,43 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                         this.refresh();
                     }
                 };
+                SqlQueryCtrl.prototype.getDatabaseSegments = function () {
+                    return this.querySegment('DATABASES');
+                };
+                SqlQueryCtrl.prototype.databaseChanged = function () {
+                    this.target.database = this.databaseSegment.value;
+                    this.applySegment(this.tableSegment, this.fakeSegment('-- table : col --'));
+                    this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
+                    this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
+                };
+                SqlQueryCtrl.prototype.getTableSegments = function () {
+                    var target = this.target;
+                    target.tableLoading = true;
+                    return this.querySegment('TABLES').then(function (response) {
+                        target.tableLoading = false;
+                        return response;
+                    });
+                };
+                SqlQueryCtrl.prototype.tableChanged = function () {
+                    this.target.table = this.tableSegment.value;
+                    this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
+                    this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
+                    var self = this;
+                    this.getDateColDataTypeSegments().then(function (segments) {
+                        if (segments.length === 0) {
+                            return;
+                        }
+                        self.applySegment(self.dateColDataTypeSegment, segments[0]);
+                        self.dateColDataTypeChanged();
+                    });
+                    this.getDateTimeColDataTypeSegments().then(function (segments) {
+                        if (segments.length === 0) {
+                            return;
+                        }
+                        self.applySegment(self.dateTimeColDataTypeSegment, segments[0]);
+                        self.dateTimeColDataTypeChanged();
+                    });
+                };
                 SqlQueryCtrl.prototype.formatQuery = function () {
                     this.target.query = this.format();
                     this.toggleEdit({}, false);
@@ -179,7 +184,7 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                     return [];
                 };
                 SqlQueryCtrl.prototype.querySegment = function (type) {
-                    var query = this.queryBuilder.buildExploreQuery(type);
+                    var query = this.buildExploreQuery(type);
                     return this.datasource.metricFindQuery(query)
                         .then(this.uiSegmentSrv.transformToSegments(false))
                         .catch(this.handleQueryError.bind(this));
@@ -189,9 +194,48 @@ System.register(['jquery', 'lodash', './query_builder', './sql_query', 'app/plug
                     dst.html = src.html || src.value;
                     dst.fake = src.fake === undefined ? false : src.fake;
                 };
-                SqlQueryCtrl.prototype.getCollapsedText = function () {
-                    return this.target.query;
+                SqlQueryCtrl.prototype.buildExploreQuery = function (type) {
+                    var query;
+                    switch (type) {
+                        case 'TABLES':
+                            query = 'SELECT name ' +
+                                'FROM system.tables ' +
+                                'WHERE database = \'' + this.target.database + '\' ' +
+                                'ORDER BY name';
+                            break;
+                        case 'DATE':
+                            query = 'SELECT name ' +
+                                'FROM system.columns ' +
+                                'WHERE database = \'' + this.target.database + '\' AND ' +
+                                'table = \'' + this.target.table + '\' AND ' +
+                                'type = \'Date\' ' +
+                                'ORDER BY name';
+                            break;
+                        case 'DATETIME':
+                            query = 'SELECT name ' +
+                                'FROM system.columns ' +
+                                'WHERE database = \'' + this.target.database + '\' AND ' +
+                                'table = \'' + this.target.table + '\' AND ' +
+                                'type = \'DateTime\' ' +
+                                'ORDER BY name';
+                            break;
+                        case 'TIMESTAMP':
+                            query = 'SELECT name ' +
+                                'FROM system.columns ' +
+                                'WHERE database = \'' + this.target.database + '\' AND ' +
+                                'table = \'' + this.target.table + '\' AND ' +
+                                'type = \'UInt32\' ' +
+                                'ORDER BY name';
+                            break;
+                        case 'DATABASES':
+                            query = 'SELECT name ' +
+                                'FROM system.databases ' +
+                                'ORDER BY name';
+                            break;
+                    }
+                    return query;
                 };
+                ;
                 SqlQueryCtrl.templateUrl = 'partials/query.editor.html';
                 return SqlQueryCtrl;
             })(sdk_1.QueryCtrl);

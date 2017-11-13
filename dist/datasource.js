@@ -86,8 +86,10 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
                         return _this._seriesQuery(query);
                     });
                     return this.$q.all(allQueryPromise).then(function (responses) {
-                        var result = [];
+                        var result = [], i = 0;
                         lodash_1.default.each(responses, function (response) {
+                            var target = options.targets[i];
+                            i++;
                             if (!response || !response.rows) {
                                 return;
                             }
@@ -98,9 +100,16 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
                                 from: sql_query_1.default.convertTimestamp(options.range.from),
                                 to: sql_query_1.default.convertTimestamp(options.range.to)
                             });
-                            lodash_1.default.each(sqlSeries.getTimeSeries(), function (data) {
-                                result.push(data);
-                            });
+                            if (target.format === 'table') {
+                                lodash_1.default.each(sqlSeries.toTable(), function (data) {
+                                    result.push(data);
+                                });
+                            }
+                            else {
+                                lodash_1.default.each(sqlSeries.toTimeSeries(), function (data) {
+                                    result.push(data);
+                                });
+                            }
                         });
                         return { data: result };
                     });

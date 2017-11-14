@@ -15,7 +15,5 @@ export default class Scanner {
     next(): boolean;
     _next(): boolean;
     Format(): string;
-    Highlight(): string;
-    wrapWithColor(color: any): string;
     toAST(): {};
 }

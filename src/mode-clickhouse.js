@@ -26,9 +26,9 @@ ace.define("ace/mode/clickhouse_highlight_rules", ["require", "exports", "module
                 token: "comment",
                 regex: "--.*$"
             }, {
-                token: "comment",
-                start: "/\\*",
-                end: "\\*/"
+                token: "comment.block",
+                start: "```",
+                end: "```"
             }, {
                 token: "string",           // ' string
                 regex: "'.*?'"

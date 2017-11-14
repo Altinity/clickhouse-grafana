@@ -1,5 +1,5 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
-System.register(['jquery', 'lodash', './sql_query', 'app/plugins/sdk', './scanner'], function(exports_1) {
+System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', './snippets/clickhouse', './sql_query', 'app/plugins/sdk', './scanner'], function(exports_1) {
     var __extends = (this && this.__extends) || function (d, b) {
         for (var p in b) if (b.hasOwnProperty(p)) d[p] = b[p];
         function __() { this.constructor = d; }
@@ -15,6 +15,9 @@ System.register(['jquery', 'lodash', './sql_query', 'app/plugins/sdk', './scanne
             function (lodash_1_1) {
                 lodash_1 = lodash_1_1;
             },
+            function (_1) {},
+            function (_2) {},
+            function (_3) {},
             function (sql_query_1_1) {
                 sql_query_1 = sql_query_1_1;
             },

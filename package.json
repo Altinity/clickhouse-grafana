@@ -9,6 +9,9 @@
     "author": "Vertamedia",
     "license": "MIT",
     "dependencies": {
+        "babel-plugin-transform-es2015-for-of": "^6.6.0",
+        "babel-plugin-transform-es2015-modules-systemjs": "^6.24.1",
+        "babel-preset-es2015": "^6.24.1",
         "lodash": "^4.17.4",
         "moment": "^2.18.1",
         "q": "^1.5.1",
@@ -16,8 +19,9 @@
         "systemjs": "^0.19.47"
     },
     "devDependencies": {
-        "brace": "^0.10.0",
-        "ace-builds": "^1.2.5",
+        "babel": "^6.23.0",
+        "grunt-babel": "~6.0.0",
+        "grunt-systemjs-builder": "^1.0.0",
         "@types/lodash": "^4.14.83",
         "grafana-sdk-mocks": "github:grafana/grafana-sdk-mocks",
         "grunt": "^1.0.1",

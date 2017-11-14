@@ -2,6 +2,9 @@
 
 import $ from 'jquery';
 import _ from 'lodash';
+import './clickhouse-info';
+import './mode-clickhouse';
+import './snippets/clickhouse';
 import SqlQuery from './sql_query';
 import {QueryCtrl} from 'app/plugins/sdk';
 import Scanner from './scanner';

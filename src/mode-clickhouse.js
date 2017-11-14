@@ -5,7 +5,7 @@ ace.define("ace/mode/clickhouse_highlight_rules", ["require", "exports", "module
     "use strict";
 
     var oop = require("../lib/oop");
-    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;debugger
+    var TextHighlightRules = require("./text_highlight_rules").TextHighlightRules;
     var ClickhouseInfo = require("./clickhouse_info").ClickhouseInfo;
 
     var ClickHouseHighlightRules = function () {
@@ -63,7 +63,7 @@ ace.define("ace/mode/clickhouse_highlight_rules", ["require", "exports", "module
 ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "ace/token_iterator", "ace/lib/lang"], function (require, exports, module) {
     "use strict";
 
-    // var lang = require("../lib/lang");
+    var lang = require("../lib/lang");
     var ClickhouseInfo = require("./clickhouse_info").ClickhouseInfo;
 
     var keyWordsCompletions = ClickhouseInfo.Keywords.map(function (word) {
@@ -78,12 +78,49 @@ ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "
     var functionsCompletions = ClickhouseInfo.FunctionsCompletions().map(function (item) {
         return {
             caption: item.name,
-            value: item.value,
-            docHTML: item.docText,
+            value: item.name+"()",
+            docHTML: convertToHTML(item),
             meta: "function",
             score: Number.MAX_VALUE
         };
     });
+
+    function wrapText(str, len) {
+        len = len || 60;
+        var lines = [];
+        var space_index = 0;
+        var line_start = 0;
+        var next_line_end = len;
+        var line = "";
+        for (var i = 0; i < str.length; i++) {
+            if (str[i] === ' ') {
+                space_index = i;
+            } else if (i >= next_line_end  && space_index !== 0) {
+                line = str.slice(line_start, space_index);
+                lines.push(line);
+                line_start = space_index + 1;
+                next_line_end = i + len;
+                space_index = 0;
+            }
+        }
+        line = str.slice(line_start);
+        lines.push(line);
+        return lines.join("&nbsp<br>");
+    }
+
+    function convertMarkDownTags(text) {
+        text = text.replace(/```(.+)```/, "<pre>$1</pre>");
+        text = text.replace(/`([^`]+)`/, "<code>$1</code>");
+        return text;
+    }
+
+    function convertToHTML(item) {debugger
+        var docText = lang.escapeHTML(item.docText);
+        docText = convertMarkDownTags(wrapText(docText, 40));
+        return [
+            "<b>", lang.escapeHTML(item.def), "</b>", "<hr></hr>", docText, "<br>&nbsp"
+        ].join("");
+    }
 
     var ClickhouseCompletions = function () {
     };

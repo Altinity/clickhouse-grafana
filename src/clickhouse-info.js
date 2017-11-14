@@ -133,42 +133,50 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "stddevPop",
                 "def": "stddevPop(x)",
-                "docText": "The result is equal to the square root of &#39;varPop(x)&#39;."
+                "docText": "The result is equal to the square root of `varPop(x)`."
             },
             {
                 "name": "varPop",
                 "def": "varPop(x, y)",
-                "docText": "Calculates the value of %%Σ((x - x̅)(y - y̅)) / n%%."
+                "docText": "Calculates the value of `Σ((x - x̅)(y - y̅)) / n`."
             },
             {
                 "name": "argMin",
                 "def": "argMin(arg, val)",
-                "docText": "Calculates the &#39;arg&#39; value for a minimal &#39;val&#39; value. If there are several different values of &#39;arg&#39; for minimal values of &#39;val&#39;, the first of these values encountered is output."
+                "docText": "Calculates the `arg` value for a minimal `val` value. If there are several different values of `arg` for minimal values of `val`, the first of these values encountered is output."
             },
             {
                 "name": "quantileExactWeighted",
                 "def": "quantileExactWeighted(level)(x, weight)",
-                "docText": "Вычисляет квантиль уровня level точно."
+                "docText": "Computes the level quantile exactly. In this case, each value is taken into account with the weight weight - as if it is present weight once. The arguments of the function can be considered as histograms, where the value \"x\" corresponds to the \"column\" of the histogram of the height weight, and the function itself can be considered as the summation of histograms.\n" +
+                "\n" +
+                "The algorithm is a hash table. Because of this, in case the transmitted values ​​are often repeated, the function consumes less RAM than the quantileExact. You can use this function instead of quantileExact, specifying the number 1 as the weight."
             },
             {
                 "name": "min",
                 "def": "min(v)",
-                "docText": "Minimal execution speed in rows per second. Checked on every data block when &#39;timeout_before_checking_execution_speed&#39; expires. If the execution speed is lower, an exception is thrown."
+                "docText": "Minimal execution speed in rows per second. Checked on every data block when `timeout_before_checking_execution_speed` expires. If the execution speed is lower, an exception is thrown."
             },
             {
                 "name": "varSamp",
-                "def": "varSamp(x, y)",
-                "docText": "Calculates the value of %%Σ((x - x̅)(y - y̅)) / (n - 1)%%. <br>  <br> Returns Float64. If n &lt;= 1, it returns +∞."
+                "def": "varSamp(x)",
+                "docText": "Calculates the amount Σ((x - x̅)2) / (n - 1), where 'n' is the sample size and 'x̅' is the average value of 'x'.\n" +
+                "\n" +
+                "It represents an unbiased estimate of the variance of a random variable, if the values passed to the function are a sample of this random amount.\n" +
+                "\n" +
+                "Returns Float64. If n <= 1, it returns +∞."
             },
             {
                 "name": "anyLast",
                 "def": "anyLast(x)",
-                "docText": "Selects the last value encountered. <br> The result is just as indeterminate as for the &#39;any&#39; function."
+                "docText": "Selects the last value encountered. \n" +
+                "\n" +
+                " The result is just as indeterminate as for the `any` function."
             },
             {
                 "name": "argMax",
                 "def": "argMax(arg, val)",
-                "docText": "Calculates the &#39;arg&#39; value for a maximum &#39;val&#39; value. If there are several different values of &#39;arg&#39; for maximum values of &#39;val&#39;, the first of these values encountered is output."
+                "docText": "Calculates the `arg` value for a maximum `val` value. If there are several different values of `arg` for maximum values of `val`, the first of these values encountered is output."
             },
             {
                 "name": "count",
@@ -178,42 +186,57 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "any",
                 "def": "any(x)",
-                "docText": "Selects the last value encountered. <br> The result is just as indeterminate as for the &#39;any&#39; function."
+                "docText": "Selects the last value encountered. \n" +
+                "\n" +
+                " The result is just as indeterminate as for the `any` function."
             },
             {
                 "name": "avg",
                 "def": "avg(x)",
-                "docText": "Calculates the average. <br> Only works for numbers. <br> The result is always Float64."
+                "docText": "Calculates the average. \n" +
+                "\n" +
+                " Only works for numbers. \n" +
+                "\n" +
+                " The result is always Float64."
             },
             {
                 "name": "sequenceMatch",
                 "def": "sequenceMatch(pattern)(time, cond1, cond2, ...)",
-                "docText": "Pattern matching for event chains. <br>  <br> &#39;pattern&#39; is a string containing a pattern to match."
+                "docText": "Pattern matching for event chains.\n" +
+                "\n" +
+                "'pattern' is a string containing a pattern to match. The pattern is similar to a regular expression. 'time' is the event time of the DateTime type. 'cond1, cond2 ...' are from one to 32 arguments of the UInt8 type that indicate whether an event condition was met.\n" +
+                "\n" +
+                "The function collects a sequence of events in RAM. Then it checks whether this sequence matches the pattern. It returns UInt8 - 0 if the pattern isn't matched, or 1 if it matches.\n" +
+                "\n" +
+                "Example: sequenceMatch('(?1).*(?2)')(EventTime, URL LIKE '%company%', URL LIKE '%cart%') - whether there was a chain of events in which pages with the address in company were visited earlier than pages with the address in cart."
             },
             {
                 "name": "stddevSamp",
                 "def": "stddevSamp(x)",
-                "docText": "The result is equal to the square root of &#39;varSamp(x)&#39;."
+                "docText": "The result is equal to the square root of `varSamp(x)`."
             },
             {
                 "name": "medianDeterministic",
                 "def": "medianDeterministic(x, determinator)",
-                "docText": "This function works similarly to the &#39;median&#39; function - it approximates the median."
+                "docText": "This function works similarly to the `median` function - it approximates the median."
             },
             {
                 "name": "quantilesTimingWeighted",
                 "def": "quantilesTimingWeighted(level1, level2, ...)(x, weight)",
-                "docText": "Calculates the quantiles of all specified levels using the same algorithm as the &#39;medianTimingWeighted&#39; function."
+                "docText": "Calculates the quantiles of all specified levels using the same algorithm as the `medianTimingWeighted` function."
             },
             {
                 "name": "uniq",
                 "def": "uniq(N)(x)",
-                "docText": "Calculates the number of different argument values, if it is less than or equal to N. <br> If the number of different argument values is greater than N, it returns N + 1."
+                "docText": "Calculates the number of different argument values, if it is less than or equal to N. \n" +
+                "\n" +
+                " If the number of different argument values is greater than N, it returns N + 1."
             },
             {
                 "name": "covarSamp",
                 "def": "covarSamp(x, y)",
-                "docText": "Calculates the value of %%Σ((x - x̅)(y - y̅)) / (n - 1)%%. <br>  <br> Returns Float64. If n &lt;= 1, it returns +∞."
+                "docText": "Calculates the value of `Σ((x - x̅)(y - y̅)) / (n - 1)`. " +
+                "Returns Float64. If n <= 1, it returns +∞."
             },
             {
                 "name": "max",
@@ -228,47 +251,55 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "quantilesTiming",
                 "def": "quantilesTiming(level1, level2, ...)(x, weight)",
-                "docText": "Calculates the quantiles of all specified levels using the same algorithm as the &#39;medianTimingWeighted&#39; function."
+                "docText": "Calculates the quantiles of all specified levels using the same algorithm as the `medianTimingWeighted` function."
             },
             {
                 "name": "quantiles",
                 "def": "quantiles(level1, level2, ...)(x, determinator)",
-                "docText": "Calculates the quantiles of all specified levels using the same algorithm as the &#39;medianDeterministic&#39; function."
+                "docText": "Calculates the quantiles of all specified levels using the same algorithm as the `medianDeterministic` function."
             },
             {
                 "name": "quantile",
                 "def": "quantile(level1, level2, ...)(x, determinator)",
-                "docText": "Calculates the quantiles of all specified levels using the same algorithm as the &#39;medianDeterministic&#39; function."
+                "docText": "Calculates the quantiles of all specified levels using the same algorithm as the `medianDeterministic` function."
             },
             {
                 "name": "groupArray",
                 "def": "groupArray(x)",
-                "docText": "Creates an array of argument values. <br> Values can be added to the array in any (indeterminate) order. <br>  <br> In some cases, you can rely on the order of execution. This applies to cases when SELECT comes from a subquery that uses ORDER BY."
+                "docText": "Creates an array of argument values. \n" +
+                "\n" +
+                " Values can be added to the array in any (indeterminate) order. \n" +
+                "\n" +
+                " In some cases, you can rely on the order of execution. This applies to cases when SELECT comes from a subquery that uses ORDER BY."
             },
             {
                 "name": "sum",
                 "def": "sum(x)",
-                "docText": "Calculates the sum. <br> Only works for numbers."
+                "docText": "Calculates the sum. \n" +
+                "\n" +
+                " Only works for numbers."
             },
             {
                 "name": "median",
                 "def": "median(x, weight)",
-                "docText": "Differs from the &#39;medianTiming&#39; function in that it has a second argument - &quot;weights&quot;. Weight is a non-negative integer. <br> The result is calculated as if the &#39;x&#39; value were passed &#39;weight&#39; number of times to the &#39;medianTiming&#39; function."
+                "docText": "Differs from the `medianTiming` function in that it has a second argument - `weights`. Weight is a non-negative integer. \n" +
+                "\n" +
+                " The result is calculated as if the `x` value were passed `weight` number of times to the `medianTiming` function."
             },
             {
                 "name": "quantileTiming",
                 "def": "quantileTiming(level)(x, weight)",
-                "docText": "Calculates the quantile of &#39;level&#39; using the same algorithm as the &#39;medianTimingWeighted&#39; function."
+                "docText": "Calculates the quantile of `level` using the same algorithm as the `medianTimingWeighted` function."
             },
             {
                 "name": "quantileTimingWeighted",
                 "def": "quantileTimingWeighted(level)(x, weight)",
-                "docText": "Calculates the quantile of &#39;level&#39; using the same algorithm as the &#39;medianTimingWeighted&#39; function."
+                "docText": "Calculates the quantile of `level` using the same algorithm as the `medianTimingWeighted` function."
             },
             {
                 "name": "groupUniqArray",
                 "def": "groupUniqArray(x)",
-                "docText": "Creates an array from different argument values. Memory consumption is the same as for the &#39;uniqExact&#39; function."
+                "docText": "Creates an array from different argument values. Memory consumption is the same as for the `uniqExact` function."
             },
             {
                 "name": "uniqHLL12",
@@ -278,7 +309,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "covarPop",
                 "def": "covarPop(x, y)",
-                "docText": "Calculates the value of %%Σ((x - x̅)(y - y̅)) / n%%."
+                "docText": "Calculates the value of `Σ((x - x̅)(y - y̅)) / n`."
             },
             {
                 "name": "sequenceCount",
@@ -288,7 +319,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "quantileDeterministic",
                 "def": "quantileDeterministic(level)(x, determinator)",
-                "docText": "Calculates the quantile of &#39;level&#39; using the same algorithm as the &#39;medianDeterministic&#39; function."
+                "docText": "Calculates the quantile of `level` using the same algorithm as the `medianDeterministic` function."
             },
             {
                 "name": "quantileExact",
@@ -298,22 +329,26 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "quantilesDeterministic",
                 "def": "quantilesDeterministic(level1, level2, ...)(x, determinator)",
-                "docText": "Calculates the quantiles of all specified levels using the same algorithm as the &#39;medianDeterministic&#39; function."
+                "docText": "Calculates the quantiles of all specified levels using the same algorithm as the `medianDeterministic` function."
             },
             {
                 "name": "medianTiming",
                 "def": "medianTiming(x, weight)",
-                "docText": "Differs from the &#39;medianTiming&#39; function in that it has a second argument - &quot;weights&quot;."
+                "docText": "Differs from the `medianTiming` function in that it has a second argument - `weights`."
             },
             {
                 "name": "medianTimingWeighted",
                 "def": "medianTimingWeighted(x, weight)",
-                "docText": "Differs from the &#39;medianTiming&#39; function in that it has a second argument - &quot;weights&quot;."
+                "docText": "Differs from the `medianTiming` function in that it has a second argument - `weights`."
             },
             {
                 "name": "uniqExact",
                 "def": "uniqExact(x)",
-                "docText": "Calculates the number of different values of the argument, exactly. <br> There is no reason to fear approximations, so it&#39;s better to use the &#39;uniq&#39; function. <br> You should use the &#39;uniqExact&#39; function if you definitely need an exact result. "
+                "docText": "Calculates the number of different values of the argument, exactly. \n" +
+                "\n" +
+                " There is no reason to fear approximations, so it`s better to use the `uniq` function. \n" +
+                "\n" +
+                " You should use the `uniqExact` function if you definitely need an exact result. "
             },
             {
                 "name": "uniqCombined",
@@ -323,17 +358,19 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "uniqUpTo",
                 "def": "uniqUpTo(N)(x)",
-                "docText": "Calculates the number of different argument values, if it is less than or equal to N. <br> If the number of different argument values is greater than N, it returns N + 1."
+                "docText": "Calculates the number of different argument values, if it is less than or equal to N. \n" +
+                "\n" +
+                " If the number of different argument values is greater than N, it returns N + 1."
             },
             {
                 "name": "substring",
                 "def": "substring(s, offset, length)",
-                "docText": "The same as &#39;substring&#39;, but for Unicode code points. Works under the assumption that the string contains a set of bytes representing a UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn&#39;t throw an exception)."
+                "docText": "The same as `substring`, but for Unicode code points. Works under the assumption that the string contains a set of bytes representing a UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception)."
             },
             {
                 "name": "notLike",
                 "def": "notLike(haystack, pattern), haystack NOT LIKE pattern operator",
-                "docText": "The same thing as &#39;like&#39;, but negative."
+                "docText": "The same thing as `like`, but negative."
             },
             {
                 "name": "hostName",
@@ -343,72 +380,79 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "globalNotIn",
                 "def": "globalNotIn(v)",
-                "docText": "See the section &quot;IN operators&quot;."
+                "docText": "See the section `IN operators`."
             },
             {
                 "name": "or",
                 "def": "or(v)",
-                "docText": "The same thing as &#39;max_temporary_columns&#39;, but without counting constant columns. <br> Note that constant columns are formed fairly often when running a query, but they require approximately zero computing resources."
+                "docText": "The same thing as `max_temporary_columns`, but without counting constant columns. \n" +
+                "\n" +
+                " Note that constant columns are formed fairly often when running a query, but they require approximately zero computing resources."
             },
             {
                 "name": "extractAll",
                 "def": "extractAll(haystack, pattern)",
-                "docText": "Extracts all the fragments of a string using a regular expression. If &#39;haystack&#39; doesn&#39;t match the &#39;pattern&#39; regex, an empty string is returned. Returns an array of strings consisting of all matches to the regex."
+                "docText": "Extracts all the fragments of a string using a regular expression. If `haystack` doesn`t match the `pattern` regex, an empty string is returned. Returns an array of strings consisting of all matches to the regex."
             },
             {
                 "name": "arrayFirst",
                 "def": "arrayFirst(func, arr1, ...)",
-                "docText": "Returns the index of the first element in the &#39;arr1&#39; array for which &#39;func&#39; returns something other than 0."
-            },
-            {
-                "name": "notEquals",
-                "def": "notEquals(v)",
-                "docText": ""
+                "docText": "Returns the index of the first element in the `arr1` array for which `func` returns something other than 0."
             },
             {
                 "name": "arrayExists",
                 "def": "arrayExists([func,] arr1, ...)",
-                "docText": "Returns 1 if there is at least one element in &#39;arr&#39; for which &#39;func&#39; returns something other than 0. Otherwise, it returns 0."
+                "docText": "Returns 1 if there is at least one element in `arr` for which `func` returns something other than 0. Otherwise, it returns 0."
             },
             {
                 "name": "arrayCount",
                 "def": "arrayCount([func,] arr1, ...)",
-                "docText": "Returns the number of elements in &#39;arr&#39; for which &#39;func&#39; returns something other than 0. If &#39;func&#39; is not specified, it returns the number of non-zero items in the array."
+                "docText": "Returns the number of elements in `arr` for which `func` returns something other than 0. If `func` is not specified, it returns the number of non-zero items in the array."
             },
             {
                 "name": "arrayMap",
                 "def": "arrayMap(func, arr1, ...)",
-                "docText": "Returns an array obtained from the original application of the &#39;func&#39; function to each element in the &#39;arr&#39; array."
+                "docText": "Returns an array obtained from the original application of the `func` function to each element in the `arr` array."
             },
             {
                 "name": "now",
                 "def": "now(v)",
-                "docText": "If the parameter is true, INSERT operation will skip columns with unknown names from input. <br> Otherwise, an exception will be generated, it is default behavior. <br> The parameter works only for JSONEachRow and TSKV input formats."
+                "docText": "If the parameter is true, INSERT operation will skip columns with unknown names from input. \n" +
+                "\n" +
+                " Otherwise, an exception will be generated, it is default behavior. \n" +
+                "\n" +
+                " The parameter works only for JSONEachRow and TSKV input formats."
             },
             {
                 "name": "intDiv",
                 "def": "intDiv(a, b)",
-                "docText": "Differs from &#39;intDiv&#39; in that it returns zero when dividing by zero or when dividing a minimal negative number by minus one."
+                "docText": "Differs from `intDiv` in that it returns zero when dividing by zero or when dividing a minimal negative number by minus one."
             },
             {
                 "name": "topLevelDomain",
                 "def": "topLevelDomain(v)",
-                "docText": "- Selects the top-level domain. Example: .ru."
+                "docText": "Selects the top-level domain. Example: .ru."
             },
             {
                 "name": "intHash32",
                 "def": "intHash32(v)",
-                "docText": "Calculates a 32-bit hash code from any type of integer. <br> This is a relatively fast non-cryptographic hash function of average quality for numbers."
+                "docText": "Calculates a 32-bit hash code from any type of integer. \n" +
+                "\n" +
+                " This is a relatively fast non-cryptographic hash function of average quality for numbers."
             },
             {
                 "name": "replaceOne",
                 "def": "replaceOne(haystack, pattern, replacement)",
-                "docText": "Replaces the first occurrence, if it exists, of the &#39;pattern&#39; substring in &#39;haystack&#39; with the &#39;replacement&#39; substring. <br> Hereafter, &#39;pattern&#39; and &#39;replacement&#39; must be constants."
+                "docText": "Replaces the first occurrence, if it exists, of the `pattern` substring in `haystack` with the `replacement` substring. \n" +
+                "\n" +
+                " Hereafter, `pattern` and `replacement` must be constants."
             },
             {
                 "name": "cityHash64",
                 "def": "cityHash64(v)",
-                "docText": "Calculates CityHash64 from a string or a similar hash function for any number of any type of arguments. <br> For String-type arguments, CityHash is used. This is a fast non-cryptographic hash function for strings with decent quality"
+                "docText": "Calculates CityHash64 from a string or a similar hash function for any number of any type of arguments. \n" +
+                "\n" +
+                " For String-type arguments, CityHash is used. This is a fast non-cryptographic hash function for strings with decent quality"
             },
             {
                 "name": "OSToRoot",
@@ -418,7 +462,11 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "sipHash128",
                 "def": "sipHash128(v)",
-                "docText": "Calculates SipHash from a string. <br> Accepts a String-type argument. Returns FixedString(16). <br> Differs from sipHash64 in that the final xor-folding state is only done up to 128 bits."
+                "docText": "Calculates SipHash from a string. \n" +
+                "\n" +
+                " Accepts a String-type argument. Returns FixedString(16). \n" +
+                "\n" +
+                " Differs from sipHash64 in that the final xor-folding state is only done up to 128 bits."
             },
             {
                 "name": "SHA1",
@@ -448,12 +496,12 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "array",
                 "def": "array(v)",
-                "docText": "The -%%Array%% suffix can be appended to any aggregate function. In this case, the aggregate function takes arguments of the &#39;Array(T)&#39; type (arrays) instead of &#39;T&#39; type arguments. If the aggregate function accepts multiple arguments, this must be arrays of equal lengths. "
+                "docText": "The -`Array` suffix can be appended to any aggregate function. In this case, the aggregate function takes arguments of the `Array(T)` type (arrays) instead of `T` type arguments. If the aggregate function accepts multiple arguments, this must be arrays of equal lengths. "
             },
             {
                 "name": "dictGetStringOrDefault",
                 "def": "dictGetStringOrDefault(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "greaterOrEquals",
@@ -463,22 +511,28 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "e",
                 "def": "e(v)",
-                "docText": "What to do when the amount of data exceeds one of the limits: &#39;throw&#39; or &#39;break&#39;. By default, throw."
+                "docText": "What to do when the amount of data exceeds one of the limits: `throw` or `break`. By default, throw."
             },
             {
                 "name": "runningDifference",
                 "def": "runningDifference(x)",
-                "docText": "Calculates the difference between consecutive values in the data block. <br> Result of the function depends on the order of the data in the blocks. <br>  <br> It works only inside of the each processed block of data. Data splitting in the blocks is not explicitly controlled by the user. "
+                "docText": "Calculates the difference between consecutive values in the data block. \n" +
+                "\n" +
+                " Result of the function depends on the order of the data in the blocks. \n" +
+                "\n" + 
+                " It works only inside of the each processed block of data. Data splitting in the blocks is not explicitly controlled by the user. "
             },
             {
                 "name": "not",
                 "def": "not(v)",
-                "docText": "See the section &quot;IN operators&quot;."
+                "docText": "See the section `IN operators`."
             },
             {
                 "name": "intHash64",
                 "def": "intHash64(v)",
-                "docText": "Calculates a 64-bit hash code from any type of integer. <br> It works faster than intHash32. Average quality."
+                "docText": "Calculates a 64-bit hash code from any type of integer. \n" +
+                "\n" +
+                " It works faster than intHash32. Average quality."
             },
             {
                 "name": "acos",
@@ -493,42 +547,44 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "and",
                 "def": "and(x, determinator)",
-                "docText": "This function works similarly to the &#39;median&#39; function - it approximates the median. However, in contrast to &#39;median&#39;, the result is deterministic and does not depend on the order of query execution. <br>  <br> To achieve this, the function takes a second argument - the &quot;determinator&quot;. "
+                "docText": "This function works similarly to the `median` function - it approximates the median. However, in contrast to `median`, the result is deterministic and does not depend on the order of query execution. \n" +
+                "\n" + 
+                " To achieve this, the function takes a second argument - the `determinator`. "
             },
             {
                 "name": "dictGetDate",
                 "def": "dictGetDate(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "dictGetFloat32",
                 "def": "dictGetFloat32(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "dictGetInt8",
                 "def": "dictGetInt8(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "dictGetUInt32",
                 "def": "dictGetUInt32(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "OSIn",
                 "def": "OSIn(lhs, rhs)",
-                "docText": "Checks whether the &#39;lhs&#39; operating system belongs to the &#39;rhs&#39; operating system."
+                "docText": "Checks whether the `lhs` operating system belongs to the `rhs` operating system."
             },
             {
                 "name": "arrayFirstIndex",
                 "def": "arrayFirstIndex(func, arr1, ...)",
-                "docText": "Returns the index of the first element in the &#39;arr1&#39; array for which &#39;func&#39; returns something other than 0."
+                "docText": "Returns the index of the first element in the `arr1` array for which `func` returns something other than 0."
             },
             {
                 "name": "ceil",
                 "def": "ceil(x[, N])",
-                "docText": "Returns the smallest round number that is greater than or equal to &#39;x&#39;. In every other way, it is the same as the &#39;floor&#39; function (see above)."
+                "docText": "Returns the smallest round number that is greater than or equal to `x`. In every other way, it is the same as the `floor` function (see above)."
             },
             {
                 "name": "fragment",
@@ -538,17 +594,17 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "dictGetUInt8",
                 "def": "dictGetUInt8(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "dictHas",
                 "def": "dictHas(v)",
-                "docText": ""
+                "docText": "dictHas('dict_name', id) check the presence of a key in the dictionary. Returns a value of type UInt8, equal to 0, if there is no key and 1 if there is a key."
             },
             {
                 "name": "arraySum",
                 "def": "arraySum([func,] arr1, ...)",
-                "docText": "Returns the sum of the &#39;func&#39; values. If the function is omitted, it just returns the sum of the array elements."
+                "docText": "Returns the sum of the `func` values. If the function is omitted, it just returns the sum of the array elements."
             },
             {
                 "name": "emptyArrayDateTime",
@@ -558,22 +614,24 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "intDivOrZero",
                 "def": "intDivOrZero(a, b)",
-                "docText": "Differs from &#39;intDiv&#39; in that it returns zero when dividing by zero or when dividing a minimal negative number by minus one."
+                "docText": "Differs from `intDiv` in that it returns zero when dividing by zero or when dividing a minimal negative number by minus one."
             },
             {
                 "name": "SEHierarchy",
                 "def": "SEHierarchy(v)",
-                "docText": "Accepts a UInt8 number - the ID of the search engine from the Yandex.Metrica dictionary. Returns an array with a hierarchy of search engines. Similar to the &#39;regionHierarchy&#39; function."
+                "docText": "Accepts a UInt8 number - the ID of the search engine from the Yandex.Metrica dictionary. Returns an array with a hierarchy of search engines. Similar to the `regionHierarchy` function."
             },
             {
                 "name": "regionToContinent",
                 "def": "regionToContinent(id[, geobase])",
-                "docText": "Converts a region to a continent. In every other way, this function is the same as &#39;regionToCity&#39;. <br> Example: %%regionToContinent(toUInt32(213)) = 10001%% converts Moscow (213) to Eurasia (10001)."
+                "docText": "Converts a region to a continent. In every other way, this function is the same as `regionToCity`. \n" +
+                "\n" +
+                " Example: `regionToContinent(toUInt32(213)) = 10001` converts Moscow (213) to Eurasia (10001)."
             },
             {
                 "name": "dictGetInt32",
                 "def": "dictGetInt32(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "toInt8",
@@ -583,17 +641,21 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "materialize",
                 "def": "materialize(x)",
-                "docText": "Turns a constant into a full column containing just one value. <br> In ClickHouse, full columns and constants are represented differently in memory. Functions work differently for constant arguments and normal arguments (different code is executed), although the result is almost always the same. This function is for debugging this behavior."
+                "docText": "Turns a constant into a full column containing just one value. \n" +
+                "\n" +
+                " In ClickHouse, full columns and constants are represented differently in memory. Functions work differently for constant arguments and normal arguments (different code is executed), although the result is almost always the same. This function is for debugging this behavior."
             },
             {
                 "name": "regionToCountry",
                 "def": "regionToCountry(id[, geobase])",
-                "docText": "Converts a region to a country. In every other way, this function is the same as &#39;regionToCity&#39;. <br> Example: %%regionToCountry(toUInt32(213)) = 225%% converts Moscow (213) to Russia (225)."
+                "docText": "Converts a region to a country. In every other way, this function is the same as `regionToCity`. \n" +
+                "\n" +
+                " Example: `regionToCountry(toUInt32(213)) = 225` converts Moscow (213) to Russia (225)."
             },
             {
                 "name": "dictGetDateTime",
                 "def": "dictGetDateTime(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "xor",
@@ -608,12 +670,12 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "dictGetFloat64",
                 "def": "dictGetFloat64(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "timeSlot",
                 "def": "timeSlot(StartTime, Duration)",
-                "docText": "For a time interval starting at &#39;StartTime&#39; and continuing for &#39;Duration&#39; seconds, it returns an array of moments in time, consisting of points from this interval rounded down to the half hour."
+                "docText": "For a time interval starting at `StartTime` and continuing for `Duration` seconds, it returns an array of moments in time, consisting of points from this interval rounded down to the half hour."
             },
             {
                 "name": "toTime",
@@ -648,7 +710,9 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "currentDatabase",
                 "def": "currentDatabase()",
-                "docText": "Returns the name of the current database. <br> You can use this function in table engine parameters in a CREATE TABLE query where you need to specify the database."
+                "docText": "Returns the name of the current database. \n" +
+                "\n" +
+                " You can use this function in table engine parameters in a CREATE TABLE query where you need to specify the database."
             },
             {
                 "name": "toRelativeMonthNum",
@@ -683,7 +747,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "toStartOfFiveMinute",
                 "def": "toStartOfFiveMinute(v)",
-                "docText": ""
+                "docText": "Rounds down a date with time to the start of the 5 minute (00:00, 00:05, 00:10...)."
             },
             {
                 "name": "toUInt16OrZero",
@@ -693,7 +757,9 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "toMonday",
                 "def": "toMonday(v)",
-                "docText": "Rounds down a date or date with time to the nearest Monday. <br> Returns the date."
+                "docText": "Rounds down a date or date with time to the nearest Monday. \n" +
+                "\n" +
+                " Returns the date."
             },
             {
                 "name": "IPv6NumToString",
@@ -703,12 +769,14 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "indexOf",
                 "def": "indexOf(arr, x)",
-                "docText": "Returns the index of the &#39;x&#39; element (starting from 1) if it is in the array, or 0 if it is not."
+                "docText": "Returns the index of the `x` element (starting from 1) if it is in the array, or 0 if it is not."
             },
             {
                 "name": "today",
                 "def": "today(v)",
-                "docText": "Accepts zero arguments and returns the current date at one of the moments of request execution. <br> The same as &#39;toDate(now())&#39;."
+                "docText": "Accepts zero arguments and returns the current date at one of the moments of request execution. \n" +
+                "\n" +
+                " The same as `toDate(now())`."
             },
             {
                 "name": "emptyArrayToSingle",
@@ -718,7 +786,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "sleep",
                 "def": "sleep(seconds)",
-                "docText": "Sleeps &#39;seconds&#39; seconds on each data block. You can specify an integer or a floating-point number."
+                "docText": "Sleeps `seconds` seconds on each data block. You can specify an integer or a floating-point number."
             },
             {
                 "name": "extract",
@@ -733,17 +801,21 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "regionToName",
                 "def": "regionToName(id[, lang])",
-                "docText": "Accepts a UInt32 number - the region ID from the Yandex geobase. A string with the name of the language can be passed as a second argument. Supported languages are: ru, en, ua, uk, by, kz, tr. If the second argument is omitted, the language &#39;ru&#39; is used. "
+                "docText": "Accepts a UInt32 number - the region ID from the Yandex geobase. A string with the name of the language can be passed as a second argument. Supported languages are: ru, en, ua, uk, by, kz, tr. If the second argument is omitted, the language `ru` is used. "
             },
             {
                 "name": "concat",
                 "def": "concat(arr[, separator])",
-                "docText": "Concatenates strings from the array elements, using &#39;separator&#39; as the separator. <br> &#39;separator&#39; is a string constant, an optional parameter. By default it is an empty string. <br> Returns a string."
+                "docText": "Concatenates strings from the array elements, using `separator` as the separator. \n" +
+                "\n" +
+                " `separator` is a string constant, an optional parameter. By default it is an empty string. \n" +
+                "\n" +
+                " Returns a string."
             },
             {
                 "name": "convertCharset",
                 "def": "convertCharset(s, from, to)",
-                "docText": "Returns a string with the data %%s%% (encoded as %%from%% charset) that was converted to the %%to%% charset."
+                "docText": "Returns a string with the data `s` (encoded as `from` charset) that was converted to the `to` charset."
             },
             {
                 "name": "toMonth",
@@ -753,7 +825,9 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "IPv6StringToNum",
                 "def": "IPv6StringToNum(s)",
-                "docText": "The reverse function of IPv6NumToString. If the IPv6 address has an invalid format, it returns a string of null bytes. <br> HEX can be uppercase or lowercase."
+                "docText": "The reverse function of IPv6NumToString. If the IPv6 address has an invalid format, it returns a string of null bytes. \n" +
+                "\n" +
+                " HEX can be uppercase or lowercase."
             },
             {
                 "name": "emptyArrayString",
@@ -768,7 +842,9 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "blockSize",
                 "def": "blockSize()",
-                "docText": "Gets the size of the block. <br> In ClickHouse, queries are always run on blocks (sets of column parts). This function allows getting the size of the block that you called it for."
+                "docText": "Gets the size of the block. \n" +
+                "\n" +
+                " In ClickHouse, queries are always run on blocks (sets of column parts). This function allows getting the size of the block that you called it for."
             },
             {
                 "name": "toInt64OrZero",
@@ -778,7 +854,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "pathFull",
                 "def": "pathFull(v)",
-                "docText": "- The same as above, but including query-string and fragment. Example: /top/news.html?page=2#comments"
+                "docText": "Selects the path, but including query-string and fragment. Example: /top/news.html?page=2#comments"
             },
             {
                 "name": "emptyArrayDate",
@@ -828,7 +904,19 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "formatReadableSize",
                 "def": "formatReadableSize(x)",
-                "docText": "Gets a size (number of bytes). Returns a string that contains rounded size with the suffix (KiB, MiB etc.). <br>  <br> Example: <br>  <br> %% "
+                "docText": "Gets a size (number of bytes). Returns a string that contains rounded size with the suffix (KiB, MiB etc.).\n" +
+                "\n" +
+                "Example:\n" +
+                "\n" +
+                "SELECT\n" +
+                "    arrayJoin([1, 1024, 1024*1024, 192851925]) AS f_bytes,\n" +
+                "    formatReadableSize(filesize_bytes) AS filesize\n" +
+                "┌─f_bytes-─┬─filesize───┐\n" +
+                "│        1 │ 1.00 B     │\n" +
+                "│     1024 │ 1.00 KiB   │\n" +
+                "│  1048576 │ 1.00 MiB   │\n" +
+                "│192851925 │ 183.92 MiB │\n" +
+                "└──────────┴────────────┘\n"
             },
             {
                 "name": "toInt16OrZero",
@@ -843,27 +931,41 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "protocol",
                 "def": "protocol(v)",
-                "docText": "- Selects the protocol. Examples: http, ftp, mailto, magnet..."
+                "docText": "Selects the protocol. Examples: http, ftp, mailto, magnet..."
             },
             {
                 "name": "regionToPopulation",
                 "def": "regionToPopulation(id[, geobase])",
-                "docText": "Gets the population for a region. <br> The population can be recorded in files with the geobase. See the section &quot;External dictionaries&quot;. <br> If the population is not recorded for the region, it returns 0. <br> In the Yandex geobase, the population might be recorded for child regions, but not for parent regions."
+                "docText": "Gets the population for a region. \n" +
+                "\n" +
+                " The population can be recorded in files with the geobase. See the section `External dictionaries`. \n" +
+                "\n" +
+                " If the population is not recorded for the region, it returns 0. \n" +
+                "\n" +
+                " In the Yandex geobase, the population might be recorded for child regions, but not for parent regions."
             },
             {
                 "name": "notIn",
                 "def": "notIn(v)",
-                "docText": "See the section &quot;IN operators&quot;."
+                "docText": "See the section `IN operators`."
             },
             {
                 "name": "position",
                 "def": "position(haystack, needle)",
-                "docText": "The same as &#39;position&#39;, but the position is returned in Unicode code points. Works under the assumption that the string contains a set of bytes representing a UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn&#39;t throw an exception). <br> There's also positionCaseInsensitiveUTF8 function."
+                "docText": "The same as `position`, but the position is returned in Unicode code points. Works under the assumption that the string contains a set of bytes representing a UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception). \n" +
+                "\n" +
+                " There's also positionCaseInsensitiveUTF8 function."
             },
             {
                 "name": "arrayElement",
                 "def": "arrayElement(arr, n), arr[n] operator",
-                "docText": "Get the element with the index &#39;n&#39; from the array &#39;arr&#39;. <br> &#39;n&#39; should be any integer type. <br> Indexes in an array begin from one. <br> Negative indexes are supported - in this case, it selects the corresponding element numbered from the end. "
+                "docText": "Get the element with the index `n` from the array `arr`. \n" +
+                "\n" +
+                " `n` should be any integer type. \n" +
+                "\n" +
+                " Indexes in an array begin from one. \n" +
+                "\n" +
+                " Negative indexes are supported - in this case, it selects the corresponding element numbered from the end. "
             },
             {
                 "name": "toStringCutToZero",
@@ -878,17 +980,21 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "SEIn",
                 "def": "SEIn(lhs, rhs)",
-                "docText": "Checks whether the &#39;lhs&#39; search engine belongs to the &#39;rhs&#39; search engine."
+                "docText": "Checks whether the `lhs` search engine belongs to the `rhs` search engine."
             },
             {
                 "name": "replicate",
                 "def": "replicate(v)",
-                "docText": "Create a MergeTree table with a different name. Move all the data from the directory with the ReplicatedMergeTree table data to the new table&#39;s data directory."
+                "docText": "Create a MergeTree table with a different name. Move all the data from the directory with the ReplicatedMergeTree table data to the new table`s data directory."
             },
             {
                 "name": "sipHash64",
                 "def": "sipHash64(v)",
-                "docText": "Calculates SipHash from a string. <br> Accepts a String-type argument. Returns UInt64. <br> SipHash is a cryptographic hash function. It works at least three times faster than MD5. For more information, see <a href=\"https://131002.net/siphash/\">https://131002.net/siphash/</a>"
+                "docText": "Calculates SipHash from a string. \n" +
+                "\n" +
+                " Accepts a String-type argument. Returns UInt64. \n" +
+                "\n" +
+                " SipHash is a cryptographic hash function. It works at least three times faster than MD5. For more information, see <a href=\"https://131002.net/siphash/\">https://131002.net/siphash/</a>"
             },
             {
                 "name": "emptyArrayUInt16",
@@ -898,32 +1004,42 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "hex",
                 "def": "hex(str)",
-                "docText": "Accepts a string containing any number of hexadecimal digits, and returns a string containing the corresponding bytes. Supports both uppercase and lowercase letters A-F. The number of hexadecimal digits doesn&#39;t have to be even."
+                "docText": "Accepts a string containing any number of hexadecimal digits, and returns a string containing the corresponding bytes. Supports both uppercase and lowercase letters A-F. The number of hexadecimal digits doesn`t have to be even."
             },
             {
                 "name": "regionToDistrict",
                 "def": "regionToDistrict(id[, geobase])",
-                "docText": "Converts a region to a federal district (type 4 in the geobase). In every other way, this function is the same as &#39;regionToCity&#39;. "
+                "docText": "Converts a region to a federal district (type 4 in the geobase). In every other way, this function is the same as `regionToCity`. "
             },
             {
                 "name": "arrayFilter",
                 "def": "arrayFilter(func, arr1, ...)",
-                "docText": "Returns an array containing only the elements in &#39;arr1&#39; for which &#39;func&#39; returns something other than 0. <br>  <br> Examples: <br>  <br> %% <br> SELECT arrayFilter(x -> x LIKE &#39;%World%&#39;, [&#39;Hello&#39;, &#39;abc World&#39;]) AS res "
+                "docText": "Returns an array containing only the elements in `arr1` for which `func` returns something other than 0. \n" +
+                "\n" + 
+                " Examples: \n" +
+                "\n" +
+                " SELECT arrayFilter(x -> x LIKE `%World%`, [`Hello`, `abc World`]) AS res "
             },
             {
                 "name": "toStartOfQuarter",
                 "def": "toStartOfQuarter(v)",
-                "docText": "Rounds down a date or date with time to the first day of the quarter. <br> The first day of the quarter is either 1 January, 1 April, 1 July, or 1 October. Returns the date."
+                "docText": "Rounds down a date or date with time to the first day of the quarter. \n" +
+                "\n" +
+                " The first day of the quarter is either 1 January, 1 April, 1 July, or 1 October. Returns the date."
             },
             {
                 "name": "divide",
                 "def": "divide(a, b), a / b operator",
-                "docText": "Calculates the quotient of the numbers. The result type is always a floating-point type. <br> It is not integer division. For integer division, use the &#39;intDiv&#39; function. <br> When dividing by zero you get &#39;inf&#39;, &#39;-inf&#39;, or &#39;nan&#39;."
+                "docText": "Calculates the quotient of the numbers. The result type is always a floating-point type. \n" +
+                "\n" +
+                " It is not integer division. For integer division, use the `intDiv` function. \n" +
+                "\n" +
+                " When dividing by zero you get `inf`, `-inf`, or `nan`."
             },
             {
                 "name": "reverseUTF8",
                 "def": "reverseUTF8(v)",
-                "docText": "Reverses a sequence of Unicode code points, assuming that the string contains a set of bytes representing a UTF-8 text. Otherwise, it does something else (it doesn&#39;t throw an exception)."
+                "docText": "Reverses a sequence of Unicode code points, assuming that the string contains a set of bytes representing a UTF-8 text. Otherwise, it does something else (it doesn`t throw an exception)."
             },
             {
                 "name": "toDate",
@@ -938,12 +1054,14 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "abs",
                 "def": "abs(s, c)",
-                "docText": "If the %%s%% string is non-empty and does not contain the %%c%% character at the end, it appends the %%c%% character to the end."
+                "docText": "If the `s` string is non-empty and does not contain the `c` character at the end, it appends the `c` character to the end."
             },
             {
                 "name": "yesterday",
                 "def": "yesterday(v)",
-                "docText": "Accepts zero arguments and returns yesterday&#39;s date at one of the moments of request execution. <br> The same as &#39;today() - 1&#39;."
+                "docText": "Accepts zero arguments and returns yesterday`s date at one of the moments of request execution. \n" +
+                "\n" +
+                " The same as `today() - 1`."
             },
             {
                 "name": "toMinute",
@@ -958,7 +1076,9 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "minus",
                 "def": "minus(a, b), a - b operator",
-                "docText": "Calculates the difference. The result is always signed. <br>  <br> You can also calculate whole numbers from a date or date with time. The idea is the same - see above for &#39;plus&#39;."
+                "docText": "Calculates the difference. The result is always signed. \n" +
+                "\n" + 
+                " You can also calculate whole numbers from a date or date with time. The idea is the same - see above for `plus`."
             },
             {
                 "name": "toDateTime",
@@ -968,7 +1088,11 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "modulo",
                 "def": "modulo(a, b), a % b operator",
-                "docText": "Calculates the remainder after division. <br> If arguments are floating-point numbers, they are pre-converted to integers by dropping the decimal portion. The remainder is taken in the same sense as in C++. Truncated division is used for negative numbers. <br> An exception is thrown when dividing by zero or when dividing a minimal negative number by minus one."
+                "docText": "Calculates the remainder after division. \n" +
+                "\n" +
+                " If arguments are floating-point numbers, they are pre-converted to integers by dropping the decimal portion. The remainder is taken in the same sense as in C++. Truncated division is used for negative numbers. \n" +
+                "\n" +
+                " An exception is thrown when dividing by zero or when dividing a minimal negative number by minus one."
             },
             {
                 "name": "bitmaskToArray",
@@ -988,12 +1112,14 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "range",
                 "def": "range(N)",
-                "docText": "Returns an array of numbers from 0 to N-1. <br> Just in case, an exception is thrown if arrays with a total length of more than 100,000,000 elements are created in a data block."
+                "docText": "Returns an array of numbers from 0 to N-1. \n" +
+                "\n" +
+                " Just in case, an exception is thrown if arrays with a total length of more than 100,000,000 elements are created in a data block."
             },
             {
                 "name": "arrayAll",
                 "def": "arrayAll([func,] arr1, ...)",
-                "docText": "Returns 1 if &#39;func&#39; returns something other than 0 for all the elements in &#39;arr&#39;. Otherwise, it returns 0."
+                "docText": "Returns 1 if `func` returns something other than 0 for all the elements in `arr`. Otherwise, it returns 0."
             },
             {
                 "name": "toInt32",
@@ -1003,7 +1129,9 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "unhex",
                 "def": "unhex(str)",
-                "docText": "Accepts a string containing any number of hexadecimal digits, and returns a string containing the corresponding bytes. Supports both uppercase and lowercase letters A-F. The number of hexadecimal digits doesn&#39;t have to be even. If it is odd, the last digit is interpreted as the younger half of the 00-0F byte. If the argument string contains anything other than hexadecimal digits, some implementation-defined result is returned (an exception isn&#39;t thrown). <br> If you want to convert the result to a number, you can use the functions &#39;reverse&#39; and &#39;reinterpretAs<i>Type</i>&#39;."
+                "docText": "Accepts a string containing any number of hexadecimal digits, and returns a string containing the corresponding bytes. Supports both uppercase and lowercase letters A-F. The number of hexadecimal digits doesn`t have to be even. If it is odd, the last digit is interpreted as the younger half of the 00-0F byte. If the argument string contains anything other than hexadecimal digits, some implementation-defined result is returned (an exception isn`t thrown). \n" +
+                "\n" +
+                " If you want to convert the result to a number, you can use the functions `reverse` and `reinterpretAsType`."
             },
             {
                 "name": "toFloat64",
@@ -1018,7 +1146,9 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "toStartOfYear",
                 "def": "toStartOfYear(v)",
-                "docText": "Rounds down a date or date with time to the first day of the year. <br> Returns the date."
+                "docText": "Rounds down a date or date with time to the first day of the year. \n" +
+                "\n" +
+                " Returns the date."
             },
             {
                 "name": "bitOr",
@@ -1058,7 +1188,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "visitParamExtractUInt",
                 "def": "visitParamExtractUInt(params, name)",
-                "docText": "Parses UInt64 from the value of the field named &#39;name&#39;. If this is a string field, it tries to parse a number from the beginning of the string. If the field doesn&#39;t exist, or it exists but doesn&#39;t contain a number, it returns 0."
+                "docText": "Parses UInt64 from the value of the field named `name`. If this is a string field, it tries to parse a number from the beginning of the string. If the field doesn`t exist, or it exists but doesn`t contain a number, it returns 0."
             },
             {
                 "name": "toTypeName",
@@ -1078,7 +1208,11 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "has",
                 "def": "has('database', 'table', 'column')",
-                "docText": "Accepts constant String columns - database name, table name and column name. Returns constant UInt8 value, equal to 1 if column exists, <br> otherwise 0. <br> If table doesn't exist than exception is thrown. <br> For elements of nested data structure function checks existence of column. For nested data structure 0 is returned."
+                "docText": "Accepts constant String columns - database name, table name and column name. Returns constant UInt8 value, equal to 1 if column exists, otherwise 0.\n" +
+                "\n" +
+                " If table doesn't exist than exception is thrown. \n" +
+                "\n" +
+                " For elements of nested data structure function checks existence of column. For nested data structure 0 is returned."
             },
             {
                 "name": "bitNot",
@@ -1088,17 +1222,17 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "lessOrEquals",
                 "def": "lessOrEquals(v)",
-                "docText": "<h3>greaterOrEquals, >= operator</h3>"
+                "docText": "greaterOrEquals, >= operator"
             },
             {
                 "name": "reinterpretAsInt64",
                 "def": "reinterpretAsInt64(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "IPv4NumToString",
                 "def": "IPv4NumToString(num)",
-                "docText": "Similar to IPv4NumToString, but using %%xxx%% instead of the last octet. "
+                "docText": "Similar to IPv4NumToString, but using `xxx` instead of the last octet. "
             },
             {
                 "name": "bitShiftLeft",
@@ -1108,7 +1242,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "dictGetInt16",
                 "def": "dictGetInt16(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "toUInt32OrZero",
@@ -1118,22 +1252,28 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "regionIn",
                 "def": "regionIn(lhs, rhs[, geobase])",
-                "docText": "Checks whether a &#39;lhs&#39; region belongs to a &#39;rhs&#39; region. Returns a UInt8 number equal to 1 if it belongs, or 0 if it doesn&#39;t belong. <br> The relationship is reflexive - any region also belongs to itself."
+                "docText": "Checks whether a `lhs` region belongs to a `rhs` region. Returns a UInt8 number equal to 1 if it belongs, or 0 if it doesn`t belong. \n" +
+                "\n" +
+                " The relationship is reflexive - any region also belongs to itself."
             },
             {
                 "name": "reinterpretAsUInt8",
                 "def": "reinterpretAsUInt8(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "dictIsIn",
                 "def": "dictIsIn(v)",
-                "docText": "%%dictIsIn(&#39;dict_name&#39;, child_id, ancestor_id)%% <br> - For the &#39;dict_name&#39; hierarchical dictionary, finds out whether the &#39;child_id&#39; key is located inside &#39;ancestor_id&#39; (or matches &#39;ancestor_id&#39;). Returns UInt8."
+                "docText": "`dictIsIn(`dict_name`, child_id, ancestor_id)` \n" +
+                "\n" +
+                " - For the `dict_name` hierarchical dictionary, finds out whether the `child_id` key is located inside `ancestor_id` (or matches `ancestor_id`). Returns UInt8."
             },
             {
                 "name": "toSecond",
                 "def": "toSecond(v)",
-                "docText": "Converts a date with time to a UInt8 number containing the number of the second in the minute (0-59). <br> Leap seconds are not accounted for."
+                "docText": "Converts a date with time to a UInt8 number containing the number of the second in the minute (0-59). \n" +
+                "\n" +
+                " Leap seconds are not accounted for."
             },
             {
                 "name": "least",
@@ -1143,7 +1283,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "countEqual",
                 "def": "countEqual(arr, x)",
-                "docText": "Returns the number of elements in the array equal to &#39;x&#39;. Equivalent to <span class=\"inline-example\">arrayCount(elem -> elem = x, arr)</span>."
+                "docText": "Returns the number of elements in the array equal to `x`. Equivalent to <span class=\"inline-example\">arrayCount(elem -> elem = x, arr)</span>."
             },
             {
                 "name": "IPv4StringToNum",
@@ -1158,12 +1298,16 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "SHA224",
                 "def": "SHA224(v)",
-                "docText": "Calculates SHA-1, SHA-224, or SHA-256 from a string and returns the resulting set of bytes as FixedString(20), FixedString(28), or FixedString(32). <br> The function works fairly slowly (SHA-1 processes about 5 million short strings per second per processor core, while SHA-224 and SHA-256 process about 2.2 million). "
+                "docText": "Calculates SHA-1, SHA-224, or SHA-256 from a string and returns the resulting set of bytes as FixedString(20), FixedString(28), or FixedString(32). \n" +
+                "\n" +
+                " The function works fairly slowly (SHA-1 processes about 5 million short strings per second per processor core, while SHA-224 and SHA-256 process about 2.2 million). "
             },
             {
                 "name": "URLHash",
                 "def": "URLHash(url[, N])",
-                "docText": "A fast, decent-quality non-cryptographic hash function for a string obtained from a URL using some type of normalization. <br> URLHash(s) - Calculates a hash from a string without one of the trailing symbols /,? or # at the end, if present"
+                "docText": "A fast, decent-quality non-cryptographic hash function for a string obtained from a URL using some type of normalization. \n" +
+                "\n" +
+                " URLHash(s) - Calculates a hash from a string without one of the trailing symbols /,? or # at the end, if present"
             },
             {
                 "name": "equals",
@@ -1173,7 +1317,9 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "plus",
                 "def": "plus(a, b), a + b operator",
-                "docText": "Calculates the sum of the numbers. <br>  <br> You can also add whole numbers with a date or date and time. In the case of a date, adding a whole number means adding the corresponding number of days. For a date with time, it means adding the corresponding number of seconds."
+                "docText": "Calculates the sum of the numbers. \n" +
+                "\n" + 
+                " You can also add whole numbers with a date or date and time. In the case of a date, adding a whole number means adding the corresponding number of days. For a date with time, it means adding the corresponding number of seconds."
             },
             {
                 "name": "less",
@@ -1183,7 +1329,9 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "regionHierarchy",
                 "def": "regionHierarchy(id[, geobase])",
-                "docText": "Accepts a UInt32 number - the region ID from the Yandex geobase. Returns an array of region IDs consisting of the passed region and all parents along the chain. <br> Example: %%regionHierarchy(toUInt32(213)) = [213,1,3,225,10001,10000]%%."
+                "docText": "Accepts a UInt32 number - the region ID from the Yandex geobase. Returns an array of region IDs consisting of the passed region and all parents along the chain. \n" +
+                "\n" +
+                " Example: `regionHierarchy(toUInt32(213)) = [213,1,3,225,10001,10000]`."
             },
             {
                 "name": "toUInt64OrZero",
@@ -1203,22 +1351,24 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "bar",
                 "def": "bar(v)",
-                "docText": "Allows building a unicode-art diagram. <br>  <br> bar(x, min, max, width) - Draws a band with a width proportional to (x - min) and equal to &#39;width&#39; characters when x"
+                "docText": "Allows building a unicode-art diagram. \n" +
+                "\n" + 
+                " bar(x, min, max, width) - Draws a band with a width proportional to (x - min) and equal to `width` characters when x"
             },
             {
                 "name": "if",
                 "def": "if(v)",
-                "docText": "The suffix -%%If%% can be appended to the name of any aggregate function. In this case, the aggregate function accepts an extra argument - a condition (Uint8 type). "
+                "docText": "The suffix -`If` can be appended to the name of any aggregate function. In this case, the aggregate function accepts an extra argument - a condition (Uint8 type). "
             },
             {
                 "name": "regionToArea",
                 "def": "regionToArea(id[, geobase])",
-                "docText": "Converts a region to an area (type 5 in the geobase). In every other way, this function is the same as &#39;regionToCity&#39;.──────────────────────────────────"
+                "docText": "Converts a region to an area (type 5 in the geobase). In every other way, this function is the same as `regionToCity`."
             },
             {
                 "name": "dictGetUInt16",
                 "def": "dictGetUInt16(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "toUInt8",
@@ -1243,7 +1393,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "OSHierarchy",
                 "def": "OSHierarchy(v)",
-                "docText": "Accepts a UInt8 number - the ID of the operating system from the Yandex.Metrica dictionary. Returns an array with a hierarchy of operating systems. Similar to the &#39;regionHierarchy&#39; function."
+                "docText": "Accepts a UInt8 number - the ID of the operating system from the Yandex.Metrica dictionary. Returns an array with a hierarchy of operating systems. Similar to the `regionHierarchy` function."
             },
             {
                 "name": "cutQueryStringAndFragment",
@@ -1253,7 +1403,11 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "timeSlots",
                 "def": "timeSlots(StartTime, Duration)",
-                "docText": "For a time interval starting at &#39;StartTime&#39; and continuing for &#39;Duration&#39; seconds, it returns an array of moments in time, consisting of points from this interval rounded down to the half hour. <br> For example, %%timeSlots(toDateTime(&#39;2012-01-01 12:20:00&#39;), toUInt32(600)) = [toDateTime(&#39;2012-01-01 12:00:00&#39;), toDateTime(&#39;2012-01-01 12:30:00&#39;)]%%. <br> This is necessary for searching for pageviews in the corresponding session."
+                "docText": "For a time interval starting at `StartTime` and continuing for `Duration` seconds, it returns an array of moments in time, consisting of points from this interval rounded down to the half hour. \n" +
+                "\n" +
+                " For example, `timeSlots(toDateTime(`2012-01-01 12:20:00`), toUInt32(600)) = [toDateTime(`2012-01-01 12:00:00`), toDateTime(`2012-01-01 12:30:00`)]`. \n" +
+                "\n" +
+                " This is necessary for searching for pageviews in the corresponding session."
             },
             {
                 "name": "toUInt32",
@@ -1283,7 +1437,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "reinterpretAsInt16",
                 "def": "reinterpretAsInt16(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "toInt64",
@@ -1303,17 +1457,21 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "dictGetHierarchy",
                 "def": "dictGetHierarchy(v)",
-                "docText": "%%dictGetHierarchy(&#39;dict_name&#39;, id)%% <br> - For the &#39;dict_name&#39; hierarchical dictionary, returns an array of dictionary keys starting from &#39;id&#39; and continuing along the chain of parent elements. Returns Array(UInt64)."
+                "docText": "`dictGetHierarchy(`dict_name`, id)` \n" +
+                "\n" +
+                " - For the `dict_name` hierarchical dictionary, returns an array of dictionary keys starting from `id` and continuing along the chain of parent elements. Returns Array(UInt64)."
             },
             {
                 "name": "dictGetInt64",
                 "def": "dictGetInt64(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "CAST",
                 "def": "CAST(x, t)",
-                "docText": "Casts <i>x</i> to the <i>t</i> data type. <br> The syntax %%CAST(x AS t)%% is also supported. <br>  "
+                "docText": "Casts `x` to the `t` data type. \n" +
+                "\n" +
+                " The syntax `CAST(x AS t)` is also supported. \n"
             },
             {
                 "name": "toRelativeSecondNum",
@@ -1328,12 +1486,16 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "toStartOfMonth",
                 "def": "toStartOfMonth(v)",
-                "docText": "Rounds down a date or date with time to the first day of the month. <br> Returns the date."
+                "docText": "Rounds down a date or date with time to the first day of the month. \n" +
+                "\n" +
+                " Returns the date."
             },
             {
                 "name": "rand64",
                 "def": "rand64(v)",
-                "docText": "Returns a pseudo-random UInt64 number, evenly distributed among all UInt64-type numbers. <br> Uses a linear congruential generator."
+                "docText": "Returns a pseudo-random UInt64 number, evenly distributed among all UInt64-type numbers. \n" +
+                "\n" +
+                " Uses a linear congruential generator."
             },
             {
                 "name": "toInt8OrZero",
@@ -1363,7 +1525,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "arrayEnumerate",
                 "def": "arrayEnumerate(arr, ...)",
-                "docText": "Returns an array the same size as the source array, indicating for each element what its position is among elements with the same value. <br>"
+                "docText": "Returns an array the same size as the source array, indicating for each element what its position is among elements with the same value."
             },
             {
                 "name": "toDayOfMonth",
@@ -1373,12 +1535,12 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "dictGetUInt64",
                 "def": "dictGetUInt64(v)",
-                "docText": ""
+                "docText": "dictGetT('dict_name', 'attr_name', id) Gets the value of the 'attr_name' attribute from the 'dict_name' dictionary by the 'id' key. 'dict_name' and 'attr_name' are constant strings. 'id' must be UInt64. If the 'id' key is not in the dictionary, it returns the default value set in the dictionary definition."
             },
             {
                 "name": "IPv4NumToStringClassC",
                 "def": "IPv4NumToStringClassC(num)",
-                "docText": "Similar to IPv4NumToString, but using %%xxx%% instead of the last octet. "
+                "docText": "Similar to IPv4NumToString, but using `xxx` instead of the last octet. "
             },
             {
                 "name": "reinterpretAsString",
@@ -1388,27 +1550,45 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "toHour",
                 "def": "toHour(v)",
-                "docText": "Converts a date with time to a UInt8 number containing the number of the hour in 24-hour time (0-23). <br> This function assumes that if clocks are moved ahead, it is by one hour and occurs at 2 a.m., and if clocks are moved back, it is by one hour and occurs at 3 a.m. (which is not always true - even in Moscow the clocks were once changed at a different time)."
+                "docText": "Converts a date with time to a UInt8 number containing the number of the hour in 24-hour time (0-23). \n" +
+                "\n" +
+                " This function assumes that if clocks are moved ahead, it is by one hour and occurs at 2 a.m., and if clocks are moved back, it is by one hour and occurs at 3 a.m. (which is not always true - even in Moscow the clocks were once changed at a different time)."
             },
             {
                 "name": "ignore",
                 "def": "ignore(...)",
-                "docText": "A function that accepts any arguments and always returns 0. <br> However, the argument is still calculated. This can be used for benchmarks."
+                "docText": "A function that accepts any arguments and always returns 0. \n" +
+                "\n" +
+                " However, the argument is still calculated. This can be used for benchmarks."
             },
             {
                 "name": "arrayJoin",
                 "def": "arrayJoin(v)",
-                "docText": "This is a very unusual function. <br>  <br> Normal functions don&#39;t change a set of rows, but just change the values in each row (map). Aggregate functions compress a set of rows (fold or reduce). <br> The &#39;arrayJoin&#39; function takes each row and generates a set of rows (unfold). <br>  <br> T"
+                "docText": "This is a very unusual function.\n" +
+                "\n" +
+                "Normal functions don't change a set of rows, but just change the values in each row (map). Aggregate functions compress a set of rows (fold or reduce). The 'arrayJoin' function takes each row and generates a set of rows (unfold).\n" +
+                "\n" +
+                "This function takes an array as an argument, and propagates the source row to multiple rows for the number of elements in the array. All the values in columns are simply copied, except the values in the column where this function is applied - it is replaced with the corresponding array value.\n" +
+                "\n" +
+                "A query can use multiple 'arrayJoin' functions. In this case, the transformation is performed multiple times.\n" +
+                "\n" +
+                "Note the ARRAY JOIN syntax in the SELECT query, which provides broader possibilities."
             },
             {
                 "name": "length",
                 "def": "length(v)",
-                "docText": "Returns the length of a string in Unicode code points (not in characters), assuming that the string contains a set of bytes that make up UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn&#39;t throw an exception). <br> The result type is UInt64."
+                "docText": "Returns the length of a string in Unicode code points (not in characters), assuming that the string contains a set of bytes that make up UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception). \n" +
+                "\n" +
+                " The result type is UInt64."
             },
             {
                 "name": "tuple",
                 "def": "tuple(tuple, n), operator x.N",
-                "docText": "A function that allows getting columns from a tuple. <br> &#39;N&#39; is the column index, starting from 1. &#39;N&#39; must be a constant. &#39;N&#39; must be a strict postive integer no greater than the size of the tuple. <br> There is no cost to execute the function."
+                "docText": "A function that allows getting columns from a tuple. \n" +
+                "\n" +
+                " `N` is the column index, starting from 1. `N` must be a constant. `N` must be a strict postive integer no greater than the size of the tuple. \n" +
+                "\n" +
+                " There is no cost to execute the function."
             },
             {
                 "name": "extractURLParameterNames",
@@ -1418,17 +1598,21 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "tupleElement",
                 "def": "tupleElement(tuple, n), operator x.N",
-                "docText": "A function that allows getting columns from a tuple. <br> &#39;N&#39; is the column index, starting from 1. &#39;N&#39; must be a constant. &#39;N&#39; must be a strict postive integer no greater than the size of the tuple. <br> There is no cost to execute the function."
+                "docText": "A function that allows getting columns from a tuple. \n" +
+                "\n" +
+                " `N` is the column index, starting from 1. `N` must be a constant. `N` must be a strict postive integer no greater than the size of the tuple. \n" +
+                "\n" +
+                " There is no cost to execute the function."
             },
             {
                 "name": "in",
                 "def": "in(v)",
-                "docText": "What to do when the amount of data exceeds one of the limits: &#39;throw&#39; or &#39;break&#39;. By default, throw."
+                "docText": "What to do when the amount of data exceeds one of the limits: `throw` or `break`. By default, throw."
             },
             {
                 "name": "globalIn",
                 "def": "globalIn(v)",
-                "docText": "See the section &quot;IN operators&quot;."
+                "docText": "See the section `IN operators`."
             },
             {
                 "name": "isFinite",
@@ -1443,22 +1627,30 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "isInfinite",
                 "def": "isInfinite(x)",
-                "docText": "Accepts Float32 and Float64 and returns UInt8 equal to 1 if the argument is infinite, otherwise 0. <br> Note that 0 is returned for a NaN."
+                "docText": "Accepts Float32 and Float64 and returns UInt8 equal to 1 if the argument is infinite, otherwise 0. \n" +
+                "\n" +
+                " Note that 0 is returned for a NaN."
             },
             {
                 "name": "transform",
                 "def": "transform(v)",
-                "docText": "Transforms a value according to the explicitly defined mapping of some elements to other ones. <br> There are two variations of this function: <br>  <br> 1. %%transform(x, array_from, array_to, default)%% "
+                "docText": "Transforms a value according to the explicitly defined mapping of some elements to other ones. \n" +
+                "\n" +
+                " There are two variations of this function: \n" +
+                "\n" + 
+                " 1. `transform(x, array_from, array_to, default)` "
             },
             {
                 "name": "rand",
                 "def": "rand(v)",
-                "docText": "Returns a pseudo-random UInt64 number, evenly distributed among all UInt64-type numbers. <br> Uses a linear congruential generator."
+                "docText": "Returns a pseudo-random UInt64 number, evenly distributed among all UInt64-type numbers. \n" +
+                "\n" +
+                " Uses a linear congruential generator."
             },
             {
                 "name": "reinterpretAsUInt16",
                 "def": "reinterpretAsUInt16(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "pi",
@@ -1468,47 +1660,47 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "reinterpretAsUInt32",
                 "def": "reinterpretAsUInt32(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "reinterpretAsUInt64",
                 "def": "reinterpretAsUInt64(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "reinterpretAsInt8",
                 "def": "reinterpretAsInt8(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "upperUTF8",
                 "def": "upperUTF8(v)",
-                "docText": "Converts a string to uppercase, assuming the string contains a set of bytes that make up a UTF-8 encoded text. It doesn&#39;t detect the language. So for Turkish the result might not be exactly correct. "
+                "docText": "Converts a string to uppercase, assuming the string contains a set of bytes that make up a UTF-8 encoded text. It doesn`t detect the language. So for Turkish the result might not be exactly correct. "
             },
             {
                 "name": "reinterpretAsInt32",
                 "def": "reinterpretAsInt32(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "reinterpretAsFloat32",
                 "def": "reinterpretAsFloat32(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "reinterpretAsFloat64",
                 "def": "reinterpretAsFloat64(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "reinterpretAsDate",
                 "def": "reinterpretAsDate(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "reinterpretAsDateTime",
                 "def": "reinterpretAsDateTime(v)",
-                "docText": ""
+                "docText": "Functions accept a string and interpret the bytes placed at the beginning of the string as a number in host order (little endian). If the string isn't long enough, the functions work as if the string is padded with the necessary number of null bytes. If the string is longer than needed, the extra bytes are ignored. A date is interpreted as the number of days since the beginning of the Unix Epoch, and a date with time is interpreted as the number of seconds since the beginning of the Unix Epoch."
             },
             {
                 "name": "roundToExp2",
@@ -1518,12 +1710,14 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "upper",
                 "def": "upper(v)",
-                "docText": "Converts a string to uppercase, assuming the string contains a set of bytes that make up a UTF-8 encoded text. It doesn&#39;t detect the language. So for Turkish the result might not be exactly correct."
+                "docText": "Converts a string to uppercase, assuming the string contains a set of bytes that make up a UTF-8 encoded text. It doesn`t detect the language. So for Turkish the result might not be exactly correct."
             },
             {
                 "name": "positionUTF8",
                 "def": "positionUTF8(haystack, needle)",
-                "docText": "The same as &#39;position&#39;, but the position is returned in Unicode code points. Works under the assumption that the string contains a set of bytes representing a UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn&#39;t throw an exception). <br> There's also positionCaseInsensitiveUTF8 function."
+                "docText": "The same as `position`, but the position is returned in Unicode code points. Works under the assumption that the string contains a set of bytes representing a UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception). \n" +
+                "\n" +
+                " There's also positionCaseInsensitiveUTF8 function."
             },
             {
                 "name": "roundDuration",
@@ -1543,32 +1737,38 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "floor",
                 "def": "floor(x[, N])",
-                "docText": "Returns a rounder number that is less than or equal to &#39;x&#39;."
+                "docText": "Returns a rounder number that is less than or equal to `x`."
             },
             {
                 "name": "notEmpty",
                 "def": "notEmpty(v)",
-                "docText": "Returns 0 for an empty array, or 1 for a non-empty array. <br> The result type is UInt8. <br> The function also works for strings."
+                "docText": "Returns 0 for an empty array, or 1 for a non-empty array. \n" +
+                "\n" +
+                " The result type is UInt8. \n" +
+                "\n" +
+                " The function also works for strings."
             },
             {
                 "name": "lengthUTF8",
                 "def": "lengthUTF8(v)",
-                "docText": "Returns the length of a string in Unicode code points (not in characters), assuming that the string contains a set of bytes that make up UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn&#39;t throw an exception). <br> The result type is UInt64."
+                "docText": "Returns the length of a string in Unicode code points (not in characters), assuming that the string contains a set of bytes that make up UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception). \n" +
+                "\n" +
+                " The result type is UInt64."
             },
             {
                 "name": "lower",
                 "def": "lower(v)",
-                "docText": "Converts a string to lowercase, assuming the string contains a set of bytes that make up a UTF-8 encoded text. It doesn&#39;t detect the language.  "
+                "docText": "Converts a string to lowercase, assuming the string contains a set of bytes that make up a UTF-8 encoded text. It doesn`t detect the language.  "
             },
             {
                 "name": "lowerUTF8",
                 "def": "lowerUTF8(v)",
-                "docText": "Converts a string to lowercase, assuming the string contains a set of bytes that make up a UTF-8 encoded text. It doesn&#39;t detect the language. "
+                "docText": "Converts a string to lowercase, assuming the string contains a set of bytes that make up a UTF-8 encoded text. It doesn`t detect the language. "
             },
             {
                 "name": "reverse",
                 "def": "reverse(v)",
-                "docText": "Reverses a sequence of Unicode code points, assuming that the string contains a set of bytes representing a UTF-8 text. Otherwise, it does something else (it doesn&#39;t throw an exception)."
+                "docText": "Reverses a sequence of Unicode code points, assuming that the string contains a set of bytes representing a UTF-8 text. Otherwise, it does something else (it doesn`t throw an exception)."
             },
             {
                 "name": "URLPathHierarchy",
@@ -1578,37 +1778,49 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "substringUTF8",
                 "def": "substringUTF8(s, offset, length)",
-                "docText": "The same as &#39;substring&#39;, but for Unicode code points. Works under the assumption that the string contains a set of bytes representing a UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn&#39;t throw an exception)."
+                "docText": "The same as `substring`, but for Unicode code points. Works under the assumption that the string contains a set of bytes representing a UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception)."
             },
             {
                 "name": "appendTrailingCharIfAbsent",
                 "def": "appendTrailingCharIfAbsent(s, c)",
-                "docText": "If the %%s%% string is non-empty and does not contain the %%c%% character at the end, it appends the %%c%% character to the end."
+                "docText": "If the `s` string is non-empty and does not contain the `c` character at the end, it appends the `c` character to the end."
             },
             {
                 "name": "alphaTokens",
                 "def": "alphaTokens(s)",
-                "docText": "Selects substrings of consecutive bytes from the range a-z and A-Z. <br> Returns an array of selected substrings."
+                "docText": "Selects substrings of consecutive bytes from the range a-z and A-Z. \n" +
+                "\n" +
+                " Returns an array of selected substrings."
             },
             {
                 "name": "splitByChar",
                 "def": "splitByChar(separator, s)",
-                "docText": "Splits a string into substrings, using &#39;separator&#39; as the separator. <br> &#39;separator&#39; must be a string constant consisting of exactly one character. <br> Returns an array of selected substrings"
+                "docText": "Splits a string into substrings, using `separator` as the separator. \n" +
+                "\n" +
+                " `separator` must be a string constant consisting of exactly one character. \n" +
+                "\n" +
+                " Returns an array of selected substrings"
             },
             {
                 "name": "arrayStringConcat",
                 "def": "arrayStringConcat(arr[, separator])",
-                "docText": "Concatenates strings from the array elements, using &#39;separator&#39; as the separator. <br> &#39;separator&#39; is a string constant, an optional parameter. By default it is an empty string. <br> Returns a string."
+                "docText": "Concatenates strings from the array elements, using `separator` as the separator. \n" +
+                "\n" +
+                " `separator` is a string constant, an optional parameter. By default it is an empty string. \n" +
+                "\n" +
+                " Returns a string."
             },
             {
                 "name": "replaceAll",
                 "def": "replaceAll(haystack, pattern, replacement)",
-                "docText": "Replaces all occurrences of the &#39;pattern&#39; substring in &#39;haystack&#39; with the &#39;replacement&#39; substring."
+                "docText": "Replaces all occurrences of the `pattern` substring in `haystack` with the `replacement` substring."
             },
             {
                 "name": "replaceRegexpOne",
                 "def": "replaceRegexpOne(haystack, pattern, replacement)",
-                "docText": "Replacement using the &#39;pattern&#39; regular expression. A re2 regular expression. Replaces only the first occurrence, if it exists. <br> A pattern can be specified as &#39;replacement&#39;. "
+                "docText": "Replacement using the `pattern` regular expression. A re2 regular expression. Replaces only the first occurrence, if it exists. \n" +
+                "\n" +
+                " A pattern can be specified as `replacement`. "
             },
             {
                 "name": "cbrt",
@@ -1618,32 +1830,38 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "match",
                 "def": "match(pattern)(time, cond1, cond2, ...)",
-                "docText": "Pattern matching for event chains. <br>  <br> &#39;pattern&#39; is a string containing a pattern to match. The pattern is similar to a regular expression."
+                "docText": "Pattern matching for event chains. \n" +
+                "\n" + 
+                " `pattern` is a string containing a pattern to match. The pattern is similar to a regular expression."
             },
             {
                 "name": "cutURLParameter",
                 "def": "cutURLParameter(URL, name)",
-                "docText": "Removes the URL parameter named &#39;name&#39;, if present. This function works under the assumption that the parameter name is encoded in the URL exactly the same way as in the passed argument."
+                "docText": "Removes the URL parameter named `name`, if present. This function works under the assumption that the parameter name is encoded in the URL exactly the same way as in the passed argument."
             },
             {
                 "name": "like",
                 "def": "like(haystack, pattern), haystack NOT LIKE pattern operator",
-                "docText": "The same thing as &#39;like&#39;, but negative."
+                "docText": "The same thing as `like`, but negative."
             },
             {
                 "name": "domain",
                 "def": "domain(v)",
-                "docText": "- Selects the part of the domain that includes top-level subdomains up to the &quot;first significant subdomain&quot; (see the explanation above). <br> For example, cutToFirstSignificantSubdomain(&#39;https://news.yandex.com.tr/&#39;) = &#39;yandex.com.tr&#39;."
+                "docText": "- Selects the part of the domain that includes top-level subdomains up to the `first significant subdomain` (see the explanation above). \n" +
+                "\n" +
+                " For example, cutToFirstSignificantSubdomain(`https://news.yandex.com.tr/`) = `yandex.com.tr`."
             },
             {
                 "name": "domainWithoutWWW",
                 "def": "domainWithoutWWW(v)",
-                "docText": "- Selects the domain and removes no more than one &#39;www.&#39; from the beginning of it, if present."
+                "docText": "- Selects the domain and removes no more than one `www.` from the beginning of it, if present."
             },
             {
                 "name": "firstSignificantSubdomain",
                 "def": "firstSignificantSubdomain(v)",
-                "docText": "- Selects the part of the domain that includes top-level subdomains up to the &quot;first significant subdomain&quot; (see the explanation above). <br> For example, cutToFirstSignificantSubdomain(&#39;https://news.yandex.com.tr/&#39;) = &#39;yandex.com.tr&#39;."
+                "docText": "- Selects the part of the domain that includes top-level subdomains up to the `first significant subdomain` (see the explanation above). \n" +
+                "\n" +
+                " For example, cutToFirstSignificantSubdomain(`https://news.yandex.com.tr/`) = `yandex.com.tr`."
             },
             {
                 "name": "queryString",
@@ -1663,17 +1881,19 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "URLHierarchy",
                 "def": "URLHierarchy(URL)",
-                "docText": "- Gets an array containing the URL trimmed to the %%/%%, %%?%% characters in the path and query-string.  Consecutive separator characters are counted as one. The cut is made in the position after all the consecutive separator characters. Example:"
+                "docText": "- Gets an array containing the URL trimmed to the `/`, `?` characters in the path and query-string.  Consecutive separator characters are counted as one. The cut is made in the position after all the consecutive separator characters. Example:"
             },
             {
                 "name": "cutToFirstSignificantSubdomain",
                 "def": "cutToFirstSignificantSubdomain(v)",
-                "docText": "- Selects the part of the domain that includes top-level subdomains up to the &quot;first significant subdomain&quot; (see the explanation above). <br> For example, cutToFirstSignificantSubdomain(&#39;https://news.yandex.com.tr/&#39;) = &#39;yandex.com.tr&#39;."
+                "docText": "- Selects the part of the domain that includes top-level subdomains up to the `first significant subdomain` (see the explanation above). \n" +
+                "\n" +
+                " For example, cutToFirstSignificantSubdomain(`https://news.yandex.com.tr/`) = `yandex.com.tr`."
             },
             {
                 "name": "cutWWW",
                 "def": "cutWWW(v)",
-                "docText": "Removes no more than one &#39;www.&#39; from the beginning of the URL&#39;s domain, if present."
+                "docText": "Removes no more than one `www.` from the beginning of the URL`s domain, if present."
             },
             {
                 "name": "cutQueryString",
@@ -1688,7 +1908,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "visitParamHas",
                 "def": "visitParamHas(params, name)",
-                "docText": "Checks whether there is a field with the &#39;name&#39; name."
+                "docText": "Checks whether there is a field with the `name` name."
             },
             {
                 "name": "visitParamExtractFloat",
@@ -1708,17 +1928,17 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "exp",
                 "def": "exp(x)",
-                "docText": "Accepts a numeric argument and returns a Float64 number close to 10<sup>x</sup>."
+                "docText": "Accepts a numeric argument and returns a Float64 number close to 10 in power of x."
             },
             {
                 "name": "exp2",
                 "def": "exp2(x)",
-                "docText": "Accepts a numeric argument and returns a Float64 number close to 2<sup>x</sup>."
+                "docText": "Accepts a numeric argument and returns a Float64 number close to 2 in power of x."
             },
             {
                 "name": "exp10",
                 "def": "exp10(x)",
-                "docText": "Accepts a numeric argument and returns a Float64 number close to 10<sup>x</sup>."
+                "docText": "Accepts a numeric argument and returns a Float64 number close to 10 in power of x."
             },
             {
                 "name": "tgamma",
@@ -1738,12 +1958,12 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "erf",
                 "def": "erf(v)",
-                "docText": "What to do when the amount of data exceeds one of the limits: &#39;throw&#39; or &#39;break&#39;. By default, throw."
+                "docText": "What to do when the amount of data exceeds one of the limits: `throw` or `break`. By default, throw."
             },
             {
                 "name": "erfc",
                 "def": "erfc(x)",
-                "docText": "Accepts a numeric argument and returns a Float64 number close to 1 - erf(x), but without loss of precision for large &#39;x&#39; values."
+                "docText": "Accepts a numeric argument and returns a Float64 number close to 1 - erf(x), but without loss of precision for large `x` values."
             },
             {
                 "name": "lgamma",
@@ -1753,7 +1973,9 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "sin",
                 "def": "sin(x)",
-                "docText": "Accepts Float32 and Float64 and returns UInt8 equal to 1 if the argument is infinite, otherwise 0. <br> Note that 0 is returned for a NaN."
+                "docText": "Accepts Float32 and Float64 and returns UInt8 equal to 1 if the argument is infinite, otherwise 0. \n" +
+                "\n" +
+                " Note that 0 is returned for a NaN."
             },
             {
                 "name": "cos",
@@ -1768,7 +1990,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "pow",
                 "def": "pow(x, y)",
-                "docText": "x<sup>y</sup>."
+                "docText": "x in power of y."
             }
         ]
     };

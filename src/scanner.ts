@@ -79,43 +79,6 @@ export default class Scanner{
       return print(this.toAST());
     };
 
-    Highlight() {
-      this._s = this._sOriginal;
-      var r = '';
-      this.skipSpace = false;
-      this.re = new RegExp("^(?:" + highlightTokenRe + ")", 'i');
-
-      while (this.next()) {
-        if (isOperator(this.token) || isJoin(this.token)) {
-          r += this.wrapWithColor('darkorange');
-        } else if (isBuiltInFunc(this.token)) {
-          r += this.wrapWithColor('navajowhite');
-        } else if (isDataType(this.token)) {
-          r += this.wrapWithColor('darkseagreen');
-        } else if (isMacroFunc(this.token) || isMacro(this.token)) {
-          r += this.wrapWithColor('darkcyan');
-        } else if (isNum(this.token)) {
-          r += this.wrapWithColor('cornflowerblue');
-        } else if (isString(this.token)) {
-          r += this.wrapWithColor('lightgreen');
-        } else if (isCond(this.token) || isBinary(this.token)) {
-          r += this.wrapWithColor('yellow');
-        } else {
-          r += this.token;
-        }
-      }
-      var htmlQuery = r.replace(/  /g, '\u00a0\u00a0');
-      htmlQuery = htmlQuery.replace(/(?:\r\n|\r|\n)/g, '<br />');
-
-      return htmlQuery;
-    };
-
-    wrapWithColor(color) {
-      return '<font color="' + color + '">' +
-        this.token +
-        '</font>';
-    };
-
     toAST() {
       this._s = this._sOriginal;
       this.skipSpace = true;
@@ -332,8 +295,6 @@ var wsRe = "\\s+",
     binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");
 
 var tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, intRe,
-    floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
-var highlightTokenRe = [operatorRe, macroFuncRe, joinsRe, builtInFuncRe, dataTypeRe, wsRe, commentRe, powerIntRe, idRe, stringRe, intRe,
     floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
 
 function isSkipSpace(token) {

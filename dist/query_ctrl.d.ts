@@ -5,12 +5,12 @@ declare class SqlQueryCtrl extends QueryCtrl {
     private uiSegmentSrv;
     static templateUrl: string;
     queryModel: SqlQuery;
-    queryBuilder: any;
     databaseSegment: any;
     dateTimeType: any;
     dateColDataTypeSegment: any;
     dateTimeColDataTypeSegment: any;
     tableSegment: any;
+    formats: any[];
     panel: any;
     datasource: any;
     target: any;
@@ -25,10 +25,6 @@ declare class SqlQueryCtrl extends QueryCtrl {
     /** @ngInject **/
     constructor($scope: any, $injector: any, templateSrv: any, uiSegmentSrv: any);
     fakeSegment(value: any): any;
-    getDatabaseSegments(): any;
-    databaseChanged(): void;
-    getTableSegments(): any;
-    tableChanged(): void;
     getDateColDataTypeSegments(): any;
     dateColDataTypeChanged(): void;
     dateTimeTypeChanged(): void;
@@ -36,6 +32,10 @@ declare class SqlQueryCtrl extends QueryCtrl {
     dateTimeColDataTypeChanged(): void;
     toggleEditorMode(): void;
     toggleEdit(e: any, editMode: boolean): void;
+    getDatabaseSegments(): any;
+    databaseChanged(): void;
+    getTableSegments(): any;
+    tableChanged(): void;
     formatQuery(): void;
     toQueryMode(): void;
     format(): any;
@@ -43,6 +43,6 @@ declare class SqlQueryCtrl extends QueryCtrl {
     handleQueryError(err: any): any[];
     querySegment(type: string): any;
     applySegment(dst: any, src: any): void;
-    getCollapsedText(): any;
+    buildExploreQuery(type: any): any;
 }
 export { SqlQueryCtrl };

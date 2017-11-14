@@ -16,7 +16,36 @@ export default class SqlSeries {
         this.to = options.to;
     }
 
-    getTimeSeries() {
+    toTable():any {
+        var self = this, data = [];
+        if (this.series.length === 0) {
+            return data;
+        }
+
+        var columns = [];
+        _.each(self.meta, function(col) {
+            columns.push({"text": col.name, "type": self._toJSType(col.type)})
+        });
+
+        var rows = [];
+        _.each(self.series, function (ser) {
+            var r = [];
+            _.each(ser, function (v) {
+                r.push(v)
+            });
+            rows.push(r)
+        });
+
+        data.push({
+            "columns": columns,
+            "rows": rows,
+            "type": "table"
+        });
+
+        return data
+    }
+
+    toTimeSeries():any {
         var self = this, timeSeries = [];
         if (self.series.length === 0) {
             return timeSeries;
@@ -92,13 +121,28 @@ export default class SqlSeries {
         return datapoints;
     };
 
-    _formatValue(value) {
-        var v_numeric = Number(value);
+    _toJSType(type:any):string {
+        switch (type) {
+            case 'UInt8':
+            case 'UInt16':
+            case 'UInt32':
+            case 'UInt64':
+            case 'Int8':
+            case 'Int16':
+            case 'Int32':
+            case 'Int64':
+                return "number";
+            default:
+                return "string"
+        }
+    }
 
-        if (!isNaN(value)) {
-            return v_numeric;
+    _formatValue(value:any) {
+        var numeric = Number(value);
+        if (isNaN(numeric)) {
+            return value
         } else {
-            return parseFloat(value);
+            return numeric
         }
     };
 }

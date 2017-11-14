@@ -42,7 +42,7 @@ describe("clickhouse sql series:", () => {
             meta: response.meta,
             table: '',
         });
-        var timeSeries = sqlSeries.getTimeSeries();
+        var timeSeries = sqlSeries.toTimeSeries();
         it("expects two results", () => {
             expect(_.size(timeSeries)).to.be(2);
         });
@@ -93,7 +93,7 @@ describe("clickhouse sql series:", () => {
             meta: response.meta,
             table: '',
         });
-        var timeSeries = sqlSeries.getTimeSeries();
+        var timeSeries = sqlSeries.toTimeSeries();
 
         it("expects four results", () => {
             expect(_.size(timeSeries)).to.be(4);

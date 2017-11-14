@@ -1,12 +1,16 @@
 <query-editor-row query-ctrl="ctrl" can-collapse="true" has-text-edit-mode="true">
 
 	<div class="gf-form" ng-if="ctrl.target.rawQuery">
-        <!--<textarea rows="7" class="gf-form-input gf-form&#45;&#45;grow" style = "{{ctrl.textareaHeight}}"-->
-                  <!--ng-if="ctrl.editMode" ng-model="ctrl.target.query" give-focus="true" spellcheck="false" ng-blur="ctrl.toggleEdit($event, false)"></textarea>-->
-        <!--<div class="gf-form-input" ng-if="!ctrl.editMode" ng-bind-html="ctrl.target.formattedQuery" ng-click="ctrl.toggleEdit($event, true)"></div>-->
-
-        <code-editor content="ctrl.target.query" datasource="ctrl.datasource" on-change="ctrl.panelCtrl.refresh()" data-mode="sql">
-        </code-editor>
+        <textarea rows="7" class="gf-form-input gf-form--grow" style = "{{ctrl.textareaHeight}}"
+                  ng-if="ctrl.editMode"
+                  ng-model="ctrl.target.query"
+                  give-focus="true"
+                  spellcheck="false"
+                  ng-blur="ctrl.toggleEdit($event, false)"></textarea>
+        <div class="gf-form-input"
+             ng-if="!ctrl.editMode"
+             ng-bind-html="ctrl.target.formattedQuery"
+             ng-click="ctrl.toggleEdit($event, true)"></div>
 	</div>
 
 	<div ng-if="!ctrl.target.rawQuery">
@@ -17,8 +21,12 @@
                     <i ng-if="ctrl.target.tableLoading" class="fa fa-spinner fa-spin"></i>
                 </label>
 
-				<metric-segment segment="ctrl.databaseSegment" get-options="ctrl.getDatabaseSegments()" on-change="ctrl.databaseChanged()"></metric-segment>
-				<metric-segment segment="ctrl.tableSegment" get-options="ctrl.getTableSegments()" on-change="ctrl.tableChanged()"></metric-segment>
+				<metric-segment segment="ctrl.databaseSegment"
+                                get-options="ctrl.getDatabaseSegments()"
+                                on-change="ctrl.databaseChanged()"></metric-segment>
+				<metric-segment segment="ctrl.tableSegment"
+                                get-options="ctrl.getTableSegments()"
+                                on-change="ctrl.tableChanged()"></metric-segment>
 			</div>
 
 			<div class="gf-form gf-form--grow">
@@ -38,7 +46,9 @@
 			</div>
 
 			<div class="gf-form">
-				<metric-segment segment="ctrl.dateColDataTypeSegment" get-options="ctrl.getDateColDataTypeSegments()" on-change="ctrl.dateColDataTypeChanged()"></metric-segment>
+				<metric-segment segment="ctrl.dateColDataTypeSegment"
+                                get-options="ctrl.getDateColDataTypeSegments()"
+                                on-change="ctrl.dateColDataTypeChanged()"></metric-segment>
 			</div>
 
             <div class="gf-form width-14">
@@ -78,11 +88,22 @@
     <div class="gf-form-inline" ng-if="ctrl.target.rawQuery">
 		<div class="gf-form gf-form--grow">
 			<label class="gf-form-label query-keyword width-5">Query</label>
-			<input type="text" readonly="true" class="gf-form-label gf-form-label--grow" ng-model="ctrl.target.rawQuery" spellcheck='false' placeholder="Actual query request">
+			<input type="text" readonly="true" class="gf-form-label gf-form-label--grow"
+                   ng-model="ctrl.target.rawQuery" spellcheck='false' placeholder="Actual query request">
 		</div>
 	</div>
 
     <div class="gf-form-inline" ng-if="ctrl.target.rawQuery">
+        <div class="gf-form">
+            <label class="gf-form-label query-keyword">Format as</label>
+            <div class="gf-form-select-wrapper">
+                <select class="gf-form-input gf-size-auto"
+                        ng-model="ctrl.target.format"
+                        ng-options="f.value as f.text for f in ctrl.formats"
+                        ng-change="ctrl.refresh()"></select>
+            </div>
+        </div>
+
         <div class="gf-form">
             <label class="gf-form-label width-5">Step</label>
             <input type="text" class="gf-form-input max-width-5" ng-model="ctrl.target.interval"
@@ -116,23 +137,26 @@
                  ng-model-onblur
                  ng-change="ctrl.refresh()"/>
           <info-popover mode="right-absolute">
-            Set rounding for `left` interval border. For example, 1m - left order will be always rounded to beginning of minute.
+            Set rounding for `left` interval border.<br> For example, if set `1m` - left order will be rounded to beginning of minute.
           </info-popover>
-        </div>
-
-        <div class="gf-form">
-            <label class="gf-form-label width-6">
-                <info-popover mode="right-absolute">
-                    Experimental feature: format SQL query as CH do.
-                </info-popover>
-                <a ng-click="ctrl.formatQuery()" role="menuitem">
-                    Format
-                </a>
-            </label>
         </div>
 
         <div class="gf-form gf-form--grow">
             <div class="gf-form-label gf-form-label--grow"></div>
         </div>
     </div>
+
+    <div class="gf-form-inline" ng-if="ctrl.target.rawQuery">
+        <div class="gf-form">
+            <label class="gf-form-label width-10">
+                <info-popover mode="right-absolute">
+                    Reformat SQL query as ClickHouse do.
+                </info-popover>
+                <a ng-click="ctrl.formatQuery()" role="menuitem">
+                    Reformat Query
+                </a>
+            </label>
+        </div>
+    </div>
+
 </query-editor-row>

@@ -1386,7 +1386,7 @@ System.register([], function (_export, _context) {
                     }, {
                         "name": "$rateColumns",
                         "def": "$rateColumns(key, value)",
-                        "docText": "Is a combination of `$columns` and `$rate`." + "\n" + "Example:\n $rateColumns(OS, count(*) c) FROM requests"
+                        "docText": "Is a combination of `$columns` and `$rate` ." + "\n" + "Example:\n $rateColumns(OS, count(*) c) FROM requests"
                     }];
                 };
 

@@ -2108,7 +2108,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "$rateColumns",
                 "def": "$rateColumns(key, value)",
-                "docText": "Is a combination of `$columns` and `$rate`." +
+                "docText": "Is a combination of `$columns` and `$rate` ." +
                 "\n" +
                 "Example:\n $rateColumns(OS, count(*) c) FROM requests"
             }

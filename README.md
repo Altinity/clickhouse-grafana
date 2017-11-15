@@ -1,4 +1,4 @@
-# ClickHouse datasource for Grafana 4.0+
+# ClickHouse datasource for Grafana 4.6+
 
 ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.yandex) as a backend database.  
 

@@ -1,4 +1,4 @@
-# ClickHouse datasource for Grafana 4.0+
+# ClickHouse datasource for Grafana 4.6+
 
 ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.yandex) as a backend database.  
 
@@ -51,7 +51,7 @@ Button `Go to Query` is just a toggler to Raw SQL Editor
 
 Raw Editor allows custom SQL queries to be written:
 
-![raw editor image](https://cloud.githubusercontent.com/assets/2902918/24203787/5a5da7ac-0f1f-11e7-911b-4da7cc4ddb2a.png)
+![raw editor image](https://user-images.githubusercontent.com/2902918/32843338-337f2efc-ca28-11e7-9bde-ec65faa3cdc9.png)
 
 
 Raw Editor is represented by textarea because sometimes we need to display large queries. Also, it helps to save query formatting in order to understand its structure. 

@@ -1,6 +1,6 @@
 System.register(['lodash'], function(exports_1) {
     var lodash_1;
-    var Scanner, wsRe, commentRe, idRe, intRe, powerIntRe, floatRe, stringRe, binaryOpRe, statementRe, joinsRe, macroFuncRe, condRe, inRe, closureRe, specCharsRe, macroRe, skipSpaceRe, builtInFuncRe, operatorRe, dataTypeRe, wsOnlyRe, commentOnlyRe, idOnlyRe, closureOnlyRe, macroFuncOnlyRe, statementOnlyRe, joinsOnlyRe, operatorOnlyRe, dataTypeOnlyRe, builtInFuncOnlyRe, macroOnlyRe, inOnlyRe, condOnlyRe, numOnlyRe, stringOnlyRe, skipSpaceOnlyRe, binaryOnlyRe, tokenRe, highlightTokenRe, tabSize, newLine;
+    var Scanner, wsRe, commentRe, idRe, intRe, powerIntRe, floatRe, stringRe, binaryOpRe, statementRe, joinsRe, macroFuncRe, condRe, inRe, closureRe, specCharsRe, macroRe, skipSpaceRe, builtInFuncRe, operatorRe, dataTypeRe, wsOnlyRe, commentOnlyRe, idOnlyRe, closureOnlyRe, macroFuncOnlyRe, statementOnlyRe, joinsOnlyRe, operatorOnlyRe, dataTypeOnlyRe, builtInFuncOnlyRe, macroOnlyRe, inOnlyRe, condOnlyRe, numOnlyRe, stringOnlyRe, skipSpaceOnlyRe, binaryOnlyRe, tokenRe, tabSize, newLine;
     function isSkipSpace(token) {
         return skipSpaceOnlyRe.test(token);
     }
@@ -239,48 +239,6 @@ System.register(['lodash'], function(exports_1) {
                     return print(this.toAST());
                 };
                 ;
-                Scanner.prototype.Highlight = function () {
-                    this._s = this._sOriginal;
-                    var r = '';
-                    this.skipSpace = false;
-                    this.re = new RegExp("^(?:" + highlightTokenRe + ")", 'i');
-                    while (this.next()) {
-                        if (isOperator(this.token) || isJoin(this.token)) {
-                            r += this.wrapWithColor('darkorange');
-                        }
-                        else if (isBuiltInFunc(this.token)) {
-                            r += this.wrapWithColor('navajowhite');
-                        }
-                        else if (isDataType(this.token)) {
-                            r += this.wrapWithColor('darkseagreen');
-                        }
-                        else if (isMacroFunc(this.token) || isMacro(this.token)) {
-                            r += this.wrapWithColor('darkcyan');
-                        }
-                        else if (isNum(this.token)) {
-                            r += this.wrapWithColor('cornflowerblue');
-                        }
-                        else if (isString(this.token)) {
-                            r += this.wrapWithColor('lightgreen');
-                        }
-                        else if (isCond(this.token) || isBinary(this.token)) {
-                            r += this.wrapWithColor('yellow');
-                        }
-                        else {
-                            r += this.token;
-                        }
-                    }
-                    var htmlQuery = r.replace(/  /g, '\u00a0\u00a0');
-                    htmlQuery = htmlQuery.replace(/(?:\r\n|\r|\n)/g, '<br />');
-                    return htmlQuery;
-                };
-                ;
-                Scanner.prototype.wrapWithColor = function (color) {
-                    return '<font color="' + color + '">' +
-                        this.token +
-                        '</font>';
-                };
-                ;
                 Scanner.prototype.toAST = function () {
                     this._s = this._sOriginal;
                     this.skipSpace = true;
@@ -454,8 +412,6 @@ System.register(['lodash'], function(exports_1) {
                 "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +
                 "array|tuple|string)\\b", wsOnlyRe = new RegExp("^(?:" + wsRe + ")$"), commentOnlyRe = new RegExp("^(?:" + commentRe + ")$"), idOnlyRe = new RegExp("^(?:" + idRe + ")$"), closureOnlyRe = new RegExp("^(?:" + closureRe + ")$"), macroFuncOnlyRe = new RegExp("^(?:" + macroFuncRe + ")$"), statementOnlyRe = new RegExp("^(?:" + statementRe + ")$", 'i'), joinsOnlyRe = new RegExp("^(?:" + joinsRe + ")$", 'i'), operatorOnlyRe = new RegExp("^(?:" + operatorRe + ")$", 'i'), dataTypeOnlyRe = new RegExp("^(?:" + dataTypeRe + ")$"), builtInFuncOnlyRe = new RegExp("^(?:" + builtInFuncRe + ")$"), macroOnlyRe = new RegExp("^(?:" + macroRe + ")$", 'i'), inOnlyRe = new RegExp("^(?:" + inRe + ")$", 'i'), condOnlyRe = new RegExp("^(?:" + condRe + ")$", 'i'), numOnlyRe = new RegExp("^(?:" + [powerIntRe, intRe, floatRe].join("|") + ")$"), stringOnlyRe = new RegExp("^(?:" + stringRe + ")$"), skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$"), binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");
             tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, intRe,
-                floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
-            highlightTokenRe = [operatorRe, macroFuncRe, joinsRe, builtInFuncRe, dataTypeRe, wsRe, commentRe, powerIntRe, idRe, stringRe, intRe,
                 floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
             tabSize = '    ', newLine = '\n';
         }

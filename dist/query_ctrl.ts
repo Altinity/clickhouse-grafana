@@ -2,6 +2,9 @@
 
 import $ from 'jquery';
 import _ from 'lodash';
+import './clickhouse-info';
+import './mode-clickhouse';
+import './snippets/clickhouse';
 import SqlQuery from './sql_query';
 import {QueryCtrl} from 'app/plugins/sdk';
 import Scanner from './scanner';
@@ -133,7 +136,6 @@ class SqlQueryCtrl extends QueryCtrl {
             return;
         }
 
-        this.target.formattedQuery = this.highlight();
         if ( this.editMode === true ) {
             this.editMode = false;
             this.refresh();
@@ -188,7 +190,6 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     toQueryMode() {
-        this.target.formattedQuery = this.highlight();
         this.toggleEditorMode();
         this.refresh();
     }
@@ -196,15 +197,6 @@ class SqlQueryCtrl extends QueryCtrl {
     format() {
         try {
             return this.getScanner().Format();
-        } catch (err) {
-            console.log("Parse error: ", err);
-            return this.getScanner().raw();
-        }
-    }
-
-    highlight() {
-        try {
-            return this.getScanner().Highlight();
         } catch (err) {
             console.log("Parse error: ", err);
             return this.getScanner().raw();
@@ -278,10 +270,5 @@ class SqlQueryCtrl extends QueryCtrl {
 
         return query;
     };
-
-
-    // partial handlers
-
-
 }
 export {SqlQueryCtrl};

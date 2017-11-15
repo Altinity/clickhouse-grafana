@@ -61,6 +61,7 @@ Under the textarea you can find a raw query (all macros and functions have alrea
 
 Plugin supports the following marcos:
 
+* $table - replaced with selected table name from Query Builder
 * $timeCol - replaced with Date:Col value from Query Builder
 * $dateTimeCol - replaced with Column:DateTime or Column:TimeStamp value from Query Builder
 * $from - replaced with timestamp/1000 value of selected "Time Range:From"

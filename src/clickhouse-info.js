@@ -2057,6 +2057,11 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
     p.MacrosCompletions = function () {
         return [
             {
+                "name": "$table",
+                "def": "$able",
+                "docText": "Replaced with selected table name from Query Builder"
+            },
+            {
                 "name": "$timeCol",
                 "def": "$timeCol",
                 "docText": "Replaced with `Date:Col` value from Query Builder"

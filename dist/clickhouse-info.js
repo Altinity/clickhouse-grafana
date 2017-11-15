@@ -1348,6 +1348,10 @@ System.register([], function (_export, _context) {
 
                 p.MacrosCompletions = function () {
                     return [{
+                        "name": "$table",
+                        "def": "$able",
+                        "docText": "Replaced with selected table name from Query Builder"
+                    }, {
                         "name": "$timeCol",
                         "def": "$timeCol",
                         "docText": "Replaced with `Date:Col` value from Query Builder"

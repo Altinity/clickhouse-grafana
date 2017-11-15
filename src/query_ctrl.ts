@@ -270,10 +270,5 @@ class SqlQueryCtrl extends QueryCtrl {
 
         return query;
     };
-
-
-    // partial handlers
-
-
 }
 export {SqlQueryCtrl};

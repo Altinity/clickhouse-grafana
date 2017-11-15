@@ -63,8 +63,8 @@ ace.define("ace/mode/clickhouse_highlight_rules", ["require", "exports", "module
 ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "ace/token_iterator", "ace/lib/lang"], function (require, exports, module) {
     "use strict";
 
-    var lang = require("../lib/lang");
-    var ClickhouseInfo = require("./clickhouse_info").ClickhouseInfo;
+    var lang = require("../lib/lang"),
+        ClickhouseInfo = require("./clickhouse_info").ClickhouseInfo;
 
     var keyWordsCompletions = ClickhouseInfo.Keywords.map(function (word) {
         return {
@@ -73,6 +73,16 @@ ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "
             meta: "keyword",
             score: Number.MAX_VALUE
         }
+    });
+
+    var macrosCompletions = ClickhouseInfo.MacrosCompletions().map(function (item) {
+        return {
+            caption: item.name,
+            value: item.name,
+            docHTML: convertToHTML(item),
+            meta: "macros",
+            score: Number.MAX_VALUE
+        };
     });
 
     var functionsCompletions = ClickhouseInfo.FunctionsCompletions().map(function (item) {
@@ -86,7 +96,7 @@ ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "
     });
 
     function wrapText(str, len) {
-        len = len || 60;
+        len = len || 90;
         var lines = [];
         var space_index = 0;
         var line_start = 0;
@@ -114,7 +124,7 @@ ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "
         return text;
     }
 
-    function convertToHTML(item) {debugger
+    function convertToHTML(item) {
         var docText = lang.escapeHTML(item.docText);
         docText = convertMarkDownTags(wrapText(docText, 40));
         return [
@@ -133,6 +143,7 @@ ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "
             }
 
             var completions = keyWordsCompletions.concat(functionsCompletions);
+            completions = completions.concat(macrosCompletions);
             callback(null, completions);
         };
 

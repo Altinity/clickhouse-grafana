@@ -17,6 +17,7 @@ System.register([], function (_export, _context) {
                 p.DataTypes = ["int", "numeric", "decimal", "date", "varchar", "char", "bigint", "float", "double", "bit", "binary", "text", "set", "timestamp", "uint8", "uint16", "uint32", "uint64", "int8", "int16", "int32", "int64", "float32", "float64", "datetime", "enum8", "enum16", "array", "tuple", "string"];
                 p.Constants = ["true", "false", "NULL"];
                 p.Funcs = ["IPv4NumToString", "IPv4NumToStringClassC", "IPv4StringToNum", "IPv6NumToString", "IPv6StringToNum", "MD5", "OSHierarchy", "OSIn", "OSToRoot", "SEHierarchy", "SEIn", "SEToRoot", "SHA1", "SHA224", "SHA256", "URLHash", "URLHierarchy", "URLPathHierarchy", "abs", "alphaTokens", "appendTrailingCharIfAbsent", "argMax", "argMin", "argMinIf", "arrayAll", "arrayCount", "arrayElement", "arrayEnumerate", "arrayEnumerateUniq", "arrayExists", "arrayFilter", "arrayFirst", "arrayJoin", "arrayMap", "arraySum", "avg", "avgIf", "bitAnd", "bitNot", "bitOr", "bitShiftLeft", "bitShiftRight", "bitXor", "bitmaskToArray", "bitmaskToList", "ceil", "cityHash64", "coalesce", "concat", "corr", "corrIf", "count", "countEqual", "countIf", "countIf", "covarPop", "covarPopIf", "covarSamp", "covarSampIf", "cutFragment", "cutQueryString", "cutQueryStringAndFragment", "cutToFirstSignificantSubdomain", "cutURLParameter", "cutWWW", "dictGetDate", "dictGetDateTime", "dictGetFloat32", "dictGetFloat64", "dictGetHierarchy", "dictGetInt16", "dictGetInt32", "dictGetInt64", "dictGetInt8", "dictGetString", "dictGetUInt16", "dictGetUInt32", "dictGetUInt64", "dictGetUInt8", "dictHas", "dictIsIn", "divide", "domainWithoutWWW", "empty", "extract", "extractAll", "extractURLParameter", "extractURLParameterNames", "extractURLParameters", "first", "firstSignificantSubdomain", "floor", "groupArray", "groupUniqArray", "halfMD5", "has", "hex", "ifnull", "indexOf", "intDiv", "intDivOrZero", "intHash32", "intHash64", "isnull", "last", "lcase", "length", "lengthUTF8", "like", "lower", "lowerUTF8", "match", "max", "median", "medianIf", "mid", "min", "minus", "modulo", "multiply", "negate", "notEmpty", "notLike", "now", "now", "nvl", "plus", "position", "positionUTF8", "quantile", "quantileDeterministic", "quantileExact", "quantileExactWeighted", "quantileTDigest", "quantileTiming", "quantileTimingWeighted", "quantiles", "quantilesIf", "quantilesTimingArrayIf", "quantilesTimingIf", "queryString", "queryStringAndFragment", "rand", "rand64", "range", "rank", "regionHierarchy", "regionIn", "regionToContinent", "regionToCountry", "regionToName", "regionToPopulation", "reinterpretAsDate", "reinterpretAsDateTime", "reinterpretAsFloat32", "reinterpretAsFloat64", "reinterpretAsInt16", "reinterpretAsInt32", "reinterpretAsInt64", "reinterpretAsInt8", "reinterpretAsString", "reinterpretAsUInt16", "reinterpretAsUInt32", "reinterpretAsUInt64", "reinterpretAsUInt8", "replaceAll", "replaceOne", "replaceRegexpOne", "reverse", "reverseUTF8", "round", "round", "roundAge", "roundDuration", "roundToExp2", "sequenceCount", "sequenceMatch", "sipHash128", "sipHash64", "splitByChar", "splitByString", "stddevPop", "stddevPopIf", "stddevSamp", "stddevSampIf", "substring", "substringUTF8", "sum", "sumArray", "sumArrayIf", "sumIf", "timeSlot", "toDate", "toDateTime", "toDayOfMonth", "toDayOfWeek", "toFixedString", "toFloat32", "toFloat64", "toHour", "toInt16", "toInt32", "toInt64", "toInt8", "toMinute", "toMonday", "toMonth", "toRelativeDayNum", "toRelativeHourNum", "toRelativeMinuteNum", "toRelativeMonthNum", "toRelativeSecondNum", "toRelativeWeekNum", "toRelativeYearNum", "toSecond", "toStartOfFiveMinute", "toStartOfHour", "toStartOfMinute", "toStartOfMonth", "toStartOfQuarter", "toStartOfYear", "toString", "toStringCutToZero", "toTime", "toUInt16", "toUInt32", "toUInt64", "toUInt8", "toYear", "today", "topLevelDomain", "ucase", "unhex", "uniq", "uniqArray", "uniqArrayIf", "uniqArrayIf", "uniqCombined", "uniqExact", "uniqExactIf", "uniqHLL12", "uniqUpTo", "upper", "upperUTF8", "varPop", "varPopIf", "varSamp", "varSampIf", "yesterday"];
+                p.Macros = ["$timeCol", "$dateTimeCol", "$from", "$to", "$interval", "$timeFilter", "$timeSeries", "$rate", "$columns", "$rateColumns"];
                 p.KeywordsRe = function () {
                     return this.re(p.Keywords);
                 };
@@ -24,7 +25,7 @@ System.register([], function (_export, _context) {
                     return this.re(p.Constants);
                 };
                 p.FunctionsRe = function () {
-                    return this.re(p.Funcs);
+                    return this.re(p.Funcs).concat(this.re(p.Macros));
                 };
                 p.DataTypesRe = function () {
                     return this.re(p.DataTypes);
@@ -1344,6 +1345,51 @@ System.register([], function (_export, _context) {
                         "docText": "x in power of y."
                     }];
                 };
+
+                p.MacrosCompletions = function () {
+                    return [{
+                        "name": "$timeCol",
+                        "def": "$timeCol",
+                        "docText": "Replaced with `Date:Col` value from Query Builder"
+                    }, {
+                        "name": "$dateTimeCol",
+                        "def": "$dateTimeCol",
+                        "docText": "Replaced with `Column:DateTime` or `Column:TimeStamp` value from Query Builder"
+                    }, {
+                        "name": "$from",
+                        "def": "$from",
+                        "docText": "Replaced with timestamp/1000 value of selected `Time Range:From`"
+                    }, {
+                        "name": "$to",
+                        "def": "$to",
+                        "docText": "Replaced with timestamp/1000 value of selected `Time Range:To`"
+                    }, {
+                        "name": "$interval",
+                        "def": "$interval",
+                        "docText": "Replaced with selected `Group by time interval` value (as a number of seconds)"
+                    }, {
+                        "name": "$timeFilter",
+                        "def": "$timeFilter",
+                        "docText": "Replaced with currently selected `Time Range`. Requires `Column:Date` and `Column:DateTime` or `Column:TimeStamp` to be selected"
+                    }, {
+                        "name": "$timeSeries",
+                        "def": "$timeSeries",
+                        "docText": "Replaced with special ClickHouse construction to convert results as time-series data. Use it as `SELECT $timeSeries...`. Require `Column:DateTime` or `Column:TimeStamp` to be selected"
+                    }, {
+                        "name": "$rate",
+                        "def": "$rate(cols...)",
+                        "docText": "Converts query results as `change rate per interval`. Can be used to display changes-per-second." + "\n" + "Example:\n $rate(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests"
+                    }, {
+                        "name": "$columns",
+                        "def": "$columns(key, value)",
+                        "docText": "Query values as array of [key, value], where key will be used as label. Can be used to display multiple lines at graph" + "\n" + "Example:\n $columns(OSName, count(*) c) FROM requests"
+                    }, {
+                        "name": "$rateColumns",
+                        "def": "$rateColumns(key, value)",
+                        "docText": "Is a combination of `$columns` and `$rate`." + "\n" + "Example:\n $rateColumns(OS, count(*) c) FROM requests"
+                    }];
+                };
+
                 p.re = function (list) {
                     return list.join("|");
                 };

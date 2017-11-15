@@ -34,9 +34,9 @@ System.register([], function (_export, _context) {
                             token: "comment",
                             regex: "--.*$"
                         }, {
-                            token: "comment",
-                            start: "/\\*",
-                            end: "\\*/"
+                            token: "comment.block",
+                            start: "```",
+                            end: "```"
                         }, {
                             token: "string", // ' string
                             regex: "'.*?'"
@@ -71,14 +71,24 @@ System.register([], function (_export, _context) {
             ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "ace/token_iterator", "ace/lib/lang"], function (require, exports, module) {
                 "use strict";
 
-                var lang = require("../lib/lang");
-                var ClickhouseInfo = require("./clickhouse_info").ClickhouseInfo;
+                var lang = require("../lib/lang"),
+                    ClickhouseInfo = require("./clickhouse_info").ClickhouseInfo;
 
                 var keyWordsCompletions = ClickhouseInfo.Keywords.map(function (word) {
                     return {
                         caption: word,
                         value: word,
                         meta: "keyword",
+                        score: Number.MAX_VALUE
+                    };
+                });
+
+                var macrosCompletions = ClickhouseInfo.MacrosCompletions().map(function (item) {
+                    return {
+                        caption: item.name,
+                        value: item.name,
+                        docHTML: convertToHTML(item),
+                        meta: "macros",
                         score: Number.MAX_VALUE
                     };
                 });
@@ -94,7 +104,7 @@ System.register([], function (_export, _context) {
                 });
 
                 function wrapText(str, len) {
-                    len = len || 60;
+                    len = len || 90;
                     var lines = [];
                     var space_index = 0;
                     var line_start = 0;
@@ -123,7 +133,6 @@ System.register([], function (_export, _context) {
                 }
 
                 function convertToHTML(item) {
-                    debugger;
                     var docText = lang.escapeHTML(item.docText);
                     docText = convertMarkDownTags(wrapText(docText, 40));
                     return ["<b>", lang.escapeHTML(item.def), "</b>", "<hr></hr>", docText, "<br>&nbsp"].join("");
@@ -139,6 +148,7 @@ System.register([], function (_export, _context) {
                         }
 
                         var completions = keyWordsCompletions.concat(functionsCompletions);
+                        completions = completions.concat(macrosCompletions);
                         callback(null, completions);
                     };
                 }).call(ClickhouseCompletions.prototype);

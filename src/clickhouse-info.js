@@ -158,6 +158,18 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "uniqArrayIf", "uniqCombined", "uniqExact", "uniqExactIf", "uniqHLL12", "uniqUpTo", "upper", "upperUTF8", "varPop", "varPopIf",
         "varSamp", "varSampIf", "yesterday"
     ];
+    p.Macros = [
+        "$timeCol",
+        "$dateTimeCol",
+        "$from",
+        "$to",
+        "$interval",
+        "$timeFilter",
+        "$timeSeries",
+        "$rate",
+        "$columns",
+        "$rateColumns"
+    ];
     p.KeywordsRe = function () {
         return this.re(p.Keywords)
     };
@@ -165,7 +177,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         return this.re(p.Constants)
     };
     p.FunctionsRe = function () {
-        return this.re(p.Funcs)
+        return this.re(p.Funcs).concat(this.re(p.Macros))
     };
     p.DataTypesRe = function () {
         return this.re(p.DataTypes);
@@ -566,7 +578,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "docText": "Calculates the difference between consecutive values in the data block. \n" +
                 "\n" +
                 " Result of the function depends on the order of the data in the blocks. \n" +
-                "\n" + 
+                "\n" +
                 " It works only inside of the each processed block of data. Data splitting in the blocks is not explicitly controlled by the user. "
             },
             {
@@ -595,7 +607,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "name": "and",
                 "def": "and(x, determinator)",
                 "docText": "This function works similarly to the `median` function - it approximates the median. However, in contrast to `median`, the result is deterministic and does not depend on the order of query execution. \n" +
-                "\n" + 
+                "\n" +
                 " To achieve this, the function takes a second argument - the `determinator`. "
             },
             {
@@ -1062,7 +1074,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "name": "arrayFilter",
                 "def": "arrayFilter(func, arr1, ...)",
                 "docText": "Returns an array containing only the elements in `arr1` for which `func` returns something other than 0. \n" +
-                "\n" + 
+                "\n" +
                 " Examples: \n" +
                 "\n" +
                 " SELECT arrayFilter(x -> x LIKE `%World%`, [`Hello`, `abc World`]) AS res "
@@ -1124,7 +1136,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "name": "minus",
                 "def": "minus(a, b), a - b operator",
                 "docText": "Calculates the difference. The result is always signed. \n" +
-                "\n" + 
+                "\n" +
                 " You can also calculate whole numbers from a date or date with time. The idea is the same - see above for `plus`."
             },
             {
@@ -1365,7 +1377,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "name": "plus",
                 "def": "plus(a, b), a + b operator",
                 "docText": "Calculates the sum of the numbers. \n" +
-                "\n" + 
+                "\n" +
                 " You can also add whole numbers with a date or date and time. In the case of a date, adding a whole number means adding the corresponding number of days. For a date with time, it means adding the corresponding number of seconds."
             },
             {
@@ -1399,7 +1411,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "name": "bar",
                 "def": "bar(v)",
                 "docText": "Allows building a unicode-art diagram. \n" +
-                "\n" + 
+                "\n" +
                 " bar(x, min, max, width) - Draws a band with a width proportional to (x - min) and equal to `width` characters when x"
             },
             {
@@ -1684,7 +1696,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "docText": "Transforms a value according to the explicitly defined mapping of some elements to other ones. \n" +
                 "\n" +
                 " There are two variations of this function: \n" +
-                "\n" + 
+                "\n" +
                 " 1. `transform(x, array_from, array_to, default)` "
             },
             {
@@ -1878,7 +1890,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "name": "match",
                 "def": "match(pattern)(time, cond1, cond2, ...)",
                 "docText": "Pattern matching for event chains. \n" +
-                "\n" + 
+                "\n" +
                 " `pattern` is a string containing a pattern to match. The pattern is similar to a regular expression."
             },
             {
@@ -2041,6 +2053,68 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             }
         ]
     };
+
+    p.MacrosCompletions = function () {
+        return [
+            {
+                "name": "$timeCol",
+                "def": "$timeCol",
+                "docText": "Replaced with `Date:Col` value from Query Builder"
+            },
+            {
+                "name": "$dateTimeCol",
+                "def": "$dateTimeCol",
+                "docText": "Replaced with `Column:DateTime` or `Column:TimeStamp` value from Query Builder"
+            },
+            {
+                "name": "$from",
+                "def": "$from",
+                "docText": "Replaced with timestamp/1000 value of selected `Time Range:From`"
+            },
+            {
+                "name": "$to",
+                "def": "$to",
+                "docText": "Replaced with timestamp/1000 value of selected `Time Range:To`"
+            },
+            {
+                "name": "$interval",
+                "def": "$interval",
+                "docText": "Replaced with selected `Group by time interval` value (as a number of seconds)"
+            },
+            {
+                "name": "$timeFilter",
+                "def": "$timeFilter",
+                "docText": "Replaced with currently selected `Time Range`. Requires `Column:Date` and `Column:DateTime` or `Column:TimeStamp` to be selected"
+            },
+            {
+                "name": "$timeSeries",
+                "def": "$timeSeries",
+                "docText": "Replaced with special ClickHouse construction to convert results as time-series data. Use it as `SELECT $timeSeries...`. Require `Column:DateTime` or `Column:TimeStamp` to be selected"
+            },
+            {
+                "name": "$rate",
+                "def": "$rate(cols...)",
+                "docText": "Converts query results as `change rate per interval`. Can be used to display changes-per-second." +
+                "\n" +
+                "Example:\n $rate(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests"
+            },
+            {
+                "name": "$columns",
+                "def": "$columns(key, value)",
+                "docText": "Query values as array of [key, value], where key will be used as label. Can be used to display multiple lines at graph" +
+                "\n" +
+                "Example:\n $columns(OSName, count(*) c) FROM requests"
+            },
+            {
+                "name": "$rateColumns",
+                "def": "$rateColumns(key, value)",
+                "docText": "Is a combination of `$columns` and `$rate`." +
+                "\n" +
+                "Example:\n $rateColumns(OS, count(*) c) FROM requests"
+            }
+        ];
+    };
+
     p.re = function (list) {
         return list.join("|")
     };

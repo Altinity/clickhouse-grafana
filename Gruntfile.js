@@ -43,6 +43,26 @@ module.exports = function(grunt) {
                 dest: 'dist/'
             }
         },
+
+        babel: {
+            options: {
+                sourceMap: true,
+                presets: ['es2015']
+            },
+            dist: {
+                options: {
+                    plugins: ['transform-es2015-modules-systemjs', 'transform-es2015-for-of']
+                },
+                files: [{
+                    cwd: 'src',
+                    expand: true,
+                    src: ['**/*.js'],
+                    dest: 'dist',
+                    ext:'.js'
+                }]
+            }
+        },
+
         typescript: {
             build: {
                 src: ['dist/**/*.ts', '!**/*.d.ts'],
@@ -73,6 +93,7 @@ module.exports = function(grunt) {
         'clean',
         'copy:dist_js',
         'typescript:build',
+        'babel',
         'copy:dist_html',
         'copy:dist_css',
         'copy:dist_img',

@@ -91,7 +91,7 @@ Plugin supports the following functions:
 
 Example usage: 
 ```
-$rate(countIf(Type = 200) * 60 AS good, countIf(Type != 200) * 60 AS bad) FROM requests
+$rate(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests
 ```
 
 Query will be transformed into:
@@ -103,9 +103,9 @@ SELECT
 FROM 
 (
     SELECT 
-        (intDiv(toUInt32(EventTime), 60) * 60) * 1000 AS t, 
-        countIf(Type = 200) * 60 AS good, 
-        countIf(Type != 200) * 60 AS bad
+        (intDiv(toUInt32(EventTime), 60)) * 1000 AS t, 
+        countIf(Type = 200) AS good, 
+        countIf(Type != 200) AS bad
     FROM requests 
     WHERE ((EventDate >= toDate(1482796747)) AND (EventDate <= toDate(1482853383))) AND ((EventTime >= toDateTime(1482796747)) AND (EventTime <= toDateTime(1482853383)))
     GROUP BY t

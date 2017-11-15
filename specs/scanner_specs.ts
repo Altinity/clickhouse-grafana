@@ -3,20 +3,6 @@ import {describe, it, expect} from './lib/common';
 import Scanner from '../src/scanner';
 
 describe("scanner:", () => {
-    describe("highlight", () => {
-        var query = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
-            expectedHighlight = '<font color="darkorange">SELECT</font> <font color="darkcyan">' +
-                '$timeSeries</font> <font color="darkorange">as</font> t, <font color="navajowhite">' +
-                'count</font>() <font color="darkorange">FROM</font> <font color="darkcyan">$table' +
-                '</font> <font color="darkorange">WHERE</font> <font color="darkcyan">$timeFilter' +
-                '</font> <font color="darkorange">GROUP BY</font> t <font color="darkorange">ORDER BY</font> t';
-        var scanner = new Scanner(query);
-
-        it("expects equality", () => {
-            expect(scanner.Highlight()).to.be(expectedHighlight);
-        });
-    });
-
     describe("AST case 1", () => {
         var query = "SELECT EventDate, col1, col2, toUInt32(col1 > 0 ? col2/col1*10000 : 0)/100 AS percent " +
                 "FROM ( SELECT   EventDate,   col1,   countIf(col2 GLOBAL IN some_table) AS col2_shared,   " +

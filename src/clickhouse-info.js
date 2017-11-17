@@ -26,6 +26,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "TYPE",
         "LEFT",
         "RIGHT",
+        "USING",
         "JOIN",
         "ON",
         "OUTER",
@@ -159,6 +160,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "varSamp", "varSampIf", "yesterday"
     ];
     p.Macros = [
+        "$table",
         "$timeCol",
         "$dateTimeCol",
         "$from",

@@ -14,7 +14,7 @@ Copy files to your [Grafana plugin directory](http://docs.grafana.org/plugins/in
  * Access to CH via HTTP
  * Query setup
  * Raw SQL editor
- * SQL syntax highlighting 
+ * Query formatting
  * Macros support
  * Additional functions
  * Templates
@@ -54,8 +54,8 @@ Raw Editor allows custom SQL queries to be written:
 ![raw editor image](https://user-images.githubusercontent.com/2902918/32843338-337f2efc-ca28-11e7-9bde-ec65faa3cdc9.png)
 
 
-Raw Editor is represented by textarea because sometimes we need to display large queries. Also, it helps to save query formatting in order to understand its structure. 
-Under the textarea you can find a raw query (all macros and functions have already been replaced) which will be sent directly to ClickHouse. 
+Raw Editor allows to type queries, get info about functions and macroses, format queries as Clickhouse do. 
+Under the Editor you can find a raw query (all macros and functions have already been replaced) which will be sent directly to ClickHouse. 
 
 ### Macros
 
@@ -72,12 +72,12 @@ Plugin supports the following marcos:
 * $timeSeries - replaced with special ClickHouse construction to convert results as time-series data. Use it as "SELECT $timeSeries...". 
 Require Column:DateTime or Column:TimeStamp to be selected
 
-A description of macros is available from an interface by clicking on the info-button
+A description of macros is available by typing their names in Raw Editor
 
 ### Functions
 
 Functions are just templates of SQL queries and you can check the final query at [Raw SQL Editor mode](https://github.com/Vertamedia/clickhouse-grafana/blob/master/README.md#raw-sql-editor). 
-If some additional complexity is needed - just copy raw sql into textarea and make according changes. Remember that macros are still available to use. 
+If some additional complexity is needed - just copy raw sql into Raw Editor and make according changes. Remember that macros are still available to use. 
 
 There are some limits in function use because of poor query analysis:
 * Column:Date and Column:DateTime or Column:TimeStamp must be set in Query Builder

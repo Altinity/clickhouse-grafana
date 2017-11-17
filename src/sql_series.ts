@@ -56,7 +56,6 @@ export default class SqlSeries {
         _.each(self.series, function(series) {
             t = self._formatValue(series[timeCol.name]);
             intervals.push(t);
-
             // rm time value from series
             delete series[timeCol.name];
             _.each(series, function(val, key) {
@@ -73,14 +72,13 @@ export default class SqlSeries {
         _.each(metrics, function(v, k) {
             var datapoints = [];
             _.each(intervals, function(interval) {
-                if (metrics[k][interval] === undefined || metrics[k][interval] === null) {
-                    metrics[k][interval] = 0;
+                if (metrics[k][interval] === undefined) {
+                    metrics[k][interval] = null;
                 }
                 datapoints.push([self._formatValue(metrics[k][interval]), interval]);
             });
             timeSeries.push({target: k, datapoints: self.extrapolate(datapoints)});
         });
-
         return timeSeries;
     };
 
@@ -138,6 +136,10 @@ export default class SqlSeries {
     }
 
     _formatValue(value:any) {
+        if (value === null) {
+            return value
+        }
+
         var numeric = Number(value);
         if (isNaN(numeric)) {
             return value

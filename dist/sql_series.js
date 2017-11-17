@@ -66,8 +66,8 @@ System.register(['lodash'], function(exports_1) {
                     lodash_1.default.each(metrics, function (v, k) {
                         var datapoints = [];
                         lodash_1.default.each(intervals, function (interval) {
-                            if (metrics[k][interval] === undefined || metrics[k][interval] === null) {
-                                metrics[k][interval] = 0;
+                            if (metrics[k][interval] === undefined) {
+                                metrics[k][interval] = null;
                             }
                             datapoints.push([self._formatValue(metrics[k][interval]), interval]);
                         });
@@ -122,6 +122,9 @@ System.register(['lodash'], function(exports_1) {
                     }
                 };
                 SqlSeries.prototype._formatValue = function (value) {
+                    if (value === null) {
+                        return value;
+                    }
                     var numeric = Number(value);
                     if (isNaN(numeric)) {
                         return value;

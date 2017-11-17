@@ -39,7 +39,7 @@ module.exports = function(grunt) {
             dist_statics: {
                 expand: true,
                 flatten: true,
-                src: ['src/plugin.json', 'LICENSE', 'README.md'],
+                src: ['src/plugin.json', 'LICENSE', 'README.md', 'CHANGELOG.md'],
                 dest: 'dist/'
             }
         },
@@ -81,7 +81,7 @@ module.exports = function(grunt) {
         },
 
         watch: {
-            files: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.html', 'src/**/*.css', 'src/img/*.*', 'src/plugin.json', 'README.md'],
+            files: ['src/**/*.ts', 'src/**/*.js', 'src/**/*.html', 'src/**/*.css', 'src/img/*.*', 'src/plugin.json', 'README.md', 'CHANGELOG.md'],
             tasks: ['default'],
             options: {
                 debounceDelay: 250

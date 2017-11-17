@@ -40,7 +40,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         }
                     }
                     catch (err) {
-                        console.log("Parse error: ", err);
+                        throw { message: 'AST parser error: ' + err.message };
                     }
                     query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     this.target.rawQuery = query
@@ -91,7 +91,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         fromQuery +
                         ' GROUP BY t, ' + keyAlias +
                         ' ' + having +
-                        ' ORDER BY t' +
+                        ' ORDER BY t, ' + keyAlias +
                         ') ' +
                         'GROUP BY t ' +
                         'ORDER BY t';

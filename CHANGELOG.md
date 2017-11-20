@@ -1,3 +1,9 @@
+# 1.2.3 (2017-11-20)
+
+# Fixes 
+* commit generated files
+
+
 # 1.2.2 (2017-11-20)
 
 # Fixes 

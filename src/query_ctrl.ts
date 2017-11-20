@@ -36,6 +36,8 @@ class SqlQueryCtrl extends QueryCtrl {
     datetimeLoading: boolean;
     dateLoading: boolean;
 
+    showLastQuerySQL: boolean;
+
     /** @ngInject **/
     constructor($scope, $injector, templateSrv, private uiSegmentSrv) {
         super($scope, $injector);

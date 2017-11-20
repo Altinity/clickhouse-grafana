@@ -84,6 +84,10 @@ class SqlQueryCtrl extends QueryCtrl {
         }
     }
 
+    getCollapsedText() {
+        return this.target.rawQuery;
+    }
+
     fakeSegment(value) {
         return this.uiSegmentSrv.newSegment({fake: true, value: value});
     }
@@ -267,7 +271,6 @@ class SqlQueryCtrl extends QueryCtrl {
                     'ORDER BY name';
                 break;
         }
-
         return query;
     };
 }

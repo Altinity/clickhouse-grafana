@@ -24,6 +24,7 @@ declare class SqlQueryCtrl extends QueryCtrl {
     dateLoading: boolean;
     /** @ngInject **/
     constructor($scope: any, $injector: any, templateSrv: any, uiSegmentSrv: any);
+    getCollapsedText(): any;
     fakeSegment(value: any): any;
     getDateColDataTypeSegments(): any;
     dateColDataTypeChanged(): void;

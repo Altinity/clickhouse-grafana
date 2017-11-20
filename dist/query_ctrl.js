@@ -62,6 +62,9 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                         this.target.query = this.format();
                     }
                 }
+                SqlQueryCtrl.prototype.getCollapsedText = function () {
+                    return this.target.rawQuery;
+                };
                 SqlQueryCtrl.prototype.fakeSegment = function (value) {
                     return this.uiSegmentSrv.newSegment({ fake: true, value: value });
                 };

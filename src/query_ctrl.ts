@@ -88,7 +88,7 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     getCollapsedText() {
-        return this.target.rawQuery;
+        return this.target.query;
     }
 
     fakeSegment(value) {

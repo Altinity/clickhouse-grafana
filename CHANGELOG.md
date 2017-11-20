@@ -1,3 +1,13 @@
+# 1.2.2 (2017-11-20)
+
+# Fixes 
+* fix error with absent `getCollapsedText` [#24](https://github.com/Vertamedia/clickhouse-grafana/issues/24)
+* suppress errors while parsing AST [#24](https://github.com/Vertamedia/clickhouse-grafana/issues/24)
+* show generated SQL in textarea [#24](https://github.com/Vertamedia/clickhouse-grafana/issues/24)
+* do not round timestamp after converting [#25](https://github.com/Vertamedia/clickhouse-grafana/issues/25)
+* increase max-height of query editor
+
+
 # 1.2.1 (2017-11-17)
 
 # Fixes 

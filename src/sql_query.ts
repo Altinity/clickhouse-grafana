@@ -9,7 +9,6 @@ var durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
 
 export default class SqlQuery {
   target: any;
-  queryBuilder: any;
   templateSrv: any;
   options: any;
 
@@ -41,7 +40,7 @@ export default class SqlQuery {
                 query = SqlQuery.rate(query, ast);
             }
         } catch (err) {
-            throw {message: 'AST parser error: ' + err.message};
+            console.log('AST parser error: ', err.message)
         }
 
         query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);

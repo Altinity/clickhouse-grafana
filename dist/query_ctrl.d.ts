@@ -23,6 +23,7 @@ declare class SqlQueryCtrl extends QueryCtrl {
     datetimeLoading: boolean;
     dateLoading: boolean;
     showLastQuerySQL: boolean;
+    showHelp: boolean;
     /** @ngInject **/
     constructor($scope: any, $injector: any, templateSrv: any, uiSegmentSrv: any);
     getCollapsedText(): any;

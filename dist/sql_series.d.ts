@@ -9,6 +9,6 @@ export default class SqlSeries {
     toTable(): any;
     toTimeSeries(): any;
     extrapolate(datapoints: any): any;
-    _toJSType(type: any): string;
+    static _toJSType(type: any): string;
     _formatValue(value: any): any;
 }

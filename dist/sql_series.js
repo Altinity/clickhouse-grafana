@@ -23,7 +23,7 @@ System.register(['lodash'], function(exports_1) {
                     }
                     var columns = [];
                     lodash_1.default.each(self.meta, function (col) {
-                        columns.push({ "text": col.name, "type": self._toJSType(col.type) });
+                        columns.push({ "text": col.name, "type": SqlSeries._toJSType(col.type) });
                     });
                     var rows = [];
                     lodash_1.default.each(self.series, function (ser) {
@@ -106,7 +106,7 @@ System.register(['lodash'], function(exports_1) {
                     return datapoints;
                 };
                 ;
-                SqlSeries.prototype._toJSType = function (type) {
+                SqlSeries._toJSType = function (type) {
                     switch (type) {
                         case 'UInt8':
                         case 'UInt16':

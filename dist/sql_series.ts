@@ -24,7 +24,7 @@ export default class SqlSeries {
 
         var columns = [];
         _.each(self.meta, function(col) {
-            columns.push({"text": col.name, "type": self._toJSType(col.type)})
+            columns.push({"text": col.name, "type": SqlSeries._toJSType(col.type)})
         });
 
         var rows = [];
@@ -119,7 +119,7 @@ export default class SqlSeries {
         return datapoints;
     };
 
-    _toJSType(type:any):string {
+    static _toJSType(type:any):string {
         switch (type) {
             case 'UInt8':
             case 'UInt16':

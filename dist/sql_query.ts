@@ -223,7 +223,7 @@ export default class SqlQuery {
             date = dateMath.parse(date, true);
         }
 
-        return Math.ceil(date.valueOf() / 1000);
+        return Math.floor(date.valueOf() / 1000);
     }
 
     static round(date: any, round: string): any {

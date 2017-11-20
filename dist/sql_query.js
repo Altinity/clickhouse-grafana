@@ -192,7 +192,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     if (lodash_1.default.isString(date)) {
                         date = dateMath.parse(date, true);
                     }
-                    return Math.ceil(date.valueOf() / 1000);
+                    return Math.floor(date.valueOf() / 1000);
                 };
                 SqlQuery.round = function (date, round) {
                     if (round === "" || round === undefined || round === "0s") {

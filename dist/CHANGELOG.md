@@ -1,3 +1,9 @@
+# 1.2.4 (2017-11-22)
+
+# Fixes
+* apply proper value formatting for table format
+
+
 # 1.2.3 (2017-11-20)
 
 # Fixes 

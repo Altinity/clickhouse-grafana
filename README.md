@@ -30,6 +30,19 @@ Page configuration is standard
 
 There is a small feature - ClickHouse treats HTTP Basic Authentication credentials as a database user and will try to run queries using its name.
 
+#### [CHProxy](https://github.com/Vertamedia/chproxy) (optional)
+Using of [CHProxy](https://github.com/Vertamedia/chproxy) will bring additional features:
+* Easily setup `HTTPS` access to ClickHouse as shown [here](https://github.com/Vertamedia/chproxy#authorize-users-by-passwords-via-https)
+to provide secure access.
+* Limit amount and time execution for requests from `Grafana` as shown [here](https://github.com/Vertamedia/chproxy#spread-selects-from-reporting-apps-among-cluster-nodes)
+to prevent `ClickHouse` overloading from `Grafana`.
+* Protection against request bursts for dashboards with numerous graphs. `CHProxy` allows to queue requests and execute them sequentially.
+To learn more - read about params `max_queue_size` and `max_queue_time` at [CHProxy](https://github.com/Vertamedia/chproxy) page.
+* Response caching for the most frequent queries as shown [here](https://github.com/Vertamedia/chproxy#caching).
+`Caching` will protect `ClickHouse` from excessive refreshes and will be optimal option for popular dashboards.
+>> Hint - if you need to cache requests like `last 24h` where timestamp changes constantly then try to use `Round` option at `Raw Editor`
+
+
 ### Query setup
 
 Query setup interface:

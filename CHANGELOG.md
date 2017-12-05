@@ -1,3 +1,10 @@
+# 1.2.5 (2017-12-05)
+
+# Fixes
+* support template variables with different `text` and `value` values [#27](https://github.com/Vertamedia/clickhouse-grafana/issues/27)
+* fix visual glitches [#29](https://github.com/Vertamedia/clickhouse-grafana/issues/29)
+
+
 # 1.2.4 (2017-11-22)
 
 # Fixes

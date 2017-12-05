@@ -2060,7 +2060,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         return [
             {
                 "name": "$table",
-                "def": "$able",
+                "def": "$table",
                 "docText": "Replaced with selected table name from Query Builder"
             },
             {

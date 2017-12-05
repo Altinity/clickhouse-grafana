@@ -15,23 +15,20 @@ System.register(['lodash'], function(exports_1) {
                         return [];
                     }
                     var sqlResults = results.data;
-                    var res = [], v;
-                    lodash_1.default.each(sqlResults, function (row) {
-                        lodash_1.default.each(row, function (value) {
-                            if (lodash_1.default.isArray(value) || lodash_1.default.isObject(value)) {
-                                v = value[0];
-                            }
-                            else {
-                                v = value;
-                            }
-                            if (res.indexOf(v) === -1) {
-                                res.push(v);
-                            }
-                        });
+                    var res = [];
+                    lodash_1.default.each(sqlResults, function (r) {
+                        if (r && r.text && r.value) {
+                            res.push({ text: r.text, value: r.value });
+                            return;
+                        }
+                        if (lodash_1.default.isObject(r)) {
+                            var key = Object.keys(r)[0];
+                            res.push({ text: r[key] });
+                            return;
+                        }
+                        res.push({ text: r });
                     });
-                    return lodash_1.default.map(res, function (value) {
-                        return { text: value };
-                    });
+                    return res;
                 };
                 return ResponseParser;
             })();

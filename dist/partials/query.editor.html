@@ -117,7 +117,9 @@
                  ng-model-onblur
                  ng-change="ctrl.refresh()"/>
           <info-popover mode="right-absolute">
-            Set rounding for `left` interval border.<br> For example, if set `1m` - left order will be rounded to beginning of minute.
+            Set rounding for `$from` and `$to` timestamps.<br>
+            For example, if set `1m` - both `$from` and `$to` will be rounded to beginning of minute.<br>
+            It will make all requests similar during one minute which is good for caching.
           </info-popover>
         </div>
 

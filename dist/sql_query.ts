@@ -24,14 +24,14 @@ export default class SqlQuery {
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME',
             from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)),
-            to = SqlQuery.convertTimestamp(this.options.range.to),
+            to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round)),
             timeSeries = SqlQuery.getTimeSeries(dateTimeType),
             timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType),
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
 
         try {
-            var ast = scanner.toAST();
+            let ast = scanner.toAST();
             if (ast.hasOwnProperty('$columns') && !_.isEmpty(ast['$columns'])) {
                 query = SqlQuery.columns(query);
             } else if (ast.hasOwnProperty('$rateColumns') && !_.isEmpty(ast['$rateColumns'])) {

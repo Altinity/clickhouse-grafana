@@ -1,3 +1,9 @@
+# 1.2.6 (2017-12-13)
+
+# Fixes
+* allow rounding with `round` option both time filters: $from and $to
+
+
 # 1.2.5 (2017-12-05)
 
 # Fixes

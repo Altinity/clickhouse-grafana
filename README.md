@@ -285,6 +285,13 @@ FROM some_table
 
 // It is also possible to use query without macros
 
+### FAQ
+
+> Why no alerts support?
+
+Alerts feature requires changes in `Grafana`'s backend, which can't be extended for now. `Grafana`'s maintainers are working on this feature.
+
+
 ### Contribute
 
 Since we developed this plugin only for internal needs we don't have some of Grafana's features:

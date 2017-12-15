@@ -1,31 +1,31 @@
 # 1.2.6 (2017-12-13)
 
-# Fixes
+## Fixes
 * allow rounding with `round` option both time filters: $from and $to
 
 
 # 1.2.5 (2017-12-05)
 
-# Fixes
+## Fixes
 * support template variables with different `text` and `value` values [#27](https://github.com/Vertamedia/clickhouse-grafana/issues/27)
 * fix visual glitches [#29](https://github.com/Vertamedia/clickhouse-grafana/issues/29)
 
 
 # 1.2.4 (2017-11-22)
 
-# Fixes
+## Fixes
 * apply proper value formatting for table format
 
 
 # 1.2.3 (2017-11-20)
 
-# Fixes 
+## Fixes
 * commit generated files
 
 
 # 1.2.2 (2017-11-20)
 
-# Fixes 
+## Fixes
 * fix error with absent `getCollapsedText` [#24](https://github.com/Vertamedia/clickhouse-grafana/issues/24)
 * suppress errors while parsing AST [#24](https://github.com/Vertamedia/clickhouse-grafana/issues/24)
 * show generated SQL in textarea [#24](https://github.com/Vertamedia/clickhouse-grafana/issues/24)
@@ -35,7 +35,7 @@
 
 # 1.2.1 (2017-11-17)
 
-# Fixes 
+## Fixes
 * add forgotten completions
 * process NULL values [#19](https://github.com/Vertamedia/clickhouse-grafana/issues/19)
 * sort by key value in `$columns` macro [#16](https://github.com/Vertamedia/clickhouse-grafana/issues/16)

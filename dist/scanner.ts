@@ -83,27 +83,31 @@ export default class Scanner{
       this._s = this._sOriginal;
       this.skipSpace = true;
       this.re = new RegExp("^(?:" + tokenRe + ")", 'i');
-      var rootToken = 'root',
+      let rootToken = 'root',
         subQuery = '',
         argument = '',
         ast = {},
-        subAST = {};
+        subAST = {},
+        expectNextEl = false;
 
       ast[rootToken] = [];
       while (this.next()) {
-        if (isStatement(this.token) && !ast.hasOwnProperty(_.toLower(this.token))) {
+        if (isStatement(this.token) && !ast.hasOwnProperty(_.toLower(this.token)) && !expectNextEl) {
 
-          if (argument !== '') {
+          if (argument.length > 0) {
             ast[rootToken].push(argument);
             argument = '';
+            expectNextEl = false;
           }
 
           rootToken = _.toLower(this.token);
           ast[rootToken] = [];
+          expectNextEl = true;
         }
         else if (this.token === ',' && isClosured(argument))  {
           ast[rootToken].push(argument);
           argument = '';
+          expectNextEl = true;
         }
         else if (isClosureChars(this.token) && rootToken === 'from') {
           subQuery = betweenBraces(this._s);
@@ -111,7 +115,7 @@ export default class Scanner{
           this._s = this._s.substring(subQuery.length+1);
         }
         else if (isMacroFunc(this.token)) {
-          var func = this.token;
+          let func = this.token;
           if (!this.next()) {
             throw("wrong function signature for `" + func + "` at [" + this._s + "]");
           }
@@ -163,7 +167,7 @@ export default class Scanner{
           }
         }
         else if (isJoin(this.token)) {
-          var joinType = this.token, source;
+          let joinType = this.token, source;
           if (!this.next()) {
             throw("wrong join signature for `" + joinType + "` at [" + this._s + "]");
           }
@@ -178,11 +182,7 @@ export default class Scanner{
 
           this.expect('using');
           ast['join'] = {type: joinType, source: source, using: []};
-          while(this.next()) {
-            if (!isID(this.token)) {
-              continue;
-            }
-
+          while(this.next()) {debugger
             if (isStatement(this.token)) {
               if (argument !== '') {
                 ast[rootToken].push(argument);
@@ -193,16 +193,25 @@ export default class Scanner{
               break;
             }
 
+              if (!isID(this.token)) {
+                  continue;
+              }
+
             ast['join'].using.push(this.token);
           }
         } else if (isClosureChars(this.token)) {
           argument += this.token;
+          if (this.token === '(') {
+              expectNextEl = true;
+          }
         } else if (this.token === '.') {
           argument += this.token;
         } else if (this.token === ',') {
           argument += this.token + ' ';
+          expectNextEl = true;
         } else {
           argument += argument === '' || isSkipSpace(argument[argument.length-1]) ? this.token : ' ' + this.token;
+            expectNextEl = false;
         }
       }
 
@@ -263,14 +272,13 @@ var wsRe = "\\s+",
         "argMin|argMax|uniqCombined|uniqHLL12|uniqExact|uniqExactIf|groupArray|groupUniqArray|quantile|" +
         "quantileDeterministic|quantileTiming|quantileTimingWeighted|quantileExact|" +
         "quantileExactWeighted|quantileTDigest|median|quantiles|varSamp|varPop|stddevSamp|stddevPop|" +
-        "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|countIf|avgIf|" +
+        "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|avgIf|" +
         "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
         "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
         "uniqArrayIf|sumArrayIf|uniq)\\b",
     operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
         "when|else|end|type|left|right|on|outer|desc|asc|union|primary|key|between|" +
-        "foreign|not|references|default|null|inner|cross|natural|database|" +
-        "attach|detach|describe|optimize|prewhere|totals|databases|processlist|show|format|using|global|in)\\b",
+        "foreign|not|null|inner|cross|natural|database|prewhere|using|global|in)\\b",
     dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
         "money|real|number|integer|" +
         "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +

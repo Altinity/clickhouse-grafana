@@ -10,5 +10,5 @@ export default class SqlSeries {
     toTimeSeries(): any;
     extrapolate(datapoints: any): any;
     static _toJSType(type: any): string;
-    _formatValue(value: any): any;
+    static _formatValue(value: any): any;
 }

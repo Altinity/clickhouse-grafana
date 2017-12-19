@@ -29,7 +29,7 @@ System.register(['lodash'], function(exports_1) {
                     lodash_1.default.each(self.series, function (ser) {
                         var r = [];
                         lodash_1.default.each(ser, function (v) {
-                            r.push(self._formatValue(v));
+                            r.push(SqlSeries._formatValue(v));
                         });
                         rows.push(r);
                     });
@@ -48,7 +48,7 @@ System.register(['lodash'], function(exports_1) {
                     // timeCol have to be the first column always
                     var timeCol = self.meta[0], metrics = {}, intervals = [], t;
                     lodash_1.default.each(self.series, function (series) {
-                        t = self._formatValue(series[timeCol.name]);
+                        t = SqlSeries._formatValue(series[timeCol.name]);
                         intervals.push(t);
                         // rm time value from series
                         delete series[timeCol.name];
@@ -69,7 +69,7 @@ System.register(['lodash'], function(exports_1) {
                             if (metrics[k][interval] === undefined) {
                                 metrics[k][interval] = null;
                             }
-                            datapoints.push([self._formatValue(metrics[k][interval]), interval]);
+                            datapoints.push([SqlSeries._formatValue(metrics[k][interval]), interval]);
                         });
                         timeSeries.push({ target: k, datapoints: self.extrapolate(datapoints) });
                     });
@@ -121,7 +121,7 @@ System.register(['lodash'], function(exports_1) {
                             return "string";
                     }
                 };
-                SqlSeries.prototype._formatValue = function (value) {
+                SqlSeries._formatValue = function (value) {
                     if (value === null) {
                         return value;
                     }

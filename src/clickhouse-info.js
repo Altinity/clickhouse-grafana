@@ -19,6 +19,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "OFFSET",
         "HAVING",
         "AS",
+        "GLOBAL",
         "FROM",
         "WHEN",
         "ELSE",
@@ -63,30 +64,18 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "DATABASES",
         "PROCESSLIST",
         "SHOW",
+        "LIMIT",
         "IF",
         "IF NOT EXISTS",
         "IF EXISTS",
+        "GROUP",
+        "ORDER",
+        "BY",
+        "IN",
+        "FORMAT",
         "GROUP BY",
         "ORDER BY",
-        "UNION ALL",
-        "FORMAT JSON",
-        "FORMAT JSONCompact",
-        "FORMAT JSONEachRow",
-        "FORMAT TSV",
-        "FORMAT TabSeparated",
-        "FORMAT TabSeparatedWithNames",
-        "FORMAT TabSeparatedWithNamesAndTypes",
-        "FORMAT TabSeparatedRaw",
-        "FORMAT BlockTabSeparated",
-        "FORMAT TSKV",
-        "FORMAT CSV",
-        "FORMAT CSVWithNames",
-        "SYSTEM RELOAD DICTIONARY",
-        "SYSTEM RELOAD DICTIONARIES",
-        "SYSTEM DROP DNS CACHE",
-        "SYSTEM SHUTDOWN",
-        "SYSTEM KILL",
-        "CLEAR COLUMN IN PARTITION"
+        "UNION ALL"
     ];
     p.DataTypes = [
         "int",
@@ -156,7 +145,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "toRelativeSecondNum", "toRelativeWeekNum", "toRelativeYearNum", "toSecond", "toStartOfFiveMinute", "toStartOfHour",
         "toStartOfMinute", "toStartOfMonth", "toStartOfQuarter", "toStartOfYear", "toString", "toStringCutToZero", "toTime", "toUInt16",
         "toUInt32", "toUInt64", "toUInt8", "toYear", "today", "topLevelDomain", "ucase", "unhex", "uniq", "uniqArray", "uniqArrayIf",
-        "uniqArrayIf", "uniqCombined", "uniqExact", "uniqExactIf", "uniqHLL12", "uniqUpTo", "upper", "upperUTF8", "varPop", "varPopIf",
+        "uniqArrayIf", "uniqCombined", "uniqCombinedIf", "uniqExact", "uniqExactIf", "uniqHLL12", "uniqUpTo", "upper", "upperUTF8", "varPop", "varPopIf",
         "varSamp", "varSampIf", "yesterday"
     ];
     p.Macros = [
@@ -414,6 +403,11 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "uniqCombined",
                 "def": "uniqCombined(x)",
+                "docText": ""
+            },
+            {
+                "name": "uniqCombinedIf",
+                "def": "uniqCombinedIf(x,v)",
                 "docText": ""
             },
             {

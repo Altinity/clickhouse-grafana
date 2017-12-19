@@ -243,20 +243,23 @@ System.register(['lodash'], function(exports_1) {
                     this._s = this._sOriginal;
                     this.skipSpace = true;
                     this.re = new RegExp("^(?:" + tokenRe + ")", 'i');
-                    var rootToken = 'root', subQuery = '', argument = '', ast = {}, subAST = {};
+                    var rootToken = 'root', subQuery = '', argument = '', ast = {}, subAST = {}, expectNextEl = false;
                     ast[rootToken] = [];
                     while (this.next()) {
-                        if (isStatement(this.token) && !ast.hasOwnProperty(lodash_1.default.toLower(this.token))) {
-                            if (argument !== '') {
+                        if (isStatement(this.token) && !ast.hasOwnProperty(lodash_1.default.toLower(this.token)) && !expectNextEl) {
+                            if (argument.length > 0) {
                                 ast[rootToken].push(argument);
                                 argument = '';
+                                expectNextEl = false;
                             }
                             rootToken = lodash_1.default.toLower(this.token);
                             ast[rootToken] = [];
+                            expectNextEl = true;
                         }
                         else if (this.token === ',' && isClosured(argument)) {
                             ast[rootToken].push(argument);
                             argument = '';
+                            expectNextEl = true;
                         }
                         else if (isClosureChars(this.token) && rootToken === 'from') {
                             subQuery = betweenBraces(this._s);
@@ -317,7 +320,7 @@ System.register(['lodash'], function(exports_1) {
                             }
                         }
                         else if (isJoin(this.token)) {
-                            var joinType = this.token, source;
+                            var joinType = this.token, source = void 0;
                             if (!this.next()) {
                                 throw ("wrong join signature for `" + joinType + "` at [" + this._s + "]");
                             }
@@ -332,9 +335,7 @@ System.register(['lodash'], function(exports_1) {
                             this.expect('using');
                             ast['join'] = { type: joinType, source: source, using: [] };
                             while (this.next()) {
-                                if (!isID(this.token)) {
-                                    continue;
-                                }
+                                debugger;
                                 if (isStatement(this.token)) {
                                     if (argument !== '') {
                                         ast[rootToken].push(argument);
@@ -344,20 +345,28 @@ System.register(['lodash'], function(exports_1) {
                                     ast[rootToken] = [];
                                     break;
                                 }
+                                if (!isID(this.token)) {
+                                    continue;
+                                }
                                 ast['join'].using.push(this.token);
                             }
                         }
                         else if (isClosureChars(this.token)) {
                             argument += this.token;
+                            if (this.token === '(') {
+                                expectNextEl = true;
+                            }
                         }
                         else if (this.token === '.') {
                             argument += this.token;
                         }
                         else if (this.token === ',') {
                             argument += this.token + ' ';
+                            expectNextEl = true;
                         }
                         else {
                             argument += argument === '' || isSkipSpace(argument[argument.length - 1]) ? this.token : ' ' + this.token;
+                            expectNextEl = false;
                         }
                     }
                     if (argument !== '') {
@@ -401,13 +410,12 @@ System.register(['lodash'], function(exports_1) {
                 "argMin|argMax|uniqCombined|uniqHLL12|uniqExact|uniqExactIf|groupArray|groupUniqArray|quantile|" +
                 "quantileDeterministic|quantileTiming|quantileTimingWeighted|quantileExact|" +
                 "quantileExactWeighted|quantileTDigest|median|quantiles|varSamp|varPop|stddevSamp|stddevPop|" +
-                "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|countIf|avgIf|" +
+                "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|avgIf|" +
                 "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
                 "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
                 "uniqArrayIf|sumArrayIf|uniq)\\b", operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
                 "when|else|end|type|left|right|on|outer|desc|asc|union|primary|key|between|" +
-                "foreign|not|references|default|null|inner|cross|natural|database|" +
-                "attach|detach|describe|optimize|prewhere|totals|databases|processlist|show|format|using|global|in)\\b", dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
+                "foreign|not|null|inner|cross|natural|database|prewhere|using|global|in)\\b", dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
                 "money|real|number|integer|" +
                 "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +
                 "array|tuple|string)\\b", wsOnlyRe = new RegExp("^(?:" + wsRe + ")$"), commentOnlyRe = new RegExp("^(?:" + commentRe + ")$"), idOnlyRe = new RegExp("^(?:" + idRe + ")$"), closureOnlyRe = new RegExp("^(?:" + closureRe + ")$"), macroFuncOnlyRe = new RegExp("^(?:" + macroFuncRe + ")$"), statementOnlyRe = new RegExp("^(?:" + statementRe + ")$", 'i'), joinsOnlyRe = new RegExp("^(?:" + joinsRe + ")$", 'i'), operatorOnlyRe = new RegExp("^(?:" + operatorRe + ")$", 'i'), dataTypeOnlyRe = new RegExp("^(?:" + dataTypeRe + ")$"), builtInFuncOnlyRe = new RegExp("^(?:" + builtInFuncRe + ")$"), macroOnlyRe = new RegExp("^(?:" + macroRe + ")$", 'i'), inOnlyRe = new RegExp("^(?:" + inRe + ")$", 'i'), condOnlyRe = new RegExp("^(?:" + condRe + ")$", 'i'), numOnlyRe = new RegExp("^(?:" + [powerIntRe, intRe, floatRe].join("|") + ")$"), stringOnlyRe = new RegExp("^(?:" + stringRe + ")$"), skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$"), binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");

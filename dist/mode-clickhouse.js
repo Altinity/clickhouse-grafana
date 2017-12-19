@@ -41,14 +41,17 @@ System.register([], function (_export, _context) {
                             token: "string", // ' string
                             regex: "'.*?'"
                         }, {
+                            token: "variable",
+                            regex: "\\$\\w+"
+                        }, {
+                            token: "keyword.operator",
+                            regex: "\\+|\\-|\\/|\\/\\/|%|<@>|@>|<@|&|\\^|~|<|>|<=|=>|==|!=|<>|=|\\?|:"
+                        }, {
                             token: "constant.numeric", // float
                             regex: "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b"
                         }, {
                             token: keywordMapper,
                             regex: "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
-                        }, {
-                            token: "keyword.operator",
-                            regex: "\\+|\\-|\\/|\\/\\/|%|<@>|@>|<@|&|\\^|~|<|>|<=|=>|==|!=|<>|="
                         }, {
                             token: "paren.lparen",
                             regex: "[\\(]"
@@ -79,6 +82,15 @@ System.register([], function (_export, _context) {
                         caption: word,
                         value: word,
                         meta: "keyword",
+                        score: Number.MAX_VALUE
+                    };
+                });
+
+                var constantCompletions = ClickhouseInfo.Constants.map(function (word) {
+                    return {
+                        caption: word,
+                        value: word,
+                        meta: "constant",
                         score: Number.MAX_VALUE
                     };
                 });
@@ -147,7 +159,7 @@ System.register([], function (_export, _context) {
                             return callback(null, []);
                         }
 
-                        var completions = keyWordsCompletions.concat(functionsCompletions);
+                        var completions = keyWordsCompletions.concat(functionsCompletions).concat(constantCompletions);
                         completions = completions.concat(macrosCompletions);
                         callback(null, completions);
                     };

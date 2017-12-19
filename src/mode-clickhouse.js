@@ -33,14 +33,17 @@ ace.define("ace/mode/clickhouse_highlight_rules", ["require", "exports", "module
                 token: "string",           // ' string
                 regex: "'.*?'"
             }, {
+                token: "variable",
+                regex: "\\$\\w+"
+            }, {
+                token: "keyword.operator",
+                regex: "\\+|\\-|\\/|\\/\\/|%|<@>|@>|<@|&|\\^|~|<|>|<=|=>|==|!=|<>|=|\\?|:"
+            }, {
                 token: "constant.numeric", // float
                 regex: "[+-]?\\d+(?:(?:\\.\\d*)?(?:[eE][+-]?\\d+)?)?\\b"
             }, {
                 token: keywordMapper,
                 regex: "[a-zA-Z_$][a-zA-Z0-9_$]*\\b"
-            }, {
-                token: "keyword.operator",
-                regex: "\\+|\\-|\\/|\\/\\/|%|<@>|@>|<@|&|\\^|~|<|>|<=|=>|==|!=|<>|="
             }, {
                 token: "paren.lparen",
                 regex: "[\\(]"
@@ -75,6 +78,15 @@ ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "
         }
     });
 
+    var constantCompletions = ClickhouseInfo.Constants.map(function (word) {
+        return {
+            caption: word,
+            value: word,
+            meta: "constant",
+            score: Number.MAX_VALUE
+        };
+    });
+
     var macrosCompletions = ClickhouseInfo.MacrosCompletions().map(function (item) {
         return {
             caption: item.name,
@@ -84,6 +96,7 @@ ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "
             score: Number.MAX_VALUE
         };
     });
+
 
     var functionsCompletions = ClickhouseInfo.FunctionsCompletions().map(function (item) {
         return {
@@ -142,7 +155,7 @@ ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "
                 return callback(null, []);
             }
 
-            var completions = keyWordsCompletions.concat(functionsCompletions);
+            var completions = keyWordsCompletions.concat(functionsCompletions).concat(constantCompletions);
             completions = completions.concat(macrosCompletions);
             callback(null, completions);
         };

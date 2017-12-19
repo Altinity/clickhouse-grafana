@@ -81,10 +81,12 @@ describe("scanner:", () => {
                 "using": [
                     "EventDate",
                     "col1",
-                    "EventDate",
-                    "col1"
                 ]
             },
+            "order by": [
+                "EventDate",
+                "col1"
+            ],
             "format": [
                 "CSVWithNames"
             ]
@@ -205,5 +207,67 @@ describe("scanner:", () => {
       expect(scanner.toAST()).to.eql(expectedAST);
     });
   });
+
+    describe("AST case 5", () => {
+        var query = "SELECT select FROM $table",
+            scanner = new Scanner(query);
+
+        var expectedAST = {
+            "root": [
+            ],
+            "select": [
+                "select"
+            ],
+            "from": [
+                "$table"
+            ]
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).to.eql(expectedAST);
+        });
+    });
+
+    describe("AST case 6", () => {
+        var query = "SELECT 1, select FROM $table",
+            scanner = new Scanner(query);
+
+        var expectedAST = {
+            "root": [
+            ],
+            "select": [
+                "1",
+                "select"
+            ],
+            "from": [
+                "$table"
+            ]
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).to.eql(expectedAST);
+        });
+    });
+
+    describe("AST case 6", () => {
+        var query = "SELECT t, countIf(Format='1') FROM $table",
+            scanner = new Scanner(query);
+
+        var expectedAST = {
+            "root": [
+            ],
+            "select": [
+                "t",
+                "countIf(Format = '1')"
+            ],
+            "from": [
+                "$table"
+            ]
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).to.eql(expectedAST);
+        });
+    });
 
 });

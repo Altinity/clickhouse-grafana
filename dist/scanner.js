@@ -419,8 +419,8 @@ System.register(['lodash'], function(exports_1) {
                 "money|real|number|integer|" +
                 "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +
                 "array|tuple|string)\\b", wsOnlyRe = new RegExp("^(?:" + wsRe + ")$"), commentOnlyRe = new RegExp("^(?:" + commentRe + ")$"), idOnlyRe = new RegExp("^(?:" + idRe + ")$"), closureOnlyRe = new RegExp("^(?:" + closureRe + ")$"), macroFuncOnlyRe = new RegExp("^(?:" + macroFuncRe + ")$"), statementOnlyRe = new RegExp("^(?:" + statementRe + ")$", 'i'), joinsOnlyRe = new RegExp("^(?:" + joinsRe + ")$", 'i'), operatorOnlyRe = new RegExp("^(?:" + operatorRe + ")$", 'i'), dataTypeOnlyRe = new RegExp("^(?:" + dataTypeRe + ")$"), builtInFuncOnlyRe = new RegExp("^(?:" + builtInFuncRe + ")$"), macroOnlyRe = new RegExp("^(?:" + macroRe + ")$", 'i'), inOnlyRe = new RegExp("^(?:" + inRe + ")$", 'i'), condOnlyRe = new RegExp("^(?:" + condRe + ")$", 'i'), numOnlyRe = new RegExp("^(?:" + [powerIntRe, intRe, floatRe].join("|") + ")$"), stringOnlyRe = new RegExp("^(?:" + stringRe + ")$"), skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$"), binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");
-            tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, intRe,
-                floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
+            tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, floatRe, intRe,
+                binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
             tabSize = '    ', newLine = '\n';
         }
     }

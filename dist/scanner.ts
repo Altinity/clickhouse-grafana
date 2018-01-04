@@ -302,8 +302,8 @@ var wsRe = "\\s+",
     skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$"),
     binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");
 
-var tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, intRe,
-    floatRe, binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
+var tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, floatRe, intRe,
+    binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
 
 function isSkipSpace(token) {
     return skipSpaceOnlyRe.test(token);

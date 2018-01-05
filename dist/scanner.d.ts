@@ -1,8 +1,10 @@
 export default class Scanner {
+    tree: any;
+    rootToken: any;
     token: any;
-    AST: any;
     skipSpace: boolean;
     re: any;
+    expectedNext: boolean;
     _sOriginal: any;
     _s: any;
     /** @ngInject */
@@ -11,9 +13,11 @@ export default class Scanner {
     expect(token: any): void;
     isToken(token: any): boolean;
     expectNext(): void;
-    prev(): void;
     next(): boolean;
     _next(): boolean;
     Format(): string;
-    toAST(): {};
+    push(argument: any): void;
+    setRoot(token: any): void;
+    isExpectedNext(): boolean;
+    toAST(): any;
 }

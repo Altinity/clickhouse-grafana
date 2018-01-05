@@ -284,15 +284,15 @@ describe("scanner:", () => {
     });
 
     describe("AST case 9", () => {
-        let query = "SELECT " +
-            "  t, groupArray((process_name, duration)) as groupArr" +
-            "FROM ( " +
-            "  SELECT " +
-            "    (intDiv(toUInt32(event_datetime), 5) * 5) * 1000 as t, " +
-            "    process_name, " +
-            "    quantile(0.95)(duration) duration " +
+        let query = "SELECT" +
+            "  t, groupArray((process_name, duration)) as groupArr " +
+            " FROM (" +
+            "  SELECT" +
+            "    (intDiv(toUInt32(event_datetime), 5) * 5) * 1000 as t," +
+            "    process_name," +
+            "    quantile(0.95)(duration) duration" +
             "  FROM xx " +
-            "  WHERE event_date >= toDate(1514966917) AND event_datetime >= toDateTime(1514966917) " +
+            "  WHERE event_date >= toDate(1514966917) AND event_datetime >= toDateTime(1514966917)" +
             "  GROUP BY t, process_name  ORDER BY t, process_name" +
             ") GROUP BY t ORDER BY t FORMAT JSON",
             scanner = new Scanner(query);

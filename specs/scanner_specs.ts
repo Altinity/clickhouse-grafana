@@ -282,4 +282,63 @@ describe("scanner:", () => {
             expect(scanner.toAST()).to.eql(expectedAST);
         });
     });
+
+    describe("AST case 9", () => {
+        let query = "SELECT " +
+            "  t, groupArray((process_name, duration)) as groupArr" +
+            "FROM ( " +
+            "  SELECT " +
+            "    (intDiv(toUInt32(event_datetime), 5) * 5) * 1000 as t, " +
+            "    process_name, " +
+            "    quantile(0.95)(duration) duration " +
+            "  FROM xx " +
+            "  WHERE event_date >= toDate(1514966917) AND event_datetime >= toDateTime(1514966917) " +
+            "  GROUP BY t, process_name  ORDER BY t, process_name" +
+            ") GROUP BY t ORDER BY t FORMAT JSON",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
+            "select": [
+                "t",
+                "groupArray((process_name, duration)) as groupArr"
+            ],
+            "from": {
+                "root": [],
+                "select": [
+                    "(intDiv(toUInt32(event_datetime), 5) * 5) * 1000 as t",
+                    "process_name",
+                    "quantile(0.95)(duration) duration"
+                ],
+                "from": [
+                    "xx"
+                ],
+                "where": [
+                    "event_date >= toDate(1514966917)",
+                    "AND event_datetime >= toDateTime(1514966917)",
+                ],
+                "group by": [
+                    "t",
+                    "process_name"
+                ],
+                "order by": [
+                    "t",
+                    "process_name"
+                ]
+            },
+            "group by": [
+                "t"
+            ],
+            "order by": [
+                "t"
+            ],
+            "format": [
+                "JSON"
+            ]
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).to.eql(expectedAST);
+        });
+    });
 });

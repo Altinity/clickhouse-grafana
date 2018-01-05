@@ -1,23 +1,22 @@
-
 import {describe, it, expect} from './lib/common';
 import Scanner from '../src/scanner';
 
 describe("scanner:", () => {
     describe("AST case 1", () => {
-        var query = "SELECT EventDate, col1, col2, toUInt32(col1 > 0 ? col2/col1*10000 : 0)/100 AS percent " +
-                "FROM ( SELECT   EventDate,   col1,   countIf(col2 GLOBAL IN some_table) AS col2_shared,   " +
-                "count() AS col_count,   uniqCombinedIf(col3, col3 GLOBAL IN some_table) AS col3_shared,   " +
-                "uniqCombined(col3) AS unique_col3 FROM   general_table_all PREWHERE   Event IN ('type1')   " +
-                "AND EventDate <= '2016-12-20'   WHERE     (EventDate, col1) GLOBAL IN some_table GROUP BY   " +
-                "EventDate, col1) GLOBAL ANY LEFT JOIN ( SELECT   EventDate,   col1,   countIf(col2 GLOBAL IN some_table) " +
-                "AS col2_shared,   count() AS col_count,   uniqCombinedIf(col3, col3 GLOBAL IN some_table) AS col3_shared,   " +
-                "uniqCombined(col3) AS unique_col3 FROM   general_table_all PREWHERE   Event IN ('type2')   " +
-                "AND EventDate <= '2016-12-20' WHERE   (EventDate, col1) GLOBAL IN some_table   " +
-                "AND col4 GLOBAL IN some_table GROUP BY   EventDate, col1) USING EventDate, col1 " +
-                "ORDER BY EventDate, col1 FORMAT CSVWithNames",
+        let query = "SELECT EventDate, col1, col2, toUInt32(col1 > 0 ? col2/col1*10000 : 0)/100 AS percent " +
+            "FROM ( SELECT   EventDate,   col1,   countIf(col2 GLOBAL IN some_table) AS col2_shared,   " +
+            "count() AS col_count,   uniqCombinedIf(col3, col3 GLOBAL IN some_table) AS col3_shared,   " +
+            "uniqCombined(col3) AS unique_col3 FROM   general_table_all PREWHERE   Event IN ('type1')   " +
+            "AND EventDate <= '2016-12-20'   WHERE     (EventDate, col1) GLOBAL IN some_table GROUP BY   " +
+            "EventDate, col1) GLOBAL ANY LEFT JOIN ( SELECT   EventDate,   col1,   countIf(col2 GLOBAL IN some_table) " +
+            "AS col2_shared,   count() AS col_count,   uniqCombinedIf(col3, col3 GLOBAL IN some_table) AS col3_shared,   " +
+            "uniqCombined(col3) AS unique_col3 FROM   general_table_all PREWHERE   Event IN ('type2')   " +
+            "AND EventDate <= '2016-12-20' WHERE   (EventDate, col1) GLOBAL IN some_table   " +
+            "AND col4 GLOBAL IN some_table GROUP BY   EventDate, col1) USING EventDate, col1 " +
+            "ORDER BY EventDate, col1 FORMAT CSVWithNames",
             scanner = new Scanner(query);
 
-        var expectedAST = {
+        let expectedAST = {
             "root": [],
             "select": [
                 "EventDate",
@@ -98,11 +97,11 @@ describe("scanner:", () => {
     });
 
     describe("AST case 2", () => {
-        var query = "$rateColumns((AppType = '' ? 'undefined' : AppType) type, sum(Hits) hits) " +
-                "FROM table_all  WHERE Event = 'request' AND (-1 IN ($template) OR col IN ($template)) HAVING hits > $interval",
+        let query = "$rateColumns((AppType = '' ? 'undefined' : AppType) type, sum(Hits) hits) " +
+            "FROM table_all  WHERE Event = 'request' AND (-1 IN ($template) OR col IN ($template)) HAVING hits > $interval",
             scanner = new Scanner(query);
 
-        var expectedAST = {
+        let expectedAST = {
             "root": [],
             "$rateColumns": [
                 "(AppType = '' ? 'undefined' : AppType) type",
@@ -127,11 +126,11 @@ describe("scanner:", () => {
     });
 
     describe("AST case 3", () => {
-        var query = "SELECT $timeSeries as t, count() AS `SMALL` FROM db.table " +
-                "WHERE W0 <= 400 AND LastEvent>=1 AND $timeFilter GROUP BY t ORDER BY t",
+        let query = "SELECT $timeSeries as t, count() AS `SMALL` FROM db.table " +
+            "WHERE W0 <= 400 AND LastEvent>=1 AND $timeFilter GROUP BY t ORDER BY t",
             scanner = new Scanner(query);
 
-        var expectedAST = {
+        let expectedAST = {
             "root": [],
             "select": [
                 "$timeSeries as t",
@@ -159,62 +158,59 @@ describe("scanner:", () => {
     });
 
 
-  describe("AST case 4", () => {
-    var query = "SELECT LogTime, Entity, Message FROM $table " +
-        "ANY LEFT JOIN (SELECT * FROM default.log_events) USING EventCode " +
-        "WHERE $timeFilter ORDER BY LogTime DESC LIMIT $__limit",
-      scanner = new Scanner(query);
-
-    var expectedAST = {
-      "root": [
-      ],
-      "select": [
-        "LogTime",
-        "Entity",
-        "Message"
-      ],
-      "from": [
-        "$table"
-      ],
-      "join": {
-        "type": "ANY LEFT JOIN",
-        "source": {
-          "root": [
-          ],
-          "select": [
-            "*"
-          ],
-          "from": [
-            "default.log_events"
-          ]
-        },
-        "using": [
-          "EventCode"
-        ]
-      },
-      "where": [
-        "$timeFilter"
-      ],
-      "order by": [
-        "LogTime DESC"
-      ],
-      "limit": [
-        "$__limit"
-      ]
-    };
-
-    it("expects equality", () => {
-      expect(scanner.toAST()).to.eql(expectedAST);
-    });
-  });
-
-    describe("AST case 5", () => {
-        var query = "SELECT select FROM $table",
+    describe("AST case 4", () => {
+        let query = "SELECT LogTime, Entity, Message FROM $table " +
+            "ANY LEFT JOIN (SELECT * FROM default.log_events) USING EventCode " +
+            "WHERE $timeFilter ORDER BY LogTime DESC LIMIT $__limit",
             scanner = new Scanner(query);
 
-        var expectedAST = {
-            "root": [
+        let expectedAST = {
+            "root": [],
+            "select": [
+                "LogTime",
+                "Entity",
+                "Message"
             ],
+            "from": [
+                "$table"
+            ],
+            "join": {
+                "type": "ANY LEFT JOIN",
+                "source": {
+                    "root": [],
+                    "select": [
+                        "*"
+                    ],
+                    "from": [
+                        "default.log_events"
+                    ]
+                },
+                "using": [
+                    "EventCode"
+                ]
+            },
+            "where": [
+                "$timeFilter"
+            ],
+            "order by": [
+                "LogTime DESC"
+            ],
+            "limit": [
+                "$__limit"
+            ]
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).to.eql(expectedAST);
+        });
+    });
+
+    describe("AST case 5", () => {
+        let query = "SELECT select FROM $table",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
             "select": [
                 "select"
             ],
@@ -229,12 +225,11 @@ describe("scanner:", () => {
     });
 
     describe("AST case 6", () => {
-        var query = "SELECT 1, select FROM $table",
+        let query = "SELECT 1, select FROM $table",
             scanner = new Scanner(query);
 
-        var expectedAST = {
-            "root": [
-            ],
+        let expectedAST = {
+            "root": [],
             "select": [
                 "1",
                 "select"
@@ -249,13 +244,12 @@ describe("scanner:", () => {
         });
     });
 
-    describe("AST case 6", () => {
-        var query = "SELECT t, countIf(Format='1') FROM $table",
+    describe("AST case 7", () => {
+        let query = "SELECT t, countIf(Format='1') FROM $table",
             scanner = new Scanner(query);
 
-        var expectedAST = {
-            "root": [
-            ],
+        let expectedAST = {
+            "root": [],
             "select": [
                 "t",
                 "countIf(Format = '1')"
@@ -270,4 +264,22 @@ describe("scanner:", () => {
         });
     });
 
+    describe("AST case 8", () => {
+        let query = "SELECT from FROM from",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
+            "select": [
+                "from"
+            ],
+            "from": [
+                "from"
+            ]
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).to.eql(expectedAST);
+        });
+    });
 });

@@ -176,7 +176,6 @@ System.register(['lodash'], function(exports_1) {
                 function Scanner(s) {
                     this._sOriginal = s;
                     this.token = null;
-                    this.AST = {};
                 }
                 Scanner.prototype.raw = function () {
                     return this._sOriginal;
@@ -197,14 +196,6 @@ System.register(['lodash'], function(exports_1) {
                     if (!this.next()) {
                         throw ("expecting additional token at the end of query [" + this._sOriginal + "]");
                     }
-                };
-                ;
-                Scanner.prototype.prev = function () {
-                    if (this.token === null) {
-                        throw ("BUG: prev called on empty token");
-                    }
-                    this._s = this.token + " " + this._s;
-                    this.token = null;
                 };
                 ;
                 Scanner.prototype.next = function () {
@@ -239,31 +230,48 @@ System.register(['lodash'], function(exports_1) {
                     return print(this.toAST());
                 };
                 ;
+                Scanner.prototype.push = function (argument) {
+                    this.tree[this.rootToken].push(argument);
+                    this.expectedNext = false;
+                };
+                Scanner.prototype.setRoot = function (token) {
+                    this.rootToken = token.toLowerCase();
+                    this.tree[this.rootToken] = [];
+                    this.expectedNext = true;
+                };
+                Scanner.prototype.isExpectedNext = function () {
+                    var v = this.expectedNext;
+                    this.expectedNext = false;
+                    return v;
+                };
                 Scanner.prototype.toAST = function () {
                     this._s = this._sOriginal;
+                    this.tree = {};
+                    this.setRoot('root');
+                    this.expectedNext = false;
                     this.skipSpace = true;
                     this.re = new RegExp("^(?:" + tokenRe + ")", 'i');
-                    var rootToken = 'root', subQuery = '', argument = '', ast = {}, subAST = {}, expectNextEl = false;
-                    ast[rootToken] = [];
+                    var subQuery = '', argument = '';
                     while (this.next()) {
-                        if (isStatement(this.token) && !ast.hasOwnProperty(lodash_1.default.toLower(this.token)) && !expectNextEl) {
-                            if (argument.length > 0) {
-                                ast[rootToken].push(argument);
-                                argument = '';
-                                expectNextEl = false;
+                        if (!this.isExpectedNext() && isStatement(this.token) && !this.tree.hasOwnProperty(lodash_1.default.toLower(this.token))) {
+                            if (!isClosured(argument)) {
+                                argument += this.token;
+                                continue;
                             }
-                            rootToken = lodash_1.default.toLower(this.token);
-                            ast[rootToken] = [];
-                            expectNextEl = true;
+                            if (argument.length > 0) {
+                                this.push(argument);
+                                argument = '';
+                            }
+                            this.setRoot(this.token);
                         }
                         else if (this.token === ',' && isClosured(argument)) {
-                            ast[rootToken].push(argument);
+                            this.push(argument);
                             argument = '';
-                            expectNextEl = true;
+                            this.expectedNext = true;
                         }
-                        else if (isClosureChars(this.token) && rootToken === 'from') {
+                        else if (isClosureChars(this.token) && this.rootToken === 'from') {
                             subQuery = betweenBraces(this._s);
-                            ast[rootToken] = toAST(subQuery);
+                            this.tree[this.rootToken] = toAST(subQuery);
                             this._s = this._s.substring(subQuery.length + 1);
                         }
                         else if (isMacroFunc(this.token)) {
@@ -272,18 +280,18 @@ System.register(['lodash'], function(exports_1) {
                                 throw ("wrong function signature for `" + func + "` at [" + this._s + "]");
                             }
                             subQuery = betweenBraces(this._s);
-                            subAST = toAST(subQuery);
+                            var subAST = toAST(subQuery);
                             if (isSet(subAST, 'root')) {
-                                ast[func] = subAST['root'].map(function (item) {
+                                this.tree[func] = subAST['root'].map(function (item) {
                                     return item;
                                 });
                             }
                             else {
-                                ast[func] = subAST;
+                                this.tree[func] = subAST;
                             }
                             this._s = this._s.substring(subQuery.length + 1);
                             // macro funcs are used instead of SELECT statement
-                            ast['select'] = [];
+                            this.tree['select'] = [];
                         }
                         else if (isIn(this.token)) {
                             argument += ' ' + this.token;
@@ -292,7 +300,7 @@ System.register(['lodash'], function(exports_1) {
                             }
                             if (isClosureChars(this.token)) {
                                 subQuery = betweenBraces(this._s);
-                                subAST = toAST(subQuery);
+                                var subAST = toAST(subQuery);
                                 if (isSet(subAST, 'root')) {
                                     argument += ' (' + subAST['root'].map(function (item) {
                                         return item;
@@ -301,7 +309,7 @@ System.register(['lodash'], function(exports_1) {
                                 }
                                 else {
                                     argument += ' (' + newLine + print(subAST, tabSize) + ')';
-                                    ast[rootToken].push(argument);
+                                    this.push(argument);
                                     argument = '';
                                 }
                                 this._s = this._s.substring(subQuery.length + 1);
@@ -310,9 +318,9 @@ System.register(['lodash'], function(exports_1) {
                                 argument += ' ' + this.token;
                             }
                         }
-                        else if (isCond(this.token) && (rootToken === 'where' || rootToken === 'prewhere')) {
+                        else if (isCond(this.token) && (this.rootToken === 'where' || this.rootToken === 'prewhere')) {
                             if (isClosured(argument)) {
-                                ast[rootToken].push(argument);
+                                this.push(argument);
                                 argument = this.token;
                             }
                             else {
@@ -333,47 +341,38 @@ System.register(['lodash'], function(exports_1) {
                                 source = [this.token];
                             }
                             this.expect('using');
-                            ast['join'] = { type: joinType, source: source, using: [] };
+                            this.tree['join'] = { type: joinType, source: source, using: [] };
                             while (this.next()) {
-                                debugger;
                                 if (isStatement(this.token)) {
                                     if (argument !== '') {
-                                        ast[rootToken].push(argument);
+                                        this.push(argument);
                                         argument = '';
                                     }
-                                    rootToken = this.token.toLowerCase();
-                                    ast[rootToken] = [];
+                                    this.setRoot(this.token);
                                     break;
                                 }
                                 if (!isID(this.token)) {
                                     continue;
                                 }
-                                ast['join'].using.push(this.token);
+                                this.tree['join'].using.push(this.token);
                             }
                         }
-                        else if (isClosureChars(this.token)) {
-                            argument += this.token;
-                            if (this.token === '(') {
-                                expectNextEl = true;
-                            }
-                        }
-                        else if (this.token === '.') {
+                        else if (isClosureChars(this.token) || this.token === '.') {
                             argument += this.token;
                         }
                         else if (this.token === ',') {
                             argument += this.token + ' ';
-                            expectNextEl = true;
                         }
                         else {
-                            argument += argument === '' || isSkipSpace(argument[argument.length - 1]) ? this.token : ' ' + this.token;
-                            expectNextEl = false;
+                            argument += (argument === '' || isSkipSpace(argument[argument.length - 1]))
+                                ? this.token
+                                : ' ' + this.token;
                         }
                     }
                     if (argument !== '') {
-                        ast[rootToken].push(argument);
+                        this.push(argument);
                     }
-                    this.AST = ast;
-                    return ast;
+                    return this.tree;
                 };
                 ;
                 return Scanner;

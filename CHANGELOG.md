@@ -1,3 +1,11 @@
+# 1.2.7 (2018-01-05)
+
+## Fixes
+
+* properly format query with reserved names
+* fix #31
+
+
 # 1.2.6 (2017-12-13)
 
 ## Fixes

@@ -31,7 +31,7 @@ describe("scanner:", () => {
                     "col1",
                     "countIf(col2 GLOBAL IN some_table) AS col2_shared",
                     "count() AS col_count",
-                    "uniqCombinedIf(col3,  col3 GLOBAL IN some_table) AS col3_shared",
+                    "uniqCombinedIf(col3, col3 GLOBAL IN some_table) AS col3_shared",
                     "uniqCombined(col3) AS unique_col3"
                 ],
                 "from": [
@@ -42,7 +42,7 @@ describe("scanner:", () => {
                     "AND EventDate <= '2016-12-20'"
                 ],
                 "where": [
-                    "(EventDate,  col1) GLOBAL IN some_table"
+                    "(EventDate, col1) GLOBAL IN some_table"
                 ],
                 "group by": [
                     "EventDate",
@@ -58,7 +58,7 @@ describe("scanner:", () => {
                         "col1",
                         "countIf(col2 GLOBAL IN some_table) AS col2_shared",
                         "count() AS col_count",
-                        "uniqCombinedIf(col3,  col3 GLOBAL IN some_table) AS col3_shared",
+                        "uniqCombinedIf(col3, col3 GLOBAL IN some_table) AS col3_shared",
                         "uniqCombined(col3) AS unique_col3"
                     ],
                     "from": [
@@ -69,7 +69,7 @@ describe("scanner:", () => {
                         "AND EventDate <= '2016-12-20'"
                     ],
                     "where": [
-                        "(EventDate,  col1) GLOBAL IN some_table",
+                        "(EventDate, col1) GLOBAL IN some_table",
                         "AND col4 GLOBAL IN some_table"
                     ],
                     "group by": [

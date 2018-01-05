@@ -237,7 +237,7 @@ let wsRe = "\\s+",
     closureRe = "[\\(\\)]",
     specCharsRe = "[,?:]",
     macroRe = "\\$[A-Za-z0-9_$]+",
-    skipSpaceRe = "[\\(\\.!]",
+    skipSpaceRe = "[\\(\\.! ]",
 
     builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
         "coalesce|ifnull|isnull|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +

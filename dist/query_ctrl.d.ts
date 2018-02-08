@@ -19,6 +19,7 @@ declare class SqlQueryCtrl extends QueryCtrl {
     editMode: boolean;
     textareaHeight: any;
     dateTimeTypeOptions: any;
+    completerCache: any[];
     tableLoading: boolean;
     datetimeLoading: boolean;
     dateLoading: boolean;
@@ -35,6 +36,9 @@ declare class SqlQueryCtrl extends QueryCtrl {
     dateTimeColDataTypeChanged(): void;
     toggleEditorMode(): void;
     toggleEdit(e: any, editMode: boolean): void;
+    getCompleter(): SqlQueryCtrl;
+    getCompletions(editor: any, session: any, pos: any, prefix: any, callback: any): void;
+    static _convertToHTML(item: any): string;
     getDatabaseSegments(): any;
     databaseChanged(): void;
     getTableSegments(): any;
@@ -44,6 +48,7 @@ declare class SqlQueryCtrl extends QueryCtrl {
     format(): any;
     getScanner(): any;
     handleQueryError(err: any): any[];
+    queryColumns(): any;
     querySegment(type: string): any;
     applySegment(dst: any, src: any): void;
     buildExploreQuery(type: any): any;

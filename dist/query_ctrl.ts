@@ -32,6 +32,8 @@ class SqlQueryCtrl extends QueryCtrl {
     textareaHeight: any;
     dateTimeTypeOptions: any;
 
+    completerCache: any[];
+
     tableLoading: boolean;
     datetimeLoading: boolean;
     dateLoading: boolean;
@@ -64,6 +66,8 @@ class SqlQueryCtrl extends QueryCtrl {
         this.resolutions = _.map([1,2,3,4,5,10], function(f) {
             return {factor: f, label: '1/' + f};
         });
+
+        this.completerCache = [];
 
         this.dateTimeTypeOptions =  [
             {text: 'Column:DateTime', value: 'DATETIME'},
@@ -149,6 +153,59 @@ class SqlQueryCtrl extends QueryCtrl {
         }
     }
 
+    getCompleter() {
+        return this;
+    }
+
+    getCompletions(editor, session, pos, prefix, callback) {
+        if (this.target.database === undefined || this.target.table === undefined) {
+            callback(null, []);
+            return;
+        }
+
+        let self = this;
+        let key = self.target.database + '.' + self.target.table;
+        if (self.completerCache[key]) {
+            callback(null, self.completerCache[key]);
+            return;
+        }
+
+        self.queryColumns().then(function(response){
+            self.completerCache[key] = response.map(function (item) {
+                return {
+                    caption: item.text,
+                    value: item.text,
+                    meta: key,
+                    docHTML: SqlQueryCtrl._convertToHTML(item),
+                };
+            });
+            callback(null, self.completerCache[key]);
+        });
+    }
+
+    static _convertToHTML(item: any) {
+        var desc = item.value,
+            space_index = 0,
+            start = 0,
+            line = "",
+            next_line_end = 60,
+            lines = [];
+        for (var i = 0; i < desc.length; i++) {
+            if (desc[i] === ' ') {
+                space_index = i;
+            } else if (i >= next_line_end  && space_index !== 0) {
+                line = desc.slice(start, space_index);
+                lines.push(line);
+                start = space_index + 1;
+                next_line_end = i + 60;
+                space_index = 0;
+            }
+        }
+        line = desc.slice(start);
+        lines.push(line);
+        return ["<b>", item.text, "</b>", "<hr></hr>", lines.join("&nbsp<br>")].join("");
+    }
+
     getDatabaseSegments() {
         return this.querySegment('DATABASES');
     }
@@ -222,6 +279,11 @@ class SqlQueryCtrl extends QueryCtrl {
         return [];
     }
 
+    queryColumns() {
+        var query = this.buildExploreQuery('COLUMNS');
+        return this.datasource.metricFindQuery(query)
+    }
+
     querySegment(type: string) {
         var query = this.buildExploreQuery(type);
         return this.datasource.metricFindQuery(query)
@@ -272,6 +334,12 @@ class SqlQueryCtrl extends QueryCtrl {
                 query = 'SELECT name ' +
                     'FROM system.databases ' +
                     'ORDER BY name';
+                break;
+            case 'COLUMNS':
+                query = 'SELECT name text, type value ' +
+                    'FROM system.columns ' +
+                    'WHERE database = \'' + this.target.database + '\' AND ' +
+                    'table = \'' + this.target.table + '\'';
                 break;
         }
         return query;

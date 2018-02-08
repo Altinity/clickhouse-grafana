@@ -43,6 +43,7 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                     this.resolutions = lodash_1.default.map([1, 2, 3, 4, 5, 10], function (f) {
                         return { factor: f, label: '1/' + f };
                     });
+                    this.completerCache = [];
                     this.dateTimeTypeOptions = [
                         { text: 'Column:DateTime', value: 'DATETIME' },
                         { text: 'Column:TimeStamp', value: 'TIMESTAMP' },
@@ -114,6 +115,50 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                         this.refresh();
                     }
                 };
+                SqlQueryCtrl.prototype.getCompleter = function () {
+                    return this;
+                };
+                SqlQueryCtrl.prototype.getCompletions = function (editor, session, pos, prefix, callback) {
+                    if (this.target.database === undefined || this.target.table === undefined) {
+                        callback(null, []);
+                        return;
+                    }
+                    var self = this;
+                    var key = self.target.database + '.' + self.target.table;
+                    if (self.completerCache[key]) {
+                        callback(null, self.completerCache[key]);
+                        return;
+                    }
+                    self.queryColumns().then(function (response) {
+                        self.completerCache[key] = response.map(function (item) {
+                            return {
+                                caption: item.text,
+                                value: item.text,
+                                meta: key,
+                                docHTML: SqlQueryCtrl._convertToHTML(item),
+                            };
+                        });
+                        callback(null, self.completerCache[key]);
+                    });
+                };
+                SqlQueryCtrl._convertToHTML = function (item) {
+                    var desc = item.value, space_index = 0, start = 0, line = "", next_line_end = 60, lines = [];
+                    for (var i = 0; i < desc.length; i++) {
+                        if (desc[i] === ' ') {
+                            space_index = i;
+                        }
+                        else if (i >= next_line_end && space_index !== 0) {
+                            line = desc.slice(start, space_index);
+                            lines.push(line);
+                            start = space_index + 1;
+                            next_line_end = i + 60;
+                            space_index = 0;
+                        }
+                    }
+                    line = desc.slice(start);
+                    lines.push(line);
+                    return ["<b>", item.text, "</b>", "<hr></hr>", lines.join("&nbsp<br>")].join("");
+                };
                 SqlQueryCtrl.prototype.getDatabaseSegments = function () {
                     return this.querySegment('DATABASES');
                 };
@@ -178,6 +223,10 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                     this.error = err.message || 'Failed to issue metric query';
                     return [];
                 };
+                SqlQueryCtrl.prototype.queryColumns = function () {
+                    var query = this.buildExploreQuery('COLUMNS');
+                    return this.datasource.metricFindQuery(query);
+                };
                 SqlQueryCtrl.prototype.querySegment = function (type) {
                     var query = this.buildExploreQuery(type);
                     return this.datasource.metricFindQuery(query)
@@ -226,6 +275,12 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                             query = 'SELECT name ' +
                                 'FROM system.databases ' +
                                 'ORDER BY name';
+                            break;
+                        case 'COLUMNS':
+                            query = 'SELECT name text, type value ' +
+                                'FROM system.columns ' +
+                                'WHERE database = \'' + this.target.database + '\' AND ' +
+                                'table = \'' + this.target.table + '\'';
                             break;
                     }
                     return query;

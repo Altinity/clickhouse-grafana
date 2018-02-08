@@ -146,7 +146,7 @@ System.register([], function (_export, _context) {
 
                 function convertToHTML(item) {
                     var docText = lang.escapeHTML(item.docText);
-                    docText = convertMarkDownTags(wrapText(docText, 40));
+                    docText = convertMarkDownTags(wrapText(docText, 90));
                     return ["<b>", lang.escapeHTML(item.def), "</b>", "<hr></hr>", docText, "<br>&nbsp"].join("");
                 }
 
@@ -154,11 +154,6 @@ System.register([], function (_export, _context) {
 
                 (function () {
                     this.getCompletions = function (state, session, pos, prefix, callback) {
-                        var token = session.getTokenAt(pos.row, pos.column);
-                        if (token.type === 'entity.name.tag' || token.type === 'string.quoted') {
-                            return callback(null, []);
-                        }
-
                         var completions = keyWordsCompletions.concat(functionsCompletions).concat(constantCompletions);
                         completions = completions.concat(macrosCompletions);
                         callback(null, completions);

@@ -1,3 +1,8 @@
+# 1.3.0 (2018-02-07)
+
+## New Features
+* columns autocompletion in ace-editor
+
 # 1.2.7 (2018-01-05)
 
 ## Fixes

@@ -253,7 +253,6 @@ System.register(['lodash'], function(exports_1) {
                     this.re = new RegExp("^(?:" + tokenRe + ")", 'i');
                     var subQuery = '', argument = '';
                     while (this.next()) {
-                        debugger;
                         if (!this.isExpectedNext() && isStatement(this.token) && !this.tree.hasOwnProperty(lodash_1.default.toLower(this.token))) {
                             if (!isClosured(argument)) {
                                 argument += this.token;

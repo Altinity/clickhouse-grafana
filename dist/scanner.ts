@@ -98,7 +98,7 @@ export default class Scanner {
         let subQuery = '',
             argument = '';
 
-        while (this.next()) {debugger
+        while (this.next()) {
             if (!this.isExpectedNext() && isStatement(this.token) && !this.tree.hasOwnProperty(_.toLower(this.token))) {
                 if (!isClosured(argument)) {
                     argument += this.token;

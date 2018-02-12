@@ -414,17 +414,14 @@ function betweenBraces(query) {
         if (query.charAt(i) === '(') {
             openBraces++;
         }
-
         if (query.charAt(i) === ')') {
             if (openBraces === 1) {
                 subQuery = query.substring(0, i);
                 break;
             }
-
             openBraces--;
         }
     }
-
     return subQuery;
 }
 

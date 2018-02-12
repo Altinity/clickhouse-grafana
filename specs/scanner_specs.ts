@@ -341,4 +341,27 @@ describe("scanner:", () => {
             expect(scanner.toAST()).to.eql(expectedAST);
         });
     });
+
+    describe("AST case 10(array)", () => {
+        let query = "SELECT count() FROM $table WHERE type[1] = 'key' AND zone['City'] = 'Kyiv'",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
+            "select": [
+                "count()"
+            ],
+            "from": [
+                "$table"
+            ],
+            "where": [
+                "type[1] = 'key'",
+                "AND zone['City'] = 'Kyiv'",
+            ],
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).to.eql(expectedAST);
+        });
+    });
 });

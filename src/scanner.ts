@@ -98,7 +98,7 @@ export default class Scanner {
         let subQuery = '',
             argument = '';
 
-        while (this.next()) {
+        while (this.next()) {debugger
             if (!this.isExpectedNext() && isStatement(this.token) && !this.tree.hasOwnProperty(_.toLower(this.token))) {
                 if (!isClosured(argument)) {
                     argument += this.token;
@@ -234,10 +234,10 @@ let wsRe = "\\s+",
     macroFuncRe = "(\\$rateColumns|\\$rate|\\$columns)",
     condRe = "\\b(or|and)\\b",
     inRe = "\\b(global in|global not in|not in|in)\\b",
-    closureRe = "[\\(\\)]",
+    closureRe = "[\\(\\)\\[\\]]",
     specCharsRe = "[,?:]",
     macroRe = "\\$[A-Za-z0-9_$]+",
-    skipSpaceRe = "[\\(\\.! ]",
+    skipSpaceRe = "[\\(\\.! \\[]",
 
     builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
         "coalesce|ifnull|isnull|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +

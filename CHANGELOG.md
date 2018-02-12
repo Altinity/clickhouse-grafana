@@ -1,3 +1,10 @@
+# 1.3.1 (2018-02-12)
+
+## Fixes
+
+* support array indexing int AST
+
+
 # 1.3.0 (2018-02-07)
 
 ## New Features

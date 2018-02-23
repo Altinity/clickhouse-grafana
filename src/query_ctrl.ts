@@ -319,7 +319,7 @@ class SqlQueryCtrl extends QueryCtrl {
                     'FROM system.columns ' +
                     'WHERE database = \'' + this.target.database + '\' AND ' +
                     'table = \'' + this.target.table + '\' AND ' +
-                    'type = \'DateTime\' ' +
+                    'type LIKE \'DateTime%\' ' +
                     'ORDER BY name';
                 break;
             case 'TIMESTAMP':

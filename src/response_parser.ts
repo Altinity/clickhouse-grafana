@@ -8,16 +8,16 @@ export default class ResponseParser {
     var sqlResults = results.data;
     var res = [];
     _.each(sqlResults, r => {
-        if (r && r.text && r.value) {
-            res.push({ text: r.text, value: r.value });
+        if (!_.isObject(r)) {
+            res.push({ text: r });
             return
         }
-        if (_.isObject(r)) {
-            var key = Object.keys(r)[0];
-            res.push({ text: r[key]});
-            return
+        let keys = Object.keys(r);
+        if (keys.length > 1) {
+            res.push(r);
+        } else {
+            res.push({ text: r[keys[0]]});
         }
-        res.push({ text: r });
     });
 
     return res

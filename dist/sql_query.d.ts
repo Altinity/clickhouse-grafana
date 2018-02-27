@@ -5,7 +5,7 @@ export default class SqlQuery {
     options: any;
     /** @ngInject */
     constructor(target: any, templateSrv?: any, options?: any);
-    replace(options?: any): any;
+    replace(options: any, adhocFilters: any): any;
     static columns(query: string): string;
     static _columns(key: string, value: string, fromQuery: string): string;
     static rateColumns(query: string): string;
@@ -19,5 +19,6 @@ export default class SqlQuery {
     static round(date: any, round: string): any;
     static convertInterval(interval: any, intervalFactor: any): number;
     static interpolateQueryExpr(value: any, variable: any, defaultFormatFn: any): any;
+    static clickhouseOperator(value: any): any;
     static clickhouseEscape(value: any, variable: any): any;
 }

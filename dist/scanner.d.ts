@@ -16,6 +16,7 @@ export default class Scanner {
     next(): boolean;
     _next(): boolean;
     Format(): string;
+    Print(ast: any): string;
     push(argument: any): void;
     setRoot(token: any): void;
     isExpectedNext(): boolean;

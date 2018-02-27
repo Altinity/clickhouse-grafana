@@ -8,14 +8,13 @@ module.exports = function(config) {
             'specs/**/*specs.ts',
             'specs/lib/*.ts',
             { pattern: 'src/**/*.ts', included: false },
-            { pattern: 'src/css/*.css', included: false },
             { pattern: 'node_modules/grafana-sdk-mocks/**/*.ts', included: false },
             { pattern: 'node_modules/grafana-sdk-mocks/**/*.js', included: false },
             { pattern: 'node_modules/typescript/lib/typescript.js', included: false },
             { pattern: 'node_modules/systemjs-plugin-css/css.js', included: false },
             { pattern: 'node_modules/lodash/lodash.js', included: false },
             { pattern: 'node_modules/moment/moment.js', included: false },
-            { pattern: 'node_modules/q/q.js', included: false },
+            { pattern: 'node_modules/q/q.js', included: false }
         ],
 
         systemjs: {
@@ -32,7 +31,7 @@ module.exports = function(config) {
                     'typescript': 'node_modules/typescript/lib/typescript.js',
                     'plugin-typescript': 'node_modules/plugin-typescript/lib/plugin.js',
                     'css': 'node_modules/systemjs-plugin-css/css.js',
-                    'app/': 'node_modules/grafana-sdk-mocks/app/',
+                    'app/': 'node_modules/grafana-sdk-mocks/app/'
                 },
 
                 map: {
@@ -75,10 +74,10 @@ module.exports = function(config) {
                                 'loader': 'typescript'
                             }
                         }
-                    },
+                    }
                 },
 
-                transpiler: 'plugin-typescript',
+                transpiler: 'plugin-typescript'
             }
         },
 

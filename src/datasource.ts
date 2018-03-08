@@ -5,6 +5,7 @@ import _ from 'lodash';
 import SqlSeries from './sql_series';
 import SqlQuery from './sql_query';
 import ResponseParser from './response_parser';
+import AdhocCtrl from './adhoc';
 
 export class ClickHouseDatasource {
   type: string;
@@ -17,6 +18,7 @@ export class ClickHouseDatasource {
   usePOST: boolean;
   addCorsHeader: boolean;
   responseParser: any;
+  adhocCtrl: AdhocCtrl;
 
     /** @ngInject */
     constructor(instanceSettings,
@@ -33,10 +35,11 @@ export class ClickHouseDatasource {
       this.withCredentials = instanceSettings.withCredentials;
       this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
       this.usePOST = instanceSettings.jsonData.usePOST;
+      this.adhocCtrl = new AdhocCtrl();
     }
 
     _request(query) {
-        var options: any = {
+        let options: any = {
             url: this.url
         };
 
@@ -71,12 +74,13 @@ export class ClickHouseDatasource {
     };
 
     query(options) {
-        var queries = [], q;
+        var queries = [], q,
+            adhocFilters = this.templateSrv.getAdhocFilters(this.name);
 
         _.map(options.targets, (target) => {
             if (!target.hide && target.query) {
                 var queryModel = new SqlQuery(target, this.templateSrv, options);
-                q = queryModel.replace(options);
+                q = queryModel.replace(options, adhocFilters);
                 queries.push(q);
             }
         });
@@ -148,7 +152,17 @@ export class ClickHouseDatasource {
         return this._request(query);
     };
 
+
     targetContainsTemplate(target) {
         return this.templateSrv.variableExists(target.expr);
     };
+
+    getTagKeys() {
+        return this.adhocCtrl.GetTagKeys(this);
+
+    }
+
+    getTagValues(options) {
+        return this.adhocCtrl.GetTagValues(options);
+    }
 }

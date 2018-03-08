@@ -71,6 +71,10 @@ export default class Scanner {
         return print(this.toAST());
     };
 
+    Print(ast) {
+        return print(ast)
+    }
+
     push(argument) {
         this.tree[this.rootToken].push(argument);
         this.expectedNext = false;

@@ -17,16 +17,17 @@ System.register(['lodash'], function(exports_1) {
                     var sqlResults = results.data;
                     var res = [];
                     lodash_1.default.each(sqlResults, function (r) {
-                        if (r && r.text && r.value) {
-                            res.push({ text: r.text, value: r.value });
+                        if (!lodash_1.default.isObject(r)) {
+                            res.push({ text: r });
                             return;
                         }
-                        if (lodash_1.default.isObject(r)) {
-                            var key = Object.keys(r)[0];
-                            res.push({ text: r[key] });
-                            return;
+                        var keys = Object.keys(r);
+                        if (keys.length > 1) {
+                            res.push(r);
                         }
-                        res.push({ text: r });
+                        else {
+                            res.push({ text: r[keys[0]] });
+                        }
                     });
                     return res;
                 };

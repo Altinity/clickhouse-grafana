@@ -230,6 +230,9 @@ System.register(['lodash'], function(exports_1) {
                     return print(this.toAST());
                 };
                 ;
+                Scanner.prototype.Print = function (ast) {
+                    return print(ast);
+                };
                 Scanner.prototype.push = function (argument) {
                     this.tree[this.rootToken].push(argument);
                     this.expectedNext = false;

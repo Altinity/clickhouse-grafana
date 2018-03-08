@@ -1,6 +1,6 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
-System.register(['lodash', './sql_series', './sql_query', './response_parser'], function(exports_1) {
-    var lodash_1, sql_series_1, sql_query_1, response_parser_1;
+System.register(['lodash', './sql_series', './sql_query', './response_parser', './adhoc'], function(exports_1) {
+    var lodash_1, sql_series_1, sql_query_1, response_parser_1, adhoc_1;
     var ClickHouseDatasource;
     return {
         setters:[
@@ -15,6 +15,9 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
             },
             function (response_parser_1_1) {
                 response_parser_1 = response_parser_1_1;
+            },
+            function (adhoc_1_1) {
+                adhoc_1 = adhoc_1_1;
             }],
         execute: function() {
             ClickHouseDatasource = (function () {
@@ -33,6 +36,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
                     this.withCredentials = instanceSettings.withCredentials;
                     this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
                     this.usePOST = instanceSettings.jsonData.usePOST;
+                    this.adhocCtrl = new adhoc_1.default();
                 }
                 ClickHouseDatasource.prototype._request = function (query) {
                     var options = {
@@ -68,11 +72,11 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
                 ;
                 ClickHouseDatasource.prototype.query = function (options) {
                     var _this = this;
-                    var queries = [], q;
+                    var queries = [], q, adhocFilters = this.templateSrv.getAdhocFilters(this.name);
                     lodash_1.default.map(options.targets, function (target) {
                         if (!target.hide && target.query) {
                             var queryModel = new sql_query_1.default(target, _this.templateSrv, options);
-                            q = queryModel.replace(options);
+                            q = queryModel.replace(options, adhocFilters);
                             queries.push(q);
                         }
                     });
@@ -143,6 +147,12 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser'], 
                     return this.templateSrv.variableExists(target.expr);
                 };
                 ;
+                ClickHouseDatasource.prototype.getTagKeys = function () {
+                    return this.adhocCtrl.GetTagKeys(this);
+                };
+                ClickHouseDatasource.prototype.getTagValues = function (options) {
+                    return this.adhocCtrl.GetTagValues(options);
+                };
                 return ClickHouseDatasource;
             })();
             exports_1("ClickHouseDatasource", ClickHouseDatasource);

@@ -20,6 +20,7 @@ Copy files to your [Grafana plugin directory](http://docs.grafana.org/plugins/in
  * Templates
  * Table view
  * SingleStat view
+ * Ad-hoc filters
 
 
 ### Access to CH via HTTP
@@ -285,7 +286,29 @@ FROM some_table
 
 // It is also possible to use query without macros
 
+### Ad-hoc filters
+
+If there is an Ad-hoc variable, plugin will fetch all columns of all tables of all databases (except system database) as tags.
+So in dropdown menu will be options like `database.table.column`. If there are ENUM columns,
+plugin will fetch their options and use them as tag values.
+
+Plugin will apply Ad-hoc filters to all queries on the dashboard if their settings `$database` and `$table` are the same
+as Ad-hoc's `database.table`
+
+![ad-hoc](https://user-images.githubusercontent.com/2902918/37139531-ed67f222-22b6-11e8-8815-9268850f16fb.png)
+
+// There are no option to apply OR operator for multiple Ad-hoc filters - see grafana/grafana#10918
+// There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
+
+
 ### FAQ
+
+> Time series last point is not the real last point
+
+Plugin extrapolates last datapoint if timerange is `last N` to avoid displaying of constantly decreasing graphs
+when timestamp in table is rounded to minute or bigger.
+If it so then in 99% cases last datapoint will be much less than previous one, because last minute is not finished yet.
+That's why plugin checks prev datapoints and tries to predict last datapoint value just as it was already written into db.
 
 > Why no alerts support?
 

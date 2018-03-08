@@ -1,3 +1,15 @@
+# 1.4.0 (2018-03-08)
+
+## New Features
+Ad-hoc filters support:
+* If there is an Ad-hoc variable, plugin will fetch all columns of all tables of all databases (except system database) as tags.
+So in dropdown menu will be options like `database.table.column`
+* If there are ENUM columns, plugin will fetch their options and use them as tag values
+* Plugin will apply Ad-hoc filters to all queries on the dashboard if their settings `$database` and `$table` are the same
+as Ad-hoc's `database.table`
+* There are no option to apply OR operator for multiple Ad-hoc filters - see grafana/grafana#10918
+* There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
+
 # 1.3.1 (2018-02-12)
 
 ## Fixes

@@ -297,8 +297,9 @@ as Ad-hoc's `database.table`
 
 ![ad-hoc](https://user-images.githubusercontent.com/2902918/37139531-ed67f222-22b6-11e8-8815-9268850f16fb.png)
 
-// There are no option to apply OR operator for multiple Ad-hoc filters - see grafana/grafana#10918
-// There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
+> There are no option to apply OR operator for multiple Ad-hoc filters - see grafana/grafana#10918
+
+> There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
 
 
 ### FAQ

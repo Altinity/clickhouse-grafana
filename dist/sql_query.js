@@ -67,6 +67,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         console.log('AST parser error: ', err.message);
                     }
                     query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
+                    query = SqlQuery.unescape(query);
                     this.target.rawQuery = query
                         .replace(/\$timeSeries/g, timeSeries)
                         .replace(/\$timeFilter/g, timeFilter)
@@ -242,7 +243,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     return Math.ceil(sec * intervalFactor);
                 };
                 SqlQuery.interpolateQueryExpr = function (value, variable, defaultFormatFn) {
-                    // if no multi or include all do not regexEscape
+                    // if no `multiselect` or `include all` - do not escape
                     if (!variable.multi && !variable.includeAll) {
                         return value;
                     }
@@ -289,6 +290,22 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     else {
                         return "'" + value.replace(/[\\']/g, '\\$&') + "'";
                     }
+                };
+                SqlQuery.unescape = function (query) {
+                    var macros = '$unescape(';
+                    var openMacros = query.indexOf(macros);
+                    while (openMacros !== -1) {
+                        var closeMacros = query.indexOf(')', openMacros);
+                        if (closeMacros === -1) {
+                            throw { message: 'unable to find closing brace for $unescape macros: ' + query.substring(0, openMacros) };
+                        }
+                        var arg = query.substring(openMacros + macros.length, closeMacros)
+                            .trim();
+                        arg = arg.replace(/[']+/g, '');
+                        query = query.substring(0, openMacros) + arg + query.substring(closeMacros + 1, query.length);
+                        openMacros = query.indexOf('$unescape(');
+                    }
+                    return query;
                 };
                 return SqlQuery;
             })();

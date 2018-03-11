@@ -84,6 +84,7 @@ Plugin supports the following marcos:
 * $timeFilter - replaced with currently selected "Time Range". 
   Require Column:Date and Column:DateTime or Column:TimeStamp to be selected
 * $timeSeries - replaced with special ClickHouse construction to convert results as time-series data. Use it as "SELECT $timeSeries...". 
+* $unescape - unescapes variable value by removing single quotes. Used for multiple-value string variables: "SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
 Require Column:DateTime or Column:TimeStamp to be selected
 
 A description of macros is available by typing their names in Raw Editor

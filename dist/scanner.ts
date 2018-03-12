@@ -224,7 +224,6 @@ export default class Scanner {
     };
 }
 
-
 let wsRe = "\\s+",
     commentRe = "--[^\n]*|/\\*(?:[^*]|\\*[^/])*\\*/",
     idRe = "[a-zA-Z_][a-zA-Z_0-9]*",

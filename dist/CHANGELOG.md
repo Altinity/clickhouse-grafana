@@ -1,6 +1,18 @@
+# 1.4.1 (2018-03-12)
+
+## New Features
+
+* $unescape - unescapes variable value by removing single quotes. Used for multiple-value string variables: "SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
+
+## Fixes
+
+* labmda-operator `->` no more breaks while reformatting query
+
+
 # 1.4.0 (2018-03-08)
 
 ## New Features
+
 Ad-hoc filters support:
 * If there is an Ad-hoc variable, plugin will fetch all columns of all tables of all databases (except system database) as tags.
 So in dropdown menu will be options like `database.table.column`

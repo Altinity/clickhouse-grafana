@@ -30,7 +30,6 @@ export default class SqlQuery {
             timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType),
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
-
         try {
             let ast = scanner.toAST();
             if (adhocFilters.length > 0) {
@@ -56,7 +55,7 @@ export default class SqlQuery {
                     ast.where.push(cond)
                 });
             }
-            query = scanner.Print(ast)
+            query = scanner.Print(ast);
             if (ast.hasOwnProperty('$columns') && !_.isEmpty(ast['$columns'])) {
                 query = SqlQuery.columns(query);
             } else if (ast.hasOwnProperty('$rateColumns') && !_.isEmpty(ast['$rateColumns'])) {
@@ -64,13 +63,12 @@ export default class SqlQuery {
             } else if (ast.hasOwnProperty('$rate') && !_.isEmpty(ast['$rate'])) {
                 query = SqlQuery.rate(query, ast);
             }
-
-
         } catch (err) {
             console.log('AST parser error: ', err.message)
         }
 
         query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
+        query = SqlQuery.unescape(query);
         this.target.rawQuery = query
                     .replace(/\$timeSeries/g, timeSeries)
                     .replace(/\$timeFilter/g, timeFilter)
@@ -283,16 +281,14 @@ export default class SqlQuery {
     }
 
     static interpolateQueryExpr (value, variable, defaultFormatFn) {
-        // if no multi or include all do not regexEscape
+        // if no `multiselect` or `include all` - do not escape
         if (!variable.multi && !variable.includeAll) {
             return value;
         }
-
         if (typeof value === 'string') {
             return SqlQuery.clickhouseEscape(value, variable);
         }
-
-        var escapedValues = _.map(value, function(v){
+        let escapedValues = _.map(value, function(v){
             return SqlQuery.clickhouseEscape(v, variable);
         });
         return escapedValues.join(',');
@@ -322,7 +318,6 @@ export default class SqlQuery {
             if (opt.value === '$__all') {
                 return true;
             }
-
             if (!opt.value.match(/^\d+$/)) {
                 isDigit = false;
                 return false;
@@ -335,5 +330,22 @@ export default class SqlQuery {
         } else {
             return "'" + value.replace(/[\\']/g, '\\$&') + "'";
         }
+    }
+
+    static unescape(query) {
+        let macros = '$unescape(';
+        let openMacros = query.indexOf(macros);
+        while (openMacros !== -1) {
+            let closeMacros = query.indexOf(')', openMacros);
+            if(closeMacros === -1) {
+                throw {message: 'unable to find closing brace for $unescape macros: ' + query.substring(0, openMacros)};
+            }
+            let arg = query.substring(openMacros+macros.length, closeMacros)
+                .trim();
+            arg = arg.replace(/[']+/g, '');
+            query = query.substring(0, openMacros) + arg + query.substring(closeMacros+1, query.length);
+            openMacros = query.indexOf('$unescape(');
+        }
+        return query
     }
 }

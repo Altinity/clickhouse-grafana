@@ -84,6 +84,7 @@ Plugin supports the following marcos:
 * $timeFilter - replaced with currently selected "Time Range". 
   Require Column:Date and Column:DateTime or Column:TimeStamp to be selected
 * $timeSeries - replaced with special ClickHouse construction to convert results as time-series data. Use it as "SELECT $timeSeries...". 
+* $unescape - unescapes variable value by removing single quotes. Used for multiple-value string variables: "SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
 Require Column:DateTime or Column:TimeStamp to be selected
 
 A description of macros is available by typing their names in Raw Editor
@@ -297,8 +298,9 @@ as Ad-hoc's `database.table`
 
 ![ad-hoc](https://user-images.githubusercontent.com/2902918/37139531-ed67f222-22b6-11e8-8815-9268850f16fb.png)
 
-// There are no option to apply OR operator for multiple Ad-hoc filters - see grafana/grafana#10918
-// There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
+> There are no option to apply OR operator for multiple Ad-hoc filters - see grafana/grafana#10918
+
+> There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
 
 
 ### FAQ

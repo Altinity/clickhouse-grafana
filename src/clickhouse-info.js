@@ -159,7 +159,8 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "$timeSeries",
         "$rate",
         "$columns",
-        "$rateColumns"
+        "$rateColumns",
+        "$unescape"
     ];
     p.KeywordsRe = function () {
         return this.re(p.Keywords)
@@ -2112,6 +2113,13 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "docText": "Is a combination of `$columns` and `$rate` ." +
                 "\n" +
                 "Example:\n $rateColumns(OS, count(*) c) FROM requests"
+            },
+            {
+                "name": "$unescape",
+                "def": "$unescape($variable)",
+                "docText": "Unescapes variable value by removing single quotes" +
+                "\n" +
+                "Example:\n SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
             }
         ];
     };

@@ -21,4 +21,5 @@ export default class SqlQuery {
     static interpolateQueryExpr(value: any, variable: any, defaultFormatFn: any): any;
     static clickhouseOperator(value: any): any;
     static clickhouseEscape(value: any, variable: any): any;
+    static unescape(query: any): any;
 }

@@ -231,7 +231,7 @@ let wsRe = "\\s+",
     powerIntRe = "\\d+e\\d+",
     floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+",
     stringRe = "('[^']*')|(`[^`]*`)",
-    binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|[-+/%*=<>\\.!]",
+    binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|->|[-+/%*=<>\\.!]",
     statementRe = "(select|from|where|having|order by|group by|limit|format|prewhere|union all)",
     joinsRe = "(any inner join|any left join|all inner join|all left join" +
         "|global any inner join|global any left join|global all inner join|global all left join)",

@@ -490,7 +490,7 @@ function print(AST, tab = '') {
 
     if (isSet(AST, 'limit')) {
         result += newLine + tab + 'LIMIT';
-        result += printItems(AST.limit, tab);
+        result += printItems(AST.limit, tab, ',');
     }
 
     if (isSet(AST, 'union all')) {

@@ -156,8 +156,10 @@ System.register(['lodash'], function(exports_1) {
             result += printItems(AST.limit, tab);
         }
         if (isSet(AST, 'union all')) {
-            result += newLine + tab + 'UNION ALL';
-            result += printItems(AST['union all'], tab);
+            AST['union all'].forEach(function (v) {
+                result += newLine + newLine + tab + 'UNION ALL' + newLine + newLine;
+                result += print(v, tab);
+            });
         }
         if (isSet(AST, 'format')) {
             result += newLine + tab + 'FORMAT';
@@ -360,6 +362,21 @@ System.register(['lodash'], function(exports_1) {
                                 this.tree['join'].using.push(this.token);
                             }
                         }
+                        else if (this.rootToken === 'union all') {
+                            var statement = 'union all';
+                            this._s = this.token + ' ' + this._s;
+                            var subQueryPos = this._s.toLowerCase().indexOf(statement);
+                            while (subQueryPos !== -1) {
+                                var subQuery_1 = this._s.substring(0, subQueryPos);
+                                var ast_1 = toAST(subQuery_1);
+                                this.tree[statement].push(ast_1);
+                                this._s = this._s.substring(subQueryPos + statement.length, this._s.length);
+                                subQueryPos = this._s.toLowerCase().indexOf(statement);
+                            }
+                            var ast = toAST(this._s);
+                            this._s = '';
+                            this.tree[statement].push(ast);
+                        }
                         else if (isClosureChars(this.token) || this.token === '.') {
                             argument += this.token;
                         }
@@ -416,7 +433,7 @@ System.register(['lodash'], function(exports_1) {
                 "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
                 "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
                 "uniqArrayIf|sumArrayIf|uniq)\\b", operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
-                "when|else|end|type|left|right|on|outer|desc|asc|union|primary|key|between|" +
+                "when|else|end|type|left|right|on|outer|desc|asc|primary|key|between|" +
                 "foreign|not|null|inner|cross|natural|database|prewhere|using|global|in)\\b", dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
                 "money|real|number|integer|" +
                 "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +

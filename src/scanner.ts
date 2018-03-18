@@ -206,7 +206,22 @@ export default class Scanner {
                     }
                     this.tree['join'].using.push(this.token);
                 }
-            } else if (isClosureChars(this.token) || this.token === '.') {
+            } else if (this.rootToken === 'union all') {
+                let statement = 'union all';
+                this._s = this.token + ' ' + this._s;
+                let subQueryPos = this._s.toLowerCase().indexOf(statement);
+                while (subQueryPos !== -1) {
+                    let subQuery = this._s.substring(0, subQueryPos);
+                    let ast = toAST(subQuery);
+                    this.tree[statement].push(ast);
+                    this._s = this._s.substring(subQueryPos + statement.length, this._s.length);
+                    subQueryPos = this._s.toLowerCase().indexOf(statement);
+                }
+                let ast = toAST(this._s);
+                this._s = '';
+                this.tree[statement].push(ast);
+            }
+            else if (isClosureChars(this.token) || this.token === '.') {
                 argument += this.token;
             } else if (this.token === ',') {
                 argument += this.token + ' ';
@@ -278,7 +293,7 @@ let wsRe = "\\s+",
         "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
         "uniqArrayIf|sumArrayIf|uniq)\\b",
     operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
-        "when|else|end|type|left|right|on|outer|desc|asc|union|primary|key|between|" +
+        "when|else|end|type|left|right|on|outer|desc|asc|primary|key|between|" +
         "foreign|not|null|inner|cross|natural|database|prewhere|using|global|in)\\b",
     dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
         "money|real|number|integer|" +
@@ -494,8 +509,10 @@ function print(AST, tab = '') {
     }
 
     if (isSet(AST, 'union all')) {
-        result += newLine + tab + 'UNION ALL';
-        result += printItems(AST['union all'], tab);
+        AST['union all'].forEach(function (v) {
+            result += newLine + newLine + tab + 'UNION ALL' + newLine + newLine;
+            result += print(v, tab)
+        })
     }
 
     if (isSet(AST, 'format')) {

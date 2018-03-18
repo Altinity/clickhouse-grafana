@@ -364,4 +364,87 @@ describe("scanner:", () => {
             expect(scanner.toAST()).to.eql(expectedAST);
         });
     });
+
+    describe("AST case 11(union all)", () => {
+        let query = "SELECT a, b FROM table1 UNION ALL select c, d from table2 UNION ALL select e, f from table3",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
+            "select": [
+                "a",
+                "b"
+            ],
+            "from": [
+                "table1"
+            ],
+            "union all": [
+                {
+                    "root": [],
+                    "select": [
+                        "c",
+                        "d"
+                    ],
+                    "from": [
+                        "table2"
+                    ],
+                },
+                {
+                    "root": [],
+                    "select": [
+                        "e",
+                        "f"
+                    ],
+                    "from": [
+                        "table3"
+                    ],
+                }
+            ],
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).to.eql(expectedAST);
+        });
+    });
+
+    describe("AST case 12(union all closure)", () => {
+        let query = "SELECT * FROM (select c, d from table2 UNION ALL select e, f from table3) ORDER BY c",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
+            "select": [
+                "*"
+            ],
+            "from": {
+                "root": [],
+                "select": [
+                    "c",
+                    "d"
+                ],
+                "from": [
+                    "table2"
+                ],
+                "union all": [
+                    {
+                        "root": [],
+                        "select": [
+                            "e",
+                            "f"
+                        ],
+                        "from": [
+                            "table3"
+                        ],
+                    }
+                ],
+            },
+            "order by": [
+                "c"
+            ],
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).to.eql(expectedAST);
+        });
+    });
 });

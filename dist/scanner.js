@@ -153,7 +153,7 @@ System.register(['lodash'], function(exports_1) {
         }
         if (isSet(AST, 'limit')) {
             result += newLine + tab + 'LIMIT';
-            result += printItems(AST.limit, tab);
+            result += printItems(AST.limit, tab, ',');
         }
         if (isSet(AST, 'union all')) {
             AST['union all'].forEach(function (v) {

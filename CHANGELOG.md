@@ -1,3 +1,12 @@
+# 1.4.2 (2018-03-18)
+
+## Fixes
+
+* support `UNION ALL` statements
+* proper format for `LIMIT N,M` construction (thx to @shankerwangmiao)
+* update `Show Help` section with $unescape description
+
+
 # 1.4.1 (2018-03-12)
 
 ## New Features

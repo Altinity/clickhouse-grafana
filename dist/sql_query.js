@@ -26,7 +26,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     this.options = options;
                 }
                 SqlQuery.prototype.replace = function (options, adhocFilters) {
-                    var self = this, query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME', from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round)), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
+                    var self = this, query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME', from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round), dateTimeType), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round), dateTimeType), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1, dateTimeType);
                     try {
                         var ast = scanner.toAST();
                         if (adhocFilters.length > 0) {
@@ -197,27 +197,36 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     if (dateTimeType === 'DATETIME') {
                         return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
                     }
+                    if (dateTimeType === 'TIMESTAMPMS') {
+                        return 'intDiv($dateTimeCol, $interval) * $interval';
+                    }
                     return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
                 };
                 SqlQuery.getTimeFilter = function (isToNow, dateTimeType) {
-                    var convertFn = function (t) {
+                    var dateCol = function (t) {
+                        if (dateTimeType === 'TIMESTAMPMS') {
+                            t = t + '/1000';
+                        }
+                        return 'toDate(' + t + ')';
+                    };
+                    var dateTimeCol = function (t) {
                         if (dateTimeType === 'DATETIME') {
                             return 'toDateTime(' + t + ')';
                         }
                         return t;
                     };
                     if (isToNow) {
-                        return '$dateCol >= toDate($from) AND $dateTimeCol >= ' + convertFn('$from');
+                        return '$dateCol >= ' + dateCol('$from') + ' AND $dateTimeCol >= ' + dateTimeCol('$from');
                     }
-                    return '$dateCol BETWEEN toDate($from) AND toDate($to) AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
+                    return '$dateCol BETWEEN ' + dateCol('$from') + ' AND ' + dateCol('$to') + ' AND $dateTimeCol BETWEEN ' + dateTimeCol('$from') + ' AND ' + dateTimeCol('$to');
                 };
                 // date is a moment object
-                SqlQuery.convertTimestamp = function (date) {
+                SqlQuery.convertTimestamp = function (date, dateTimeType) {
                     //return date.format("'Y-MM-DD HH:mm:ss'")
                     if (lodash_1.default.isString(date)) {
                         date = dateMath.parse(date, true);
                     }
-                    return Math.floor(date.valueOf() / 1000);
+                    return Math.floor(dateTimeType === 'TIMESTAMPMS' ? date.valueOf() : date.valueOf() / 1000);
                 };
                 SqlQuery.round = function (date, round) {
                     if (round === "" || round === undefined || round === "0s") {
@@ -226,17 +235,20 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     if (lodash_1.default.isString(date)) {
                         date = dateMath.parse(date, true);
                     }
-                    var coeff = 1000 * SqlQuery.convertInterval(round, 1);
+                    var coeff = SqlQuery.convertInterval(round, 1, 'TIMESTAMPMS');
                     var rounded = Math.floor(date.valueOf() / coeff) * coeff;
                     return moment_1.default(rounded);
                 };
-                SqlQuery.convertInterval = function (interval, intervalFactor) {
+                SqlQuery.convertInterval = function (interval, intervalFactor, dateTimeType) {
                     var m = interval.match(durationSplitRegexp);
                     if (m === null) {
                         throw { message: 'Received duration is invalid: ' + interval };
                     }
                     var dur = moment_1.default.duration(parseInt(m[1]), m[2]);
                     var sec = dur.asSeconds();
+                    if (dateTimeType === 'TIMESTAMPMS') {
+                        return Math.ceil((sec * 1000 || 1) * intervalFactor);
+                    }
                     if (sec < 1) {
                         sec = 1;
                     }

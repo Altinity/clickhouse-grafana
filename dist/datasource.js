@@ -101,8 +101,8 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                                 series: response.data,
                                 meta: response.meta,
                                 tillNow: options.rangeRaw.to === 'now',
-                                from: sql_query_1.default.convertTimestamp(options.range.from),
-                                to: sql_query_1.default.convertTimestamp(options.range.to)
+                                from: sql_query_1.default.convertTimestamp(options.range.from, target.dateTimeType),
+                                to: sql_query_1.default.convertTimestamp(options.range.to, target.dateTimeType)
                             });
                             if (target.format === 'table') {
                                 lodash_1.default.each(sqlSeries.toTable(), function (data) {
@@ -119,10 +119,21 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     });
                 };
                 ;
-                ClickHouseDatasource.prototype.metricFindQuery = function (query) {
+                ClickHouseDatasource.prototype.metricFindQuery = function (query, options) {
                     var interpolated;
                     try {
-                        interpolated = this.templateSrv.replace(query, {}, sql_query_1.default.interpolateQueryExpr);
+                        var scopedVars = {};
+                        if (options && options.range) {
+                            scopedVars['from'] = {
+                                text: options.range.from.valueOf(),
+                                value: options.range.from.valueOf()
+                            };
+                            scopedVars['to'] = {
+                                text: options.range.to.valueOf(),
+                                value: options.range.to.valueOf()
+                            };
+                        }
+                        interpolated = this.templateSrv.replace(query, scopedVars, sql_query_1.default.interpolateQueryExpr);
                     }
                     catch (err) {
                         return this.$q.reject(err);

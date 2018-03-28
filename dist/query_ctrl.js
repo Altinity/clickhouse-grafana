@@ -47,6 +47,7 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                     this.dateTimeTypeOptions = [
                         { text: 'Column:DateTime', value: 'DATETIME' },
                         { text: 'Column:TimeStamp', value: 'TIMESTAMP' },
+                        { text: 'Column:TimeStampMs', value: 'TIMESTAMPMS' },
                     ];
                     this.formats = [
                         { text: 'Time series', value: 'time_series' },
@@ -269,6 +270,14 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                                 'WHERE database = \'' + this.target.database + '\' AND ' +
                                 'table = \'' + this.target.table + '\' AND ' +
                                 'type = \'UInt32\' ' +
+                                'ORDER BY name';
+                            break;
+                        case 'TIMESTAMPMS':
+                            query = 'SELECT name ' +
+                                'FROM system.columns ' +
+                                'WHERE database = \'' + this.target.database + '\' AND ' +
+                                'table = \'' + this.target.table + '\' AND ' +
+                                'type = \'UInt64\' ' +
                                 'ORDER BY name';
                             break;
                         case 'DATABASES':

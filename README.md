@@ -1,6 +1,6 @@
 # ClickHouse datasource for Grafana 4.6+
 
-ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.yandex) as a backend database.  
+ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.yandex) as a backend database.
 
 ### Quick start
 Install from [grafana.net](https://grafana.net/plugins/vertamedia-clickhouse-datasource)
@@ -68,8 +68,8 @@ Raw Editor allows custom SQL queries to be written:
 ![raw editor image](https://user-images.githubusercontent.com/2902918/32843338-337f2efc-ca28-11e7-9bde-ec65faa3cdc9.png)
 
 
-Raw Editor allows to type queries, get info about functions and macroses, format queries as Clickhouse do. 
-Under the Editor you can find a raw query (all macros and functions have already been replaced) which will be sent directly to ClickHouse. 
+Raw Editor allows to type queries, get info about functions and macroses, format queries as Clickhouse do.
+Under the Editor you can find a raw query (all macros and functions have already been replaced) which will be sent directly to ClickHouse.
 
 ### Macros
 
@@ -81,9 +81,9 @@ Plugin supports the following marcos:
 * $from - replaced with timestamp/1000 value of selected "Time Range:From"
 * $to - replaced with timestamp/1000 value of selected "Time Range:To"
 * $interval - replaced with selected "Group by time interval" value (as a number of seconds)
-* $timeFilter - replaced with currently selected "Time Range". 
+* $timeFilter - replaced with currently selected "Time Range".
   Require Column:Date and Column:DateTime or Column:TimeStamp to be selected
-* $timeSeries - replaced with special ClickHouse construction to convert results as time-series data. Use it as "SELECT $timeSeries...". 
+* $timeSeries - replaced with special ClickHouse construction to convert results as time-series data. Use it as "SELECT $timeSeries...".
 * $unescape - unescapes variable value by removing single quotes. Used for multiple-value string variables: "SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
 Require Column:DateTime or Column:TimeStamp to be selected
 
@@ -91,8 +91,8 @@ A description of macros is available by typing their names in Raw Editor
 
 ### Functions
 
-Functions are just templates of SQL queries and you can check the final query at [Raw SQL Editor mode](https://github.com/Vertamedia/clickhouse-grafana/blob/master/README.md#raw-sql-editor). 
-If some additional complexity is needed - just copy raw sql into Raw Editor and make according changes. Remember that macros are still available to use. 
+Functions are just templates of SQL queries and you can check the final query at [Raw SQL Editor mode](https://github.com/Vertamedia/clickhouse-grafana/blob/master/README.md#raw-sql-editor).
+If some additional complexity is needed - just copy raw sql into Raw Editor and make according changes. Remember that macros are still available to use.
 
 There are some limits in function use because of poor query analysis:
 * Column:Date and Column:DateTime or Column:TimeStamp must be set in Query Builder
@@ -105,59 +105,59 @@ Plugin supports the following functions:
 
 #### $rate(cols...) - converts query results as "change rate per interval"
 
-Example usage: 
+Example usage:
 ```
 $rate(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests
 ```
 
 Query will be transformed into:
 ```
-SELECT 
-    t, 
-    good / runningDifference(t / 1000) AS goodRate, 
+SELECT
+    t,
+    good / runningDifference(t / 1000) AS goodRate,
     bad / runningDifference(t / 1000) AS badRate
-FROM 
+FROM
 (
-    SELECT 
-        (intDiv(toUInt32(EventTime), 60)) * 1000 AS t, 
-        countIf(Type = 200) AS good, 
+    SELECT
+        (intDiv(toUInt32(EventTime), 60)) * 1000 AS t,
+        countIf(Type = 200) AS good,
         countIf(Type != 200) AS bad
-    FROM requests 
+    FROM requests
     WHERE ((EventDate >= toDate(1482796747)) AND (EventDate <= toDate(1482853383))) AND ((EventTime >= toDateTime(1482796747)) AND (EventTime <= toDateTime(1482853383)))
     GROUP BY t
     ORDER BY t ASC
-) 
+)
 ```
 ---
 
 #### $columns(key, value) - query values as array of [key, value], where key will be used as label
 
-Example usage: 
+Example usage:
 ```
 $columns(OSName, count(*) c) FROM requests
 ```
 
 Query will be transformed into:
 ```
-SELECT 
-    t, 
+SELECT
+    t,
     groupArray((OSName, c)) AS groupArr
-FROM 
+FROM
 (
-    SELECT 
-        (intDiv(toUInt32(EventTime), 60) * 60) * 1000 AS t, 
-        OSName, 
+    SELECT
+        (intDiv(toUInt32(EventTime), 60) * 60) * 1000 AS t,
+        OSName,
         count(*) AS c
-    FROM requests 
+    FROM requests
     ANY INNER JOIN oses USING (OS)
     WHERE ((EventDate >= toDate(1482796627)) AND (EventDate <= toDate(1482853383))) AND ((EventTime >= toDateTime(1482796627)) AND (EventTime <= toDateTime(1482853383)))
-    GROUP BY 
-        t, 
+    GROUP BY
+        t,
         OSName
-    ORDER BY 
-        t ASC, 
+    ORDER BY
+        t ASC,
         OSName ASC
-) 
+)
 GROUP BY t
 ORDER BY t ASC
 ```
@@ -170,39 +170,39 @@ This will help to build the next graph:
 
 #### $rateColumns(key, value) - is a combination of $columns and $rate
 
-Example usage: 
+Example usage:
 ```
 $rateColumns(OS, count(*) c) FROM requests
 ```
 
 Query will be transformed into:
 ```
-SELECT 
-    t, 
+SELECT
+    t,
     arrayMap(lambda(tuple(a), (a.1, a.2 / runningDifference(t / 1000))), groupArr)
-FROM 
+FROM
 (
-    SELECT 
-        t, 
+    SELECT
+        t,
         groupArray((OS, c)) AS groupArr
-    FROM 
+    FROM
     (
-        SELECT 
-            (intDiv(toUInt32(EventTime), 60) * 60) * 1000 AS t, 
-            OS, 
+        SELECT
+            (intDiv(toUInt32(EventTime), 60) * 60) * 1000 AS t,
+            OS,
             count(*) AS c
-        FROM requests 
+        FROM requests
         WHERE ((EventDate >= toDate(1482796867)) AND (EventDate <= toDate(1482853383))) AND ((EventTime >= toDateTime(1482796867)) AND (EventTime <= toDateTime(1482853383)))
-        GROUP BY 
-            t, 
+        GROUP BY
+            t,
             OS
-        ORDER BY 
-            t ASC, 
+        ORDER BY
+            t ASC,
             OS ASC
-    ) 
+    )
     GROUP BY t
     ORDER BY t ASC
-) 
+)
 
 ```
 
@@ -262,7 +262,7 @@ SELECT
 FROM requests
 GROUP BY
     UserName
-ORDER BY 
+ORDER BY
     Reqs
 ```
 
@@ -302,6 +302,22 @@ as Ad-hoc's `database.table`
 
 > There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
 
+### Millisecond resolution
+
+If your data has timestamp with millisecond resolution, you can use Column:TimeStampMs type with UInt64 column as your time column.
+Template variables like `$from`, `$to` or `$interval` will also have a unit of millisecond.
+
+### Time range dependent variable values
+
+If you wish to have your dashboard variables to depend on selected time range, you need to set such varable to refresh on time range change.
+After doing this, you can use `$from` and `$to` in your queries. Notice that in this case `$from` and `$to` will always be
+milliseconds.
+
+Example:
+
+```
+SELECT DISTINCT(UserName) FROM requests WHERE EventTime BETWEEN toDateTime($from/1000) AND toDateTime($to/1000)
+```
 
 ### FAQ
 
@@ -325,8 +341,8 @@ Since we developed this plugin only for internal needs we don't have some of Gra
 * Annotations
 * Labels
 
-We know that code quality needs a tons of improvements and unit-tests. We will continue working on this. 
-If you have any idea for an improvement or found a bug do not hesitate to open an issue or submit a pull request. 
+We know that code quality needs a tons of improvements and unit-tests. We will continue working on this.
+If you have any idea for an improvement or found a bug do not hesitate to open an issue or submit a pull request.
 We will appreciate any help from the community which will make working with such amazing products as ClickHouse and Grafana more convenient.
 
 

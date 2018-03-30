@@ -111,7 +111,14 @@ export default class SqlQuery {
         var keyAlias = key.trim().split(' ').pop(),
             valueAlias = value.trim().split(' ').pop(),
             havingIndex = fromQuery.toLowerCase().indexOf('having'),
-            having = "";
+            having = "",
+            aliasRegex = /%(\w+)/g,
+            concatExpr = "";
+
+        if (key.match(/^'.*'$/) && key.match(aliasRegex)) {
+            concatExpr = 'concat(' + key.replace(aliasRegex, "', $1, '").replace(/, ''/g, '') + ')';
+            key = keyAlias = _.uniq(key.match(aliasRegex).map(k => k.slice(1))).join(', ');
+        }
 
         if (havingIndex !== -1) {
             having = fromQuery.slice(havingIndex, fromQuery.length);
@@ -121,7 +128,7 @@ export default class SqlQuery {
 
         return 'SELECT ' +
             't' +
-            ', groupArray((' + keyAlias + ', ' + valueAlias + ')) as groupArr' +
+            ', groupArray((' + (concatExpr || keyAlias) + ', ' + valueAlias + ')) as groupArr' +
             ' FROM (' +
                 ' SELECT $timeSeries as t' +
                 ', ' + key +

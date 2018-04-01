@@ -92,6 +92,12 @@ export default class Scanner {
         return v
     }
 
+    appendToken(argument): string {
+        return (argument === '' || isSkipSpace(argument[argument.length - 1]))
+            ? this.token
+            : ' ' + this.token;
+    }
+
     toAST() {
         this._s = this._sOriginal;
         this.tree = {};
@@ -105,7 +111,7 @@ export default class Scanner {
         while (this.next()) {
             if (!this.isExpectedNext() && isStatement(this.token) && !this.tree.hasOwnProperty(_.toLower(this.token))) {
                 if (!isClosured(argument)) {
-                    argument += this.token;
+                    argument += this.appendToken(argument);
                     continue
                 }
                 if (argument.length > 0) {
@@ -226,9 +232,7 @@ export default class Scanner {
             } else if (this.token === ',') {
                 argument += this.token + ' ';
             } else {
-                argument += (argument === '' || isSkipSpace(argument[argument.length - 1]))
-                    ? this.token
-                    : ' ' + this.token;
+                argument += this.appendToken(argument);
             }
         }
 

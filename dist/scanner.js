@@ -249,6 +249,11 @@ System.register(['lodash'], function(exports_1) {
                     this.expectedNext = false;
                     return v;
                 };
+                Scanner.prototype.appendToken = function (argument) {
+                    return (argument === '' || isSkipSpace(argument[argument.length - 1]))
+                        ? this.token
+                        : ' ' + this.token;
+                };
                 Scanner.prototype.toAST = function () {
                     this._s = this._sOriginal;
                     this.tree = {};
@@ -260,7 +265,7 @@ System.register(['lodash'], function(exports_1) {
                     while (this.next()) {
                         if (!this.isExpectedNext() && isStatement(this.token) && !this.tree.hasOwnProperty(lodash_1.default.toLower(this.token))) {
                             if (!isClosured(argument)) {
-                                argument += this.token;
+                                argument += this.appendToken(argument);
                                 continue;
                             }
                             if (argument.length > 0) {
@@ -384,9 +389,7 @@ System.register(['lodash'], function(exports_1) {
                             argument += this.token + ' ';
                         }
                         else {
-                            argument += (argument === '' || isSkipSpace(argument[argument.length - 1]))
-                                ? this.token
-                                : ' ' + this.token;
+                            argument += this.appendToken(argument);
                         }
                     }
                     if (argument !== '') {

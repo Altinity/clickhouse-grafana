@@ -20,5 +20,6 @@ export default class Scanner {
     push(argument: any): void;
     setRoot(token: any): void;
     isExpectedNext(): boolean;
+    appendToken(argument: any): string;
     toAST(): any;
 }

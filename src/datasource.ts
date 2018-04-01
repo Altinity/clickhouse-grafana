@@ -110,8 +110,8 @@ export class ClickHouseDatasource {
                     series: response.data,
                     meta: response.meta,
                     tillNow: options.rangeRaw.to === 'now',
-                    from: SqlQuery.convertTimestamp(options.range.from),
-                    to: SqlQuery.convertTimestamp(options.range.to)
+                    from: SqlQuery.convertTimestamp(options.range.from, target.dateTimeType),
+                    to: SqlQuery.convertTimestamp(options.range.to, target.dateTimeType)
                 });
                 if (target.format === 'table') {
                     _.each(sqlSeries.toTable(), (data) => {
@@ -127,10 +127,24 @@ export class ClickHouseDatasource {
         });
     };
 
-    metricFindQuery(query) {
+    metricFindQuery(query, options?: any) {
         var interpolated;
         try {
-            interpolated = this.templateSrv.replace(query, {}, SqlQuery.interpolateQueryExpr);
+            var scopedVars = {};
+
+            if (options && options.range) {
+                scopedVars['from'] = {
+                    text: options.range.from.valueOf(),
+                    value: options.range.from.valueOf()
+                }
+
+                scopedVars['to'] = {
+                    text: options.range.to.valueOf(),
+                    value: options.range.to.valueOf()
+                }
+            }
+
+            interpolated = this.templateSrv.replace(query, scopedVars, SqlQuery.interpolateQueryExpr);
         } catch (err) {
             return this.$q.reject(err);
         }

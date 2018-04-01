@@ -24,12 +24,12 @@ export default class SqlQuery {
             query = this.target.query,
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME',
-            from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)),
-            to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round)),
+            from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round), dateTimeType),
+            to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round), dateTimeType),
             timeSeries = SqlQuery.getTimeSeries(dateTimeType),
             timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType),
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
-            interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
+            interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1, dateTimeType);
         try {
             let ast = scanner.toAST();
             if (adhocFilters.length > 0) {
@@ -224,11 +224,24 @@ export default class SqlQuery {
         if (dateTimeType === 'DATETIME') {
             return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
         }
+
+        if (dateTimeType === 'TIMESTAMPMS') {
+            return 'intDiv($dateTimeCol, $interval) * $interval';
+        }
+
         return '(intDiv($dateTimeCol, $interval) * $interval) * 1000'
     }
 
     static getTimeFilter(isToNow: boolean, dateTimeType: string): string {
-        var convertFn = function (t: string): string {
+        var dateCol = function (t: string): string {
+            if (dateTimeType === 'TIMESTAMPMS') {
+                t = t + '/1000';
+            }
+
+            return 'toDate(' + t + ')';
+        };
+
+        var dateTimeCol = function (t: string): string {
             if (dateTimeType === 'DATETIME') {
                 return 'toDateTime('+ t +')';
             }
@@ -236,19 +249,20 @@ export default class SqlQuery {
         };
 
         if (isToNow) {
-            return '$dateCol >= toDate($from) AND $dateTimeCol >= ' + convertFn('$from');
+            return '$dateCol >= ' + dateCol('$from') + ' AND $dateTimeCol >= ' + dateTimeCol('$from');
         }
-        return '$dateCol BETWEEN toDate($from) AND toDate($to) AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
+
+        return '$dateCol BETWEEN ' + dateCol('$from') + ' AND ' + dateCol('$to') + ' AND $dateTimeCol BETWEEN ' + dateTimeCol('$from') + ' AND ' + dateTimeCol('$to');
     }
 
     // date is a moment object
-    static convertTimestamp(date: any) {
+    static convertTimestamp(date: any, dateTimeType: string) {
         //return date.format("'Y-MM-DD HH:mm:ss'")
         if (_.isString(date)) {
             date = dateMath.parse(date, true);
         }
 
-        return Math.floor(date.valueOf() / 1000);
+        return Math.floor(dateTimeType === 'TIMESTAMPMS' ? date.valueOf() : date.valueOf() / 1000);
     }
 
     static round(date: any, round: string): any {
@@ -260,12 +274,12 @@ export default class SqlQuery {
           date = dateMath.parse(date, true);
         }
 
-        let coeff = 1000 * SqlQuery.convertInterval(round, 1);
+        let coeff = SqlQuery.convertInterval(round, 1, 'TIMESTAMPMS');
         let rounded = Math.floor(date.valueOf() / coeff) * coeff;
         return moment(rounded);
     }
 
-    static convertInterval(interval, intervalFactor) {
+    static convertInterval(interval, intervalFactor, dateTimeType: string) {
         var m = interval.match(durationSplitRegexp);
         if (m === null) {
           throw {message: 'Received duration is invalid: ' + interval};
@@ -273,6 +287,11 @@ export default class SqlQuery {
 
         var dur = moment.duration(parseInt(m[1]), m[2]);
         var sec = dur.asSeconds();
+
+        if (dateTimeType === 'TIMESTAMPMS') {
+            return Math.ceil((sec * 1000 || 1) * intervalFactor);
+        }
+
         if (sec < 1) {
             sec = 1;
         }

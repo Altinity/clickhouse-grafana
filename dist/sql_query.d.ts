@@ -15,9 +15,9 @@ export default class SqlQuery {
     static _applyTimeFilter(query: string): string;
     static getTimeSeries(dateTimeType: string): string;
     static getTimeFilter(isToNow: boolean, dateTimeType: string): string;
-    static convertTimestamp(date: any): number;
+    static convertTimestamp(date: any, dateTimeType: string): number;
     static round(date: any, round: string): any;
-    static convertInterval(interval: any, intervalFactor: any): number;
+    static convertInterval(interval: any, intervalFactor: any, dateTimeType: string): number;
     static interpolateQueryExpr(value: any, variable: any, defaultFormatFn: any): any;
     static clickhouseOperator(value: any): any;
     static clickhouseEscape(value: any, variable: any): any;

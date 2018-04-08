@@ -51,8 +51,8 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                                 }
                                 ast.where.push(cond);
                             });
+                            query = scanner.Print(ast);
                         }
-                        query = scanner.Print(ast);
                         if (ast.hasOwnProperty('$columns') && !lodash_1.default.isEmpty(ast['$columns'])) {
                             query = SqlQuery.columns(query);
                         }

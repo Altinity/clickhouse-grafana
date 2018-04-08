@@ -54,8 +54,8 @@ export default class SqlQuery {
                     }
                     ast.where.push(cond)
                 });
+                query = scanner.Print(ast);
             }
-            query = scanner.Print(ast);
             if (ast.hasOwnProperty('$columns') && !_.isEmpty(ast['$columns'])) {
                 query = SqlQuery.columns(query);
             } else if (ast.hasOwnProperty('$rateColumns') && !_.isEmpty(ast['$rateColumns'])) {

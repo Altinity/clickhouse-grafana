@@ -1,3 +1,12 @@
+# 1.4.3 (2018-04-09)
+
+## Fixes
+
+* fix broken AST when using nested `SELECT` without `FROM` statement (#45)
+* strict statement matching (#44)
+* rebuild queries from AST only if adhoc filters were applied
+
+
 # 1.4.2 (2018-03-18)
 
 ## Fixes

@@ -1,6 +1,6 @@
 {
     "name": "vertamedia-clickhouse",
-    "version": "1.4.2",
+    "version": "1.4.3",
     "description": "ClickHouse datasource for Grafana",
     "scripts": {
         "build": "grunt",

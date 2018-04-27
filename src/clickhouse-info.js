@@ -150,7 +150,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
     ];
     p.Macros = [
         "$table",
-        "$timeCol",
+        "$dateCol",
         "$dateTimeCol",
         "$from",
         "$to",
@@ -2059,8 +2059,8 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "docText": "Replaced with selected table name from Query Builder"
             },
             {
-                "name": "$timeCol",
-                "def": "$timeCol",
+                "name": "$dateCol",
+                "def": "$dateCol",
                 "docText": "Replaced with `Date:Col` value from Query Builder"
             },
             {

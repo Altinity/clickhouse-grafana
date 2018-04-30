@@ -315,18 +315,11 @@ ORDER BY Reqs DESC
 )
 ```
 
-If you using [geohash](https://github.com/grafana/worldmap-panel#geohashes-as-the-data-source) set `Format` option to `Table` as shown here:
+If you using [geohash](https://github.com/grafana/worldmap-panel#geohashes-as-the-data-source) set following options:
 ![Format](https://user-images.githubusercontent.com/2902918/32726398-96793438-c881-11e7-84b8-26e82dbdb40c.png)
 
-With following query example:
-```
- SELECT
-    count() metric,
-    geohash,
-    city
-FROM $table
-GROUP BY geohash, city
-```
+And make following query with `Table` formatting:
+![geohash-query](https://user-images.githubusercontent.com/2902918/32726399-96a01e86-c881-11e7-9368-61207bae72fd.png)
 
 
 ### Ad-hoc filters

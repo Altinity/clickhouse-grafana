@@ -250,7 +250,7 @@ FROM
 )
 ```
 
-### Table (https://grafana.com/plugins/table)
+#### Table (https://grafana.com/plugins/table)
 
 There are no any tricks in displaying time-series data. But to display some summary we will need to fake timestamp data:
 
@@ -269,7 +269,7 @@ ORDER BY
 Better to hide `Time` column at `Options` tab while editing panel
 
 
-### Vertical histogram (https://grafana.com/plugins/graph)
+#### Vertical histogram (https://grafana.com/plugins/graph)
 
 ![vertical histogram](https://cloud.githubusercontent.com/assets/2902918/25392561/9f3777e0-29e1-11e7-8b23-2ea9ae46a029.png)
 
@@ -286,6 +286,48 @@ FROM some_table
 ```
 
 // It is also possible to use query without macros
+
+
+#### Worldmap panel (https://github.com/grafana/worldmap-panel)
+
+![worldmap](https://user-images.githubusercontent.com/2902918/39430337-47513f4c-4c96-11e8-981d-04533538abec.png)
+
+If you have a table with country/city codes:
+```
+SELECT
+    1,
+    groupArray((c, Reqs)) AS groupArr
+FROM
+(
+ SELECT
+    CountryCode AS c,
+    sum(requests) AS Reqs
+FROM requests
+GLOBAL ANY INNER JOIN
+(
+    SELECT Country country, CountryCode
+    FROM countries
+) USING (country)
+WHERE $timeFilter
+GROUP BY
+    c
+ORDER BY Reqs DESC
+)
+```
+
+If you using [geohash](https://github.com/grafana/worldmap-panel#geohashes-as-the-data-source) set `Format` option to `Table` as shown here:
+![Format](https://user-images.githubusercontent.com/2902918/32726398-96793438-c881-11e7-84b8-26e82dbdb40c.png)
+
+With following query example:
+```
+ SELECT
+    count() metric,
+    geohash,
+    city
+FROM $table
+GROUP BY geohash, city
+```
+
 
 ### Ad-hoc filters
 

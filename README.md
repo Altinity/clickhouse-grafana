@@ -315,7 +315,7 @@ ORDER BY Reqs DESC
 )
 ```
 
-If you using [geohash](https://github.com/grafana/worldmap-panel#geohashes-as-the-data-source) set following options:
+If you are using [geohash](https://github.com/grafana/worldmap-panel#geohashes-as-the-data-source) set following options:
 
 ![Format](https://user-images.githubusercontent.com/2902918/32726398-96793438-c881-11e7-84b8-26e82dbdb40c.png)
 

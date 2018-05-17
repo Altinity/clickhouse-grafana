@@ -21,6 +21,10 @@ type CHDatasource struct {
 	plugin.NetRPCUnsupportedPlugin
 }
 
+func init() {
+	log.Println("from plugins!")
+}
+
 func (ds *CHDatasource) Query(ctx context.Context, tsdbReq *datasource.DatasourceRequest) (*datasource.DatasourceResponse, error) {
 	log.Println("from plugins!")
 

@@ -6,6 +6,8 @@
   "metrics": true,
   "annotations": false,
   "alerting": true,
+  "backend" : true,
+  "executable": "clickhouse-plugin",
 
   "info": {
     "description": "ClickHouse datasource for Grafana",

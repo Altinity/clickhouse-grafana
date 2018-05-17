@@ -64,7 +64,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         }
                     }
                     catch (err) {
-                        console.log('AST parser error: ', err.message);
+                        console.log('AST parser error: ', err);
                     }
                     query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     query = SqlQuery.unescape(query);

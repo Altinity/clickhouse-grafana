@@ -64,7 +64,7 @@ export default class SqlQuery {
                 query = SqlQuery.rate(query, ast);
             }
         } catch (err) {
-            console.log('AST parser error: ', err.message)
+            console.log('AST parser error: ', err)
         }
 
         query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);

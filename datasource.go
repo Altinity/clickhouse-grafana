@@ -216,5 +216,5 @@ func reportUnsupported(val interface{}) {
 	if t != nil {
 		typ = t.Name()
 	}
-	log.Printf("ERROR: paramter %#v has unsupported type: %s", val, typ)
+	log.Printf("ERROR: parameter %#v has unsupported type: %s", val, typ)
 }

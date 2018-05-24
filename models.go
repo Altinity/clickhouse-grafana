@@ -1,9 +1,17 @@
 package main
 
-type TargetResponseDTO struct {
-	Target     string           `json:"target"`
-	DataPoints TimeSeriesPoints `json:"datapoints"`
+type targetResponseDTO struct {
+	Meta []meta                   `json:"meta"`
+	Data []map[string]interface{} `json:"data"`
+	Rows int                      `json:"rows"`
 }
 
-type TimePoint [2]float64
-type TimeSeriesPoints []TimePoint
+type meta struct {
+	Name string `json:"name"`
+	Type string `json:"type"`
+}
+
+type queryModel struct {
+	Raw   string `json:"rawQuery"`
+	RefID string `json:"refId"`
+}

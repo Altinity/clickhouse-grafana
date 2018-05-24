@@ -1,0 +1,37 @@
+{
+  "meta":
+  [
+    {
+      "name": "t",
+      "type": "UInt64"
+    },
+    {
+      "name": "groupArr",
+      "type": "Array(Tuple(Enum8('VIEWS' = 1, 'CLICKS' = 2), UInt64))"
+    }
+  ],
+  "data":
+  [
+    {
+      "t": "1519405140000",
+      "groupArr": [["VIEWS", null]]
+    },
+    {
+      "t": "1519405141000",
+      "groupArr": [["VIEWS","8"],["CLICKS", 8.22]]
+    },
+    {
+      "t": "1519405142000",
+      "groupArr": [["VIEWS","10"],["CLICKS", 6]]
+    },
+    {
+      "t": "1519405143000",
+      "groupArr": [["CLICKS","2"]]
+    },
+    {
+      "t": "1519405144000",
+      "groupArr": [["VIEWS", 2]]
+    }
+  ],
+  "rows": 5
+}

@@ -1,19 +1,22 @@
 package main
 
 import (
-	"encoding/json"
 	"context"
 	"crypto/tls"
+	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"log"
 	"net"
 	"net/http"
-	"time"
+	"reflect"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/grafana/grafana_plugin_model/go/datasource"
 	"github.com/hashicorp/go-plugin"
+	"github.com/pkg/errors"
 	"golang.org/x/net/context/ctxhttp"
 )
 
@@ -21,22 +24,20 @@ type CHDatasource struct {
 	plugin.NetRPCUnsupportedPlugin
 }
 
-func init() {
-	log.Println("from plugins!")
-}
-
 func (ds *CHDatasource) Query(ctx context.Context, tsdbReq *datasource.DatasourceRequest) (*datasource.DatasourceResponse, error) {
-	log.Println("from plugins!")
-
-	for _, query := range tsdbReq.Queries {
-
-		fmt.Println(query)
-	}
-
 	url := tsdbReq.Datasource.Url + "/query"
-	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(string("SELECT 1")))
-	if err != nil {
-		return nil, err
+	response := &datasource.DatasourceResponse{}
+	for _, query := range tsdbReq.Queries {
+		q := &queryModel{}
+		if err := json.Unmarshal([]byte(query.ModelJson), q); err != nil {
+			return nil, err
+		}
+		r, err := doQuery(ctx, url, q.Raw)
+		if err != nil {
+			return nil, err
+		}
+		r.RefId = q.RefID
+		response.Results = append(response.Results, r)
 	}
 
 	//if tsdbReq.Datasource.BasicAuth {
@@ -45,61 +46,116 @@ func (ds *CHDatasource) Query(ctx context.Context, tsdbReq *datasource.Datasourc
 	//		tsdbReq.Datasource.BasicAuthPassword)
 	//}
 
+	return response, nil
+}
+
+func doQuery(ctx context.Context, url, query string) (*datasource.QueryResult, error) {
+	query = query + " FORMAT JSON"
+	log.Printf(">> sending query %q\n", query)
+	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(query))
+	if err != nil {
+		return nil, err
+	}
 	req.Header.Add("Content-Type", "application/json")
-
-
 	res, err := ctxhttp.Do(ctx, httpClient, req)
 	if err != nil {
 		return nil, err
 	}
-	defer res.Body.Close()
-
 	if res.StatusCode != http.StatusOK {
 		return nil, fmt.Errorf("invalid status code. status: %v", res.Status)
 	}
-
 	body, err := ioutil.ReadAll(res.Body)
 	if err != nil {
 		return nil, err
 	}
+	res.Body.Close()
 
-	r, err := parseResponse(body, "A")
-	if err != nil {
-		return nil, err
-	}
-
-	return &datasource.DatasourceResponse{
-		Results: []*datasource.QueryResult{r},
-	}, nil
+	return parseResponse(body)
 }
 
-func parseResponse(body []byte, refId string) (*datasource.QueryResult, error) {
-	responseBody := []TargetResponseDTO{}
-	err := json.Unmarshal(body, &responseBody)
-	if err != nil {
+func parseResponse(body []byte) (*datasource.QueryResult, error) {
+	var dto targetResponseDTO
+	if err := json.Unmarshal(body, &dto); err != nil {
 		return nil, err
 	}
+	if dto.Rows == 0 {
+		return &datasource.QueryResult{}, nil
+	}
+	if len(dto.Meta) < 2 {
+		return nil, fmt.Errorf("response can't contain less than 2 columns")
+	}
+	// timeCol have to be the first column always
+	if dto.Meta[0].Type != "UInt64" {
+		return nil, fmt.Errorf("timeColumn must be UInt64; got %q instead", dto.Meta[0].Type)
+	}
+	timeCol := dto.Meta[0].Name
 
-	series := []*datasource.TimeSeries{}
-	for _, r := range responseBody {
-		serie := &datasource.TimeSeries{Name: r.Target}
+	intervals := make([]int64, dto.Rows)
+	dataPoints := make(map[string]map[int64]float64)
+	push := func(key string, ts int64, val interface{}) error {
+		f, err := toFloat64(val)
+		if err != nil {
+			return err
+		}
+		if dataPoints[key] == nil {
+			dataPoints[key] = make(map[int64]float64)
+		}
+		dataPoints[key][ts] = f
+		return nil
+	}
 
-		for _, p := range r.DataPoints {
+	for i, item := range dto.Data {
+		tsVal, ok := item[timeCol]
+		if !ok {
+			return nil, fmt.Errorf("unable to find timeCol %q in response.data", timeCol)
+		}
+		ts, err := toInt64(tsVal)
+		if err != nil {
+			return nil, err
+		}
+		intervals[i] = ts
+		delete(item, timeCol)
+
+		for k, val := range item {
+			switch v := val.(type) {
+			case string, float64:
+				push(k, ts, v)
+			case []interface{}:
+				for _, row := range v {
+					r, ok := row.([]interface{})
+					if !ok {
+						reportUnsupported(v)
+						return nil, errUnsupportedType
+					}
+					push(r[0].(string), ts, r[1])
+				}
+			default:
+				reportUnsupported(v)
+				return nil, errUnsupportedType
+			}
+		}
+	}
+
+	var series []*datasource.TimeSeries
+	for target, dp := range dataPoints {
+		serie := &datasource.TimeSeries{Name: target}
+		for _, i := range intervals {
+			v, ok := dp[i]
+			if !ok {
+				v = float64(0)
+			}
 			serie.Points = append(serie.Points, &datasource.Point{
-				Timestamp: int64(p[1]),
-				Value:     p[0],
+				Timestamp: i,
+				Value:     v,
 			})
 		}
-
 		series = append(series, serie)
 	}
 
 	return &datasource.QueryResult{
 		Series: series,
-		RefId:  refId,
 	}, nil
 }
-
 
 var httpClient = &http.Client{
 	Transport: &http.Transport{
@@ -120,3 +176,45 @@ var httpClient = &http.Client{
 	Timeout: time.Duration(time.Second * 30),
 }
 
+var errUnsupportedType = errors.New("unsupported column type")
+
+func toInt64(val interface{}) (int64, error) {
+	switch v := val.(type) {
+	case string:
+		return strconv.ParseInt(v, 10, 64)
+	case float64:
+		return int64(v), nil
+	case int64:
+		return v, nil
+	case uint64:
+		return int64(v), nil
+	case nil:
+		return int64(0), nil
+	}
+	reportUnsupported(val)
+	return int64(0), errUnsupportedType
+}
+
+func toFloat64(val interface{}) (float64, error) {
+	switch v := val.(type) {
+	case string:
+		return strconv.ParseFloat(v, 64)
+	case float64:
+		return v, nil
+	case int64:
+		return float64(v), nil
+	case nil:
+		return float64(0), nil
+	}
+	reportUnsupported(val)
+	return float64(0), errUnsupportedType
+}
+
+func reportUnsupported(val interface{}) {
+	typ := "nil"
+	t := reflect.TypeOf(val)
+	if t != nil {
+		typ = t.Name()
+	}
+	log.Printf("ERROR: paramter %#v has unsupported type: %s", val, typ)
+}

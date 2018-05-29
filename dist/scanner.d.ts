@@ -3,7 +3,7 @@ export default class Scanner {
     rootToken: any;
     token: any;
     skipSpace: boolean;
-    re: any;
+    re: RegExp;
     expectedNext: boolean;
     _sOriginal: any;
     _s: any;

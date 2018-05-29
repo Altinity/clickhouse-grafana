@@ -36,6 +36,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     this.withCredentials = instanceSettings.withCredentials;
                     this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
                     this.usePOST = instanceSettings.jsonData.usePOST;
+                    this.defaultDatabase = instanceSettings.jsonData.defaultDatabase;
                     this.adhocCtrl = new adhoc_1.default();
                 }
                 ClickHouseDatasource.prototype._request = function (query) {

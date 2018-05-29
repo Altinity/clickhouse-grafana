@@ -36,7 +36,11 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                     _super.call(this, $scope, $injector);
                     this.uiSegmentSrv = uiSegmentSrv;
                     this.queryModel = new sql_query_1.default(this.target, templateSrv, this.panel.scopedVars);
-                    this.databaseSegment = uiSegmentSrv.newSegment(this.target.database || { fake: true, value: '-- database --' });
+                    var defaultDatabaseSegment = { fake: true, value: '-- database --' };
+                    if (this.datasource.defaultDatabase.length > 0) {
+                        defaultDatabaseSegment = { fake: false, value: this.datasource.defaultDatabase };
+                    }
+                    this.databaseSegment = uiSegmentSrv.newSegment(this.target.database || defaultDatabaseSegment);
                     this.tableSegment = uiSegmentSrv.newSegment(this.target.table || { fake: true, value: '-- table --' });
                     this.dateColDataTypeSegment = uiSegmentSrv.newSegment(this.target.dateColDataType || { fake: true, value: '-- date : col --' });
                     this.dateTimeColDataTypeSegment = uiSegmentSrv.newSegment(this.target.dateTimeColDataType || { fake: true, value: '-- dateTime : col --' });
@@ -61,6 +65,10 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                     this.scanner = new scanner_1.default(this.target.query);
                     if (this.target.query === defaultQuery) {
                         this.target.query = this.format();
+                    }
+                    /* Update database if default database is used to prepopulate the field */
+                    if (this.target.database === undefined && !defaultDatabaseSegment.fake) {
+                        this.databaseChanged();
                     }
                 }
                 SqlQueryCtrl.prototype.getCollapsedText = function () {

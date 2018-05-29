@@ -16,6 +16,7 @@ export class ClickHouseDatasource {
   basicAuth: any;
   withCredentials: any;
   usePOST: boolean;
+  defaultDatabase: string;
   addCorsHeader: boolean;
   responseParser: any;
   adhocCtrl: AdhocCtrl;
@@ -35,6 +36,7 @@ export class ClickHouseDatasource {
       this.withCredentials = instanceSettings.withCredentials;
       this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
       this.usePOST = instanceSettings.jsonData.usePOST;
+      this.defaultDatabase = instanceSettings.jsonData.defaultDatabase;
       this.adhocCtrl = new AdhocCtrl();
     }
 

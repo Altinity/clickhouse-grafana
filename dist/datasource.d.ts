@@ -12,6 +12,7 @@ export declare class ClickHouseDatasource {
     basicAuth: any;
     withCredentials: any;
     usePOST: boolean;
+    defaultDatabase: string;
     addCorsHeader: boolean;
     responseParser: any;
     adhocCtrl: AdhocCtrl;

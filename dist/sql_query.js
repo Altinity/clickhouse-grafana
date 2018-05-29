@@ -35,6 +35,15 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                             }
                             adhocFilters.forEach(function (af) {
                                 var parts = af.key.split('.');
+                                /* Wildcard table, substitute current target table */
+                                if (parts.length == 1) {
+                                    parts.unshift(self.target.table);
+                                }
+                                /* Wildcard database, substitute current target database */
+                                if (parts.length == 2) {
+                                    parts.unshift(self.target.database);
+                                }
+                                /* Expect fully qualified column name at this point */
                                 if (parts.length < 3) {
                                     console.log("adhoc filters: filter " + af.key + "` has wrong format");
                                     return;
@@ -64,7 +73,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         }
                     }
                     catch (err) {
-                        console.log('AST parser error: ', err.message);
+                        console.log('AST parser error: ', err);
                     }
                     query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     query = SqlQuery.unescape(query);

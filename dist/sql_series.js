@@ -15,6 +15,7 @@ System.register(['lodash'], function(exports_1) {
                     this.tillNow = options.tillNow;
                     this.from = options.from;
                     this.to = options.to;
+                    this.keys = options.keys;
                 }
                 SqlSeries.prototype.toTable = function () {
                     var self = this, data = [];
@@ -47,12 +48,27 @@ System.register(['lodash'], function(exports_1) {
                     }
                     // timeCol have to be the first column always
                     var timeCol = self.meta[0], metrics = {}, intervals = [], t;
+                    var keyColumns = self.keys.filter(function (name) { return name != timeCol.name; });
                     lodash_1.default.each(self.series, function (series) {
                         t = SqlSeries._formatValue(series[timeCol.name]);
                         intervals.push(t);
                         // rm time value from series
                         delete series[timeCol.name];
+                        /* Build composite key (categories) from GROUP BY */
+                        var metricKey = null;
+                        if (keyColumns.length > 0) {
+                            metricKey = keyColumns.map(function (name) { return series[name]; }).join(', ');
+                            keyColumns.forEach(function (name) {
+                                delete series[name];
+                            });
+                        }
                         lodash_1.default.each(series, function (val, key) {
+                            /* If composite key is specified, e.g. 'category1',
+                             * use it instead of the metric name, e.g. count()
+                             */
+                            if (metricKey) {
+                                key = metricKey;
+                            }
                             if (lodash_1.default.isArray(val)) {
                                 lodash_1.default.each(val, function (arr) {
                                     (metrics[arr[0]] = metrics[arr[0]] || {})[t] = arr[1];

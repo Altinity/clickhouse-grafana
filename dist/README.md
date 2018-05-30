@@ -220,43 +220,32 @@ Top5:
 ```
 SELECT
     1, /* fake timestamp value */
-    groupArray((UserName,  Reqs))
-FROM
-(
-    SELECT
-        UserName,
-        sum(Reqs) AS Reqs
-    FROM requests
-    GROUP BY UserName
-    ORDER BY Reqs desc
-    LIMIT 5
-)
+    UserName,
+    sum(Reqs) AS Reqs
+FROM requests
+GROUP BY UserName
+ORDER BY Reqs desc
+LIMIT 5
 ```
 
 Other:
 ```
 SELECT
     1, /* fake timestamp value */
-    tuple(tuple('Other',  sum(Reqs)))
-FROM
-(
-    SELECT
-        UserName,
-        sum(Reqs) AS Reqs
-    FROM requests
-    GROUP BY UserName
-    ORDER BY Reqs desc
-    LIMIT 5,10000000000000 /* select some ridiculous number after first 5 */
-)
+    UserName,
+    sum(Reqs) AS Reqs
+FROM requests
+GROUP BY UserName
+ORDER BY Reqs
+LIMIT 5,10000000000000 /* select some ridiculous number after first 5 */
 ```
 
 #### Table (https://grafana.com/plugins/table)
 
-There are no any tricks in displaying time-series data. But to display some summary we will need to fake timestamp data:
+There are no any tricks in displaying time-series data. To print summary data, omit time column, and format the result as "Table".
 
 ```
 SELECT
-    rand() Time, /* fake timestamp value */
     UserName,
     sum(Reqs) as Reqs
 FROM requests
@@ -265,9 +254,6 @@ GROUP BY
 ORDER BY 
     Reqs
 ```
-
-Better to hide `Time` column at `Options` tab while editing panel
-
 
 #### Vertical histogram (https://grafana.com/plugins/graph)
 
@@ -296,10 +282,6 @@ If you have a table with country/city codes:
 ```
 SELECT
     1,
-    groupArray((c, Reqs)) AS groupArr
-FROM
-(
- SELECT
     CountryCode AS c,
     sum(requests) AS Reqs
 FROM requests
@@ -312,7 +294,6 @@ WHERE $timeFilter
 GROUP BY
     c
 ORDER BY Reqs DESC
-)
 ```
 
 If you are using [geohash](https://github.com/grafana/worldmap-panel#geohashes-as-the-data-source) set following options:

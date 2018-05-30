@@ -6,6 +6,7 @@ import SqlSeries from './sql_series';
 import SqlQuery from './sql_query';
 import ResponseParser from './response_parser';
 import AdhocCtrl from './adhoc';
+import Scanner from './scanner';
 
 export class ClickHouseDatasource {
   type: string;
@@ -77,13 +78,16 @@ export class ClickHouseDatasource {
 
     query(options) {
         var queries = [], q,
-            adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+            adhocFilters = this.templateSrv.getAdhocFilters(this.name),
+            keyColumns = [];
 
         _.map(options.targets, (target) => {
             if (!target.hide && target.query) {
                 var queryModel = new SqlQuery(target, this.templateSrv, options);
                 q = queryModel.replace(options, adhocFilters);
                 queries.push(q);
+                let queryAST = new Scanner(q).toAST();
+                keyColumns.push(queryAST['group by'] || []);
             }
         });
 
@@ -103,6 +107,8 @@ export class ClickHouseDatasource {
             var result = [], i = 0;
             _.each(responses, (response) => {
                 var target = options.targets[i];
+                var keys = keyColumns[i];
+
                 i++;
                 if (!response || !response.rows) {
                     return;
@@ -111,6 +117,7 @@ export class ClickHouseDatasource {
                 var sqlSeries = new SqlSeries({
                     series: response.data,
                     meta: response.meta,
+                    keys: keys,
                     tillNow: options.rangeRaw.to === 'now',
                     from: SqlQuery.convertTimestamp(options.range.from),
                     to: SqlQuery.convertTimestamp(options.range.to)

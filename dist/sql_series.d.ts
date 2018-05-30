@@ -1,5 +1,6 @@
 export default class SqlSeries {
     series: any;
+    keys: any;
     meta: any;
     tillNow: any;
     from: any;

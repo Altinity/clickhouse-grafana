@@ -1,6 +1,6 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
-System.register(['lodash', './sql_series', './sql_query', './response_parser', './adhoc'], function(exports_1) {
-    var lodash_1, sql_series_1, sql_query_1, response_parser_1, adhoc_1;
+System.register(['lodash', './sql_series', './sql_query', './response_parser', './adhoc', './scanner'], function(exports_1) {
+    var lodash_1, sql_series_1, sql_query_1, response_parser_1, adhoc_1, scanner_1;
     var ClickHouseDatasource;
     return {
         setters:[
@@ -18,6 +18,9 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
             },
             function (adhoc_1_1) {
                 adhoc_1 = adhoc_1_1;
+            },
+            function (scanner_1_1) {
+                scanner_1 = scanner_1_1;
             }],
         execute: function() {
             ClickHouseDatasource = (function () {
@@ -73,12 +76,14 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                 ;
                 ClickHouseDatasource.prototype.query = function (options) {
                     var _this = this;
-                    var queries = [], q, adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+                    var queries = [], q, adhocFilters = this.templateSrv.getAdhocFilters(this.name), keyColumns = [];
                     lodash_1.default.map(options.targets, function (target) {
                         if (!target.hide && target.query) {
                             var queryModel = new sql_query_1.default(target, _this.templateSrv, options);
                             q = queryModel.replace(options, adhocFilters);
                             queries.push(q);
+                            var queryAST = new scanner_1.default(q).toAST();
+                            keyColumns.push(queryAST['group by'] || []);
                         }
                     });
                     // No valid targets, return the empty result to save a round trip.
@@ -94,6 +99,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                         var result = [], i = 0;
                         lodash_1.default.each(responses, function (response) {
                             var target = options.targets[i];
+                            var keys = keyColumns[i];
                             i++;
                             if (!response || !response.rows) {
                                 return;
@@ -101,6 +107,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                             var sqlSeries = new sql_series_1.default({
                                 series: response.data,
                                 meta: response.meta,
+                                keys: keys,
                                 tillNow: options.rangeRaw.to === 'now',
                                 from: sql_query_1.default.convertTimestamp(options.range.from),
                                 to: sql_query_1.default.convertTimestamp(options.range.to)

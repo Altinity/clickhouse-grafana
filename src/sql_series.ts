@@ -15,7 +15,7 @@ export default class SqlSeries {
         this.tillNow = options.tillNow;
         this.from = options.from;
         this.to = options.to;
-        this.keys = options.keys;
+        this.keys = options.keys || [];
     }
 
     toTable():any {

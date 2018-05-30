@@ -17,10 +17,11 @@ System.register([], function(exports_1) {
                     if (this.tagKeys.length > 0) {
                         return Promise.resolve(this.tagKeys);
                     }
-                    var query = columnsQuery.replace('{filter}', queryFilter);
+                    var filter = queryFilter;
                     if (datasource.defaultDatabase.length > 0) {
-                        query = columnsQuery.replace('{filter}', "database = '" + datasource.defaultDatabase + "' AND " + queryFilter);
+                        filter = "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
                     }
+                    var query = columnsQuery.replace('{filter}', queryFilter);
                     return datasource.metricFindQuery(query)
                         .then(function (response) {
                         var columnNames = {};

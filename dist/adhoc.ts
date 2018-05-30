@@ -17,10 +17,11 @@ export default class AdhocCtrl {
         if (this.tagKeys.length > 0) {
             return Promise.resolve(this.tagKeys);
         }
+        let filter = queryFilter;
+        if (datasource.defaultDatabase.length > 0) { 
+         filter =  "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
+        } 
         let query = columnsQuery.replace('{filter}', queryFilter);
-        if (datasource.defaultDatabase.length > 0) {
-          query = columnsQuery.replace('{filter}', "database = '" + datasource.defaultDatabase + "' AND " + queryFilter);
-        }
         return datasource.metricFindQuery(query)
             .then(function(response){
                 let columnNames = {};

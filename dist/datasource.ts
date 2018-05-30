@@ -37,7 +37,7 @@ export class ClickHouseDatasource {
       this.withCredentials = instanceSettings.withCredentials;
       this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
       this.usePOST = instanceSettings.jsonData.usePOST;
-      this.defaultDatabase = instanceSettings.jsonData.defaultDatabase;
+      this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
       this.adhocCtrl = new AdhocCtrl();
     }
 
@@ -86,8 +86,12 @@ export class ClickHouseDatasource {
                 var queryModel = new SqlQuery(target, this.templateSrv, options);
                 q = queryModel.replace(options, adhocFilters);
                 queries.push(q);
-                let queryAST = new Scanner(q).toAST();
-                keyColumns.push(queryAST['group by'] || []);
+                try {
+                    let queryAST = new Scanner(q).toAST();
+                    keyColumns.push(queryAST['group by'] || []);
+                } catch (err) {
+                    console.log('AST parser error: ', err)
+                }
             }
         });
 

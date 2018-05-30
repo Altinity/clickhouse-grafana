@@ -335,6 +335,19 @@ That's why plugin checks prev datapoints and tries to predict last datapoint val
 
 Alerts feature requires changes in `Grafana`'s backend, which can't be extended for now. `Grafana`'s maintainers are working on this feature.
 
+### Build
+
+The build works with either NPM or Yarn:
+
+```
+yarn run build
+```
+
+Tests can be run with Karma:
+
+```
+yarn run test
+```
 
 ### Contribute
 

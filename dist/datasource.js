@@ -39,7 +39,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     this.withCredentials = instanceSettings.withCredentials;
                     this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
                     this.usePOST = instanceSettings.jsonData.usePOST;
-                    this.defaultDatabase = instanceSettings.jsonData.defaultDatabase;
+                    this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
                     this.adhocCtrl = new adhoc_1.default();
                 }
                 ClickHouseDatasource.prototype._request = function (query) {
@@ -82,8 +82,13 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                             var queryModel = new sql_query_1.default(target, _this.templateSrv, options);
                             q = queryModel.replace(options, adhocFilters);
                             queries.push(q);
-                            var queryAST = new scanner_1.default(q).toAST();
-                            keyColumns.push(queryAST['group by'] || []);
+                            try {
+                                var queryAST = new scanner_1.default(q).toAST();
+                                keyColumns.push(queryAST['group by'] || []);
+                            }
+                            catch (err) {
+                                console.log('AST parser error: ', err);
+                            }
                         }
                     });
                     // No valid targets, return the empty result to save a round trip.

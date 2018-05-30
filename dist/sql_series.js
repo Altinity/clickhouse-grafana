@@ -15,7 +15,7 @@ System.register(['lodash'], function(exports_1) {
                     this.tillNow = options.tillNow;
                     this.from = options.from;
                     this.to = options.to;
-                    this.keys = options.keys;
+                    this.keys = options.keys || [];
                 }
                 SqlSeries.prototype.toTable = function () {
                     var self = this, data = [];

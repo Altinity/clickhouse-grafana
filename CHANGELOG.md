@@ -1,3 +1,13 @@
+# 1.5.0 (2018-05-31)
+
+## New Features
+
+* new datasource setting - `default database`. If set it will be prefilled in the query builder, and used to make ad-hoc filters more convenient (thx to @vavrusa)
+* support wildcard ad-hoc filters for dashboards using multiple tables (thx to @vavrusa)
+* parse dimensions from GROUP BY to simplify querying (see [piechart](https://github.com/Vertamedia/clickhouse-grafana#piechart-httpsgrafanacompluginsgrafana-piechart-panel) and [worldmap](https://github.com/Vertamedia/clickhouse-grafana#worldmap-panel-httpsgithubcomgrafanaworldmap-panel) examples) (thx to @vavrusa)
+* `$timeCol` to `$dateCol` renamed to be more clear with column types (thx to @simPod)
+
+
 # 1.4.3 (2018-04-09)
 
 ## Fixes

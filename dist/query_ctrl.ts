@@ -47,8 +47,12 @@ class SqlQueryCtrl extends QueryCtrl {
 
         this.queryModel = new SqlQuery(this.target, templateSrv, this.panel.scopedVars);
 
+        let defaultDatabaseSegment = {fake: true, value: '-- database --'};
+        if (this.datasource.defaultDatabase.length > 0) {
+            defaultDatabaseSegment = {fake: false, value: this.datasource.defaultDatabase};
+        }
         this.databaseSegment = uiSegmentSrv.newSegment(
-            this.target.database || {fake: true, value: '-- database --'}
+            this.target.database || defaultDatabaseSegment
         );
 
         this.tableSegment = uiSegmentSrv.newSegment(
@@ -88,6 +92,11 @@ class SqlQueryCtrl extends QueryCtrl {
         this.scanner = new Scanner(this.target.query);
         if (this.target.query === defaultQuery) {
             this.target.query = this.format();
+        }
+
+        /* Update database if default database is used to prepopulate the field */
+        if (this.target.database === undefined && !defaultDatabaseSegment.fake) {
+            this.databaseChanged();
         }
     }
 

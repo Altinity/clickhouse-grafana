@@ -1,9 +1,10 @@
 System.register([], function(exports_1) {
-    var columnsQuery, regexEnum, AdhocCtrl;
+    var queryFilter, columnsQuery, regexEnum, AdhocCtrl;
     return {
         setters:[],
         execute: function() {
-            columnsQuery = "SELECT database, table, name, type FROM system.columns where database != 'system' ORDER BY database, table";
+            queryFilter = "database != 'system'";
+            columnsQuery = "SELECT database, table, name, type FROM system.columns WHERE {filter} ORDER BY database, table";
             regexEnum = /'(?:[^']+|'')+'/gmi;
             AdhocCtrl = (function () {
                 /** @ngInject */
@@ -16,10 +17,19 @@ System.register([], function(exports_1) {
                     if (this.tagKeys.length > 0) {
                         return Promise.resolve(this.tagKeys);
                     }
-                    return datasource.metricFindQuery(columnsQuery)
+                    var filter = queryFilter;
+                    if (datasource.defaultDatabase.length > 0) {
+                        filter = "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
+                    }
+                    var query = columnsQuery.replace('{filter}', queryFilter);
+                    return datasource.metricFindQuery(query)
                         .then(function (response) {
+                        var columnNames = {};
                         response.forEach(function (item) {
-                            var text = item.database + '.' + item.table + '.' + item.name;
+                            var text = item.table + '.' + item.name;
+                            if (datasource.defaultDatabase.length == 0) {
+                                text = item.database + '.' + text;
+                            }
                             var value = item.name;
                             self.tagKeys.push({ text: text, value: value });
                             if (item.type.slice(0, 4) === 'Enum') {
@@ -29,8 +39,14 @@ System.register([], function(exports_1) {
                                     options.forEach(function (o) {
                                         self.tagValues[text].push({ text: o, value: o });
                                     });
+                                    self.tagValues[item.name] = self.tagValues[text];
                                 }
                             }
+                            columnNames[item.name] = true;
+                        });
+                        /* Store unique column names with wildcard table */
+                        Object.keys(columnNames).forEach(function (columnName) {
+                            self.tagKeys.push({ text: columnName, value: columnName });
                         });
                         return Promise.resolve(self.tagKeys);
                     });

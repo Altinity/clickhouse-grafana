@@ -2,6 +2,7 @@ import _ from 'lodash';
 
 export default class SqlSeries {
     series: any;
+    keys: any;
     meta: any;
     tillNow: any;
     from: any;
@@ -14,6 +15,7 @@ export default class SqlSeries {
         this.tillNow = options.tillNow;
         this.from = options.from;
         this.to = options.to;
+        this.keys = options.keys || [];
     }
 
     toTable():any {
@@ -53,12 +55,28 @@ export default class SqlSeries {
 
         // timeCol have to be the first column always
         let timeCol = self.meta[0], metrics = {}, intervals = [], t;
+        let keyColumns = self.keys.filter(name => name != timeCol.name);
         _.each(self.series, function(series) {
             t = SqlSeries._formatValue(series[timeCol.name]);
             intervals.push(t);
             // rm time value from series
             delete series[timeCol.name];
+            /* Build composite key (categories) from GROUP BY */
+            let metricKey = null;
+            if (keyColumns.length > 0) {
+                metricKey = keyColumns.map(name => series[name]).join(', ');
+                keyColumns.forEach(name => {
+                    delete series[name];
+                });
+            }
+
             _.each(series, function(val, key) {
+                /* If composite key is specified, e.g. 'category1',
+                 * use it instead of the metric name, e.g. count()
+                 */
+                if (metricKey) {
+                    key = metricKey;
+                }
                 if (_.isArray(val)) {
                     _.each(val, function(arr) {
                         (metrics[arr[0]] = metrics[arr[0]] || {})[t] = arr[1];

@@ -46,48 +46,52 @@ System.register(['lodash'], function(exports_1) {
                     if (self.series.length === 0) {
                         return timeSeries;
                     }
+                    var metrics = {};
                     // timeCol have to be the first column always
-                    var timeCol = self.meta[0], metrics = {}, intervals = [], t;
+                    var timeCol = self.meta[0];
+                    var lastTimeStamp = self.series[0][timeCol.name];
                     var keyColumns = self.keys.filter(function (name) { return name != timeCol.name; });
-                    lodash_1.default.each(self.series, function (series) {
-                        t = SqlSeries._formatValue(series[timeCol.name]);
-                        intervals.push(t);
-                        // rm time value from series
-                        delete series[timeCol.name];
+                    lodash_1.default.each(self.series, function (row) {
+                        var t = SqlSeries._formatValue(row[timeCol.name]);
                         /* Build composite key (categories) from GROUP BY */
                         var metricKey = null;
                         if (keyColumns.length > 0) {
-                            metricKey = keyColumns.map(function (name) { return series[name]; }).join(', ');
-                            keyColumns.forEach(function (name) {
-                                delete series[name];
-                            });
+                            metricKey = keyColumns.map(function (name) { return row[name]; }).join(', ');
                         }
-                        lodash_1.default.each(series, function (val, key) {
+                        /* Make sure all series end with a value or nil for current timestamp
+                         * to render discontiguous timeseries properly. */
+                        if (lastTimeStamp < t) {
+                            lodash_1.default.each(metrics, function (datapoints, seriesName) {
+                                if (datapoints[datapoints.length - 1][1] < lastTimeStamp) {
+                                    datapoints.push([null, lastTimeStamp]);
+                                }
+                            });
+                            lastTimeStamp = t;
+                        }
+                        /* For each metric-value pair in row, construct a datapoint */
+                        lodash_1.default.each(row, function (val, key) {
+                            /* Skip timestamp and GROUP BY keys */
+                            if ((self.keys.length == 0 && timeCol.name == key) || self.keys.indexOf(key) >= 0) {
+                                return;
+                            }
                             /* If composite key is specified, e.g. 'category1',
-                             * use it instead of the metric name, e.g. count()
-                             */
+                             * use it instead of the metric name, e.g. count() */
                             if (metricKey) {
                                 key = metricKey;
                             }
                             if (lodash_1.default.isArray(val)) {
+                                /* Expand groupArray into multiple timeseries */
                                 lodash_1.default.each(val, function (arr) {
-                                    (metrics[arr[0]] = metrics[arr[0]] || {})[t] = arr[1];
+                                    SqlSeries._pushDatapoint(metrics, t, arr[0], arr[1]);
                                 });
                             }
                             else {
-                                (metrics[key] = metrics[key] || {})[t] = val;
+                                SqlSeries._pushDatapoint(metrics, t, key, val);
                             }
                         });
                     });
-                    lodash_1.default.each(metrics, function (v, k) {
-                        var datapoints = [];
-                        lodash_1.default.each(intervals, function (interval) {
-                            if (metrics[k][interval] === undefined) {
-                                metrics[k][interval] = null;
-                            }
-                            datapoints.push([SqlSeries._formatValue(metrics[k][interval]), interval]);
-                        });
-                        timeSeries.push({ target: k, datapoints: self.extrapolate(datapoints) });
+                    lodash_1.default.each(metrics, function (datapoints, seriesName) {
+                        timeSeries.push({ target: seriesName, datapoints: self.extrapolate(datapoints) });
                     });
                     return timeSeries;
                 };
@@ -122,6 +126,21 @@ System.register(['lodash'], function(exports_1) {
                     return datapoints;
                 };
                 ;
+                SqlSeries._pushDatapoint = function (metrics, timestamp, key, value) {
+                    if (!metrics[key]) {
+                        metrics[key] = [];
+                        /* Fill null values for each new series */
+                        for (var seriesName in metrics) {
+                            metrics[seriesName].forEach(function (v) {
+                                if (v[1] < timestamp) {
+                                    metrics[key].push([null, v[1]]);
+                                }
+                            });
+                            break;
+                        }
+                    }
+                    metrics[key].push([SqlSeries._formatValue(value), timestamp]);
+                };
                 SqlSeries._toJSType = function (type) {
                     switch (type) {
                         case 'UInt8':

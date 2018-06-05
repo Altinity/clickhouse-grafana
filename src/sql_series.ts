@@ -53,50 +53,54 @@ export default class SqlSeries {
             return timeSeries;
         }
 
+        let metrics = {};
         // timeCol have to be the first column always
-        let timeCol = self.meta[0], metrics = {}, intervals = [], t;
+        let timeCol = self.meta[0];
+        let lastTimeStamp = self.series[0][timeCol.name];
         let keyColumns = self.keys.filter(name => name != timeCol.name);
-        _.each(self.series, function(series) {
-            t = SqlSeries._formatValue(series[timeCol.name]);
-            intervals.push(t);
-            // rm time value from series
-            delete series[timeCol.name];
+        _.each(self.series, function(row) {
+            let t = SqlSeries._formatValue(row[timeCol.name]);
             /* Build composite key (categories) from GROUP BY */
             let metricKey = null;
             if (keyColumns.length > 0) {
-                metricKey = keyColumns.map(name => series[name]).join(', ');
-                keyColumns.forEach(name => {
-                    delete series[name];
-                });
+                metricKey = keyColumns.map(name => row[name]).join(', ');
             }
-
-            _.each(series, function(val, key) {
+            /* Make sure all series end with a value or nil for current timestamp
+             * to render discontiguous timeseries properly. */
+             if (lastTimeStamp < t) {
+                 _.each(metrics, function(datapoints, seriesName) {
+                     if (datapoints[datapoints.length - 1][1] < lastTimeStamp) {
+                         datapoints.push([null, lastTimeStamp]);
+                     }
+                 });
+                 lastTimeStamp = t;
+             }
+            /* For each metric-value pair in row, construct a datapoint */
+            _.each(row, function(val, key) {
+                /* Skip timestamp and GROUP BY keys */
+                if ((self.keys.length == 0 && timeCol.name == key) || self.keys.indexOf(key) >= 0) {
+                    return;
+                }
                 /* If composite key is specified, e.g. 'category1',
-                 * use it instead of the metric name, e.g. count()
-                 */
+                 * use it instead of the metric name, e.g. count() */
                 if (metricKey) {
                     key = metricKey;
                 }
                 if (_.isArray(val)) {
+                    /* Expand groupArray into multiple timeseries */
                     _.each(val, function(arr) {
-                        (metrics[arr[0]] = metrics[arr[0]] || {})[t] = arr[1];
+                        SqlSeries._pushDatapoint(metrics, t, arr[0], arr[1]);
                     });
                 } else {
-                    (metrics[key] = metrics[key] || {})[t] = val;
+                    SqlSeries._pushDatapoint(metrics, t, key, val);
                 }
             });
         });
 
-        _.each(metrics, function(v, k) {
-            let datapoints = [];
-            _.each(intervals, function(interval) {
-                if (metrics[k][interval] === undefined) {
-                    metrics[k][interval] = null;
-                }
-                datapoints.push([SqlSeries._formatValue(metrics[k][interval]), interval]);
-            });
-            timeSeries.push({target: k, datapoints: self.extrapolate(datapoints)});
+        _.each(metrics, function(datapoints, seriesName) {
+            timeSeries.push({target: seriesName, datapoints: self.extrapolate(datapoints)});
         });
+
         return timeSeries;
     };
 
@@ -136,6 +140,23 @@ export default class SqlSeries {
 
         return datapoints;
     };
+
+    static _pushDatapoint(metrics: any, timestamp: number, key: string, value: number) {
+        if (!metrics[key]) {
+            metrics[key] = [];
+            /* Fill null values for each new series */
+            for (var seriesName in metrics) {
+                metrics[seriesName].forEach(v => {
+                    if (v[1] < timestamp) {
+                        metrics[key].push([null, v[1]]);
+                    }
+                });
+                break;
+            }
+        }
+
+        metrics[key].push([ SqlSeries._formatValue(value), timestamp ]);
+    }
 
     static _toJSType(type:any):string {
         switch (type) {

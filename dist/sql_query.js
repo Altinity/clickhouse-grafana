@@ -29,7 +29,12 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     var self = this, query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME', from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round)), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
                     try {
                         var ast = scanner.toAST();
+                        var topQuery = ast;
                         if (adhocFilters.length > 0) {
+                            /* Check subqueries for ad-hoc filters */
+                            while (!lodash_1.default.isArray(ast.from)) {
+                                ast = ast.from;
+                            }
                             if (!ast.hasOwnProperty('where')) {
                                 ast.where = [];
                             }
@@ -60,7 +65,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                                 }
                                 ast.where.push(cond);
                             });
-                            query = scanner.Print(ast);
+                            query = scanner.Print(topQuery);
                         }
                         if (ast.hasOwnProperty('$columns') && !lodash_1.default.isEmpty(ast['$columns'])) {
                             query = SqlQuery.columns(query);

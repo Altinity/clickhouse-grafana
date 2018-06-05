@@ -32,7 +32,12 @@ export default class SqlQuery {
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
         try {
             let ast = scanner.toAST();
+            let topQuery = ast;
             if (adhocFilters.length > 0) {
+                /* Check subqueries for ad-hoc filters */
+                while (!_.isArray(ast.from)) {
+                    ast = ast.from;
+                }
                 if (!ast.hasOwnProperty('where')) {
                     ast.where = [];
                 }
@@ -63,7 +68,7 @@ export default class SqlQuery {
                     }
                     ast.where.push(cond)
                 });
-                query = scanner.Print(ast);
+                query = scanner.Print(topQuery);
             }
             if (ast.hasOwnProperty('$columns') && !_.isEmpty(ast['$columns'])) {
                 query = SqlQuery.columns(query);

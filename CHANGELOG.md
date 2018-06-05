@@ -1,3 +1,11 @@
+# 1.5.1 (2018-06-05)
+
+## Fixes
+
+* optimize memory use for range time series (thx to @vavrusa)
+* apply ad-hoc filters on inner subqueries (thx to @vavrusa)
+
+
 # 1.5.0 (2018-05-31)
 
 ## New Features

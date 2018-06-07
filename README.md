@@ -322,6 +322,44 @@ This is useful if the dashboard contains queries to multiple different tables.
 > There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
 
 
+### Configure the Datasource with Provisioning
+It’s now possible to configure datasources using config files with Grafana’s provisioning system.
+You can read more about how it works and all the settings you can set for datasources on the [provisioning docs page](http://docs.grafana.org/administration/provisioning/#datasources)
+
+Here are some provisioning example:
+```
+apiVersion: 1
+
+datasources:
+ - name: Clickhouse-Prov
+   type: vertamedia-clickhouse-datasource
+   # <int> org id. will default to orgId 1 if not specified
+   orgId: 1
+   access: proxy
+   url: http://localhost:8123
+   # <bool> enable/disable basic auth
+   basicAuth:
+   # <string> basic auth username
+   basicAuthUser:
+   # <string> basic auth password
+   basicAuthPassword:
+   # <bool> enable/disable with credentials headers
+   withCredentials:
+   # <bool> mark as default datasource. Max one per org
+   isDefault:
+   # <map> fields that will be converted to json and stored in json_data
+   jsonData:
+      # <bool> enable/disable sending 'add_http_cors_header=1' parameter
+      addCorsHeader:
+      # <bool> enable/disable using POST method for sending queries
+      usePOST:
+      # <string> default database name
+      defaultDatabase:
+```
+
+Some settings and security params are the same for all datasources. You can find them [here](http://docs.grafana.org/administration/provisioning/#example-datasource-config-file)
+
+
 ### FAQ
 
 > Time series last point is not the real last point

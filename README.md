@@ -331,12 +331,11 @@ Here are some provisioning example:
 apiVersion: 1
 
 datasources:
- - name: Clickhouse-Prov
+ - name: Clickhouse
    type: vertamedia-clickhouse-datasource
-   # <int> org id. will default to orgId 1 if not specified
-   orgId: 1
    access: proxy
    url: http://localhost:8123
+
    # <bool> enable/disable basic auth
    basicAuth:
    # <string> basic auth username

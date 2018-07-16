@@ -41,7 +41,7 @@ to prevent `ClickHouse` overloading from `Grafana`.
 To learn more - read about params `max_queue_size` and `max_queue_time` at [CHProxy](https://github.com/Vertamedia/chproxy) page.
 * Response caching for the most frequent queries as shown [here](https://github.com/Vertamedia/chproxy#caching).
 `Caching` will protect `ClickHouse` from excessive refreshes and will be optimal option for popular dashboards.
->> Hint - if you need to cache requests like `last 24h` where timestamp changes constantly then try to use `Round` option at `Raw Editor`
+> Hint - if you need to cache requests like `last 24h` where timestamp changes constantly then try to use `Round` option at `Raw Editor`
 
 
 ### Query setup

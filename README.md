@@ -206,6 +206,38 @@ FROM
 
 ```
 
+## Templating
+
+### Query Variable
+
+If you add a template variable of the type `Query`, you can write a ClickHouse query that can
+return things like measurement names, key names or key values that are shown as a dropdown select box.
+
+For example, you can have a variable that contains all values for the `hostname` column in a table if you specify a query like this in the templating variable *Query* setting.
+
+```sql
+SELECT hostname FROM host
+```
+
+To use time range dependent macros like `$__timeFilter(column)` in your query the refresh mode of the template variable needs to be set to *On Time Range Change*.
+
+```sql
+SELECT event_name FROM event_log WHERE $__timeFilter(time_column)
+```
+
+Another option is a query that can create a key/value variable. The query should return two columns that are named `__text` and `__value`. The `__text` column value should be unique (if it is not unique then the first value is used). The options in the dropdown will have a text and value that allows you to have a friendly name as text and an id as the value. An example query with `hostname` as the text and `id` as the value:
+
+```sql
+SELECT hostname AS __text, id AS __value FROM host
+```
+
+You can also create nested variables. For example if you had another variable named `region`. Then you could have
+the hosts variable only show hosts from the current selected region with a query like this (if `region` is a multi-value variable then use the `IN` comparison operator rather than `=` to match against multiple values):
+
+```sql
+SELECT hostname FROM host  WHERE region IN($region)
+```
+
 ### Working with panels
 
 #### Piechart (https://grafana.com/plugins/grafana-piechart-panel)

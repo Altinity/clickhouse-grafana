@@ -182,24 +182,20 @@ System.register(['lodash'], function(exports_1) {
                 Scanner.prototype.raw = function () {
                     return this._sOriginal;
                 };
-                ;
                 Scanner.prototype.expect = function (token) {
                     this.expectNext();
                     if (!this.isToken(token)) {
                         throw ("expecting [" + token + "], but got [" + this.token + "] at [" + this._s + "]");
                     }
                 };
-                ;
                 Scanner.prototype.isToken = function (token) {
                     return lodash_1.default.toUpper(token) === lodash_1.default.toUpper(this.token);
                 };
-                ;
                 Scanner.prototype.expectNext = function () {
                     if (!this.next()) {
                         throw ("expecting additional token at the end of query [" + this._sOriginal + "]");
                     }
                 };
-                ;
                 Scanner.prototype.next = function () {
                     while (this._next()) {
                         if (this.skipSpace && isWS(this.token)) {
@@ -214,7 +210,6 @@ System.register(['lodash'], function(exports_1) {
                     }
                     return false;
                 };
-                ;
                 Scanner.prototype._next = function () {
                     if (this._s.length === 0) {
                         return false;
@@ -227,11 +222,9 @@ System.register(['lodash'], function(exports_1) {
                     this._s = this._s.substring(this.token.length);
                     return true;
                 };
-                ;
                 Scanner.prototype.Format = function () {
                     return print(this.toAST());
                 };
-                ;
                 Scanner.prototype.Print = function (ast) {
                     return print(ast);
                 };
@@ -397,7 +390,6 @@ System.register(['lodash'], function(exports_1) {
                     }
                     return this.tree;
                 };
-                ;
                 return Scanner;
             })();
             exports_1("default", Scanner);

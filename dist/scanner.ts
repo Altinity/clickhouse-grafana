@@ -19,24 +19,24 @@ export default class Scanner {
 
     raw() {
         return this._sOriginal;
-    };
+    }
 
     expect(token) {
         this.expectNext();
         if (!this.isToken(token)) {
             throw("expecting [" + token + "], but got [" + this.token + "] at [" + this._s + "]");
         }
-    };
+    }
 
     isToken(token) {
         return _.toUpper(token) === _.toUpper(this.token);
-    };
+    }
 
     expectNext() {
         if (!this.next()) {
             throw("expecting additional token at the end of query [" + this._sOriginal + "]");
         }
-    };
+    }
 
     next() {
         while (this._next()) {
@@ -51,7 +51,7 @@ export default class Scanner {
             return true;
         }
         return false;
-    };
+    }
 
     _next() {
         if (this._s.length === 0) {
@@ -65,14 +65,14 @@ export default class Scanner {
         this.token = r[0];
         this._s = this._s.substring(this.token.length);
         return true;
-    };
+    }
 
     Format() {
         return print(this.toAST());
-    };
+    }
 
     Print(ast) {
-        return print(ast)
+        return print(ast);
     }
 
     push(argument) {
@@ -89,7 +89,7 @@ export default class Scanner {
     isExpectedNext(): boolean {
         let v = this.expectedNext;
         this.expectedNext = false;
-        return v
+        return v;
     }
 
     appendToken(argument): string {
@@ -112,25 +112,22 @@ export default class Scanner {
             if (!this.isExpectedNext() && isStatement(this.token) && !this.tree.hasOwnProperty(_.toLower(this.token))) {
                 if (!isClosured(argument)) {
                     argument += this.appendToken(argument);
-                    continue
+                    continue;
                 }
                 if (argument.length > 0) {
                     this.push(argument);
                     argument = '';
                 }
                 this.setRoot(this.token);
-            }
-            else if (this.token === ',' && isClosured(argument)) {
+            } else if (this.token === ',' && isClosured(argument)) {
                 this.push(argument);
                 argument = '';
                 this.expectedNext = true;
-            }
-            else if (isClosureChars(this.token) && this.rootToken === 'from') {
+            } else if (isClosureChars(this.token) && this.rootToken === 'from') {
                 subQuery = betweenBraces(this._s);
                 this.tree[this.rootToken] = toAST(subQuery);
                 this._s = this._s.substring(subQuery.length + 1);
-            }
-            else if (isMacroFunc(this.token)) {
+            } else if (isMacroFunc(this.token)) {
                 let func = this.token;
                 if (!this.next()) {
                     throw("wrong function signature for `" + func + "` at [" + this._s + "]");
@@ -149,8 +146,7 @@ export default class Scanner {
 
                 // macro funcs are used instead of SELECT statement
                 this.tree['select'] = [];
-            }
-            else if (isIn(this.token)) {
+            } else if (isIn(this.token)) {
                 argument += ' ' + this.token;
                 if (!this.next()) {
                     throw("wrong in signature for `" + argument + "` at [" + this._s + "]");
@@ -173,16 +169,14 @@ export default class Scanner {
                 } else {
                     argument += ' ' + this.token;
                 }
-            }
-            else if (isCond(this.token) && (this.rootToken === 'where' || this.rootToken === 'prewhere')) {
+            } else if (isCond(this.token) && (this.rootToken === 'where' || this.rootToken === 'prewhere')) {
                 if (isClosured(argument)) {
                     this.push(argument);
                     argument = this.token;
                 } else {
                     argument += ' ' + this.token;
                 }
-            }
-            else if (isJoin(this.token)) {
+            } else if (isJoin(this.token)) {
                 let joinType = this.token, source;
                 if (!this.next()) {
                     throw("wrong join signature for `" + joinType + "` at [" + this._s + "]");
@@ -226,8 +220,7 @@ export default class Scanner {
                 let ast = toAST(this._s);
                 this._s = '';
                 this.tree[statement].push(ast);
-            }
-            else if (isClosureChars(this.token) || this.token === '.') {
+            } else if (isClosureChars(this.token) || this.token === '.') {
                 argument += this.token;
             } else if (this.token === ',') {
                 argument += this.token + ' ';
@@ -240,7 +233,7 @@ export default class Scanner {
             this.push(argument);
         }
         return this.tree;
-    };
+    }
 }
 
 let wsRe = "\\s+",
@@ -515,8 +508,8 @@ function print(AST, tab = '') {
     if (isSet(AST, 'union all')) {
         AST['union all'].forEach(function (v) {
             result += newLine + newLine + tab + 'UNION ALL' + newLine + newLine;
-            result += print(v, tab)
-        })
+            result += print(v, tab);
+        });
     }
 
     if (isSet(AST, 'format')) {

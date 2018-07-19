@@ -24,10 +24,7 @@ export default class SqlQuery {
             query = this.target.query,
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME',
-            from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)),
-            to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round)),
             timeSeries = SqlQuery.getTimeSeries(dateTimeType),
-            timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType),
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
         try {
@@ -44,29 +41,29 @@ export default class SqlQuery {
                 adhocFilters.forEach(function(af) {
                     let parts = af.key.split('.');
                     /* Wildcard table, substitute current target table */
-                    if (parts.length == 1) {
+                    if (parts.length === 1) {
                         parts.unshift(self.target.table);
                     }
                     /* Wildcard database, substitute current target database */
-                    if (parts.length == 2) {
+                    if (parts.length === 2) {
                         parts.unshift(self.target.database);
                     }
                     /* Expect fully qualified column name at this point */
                     if (parts.length < 3) {
                         console.log("adhoc filters: filter " + af.key + "` has wrong format");
-                        return
+                        return;
                     }
-                    if (self.target.database != parts[0] || self.target.table != parts[1]) {
-                        return
+                    if (self.target.database !== parts[0] || self.target.table !== parts[1]) {
+                        return;
                     }
                     let operator = SqlQuery.clickhouseOperator(af.operator);
                     let cond = parts[2] + " " + operator + " " + af.value;
                     if (ast.where.length > 0) {
                         // OR is not implemented
                         // @see https://github.com/grafana/grafana/issues/10918
-                        cond = "AND " + cond
+                        cond = "AND " + cond;
                     }
-                    ast.where.push(cond)
+                    ast.where.push(cond);
                 });
                 query = scanner.Print(topQuery);
             }
@@ -78,22 +75,48 @@ export default class SqlQuery {
                 query = SqlQuery.rate(query, ast);
             }
         } catch (err) {
-            console.log('AST parser error: ', err)
+            console.error('AST parser error: ', err);
         }
 
-        query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
-        query = SqlQuery.unescape(query);
-        this.target.rawQuery = query
-                    .replace(/\$timeSeries/g, timeSeries)
-                    .replace(/\$timeFilter/g, timeFilter)
-                    .replace(/\$table/g, this.target.database + '.' + this.target.table)
-                    .replace(/\$from/g, from)
-                    .replace(/\$to/g, to)
-                    .replace(/\$dateCol/g, this.target.dateColDataType)
-                    .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
-                    .replace(/\$interval/g, interval)
-                    .replace(/(?:\r\n|\r|\n)/g, ' ');
-        return this.target.rawQuery;
+      query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
+      query = SqlQuery.unescape(query);
+
+      const timeFilter = SqlQuery.getTimeFilter(
+        this.options.range.raw.to === 'now',
+        dateTimeType,
+        this.target.dateColDataType !== null,
+        this.target.dateTimeColDataType !== null
+      );
+
+      console.log(timeFilter);
+
+      query = query
+        .replace(/\$timeSeries/g, timeSeries)
+        .replace(/\$timeFilter/g, timeFilter)
+        .replace(/\$table/g, this.target.database + '.' + this.target.table)
+        .replace(/\$dateCol/g, this.target.dateColDataType)
+        .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
+        .replace(/\$interval/g, interval)
+        .replace(/(?:\r\n|\r|\n)/g, ' ');
+
+      this.target.rawQuery = SqlQuery.replaceTimeFilters(query, this.options.range, dateTimeType, this.target.round);
+
+      return this.target.rawQuery;
+    }
+
+    static replaceTimeFilters(query: string, range, dateTimeType = 'DATETIME', round?: string): string {
+      const from = SqlQuery.convertTimestamp(SqlQuery.round(range.from, round || undefined));
+      const to = SqlQuery.convertTimestamp(SqlQuery.round(range.to, round || undefined));
+
+      return query
+        .replace(
+          /\$timeFilterColumn\(([\w_]+)\)/g,
+          (match: string, columnName: string) => (
+            `${columnName} ${SqlQuery.getFilterSqlForDateTime(range.raw.to === 'now',dateTimeType)}`
+          )
+        )
+        .replace(/\$from/g, from.toString())
+        .replace(/\$to/g, to.toString());
     }
 
     // $columns(query)
@@ -238,21 +261,66 @@ export default class SqlQuery {
         if (dateTimeType === 'DATETIME') {
             return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
         }
-        return '(intDiv($dateTimeCol, $interval) * $interval) * 1000'
+        return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
     }
 
-    static getTimeFilter(isToNow: boolean, dateTimeType: string): string {
-        var convertFn = function (t: string): string {
-            if (dateTimeType === 'DATETIME') {
-                return 'toDateTime('+ t +')';
-            }
-            return t
-        };
+    static getTimeFilter(
+      isToNow: boolean,
+      dateTimeType: string,
+      includeDateColumn: boolean,
+      includeDateTimeColumn: boolean
+    ): string {
+      let dateFilterSql = null;
+      if (includeDateColumn) {
+        dateFilterSql = `$dateCol ${SqlQuery.getFilterSqlForDate(isToNow)}`;
+      }
 
-        if (isToNow) {
-            return '$dateCol >= toDate($from) AND $dateTimeCol >= ' + convertFn('$from');
+      let dateTimeFilterSql = null;
+      if (includeDateColumn) {
+        dateTimeFilterSql = `$dateTimeCol ${SqlQuery.getFilterSqlForDateTime(isToNow, dateTimeType)}`;
+      }
+
+      if (includeDateColumn && includeDateTimeColumn) {
+        return `${dateFilterSql} AND ${dateTimeFilterSql}`;
+      }
+
+      if (includeDateColumn) {
+        return dateFilterSql;
+      }
+
+      if (includeDateTimeColumn) {
+        return dateTimeFilterSql;
+      }
+
+      throw new Error('Date, datetime or both filters are required');
+    }
+
+    static getFilterSqlForDate(isToNow: boolean) {
+      if (isToNow) {
+        return `>= toDate($from)`;
+      }
+
+      return 'BETWEEN toDate($from) AND toDate($to)';
+    }
+
+    static getFilterSqlForDateTime(isToNow: boolean, dateTimeType: string) {
+      const convertFn = this.getConvertFn(dateTimeType);
+
+      if (isToNow) {
+        return `>= ${convertFn('$from')}`;
+      }
+
+      return `BETWEEN ${convertFn('$from')} + AND  ${convertFn('$to')}`;
+    }
+
+    static getConvertFn(dateTimeType: string) {
+      return function (t: string): string {
+        if (dateTimeType === 'DATETIME') {
+          return 'toDateTime('+ t +')';
         }
-        return '$dateCol BETWEEN toDate($from) AND toDate($to) AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
+
+        return t;
+      };
     }
 
     // date is a moment object

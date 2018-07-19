@@ -6,6 +6,7 @@ export default class SqlQuery {
     /** @ngInject */
     constructor(target: any, templateSrv?: any, options?: any);
     replace(options: any, adhocFilters: any): any;
+    static replaceTimeFilters(query: string, range: any, dateTimeType?: string, round?: string): string;
     static columns(query: string): string;
     static _columns(key: string, value: string, fromQuery: string): string;
     static rateColumns(query: string): string;
@@ -14,7 +15,10 @@ export default class SqlQuery {
     static _rate(args: any, fromQuery: string): string;
     static _applyTimeFilter(query: string): string;
     static getTimeSeries(dateTimeType: string): string;
-    static getTimeFilter(isToNow: boolean, dateTimeType: string): string;
+    static getTimeFilter(isToNow: boolean, dateTimeType: string, includeDateColumn: boolean, includeDateTimeColumn: boolean): string;
+    static getFilterSqlForDate(isToNow: boolean): string;
+    static getFilterSqlForDateTime(isToNow: boolean, dateTimeType: string): string;
+    static getConvertFn(dateTimeType: string): (t: string) => string;
     static convertTimestamp(date: any): number;
     static round(date: any, round: string): any;
     static convertInterval(interval: any, intervalFactor: any): number;

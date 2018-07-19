@@ -74,7 +74,7 @@ export class ClickHouseDatasource {
         return this.backendSrv.datasourceRequest(options).then(result => {
             return result.data;
         });
-    };
+    }
 
     query(options) {
         var queries = [], q,
@@ -90,7 +90,7 @@ export class ClickHouseDatasource {
                     let queryAST = new Scanner(q).toAST();
                     keyColumns.push(queryAST['group by'] || []);
                 } catch (err) {
-                    console.log('AST parser error: ', err)
+                    console.error('AST parser error: ', err);
                 }
             }
         });
@@ -138,7 +138,7 @@ export class ClickHouseDatasource {
             });
             return {data: result};
         });
-    };
+    }
 
     annotationQuery(options) {
         if (!options.annotation.query) {
@@ -170,41 +170,39 @@ export class ClickHouseDatasource {
             .then(result => this.responseParser.transformAnnotationResponse(params, result.data));
     }
 
-    metricFindQuery(query, options?:any) {
-        var interpolated;
+    metricFindQuery(query: string, options?: any) {
+        let interpolatedQuery;
         try {
-            if (options && options.range) {
-                let from = SqlQuery.convertTimestamp(options.range.from); //optionalOptions.range.from.valueOf().toString();
-                let to = SqlQuery.convertTimestamp(options.range.to); //optionalOptions.range.from.valueOf().toString();
-                query = query.replace(/\$to/g, to)
-                    .replace(/\$from/g, from)
-            }
-            interpolated = this.templateSrv.replace(query, {}, SqlQuery.interpolateQueryExpr);
+          interpolatedQuery = this.templateSrv.replace(query, {}, SqlQuery.interpolateQueryExpr);
         } catch (err) {
             return this.$q.reject(err);
         }
 
-        return this._seriesQuery(interpolated)
-            .then(_.curry(this.responseParser.parse)(query));
-    };
+      if (options && options.range) {
+        interpolatedQuery = SqlQuery.replaceTimeFilters(interpolatedQuery, options.range);
+      }
+
+      return this._seriesQuery(interpolatedQuery)
+        .then(_.curry(this.responseParser.parse)(query));
+    }
 
     testDatasource() {
         return this.metricFindQuery('SELECT 1').then(
             () => {
                 return {status: "success", message: "Data source is working", title: "Success"};
             });
-    };
+    }
 
     _seriesQuery(query) {
         query = query.replace(/(?:\r\n|\r|\n)/g, ' ');
         query += ' FORMAT JSON';
         return this._request(query);
-    };
+    }
 
 
     targetContainsTemplate(target) {
         return this.templateSrv.variableExists(target.expr);
-    };
+    }
 
     getTagKeys() {
         return this.adhocCtrl.GetTagKeys(this);

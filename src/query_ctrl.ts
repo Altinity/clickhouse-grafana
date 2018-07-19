@@ -240,7 +240,7 @@ class SqlQueryCtrl extends QueryCtrl {
         this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
         this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
 
-        var self = this;
+        const self = this;
         this.getDateColDataTypeSegments().then(function(segments) {
             if (segments.length === 0) {
                 return;
@@ -290,7 +290,7 @@ class SqlQueryCtrl extends QueryCtrl {
 
     queryColumns() {
         var query = this.buildExploreQuery('COLUMNS');
-        return this.datasource.metricFindQuery(query)
+        return this.datasource.metricFindQuery(query);
     }
 
     querySegment(type: string) {
@@ -352,6 +352,6 @@ class SqlQueryCtrl extends QueryCtrl {
                 break;
         }
         return query;
-    };
+    }
 }
 export {SqlQueryCtrl};

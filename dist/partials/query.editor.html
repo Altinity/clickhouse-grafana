@@ -44,12 +44,11 @@
 				</label>
 			</div>
 
-			<div class="gf-form">
-				<metric-segment segment="ctrl.dateColDataTypeSegment"
+            <div class="gf-form">
+                <metric-segment segment="ctrl.dateColDataTypeSegment"
                                 get-options="ctrl.getDateColDataTypeSegments()"
                                 on-change="ctrl.dateColDataTypeChanged()"></metric-segment>
-			</div>
-
+            </div>
             <div class="gf-form width-14">
                 <metric-segment-model property="ctrl.target.dateTimeType"
                                       options="ctrl.dateTimeTypeOptions" css-class="query-keyword width-14 "
@@ -185,6 +184,7 @@ $to - replaced with timestamp/1000 value of selected "Time Range:To"
 $interval - replaced with selected "Group by time interval" value (as a number of seconds)
 $timeFilter - replaced with currently selected "Time Range".
             Require Column:Date and Column:DateTime or Column:TimeStamp to be selected
+$timeFilterColumn(columnname) - replaced with currently selected "Time Range", filtering column passed as `columnname` argument.
 $timeSeries - replaced with special ClickHouse construction to convert results as time-series data.
             Use it as "SELECT $timeSeries...". Require Column:DateTime or Column:TimeStamp to be selected
 $unescape - unescapes variable value by removing single quotes.

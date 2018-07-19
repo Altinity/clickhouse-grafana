@@ -73,7 +73,6 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                         return result.data;
                     });
                 };
-                ;
                 ClickHouseDatasource.prototype.query = function (options) {
                     var _this = this;
                     var queries = [], q, adhocFilters = this.templateSrv.getAdhocFilters(this.name), keyColumns = [];
@@ -87,7 +86,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                                 keyColumns.push(queryAST['group by'] || []);
                             }
                             catch (err) {
-                                console.log('AST parser error: ', err);
+                                console.error('AST parser error: ', err);
                             }
                         }
                     });
@@ -131,7 +130,6 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                         return { data: result };
                     });
                 };
-                ;
                 ClickHouseDatasource.prototype.annotationQuery = function (options) {
                     var _this = this;
                     if (!options.annotation.query) {
@@ -160,39 +158,32 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                         .then(function (result) { return _this.responseParser.transformAnnotationResponse(params, result.data); });
                 };
                 ClickHouseDatasource.prototype.metricFindQuery = function (query, options) {
-                    var interpolated;
+                    var interpolatedQuery;
                     try {
-                        if (options && options.range) {
-                            var from = sql_query_1.default.convertTimestamp(options.range.from); //optionalOptions.range.from.valueOf().toString();
-                            var to = sql_query_1.default.convertTimestamp(options.range.to); //optionalOptions.range.from.valueOf().toString();
-                            query = query.replace(/\$to/g, to)
-                                .replace(/\$from/g, from);
-                        }
-                        interpolated = this.templateSrv.replace(query, {}, sql_query_1.default.interpolateQueryExpr);
+                        interpolatedQuery = this.templateSrv.replace(query, {}, sql_query_1.default.interpolateQueryExpr);
                     }
                     catch (err) {
                         return this.$q.reject(err);
                     }
-                    return this._seriesQuery(interpolated)
+                    if (options && options.range) {
+                        interpolatedQuery = sql_query_1.default.replaceTimeFilters(interpolatedQuery, options.range);
+                    }
+                    return this._seriesQuery(interpolatedQuery)
                         .then(lodash_1.default.curry(this.responseParser.parse)(query));
                 };
-                ;
                 ClickHouseDatasource.prototype.testDatasource = function () {
                     return this.metricFindQuery('SELECT 1').then(function () {
                         return { status: "success", message: "Data source is working", title: "Success" };
                     });
                 };
-                ;
                 ClickHouseDatasource.prototype._seriesQuery = function (query) {
                     query = query.replace(/(?:\r\n|\r|\n)/g, ' ');
                     query += ' FORMAT JSON';
                     return this._request(query);
                 };
-                ;
                 ClickHouseDatasource.prototype.targetContainsTemplate = function (target) {
                     return this.templateSrv.variableExists(target.expr);
                 };
-                ;
                 ClickHouseDatasource.prototype.getTagKeys = function () {
                     return this.adhocCtrl.GetTagKeys(this);
                 };

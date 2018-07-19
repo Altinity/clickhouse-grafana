@@ -293,7 +293,6 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                     }
                     return query;
                 };
-                ;
                 SqlQueryCtrl.templateUrl = 'partials/query.editor.html';
                 return SqlQueryCtrl;
             })(sdk_1.QueryCtrl);

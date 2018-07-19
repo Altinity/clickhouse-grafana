@@ -77,13 +77,13 @@ Under the Editor you can find a raw query (all macros and functions have already
 Plugin supports the following marcos:
 
 * $table - replaced with selected table name from Query Builder
-* $dateCol - replaced with Date:Col value from Query Builder
 * $dateTimeCol - replaced with Column:DateTime or Column:TimeStamp value from Query Builder
 * $from - replaced with timestamp/1000 value of selected "Time Range:From"
 * $to - replaced with timestamp/1000 value of selected "Time Range:To"
 * $interval - replaced with selected "Group by time interval" value (as a number of seconds)
 * $timeFilter - replaced with currently selected "Time Range". 
-  Require Column:Date and Column:DateTime or Column:TimeStamp to be selected
+  Require Column:DateTime or Column:TimeStamp to be selected
+* $timeFilterColumn(columnname) - replaced with currently selected "Time Range", filtering column passed as `columnname` argument.
 * $timeSeries - replaced with special ClickHouse construction to convert results as time-series data. Use it as "SELECT $timeSeries...". 
 * $unescape - unescapes variable value by removing single quotes. Used for multiple-value string variables: "SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
 

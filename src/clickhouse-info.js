@@ -156,6 +156,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "$to",
         "$interval",
         "$timeFilter",
+        "$timeFilterColumn(columnname)",
         "$timeSeries",
         "$rate",
         "$columns",
@@ -2087,6 +2088,11 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "name": "$timeFilter",
                 "def": "$timeFilter",
                 "docText": "Replaced with currently selected `Time Range`. Requires `Column:Date` and `Column:DateTime` or `Column:TimeStamp` to be selected"
+            },
+            {
+                "name": "$timeFilterColumn",
+                "def": "$timeFilterColumn(columnname)",
+                "docText": "replaced with currently selected `Time Range`, filtering column passed as `columnname` argument."
             },
             {
                 "name": "$timeSeries",

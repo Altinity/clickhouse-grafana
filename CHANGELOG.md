@@ -1,3 +1,10 @@
+# Master
+
+## New Features
+
+* add `$timeFilterColumn(columnname)` macro. Allows to use filters in Query variables.
+
+
 # 1.6.0 (2018-08-07)
 
 ## New Features

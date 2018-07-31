@@ -30,7 +30,7 @@ export class ClickHouseDatasource {
       this.type = 'clickhouse';
       this.name = instanceSettings.name;
       this.supportMetrics = true;
-      this.responseParser = new ResponseParser();
+      this.responseParser = new ResponseParser(this.$q);
       this.url = instanceSettings.url;
       this.directUrl = instanceSettings.directUrl;
       this.basicAuth = instanceSettings.basicAuth;
@@ -139,6 +139,36 @@ export class ClickHouseDatasource {
             return {data: result};
         });
     };
+
+    annotationQuery(options) {
+        if (!options.annotation.query) {
+            return this.$q.reject({
+                message: 'Query missing in annotation definition',
+            });
+        }
+
+        const params = Object.assign({
+            annotation: {
+                dateTimeColDataType: 'time'
+            },
+            interval: '30s'
+        }, options);
+        let queryModel;
+        let query;
+
+        queryModel = new SqlQuery(params.annotation, this.templateSrv, params);
+        queryModel = queryModel.replace(params, []);
+        query = queryModel.replace(/(?:\r\n|\r|\n)/g, ' ');
+        query += ' FORMAT JSON';
+
+        return this.backendSrv
+            .datasourceRequest({
+                url: this.url,
+                method: 'POST',
+                data: query
+            })
+            .then(result => this.responseParser.transformAnnotationResponse(params, result.data));
+    }
 
     metricFindQuery(query) {
         var interpolated;

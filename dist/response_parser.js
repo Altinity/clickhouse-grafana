@@ -8,7 +8,8 @@ System.register(['lodash'], function(exports_1) {
             }],
         execute: function() {
             ResponseParser = (function () {
-                function ResponseParser() {
+                function ResponseParser($q) {
+                    this.$q = $q;
                 }
                 ResponseParser.prototype.parse = function (query, results) {
                     if (!results || results.data.length === 0) {
@@ -30,6 +31,26 @@ System.register(['lodash'], function(exports_1) {
                         }
                     });
                     return res;
+                };
+                ResponseParser.prototype.transformAnnotationResponse = function (options, data) {
+                    var rows = data.data;
+                    var result = [];
+                    for (var i = 0, len = rows.length; i < len; i++) {
+                        var row = rows[i];
+                        if (!row.time) {
+                            return this.$q.reject({
+                                message: 'Missing mandatory time column in annotation query.',
+                            });
+                        }
+                        result.push({
+                            annotation: options.annotation,
+                            time: Math.floor(row.time),
+                            title: row.title,
+                            text: row.text,
+                            tags: row.tags ? row.tags.trim().split(/\s*, \s*/) : []
+                        });
+                    }
+                    return result;
                 };
                 return ResponseParser;
             })();

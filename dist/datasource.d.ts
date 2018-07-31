@@ -20,6 +20,7 @@ export declare class ClickHouseDatasource {
     constructor(instanceSettings: any, $q: any, backendSrv: any, templateSrv: any);
     _request(query: any): any;
     query(options: any): any;
+    annotationQuery(options: any): any;
     metricFindQuery(query: any): any;
     testDatasource(): any;
     _seriesQuery(query: any): any;

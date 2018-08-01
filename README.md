@@ -21,6 +21,7 @@ Copy files to your [Grafana plugin directory](http://docs.grafana.org/plugins/in
  * Table view
  * SingleStat view
  * Ad-hoc filters
+ * Annotations
 
 
 ### Access to CH via HTTP
@@ -391,7 +392,6 @@ yarn run test
 Since we developed this plugin only for internal needs we don't have some of Grafana's features:
 
 * Alerts (this feature requires additional changes at backend and can't be solved by js-plugin)
-* Annotations
 * Labels
 
 We know that code quality needs a tons of improvements and unit-tests. We will continue working on this. 

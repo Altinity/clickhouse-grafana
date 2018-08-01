@@ -54,7 +54,7 @@ export default class ResponseParser {
         time: Math.floor(row.time),
         title: row.title,
         text: row.text,
-        tags: row.tags ? row.tags.trim().split(/\s*, \s*/) : []
+        tags: row.tags ? row.tags.trim().split(/\s*,\s*/) : []
       });
     }
 

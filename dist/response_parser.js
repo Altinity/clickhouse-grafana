@@ -34,20 +34,29 @@ System.register(['lodash'], function(exports_1) {
                 };
                 ResponseParser.prototype.transformAnnotationResponse = function (options, data) {
                     var rows = data.data;
+                    var columns = data.meta;
                     var result = [];
+                    var hasTime = false;
+                    for (var i = 0, len = columns.length; i < len; i++) {
+                        var column = columns[i];
+                        if (column.name === 'time') {
+                            hasTime = true;
+                            break;
+                        }
+                    }
+                    if (!hasTime) {
+                        return this.$q.reject({
+                            message: 'Missing mandatory time column in annotation query.',
+                        });
+                    }
                     for (var i = 0, len = rows.length; i < len; i++) {
                         var row = rows[i];
-                        if (!row.time) {
-                            return this.$q.reject({
-                                message: 'Missing mandatory time column in annotation query.',
-                            });
-                        }
                         result.push({
                             annotation: options.annotation,
                             time: Math.floor(row.time),
                             title: row.title,
                             text: row.text,
-                            tags: row.tags ? row.tags.trim().split(/\s*, \s*/) : []
+                            tags: row.tags ? row.tags.trim().split(/\s*,\s*/) : []
                         });
                     }
                     return result;

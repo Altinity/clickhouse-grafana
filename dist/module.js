@@ -16,7 +16,7 @@ System.register(['./datasource', './query_ctrl'], function(exports_1) {
                 SqlConfigCtrl.templateUrl = 'partials/config.html';
                 return SqlConfigCtrl;
             })();
-            defaultQuery = "SELECT\n  toUInt32(toDateTime(ts)) * 1000 AS time,\n  description AS text,\n  tags\nFROM\n  events\nWHERE\n  ts >= $from AND ts < $to\n";
+            defaultQuery = "SELECT\n  toUInt32(toDateTime(ts)) * 1000 AS time,\n  description AS text,\n  tags\nFROM\n  event_table\nWHERE\n  ts >= $from AND ts < $to\n";
             ClickHouseAnnotationsQueryCtrl = (function () {
                 /** @ngInject **/
                 function ClickHouseAnnotationsQueryCtrl() {

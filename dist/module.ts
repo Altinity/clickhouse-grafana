@@ -10,7 +10,7 @@ const defaultQuery = `SELECT
   description AS text,
   tags
 FROM
-  events
+  event_table
 WHERE
   ts >= $from AND ts < $to
 `;

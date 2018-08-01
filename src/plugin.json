@@ -4,7 +4,7 @@
   "name": "ClickHouse",
 
   "metrics": true,
-  "annotations": false,
+  "annotations": true,
   "alerting": false,
 
   "info": {

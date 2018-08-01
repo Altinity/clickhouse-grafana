@@ -32,7 +32,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     this.type = 'clickhouse';
                     this.name = instanceSettings.name;
                     this.supportMetrics = true;
-                    this.responseParser = new response_parser_1.default();
+                    this.responseParser = new response_parser_1.default(this.$q);
                     this.url = instanceSettings.url;
                     this.directUrl = instanceSettings.directUrl;
                     this.basicAuth = instanceSettings.basicAuth;
@@ -132,6 +132,33 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     });
                 };
                 ;
+                ClickHouseDatasource.prototype.annotationQuery = function (options) {
+                    var _this = this;
+                    if (!options.annotation.query) {
+                        return this.$q.reject({
+                            message: 'Query missing in annotation definition',
+                        });
+                    }
+                    var params = Object.assign({
+                        annotation: {
+                            dateTimeColDataType: 'time'
+                        },
+                        interval: '30s'
+                    }, options);
+                    var queryModel;
+                    var query;
+                    queryModel = new sql_query_1.default(params.annotation, this.templateSrv, params);
+                    queryModel = queryModel.replace(params, []);
+                    query = queryModel.replace(/(?:\r\n|\r|\n)/g, ' ');
+                    query += ' FORMAT JSON';
+                    return this.backendSrv
+                        .datasourceRequest({
+                        url: this.url,
+                        method: 'POST',
+                        data: query
+                    })
+                        .then(function (result) { return _this.responseParser.transformAnnotationResponse(params, result.data); });
+                };
                 ClickHouseDatasource.prototype.metricFindQuery = function (query) {
                     var interpolated;
                     try {

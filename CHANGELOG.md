@@ -1,3 +1,12 @@
+# 1.6.0 (2018-08-07)
+
+## New Features
+
+* annotations support (txh to @atsirin)
+* allow to use `$from` and `$to` macroses in variable queries
+* provisioning config example in README
+
+
 # 1.5.1 (2018-06-05)
 
 ## Fixes

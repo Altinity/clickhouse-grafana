@@ -159,9 +159,15 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     })
                         .then(function (result) { return _this.responseParser.transformAnnotationResponse(params, result.data); });
                 };
-                ClickHouseDatasource.prototype.metricFindQuery = function (query) {
+                ClickHouseDatasource.prototype.metricFindQuery = function (query, options) {
                     var interpolated;
                     try {
+                        if (options && options.range) {
+                            var from = sql_query_1.default.convertTimestamp(options.range.from); //optionalOptions.range.from.valueOf().toString();
+                            var to = sql_query_1.default.convertTimestamp(options.range.to); //optionalOptions.range.from.valueOf().toString();
+                            query = query.replace(/\$to/g, to)
+                                .replace(/\$from/g, from);
+                        }
                         interpolated = this.templateSrv.replace(query, {}, sql_query_1.default.interpolateQueryExpr);
                     }
                     catch (err) {

@@ -323,6 +323,14 @@ This is useful if the dashboard contains queries to multiple different tables.
 > There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
 
 
+### Query variables
+
+To use time range dependent macros like `$from` and `$to` in your query the refresh mode of the template variable needs to be set to On Time Range Change.
+```
+SELECT ClientID FROM events WHERE EventTime > $from AND EventTime < $to
+```
+
+
 ### Configure the Datasource with Provisioning
 It’s now possible to configure datasources using config files with Grafana’s provisioning system.
 You can read more about how it works and all the settings you can set for datasources on the [provisioning docs page](http://docs.grafana.org/administration/provisioning/#datasources)

@@ -299,6 +299,9 @@ export default class SqlQuery {
         if (!variable.multi && !variable.includeAll) {
             return value;
         }
+        if (variable.includeAll && variable.allValue !== "" && !variable.multi) {
+            return value;
+        }
         if (typeof value === 'string') {
             return SqlQuery.clickhouseEscape(value, variable);
         }

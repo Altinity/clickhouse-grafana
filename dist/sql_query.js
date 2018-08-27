@@ -261,6 +261,9 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     if (!variable.multi && !variable.includeAll) {
                         return value;
                     }
+                    if (variable.includeAll && variable.allValue !== "" && !variable.multi) {
+                        return value;
+                    }
                     if (typeof value === 'string') {
                         return SqlQuery.clickhouseEscape(value, variable);
                     }

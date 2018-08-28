@@ -29,3 +29,13 @@
         </info-popover>
     </div>
 </div>
+
+<div class="gf-form-inline">
+    <div class="gf-form max-width-30">
+        <span class="gf-form-label width-10">Min time interval</span>
+        <input type="text" class="gf-form-input max-width-20" ng-model='ctrl.current.jsonData.minTimeInterval' placeholder="default"></input>
+        <info-popover mode="right-absolute">
+            A lower limit for the auto group by time interval. Recommended to be set to write frequency, for example 1m if your data is written every minute.
+        </info-popover>
+    </div>
+</div>

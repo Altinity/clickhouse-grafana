@@ -41,6 +41,8 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     this.usePOST = instanceSettings.jsonData.usePOST;
                     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
                     this.adhocCtrl = new adhoc_1.default();
+                    this.minTimeInterval = instanceSettings.jsonData.minTimeInterval;
+                    this.minTimeIntervalMs = sql_query_1.default.convertInterval(this.minTimeInterval, 1) * 1000;
                 }
                 ClickHouseDatasource.prototype._request = function (query) {
                     var options = {
@@ -79,6 +81,11 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     var queries = [], q, adhocFilters = this.templateSrv.getAdhocFilters(this.name), keyColumns = [];
                     lodash_1.default.map(options.targets, function (target) {
                         if (!target.hide && target.query) {
+                            //if interval < minTimeInterval 
+                            if (options.intervalMs < _this.minTimeIntervalMs) {
+                                options.intervalMs = _this.minTimeIntervalMs;
+                                options.interval = _this.minTimeInterval;
+                            }
                             var queryModel = new sql_query_1.default(target, _this.templateSrv, options);
                             q = queryModel.replace(options, adhocFilters);
                             queries.push(q);

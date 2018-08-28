@@ -21,6 +21,8 @@ export class ClickHouseDatasource {
   addCorsHeader: boolean;
   responseParser: any;
   adhocCtrl: AdhocCtrl;
+  minTimeIntervalMs: any;
+  minTimeInterval: string;
 
     /** @ngInject */
     constructor(instanceSettings,
@@ -39,6 +41,8 @@ export class ClickHouseDatasource {
       this.usePOST = instanceSettings.jsonData.usePOST;
       this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
       this.adhocCtrl = new AdhocCtrl();
+      this.minTimeInterval = instanceSettings.jsonData.minTimeInterval;
+      this.minTimeIntervalMs = SqlQuery.convertInterval(this.minTimeInterval,1) * 1000;
     }
 
     _request(query) {
@@ -83,6 +87,11 @@ export class ClickHouseDatasource {
 
         _.map(options.targets, (target) => {
             if (!target.hide && target.query) {
+                //if interval < minTimeInterval 
+                if (options.intervalMs<this.minTimeIntervalMs) {
+                    options.intervalMs = this.minTimeIntervalMs;
+                    options.interval = this.minTimeInterval;
+                }
                 var queryModel = new SqlQuery(target, this.templateSrv, options);
                 q = queryModel.replace(options, adhocFilters);
                 queries.push(q);

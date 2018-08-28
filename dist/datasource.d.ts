@@ -16,6 +16,8 @@ export declare class ClickHouseDatasource {
     addCorsHeader: boolean;
     responseParser: any;
     adhocCtrl: AdhocCtrl;
+    minTimeIntervalMs: any;
+    minTimeInterval: string;
     /** @ngInject */
     constructor(instanceSettings: any, $q: any, backendSrv: any, templateSrv: any);
     _request(query: any): any;

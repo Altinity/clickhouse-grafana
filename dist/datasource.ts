@@ -41,7 +41,7 @@ export class ClickHouseDatasource {
       this.usePOST = instanceSettings.jsonData.usePOST;
       this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
       this.adhocCtrl = new AdhocCtrl();
-      this.minTimeInterval = instanceSettings.jsonData.minTimeInterval;
+      this.minTimeInterval = instanceSettings.jsonData.minTimeInterval || '1s';
       this.minTimeIntervalMs = SqlQuery.convertInterval(this.minTimeInterval,1) * 1000;
     }
 

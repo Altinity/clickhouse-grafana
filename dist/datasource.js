@@ -41,7 +41,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     this.usePOST = instanceSettings.jsonData.usePOST;
                     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
                     this.adhocCtrl = new adhoc_1.default();
-                    this.minTimeInterval = instanceSettings.jsonData.minTimeInterval;
+                    this.minTimeInterval = instanceSettings.jsonData.minTimeInterval || '1s';
                     this.minTimeIntervalMs = sql_query_1.default.convertInterval(this.minTimeInterval, 1) * 1000;
                 }
                 ClickHouseDatasource.prototype._request = function (query) {

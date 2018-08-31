@@ -1400,9 +1400,9 @@ System.register([], function (_export, _context) {
                         "def": "$unescape($variable)",
                         "docText": "Unescapes variable value by removing single quotes" + "\n" + "Example:\n SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
                     }, {
-                        "name": "adhoc",
-                        "def": "adhoc",
-                        "docText": "Replaced with a rendered ad-hoc filter expression, or `1` if no ad-hoc filters exist"
+                        "name": "$adhoc",
+                        "def": "$adhoc",
+                        "docText": "Replaced with a rendered ad-hoc filter expression, or `1` if no ad-hoc filters exist" + "\n" + "Example:\n SELECT * FROM (select a, b from table2 WHERE $adhoc) ORDER BY a"
                     }];
                 };
 

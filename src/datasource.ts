@@ -174,8 +174,8 @@ export class ClickHouseDatasource {
         var interpolated;
         try {
             if (options && options.range) {
-                let from = SqlQuery.convertTimestamp(options.range.from); //optionalOptions.range.from.valueOf().toString();
-                let to = SqlQuery.convertTimestamp(options.range.to); //optionalOptions.range.from.valueOf().toString();
+                let from = SqlQuery.convertTimestamp(options.range.from);
+                let to = SqlQuery.convertTimestamp(options.range.to);
                 query = query.replace(/\$to/g, to)
                     .replace(/\$from/g, from)
             }

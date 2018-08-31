@@ -62,7 +62,7 @@ export default class SqlQuery {
                     }
                     let operator = SqlQuery.clickhouseOperator(af.operator);
                     let cond = parts[2] + " " + operator + " " + af.value;
-                    adhocCondition.push(cond)
+                    adhocCondition.push(cond);
                     if (ast.where.length > 0) {
                         // OR is not implemented
                         // @see https://github.com/grafana/grafana/issues/10918

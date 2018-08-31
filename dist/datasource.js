@@ -163,8 +163,8 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     var interpolated;
                     try {
                         if (options && options.range) {
-                            var from = sql_query_1.default.convertTimestamp(options.range.from); //optionalOptions.range.from.valueOf().toString();
-                            var to = sql_query_1.default.convertTimestamp(options.range.to); //optionalOptions.range.from.valueOf().toString();
+                            var from = sql_query_1.default.convertTimestamp(options.range.from);
+                            var to = sql_query_1.default.convertTimestamp(options.range.to);
                             query = query.replace(/\$to/g, to)
                                 .replace(/\$from/g, from);
                         }

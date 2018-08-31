@@ -21,7 +21,7 @@ System.register([], function(exports_1) {
                     if (datasource.defaultDatabase.length > 0) {
                         filter = "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
                     }
-                    var query = columnsQuery.replace('{filter}', queryFilter);
+                    var query = columnsQuery.replace('{filter}', filter);
                     return datasource.metricFindQuery(query)
                         .then(function (response) {
                         var columnNames = {};

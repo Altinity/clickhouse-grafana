@@ -1,4 +1,4 @@
-const queryFilter = "database != 'system'"
+const queryFilter = "database != 'system'";
 const columnsQuery = "SELECT database, table, name, type FROM system.columns WHERE {filter} ORDER BY database, table";
 const regexEnum = /'(?:[^']+|'')+'/gmi;
 
@@ -18,10 +18,10 @@ export default class AdhocCtrl {
             return Promise.resolve(this.tagKeys);
         }
         let filter = queryFilter;
-        if (datasource.defaultDatabase.length > 0) { 
-         filter =  "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
-        } 
-        let query = columnsQuery.replace('{filter}', queryFilter);
+        if (datasource.defaultDatabase.length > 0) {
+            filter =  "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
+        }
+        let  query = columnsQuery.replace('{filter}', filter);
         return datasource.metricFindQuery(query)
             .then(function(response){
                 let columnNames = {};
@@ -38,7 +38,7 @@ export default class AdhocCtrl {
                            self.tagValues[text] = [];
                            options.forEach(function(o) {
                                self.tagValues[text].push({text: o, value: o})
-                           })
+                           });
                            self.tagValues[item.name] = self.tagValues[text];
                        }
                    }

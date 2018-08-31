@@ -1,6 +1,8 @@
+import { describe, it, expect } from './lib/common';
 import _ from 'lodash';
-import {describe, it, expect} from './lib/common';
 import SqlSeries from '../src/sql_series';
+import AdhocCtrl from "../src/adhoc";
+import ResponseParser from "../src/response_parser";
 
 describe("clickhouse sql series:", () => {
     describe("SELECT $timeseries response WHERE $adhoc = 1", () => {
@@ -106,5 +108,84 @@ describe("clickhouse sql series:", () => {
             expect(_.size(timeSeries[3].datapoints)).to.be(4);
         });
     });
+
+    describe("When performing ad-hoc query", () => {
+        var response = {
+            "meta":
+                [
+                    {
+                        "name": "database",
+                        "type": "String"
+                    },
+                    {
+                        "name": "table",
+                        "type": "String"
+                    },
+                    {
+                        "name": "name",
+                        "type": "String"
+                    },
+                    {
+                        "name": "type",
+                        "type": "String"
+                    }
+                ],
+            "data":
+                [
+                    {
+                        "database": "default",
+                        "table": "requests",
+                        "name": "Event",
+                        "type": "Enum8('VIEWS' = 1, 'CLICKS' = 2)"
+                    },
+                    {
+                        "database": "default",
+                        "table": "requests",
+                        "name": "UserID",
+                        "type": "UInt32"
+                    },
+                    {
+                        "database": "default",
+                        "table": "requests",
+                        "name": "URL",
+                        "type": "String"
+                    }
+                ],
+
+            "rows": 3
+        };
+
+        let rp = new ResponseParser(this.$q);
+        let adhocCtrl = new AdhocCtrl({defaultDatabase: "default"});
+        it('should be inited', function () {
+            expect(adhocCtrl.query).to.be('SELECT database, table, name, type FROM system.columns WHERE database = \'default\' AND database != \'system\' ORDER BY database, table');
+            expect(adhocCtrl.datasource.defaultDatabase).to.be('default');
+        });
+
+        let data = rp.parse("", response);
+        adhocCtrl.processResponse(data);
+        it('should return adhoc filter list', function() {
+            let results = adhocCtrl.tagKeys;
+            expect(results.length).to.be(6);
+            expect(results[0].text).to.be('requests.Event');
+            expect(results[0].value).to.be('Event');
+
+            expect(results[1].text).to.be('requests.UserID');
+            expect(results[1].value).to.be('UserID');
+
+            expect(results[2].text).to.be('requests.URL');
+            expect(results[2].value).to.be('URL');
+
+            expect(results[3].text).to.be('Event');
+            expect(results[3].value).to.be('Event');
+
+            expect(results[4].text).to.be('UserID');
+            expect(results[4].value).to.be('UserID');
+
+            expect(results[5].text).to.be('URL');
+            expect(results[5].value).to.be('URL');
+        });
+    });
+
 
 });

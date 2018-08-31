@@ -38,7 +38,7 @@ export class ClickHouseDatasource {
       this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
       this.usePOST = instanceSettings.jsonData.usePOST;
       this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
-      this.adhocCtrl = new AdhocCtrl();
+      this.adhocCtrl = new AdhocCtrl(this);
     }
 
     _request(query) {
@@ -207,7 +207,7 @@ export class ClickHouseDatasource {
     };
 
     getTagKeys() {
-        return this.adhocCtrl.GetTagKeys(this);
+        return this.adhocCtrl.GetTagKeys();
 
     }
 

@@ -26,7 +26,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     this.options = options;
                 }
                 SqlQuery.prototype.replace = function (options, adhocFilters) {
-                    var self = this, query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME', from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round)), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
+                    var self = this, query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME', from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round)), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), adhocCondition = [];
                     try {
                         var ast = scanner.toAST();
                         var topQuery = ast;
@@ -58,6 +58,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                                 }
                                 var operator = SqlQuery.clickhouseOperator(af.operator);
                                 var cond = parts[2] + " " + operator + " " + af.value;
+                                adhocCondition.push(cond);
                                 if (ast.where.length > 0) {
                                     // OR is not implemented
                                     // @see https://github.com/grafana/grafana/issues/10918
@@ -80,6 +81,11 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     catch (err) {
                         console.log('AST parser error: ', err);
                     }
+                    /* Render the ad-hoc condition or evaluate to an always true condition */
+                    var renderedAdHocCondition = '1';
+                    if (adhocCondition.length > 0) {
+                        renderedAdHocCondition = '(' + adhocCondition.join(' AND ') + ')';
+                    }
                     query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     query = SqlQuery.unescape(query);
                     this.target.rawQuery = query
@@ -91,6 +97,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         .replace(/\$dateCol/g, this.target.dateColDataType)
                         .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
                         .replace(/\$interval/g, interval)
+                        .replace(/\$adhoc/g, renderedAdHocCondition)
                         .replace(/(?:\r\n|\r|\n)/g, ' ');
                     return this.target.rawQuery;
                 };

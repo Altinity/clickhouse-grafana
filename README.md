@@ -322,6 +322,17 @@ This is useful if the dashboard contains queries to multiple different tables.
 
 > There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
 
+There may be cases when CH contains too many tables and columns so their fetching could take notably amount of time. And if you need
+to have multiple dashboards with different databases using of `default database` won't help. The best way to solve this will be to have parametrized
+ad-hoc variable in dashboard settings. Currently it's not supported by Grafana interface (see [issue](https://github.com/grafana/grafana/issues/13109)).
+As a temporary workaround, plugin will try to look for variable with name `adhoc_query_filter` and if it exists will use it's value as query to fetch columns.
+To do so we recommend to create some `constant` variable with name `adhoc_query_filter` and set value similar to following:
+```
+SELECT database, table, name, type FROM system.columns WHERE table='myTable' ORDER BY database, table
+```
+
+That should help to control data fetching by ad-hoc queries.
+
 
 ### Query variables
 

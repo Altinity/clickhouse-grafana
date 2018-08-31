@@ -18,16 +18,26 @@ System.register([], function(exports_1) {
                     }
                     this.query = columnsQuery.replace('{filter}', filter);
                 }
-                AdhocCtrl.prototype.GetTagKeys = function () {
+                // GetTagKeys fetches columns from CH tables according to provided filters
+                // if no filters applied all tables from all databases will be fetched
+                // if datasource setting `defaultDatabase` is set only tables from that database will be fetched
+                // if query param passed it will be performed instead of default
+                AdhocCtrl.prototype.GetTagKeys = function (query) {
                     var self = this;
                     if (this.tagKeys.length > 0) {
                         return Promise.resolve(this.tagKeys);
                     }
-                    return this.datasource.metricFindQuery(this.query)
+                    var q = this.query;
+                    if (query.length > 0) {
+                        q = query;
+                    }
+                    return this.datasource.metricFindQuery(q)
                         .then(function (response) {
                         return self.processResponse(response);
                     });
                 };
+                // GetTagValues returns column values according to passed options
+                // It supposed that values were already fetched in GetTagKeys func and stored in `tagValues`
                 AdhocCtrl.prototype.GetTagValues = function (options) {
                     if (this.tagValues.hasOwnProperty(options.key)) {
                         return Promise.resolve(this.tagValues[options.key]);

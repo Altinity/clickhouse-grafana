@@ -5,7 +5,7 @@ export default class AdhocCtrl {
     query: string;
     /** @ngInject */
     constructor(datasource: any);
-    GetTagKeys(): any;
+    GetTagKeys(query?: any): any;
     GetTagValues(options: any): Promise<any>;
     processResponse(response: any): Promise<any[]>;
 }

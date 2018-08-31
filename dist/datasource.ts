@@ -8,6 +8,8 @@ import ResponseParser from './response_parser';
 import AdhocCtrl from './adhoc';
 import Scanner from './scanner';
 
+const adhocFilterVariable = 'adhoc_query_filter';
+
 export class ClickHouseDatasource {
   type: string;
   name: string;
@@ -201,14 +203,21 @@ export class ClickHouseDatasource {
         return this._request(query);
     };
 
-
     targetContainsTemplate(target) {
         return this.templateSrv.variableExists(target.expr);
     };
 
     getTagKeys() {
-        return this.adhocCtrl.GetTagKeys();
-
+        // check whether variable `adhoc_query_filter` exists to apply additional filtering
+        // @see https://github.com/Vertamedia/clickhouse-grafana/issues/75
+        // @see https://github.com/grafana/grafana/issues/13109
+        let queryFilter = '';
+        _.each(this.templateSrv.variables, (v) => {
+            if (v.name === adhocFilterVariable) {
+                queryFilter = v.query
+            }
+        });
+        return this.adhocCtrl.GetTagKeys(queryFilter);
     }
 
     getTagValues(options) {

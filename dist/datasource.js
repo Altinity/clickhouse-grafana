@@ -1,7 +1,7 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 System.register(['lodash', './sql_series', './sql_query', './response_parser', './adhoc', './scanner'], function(exports_1) {
     var lodash_1, sql_series_1, sql_query_1, response_parser_1, adhoc_1, scanner_1;
-    var ClickHouseDatasource;
+    var adhocFilterVariable, ClickHouseDatasource;
     return {
         setters:[
             function (lodash_1_1) {
@@ -23,6 +23,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                 scanner_1 = scanner_1_1;
             }],
         execute: function() {
+            adhocFilterVariable = 'adhoc_query_filter';
             ClickHouseDatasource = (function () {
                 /** @ngInject */
                 function ClickHouseDatasource(instanceSettings, $q, backendSrv, templateSrv) {
@@ -194,7 +195,16 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                 };
                 ;
                 ClickHouseDatasource.prototype.getTagKeys = function () {
-                    return this.adhocCtrl.GetTagKeys();
+                    // check whether variable `adhoc_query_filter` exists to apply additional filtering
+                    // @see https://github.com/Vertamedia/clickhouse-grafana/issues/75
+                    // @see https://github.com/grafana/grafana/issues/13109
+                    var queryFilter = '';
+                    lodash_1.default.each(this.templateSrv.variables, function (v) {
+                        if (v.name === adhocFilterVariable) {
+                            queryFilter = v.query;
+                        }
+                    });
+                    return this.adhocCtrl.GetTagKeys(queryFilter);
                 };
                 ClickHouseDatasource.prototype.getTagValues = function (options) {
                     return this.adhocCtrl.GetTagValues(options);

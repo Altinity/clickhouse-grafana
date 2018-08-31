@@ -29,7 +29,8 @@ export default class SqlQuery {
             timeSeries = SqlQuery.getTimeSeries(dateTimeType),
             timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType),
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
-            interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1);
+            interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1),
+            adhocCondition = [];
         try {
             let ast = scanner.toAST();
             let topQuery = ast;
@@ -61,6 +62,7 @@ export default class SqlQuery {
                     }
                     let operator = SqlQuery.clickhouseOperator(af.operator);
                     let cond = parts[2] + " " + operator + " " + af.value;
+                    adhocCondition.push(cond)
                     if (ast.where.length > 0) {
                         // OR is not implemented
                         // @see https://github.com/grafana/grafana/issues/10918
@@ -81,6 +83,12 @@ export default class SqlQuery {
             console.log('AST parser error: ', err)
         }
 
+        /* Render the ad-hoc condition or evaluate to an always true condition */
+        let renderedAdHocCondition = '1';
+        if (adhocCondition.length > 0) {
+            renderedAdHocCondition = '(' + adhocCondition.join(' AND ') + ')';
+        }
+
         query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
         query = SqlQuery.unescape(query);
         this.target.rawQuery = query
@@ -92,6 +100,7 @@ export default class SqlQuery {
                     .replace(/\$dateCol/g, this.target.dateColDataType)
                     .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
                     .replace(/\$interval/g, interval)
+                    .replace(/\$adhoc/g, renderedAdHocCondition)
                     .replace(/(?:\r\n|\r|\n)/g, ' ');
         return this.target.rawQuery;
     }

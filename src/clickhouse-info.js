@@ -160,7 +160,8 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "$rate",
         "$columns",
         "$rateColumns",
-        "$unescape"
+        "$unescape",
+        "$adhoc"
     ];
     p.KeywordsRe = function () {
         return this.re(p.Keywords)
@@ -2120,6 +2121,11 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "docText": "Unescapes variable value by removing single quotes" +
                 "\n" +
                 "Example:\n SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
+            },
+            {
+                "name": "adhoc",
+                "def": "adhoc",
+                "docText": "Replaced with a rendered ad-hoc filter expression, or `1` if no ad-hoc filters exist"
             }
         ];
     };

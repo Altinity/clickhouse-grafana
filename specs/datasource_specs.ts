@@ -3,7 +3,7 @@ import {describe, it, expect} from './lib/common';
 import SqlSeries from '../src/sql_series';
 
 describe("clickhouse sql series:", () => {
-    describe("SELECT $timeseries response", () => {
+    describe("SELECT $timeseries response WHERE $adhoc = 1", () => {
         var response = {
             "meta":
             [

@@ -24,12 +24,13 @@ export default class SqlQuery {
             query = this.target.query,
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME',
-            from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)),
-            to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round)),
-            timeSeries = SqlQuery.getTimeSeries(dateTimeType),
-            timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType),
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1),
+            round = this.target.round === "$step" ? interval : SqlQuery.convertInterval(this.target.round,1),
+            from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)),
+            to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)),
+            timeSeries = SqlQuery.getTimeSeries(dateTimeType),
+            timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType),
             adhocCondition = [];
         try {
             let ast = scanner.toAST();
@@ -274,8 +275,8 @@ export default class SqlQuery {
         return Math.floor(date.valueOf() / 1000);
     }
 
-    static round(date: any, round: string): any {
-        if (round === "" || round === undefined || round === "0s" ) {
+    static round(date: any, round: number): any {
+        if (round == 0) {
           return date;
         }
 
@@ -283,15 +284,18 @@ export default class SqlQuery {
           date = dateMath.parse(date, true);
         }
 
-        let coeff = 1000 * SqlQuery.convertInterval(round, 1);
+        let coeff = 1000 * round;
         let rounded = Math.floor(date.valueOf() / coeff) * coeff;
         return moment(rounded);
     }
 
-    static convertInterval(interval, intervalFactor) {
+    static convertInterval(interval: any, intervalFactor: number): number {
+        if (interval === undefined || typeof interval !== 'string' || interval == "") {
+            return 0
+        }
         var m = interval.match(durationSplitRegexp);
         if (m === null) {
-          throw {message: 'Received duration is invalid: ' + interval};
+          throw {message: 'Received interval is invalid: ' + interval};
         }
 
         var dur = moment.duration(parseInt(m[1]), m[2]);

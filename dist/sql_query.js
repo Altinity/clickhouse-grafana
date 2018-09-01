@@ -26,7 +26,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     this.options = options;
                 }
                 SqlQuery.prototype.replace = function (options, adhocFilters) {
-                    var self = this, query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME', from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, this.target.round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, this.target.round)), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), adhocCondition = [];
+                    var self = this, query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME', i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), round = this.target.round === "$step" ? interval : SqlQuery.convertInterval(this.target.round, 1), from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), adhocCondition = [];
                     try {
                         var ast = scanner.toAST();
                         var topQuery = ast;
@@ -241,20 +241,23 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     return Math.floor(date.valueOf() / 1000);
                 };
                 SqlQuery.round = function (date, round) {
-                    if (round === "" || round === undefined || round === "0s") {
+                    if (round == 0) {
                         return date;
                     }
                     if (lodash_1.default.isString(date)) {
                         date = dateMath.parse(date, true);
                     }
-                    var coeff = 1000 * SqlQuery.convertInterval(round, 1);
+                    var coeff = 1000 * round;
                     var rounded = Math.floor(date.valueOf() / coeff) * coeff;
                     return moment_1.default(rounded);
                 };
                 SqlQuery.convertInterval = function (interval, intervalFactor) {
+                    if (interval === undefined || typeof interval !== 'string' || interval == "") {
+                        return 0;
+                    }
                     var m = interval.match(durationSplitRegexp);
                     if (m === null) {
-                        throw { message: 'Received duration is invalid: ' + interval };
+                        throw { message: 'Received interval is invalid: ' + interval };
                     }
                     var dur = moment_1.default.duration(parseInt(m[1]), m[2]);
                     var sec = dur.asSeconds();

@@ -110,7 +110,7 @@
 
         <div class="gf-form">
           <label class="gf-form-label width-5">Round</label>
-          <input type="text" class="gf-form-input max-width-5" ng-model="ctrl.target.round"
+          <input type="text" class="gf-form-input max-width-6" ng-model="ctrl.target.round"
                  data-placement="right"
                  spellcheck='false'
                  placeholder="0s"
@@ -119,7 +119,8 @@
                  ng-change="ctrl.refresh()"/>
           <info-popover mode="right-absolute">
             Set rounding for `$from` and `$to` timestamps.<br>
-            For example, if set `1m` - both `$from` and `$to` will be rounded to beginning of minute.<br>
+            For example, if set `1m` - both `$from` and `$to` will be rounded to beginning of minute.<br><br>
+            Or set to `$step` to automatically adjust according to `Step * Resolution` value. <br><br>
             It will make all requests similar during one minute which is good for caching.
           </info-popover>
         </div>

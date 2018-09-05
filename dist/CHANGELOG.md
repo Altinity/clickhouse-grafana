@@ -1,3 +1,12 @@
+# 1.7.0 (2018-09-05)
+
+## New Features
+
+* provide $adhoc macros for using ad-hoc filters in inner queries (thx to @vavrusa)
+* allow to set custom query for ad-hoc filter via `adhoc_query_filter` variable
+* provide new `Round` value `$step` for auto-rounding according to graph resolution changes
+
+
 # 1.6.0 (2018-08-07)
 
 ## New Features

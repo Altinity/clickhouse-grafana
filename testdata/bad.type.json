@@ -1,0 +1,21 @@
+{
+  "meta":
+  [
+    {
+      "name": "t",
+      "type": "UInt64"
+    },
+    {
+      "name": "count()",
+      "type": "UInt64"
+    }
+  ],
+  "data":
+  [
+    {
+      "t": "foobar",
+      "count()": "10"
+    }
+  ],
+  "rows": 1
+}

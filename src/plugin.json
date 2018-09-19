@@ -4,8 +4,10 @@
   "name": "ClickHouse",
 
   "metrics": true,
-  "annotations": true,
-  "alerting": false,
+  "annotations": false,
+  "alerting": true,
+  "backend" : true,
+  "executable": "clickhouse-plugin",
 
   "info": {
     "description": "ClickHouse datasource for Grafana",

@@ -1,0 +1,20 @@
+{
+  "meta":
+  [
+    {
+      "name": "t",
+      "type": "UInt64"
+    },
+    {
+      "name": "count()",
+      "type": "UInt64"
+    }
+  ],
+
+  "data":
+  [
+
+  ],
+
+  "rows": 0
+}

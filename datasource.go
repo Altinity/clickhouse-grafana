@@ -25,7 +25,7 @@ type CHDatasource struct {
 }
 
 func (ds *CHDatasource) Query(ctx context.Context, tsdbReq *datasource.DatasourceRequest) (*datasource.DatasourceResponse, error) {
-	url := tsdbReq.Datasource.Url + "/query"
+	url := tsdbReq.Datasource.Url
 	response := &datasource.DatasourceResponse{}
 	for _, query := range tsdbReq.Queries {
 		q := &queryModel{}
@@ -51,7 +51,7 @@ func (ds *CHDatasource) Query(ctx context.Context, tsdbReq *datasource.Datasourc
 
 func doQuery(ctx context.Context, url, query string) (*datasource.QueryResult, error) {
 	query = query + " FORMAT JSON"
-	log.Printf(">> sending query %q\n", query)
+	log.Printf(">> sending query %s\n%q\n", url, query)
 	req, err := http.NewRequest(http.MethodPost, url, strings.NewReader(query))
 	if err != nil {
 		return nil, err

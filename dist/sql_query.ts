@@ -23,10 +23,14 @@ export default class SqlQuery {
         var self = this,
             query = this.target.query,
             scanner = new Scanner(query),
-            dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME',
+            dateTimeType = this.target.dateTimeType
+                ? this.target.dateTimeType
+                : 'DATETIME',
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1),
-            round = this.target.round === "$step" ? interval : SqlQuery.convertInterval(this.target.round,1),
+            round = this.target.round === "$step"
+                ? interval
+                : SqlQuery.convertInterval(this.target.round,1),
             from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)),
             to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)),
             timeSeries = SqlQuery.getTimeSeries(dateTimeType),
@@ -88,6 +92,13 @@ export default class SqlQuery {
         let renderedAdHocCondition = '1';
         if (adhocCondition.length > 0) {
             renderedAdHocCondition = '(' + adhocCondition.join(' AND ') + ')';
+        }
+
+        // Extend date range to be sure that first and last points
+        // data is not affected by round
+        if (round > 0) {
+            to += (round*2)-1;
+            from -= (round*2)-1
         }
 
         query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);

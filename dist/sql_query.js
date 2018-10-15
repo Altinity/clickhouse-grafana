@@ -26,7 +26,11 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     this.options = options;
                 }
                 SqlQuery.prototype.replace = function (options, adhocFilters) {
-                    var self = this, query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME', i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), round = this.target.round === "$step" ? interval : SqlQuery.convertInterval(this.target.round, 1), from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), adhocCondition = [];
+                    var self = this, query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType
+                        ? this.target.dateTimeType
+                        : 'DATETIME', i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), round = this.target.round === "$step"
+                        ? interval
+                        : SqlQuery.convertInterval(this.target.round, 1), from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), adhocCondition = [];
                     try {
                         var ast = scanner.toAST();
                         var topQuery = ast;
@@ -85,6 +89,12 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     var renderedAdHocCondition = '1';
                     if (adhocCondition.length > 0) {
                         renderedAdHocCondition = '(' + adhocCondition.join(' AND ') + ')';
+                    }
+                    // Extend date range to be sure that first and last points
+                    // data is not affected by round
+                    if (round > 0) {
+                        to += (round * 2) - 1;
+                        from -= (round * 2) - 1;
                     }
                     query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     query = SqlQuery.unescape(query);

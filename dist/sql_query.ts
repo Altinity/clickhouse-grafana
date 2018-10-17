@@ -21,7 +21,7 @@ export default class SqlQuery {
 
     replace(options, adhocFilters) {
         var self = this,
-            query = this.target.query,
+            query = this.templateSrv.replace(this.target.query, options.scopedVars, SqlQuery.interpolateQueryExpr),
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType
                 ? this.target.dateTimeType
@@ -47,22 +47,32 @@ export default class SqlQuery {
                 if (!ast.hasOwnProperty('where')) {
                     ast.where = [];
                 }
+
+                let targetTable, targetDatabase = '';
+                let parts = ast.from[0].split('.');
+                if (parts.length == 1) {
+                    targetTable = parts[0];
+                    targetDatabase = self.target.database
+                } else if (parts.length == 2) {
+                    targetDatabase = parts[0];
+                    targetTable = parts[1];
+                }
                 adhocFilters.forEach(function(af) {
                     let parts = af.key.split('.');
                     /* Wildcard table, substitute current target table */
                     if (parts.length == 1) {
-                        parts.unshift(self.target.table);
+                        parts.unshift(targetTable);
                     }
                     /* Wildcard database, substitute current target database */
                     if (parts.length == 2) {
-                        parts.unshift(self.target.database);
+                        parts.unshift(targetDatabase);
                     }
                     /* Expect fully qualified column name at this point */
                     if (parts.length < 3) {
                         console.log("adhoc filters: filter " + af.key + "` has wrong format");
                         return
                     }
-                    if (self.target.database != parts[0] || self.target.table != parts[1]) {
+                    if (targetDatabase != parts[0] || targetTable != parts[1]) {
                         return
                     }
                     let operator = SqlQuery.clickhouseOperator(af.operator);
@@ -101,7 +111,6 @@ export default class SqlQuery {
             from -= (round*2)-1
         }
 
-        query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
         query = SqlQuery.unescape(query);
         this.target.rawQuery = query
                     .replace(/\$timeSeries/g, timeSeries)

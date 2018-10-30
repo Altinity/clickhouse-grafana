@@ -267,16 +267,18 @@ export default class SqlQuery {
             throw {message: 'Amount of arguments must be > 0 for $perSecond func. Parsed arguments are:  ' + args.join(', ')};
         }
 
+        _.each(args, function (a, i) {
+            args[i] = 'max(' + a + ') AS max_' + i
+        });
+
         return SqlQuery._perSecond(args, q);
     }
 
     static _perSecond(args, fromQuery: string): string {
-        let cols = [],
-            maxArgs = [];
-        _.each(args, function (a) {
-            cols.push('if(runningDifference('+ a +'Max) < 0, nan, ' +
-                'runningDifference(' + a + 'Max) / runningDifference(t/1000)) AS ' + a + 'Rate');
-            maxArgs.push('max(' + a + ') AS ' + a + 'Max')
+        let cols = [];
+        _.each(args, function (a, i) {
+            cols.push('if(runningDifference(max_'+ i +') < 0, nan, ' +
+                'runningDifference(max_' + i + ') / runningDifference(t/1000)) AS max_' + i + '_Rate');
         });
 
         fromQuery = SqlQuery._applyTimeFilter(fromQuery);
@@ -285,7 +287,7 @@ export default class SqlQuery {
             ' ' + cols.join(', ') +
             ' FROM (' +
             ' SELECT $timeSeries AS t' +
-            ', ' + maxArgs.join(', ') +
+            ', ' + args.join(', ') +
             ' ' + fromQuery +
             ' GROUP BY t' +
             ' ORDER BY t' +

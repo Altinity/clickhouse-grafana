@@ -239,14 +239,16 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     if (args.length < 1) {
                         throw { message: 'Amount of arguments must be > 0 for $perSecond func. Parsed arguments are:  ' + args.join(', ') };
                     }
+                    lodash_1.default.each(args, function (a, i) {
+                        args[i] = 'max(' + a + ') AS max_' + i;
+                    });
                     return SqlQuery._perSecond(args, q);
                 };
                 SqlQuery._perSecond = function (args, fromQuery) {
-                    var cols = [], maxArgs = [];
-                    lodash_1.default.each(args, function (a) {
-                        cols.push('if(runningDifference(' + a + 'Max) < 0, nan, ' +
-                            'runningDifference(' + a + 'Max) / runningDifference(t/1000)) AS ' + a + 'Rate');
-                        maxArgs.push('max(' + a + ') AS ' + a + 'Max');
+                    var cols = [];
+                    lodash_1.default.each(args, function (a, i) {
+                        cols.push('if(runningDifference(max_' + i + ') < 0, nan, ' +
+                            'runningDifference(max_' + i + ') / runningDifference(t/1000)) AS max_' + i + '_Rate');
                     });
                     fromQuery = SqlQuery._applyTimeFilter(fromQuery);
                     return 'SELECT ' +
@@ -254,7 +256,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         ' ' + cols.join(', ') +
                         ' FROM (' +
                         ' SELECT $timeSeries AS t' +
-                        ', ' + maxArgs.join(', ') +
+                        ', ' + args.join(', ') +
                         ' ' + fromQuery +
                         ' GROUP BY t' +
                         ' ORDER BY t' +

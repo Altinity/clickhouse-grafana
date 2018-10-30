@@ -85,12 +85,14 @@ describe("macros builder:", () => {
             ),
             new Case(
                 "$perSecond",
-                "$perSecond(total) FROM requests",
+                "$perSecond(total, amount) FROM requests",
                 'SELECT t,' +
-                ' if(runningDifference(totalMax) < 0, nan, runningDifference(totalMax) / runningDifference(t/1000)) AS totalRate' +
+                ' if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate,' +
+                ' if(runningDifference(max_1) < 0, nan, runningDifference(max_1) / runningDifference(t/1000)) AS max_1_Rate' +
                 ' FROM (' +
                 ' SELECT $timeSeries AS t,' +
-                ' max(total) AS totalMax' +
+                ' max(total) AS max_0,' +
+                ' max(amount) AS max_1' +
                 ' FROM requests' +
                 ' WHERE $timeFilter' +
                 ' GROUP BY t' +

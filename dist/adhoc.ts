@@ -15,7 +15,7 @@ export default class AdhocCtrl {
         this.datasource = datasource;
         let filter = queryFilter;
         if (datasource.defaultDatabase.length > 0) {
-            filter =  "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
+            filter = "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
         }
         this.query = columnsQuery.replace('{filter}', filter);
     }
@@ -24,7 +24,7 @@ export default class AdhocCtrl {
     // if no filters applied all tables from all databases will be fetched
     // if datasource setting `defaultDatabase` is set only tables from that database will be fetched
     // if query param passed it will be performed instead of default
-    GetTagKeys(query?){
+    GetTagKeys(query?) {
         let self = this;
         if (this.tagKeys.length > 0) {
             return Promise.resolve(this.tagKeys);
@@ -41,7 +41,7 @@ export default class AdhocCtrl {
 
     // GetTagValues returns column values according to passed options
     // It supposed that values were already fetched in GetTagKeys func and stored in `tagValues`
-    GetTagValues(options){
+    GetTagValues(options) {
         if (this.tagValues.hasOwnProperty(options.key)) {
             return Promise.resolve(this.tagValues[options.key]);
         }
@@ -51,7 +51,7 @@ export default class AdhocCtrl {
     processResponse(response) {
         var self = this;
         let columnNames = {};
-        response.forEach(function(item){
+        response.forEach(function (item) {
             let text = item.table + '.' + item.name;
             if (self.datasource.defaultDatabase.length == 0) {
                 text = item.database + '.' + text;
@@ -62,7 +62,7 @@ export default class AdhocCtrl {
                 let options = item.type.match(regexEnum);
                 if (options.length > 0) {
                     self.tagValues[text] = [];
-                    options.forEach(function(o) {
+                    options.forEach(function (o) {
                         self.tagValues[text].push({text: o, value: o})
                     });
                     self.tagValues[item.name] = self.tagValues[text];

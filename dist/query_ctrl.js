@@ -86,7 +86,13 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                     });
                 };
                 SqlQueryCtrl.prototype.dateColDataTypeChanged = function () {
-                    this.target.dateColDataType = this.dateColDataTypeSegment.value;
+                    var val = this.dateColDataTypeSegment.value;
+                    if (typeof val === 'string') {
+                        this.target.dateColDataType = val.trim();
+                    }
+                    else {
+                        this.target.dateColDataType = val;
+                    }
                 };
                 SqlQueryCtrl.prototype.dateTimeTypeChanged = function () {
                     var self = this;
@@ -107,7 +113,13 @@ System.register(['jquery', 'lodash', './clickhouse-info', './mode-clickhouse', '
                     });
                 };
                 SqlQueryCtrl.prototype.dateTimeColDataTypeChanged = function () {
-                    this.target.dateTimeColDataType = this.dateTimeColDataTypeSegment.value;
+                    var val = this.dateTimeColDataTypeSegment.value;
+                    if (typeof val === 'string') {
+                        this.target.dateTimeColDataType = val.trim();
+                    }
+                    else {
+                        this.target.dateTimeColDataType = val;
+                    }
                 };
                 SqlQueryCtrl.prototype.toggleEditorMode = function () {
                     this.target.rawQuery = !this.target.rawQuery;

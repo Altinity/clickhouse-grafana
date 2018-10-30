@@ -11,36 +11,36 @@ import Scanner from './scanner';
 const adhocFilterVariable = 'adhoc_query_filter';
 
 export class ClickHouseDatasource {
-  type: string;
-  name: string;
-  supportMetrics: boolean;
-  url: string;
-  directUrl: string;
-  basicAuth: any;
-  withCredentials: any;
-  usePOST: boolean;
-  defaultDatabase: string;
-  addCorsHeader: boolean;
-  responseParser: any;
-  adhocCtrl: AdhocCtrl;
+    type: string;
+    name: string;
+    supportMetrics: boolean;
+    url: string;
+    directUrl: string;
+    basicAuth: any;
+    withCredentials: any;
+    usePOST: boolean;
+    defaultDatabase: string;
+    addCorsHeader: boolean;
+    responseParser: any;
+    adhocCtrl: AdhocCtrl;
 
     /** @ngInject */
     constructor(instanceSettings,
                 private $q,
                 private backendSrv,
                 private templateSrv) {
-      this.type = 'clickhouse';
-      this.name = instanceSettings.name;
-      this.supportMetrics = true;
-      this.responseParser = new ResponseParser(this.$q);
-      this.url = instanceSettings.url;
-      this.directUrl = instanceSettings.directUrl;
-      this.basicAuth = instanceSettings.basicAuth;
-      this.withCredentials = instanceSettings.withCredentials;
-      this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
-      this.usePOST = instanceSettings.jsonData.usePOST;
-      this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
-      this.adhocCtrl = new AdhocCtrl(this);
+        this.type = 'clickhouse';
+        this.name = instanceSettings.name;
+        this.supportMetrics = true;
+        this.responseParser = new ResponseParser(this.$q);
+        this.url = instanceSettings.url;
+        this.directUrl = instanceSettings.directUrl;
+        this.basicAuth = instanceSettings.basicAuth;
+        this.withCredentials = instanceSettings.withCredentials;
+        this.addCorsHeader = instanceSettings.jsonData.addCorsHeader;
+        this.usePOST = instanceSettings.jsonData.usePOST;
+        this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
+        this.adhocCtrl = new AdhocCtrl(this);
     }
 
     _request(query) {
@@ -66,11 +66,11 @@ export class ClickHouseDatasource {
         }
 
         if (this.addCorsHeader) {
-          if (this.usePOST) {
-            options.url += "?add_http_cors_header=1";
-          } else {
-            options.url += "&add_http_cors_header=1";
-          }
+            if (this.usePOST) {
+                options.url += "?add_http_cors_header=1";
+            } else {
+                options.url += "&add_http_cors_header=1";
+            }
         }
 
         return this.backendSrv.datasourceRequest(options).then(result => {
@@ -172,7 +172,7 @@ export class ClickHouseDatasource {
             .then(result => this.responseParser.transformAnnotationResponse(params, result.data));
     }
 
-    metricFindQuery(query, options?:any) {
+    metricFindQuery(query, options?: any) {
         var interpolated;
         try {
             if (options && options.range) {

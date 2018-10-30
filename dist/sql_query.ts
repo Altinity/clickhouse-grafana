@@ -8,16 +8,16 @@ import Scanner from './scanner';
 var durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
 
 export default class SqlQuery {
-  target: any;
-  templateSrv: any;
-  options: any;
+    target: any;
+    templateSrv: any;
+    options: any;
 
-  /** @ngInject */
-  constructor(target, templateSrv?, options?) {
-    this.target = target;
-    this.templateSrv = templateSrv;
-    this.options = options;
-  }
+    /** @ngInject */
+    constructor(target, templateSrv?, options?) {
+        this.target = target;
+        this.templateSrv = templateSrv;
+        this.options = options;
+    }
 
     replace(options, adhocFilters) {
         var self = this,
@@ -30,7 +30,7 @@ export default class SqlQuery {
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1),
             round = this.target.round === "$step"
                 ? interval
-                : SqlQuery.convertInterval(this.target.round,1),
+                : SqlQuery.convertInterval(this.target.round, 1),
             from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)),
             to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)),
             adhocCondition = [];
@@ -45,7 +45,7 @@ export default class SqlQuery {
                 if (!ast.hasOwnProperty('where')) {
                     ast.where = [];
                 }
-                adhocFilters.forEach(function(af) {
+                adhocFilters.forEach(function (af) {
                     let parts = af.key.split('.');
                     /* Wildcard table, substitute current target table */
                     if (parts.length == 1) {
@@ -95,8 +95,8 @@ export default class SqlQuery {
         // Extend date range to be sure that first and last points
         // data is not affected by round
         if (round > 0) {
-            to += (round*2)-1;
-            from -= (round*2)-1
+            to += (round * 2) - 1;
+            from -= (round * 2) - 1
         }
 
         query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
@@ -106,16 +106,16 @@ export default class SqlQuery {
             timeFilter = SqlQuery.getDateFilter(this.options.rangeRaw.to === 'now') + ' AND ' + timeFilter
         }
         this.target.rawQuery = query
-                    .replace(/\$timeSeries/g,  SqlQuery.getTimeSeries(dateTimeType))
-                    .replace(/\$timeFilter/g, timeFilter)
-                    .replace(/\$table/g, this.target.database + '.' + this.target.table)
-                    .replace(/\$from/g, from)
-                    .replace(/\$to/g, to)
-                    .replace(/\$dateCol/g, this.target.dateColDataType)
-                    .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
-                    .replace(/\$interval/g, interval)
-                    .replace(/\$adhoc/g, renderedAdHocCondition)
-                    .replace(/(?:\r\n|\r|\n)/g, ' ');
+            .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
+            .replace(/\$timeFilter/g, timeFilter)
+            .replace(/\$table/g, this.target.database + '.' + this.target.table)
+            .replace(/\$from/g, from)
+            .replace(/\$to/g, to)
+            .replace(/\$dateCol/g, this.target.dateColDataType)
+            .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
+            .replace(/\$interval/g, interval)
+            .replace(/\$adhoc/g, renderedAdHocCondition)
+            .replace(/(?:\r\n|\r|\n)/g, ' ');
         return this.target.rawQuery;
     }
 
@@ -123,9 +123,9 @@ export default class SqlQuery {
     static columns(query: string): string {
         if (query.slice(0, 9) === '$columns(') {
             var fromIndex = SqlQuery._fromIndex(query);
-            var args = query.slice(9,fromIndex)
-                .trim() // rm spaces
-                .slice(0, -1), // cut ending brace
+            var args = query.slice(9, fromIndex)
+                    .trim() // rm spaces
+                    .slice(0, -1), // cut ending brace
                 scanner = new Scanner(args),
                 ast = scanner.toAST();
             var root = ast['root'];
@@ -160,14 +160,14 @@ export default class SqlQuery {
             't' +
             ', groupArray((' + keyAlias + ', ' + valueAlias + ')) as groupArr' +
             ' FROM (' +
-                ' SELECT $timeSeries as t' +
-                ', ' + key +
-                ', ' + value + ' ' +
-                fromQuery +
-                ' GROUP BY t, ' + keyAlias +
-                ' ' + having +
-                ' ORDER BY t, ' + keyAlias +
-                ') ' +
+            ' SELECT $timeSeries as t' +
+            ', ' + key +
+            ', ' + value + ' ' +
+            fromQuery +
+            ' GROUP BY t, ' + keyAlias +
+            ' ' + having +
+            ' ORDER BY t, ' + keyAlias +
+            ') ' +
             'GROUP BY t ' +
             'ORDER BY t';
     }
@@ -176,23 +176,23 @@ export default class SqlQuery {
     static rateColumns(query: string): string {
         if (query.slice(0, 13) === '$rateColumns(') {
             var fromIndex = SqlQuery._fromIndex(query);
-            var args = query.slice(13,fromIndex)
-                .trim() // rm spaces
-                .slice(0, -1), // cut ending brace
+            var args = query.slice(13, fromIndex)
+                    .trim() // rm spaces
+                    .slice(0, -1), // cut ending brace
                 scanner = new Scanner(args),
                 ast = scanner.toAST();
             var root = ast['root'];
 
             if (root.length !== 2) {
-                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' +  root.join(', ')};
+                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + root.join(', ')};
             }
 
             query = SqlQuery._columns(root[0], root[1], query.slice(fromIndex));
             query = 'SELECT t' +
-                    ', arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
-                    ' FROM (' +
-                    query +
-                    ')';
+                ', arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
+                ' FROM (' +
+                query +
+                ')';
         }
 
         return query;
@@ -222,7 +222,7 @@ export default class SqlQuery {
 
     static _rate(args, fromQuery: string): string {
         var aliases = [];
-        _.each(args, function(arg){
+        _.each(args, function (arg) {
             if (arg.slice(-1) === ')') {
                 throw {message: 'Argument "' + arg + '" cant be used without alias'};
             }
@@ -230,8 +230,8 @@ export default class SqlQuery {
         });
 
         var rateColums = [];
-        _.each(aliases, function(a){
-           rateColums.push(a + '/runningDifference(t/1000) ' + a + 'Rate');
+        _.each(aliases, function (a) {
+            rateColums.push(a + '/runningDifference(t/1000) ' + a + 'Rate');
         });
 
         fromQuery = SqlQuery._applyTimeFilter(fromQuery);
@@ -248,7 +248,7 @@ export default class SqlQuery {
     }
 
     static _applyTimeFilter(query: string): string {
-        if ( query.toLowerCase().indexOf('where') !== -1 ) {
+        if (query.toLowerCase().indexOf('where') !== -1) {
             query = query.replace(/where/i, 'WHERE $timeFilter AND ');
         } else {
             query += ' WHERE $timeFilter';
@@ -267,7 +267,7 @@ export default class SqlQuery {
     static getTimeFilter(isToNow: boolean, dateTimeType: string): string {
         var convertFn = function (t: string): string {
             if (dateTimeType === 'DATETIME') {
-                return 'toDateTime('+ t +')';
+                return 'toDateTime(' + t + ')';
             }
             return t
         };
@@ -289,7 +289,7 @@ export default class SqlQuery {
     static getDateTimeFilter(isToNow: boolean, dateTimeType: string) {
         var convertFn = function (t: string): string {
             if (dateTimeType === 'DATETIME') {
-                return 'toDateTime('+ t +')';
+                return 'toDateTime(' + t + ')';
             }
             return t
         };
@@ -312,11 +312,11 @@ export default class SqlQuery {
 
     static round(date: any, round: number): any {
         if (round == 0) {
-          return date;
+            return date;
         }
 
         if (_.isString(date)) {
-          date = dateMath.parse(date, true);
+            date = dateMath.parse(date, true);
         }
 
         let coeff = 1000 * round;
@@ -330,7 +330,7 @@ export default class SqlQuery {
         }
         var m = interval.match(durationSplitRegexp);
         if (m === null) {
-          throw {message: 'Received interval is invalid: ' + interval};
+            throw {message: 'Received interval is invalid: ' + interval};
         }
 
         var dur = moment.duration(parseInt(m[1]), m[2]);
@@ -342,7 +342,7 @@ export default class SqlQuery {
         return Math.ceil(sec * intervalFactor);
     }
 
-    static interpolateQueryExpr (value, variable, defaultFormatFn) {
+    static interpolateQueryExpr(value, variable, defaultFormatFn) {
         // if no `multiselect` or `include all` - do not escape
         if (!variable.multi && !variable.includeAll) {
             return value;
@@ -350,14 +350,14 @@ export default class SqlQuery {
         if (typeof value === 'string') {
             return SqlQuery.clickhouseEscape(value, variable);
         }
-        let escapedValues = _.map(value, function(v){
+        let escapedValues = _.map(value, function (v) {
             return SqlQuery.clickhouseEscape(v, variable);
         });
         return escapedValues.join(',');
     }
 
     static clickhouseOperator(value) {
-        switch (value){
+        switch (value) {
             case "=":
             case "!=":
             case ">":
@@ -376,7 +376,7 @@ export default class SqlQuery {
     static clickhouseEscape(value, variable) {
         var isDigit = true;
         // if at least one of options is not digit
-        _.each(variable.options, function(opt): boolean{
+        _.each(variable.options, function (opt): boolean {
             if (opt.value === '$__all') {
                 return true;
             }
@@ -399,13 +399,13 @@ export default class SqlQuery {
         let openMacros = query.indexOf(macros);
         while (openMacros !== -1) {
             let closeMacros = query.indexOf(')', openMacros);
-            if(closeMacros === -1) {
+            if (closeMacros === -1) {
                 throw {message: 'unable to find closing brace for $unescape macros: ' + query.substring(0, openMacros)};
             }
-            let arg = query.substring(openMacros+macros.length, closeMacros)
+            let arg = query.substring(openMacros + macros.length, closeMacros)
                 .trim();
             arg = arg.replace(/[']+/g, '');
-            query = query.substring(0, openMacros) + arg + query.substring(closeMacros+1, query.length);
+            query = query.substring(0, openMacros) + arg + query.substring(closeMacros + 1, query.length);
             openMacros = query.indexOf('$unescape(');
         }
         return query

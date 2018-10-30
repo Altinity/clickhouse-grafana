@@ -67,13 +67,13 @@ class SqlQueryCtrl extends QueryCtrl {
             this.target.dateTimeColDataType || {fake: true, value: '-- dateTime : col --'}
         );
 
-        this.resolutions = _.map([1,2,3,4,5,10], function(f) {
+        this.resolutions = _.map([1, 2, 3, 4, 5, 10], function (f) {
             return {factor: f, label: '1/' + f};
         });
 
         this.completerCache = [];
 
-        this.dateTimeTypeOptions =  [
+        this.dateTimeTypeOptions = [
             {text: 'Column:DateTime', value: 'DATETIME'},
             {text: 'Column:TimeStamp', value: 'TIMESTAMP'},
         ];
@@ -111,7 +111,7 @@ class SqlQueryCtrl extends QueryCtrl {
     getDateColDataTypeSegments() {
         var target = this.target;
         target.dateLoading = true;
-        return this.querySegment('DATE').then(function(response){
+        return this.querySegment('DATE').then(function (response) {
             target.dateLoading = false;
             return response;
         });
@@ -128,7 +128,7 @@ class SqlQueryCtrl extends QueryCtrl {
 
     dateTimeTypeChanged() {
         var self = this;
-        this.getDateTimeColDataTypeSegments().then(function(segments) {
+        this.getDateTimeColDataTypeSegments().then(function (segments) {
             if (segments.length === 0) {
                 return;
             }
@@ -140,7 +140,7 @@ class SqlQueryCtrl extends QueryCtrl {
     getDateTimeColDataTypeSegments() {
         var target = this.target;
         target.datetimeLoading = true;
-        return this.querySegment(target.dateTimeType).then(function(response){
+        return this.querySegment(target.dateTimeType).then(function (response) {
             target.datetimeLoading = false;
             return response;
         });
@@ -166,7 +166,7 @@ class SqlQueryCtrl extends QueryCtrl {
             return;
         }
 
-        if ( this.editMode === true ) {
+        if (this.editMode === true) {
             this.editMode = false;
             this.refresh();
         }
@@ -189,7 +189,7 @@ class SqlQueryCtrl extends QueryCtrl {
             return;
         }
 
-        self.queryColumns().then(function(response){
+        self.queryColumns().then(function (response) {
             self.completerCache[key] = response.map(function (item) {
                 return {
                     caption: item.text,
@@ -212,7 +212,7 @@ class SqlQueryCtrl extends QueryCtrl {
         for (var i = 0; i < desc.length; i++) {
             if (desc[i] === ' ') {
                 space_index = i;
-            } else if (i >= next_line_end  && space_index !== 0) {
+            } else if (i >= next_line_end && space_index !== 0) {
                 line = desc.slice(start, space_index);
                 lines.push(line);
                 start = space_index + 1;
@@ -239,7 +239,7 @@ class SqlQueryCtrl extends QueryCtrl {
     getTableSegments() {
         var target = this.target;
         target.tableLoading = true;
-        return this.querySegment('TABLES').then(function(response){
+        return this.querySegment('TABLES').then(function (response) {
             target.tableLoading = false;
             return response;
         });
@@ -251,14 +251,14 @@ class SqlQueryCtrl extends QueryCtrl {
         this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
 
         var self = this;
-        this.getDateColDataTypeSegments().then(function(segments) {
+        this.getDateColDataTypeSegments().then(function (segments) {
             if (segments.length === 0) {
                 return;
             }
             self.applySegment(self.dateColDataTypeSegment, segments[0]);
             self.dateColDataTypeChanged();
         });
-        this.getDateTimeColDataTypeSegments().then(function(segments) {
+        this.getDateTimeColDataTypeSegments().then(function (segments) {
             if (segments.length === 0) {
                 return;
             }
@@ -318,7 +318,7 @@ class SqlQueryCtrl extends QueryCtrl {
 
     buildExploreQuery(type) {
         var query;
-        switch (type){
+        switch (type) {
             case 'TABLES':
                 query = 'SELECT name ' +
                     'FROM system.tables ' +
@@ -364,4 +364,5 @@ class SqlQueryCtrl extends QueryCtrl {
         return query;
     };
 }
+
 export {SqlQueryCtrl};

@@ -101,7 +101,7 @@ ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "
     var functionsCompletions = ClickhouseInfo.FunctionsCompletions().map(function (item) {
         return {
             caption: item.name,
-            value: item.name+"()",
+            value: item.name + "()",
             docHTML: convertToHTML(item),
             meta: "function",
             score: Number.MAX_VALUE
@@ -118,7 +118,7 @@ ace.define("ace/mode/clickhouse_completions", ["require", "exports", "module", "
         for (var i = 0; i < str.length; i++) {
             if (str[i] === ' ') {
                 space_index = i;
-            } else if (i >= next_line_end  && space_index !== 0) {
+            } else if (i >= next_line_end && space_index !== 0) {
                 line = str.slice(line_start, space_index);
                 lines.push(line);
                 line_start = space_index + 1;

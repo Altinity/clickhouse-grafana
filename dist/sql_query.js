@@ -30,7 +30,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         ? this.target.dateTimeType
                         : 'DATETIME', i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), round = this.target.round === "$step"
                         ? interval
-                        : SqlQuery.convertInterval(this.target.round, 1), from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), adhocCondition = [];
+                        : SqlQuery.convertInterval(this.target.round, 1), from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)), adhocCondition = [];
                     try {
                         var ast = scanner.toAST();
                         var topQuery = ast;
@@ -98,8 +98,12 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     }
                     query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     query = SqlQuery.unescape(query);
+                    var timeFilter = SqlQuery.getDateTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType);
+                    if (typeof this.target.dateColDataType == "string" && this.target.dateColDataType.length > 0) {
+                        timeFilter = SqlQuery.getDateFilter(this.options.rangeRaw.to === 'now') + ' AND ' + timeFilter;
+                    }
                     this.target.rawQuery = query
-                        .replace(/\$timeSeries/g, timeSeries)
+                        .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
                         .replace(/\$timeFilter/g, timeFilter)
                         .replace(/\$table/g, this.target.database + '.' + this.target.table)
                         .replace(/\$from/g, from)
@@ -240,7 +244,26 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     if (isToNow) {
                         return '$dateCol >= toDate($from) AND $dateTimeCol >= ' + convertFn('$from');
                     }
-                    return '$dateCol BETWEEN toDate($from) AND toDate($to) AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
+                    return '$dateCol BETWEEN toDate($from) AND toDate($to) ' +
+                        'AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
+                };
+                SqlQuery.getDateFilter = function (isToNow) {
+                    if (isToNow) {
+                        return '$dateCol >= toDate($from)';
+                    }
+                    return '$dateCol BETWEEN toDate($from) AND toDate($to)';
+                };
+                SqlQuery.getDateTimeFilter = function (isToNow, dateTimeType) {
+                    var convertFn = function (t) {
+                        if (dateTimeType === 'DATETIME') {
+                            return 'toDateTime(' + t + ')';
+                        }
+                        return t;
+                    };
+                    if (isToNow) {
+                        return '$dateTimeCol >= ' + convertFn('$from');
+                    }
+                    return '$dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
                 };
                 // date is a moment object
                 SqlQuery.convertTimestamp = function (date) {

@@ -118,7 +118,12 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     dateColDataTypeChanged() {
-        this.target.dateColDataType = this.dateColDataTypeSegment.value;
+        let val = this.dateColDataTypeSegment.value;
+        if (typeof val === 'string') {
+            this.target.dateColDataType = val.trim()
+        } else {
+            this.target.dateColDataType = val
+        }
     }
 
     dateTimeTypeChanged() {
@@ -142,7 +147,12 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     dateTimeColDataTypeChanged() {
-        this.target.dateTimeColDataType = this.dateTimeColDataTypeSegment.value;
+        let val = this.dateTimeColDataTypeSegment.value;
+        if (typeof val === 'string') {
+            this.target.dateTimeColDataType = val.trim()
+        } else {
+            this.target.dateTimeColDataType = val
+        }
     }
 
     toggleEditorMode() {

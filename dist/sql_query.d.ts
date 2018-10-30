@@ -15,6 +15,8 @@ export default class SqlQuery {
     static _applyTimeFilter(query: string): string;
     static getTimeSeries(dateTimeType: string): string;
     static getTimeFilter(isToNow: boolean, dateTimeType: string): string;
+    static getDateFilter(isToNow: boolean): string;
+    static getDateTimeFilter(isToNow: boolean, dateTimeType: string): string;
     static convertTimestamp(date: any): number;
     static round(date: any, round: number): any;
     static convertInterval(interval: any, intervalFactor: number): number;

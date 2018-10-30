@@ -33,8 +33,6 @@ export default class SqlQuery {
                 : SqlQuery.convertInterval(this.target.round,1),
             from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)),
             to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)),
-            timeSeries = SqlQuery.getTimeSeries(dateTimeType),
-            timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType),
             adhocCondition = [];
         try {
             let ast = scanner.toAST();
@@ -103,8 +101,12 @@ export default class SqlQuery {
 
         query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
         query = SqlQuery.unescape(query);
+        let timeFilter = SqlQuery.getDateTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType);
+        if (typeof this.target.dateColDataType == "string" && this.target.dateColDataType.length > 0) {
+            timeFilter = SqlQuery.getDateFilter(this.options.rangeRaw.to === 'now') + ' AND ' + timeFilter
+        }
         this.target.rawQuery = query
-                    .replace(/\$timeSeries/g, timeSeries)
+                    .replace(/\$timeSeries/g,  SqlQuery.getTimeSeries(dateTimeType))
                     .replace(/\$timeFilter/g, timeFilter)
                     .replace(/\$table/g, this.target.database + '.' + this.target.table)
                     .replace(/\$from/g, from)
@@ -273,7 +275,29 @@ export default class SqlQuery {
         if (isToNow) {
             return '$dateCol >= toDate($from) AND $dateTimeCol >= ' + convertFn('$from');
         }
-        return '$dateCol BETWEEN toDate($from) AND toDate($to) AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
+        return '$dateCol BETWEEN toDate($from) AND toDate($to) ' +
+            'AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
+    }
+
+    static getDateFilter(isToNow: boolean) {
+        if (isToNow) {
+            return '$dateCol >= toDate($from)';
+        }
+        return '$dateCol BETWEEN toDate($from) AND toDate($to)'
+    }
+
+    static getDateTimeFilter(isToNow: boolean, dateTimeType: string) {
+        var convertFn = function (t: string): string {
+            if (dateTimeType === 'DATETIME') {
+                return 'toDateTime('+ t +')';
+            }
+            return t
+        };
+
+        if (isToNow) {
+            return '$dateTimeCol >= ' + convertFn('$from');
+        }
+        return '$dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
     }
 
     // date is a moment object

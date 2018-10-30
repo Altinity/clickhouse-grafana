@@ -147,24 +147,24 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     }
                     var keyAlias = key.trim().split(' ').pop(), valueAlias = value.trim().split(' ').pop(), havingIndex = fromQuery.toLowerCase().indexOf('having'), having = "";
                     if (havingIndex !== -1) {
-                        having = fromQuery.slice(havingIndex, fromQuery.length);
-                        fromQuery = fromQuery.slice(0, havingIndex);
+                        having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
+                        fromQuery = fromQuery.slice(0, havingIndex - 1);
                     }
                     fromQuery = SqlQuery._applyTimeFilter(fromQuery);
-                    return 'SELECT ' +
-                        't' +
-                        ', groupArray((' + keyAlias + ', ' + valueAlias + ')) as groupArr' +
+                    return 'SELECT' +
+                        ' t,' +
+                        ' groupArray((' + keyAlias + ', ' + valueAlias + ')) AS groupArr' +
                         ' FROM (' +
-                        ' SELECT $timeSeries as t' +
+                        ' SELECT $timeSeries AS t' +
                         ', ' + key +
                         ', ' + value + ' ' +
                         fromQuery +
                         ' GROUP BY t, ' + keyAlias +
-                        ' ' + having +
+                        having +
                         ' ORDER BY t, ' + keyAlias +
-                        ') ' +
-                        'GROUP BY t ' +
-                        'ORDER BY t';
+                        ')' +
+                        ' GROUP BY t' +
+                        ' ORDER BY t';
                 };
                 // $rateColumns(query)
                 SqlQuery.rateColumns = function (query, ast) {
@@ -215,12 +215,12 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         rateColums.push(a + '/runningDifference(t/1000) ' + a + 'Rate');
                     });
                     fromQuery = SqlQuery._applyTimeFilter(fromQuery);
-                    return 'SELECT ' + '' +
-                        't' +
-                        ', ' + rateColums.join(',') +
+                    return 'SELECT ' +
+                        't,' +
+                        ' ' + rateColums.join(', ') +
                         ' FROM (' +
-                        ' SELECT $timeSeries as t' +
-                        ', ' + args.join(',') +
+                        ' SELECT $timeSeries AS t' +
+                        ', ' + args.join(', ') +
                         ' ' + fromQuery +
                         ' GROUP BY t' +
                         ' ORDER BY t' +
@@ -228,7 +228,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                 };
                 SqlQuery._applyTimeFilter = function (query) {
                     if (query.toLowerCase().indexOf('where') !== -1) {
-                        query = query.replace(/where/i, 'WHERE $timeFilter AND ');
+                        query = query.replace(/where/i, 'WHERE $timeFilter AND');
                     }
                     else {
                         query += ' WHERE $timeFilter';

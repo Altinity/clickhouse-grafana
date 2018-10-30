@@ -158,6 +158,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "$timeFilter",
         "$timeSeries",
         "$rate",
+        "$perSecond",
         "$columns",
         "$rateColumns",
         "$unescape",
@@ -2100,6 +2101,14 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "docText": "Converts query results as `change rate per interval`. Can be used to display changes-per-second." +
                     "\n" +
                     "Example:\n $rate(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests"
+            },
+            {
+                "name": "$perSecond",
+                "def": "$perSecond(cols...)",
+                "docText": "Similar to $rate macros for Counter-like type of metrics which are only grow. The macros will chose the max" +
+                    "value for each column in every timeSlot and calculate the changes." +
+                    "\n" +
+                    "Example:\n $perSecond(total_requests) FROM requests"
             },
             {
                 "name": "$columns",

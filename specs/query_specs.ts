@@ -19,7 +19,7 @@ class Case {
 describe("macros builder:", () => {
         let testCases = [
             new Case(
-                "$rate positive",
+                "$rate",
                 "$rate(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests",
                 'SELECT t,' +
             ' good/runningDifference(t/1000) goodRate,' +
@@ -41,7 +41,7 @@ describe("macros builder:", () => {
                 SqlQuery.rate
             ),
             new Case(
-                "$rateColumns positive",
+                "$rateColumns",
                 "$rateColumns((AppType = '' ? 'undefined' : AppType) type, sum(Hits) hits) " +
                 " FROM table_all WHERE Event = 'request' AND (-1 IN ($template) OR col IN ($template)) HAVING hits > $interval",
                 'SELECT t,' +
@@ -64,7 +64,7 @@ describe("macros builder:", () => {
                 SqlQuery.rateColumns
             ),
             new Case(
-                "$columns positive",
+                "$columns",
                 "$columns(OSName, count(*) c) FROM requests ANY INNER JOIN oses USING OS",
                 'SELECT t,' +
                 ' groupArray((OSName, c)) AS groupArr' +
@@ -82,10 +82,29 @@ describe("macros builder:", () => {
                 ' GROUP BY t' +
                 ' ORDER BY t',
                 SqlQuery.columns
+            ),
+            new Case(
+                "$perSecond",
+                "$perSecond(total) FROM requests",
+                'SELECT t,' +
+                ' if(runningDifference(totalMax) < 0, nan, runningDifference(totalMax) / runningDifference(t/1000)) AS totalRate' +
+                ' FROM (' +
+                ' SELECT $timeSeries AS t,' +
+                ' max(total) AS totalMax' +
+                ' FROM requests' +
+                ' WHERE $timeFilter' +
+                ' GROUP BY t' +
+                ' ORDER BY t)',
+                SqlQuery.perSecond
             )
         ];
 
+
         _.each(testCases,  (tc) => {
+            if (tc.got !== tc.expected) {
+                console.log(tc.got)
+                console.log(tc.expected)
+            }
             describe(tc.name, () => {
                 it("expects equality", () => {
                     expect(tc.got).to.eql(tc.expected);

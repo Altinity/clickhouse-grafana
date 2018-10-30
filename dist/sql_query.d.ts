@@ -15,6 +15,8 @@ export default class SqlQuery {
     static _fromIndex(query: string): number;
     static rate(query: string, ast: any): string;
     static _rate(args: any, fromQuery: string): string;
+    static perSecond(query: string, ast: any): string;
+    static _perSecond(args: any, fromQuery: string): string;
     static _applyTimeFilter(query: string): string;
     static getTimeSeries(dateTimeType: string): string;
     static getDateFilter(isToNow: boolean): string;

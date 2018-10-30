@@ -125,6 +125,9 @@ export default class SqlQuery {
         if (SqlQuery.contain(ast, '$rate')) {
             return SqlQuery.rate(query, ast);
         }
+        if (SqlQuery.contain(ast, '$perSecond')) {
+            return SqlQuery.perSecond(query, ast);
+        }
     }
 
     static contain(obj: any, field: string): boolean {
@@ -235,18 +238,54 @@ export default class SqlQuery {
             aliases.push(arg.trim().split(' ').pop());
         });
 
-        var rateColums = [];
+        var cols = [];
         _.each(aliases, function (a) {
-            rateColums.push(a + '/runningDifference(t/1000) ' + a + 'Rate');
+            cols.push(a + '/runningDifference(t/1000) ' + a + 'Rate');
         });
 
         fromQuery = SqlQuery._applyTimeFilter(fromQuery);
         return 'SELECT ' +
             't,' +
-            ' ' + rateColums.join(', ') +
+            ' ' + cols.join(', ') +
             ' FROM (' +
             ' SELECT $timeSeries AS t' +
             ', ' + args.join(', ') +
+            ' ' + fromQuery +
+            ' GROUP BY t' +
+            ' ORDER BY t' +
+            ')';
+    }
+
+    // $perSecond(query)
+    static perSecond(query: string, ast: any): string {
+        let q = SqlQuery._parseMacros('$perSecond', query);
+        if (q.length < 1) {
+            return query
+        }
+        let args = ast['$perSecond'];
+        if (args.length < 1) {
+            throw {message: 'Amount of arguments must be > 0 for $perSecond func. Parsed arguments are:  ' + args.join(', ')};
+        }
+
+        return SqlQuery._perSecond(args, q);
+    }
+
+    static _perSecond(args, fromQuery: string): string {
+        let cols = [],
+            maxArgs = [];
+        _.each(args, function (a) {
+            cols.push('if(runningDifference('+ a +'Max) < 0, nan, ' +
+                'runningDifference(' + a + 'Max) / runningDifference(t/1000)) AS ' + a + 'Rate');
+            maxArgs.push('max(' + a + ') AS ' + a + 'Max')
+        });
+
+        fromQuery = SqlQuery._applyTimeFilter(fromQuery);
+        return 'SELECT ' +
+            't,' +
+            ' ' + cols.join(', ') +
+            ' FROM (' +
+            ' SELECT $timeSeries AS t' +
+            ', ' + maxArgs.join(', ') +
             ' ' + fromQuery +
             ' GROUP BY t' +
             ' ORDER BY t' +

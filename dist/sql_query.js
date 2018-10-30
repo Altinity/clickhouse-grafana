@@ -26,7 +26,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     this.options = options;
                 }
                 SqlQuery.prototype.replace = function (options, adhocFilters) {
-                    var self = this, query = this.target.query, scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType
+                    var self = this, query = this.target.query.trim(), scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType
                         ? this.target.dateTimeType
                         : 'DATETIME', i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), round = this.target.round === "$step"
                         ? interval
@@ -72,15 +72,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                             });
                             query = scanner.Print(topQuery);
                         }
-                        if (ast.hasOwnProperty('$columns') && !lodash_1.default.isEmpty(ast['$columns'])) {
-                            query = SqlQuery.columns(query);
-                        }
-                        else if (ast.hasOwnProperty('$rateColumns') && !lodash_1.default.isEmpty(ast['$rateColumns'])) {
-                            query = SqlQuery.rateColumns(query);
-                        }
-                        else if (ast.hasOwnProperty('$rate') && !lodash_1.default.isEmpty(ast['$rate'])) {
-                            query = SqlQuery.rate(query, ast);
-                        }
+                        query = SqlQuery.applyMacros(query, ast);
                     }
                     catch (err) {
                         console.log('AST parser error: ', err);
@@ -114,6 +106,20 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         .replace(/\$adhoc/g, renderedAdHocCondition)
                         .replace(/(?:\r\n|\r|\n)/g, ' ');
                     return this.target.rawQuery;
+                };
+                SqlQuery.applyMacros = function (query, ast) {
+                    if (SqlQuery.contain(ast, '$columns')) {
+                        return SqlQuery.columns(query);
+                    }
+                    if (SqlQuery.contain(ast, '$rateColumns')) {
+                        return SqlQuery.rateColumns(query);
+                    }
+                    if (SqlQuery.contain(ast, '$rate')) {
+                        return SqlQuery.rate(query, ast);
+                    }
+                };
+                SqlQuery.contain = function (obj, field) {
+                    return obj.hasOwnProperty(field) && !lodash_1.default.isEmpty(obj[field]);
                 };
                 // $columns(query)
                 SqlQuery.columns = function (query) {
@@ -233,19 +239,6 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
                     }
                     return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
-                };
-                SqlQuery.getTimeFilter = function (isToNow, dateTimeType) {
-                    var convertFn = function (t) {
-                        if (dateTimeType === 'DATETIME') {
-                            return 'toDateTime(' + t + ')';
-                        }
-                        return t;
-                    };
-                    if (isToNow) {
-                        return '$dateCol >= toDate($from) AND $dateTimeCol >= ' + convertFn('$from');
-                    }
-                    return '$dateCol BETWEEN toDate($from) AND toDate($to) ' +
-                        'AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
                 };
                 SqlQuery.getDateFilter = function (isToNow) {
                     if (isToNow) {

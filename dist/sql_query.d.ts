@@ -6,6 +6,8 @@ export default class SqlQuery {
     /** @ngInject */
     constructor(target: any, templateSrv?: any, options?: any);
     replace(options: any, adhocFilters: any): any;
+    static applyMacros(query: string, ast: any): string;
+    static contain(obj: any, field: string): boolean;
     static columns(query: string): string;
     static _columns(key: string, value: string, fromQuery: string): string;
     static rateColumns(query: string): string;
@@ -14,7 +16,6 @@ export default class SqlQuery {
     static _rate(args: any, fromQuery: string): string;
     static _applyTimeFilter(query: string): string;
     static getTimeSeries(dateTimeType: string): string;
-    static getTimeFilter(isToNow: boolean, dateTimeType: string): string;
     static getDateFilter(isToNow: boolean): string;
     static getDateTimeFilter(isToNow: boolean, dateTimeType: string): string;
     static convertTimestamp(date: any): number;

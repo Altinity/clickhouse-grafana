@@ -21,7 +21,7 @@ export default class SqlQuery {
 
     replace(options, adhocFilters) {
         var self = this,
-            query = this.target.query,
+            query = this.target.query.trim(),
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType
                 ? this.target.dateTimeType
@@ -75,13 +75,8 @@ export default class SqlQuery {
                 });
                 query = scanner.Print(topQuery);
             }
-            if (ast.hasOwnProperty('$columns') && !_.isEmpty(ast['$columns'])) {
-                query = SqlQuery.columns(query);
-            } else if (ast.hasOwnProperty('$rateColumns') && !_.isEmpty(ast['$rateColumns'])) {
-                query = SqlQuery.rateColumns(query);
-            } else if (ast.hasOwnProperty('$rate') && !_.isEmpty(ast['$rate'])) {
-                query = SqlQuery.rate(query, ast);
-            }
+
+            query = SqlQuery.applyMacros(query, ast)
         } catch (err) {
             console.log('AST parser error: ', err)
         }
@@ -117,6 +112,23 @@ export default class SqlQuery {
             .replace(/\$adhoc/g, renderedAdHocCondition)
             .replace(/(?:\r\n|\r|\n)/g, ' ');
         return this.target.rawQuery;
+    }
+
+
+    static applyMacros(query: string, ast: any): string {
+        if (SqlQuery.contain(ast, '$columns')) {
+            return  SqlQuery.columns(query);
+        }
+        if (SqlQuery.contain(ast, '$rateColumns')) {
+            return SqlQuery.rateColumns(query);
+        }
+        if (SqlQuery.contain(ast, '$rate')) {
+            return SqlQuery.rate(query, ast);
+        }
+    }
+
+    static contain(obj: any, field: string): boolean {
+        return obj.hasOwnProperty(field) && !_.isEmpty(obj[field])
     }
 
     // $columns(query)
@@ -262,21 +274,6 @@ export default class SqlQuery {
             return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
         }
         return '(intDiv($dateTimeCol, $interval) * $interval) * 1000'
-    }
-
-    static getTimeFilter(isToNow: boolean, dateTimeType: string): string {
-        var convertFn = function (t: string): string {
-            if (dateTimeType === 'DATETIME') {
-                return 'toDateTime(' + t + ')';
-            }
-            return t
-        };
-
-        if (isToNow) {
-            return '$dateCol >= toDate($from) AND $dateTimeCol >= ' + convertFn('$from');
-        }
-        return '$dateCol BETWEEN toDate($from) AND toDate($to) ' +
-            'AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
     }
 
     static getDateFilter(isToNow: boolean) {

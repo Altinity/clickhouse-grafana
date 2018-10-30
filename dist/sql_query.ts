@@ -117,10 +117,10 @@ export default class SqlQuery {
 
     static applyMacros(query: string, ast: any): string {
         if (SqlQuery.contain(ast, '$columns')) {
-            return  SqlQuery.columns(query);
+            return SqlQuery.columns(query, ast);
         }
         if (SqlQuery.contain(ast, '$rateColumns')) {
-            return SqlQuery.rateColumns(query);
+            return SqlQuery.rateColumns(query, ast);
         }
         if (SqlQuery.contain(ast, '$rate')) {
             return SqlQuery.rate(query, ast);
@@ -131,25 +131,26 @@ export default class SqlQuery {
         return obj.hasOwnProperty(field) && !_.isEmpty(obj[field])
     }
 
-    // $columns(query)
-    static columns(query: string): string {
-        if (query.slice(0, 9) === '$columns(') {
-            var fromIndex = SqlQuery._fromIndex(query);
-            var args = query.slice(9, fromIndex)
-                    .trim() // rm spaces
-                    .slice(0, -1), // cut ending brace
-                scanner = new Scanner(args),
-                ast = scanner.toAST();
-            var root = ast['root'];
-
-            if (root.length !== 2) {
-                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + root.join(', ')};
-            }
-
-            query = SqlQuery._columns(root[0], root[1], query.slice(fromIndex));
+    static _parseMacros(macros: string, query: string): string {
+        let mLen = macros.length;
+        if (query.slice(0, mLen + 1) !== macros + '(') {
+            return ""
         }
+        let fromIndex = SqlQuery._fromIndex(query);
+        return query.slice(fromIndex);
+    }
 
-        return query;
+    // $columns(query)
+    static columns(query: string, ast: any): string {
+        let q = SqlQuery._parseMacros('$columns', query);
+        if (q.length < 1) {
+            return query
+        }
+        let args = ast['$columns'];
+        if (args.length !== 2) {
+            throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + ast.$columns.join(', ')};
+        }
+        return SqlQuery._columns(args[0], args[1], q);
     }
 
     static _columns(key: string, value: string, fromQuery: string): string {
@@ -185,43 +186,22 @@ export default class SqlQuery {
     }
 
     // $rateColumns(query)
-    static rateColumns(query: string): string {
-        if (query.slice(0, 13) === '$rateColumns(') {
-            var fromIndex = SqlQuery._fromIndex(query);
-            var args = query.slice(13, fromIndex)
-                    .trim() // rm spaces
-                    .slice(0, -1), // cut ending brace
-                scanner = new Scanner(args),
-                ast = scanner.toAST();
-            var root = ast['root'];
-
-            if (root.length !== 2) {
-                throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + root.join(', ')};
-            }
-
-            query = SqlQuery._columns(root[0], root[1], query.slice(fromIndex));
-            query = 'SELECT t' +
-                ', arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
-                ' FROM (' +
-                query +
-                ')';
+    static rateColumns(query: string, ast: any): string {
+        let q = SqlQuery._parseMacros('$rateColumns', query);
+        if (q.length < 1) {
+            return query
+        }
+        let args = ast['$rateColumns'];
+        if (args.length !== 2) {
+            throw {message: 'Amount of arguments must equal 2 for $rateColumns func. Parsed arguments are: ' + args.join(', ')};
         }
 
-        return query;
-    }
-
-    // $rate(query)
-    static rate(query: string, ast: any): string {
-        if (query.slice(0, 6) === '$rate(') {
-            var fromIndex = SqlQuery._fromIndex(query);
-            if (ast.$rate.length < 1) {
-                throw {message: 'Amount of arguments must be > 0 for $rate func. Parsed arguments are: ' + ast.$rate.join(', ')};
-            }
-
-            query = SqlQuery._rate(ast['$rate'], query.slice(fromIndex));
-        }
-
-        return query;
+        query = SqlQuery._columns(args[0], args[1], q);
+        return 'SELECT t' +
+            ', arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
+            ' FROM (' +
+            query +
+            ')';
     }
 
     static _fromIndex(query: string): number {
@@ -230,6 +210,20 @@ export default class SqlQuery {
             throw {message: 'Could not find FROM-statement at: ' + query};
         }
         return fromIndex;
+    }
+
+    // $rate(query)
+    static rate(query: string, ast: any): string {
+        let q = SqlQuery._parseMacros('$rate', query);
+        if (q.length < 1) {
+            return query
+        }
+        let args = ast['$rate'];
+        if (args.length < 1) {
+            throw {message: 'Amount of arguments must be > 0 for $rate func. Parsed arguments are:  ' + args.join(', ')};
+        }
+
+        return SqlQuery._rate(args, q);
     }
 
     static _rate(args, fromQuery: string): string {

@@ -8,11 +8,12 @@ export default class SqlQuery {
     replace(options: any, adhocFilters: any): any;
     static applyMacros(query: string, ast: any): string;
     static contain(obj: any, field: string): boolean;
-    static columns(query: string): string;
+    static _parseMacros(macros: string, query: string): string;
+    static columns(query: string, ast: any): string;
     static _columns(key: string, value: string, fromQuery: string): string;
-    static rateColumns(query: string): string;
-    static rate(query: string, ast: any): string;
+    static rateColumns(query: string, ast: any): string;
     static _fromIndex(query: string): number;
+    static rate(query: string, ast: any): string;
     static _rate(args: any, fromQuery: string): string;
     static _applyTimeFilter(query: string): string;
     static getTimeSeries(dateTimeType: string): string;

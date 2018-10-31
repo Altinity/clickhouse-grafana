@@ -120,6 +120,9 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     if (SqlQuery.contain(ast, '$perSecond')) {
                         return SqlQuery.perSecond(query, ast);
                     }
+                    if (SqlQuery.contain(ast, '$perSecondColumns')) {
+                        return SqlQuery.perSecondColumns(query, ast);
+                    }
                 };
                 SqlQuery.contain = function (obj, field) {
                     return obj.hasOwnProperty(field) && !lodash_1.default.isEmpty(obj[field]);
@@ -132,7 +135,6 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     var fromIndex = SqlQuery._fromIndex(query);
                     return query.slice(fromIndex);
                 };
-                // $columns(query)
                 SqlQuery.columns = function (query, ast) {
                     var q = SqlQuery._parseMacros('$columns', query);
                     if (q.length < 1) {
@@ -169,7 +171,6 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         ' GROUP BY t' +
                         ' ORDER BY t';
                 };
-                // $rateColumns(query)
                 SqlQuery.rateColumns = function (query, ast) {
                     var q = SqlQuery._parseMacros('$rateColumns', query);
                     if (q.length < 1) {
@@ -193,7 +194,6 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     }
                     return fromIndex;
                 };
-                // $rate(query)
                 SqlQuery.rate = function (query, ast) {
                     var q = SqlQuery._parseMacros('$rate', query);
                     if (q.length < 1) {
@@ -229,6 +229,42 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         ' ORDER BY t' +
                         ')';
                 };
+                SqlQuery.perSecondColumns = function (query, ast) {
+                    var q = SqlQuery._parseMacros('$perSecondColumns', query);
+                    if (q.length < 1) {
+                        return query;
+                    }
+                    var args = ast['$perSecondColumns'];
+                    if (args.length !== 2) {
+                        throw { message: 'Amount of arguments must equal 2 for $perSecondColumns func. Parsed arguments are: ' + args.join(', ') };
+                    }
+                    var key = args[0], value = 'max(' + args[1].trim() + ') AS max_0', havingIndex = q.toLowerCase().indexOf('having'), having = "";
+                    if (havingIndex !== -1) {
+                        having = ' ' + q.slice(havingIndex, q.length);
+                        q = q.slice(0, havingIndex - 1);
+                    }
+                    q = SqlQuery._applyTimeFilter(q);
+                    return 'SELECT' +
+                        ' t,' +
+                        ' groupArray((' + key + ', max_0_Rate)) AS groupArr' +
+                        ' FROM (' +
+                        ' SELECT t,' +
+                        ' ' + key +
+                        ', if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
+                        ' FROM (' +
+                        ' SELECT $timeSeries AS t' +
+                        ', ' + key +
+                        ', ' + value + ' ' +
+                        q +
+                        ' GROUP BY t, ' + key +
+                        having +
+                        ' ORDER BY ' + key + ', t' +
+                        ')' +
+                        ')' +
+                        ' GROUP BY t' +
+                        ' ORDER BY t';
+                    return SqlQuery._perSecond(args, q);
+                };
                 // $perSecond(query)
                 SqlQuery.perSecond = function (query, ast) {
                     var q = SqlQuery._parseMacros('$perSecond', query);
@@ -240,7 +276,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         throw { message: 'Amount of arguments must be > 0 for $perSecond func. Parsed arguments are:  ' + args.join(', ') };
                     }
                     lodash_1.default.each(args, function (a, i) {
-                        args[i] = 'max(' + a + ') AS max_' + i;
+                        args[i] = 'max(' + a.trim() + ') AS max_' + i;
                     });
                     return SqlQuery._perSecond(args, q);
                 };
@@ -255,8 +291,8 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         't,' +
                         ' ' + cols.join(', ') +
                         ' FROM (' +
-                        ' SELECT $timeSeries AS t' +
-                        ', ' + args.join(', ') +
+                        ' SELECT $timeSeries AS t,' +
+                        ' ' + args.join(', ') +
                         ' ' + fromQuery +
                         ' GROUP BY t' +
                         ' ORDER BY t' +

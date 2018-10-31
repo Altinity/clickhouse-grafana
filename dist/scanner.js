@@ -114,6 +114,10 @@ System.register(['lodash'], function(exports_1) {
             result += tab + '$perSecond(';
             result += printItems(AST.$perSecond, tab, ',') + ')';
         }
+        if (isSet(AST, '$perSecondColumns')) {
+            result += tab + '$perSecondColumns(';
+            result += printItems(AST.$perSecondColumns, tab, ',') + ')';
+        }
         if (isSet(AST, '$columns')) {
             result += tab + '$columns(';
             result += printItems(AST.$columns, tab, ',') + ')';
@@ -398,7 +402,7 @@ System.register(['lodash'], function(exports_1) {
             })();
             exports_1("default", Scanner);
             wsRe = "\\s+", commentRe = "--[^\n]*|/\\*(?:[^*]|\\*[^/])*\\*/", idRe = "[a-zA-Z_][a-zA-Z_0-9]*", intRe = "\\d+", powerIntRe = "\\d+e\\d+", floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+", stringRe = "('[^']*')|(`[^`]*`)", binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|->|[-+/%*=<>\\.!]", statementRe = "\\b(select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b", joinsRe = "(any inner join|any left join|all inner join|all left join" +
-                "|global any inner join|global any left join|global all inner join|global all left join)", macroFuncRe = "(\\$rateColumns|\\$rate|\\$perSecond|\\$columns)", condRe = "\\b(or|and)\\b", inRe = "\\b(global in|global not in|not in|in)\\b", closureRe = "[\\(\\)\\[\\]]", specCharsRe = "[,?:]", macroRe = "\\$[A-Za-z0-9_$]+", skipSpaceRe = "[\\(\\.! \\[]", builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
+                "|global any inner join|global any left join|global all inner join|global all left join)", macroFuncRe = "(\\$rateColumns|\\$perSecondColumns|\\$rate|\\$perSecond|\\$columns)", condRe = "\\b(or|and)\\b", inRe = "\\b(global in|global not in|not in|in)\\b", closureRe = "[\\(\\)\\[\\]]", specCharsRe = "[,?:]", macroRe = "\\$[A-Za-z0-9_$]+", skipSpaceRe = "[\\(\\.! \\[]", builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
                 "coalesce|ifnull|isnull|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
                 "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +
                 "toRelativeYearNum|toTime|toStartOfHour|toStartOfFiveMinute|toStartOfMinute|toStartOfYear|" +

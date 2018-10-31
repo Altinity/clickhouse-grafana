@@ -247,7 +247,7 @@ let wsRe = "\\s+",
     statementRe = "\\b(select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b",
     joinsRe = "(any inner join|any left join|all inner join|all left join" +
         "|global any inner join|global any left join|global all inner join|global all left join)",
-    macroFuncRe = "(\\$rateColumns|\\$rate|\\$perSecond|\\$columns)",
+    macroFuncRe = "(\\$rateColumns|\\$perSecondColumns|\\$rate|\\$perSecond|\\$columns)",
     condRe = "\\b(or|and)\\b",
     inRe = "\\b(global in|global not in|not in|in)\\b",
     closureRe = "[\\(\\)\\[\\]]",
@@ -452,6 +452,11 @@ function print(AST, tab = '') {
     if (isSet(AST, '$perSecond')) {
         result += tab + '$perSecond(';
         result += printItems(AST.$perSecond, tab, ',') + ')';
+    }
+
+    if (isSet(AST, '$perSecondColumns')) {
+        result += tab + '$perSecondColumns(';
+        result += printItems(AST.$perSecondColumns, tab, ',') + ')';
     }
 
     if (isSet(AST, '$columns')) {

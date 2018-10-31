@@ -159,6 +159,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "$timeSeries",
         "$rate",
         "$perSecond",
+        "$perSecondColumns",
         "$columns",
         "$rateColumns",
         "$unescape",
@@ -2111,6 +2112,13 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                     "Example:\n $perSecond(total_requests) FROM requests"
             },
             {
+                "name": "$perSecondColumns",
+                "def": "$perSecondColumns(key, value)",
+                "docText": "A combination of $perSecond and $columns" +
+                    "\n" +
+                    "Example:\n $perSecondColumns(type, total) FROM requests"
+            },
+            {
                 "name": "$columns",
                 "def": "$columns(key, value)",
                 "docText": "Query values as array of [key, value], where key will be used as label. Can be used to display multiple lines at graph" +
@@ -2120,7 +2128,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
             {
                 "name": "$rateColumns",
                 "def": "$rateColumns(key, value)",
-                "docText": "Is a combination of `$columns` and `$rate` ." +
+                "docText": "A combination of `$columns` and `$rate` ." +
                     "\n" +
                     "Example:\n $rateColumns(OS, count(*) c) FROM requests"
             },

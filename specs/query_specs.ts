@@ -127,7 +127,7 @@ describe("macros builder:", () => {
 
     _.each(testCases, (tc) => {
         if (tc.got !== tc.expected) {
-            console.log(tc.got)
+            console.log(tc.got);
             console.log(tc.expected)
         }
         describe(tc.name, () => {

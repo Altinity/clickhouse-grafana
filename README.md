@@ -207,6 +207,78 @@ FROM
 
 ```
 
+#### $perSecond(cols...) - converts query results as "change rate per interval" for Counter-like(growing only) metrics
+
+Example usage:
+```
+$perSecond(total_requests) FROM requests
+```
+
+Query will be transformed into:
+```
+SELECT
+    t,
+    if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t / 1000)) AS max_0_Rate
+FROM
+(
+    SELECT
+        (intDiv(toUInt32(Time), 60) * 60) * 1000 AS t,
+        max(total_requests) AS max_0
+    FROM requests
+    WHERE ((Date >= toDate(1535711819)) AND (Date <= toDate(1535714715)))
+    AND ((Time >= toDateTime(1535711819)) AND (Time <= toDateTime(1535714715)))
+    AND (Type IN ('udp', 'tcp'))
+    GROUP BY t
+    ORDER BY t ASC
+)
+```
+// see [issue 78](https://github.com/Vertamedia/clickhouse-grafana/issues/78) for the background
+
+---
+
+#### $perSecondColumns(key, value) - is a combination of $columns and $perSecond for Counter-like metrics
+
+Example usage:
+```
+$perSecondColumns(type, total) FROM requests WHERE Type in ('udp','tcp')
+```
+
+Query will be transformed into:
+```
+SELECT
+    t,
+    groupArray((type, max_0_Rate)) AS groupArr
+FROM
+(
+    SELECT
+        t,
+        type,
+        if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t / 1000)) AS max_0_Rate
+    FROM
+    (
+        SELECT
+            (intDiv(toUInt32(Time), 60) * 60) * 1000 AS t,
+            type,
+            max(total) AS max_0
+        FROM requests
+        WHERE ((Date >= toDate(1535711819)) AND (Date <= toDate(1535714715)))
+        AND ((Time >= toDateTime(1535711819)) AND (Time <= toDateTime(1535714715)))
+        AND (Type IN ('udp', 'tcp'))
+        GROUP BY
+            t,
+            type
+        ORDER BY
+            type ASC,
+            t ASC
+    )
+)
+GROUP BY t
+ORDER BY t ASC
+```
+// see [issue 80](https://github.com/Vertamedia/clickhouse-grafana/issues/80) for the background
+
+---
+
 ### Working with panels
 
 #### Piechart (https://grafana.com/plugins/grafana-piechart-panel)

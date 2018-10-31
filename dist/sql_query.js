@@ -26,7 +26,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     this.options = options;
                 }
                 SqlQuery.prototype.replace = function (options, adhocFilters) {
-                    var self = this, query = this.target.query.trim(), scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType
+                    var self = this, query = this.templateSrv.replace(this.target.query.trim(), options.scopedVars, SqlQuery.interpolateQueryExpr), scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType
                         ? this.target.dateTimeType
                         : 'DATETIME', i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), round = this.target.round === "$step"
                         ? interval
@@ -42,22 +42,32 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                             if (!ast.hasOwnProperty('where')) {
                                 ast.where = [];
                             }
+                            var targetTable, targetDatabase = '';
+                            var parts = ast.from[0].split('.');
+                            if (parts.length == 1) {
+                                targetTable = parts[0];
+                                targetDatabase = self.target.database;
+                            }
+                            else if (parts.length == 2) {
+                                targetDatabase = parts[0];
+                                targetTable = parts[1];
+                            }
                             adhocFilters.forEach(function (af) {
                                 var parts = af.key.split('.');
                                 /* Wildcard table, substitute current target table */
                                 if (parts.length == 1) {
-                                    parts.unshift(self.target.table);
+                                    parts.unshift(targetTable);
                                 }
                                 /* Wildcard database, substitute current target database */
                                 if (parts.length == 2) {
-                                    parts.unshift(self.target.database);
+                                    parts.unshift(targetDatabase);
                                 }
                                 /* Expect fully qualified column name at this point */
                                 if (parts.length < 3) {
                                     console.log("adhoc filters: filter " + af.key + "` has wrong format");
                                     return;
                                 }
-                                if (self.target.database != parts[0] || self.target.table != parts[1]) {
+                                if (targetDatabase != parts[0] || targetTable != parts[1]) {
                                     return;
                                 }
                                 var operator = SqlQuery.clickhouseOperator(af.operator);
@@ -88,7 +98,6 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         to += (round * 2) - 1;
                         from -= (round * 2) - 1;
                     }
-                    query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     query = SqlQuery.unescape(query);
                     var timeFilter = SqlQuery.getDateTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType);
                     if (typeof this.target.dateColDataType == "string" && this.target.dateColDataType.length > 0) {

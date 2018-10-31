@@ -53,7 +53,7 @@ Query setup interface:
 
 First row `FROM` contains two options: database and table. Table values depends on selected database.
 Second row contains selectors for time filtering:
-* Column:Date ([EventDate](https://clickhouse.yandex/reference_en.html#Date)) - is mandatory for [MergeTree](https://clickhouse.yandex/reference_en.html#MergeTree) tables
+* Column:Date ([EventDate](https://clickhouse.yandex/reference_en.html#Date))
 * Column:DateTime ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime)) or Column:TimeStamp (UInt32).
 
 > Plugin will try to detect date columns automatically

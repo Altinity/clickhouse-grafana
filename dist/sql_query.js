@@ -26,11 +26,11 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     this.options = options;
                 }
                 SqlQuery.prototype.replace = function (options, adhocFilters) {
-                    var self = this, query = this.templateSrv.replace(this.target.query, options.scopedVars, SqlQuery.interpolateQueryExpr), scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType
+                    var self = this, query = this.target.query.trim(), scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType
                         ? this.target.dateTimeType
                         : 'DATETIME', i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), round = this.target.round === "$step"
                         ? interval
-                        : SqlQuery.convertInterval(this.target.round, 1), from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)), timeSeries = SqlQuery.getTimeSeries(dateTimeType), timeFilter = SqlQuery.getTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType), adhocCondition = [];
+                        : SqlQuery.convertInterval(this.target.round, 1), from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)), adhocCondition = [];
                     try {
                         var ast = scanner.toAST();
                         var topQuery = ast;
@@ -42,32 +42,22 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                             if (!ast.hasOwnProperty('where')) {
                                 ast.where = [];
                             }
-                            var targetTable, targetDatabase = '';
-                            var parts = ast.from[0].split('.');
-                            if (parts.length == 1) {
-                                targetTable = parts[0];
-                                targetDatabase = self.target.database;
-                            }
-                            else if (parts.length == 2) {
-                                targetDatabase = parts[0];
-                                targetTable = parts[1];
-                            }
                             adhocFilters.forEach(function (af) {
                                 var parts = af.key.split('.');
                                 /* Wildcard table, substitute current target table */
                                 if (parts.length == 1) {
-                                    parts.unshift(targetTable);
+                                    parts.unshift(self.target.table);
                                 }
                                 /* Wildcard database, substitute current target database */
                                 if (parts.length == 2) {
-                                    parts.unshift(targetDatabase);
+                                    parts.unshift(self.target.database);
                                 }
                                 /* Expect fully qualified column name at this point */
                                 if (parts.length < 3) {
                                     console.log("adhoc filters: filter " + af.key + "` has wrong format");
                                     return;
                                 }
-                                if (targetDatabase != parts[0] || targetTable != parts[1]) {
+                                if (self.target.database != parts[0] || self.target.table != parts[1]) {
                                     return;
                                 }
                                 var operator = SqlQuery.clickhouseOperator(af.operator);
@@ -82,15 +72,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                             });
                             query = scanner.Print(topQuery);
                         }
-                        if (ast.hasOwnProperty('$columns') && !lodash_1.default.isEmpty(ast['$columns'])) {
-                            query = SqlQuery.columns(query);
-                        }
-                        else if (ast.hasOwnProperty('$rateColumns') && !lodash_1.default.isEmpty(ast['$rateColumns'])) {
-                            query = SqlQuery.rateColumns(query);
-                        }
-                        else if (ast.hasOwnProperty('$rate') && !lodash_1.default.isEmpty(ast['$rate'])) {
-                            query = SqlQuery.rate(query, ast);
-                        }
+                        query = SqlQuery.applyMacros(query, ast);
                     }
                     catch (err) {
                         console.log('AST parser error: ', err);
@@ -106,9 +88,14 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         to += (round * 2) - 1;
                         from -= (round * 2) - 1;
                     }
+                    query = this.templateSrv.replace(query, options.scopedVars, SqlQuery.interpolateQueryExpr);
                     query = SqlQuery.unescape(query);
+                    var timeFilter = SqlQuery.getDateTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType);
+                    if (typeof this.target.dateColDataType == "string" && this.target.dateColDataType.length > 0) {
+                        timeFilter = SqlQuery.getDateFilter(this.options.rangeRaw.to === 'now') + ' AND ' + timeFilter;
+                    }
                     this.target.rawQuery = query
-                        .replace(/\$timeSeries/g, timeSeries)
+                        .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
                         .replace(/\$timeFilter/g, timeFilter)
                         .replace(/\$table/g, this.target.database + '.' + this.target.table)
                         .replace(/\$from/g, from)
@@ -120,21 +107,44 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         .replace(/(?:\r\n|\r|\n)/g, ' ');
                     return this.target.rawQuery;
                 };
-                // $columns(query)
-                SqlQuery.columns = function (query) {
-                    if (query.slice(0, 9) === '$columns(') {
-                        var fromIndex = SqlQuery._fromIndex(query);
-                        var args = query.slice(9, fromIndex)
-                            .trim() // rm spaces
-                            .slice(0, -1), // cut ending brace
-                        scanner = new scanner_1.default(args), ast = scanner.toAST();
-                        var root = ast['root'];
-                        if (root.length !== 2) {
-                            throw { message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + root.join(', ') };
-                        }
-                        query = SqlQuery._columns(root[0], root[1], query.slice(fromIndex));
+                SqlQuery.applyMacros = function (query, ast) {
+                    if (SqlQuery.contain(ast, '$columns')) {
+                        return SqlQuery.columns(query, ast);
                     }
-                    return query;
+                    if (SqlQuery.contain(ast, '$rateColumns')) {
+                        return SqlQuery.rateColumns(query, ast);
+                    }
+                    if (SqlQuery.contain(ast, '$rate')) {
+                        return SqlQuery.rate(query, ast);
+                    }
+                    if (SqlQuery.contain(ast, '$perSecond')) {
+                        return SqlQuery.perSecond(query, ast);
+                    }
+                    if (SqlQuery.contain(ast, '$perSecondColumns')) {
+                        return SqlQuery.perSecondColumns(query, ast);
+                    }
+                };
+                SqlQuery.contain = function (obj, field) {
+                    return obj.hasOwnProperty(field) && !lodash_1.default.isEmpty(obj[field]);
+                };
+                SqlQuery._parseMacros = function (macros, query) {
+                    var mLen = macros.length;
+                    if (query.slice(0, mLen + 1) !== macros + '(') {
+                        return "";
+                    }
+                    var fromIndex = SqlQuery._fromIndex(query);
+                    return query.slice(fromIndex);
+                };
+                SqlQuery.columns = function (query, ast) {
+                    var q = SqlQuery._parseMacros('$columns', query);
+                    if (q.length < 1) {
+                        return query;
+                    }
+                    var args = ast['$columns'];
+                    if (args.length !== 2) {
+                        throw { message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + ast.$columns.join(', ') };
+                    }
+                    return SqlQuery._columns(args[0], args[1], q);
                 };
                 SqlQuery._columns = function (key, value, fromQuery) {
                     if (key.slice(-1) === ')' || value.slice(-1) === ')') {
@@ -142,56 +152,40 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     }
                     var keyAlias = key.trim().split(' ').pop(), valueAlias = value.trim().split(' ').pop(), havingIndex = fromQuery.toLowerCase().indexOf('having'), having = "";
                     if (havingIndex !== -1) {
-                        having = fromQuery.slice(havingIndex, fromQuery.length);
-                        fromQuery = fromQuery.slice(0, havingIndex);
+                        having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
+                        fromQuery = fromQuery.slice(0, havingIndex - 1);
                     }
                     fromQuery = SqlQuery._applyTimeFilter(fromQuery);
-                    return 'SELECT ' +
-                        't' +
-                        ', groupArray((' + keyAlias + ', ' + valueAlias + ')) as groupArr' +
+                    return 'SELECT' +
+                        ' t,' +
+                        ' groupArray((' + keyAlias + ', ' + valueAlias + ')) AS groupArr' +
                         ' FROM (' +
-                        ' SELECT $timeSeries as t' +
+                        ' SELECT $timeSeries AS t' +
                         ', ' + key +
                         ', ' + value + ' ' +
                         fromQuery +
                         ' GROUP BY t, ' + keyAlias +
-                        ' ' + having +
+                        having +
                         ' ORDER BY t, ' + keyAlias +
-                        ') ' +
-                        'GROUP BY t ' +
-                        'ORDER BY t';
+                        ')' +
+                        ' GROUP BY t' +
+                        ' ORDER BY t';
                 };
-                // $rateColumns(query)
-                SqlQuery.rateColumns = function (query) {
-                    if (query.slice(0, 13) === '$rateColumns(') {
-                        var fromIndex = SqlQuery._fromIndex(query);
-                        var args = query.slice(13, fromIndex)
-                            .trim() // rm spaces
-                            .slice(0, -1), // cut ending brace
-                        scanner = new scanner_1.default(args), ast = scanner.toAST();
-                        var root = ast['root'];
-                        if (root.length !== 2) {
-                            throw { message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + root.join(', ') };
-                        }
-                        query = SqlQuery._columns(root[0], root[1], query.slice(fromIndex));
-                        query = 'SELECT t' +
-                            ', arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
-                            ' FROM (' +
-                            query +
-                            ')';
+                SqlQuery.rateColumns = function (query, ast) {
+                    var q = SqlQuery._parseMacros('$rateColumns', query);
+                    if (q.length < 1) {
+                        return query;
                     }
-                    return query;
-                };
-                // $rate(query)
-                SqlQuery.rate = function (query, ast) {
-                    if (query.slice(0, 6) === '$rate(') {
-                        var fromIndex = SqlQuery._fromIndex(query);
-                        if (ast.$rate.length < 1) {
-                            throw { message: 'Amount of arguments must be > 0 for $rate func. Parsed arguments are: ' + ast.$rate.join(', ') };
-                        }
-                        query = SqlQuery._rate(ast['$rate'], query.slice(fromIndex));
+                    var args = ast['$rateColumns'];
+                    if (args.length !== 2) {
+                        throw { message: 'Amount of arguments must equal 2 for $rateColumns func. Parsed arguments are: ' + args.join(', ') };
                     }
-                    return query;
+                    query = SqlQuery._columns(args[0], args[1], q);
+                    return 'SELECT t' +
+                        ', arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
+                        ' FROM (' +
+                        query +
+                        ')';
                 };
                 SqlQuery._fromIndex = function (query) {
                     var fromIndex = query.toLowerCase().indexOf('from');
@@ -199,6 +193,17 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         throw { message: 'Could not find FROM-statement at: ' + query };
                     }
                     return fromIndex;
+                };
+                SqlQuery.rate = function (query, ast) {
+                    var q = SqlQuery._parseMacros('$rate', query);
+                    if (q.length < 1) {
+                        return query;
+                    }
+                    var args = ast['$rate'];
+                    if (args.length < 1) {
+                        throw { message: 'Amount of arguments must be > 0 for $rate func. Parsed arguments are:  ' + args.join(', ') };
+                    }
+                    return SqlQuery._rate(args, q);
                 };
                 SqlQuery._rate = function (args, fromQuery) {
                     var aliases = [];
@@ -208,17 +213,86 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         }
                         aliases.push(arg.trim().split(' ').pop());
                     });
-                    var rateColums = [];
+                    var cols = [];
                     lodash_1.default.each(aliases, function (a) {
-                        rateColums.push(a + '/runningDifference(t/1000) ' + a + 'Rate');
+                        cols.push(a + '/runningDifference(t/1000) ' + a + 'Rate');
                     });
                     fromQuery = SqlQuery._applyTimeFilter(fromQuery);
-                    return 'SELECT ' + '' +
-                        't' +
-                        ', ' + rateColums.join(',') +
+                    return 'SELECT ' +
+                        't,' +
+                        ' ' + cols.join(', ') +
                         ' FROM (' +
-                        ' SELECT $timeSeries as t' +
-                        ', ' + args.join(',') +
+                        ' SELECT $timeSeries AS t' +
+                        ', ' + args.join(', ') +
+                        ' ' + fromQuery +
+                        ' GROUP BY t' +
+                        ' ORDER BY t' +
+                        ')';
+                };
+                SqlQuery.perSecondColumns = function (query, ast) {
+                    var q = SqlQuery._parseMacros('$perSecondColumns', query);
+                    if (q.length < 1) {
+                        return query;
+                    }
+                    var args = ast['$perSecondColumns'];
+                    if (args.length !== 2) {
+                        throw { message: 'Amount of arguments must equal 2 for $perSecondColumns func. Parsed arguments are: ' + args.join(', ') };
+                    }
+                    var key = args[0], value = 'max(' + args[1].trim() + ') AS max_0', havingIndex = q.toLowerCase().indexOf('having'), having = "";
+                    if (havingIndex !== -1) {
+                        having = ' ' + q.slice(havingIndex, q.length);
+                        q = q.slice(0, havingIndex - 1);
+                    }
+                    q = SqlQuery._applyTimeFilter(q);
+                    return 'SELECT' +
+                        ' t,' +
+                        ' groupArray((' + key + ', max_0_Rate)) AS groupArr' +
+                        ' FROM (' +
+                        ' SELECT t,' +
+                        ' ' + key +
+                        ', if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
+                        ' FROM (' +
+                        ' SELECT $timeSeries AS t' +
+                        ', ' + key +
+                        ', ' + value + ' ' +
+                        q +
+                        ' GROUP BY t, ' + key +
+                        having +
+                        ' ORDER BY ' + key + ', t' +
+                        ')' +
+                        ')' +
+                        ' GROUP BY t' +
+                        ' ORDER BY t';
+                    return SqlQuery._perSecond(args, q);
+                };
+                // $perSecond(query)
+                SqlQuery.perSecond = function (query, ast) {
+                    var q = SqlQuery._parseMacros('$perSecond', query);
+                    if (q.length < 1) {
+                        return query;
+                    }
+                    var args = ast['$perSecond'];
+                    if (args.length < 1) {
+                        throw { message: 'Amount of arguments must be > 0 for $perSecond func. Parsed arguments are:  ' + args.join(', ') };
+                    }
+                    lodash_1.default.each(args, function (a, i) {
+                        args[i] = 'max(' + a.trim() + ') AS max_' + i;
+                    });
+                    return SqlQuery._perSecond(args, q);
+                };
+                SqlQuery._perSecond = function (args, fromQuery) {
+                    var cols = [];
+                    lodash_1.default.each(args, function (a, i) {
+                        cols.push('if(runningDifference(max_' + i + ') < 0, nan, ' +
+                            'runningDifference(max_' + i + ') / runningDifference(t/1000)) AS max_' + i + '_Rate');
+                    });
+                    fromQuery = SqlQuery._applyTimeFilter(fromQuery);
+                    return 'SELECT ' +
+                        't,' +
+                        ' ' + cols.join(', ') +
+                        ' FROM (' +
+                        ' SELECT $timeSeries AS t,' +
+                        ' ' + args.join(', ') +
                         ' ' + fromQuery +
                         ' GROUP BY t' +
                         ' ORDER BY t' +
@@ -226,7 +300,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                 };
                 SqlQuery._applyTimeFilter = function (query) {
                     if (query.toLowerCase().indexOf('where') !== -1) {
-                        query = query.replace(/where/i, 'WHERE $timeFilter AND ');
+                        query = query.replace(/where/i, 'WHERE $timeFilter AND');
                     }
                     else {
                         query += ' WHERE $timeFilter';
@@ -239,7 +313,13 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     }
                     return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
                 };
-                SqlQuery.getTimeFilter = function (isToNow, dateTimeType) {
+                SqlQuery.getDateFilter = function (isToNow) {
+                    if (isToNow) {
+                        return '$dateCol >= toDate($from)';
+                    }
+                    return '$dateCol BETWEEN toDate($from) AND toDate($to)';
+                };
+                SqlQuery.getDateTimeFilter = function (isToNow, dateTimeType) {
                     var convertFn = function (t) {
                         if (dateTimeType === 'DATETIME') {
                             return 'toDateTime(' + t + ')';
@@ -247,9 +327,9 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         return t;
                     };
                     if (isToNow) {
-                        return '$dateCol >= toDate($from) AND $dateTimeCol >= ' + convertFn('$from');
+                        return '$dateTimeCol >= ' + convertFn('$from');
                     }
-                    return '$dateCol BETWEEN toDate($from) AND toDate($to) AND $dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
+                    return '$dateTimeCol BETWEEN ' + convertFn('$from') + ' AND ' + convertFn('$to');
                 };
                 // date is a moment object
                 SqlQuery.convertTimestamp = function (date) {

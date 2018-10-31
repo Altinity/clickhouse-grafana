@@ -18,14 +18,14 @@ export default class SqlSeries {
         this.keys = options.keys || [];
     }
 
-    toTable():any {
+    toTable(): any {
         let self = this, data = [];
         if (this.series.length === 0) {
             return data;
         }
 
         let columns = [];
-        _.each(self.meta, function(col) {
+        _.each(self.meta, function (col) {
             columns.push({"text": col.name, "type": SqlSeries._toJSType(col.type)})
         });
 
@@ -47,7 +47,7 @@ export default class SqlSeries {
         return data
     }
 
-    toTimeSeries():any {
+    toTimeSeries(): any {
         let self = this, timeSeries = [];
         if (self.series.length === 0) {
             return timeSeries;
@@ -58,7 +58,7 @@ export default class SqlSeries {
         let timeCol = self.meta[0];
         let lastTimeStamp = self.series[0][timeCol.name];
         let keyColumns = self.keys.filter(name => name != timeCol.name);
-        _.each(self.series, function(row) {
+        _.each(self.series, function (row) {
             let t = SqlSeries._formatValue(row[timeCol.name]);
             /* Build composite key (categories) from GROUP BY */
             let metricKey = null;
@@ -67,16 +67,16 @@ export default class SqlSeries {
             }
             /* Make sure all series end with a value or nil for current timestamp
              * to render discontiguous timeseries properly. */
-             if (lastTimeStamp < t) {
-                 _.each(metrics, function(datapoints, seriesName) {
-                     if (datapoints[datapoints.length - 1][1] < lastTimeStamp) {
-                         datapoints.push([null, lastTimeStamp]);
-                     }
-                 });
-                 lastTimeStamp = t;
-             }
+            if (lastTimeStamp < t) {
+                _.each(metrics, function (datapoints, seriesName) {
+                    if (datapoints[datapoints.length - 1][1] < lastTimeStamp) {
+                        datapoints.push([null, lastTimeStamp]);
+                    }
+                });
+                lastTimeStamp = t;
+            }
             /* For each metric-value pair in row, construct a datapoint */
-            _.each(row, function(val, key) {
+            _.each(row, function (val, key) {
                 /* Skip timestamp and GROUP BY keys */
                 if ((self.keys.length == 0 && timeCol.name == key) || self.keys.indexOf(key) >= 0) {
                     return;
@@ -88,7 +88,7 @@ export default class SqlSeries {
                 }
                 if (_.isArray(val)) {
                     /* Expand groupArray into multiple timeseries */
-                    _.each(val, function(arr) {
+                    _.each(val, function (arr) {
                         SqlSeries._pushDatapoint(metrics, t, arr[0], arr[1]);
                     });
                 } else {
@@ -97,7 +97,7 @@ export default class SqlSeries {
             });
         });
 
-        _.each(metrics, function(datapoints, seriesName) {
+        _.each(metrics, function (datapoints, seriesName) {
             timeSeries.push({target: seriesName, datapoints: self.extrapolate(datapoints)});
         });
 
@@ -110,13 +110,13 @@ export default class SqlSeries {
         }
 
         // Duration between first/last samples and boundary of range.
-        let durationToStart = datapoints[0][1]/1000 - this.from,
-            durationToEnd = this.to - datapoints[datapoints.length-1][1]/1000;
+        let durationToStart = datapoints[0][1] / 1000 - this.from,
+            durationToEnd = this.to - datapoints[datapoints.length - 1][1] / 1000;
 
         // If the first/last samples are close to the boundaries of the range,
         // extrapolate the result.
-        let sampledInterval = (datapoints[datapoints.length-1][1] - datapoints[0][1])/1000,
-            averageDurationBetweenSamples = sampledInterval / (datapoints.length-1);
+        let sampledInterval = (datapoints[datapoints.length - 1][1] - datapoints[0][1]) / 1000,
+            averageDurationBetweenSamples = sampledInterval / (datapoints.length - 1);
 
         let diff;
         // close to left border and value is 0 because of runningDifference function
@@ -130,12 +130,12 @@ export default class SqlSeries {
         }
 
         if (durationToEnd < averageDurationBetweenSamples) {
-            diff = ((datapoints[datapoints.length-2][0] - datapoints[datapoints.length-3][0]) / datapoints[datapoints.length-2][0]) * 0.1;
+            diff = ((datapoints[datapoints.length - 2][0] - datapoints[datapoints.length - 3][0]) / datapoints[datapoints.length - 2][0]) * 0.1;
             diff %= 1;
             if (isNaN(diff)) {
                 diff = 0;
             }
-            datapoints[datapoints.length-1][0] = datapoints[datapoints.length-2][0] * (1 + diff);
+            datapoints[datapoints.length - 1][0] = datapoints[datapoints.length - 2][0] * (1 + diff);
         }
 
         return datapoints;
@@ -155,10 +155,10 @@ export default class SqlSeries {
             }
         }
 
-        metrics[key].push([ SqlSeries._formatValue(value), timestamp ]);
+        metrics[key].push([SqlSeries._formatValue(value), timestamp]);
     }
 
-    static _toJSType(type:any):string {
+    static _toJSType(type: any): string {
         switch (type) {
             case 'UInt8':
             case 'UInt16':
@@ -174,7 +174,7 @@ export default class SqlSeries {
         }
     }
 
-    static _formatValue(value:any) {
+    static _formatValue(value: any) {
         if (value === null) {
             return value
         }

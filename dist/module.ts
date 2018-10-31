@@ -1,5 +1,5 @@
-import { ClickHouseDatasource } from './datasource';
-import { SqlQueryCtrl } from './query_ctrl';
+import {ClickHouseDatasource} from './datasource';
+import {SqlQueryCtrl} from './query_ctrl';
 
 class SqlConfigCtrl {
   static templateUrl = 'partials/config.html';

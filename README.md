@@ -227,7 +227,6 @@ FROM
     FROM requests
     WHERE ((Date >= toDate(1535711819)) AND (Date <= toDate(1535714715)))
     AND ((Time >= toDateTime(1535711819)) AND (Time <= toDateTime(1535714715)))
-    AND (Type IN ('udp', 'tcp'))
     GROUP BY t
     ORDER BY t ASC
 )

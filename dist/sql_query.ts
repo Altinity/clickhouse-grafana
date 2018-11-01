@@ -114,7 +114,7 @@ export default class SqlQuery {
 
     static target(from: string, target: any): [string, string] {
         if (from.length == 0) {
-            return ['','']
+            return ['', '']
         }
         let targetTable, targetDatabase;
         let parts = from.split('.');

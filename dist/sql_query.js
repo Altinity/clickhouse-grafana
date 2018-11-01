@@ -132,6 +132,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     if (SqlQuery.contain(ast, '$perSecondColumns')) {
                         return SqlQuery.perSecondColumns(query, ast);
                     }
+                    return query;
                 };
                 SqlQuery.contain = function (obj, field) {
                     return obj.hasOwnProperty(field) && !lodash_1.default.isEmpty(obj[field]);

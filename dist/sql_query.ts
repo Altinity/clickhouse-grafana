@@ -140,6 +140,7 @@ export default class SqlQuery {
         if (SqlQuery.contain(ast, '$perSecondColumns')) {
             return SqlQuery.perSecondColumns(query, ast);
         }
+        return query
     }
 
     static contain(obj: any, field: string): boolean {

@@ -6,6 +6,7 @@ export default class SqlQuery {
     /** @ngInject */
     constructor(target: any, templateSrv?: any, options?: any);
     replace(options: any, adhocFilters: any): any;
+    static target(from: string, target: any): [string, string];
     static applyMacros(query: string, ast: any): string;
     static contain(obj: any, field: string): boolean;
     static _parseMacros(macros: string, query: string): string;

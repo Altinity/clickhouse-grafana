@@ -26,7 +26,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     this.options = options;
                 }
                 SqlQuery.prototype.replace = function (options, adhocFilters) {
-                    var self = this, query = this.templateSrv.replace(this.target.query.trim(), options.scopedVars, SqlQuery.interpolateQueryExpr), scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType
+                    var query = this.templateSrv.replace(this.target.query.trim(), options.scopedVars, SqlQuery.interpolateQueryExpr), scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType
                         ? this.target.dateTimeType
                         : 'DATETIME', i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), round = this.target.round === "$step"
                         ? interval
@@ -42,32 +42,23 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                             if (!ast.hasOwnProperty('where')) {
                                 ast.where = [];
                             }
-                            var targetTable, targetDatabase = '';
-                            var parts = ast.from[0].split('.');
-                            if (parts.length == 1) {
-                                targetTable = parts[0];
-                                targetDatabase = self.target.database;
-                            }
-                            else if (parts.length == 2) {
-                                targetDatabase = parts[0];
-                                targetTable = parts[1];
-                            }
+                            var target = SqlQuery.target(ast.from[0], this.target);
                             adhocFilters.forEach(function (af) {
                                 var parts = af.key.split('.');
                                 /* Wildcard table, substitute current target table */
                                 if (parts.length == 1) {
-                                    parts.unshift(targetTable);
+                                    parts.unshift(target[1]);
                                 }
                                 /* Wildcard database, substitute current target database */
                                 if (parts.length == 2) {
-                                    parts.unshift(targetDatabase);
+                                    parts.unshift(target[0]);
                                 }
                                 /* Expect fully qualified column name at this point */
                                 if (parts.length < 3) {
                                     console.log("adhoc filters: filter " + af.key + "` has wrong format");
                                     return;
                                 }
-                                if (targetDatabase != parts[0] || targetTable != parts[1]) {
+                                if (target[0] != parts[0] || target[1] != parts[1]) {
                                     return;
                                 }
                                 var operator = SqlQuery.clickhouseOperator(af.operator);
@@ -115,6 +106,29 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         .replace(/\$adhoc/g, renderedAdHocCondition)
                         .replace(/(?:\r\n|\r|\n)/g, ' ');
                     return this.target.rawQuery;
+                };
+                SqlQuery.target = function (from, target) {
+                    if (from.length == 0) {
+                        return ['', ''];
+                    }
+                    var targetTable, targetDatabase;
+                    var parts = from.split('.');
+                    switch (parts.length) {
+                        case 1:
+                            targetTable = parts[0];
+                            targetDatabase = target.database;
+                            break;
+                        case 2:
+                            targetDatabase = parts[0];
+                            targetTable = parts[1];
+                            break;
+                        default:
+                            throw { message: 'FROM expression "' + from + '" cant be parsed' };
+                    }
+                    if (targetTable === '$table') {
+                        targetTable = target.table;
+                    }
+                    return [targetDatabase, targetTable];
                 };
                 SqlQuery.applyMacros = function (query, ast) {
                     if (SqlQuery.contain(ast, '$columns')) {

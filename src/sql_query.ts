@@ -20,8 +20,7 @@ export default class SqlQuery {
     }
 
     replace(options, adhocFilters) {
-        var self = this,
-            query = this.templateSrv.replace(this.target.query.trim(), options.scopedVars, SqlQuery.interpolateQueryExpr),
+        var query = this.templateSrv.replace(this.target.query.trim(), options.scopedVars, SqlQuery.interpolateQueryExpr),
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType
                 ? this.target.dateTimeType
@@ -45,32 +44,23 @@ export default class SqlQuery {
                 if (!ast.hasOwnProperty('where')) {
                     ast.where = [];
                 }
-
-                let targetTable, targetDatabase = '';
-                let parts = ast.from[0].split('.');
-                if (parts.length == 1) {
-                    targetTable = parts[0];
-                    targetDatabase = self.target.database
-                } else if (parts.length == 2) {
-                    targetDatabase = parts[0];
-                    targetTable = parts[1];
-                }
+                let target = SqlQuery.target(ast.from[0], this.target);
                 adhocFilters.forEach(function (af) {
                     let parts = af.key.split('.');
                     /* Wildcard table, substitute current target table */
                     if (parts.length == 1) {
-                        parts.unshift(targetTable);
+                        parts.unshift(target[1]);
                     }
                     /* Wildcard database, substitute current target database */
                     if (parts.length == 2) {
-                        parts.unshift(targetDatabase);
+                        parts.unshift(target[0]);
                     }
                     /* Expect fully qualified column name at this point */
                     if (parts.length < 3) {
                         console.log("adhoc filters: filter " + af.key + "` has wrong format");
                         return
                     }
-                    if (targetDatabase != parts[0] || targetTable != parts[1]) {
+                    if (target[0] != parts[0] || target[1] != parts[1]) {
                         return
                     }
                     let operator = SqlQuery.clickhouseOperator(af.operator);
@@ -85,7 +75,6 @@ export default class SqlQuery {
                 });
                 query = scanner.Print(topQuery);
             }
-
             query = SqlQuery.applyMacros(query, ast)
         } catch (err) {
             console.log('AST parser error: ', err)
@@ -123,6 +112,30 @@ export default class SqlQuery {
         return this.target.rawQuery;
     }
 
+    static target(from: string, target: any): [string, string] {
+        if (from.length == 0) {
+            return ['','']
+        }
+        let targetTable, targetDatabase;
+        let parts = from.split('.');
+        switch (parts.length) {
+            case 1:
+                targetTable = parts[0];
+                targetDatabase = target.database;
+                break;
+            case 2:
+                targetDatabase = parts[0];
+                targetTable = parts[1];
+                break;
+            default:
+                throw {message: 'FROM expression "' + from + '" cant be parsed'};
+        }
+
+        if (targetTable === '$table') {
+            targetTable = target.table;
+        }
+        return [targetDatabase, targetTable]
+    }
 
     static applyMacros(query: string, ast: any): string {
         if (SqlQuery.contain(ast, '$columns')) {

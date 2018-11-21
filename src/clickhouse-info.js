@@ -163,7 +163,14 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "$columns",
         "$rateColumns",
         "$unescape",
-        "$adhoc"
+        "$adhoc",
+        "$userName",
+        "$userEmail",
+        "$userLogin",
+        "$userId",
+        "$userOrgId",
+        "$userOrgName",
+        "$userOrgRole"
     ];
     p.KeywordsRe = function () {
         return this.re(p.Keywords)
@@ -2095,6 +2102,41 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "name": "$timeSeries",
                 "def": "$timeSeries",
                 "docText": "Replaced with special ClickHouse construction to convert results as time-series data. Use it as `SELECT $timeSeries...`. Require `Column:DateTime` or `Column:TimeStamp` to be selected"
+            },
+            {
+                "name": "$userName",
+                "def": "$userName",
+                "docText": "Replaced with the Name of the current user"
+            },
+            {
+                "name": "$userEmail",
+                "def": "$userEmail",
+                "docText": "Replaced with the Email of the current user"
+            },
+            {
+                "name": "$userLogin",
+                "def": "$userLogin",
+                "docText": "Replaced with the Login of the current user"
+            },
+            {
+                "name": "$userId",
+                "def": "$userId",
+                "docText": "Replace with the ID of the current user"
+            },
+            {
+                "name": "$userOrgId",
+                "def": "$userOrgId",
+                "docText": "Replace with the orgId of the current user"
+            },
+            {
+                "name": "$userOrgName",
+                "def": "$userOrgName",
+                "docText": "Replace with the orgName of the current user"
+            },
+            {
+                "name": "$userOrgRole",
+                "def": "$userOrgRole",
+                "docText": "Replace with the orgRole of the current user"
             },
             {
                 "name": "$rate",

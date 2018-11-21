@@ -17,7 +17,7 @@ System.register([], function (_export, _context) {
                 p.DataTypes = ["int", "numeric", "decimal", "date", "varchar", "char", "bigint", "float", "double", "bit", "binary", "text", "set", "timestamp", "uint8", "uint16", "uint32", "uint64", "int8", "int16", "int32", "int64", "float32", "float64", "datetime", "enum8", "enum16", "array", "tuple", "string"];
                 p.Constants = ["true", "false", "NULL"];
                 p.Funcs = ["IPv4NumToString", "IPv4NumToStringClassC", "IPv4StringToNum", "IPv6NumToString", "IPv6StringToNum", "MD5", "OSHierarchy", "OSIn", "OSToRoot", "SEHierarchy", "SEIn", "SEToRoot", "SHA1", "SHA224", "SHA256", "URLHash", "URLHierarchy", "URLPathHierarchy", "abs", "alphaTokens", "appendTrailingCharIfAbsent", "argMax", "argMin", "argMinIf", "arrayAll", "arrayCount", "arrayElement", "arrayEnumerate", "arrayEnumerateUniq", "arrayExists", "arrayFilter", "arrayFirst", "arrayJoin", "arrayMap", "arraySum", "avg", "avgIf", "bitAnd", "bitNot", "bitOr", "bitShiftLeft", "bitShiftRight", "bitXor", "bitmaskToArray", "bitmaskToList", "ceil", "cityHash64", "coalesce", "concat", "corr", "corrIf", "count", "countEqual", "countIf", "countIf", "covarPop", "covarPopIf", "covarSamp", "covarSampIf", "cutFragment", "cutQueryString", "cutQueryStringAndFragment", "cutToFirstSignificantSubdomain", "cutURLParameter", "cutWWW", "dictGetDate", "dictGetDateTime", "dictGetFloat32", "dictGetFloat64", "dictGetHierarchy", "dictGetInt16", "dictGetInt32", "dictGetInt64", "dictGetInt8", "dictGetString", "dictGetUInt16", "dictGetUInt32", "dictGetUInt64", "dictGetUInt8", "dictHas", "dictIsIn", "divide", "domainWithoutWWW", "empty", "extract", "extractAll", "extractURLParameter", "extractURLParameterNames", "extractURLParameters", "first", "firstSignificantSubdomain", "floor", "groupArray", "groupUniqArray", "halfMD5", "has", "hex", "ifnull", "indexOf", "intDiv", "intDivOrZero", "intHash32", "intHash64", "isnull", "last", "lcase", "length", "lengthUTF8", "like", "lower", "lowerUTF8", "match", "max", "median", "medianIf", "mid", "min", "minus", "modulo", "multiply", "negate", "notEmpty", "notLike", "now", "now", "nvl", "plus", "position", "positionUTF8", "quantile", "quantileDeterministic", "quantileExact", "quantileExactWeighted", "quantileTDigest", "quantileTiming", "quantileTimingWeighted", "quantiles", "quantilesIf", "quantilesTimingArrayIf", "quantilesTimingIf", "queryString", "queryStringAndFragment", "rand", "rand64", "range", "rank", "regionHierarchy", "regionIn", "regionToContinent", "regionToCountry", "regionToName", "regionToPopulation", "reinterpretAsDate", "reinterpretAsDateTime", "reinterpretAsFloat32", "reinterpretAsFloat64", "reinterpretAsInt16", "reinterpretAsInt32", "reinterpretAsInt64", "reinterpretAsInt8", "reinterpretAsString", "reinterpretAsUInt16", "reinterpretAsUInt32", "reinterpretAsUInt64", "reinterpretAsUInt8", "replaceAll", "replaceOne", "replaceRegexpOne", "reverse", "reverseUTF8", "round", "round", "roundAge", "roundDuration", "roundToExp2", "sequenceCount", "sequenceMatch", "sipHash128", "sipHash64", "splitByChar", "splitByString", "stddevPop", "stddevPopIf", "stddevSamp", "stddevSampIf", "substring", "substringUTF8", "sum", "sumArray", "sumArrayIf", "sumIf", "timeSlot", "toDate", "toDateTime", "toDayOfMonth", "toDayOfWeek", "toFixedString", "toFloat32", "toFloat64", "toHour", "toInt16", "toInt32", "toInt64", "toInt8", "toMinute", "toMonday", "toMonth", "toRelativeDayNum", "toRelativeHourNum", "toRelativeMinuteNum", "toRelativeMonthNum", "toRelativeSecondNum", "toRelativeWeekNum", "toRelativeYearNum", "toSecond", "toStartOfFiveMinute", "toStartOfHour", "toStartOfMinute", "toStartOfMonth", "toStartOfQuarter", "toStartOfYear", "toString", "toStringCutToZero", "toTime", "toUInt16", "toUInt32", "toUInt64", "toUInt8", "toYear", "today", "topLevelDomain", "ucase", "unhex", "uniq", "uniqArray", "uniqArrayIf", "uniqArrayIf", "uniqCombined", "uniqCombinedIf", "uniqExact", "uniqExactIf", "uniqHLL12", "uniqUpTo", "upper", "upperUTF8", "varPop", "varPopIf", "varSamp", "varSampIf", "yesterday"];
-                p.Macros = ["$table", "$dateCol", "$dateTimeCol", "$from", "$to", "$interval", "$timeFilter", "$timeSeries", "$rate", "$perSecond", "$perSecondColumns", "$columns", "$rateColumns", "$unescape", "$adhoc"];
+                p.Macros = ["$table", "$dateCol", "$dateTimeCol", "$from", "$to", "$interval", "$timeFilter", "$timeSeries", "$rate", "$perSecond", "$perSecondColumns", "$columns", "$rateColumns", "$unescape", "$adhoc", "$userName", "$userEmail", "$userLogin", "$userId", "$userOrgId", "$userOrgName", "$userOrgRole"];
                 p.KeywordsRe = function () {
                     return this.re(p.Keywords);
                 };
@@ -1383,6 +1383,34 @@ System.register([], function (_export, _context) {
                         "name": "$timeSeries",
                         "def": "$timeSeries",
                         "docText": "Replaced with special ClickHouse construction to convert results as time-series data. Use it as `SELECT $timeSeries...`. Require `Column:DateTime` or `Column:TimeStamp` to be selected"
+                    }, {
+                        "name": "$userName",
+                        "def": "$userName",
+                        "docText": "Replaced with the Name of the current user"
+                    }, {
+                        "name": "$userEmail",
+                        "def": "$userEmail",
+                        "docText": "Replaced with the Email of the current user"
+                    }, {
+                        "name": "$userLogin",
+                        "def": "$userLogin",
+                        "docText": "Replaced with the Login of the current user"
+                    }, {
+                        "name": "$userId",
+                        "def": "$userId",
+                        "docText": "Replace with the ID of the current user"
+                    }, {
+                        "name": "$userOrgId",
+                        "def": "$userOrgId",
+                        "docText": "Replace with the orgId of the current user"
+                    }, {
+                        "name": "$userOrgName",
+                        "def": "$userOrgName",
+                        "docText": "Replace with the orgName of the current user"
+                    }, {
+                        "name": "$userOrgRole",
+                        "def": "$userOrgRole",
+                        "docText": "Replace with the orgRole of the current user"
                     }, {
                         "name": "$rate",
                         "def": "$rate(cols...)",

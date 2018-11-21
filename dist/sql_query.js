@@ -1,6 +1,6 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
-System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], function(exports_1) {
-    var lodash_1, dateMath, moment_1, scanner_1;
+System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner', 'app/core/config'], function(exports_1) {
+    var lodash_1, dateMath, moment_1, scanner_1, config_1;
     var durationSplitRegexp, SqlQuery;
     return {
         setters:[
@@ -15,6 +15,9 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
             },
             function (scanner_1_1) {
                 scanner_1 = scanner_1_1;
+            },
+            function (config_1_1) {
+                config_1 = config_1_1;
             }],
         execute: function() {
             durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
@@ -104,6 +107,13 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
                         .replace(/\$interval/g, interval)
                         .replace(/\$adhoc/g, renderedAdHocCondition)
+                        .replace(/\$userName/g, config_1.default.bootData.user.name)
+                        .replace(/\$userEmail/g, config_1.default.bootData.user.email)
+                        .replace(/\$userLogin/g, config_1.default.bootData.user.login)
+                        .replace(/\$userId/g, config_1.default.bootData.user.id)
+                        .replace(/\$userOrgId/g, config_1.default.bootData.user.orgId)
+                        .replace(/\$userOrgName/g, config_1.default.bootData.user.orgName)
+                        .replace(/\$userOrgRole/g, config_1.default.bootData.user.orgRole)
                         .replace(/(?:\r\n|\r|\n)/g, ' ');
                     return this.target.rawQuery;
                 };

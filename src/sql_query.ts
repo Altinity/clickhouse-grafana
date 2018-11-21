@@ -4,6 +4,7 @@ import _ from 'lodash';
 import * as dateMath from 'app/core/utils/datemath';
 import moment from 'moment';
 import Scanner from './scanner';
+import config from 'app/core/config';
 
 var durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
 
@@ -108,6 +109,13 @@ export default class SqlQuery {
             .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
             .replace(/\$interval/g, interval)
             .replace(/\$adhoc/g, renderedAdHocCondition)
+            .replace(/\$userName/g, config.bootData.user.name)
+            .replace(/\$userEmail/g, config.bootData.user.email)
+            .replace(/\$userLogin/g, config.bootData.user.login)
+            .replace(/\$userId/g, config.bootData.user.id)
+            .replace(/\$userOrgId/g, config.bootData.user.orgId)
+            .replace(/\$userOrgName/g, config.bootData.user.orgName)
+            .replace(/\$userOrgRole/g, config.bootData.user.orgRole)
             .replace(/(?:\r\n|\r|\n)/g, ' ');
         return this.target.rawQuery;
     }

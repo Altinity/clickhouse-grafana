@@ -388,8 +388,8 @@ export default class SqlQuery {
         var MANY_HOURS = 60 * 60 * 72;
         var FEW_DAYS = 60 * 60 * 24 * 15;
         var FEW_WEEKS = 60 * 60 * 24 * 21;
-        var FEW_MONTHS = 60 * 60 * 24 * 30 * 10;
-        var FEW_YEARS = 60 * 60 * 24 * 365 * 5;
+        var FEW_MONTHS = 60 * 60 * 24 * 30 * 4;
+        var FEW_YEARS = 60 * 60 * 24 * 365 * 6;
         if (dateTimeType === 'DATETIME') {
             var duration = to - from;
 
@@ -399,11 +399,9 @@ export default class SqlQuery {
             else if (duration < MANY_HOURS) return 'intDiv(toUInt32(toStartOfFifteenMinutes(timestamp)),1) * 1000';
             else if (duration < FEW_DAYS) return 'intDiv(toUInt32(toStartOfHour(timestamp)),1) * 1000';
             else if (duration < FEW_WEEKS) return 'intDiv(toUInt32(toStartOfDay(timestamp)),1) * 1000';
-            else if (duration < FEW_MONTHS) return 'intDiv(toUInt32(toStartOfDay(timestamp)),1) * 1000';
-            //else if (duration < FEW_MONTHS) return 'intDiv(toUInt32(toMonday(timestamp)),1) * 1000';
-            //else return 'intDiv(toUInt32(toStartOfMonth(timestamp)),1) * 1000';
-            //else return 'intDiv(toUInt32(toStartOfQuarter(timestamp)),1) * 1000';
-            else return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
+            else if (duration < FEW_MONTHS) return 'intDiv(toUInt32(toDateTime(toMonday(timestamp))),1) * 1000';
+            else if (duration < FEW_YEARS) return 'intDiv(toUInt32(toDateTime(toStartOfMonth(timestamp))),1) * 1000';
+            else return 'intDiv(toUInt32(toDateTime(toStartOfQuarter(timestamp))),1) * 1000';
 
             //else if (duration < FEW_YEARS) return 'intDiv(toUInt32(toStartOfMonth(timestamp)),1) * 1000';
             //else return 'intDiv(toUInt32(toStartOfQuarter(timestamp)),1) * 1000';

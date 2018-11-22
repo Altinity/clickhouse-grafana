@@ -157,6 +157,7 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "$interval",
         "$timeFilter",
         "$timeSeries",
+        "$naturalTimeSeries",
         "$rate",
         "$perSecond",
         "$perSecondColumns",
@@ -2107,6 +2108,11 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
                 "name": "$timeSeries",
                 "def": "$timeSeries",
                 "docText": "Replaced with special ClickHouse construction to convert results as time-series data. Use it as `SELECT $timeSeries...`. Require `Column:DateTime` or `Column:TimeStamp` to be selected"
+            },
+            {
+                "name": "$naturalTimeSeries",
+                "def": "$naturalTimeSeries",
+                "docText": "Replaced with special ClickHouse construction to convert results as time-series data in logical/natural units. Use it as `SELECT $timeSeries...`. Require `Column:DateTime` or `Column:TimeStamp` to be selected"
             },
             {
                 "name": "$userName",

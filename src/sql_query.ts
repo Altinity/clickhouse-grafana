@@ -101,6 +101,7 @@ export default class SqlQuery {
         }
         this.target.rawQuery = query
             .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
+            .replace(/\$naturalTimeSeries/g, SqlQuery.getNaturalTimeSeries(dateTimeType, from, to))
             .replace(/\$timeFilter/g, timeFilter)
             .replace(/\$table/g, this.target.database + '.' + this.target.table)
             .replace(/\$from/g, from)
@@ -377,6 +378,22 @@ export default class SqlQuery {
         }
 
         return query;
+    }
+
+    static getNaturalTimeSeries(dateTimeType: string, from: number, to: number): string {
+        if (dateTimeType === 'DATETIME') {
+            var duration = to - from;
+
+            if (duration < 1200) return 'intDiv(toUInt32(timestamp),1) * 1000';
+            else if (duration < 20000) return 'intDiv(toUInt32(toStartOfMinute(timestamp)),1) * 1000';
+            else if (duration < 72000) return 'intDiv(toUInt32(toStartOfFiveMinute(timestamp)),1) * 1000';
+            else if (duration < 360000) return 'intDiv(toUInt32(toStartOfFifteenMinutes(timestamp)),1) * 1000';
+            else if (duration < 1420000) return 'intDiv(toUInt32(timestamp)),1) * 1000';
+            else if (duration < 1420000) return 'intDiv(toUInt32(toStartOfHour(timestamp)),1) * 1000';
+            else if (duration < 50000000) return 'intDiv(toUInt32(toStartOfDay(timestamp)),1) * 1000';
+            else return 'intDiv(toUInt32(toStartOfMonth(timestamp)),1) * 1000';
+        }
+        return '(intDiv($dateTimeCol, $interval) * $interval) * 1000'
     }
 
     static getTimeSeries(dateTimeType: string): string {

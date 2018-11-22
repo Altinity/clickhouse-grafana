@@ -380,18 +380,33 @@ export default class SqlQuery {
         return query;
     }
 
+
     static getNaturalTimeSeries(dateTimeType: string, from: number, to: number): string {
+        var SOME_MINUTES = 60 * 20;
+        var FEW_HOURS = 60 * 60 * 4;
+        var SOME_HOURS = 60 * 60 * 24;
+        var MANY_HOURS = 60 * 60 * 72;
+        var FEW_DAYS = 60 * 60 * 24 * 15;
+        var FEW_WEEKS = 60 * 60 * 24 * 21;
+        var FEW_MONTHS = 60 * 60 * 24 * 30 * 10;
+        var FEW_YEARS = 60 * 60 * 24 * 365 * 5;
         if (dateTimeType === 'DATETIME') {
             var duration = to - from;
 
-            if (duration < 1200) return 'intDiv(toUInt32(timestamp),1) * 1000';
-            else if (duration < 20000) return 'intDiv(toUInt32(toStartOfMinute(timestamp)),1) * 1000';
-            else if (duration < 72000) return 'intDiv(toUInt32(toStartOfFiveMinute(timestamp)),1) * 1000';
-            else if (duration < 360000) return 'intDiv(toUInt32(toStartOfFifteenMinutes(timestamp)),1) * 1000';
-            else if (duration < 1420000) return 'intDiv(toUInt32(timestamp)),1) * 1000';
-            else if (duration < 1420000) return 'intDiv(toUInt32(toStartOfHour(timestamp)),1) * 1000';
-            else if (duration < 50000000) return 'intDiv(toUInt32(toStartOfDay(timestamp)),1) * 1000';
-            else return 'intDiv(toUInt32(toStartOfMonth(timestamp)),1) * 1000';
+            if (duration < SOME_MINUTES) return 'intDiv(toUInt32(timestamp),1) * 1000';
+            else if (duration < FEW_HOURS) return 'intDiv(toUInt32(toStartOfMinute(timestamp)),1) * 1000';
+            else if (duration < SOME_HOURS) return 'intDiv(toUInt32(toStartOfFiveMinute(timestamp)),1) * 1000';
+            else if (duration < MANY_HOURS) return 'intDiv(toUInt32(toStartOfFifteenMinutes(timestamp)),1) * 1000';
+            else if (duration < FEW_DAYS) return 'intDiv(toUInt32(toStartOfHour(timestamp)),1) * 1000';
+            else if (duration < FEW_WEEKS) return 'intDiv(toUInt32(toStartOfDay(timestamp)),1) * 1000';
+            else if (duration < FEW_MONTHS) return 'intDiv(toUInt32(toStartOfDay(timestamp)),1) * 1000';
+            //else if (duration < FEW_MONTHS) return 'intDiv(toUInt32(toMonday(timestamp)),1) * 1000';
+            //else return 'intDiv(toUInt32(toStartOfMonth(timestamp)),1) * 1000';
+            //else return 'intDiv(toUInt32(toStartOfQuarter(timestamp)),1) * 1000';
+            else return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
+
+            //else if (duration < FEW_YEARS) return 'intDiv(toUInt32(toStartOfMonth(timestamp)),1) * 1000';
+            //else return 'intDiv(toUInt32(toStartOfQuarter(timestamp)),1) * 1000';
         }
         return '(intDiv($dateTimeCol, $interval) * $interval) * 1000'
     }

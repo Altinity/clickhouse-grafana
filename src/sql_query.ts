@@ -387,7 +387,6 @@ export default class SqlQuery {
         var SOME_HOURS = 60 * 60 * 24;
         var MANY_HOURS = 60 * 60 * 72;
         var FEW_DAYS = 60 * 60 * 24 * 15;
-        var FEW_WEEKS = 60 * 60 * 24 * 21;
         var MANY_WEEKS = 60 * 60 * 24 * 7 * 15;
         var FEW_MONTHS = 60 * 60 * 24 * 30 * 10;
         var FEW_YEARS = 60 * 60 * 24 * 365 * 6;

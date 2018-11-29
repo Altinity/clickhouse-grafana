@@ -20,6 +20,7 @@ export default class SqlQuery {
     static perSecond(query: string, ast: any): string;
     static _perSecond(args: any, fromQuery: string): string;
     static _applyTimeFilter(query: string): string;
+    static getNaturalTimeSeries(dateTimeType: string, from: number, to: number): string;
     static getTimeSeries(dateTimeType: string): string;
     static getDateFilter(isToNow: boolean): string;
     static getDateTimeFilter(isToNow: boolean, dateTimeType: string): string;

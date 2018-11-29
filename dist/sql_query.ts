@@ -101,6 +101,7 @@ export default class SqlQuery {
         }
         this.target.rawQuery = query
             .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
+            .replace(/\$naturalTimeSeries/g, SqlQuery.getNaturalTimeSeries(dateTimeType, from, to))
             .replace(/\$timeFilter/g, timeFilter)
             .replace(/\$table/g, this.target.database + '.' + this.target.table)
             .replace(/\$from/g, from)
@@ -377,6 +378,36 @@ export default class SqlQuery {
         }
 
         return query;
+    }
+
+
+    static getNaturalTimeSeries(dateTimeType: string, from: number, to: number): string {
+        var SOME_MINUTES = 60 * 20;
+        var FEW_HOURS = 60 * 60 * 4;
+        var SOME_HOURS = 60 * 60 * 24;
+        var MANY_HOURS = 60 * 60 * 72;
+        var FEW_DAYS = 60 * 60 * 24 * 15;
+        var FEW_WEEKS = 60 * 60 * 24 * 21;
+        var MANY_WEEKS = 60 * 60 * 24 * 7 * 15;
+        var FEW_MONTHS = 60 * 60 * 24 * 30 * 10;
+        var FEW_YEARS = 60 * 60 * 24 * 365 * 6;
+        if (dateTimeType === 'DATETIME') {
+            var duration = to - from;
+
+            if (duration < SOME_MINUTES) return 'toUInt32(timestamp) * 1000';
+            else if (duration < FEW_HOURS) return 'toUInt32(toStartOfMinute(timestamp)) * 1000';
+            else if (duration < SOME_HOURS) return 'toUInt32(toStartOfFiveMinute(timestamp)) * 1000';
+            else if (duration < MANY_HOURS) return 'toUInt32(toStartOfFifteenMinutes(timestamp)) * 1000';
+            else if (duration < FEW_DAYS) return 'toUInt32(toStartOfHour(timestamp)) * 1000';
+            else if (duration < MANY_WEEKS) return 'toUInt32(toStartOfDay(timestamp)) * 1000';
+            else if (duration < FEW_MONTHS) return 'toUInt32(toDateTime(toMonday(timestamp))) * 1000';
+            else if (duration < FEW_YEARS) return 'toUInt32(toDateTime(toStartOfMonth(timestamp))) * 1000';
+            else return 'toUInt32(toDateTime(toStartOfQuarter(timestamp))) * 1000';
+
+            //else if (duration < FEW_YEARS) return 'intDiv(toUInt32(toStartOfMonth(timestamp)),1) * 1000';
+            //else return 'intDiv(toUInt32(toStartOfQuarter(timestamp)),1) * 1000';
+        }
+        return '(intDiv($dateTimeCol, $interval) * $interval) * 1000'
     }
 
     static getTimeSeries(dateTimeType: string): string {

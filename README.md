@@ -83,7 +83,8 @@ Plugin supports the following marcos:
 * $to - replaced with timestamp/1000 value of selected "Time Range:To"
 * $interval - replaced with selected "Group by time interval" value (as a number of seconds)
 * $timeFilter - replaced with currently selected "Time Range". 
-  Require Column:Date and Column:DateTime or Column:TimeStamp to be selected
+  Requires Column:Date and Column:DateTime or Column:TimeStamp to be selected
+* $timeFilterColumn($column) - replaced with currently selected "Time Range" for column passed as `$column` argument. Use it in queries or query variables as `...WHERE $timeFilterColumn($column)...` or `...WHERE $timeFilterColumn(created_at)...`.
 * $timeSeries - replaced with special ClickHouse construction to convert results as time-series data. Use it as "SELECT $timeSeries...". 
 * $unescape - unescapes variable value by removing single quotes. Used for multiple-value string variables: "SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
 * $adhoc - replaced with a rendered ad-hoc filter expression, or "1" if no ad-hoc filters exist. Since ad-hoc applies automatically only to outer queries the macros can be used for filtering in inner queries.

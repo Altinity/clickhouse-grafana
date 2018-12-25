@@ -172,21 +172,20 @@ export class ClickHouseDatasource {
             .then(result => this.responseParser.transformAnnotationResponse(params, result.data));
     }
 
-    metricFindQuery(query, options?: any) {
-        var interpolated;
+    metricFindQuery(query: string, options?: any) {
+        let interpolatedQuery;
+
         try {
-            if (options && options.range) {
-                let from = SqlQuery.convertTimestamp(options.range.from);
-                let to = SqlQuery.convertTimestamp(options.range.to);
-                query = query.replace(/\$to/g, to)
-                    .replace(/\$from/g, from)
-            }
-            interpolated = this.templateSrv.replace(query, {}, SqlQuery.interpolateQueryExpr);
+            interpolatedQuery = this.templateSrv.replace(query, {}, SqlQuery.interpolateQueryExpr);
         } catch (err) {
             return this.$q.reject(err);
         }
 
-        return this._seriesQuery(interpolated)
+        if (options && options.range) {
+            interpolatedQuery = SqlQuery.replaceTimeFilters(interpolatedQuery, options.range);
+        }
+
+        return this._seriesQuery(interpolatedQuery)
             .then(_.curry(this.responseParser.parse)(query));
     };
 

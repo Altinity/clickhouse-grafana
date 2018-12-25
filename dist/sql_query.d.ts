@@ -1,4 +1,13 @@
 /// <reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
+export interface RawTimeRange {
+    from: any | string;
+    to: any | string;
+}
+export interface TimeRange {
+    from: any;
+    to: any;
+    raw: RawTimeRange;
+}
 export default class SqlQuery {
     target: any;
     templateSrv: any;
@@ -6,6 +15,9 @@ export default class SqlQuery {
     /** @ngInject */
     constructor(target: any, templateSrv?: any, options?: any);
     replace(options: any, adhocFilters: any): any;
+    static replaceTimeFilters(query: string, range: TimeRange, dateTimeType?: string, round?: number): string;
+    static getFilterSqlForDateTime(isToNow: boolean, dateTimeType: string): string;
+    static getConvertFn(dateTimeType: string): (t: string) => string;
     static target(from: string, target: any): [string, string];
     static applyMacros(query: string, ast: any): string;
     static contain(obj: any, field: string): boolean;

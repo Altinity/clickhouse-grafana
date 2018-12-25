@@ -28,9 +28,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                 SqlQuery.prototype.replace = function (options, adhocFilters) {
                     var query = this.templateSrv.replace(this.target.query.trim(), options.scopedVars, SqlQuery.interpolateQueryExpr), scanner = new scanner_1.default(query), dateTimeType = this.target.dateTimeType
                         ? this.target.dateTimeType
-                        : 'DATETIME', i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), round = this.target.round === "$step"
-                        ? interval
-                        : SqlQuery.convertInterval(this.target.round, 1), from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, round)), to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, round)), adhocCondition = [];
+                        : 'DATETIME', i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval, interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1), adhocCondition = [];
                     try {
                         var ast = scanner.toAST();
                         var topQuery = ast;
@@ -55,7 +53,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                                 }
                                 /* Expect fully qualified column name at this point */
                                 if (parts.length < 3) {
-                                    console.log("adhoc filters: filter " + af.key + "` has wrong format");
+                                    console.warn("adhoc filters: filter " + af.key + "` has wrong format");
                                     return;
                                 }
                                 if (target[0] != parts[0] || target[1] != parts[1]) {
@@ -76,18 +74,12 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         query = SqlQuery.applyMacros(query, ast);
                     }
                     catch (err) {
-                        console.log('AST parser error: ', err);
+                        console.error('AST parser error: ', err);
                     }
                     /* Render the ad-hoc condition or evaluate to an always true condition */
                     var renderedAdHocCondition = '1';
                     if (adhocCondition.length > 0) {
                         renderedAdHocCondition = '(' + adhocCondition.join(' AND ') + ')';
-                    }
-                    // Extend date range to be sure that first and last points
-                    // data is not affected by round
-                    if (round > 0) {
-                        to += (round * 2) - 1;
-                        from -= (round * 2) - 1;
                     }
                     query = SqlQuery.unescape(query);
                     var timeFilter = SqlQuery.getDateTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType);
@@ -98,14 +90,46 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
                         .replace(/\$timeFilter/g, timeFilter)
                         .replace(/\$table/g, this.target.database + '.' + this.target.table)
-                        .replace(/\$from/g, from)
-                        .replace(/\$to/g, to)
                         .replace(/\$dateCol/g, this.target.dateColDataType)
                         .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
                         .replace(/\$interval/g, interval)
                         .replace(/\$adhoc/g, renderedAdHocCondition)
                         .replace(/(?:\r\n|\r|\n)/g, ' ');
+                    var round = this.target.round === "$step"
+                        ? interval
+                        : SqlQuery.convertInterval(this.target.round, 1);
+                    this.target.rawQuery = SqlQuery.replaceTimeFilters(this.target.rawQuery, this.options.range, dateTimeType, round);
                     return this.target.rawQuery;
+                };
+                SqlQuery.replaceTimeFilters = function (query, range, dateTimeType, round) {
+                    if (dateTimeType === void 0) { dateTimeType = 'DATETIME'; }
+                    var from = SqlQuery.convertTimestamp(SqlQuery.round(range.from, round || 0));
+                    var to = SqlQuery.convertTimestamp(SqlQuery.round(range.to, round || 0));
+                    // Extend date range to be sure that first and last points
+                    // data is not affected by round
+                    if (round > 0) {
+                        to += (round * 2) - 1;
+                        from -= (round * 2) - 1;
+                    }
+                    return query
+                        .replace(/\$timeFilterByColumn\(([\w_]+)\)/g, function (match, columnName) { return (columnName + " " + SqlQuery.getFilterSqlForDateTime(range.raw.to === 'now', dateTimeType)); })
+                        .replace(/\$from/g, from.toString())
+                        .replace(/\$to/g, to.toString());
+                };
+                SqlQuery.getFilterSqlForDateTime = function (isToNow, dateTimeType) {
+                    var convertFn = this.getConvertFn(dateTimeType);
+                    if (isToNow) {
+                        return ">= " + convertFn('$from');
+                    }
+                    return "BETWEEN " + convertFn('$from') + " AND " + convertFn('$to');
+                };
+                SqlQuery.getConvertFn = function (dateTimeType) {
+                    return function (t) {
+                        if (dateTimeType === 'DATETIME') {
+                            return 'toDateTime(' + t + ')';
+                        }
+                        return t;
+                    };
                 };
                 SqlQuery.target = function (from, target) {
                     if (from.length == 0) {
@@ -414,7 +438,7 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                         case "!~":
                             return "NOT LIKE";
                         default:
-                            console.log("adhoc filters: got unsupported operator `" + value + "`");
+                            console.warn("adhoc filters: got unsupported operator `" + value + "`");
                             return value;
                     }
                 };

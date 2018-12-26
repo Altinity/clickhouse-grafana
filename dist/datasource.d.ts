@@ -21,7 +21,7 @@ export declare class ClickHouseDatasource {
     _request(query: any): any;
     query(options: any): any;
     annotationQuery(options: any): any;
-    metricFindQuery(query: any, options?: any): any;
+    metricFindQuery(query: string, options?: any): any;
     testDatasource(): any;
     _seriesQuery(query: any): any;
     targetContainsTemplate(target: any): any;

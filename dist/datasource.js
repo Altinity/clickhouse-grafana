@@ -161,20 +161,17 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                         .then(function (result) { return _this.responseParser.transformAnnotationResponse(params, result.data); });
                 };
                 ClickHouseDatasource.prototype.metricFindQuery = function (query, options) {
-                    var interpolated;
+                    var interpolatedQuery;
                     try {
-                        if (options && options.range) {
-                            var from = sql_query_1.default.convertTimestamp(options.range.from);
-                            var to = sql_query_1.default.convertTimestamp(options.range.to);
-                            query = query.replace(/\$to/g, to)
-                                .replace(/\$from/g, from);
-                        }
-                        interpolated = this.templateSrv.replace(query, {}, sql_query_1.default.interpolateQueryExpr);
+                        interpolatedQuery = this.templateSrv.replace(query, {}, sql_query_1.default.interpolateQueryExpr);
                     }
                     catch (err) {
                         return this.$q.reject(err);
                     }
-                    return this._seriesQuery(interpolated)
+                    if (options && options.range) {
+                        interpolatedQuery = sql_query_1.default.replaceTimeFilters(interpolatedQuery, options.range);
+                    }
+                    return this._seriesQuery(interpolatedQuery)
                         .then(lodash_1.default.curry(this.responseParser.parse)(query));
                 };
                 ;

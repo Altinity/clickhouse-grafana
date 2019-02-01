@@ -100,7 +100,7 @@ export default class SqlQuery {
         this.target.rawQuery = query
             .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
             .replace(/\$timeFilter/g, timeFilter)
-            .replace(/\$table/g, this.target.database + '.' + '`' + this.target.table + '`')
+            .replace(/\$table/g, '`' + this.target.database + '`' + '.' + '`' + this.target.table + '`')
             .replace(/\$dateCol/g, this.target.dateColDataType)
             .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
             .replace(/\$interval/g, interval)

@@ -43,9 +43,10 @@ export class ClickHouseDatasource {
         this.adhocCtrl = new AdhocCtrl(this);
     }
 
-    _request(query) {
+    _request(query: string, requestId?: string) {
         let options: any = {
-            url: this.url
+            url: this.url,
+            requestId: requestId,
         };
 
         if (this.usePOST) {
@@ -79,23 +80,10 @@ export class ClickHouseDatasource {
     };
 
     query(options) {
-        var queries = [], q,
-            adhocFilters = this.templateSrv.getAdhocFilters(this.name),
-            keyColumns = [];
-
-        _.map(options.targets, (target) => {
-            if (!target.hide && target.query) {
-                var queryModel = new SqlQuery(target, this.templateSrv, options);
-                q = queryModel.replace(options, adhocFilters);
-                queries.push(q);
-                try {
-                    let queryAST = new Scanner(q).toAST();
-                    keyColumns.push(queryAST['group by'] || []);
-                } catch (err) {
-                    console.log('AST parser error: ', err)
-                }
-            }
-        });
+        const queries = _(options.targets)
+            .filter(target => !target.hide && target.query)
+            .map(target => this.createQuery(options, target))
+            .value();
 
         // No valid targets, return the empty result to save a round trip.
         if (_.isEmpty(queries)) {
@@ -104,16 +92,15 @@ export class ClickHouseDatasource {
             return d.promise;
         }
 
-        var allQueryPromise = _.map(queries, query => {
-            return this._seriesQuery(query);
+        const allQueryPromise = _.map(queries, query => {
+            return this._seriesQuery(query.stmt, query.requestId);
         });
-
 
         return this.$q.all(allQueryPromise).then((responses): any => {
             var result = [], i = 0;
             _.each(responses, (response) => {
-                var target = options.targets[i];
-                var keys = keyColumns[i];
+                const target = options.targets[i];
+                const keys = queries[i].keys;
 
                 i++;
                 if (!response || !response.rows) {
@@ -141,6 +128,27 @@ export class ClickHouseDatasource {
             return {data: result};
         });
     };
+
+    createQuery(options, target) {
+        const queryModel = new SqlQuery(target, this.templateSrv, options);
+        const adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+        const stmt = queryModel.replace(options, adhocFilters);
+
+        let keys = [];
+
+        try {
+            let queryAST = new Scanner(stmt).toAST();
+            keys = queryAST['group by'] || [];
+        } catch (err) {
+            console.log('AST parser error: ', err)
+        }
+
+        return {
+            keys: keys,
+            requestId: options.panelId + target.refId,
+            stmt: stmt,
+        };
+    }
 
     annotationQuery(options) {
         if (!options.annotation.query) {
@@ -185,6 +193,7 @@ export class ClickHouseDatasource {
             interpolatedQuery = SqlQuery.replaceTimeFilters(interpolatedQuery, options.range);
         }
 
+        // todo(nv): fix request id
         return this._seriesQuery(interpolatedQuery)
             .then(_.curry(this.responseParser.parse)(query));
     };
@@ -196,10 +205,10 @@ export class ClickHouseDatasource {
             });
     };
 
-    _seriesQuery(query) {
+    _seriesQuery(query: string, requestId?: string) {
         query = query.replace(/(?:\r\n|\r|\n)/g, ' ');
         query += ' FORMAT JSON';
-        return this._request(query);
+        return this._request(query, requestId);
     };
 
     targetContainsTemplate(target) {

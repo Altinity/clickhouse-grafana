@@ -42,4 +42,5 @@ export default class SqlQuery {
     static clickhouseOperator(value: any): any;
     static clickhouseEscape(value: any, variable: any): any;
     static unescape(query: any): any;
+    static betweenBraces(query: any): any;
 }

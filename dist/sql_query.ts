@@ -542,16 +542,40 @@ export default class SqlQuery {
         let macros = '$unescape(';
         let openMacros = query.indexOf(macros);
         while (openMacros !== -1) {
-            let closeMacros = query.indexOf(')', openMacros);
-            if (closeMacros === -1) {
-                throw {message: 'unable to find closing brace for $unescape macros: ' + query.substring(0, openMacros)};
+            let r = SqlQuery.betweenBraces(query.substring(openMacros+macros.length, query.length));
+            if (r.error.length > 0) {
+                throw {message: '$unescape macros error: ' + r.error};
             }
-            let arg = query.substring(openMacros + macros.length, closeMacros)
-                .trim();
+            let arg = r.result;
             arg = arg.replace(/[']+/g, '');
-            query = query.substring(0, openMacros) + arg + query.substring(closeMacros + 1, query.length);
+            let closeMacros = openMacros + macros.length + r.result.length + 1;
+            query = query.substring(0, openMacros) + arg + query.substring(closeMacros, query.length);
             openMacros = query.indexOf('$unescape(');
         }
         return query
+    }
+
+    static betweenBraces(query): any {
+        let r = {
+            result: "",
+            error: "",
+        };
+        let openBraces = 1;
+        for (let i = 0; i < query.length; i++) {
+            if (query.charAt(i) === '(') {
+                openBraces++;
+            }
+            if (query.charAt(i) === ')') {
+                openBraces--;
+                if (openBraces === 0) {
+                    r.result = query.substring(0, i);
+                    break;
+                }
+            }
+        }
+        if (openBraces > 1) {
+            r.error = "missing parentheses"
+        }
+        return r
     }
 }

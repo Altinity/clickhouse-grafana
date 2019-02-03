@@ -466,17 +466,40 @@ System.register(['lodash', 'app/core/utils/datemath', 'moment', './scanner'], fu
                     var macros = '$unescape(';
                     var openMacros = query.indexOf(macros);
                     while (openMacros !== -1) {
-                        var closeMacros = query.indexOf(')', openMacros);
-                        if (closeMacros === -1) {
-                            throw { message: 'unable to find closing brace for $unescape macros: ' + query.substring(0, openMacros) };
+                        var r = SqlQuery.betweenBraces(query.substring(openMacros + macros.length, query.length));
+                        if (r.error.length > 0) {
+                            throw { message: '$unescape macros error: ' + r.error };
                         }
-                        var arg = query.substring(openMacros + macros.length, closeMacros)
-                            .trim();
+                        var arg = r.result;
                         arg = arg.replace(/[']+/g, '');
-                        query = query.substring(0, openMacros) + arg + query.substring(closeMacros + 1, query.length);
+                        var closeMacros = openMacros + macros.length + r.result.length + 1;
+                        query = query.substring(0, openMacros) + arg + query.substring(closeMacros, query.length);
                         openMacros = query.indexOf('$unescape(');
                     }
                     return query;
+                };
+                SqlQuery.betweenBraces = function (query) {
+                    var r = {
+                        result: "",
+                        error: "",
+                    };
+                    var openBraces = 1;
+                    for (var i = 0; i < query.length; i++) {
+                        if (query.charAt(i) === '(') {
+                            openBraces++;
+                        }
+                        if (query.charAt(i) === ')') {
+                            openBraces--;
+                            if (openBraces === 0) {
+                                r.result = query.substring(0, i);
+                                break;
+                            }
+                        }
+                    }
+                    if (openBraces > 1) {
+                        r.error = "missing parentheses";
+                    }
+                    return r;
                 };
                 return SqlQuery;
             })();

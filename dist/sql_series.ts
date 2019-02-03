@@ -33,7 +33,7 @@ export default class SqlSeries {
         _.each(self.series, function (ser) {
             let r = [];
             _.each(ser, function (v) {
-                r.push(SqlSeries._formatValue(v))
+                r.push(v)
             });
             rows.push(r)
         });

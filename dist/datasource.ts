@@ -23,6 +23,9 @@ export class ClickHouseDatasource {
     addCorsHeader: boolean;
     responseParser: any;
     adhocCtrl: AdhocCtrl;
+    xHeaderUser: string;
+    xHeaderKey: string;
+    useYandexCloudAuthorization: boolean;
 
     /** @ngInject */
     constructor(instanceSettings,
@@ -41,6 +44,9 @@ export class ClickHouseDatasource {
         this.usePOST = instanceSettings.jsonData.usePOST;
         this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
         this.adhocCtrl = new AdhocCtrl(this);
+        this.xHeaderUser = instanceSettings.jsonData.xHeaderUser;
+        this.xHeaderKey = instanceSettings.jsonData.xHeaderKey;
+        this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization;
     }
 
     _request(query: string, requestId?: string) {
@@ -64,6 +70,11 @@ export class ClickHouseDatasource {
         options.headers = options.headers || {};
         if (this.basicAuth) {
             options.headers.Authorization = this.basicAuth;
+        }
+
+        if (this.useYandexCloudAuthorization) {
+            options.headers['X-ClickHouse-User'] = this.xHeaderUser;
+            options.headers['X-ClickHouse-Key'] = this.xHeaderKey;
         }
 
         if (this.addCorsHeader) {

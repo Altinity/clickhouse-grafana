@@ -16,6 +16,9 @@ export declare class ClickHouseDatasource {
     addCorsHeader: boolean;
     responseParser: any;
     adhocCtrl: AdhocCtrl;
+    xHeaderUser: string;
+    xHeaderKey: string;
+    useYandexCloudAuthorization: boolean;
     /** @ngInject */
     constructor(instanceSettings: any, $q: any, backendSrv: any, templateSrv: any);
     _request(query: string, requestId?: string): any;

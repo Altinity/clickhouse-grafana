@@ -42,6 +42,9 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     this.usePOST = instanceSettings.jsonData.usePOST;
                     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
                     this.adhocCtrl = new adhoc_1.default(this);
+                    this.xHeaderUser = instanceSettings.jsonData.xHeaderUser;
+                    this.xHeaderKey = instanceSettings.jsonData.xHeaderKey;
+                    this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization;
                 }
                 ClickHouseDatasource.prototype._request = function (query, requestId) {
                     var options = {
@@ -62,6 +65,10 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     options.headers = options.headers || {};
                     if (this.basicAuth) {
                         options.headers.Authorization = this.basicAuth;
+                    }
+                    if (this.useYandexCloudAuthorization) {
+                        options.headers['X-ClickHouse-User'] = this.xHeaderUser;
+                        options.headers['X-ClickHouse-Key'] = this.xHeaderKey;
                     }
                     if (this.addCorsHeader) {
                         if (this.usePOST) {

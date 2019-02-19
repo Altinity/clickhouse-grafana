@@ -1,5 +1,5 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
-import _ from 'lodash';
+import {each, isObject} from 'lodash-es';
 
 export default class ResponseParser {
     constructor(private $q) {
@@ -12,8 +12,8 @@ export default class ResponseParser {
 
         var sqlResults = results.data;
         var res = [];
-        _.each(sqlResults, r => {
-            if (!_.isObject(r)) {
+        each(sqlResults, r => {
+            if (!isObject(r)) {
                 res.push({text: r});
                 return
             }

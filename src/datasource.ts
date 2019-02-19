@@ -1,6 +1,6 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 
-import _ from 'lodash';
+import {curry, each, filter, flow, isEmpty, map} from 'lodash-es';
 
 import SqlSeries from './sql_series';
 import SqlQuery from './sql_query';
@@ -91,25 +91,26 @@ export class ClickHouseDatasource {
     };
 
     query(options) {
-        const queries = _(options.targets)
-            .filter(target => !target.hide && target.query)
-            .map(target => this.createQuery(options, target))
+        const queries = flow(
+            filter(target => !target.hide && target.query),
+            map(target => this.createQuery(options, target)),
+        )(options.targets)
             .value();
 
         // No valid targets, return the empty result to save a round trip.
-        if (_.isEmpty(queries)) {
+        if (isEmpty(queries)) {
             var d = this.$q.defer();
             d.resolve({data: []});
             return d.promise;
         }
 
-        const allQueryPromise = _.map(queries, query => {
+        const allQueryPromise = map(queries, query => {
             return this._seriesQuery(query.stmt, query.requestId);
         });
 
         return this.$q.all(allQueryPromise).then((responses): any => {
             var result = [], i = 0;
-            _.each(responses, (response) => {
+            each(responses, (response) => {
                 const target = options.targets[i];
                 const keys = queries[i].keys;
 
@@ -127,11 +128,11 @@ export class ClickHouseDatasource {
                     to: SqlQuery.convertTimestamp(options.range.to)
                 });
                 if (target.format === 'table') {
-                    _.each(sqlSeries.toTable(), (data) => {
+                    each(sqlSeries.toTable(), (data) => {
                         result.push(data);
                     });
                 } else {
-                    _.each(sqlSeries.toTimeSeries(), (data) => {
+                    each(sqlSeries.toTimeSeries(), (data) => {
                         result.push(data);
                     });
                 }
@@ -206,7 +207,7 @@ export class ClickHouseDatasource {
 
         // todo(nv): fix request id
         return this._seriesQuery(interpolatedQuery)
-            .then(_.curry(this.responseParser.parse)(query));
+            .then(curry(this.responseParser.parse)(query));
     };
 
     testDatasource() {
@@ -231,7 +232,7 @@ export class ClickHouseDatasource {
         // @see https://github.com/Vertamedia/clickhouse-grafana/issues/75
         // @see https://github.com/grafana/grafana/issues/13109
         let queryFilter = '';
-        _.each(this.templateSrv.variables, (v) => {
+        each(this.templateSrv.variables, (v) => {
             if (v.name === adhocFilterVariable) {
                 queryFilter = v.query
             }

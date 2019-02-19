@@ -1,4 +1,3 @@
-import { describe, expect, it } from './lib/common';
 import SqlQuery, { TimeRange } from '../src/sql_query';
 import moment from "moment";
 import { RawTimeRangeStub } from './lib/raw_time_range_stub';
@@ -12,7 +11,7 @@ describe("Query SELECT with $timeFilterByColumn and range with from and to:", ()
   };
 
   it("gets replaced with BETWEEN filter", () => {
-    expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME')).to.be('SELECT * FROM table WHERE column_name BETWEEN toDateTime(1545613323) AND toDateTime(1546300799)');
+    expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME')).toBe('SELECT * FROM table WHERE column_name BETWEEN toDateTime(1545613323) AND toDateTime(1546300799)');
   });
 });
 
@@ -28,7 +27,7 @@ describe("Query SELECT with $timeFilterByColumn and range with from", () => {
   };
 
   it("gets replaced with >= filter", () => {
-    expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME')).to.be('SELECT * FROM table WHERE column_name >= toDateTime(1545613323)');
+    expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME')).toBe('SELECT * FROM table WHERE column_name >= toDateTime(1545613323)');
   });
 });
 

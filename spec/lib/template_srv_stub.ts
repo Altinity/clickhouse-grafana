@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import {template} from 'lodash-es';
 
 export default class TemplateSrvStub {
   variables = [];
@@ -6,7 +6,7 @@ export default class TemplateSrvStub {
   data = {};
 
   replace(text) {
-    return _.template(text, this.templateSettings)(this.data);
+    return template(text, this.templateSettings)(this.data);
   }
 
   getAdhocFilters() {

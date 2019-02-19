@@ -21,7 +21,7 @@ System.register(["test/lib/common", "./../scanner"], function (exports_1, contex
                         '</font> <font color="darkorange">GROUP BY</font> t <font color="darkorange">ORDER BY</font> t';
                     var scanner = new scanner_1.default(query);
                     common_1.it("expects equality", function () {
-                        common_1.expect(scanner.Highlight()).to.be(expectedHighlight);
+                        common_1.expect(scanner.Highlight()).toBe(expectedHighlight);
                     });
                 });
                 common_1.describe("AST case 1", function () {
@@ -109,7 +109,7 @@ System.register(["test/lib/common", "./../scanner"], function (exports_1, contex
                         ]
                     };
                     common_1.it("expects equality", function () {
-                        common_1.expect(scanner.toAST()).to.eql(expectedAST);
+                        common_1.expect(scanner.toAST()).toEqual(expectedAST);
                     });
                 });
                 common_1.describe("AST case 2", function () {
@@ -134,7 +134,7 @@ System.register(["test/lib/common", "./../scanner"], function (exports_1, contex
                         ]
                     };
                     common_1.it("expects equality", function () {
-                        common_1.expect(scanner.toAST()).to.eql(expectedAST);
+                        common_1.expect(scanner.toAST()).toEqual(expectedAST);
                     });
                 });
                 common_1.describe("AST case 3", function () {
@@ -162,7 +162,7 @@ System.register(["test/lib/common", "./../scanner"], function (exports_1, contex
                         ]
                     };
                     common_1.it("expects equality", function () {
-                        common_1.expect(scanner.toAST()).to.eql(expectedAST);
+                        common_1.expect(scanner.toAST()).toEqual(expectedAST);
                     });
                 });
                 common_1.describe("AST case 4", function () {
@@ -205,11 +205,11 @@ System.register(["test/lib/common", "./../scanner"], function (exports_1, contex
                         ]
                     };
                     common_1.it("expects equality", function () {
-                        common_1.expect(scanner.toAST()).to.eql(expectedAST);
+                        common_1.expect(scanner.toAST()).toEqual(expectedAST);
                     });
                 });
             });
         }
     };
 });
-//# sourceMappingURL=scanner_specs.js.map
+//# sourceMappingURL=scanner_specs.jest.jsst.js.map

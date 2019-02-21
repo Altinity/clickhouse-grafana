@@ -42,10 +42,14 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     this.usePOST = instanceSettings.jsonData.usePOST;
                     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
                     this.adhocCtrl = new adhoc_1.default(this);
+                    this.xHeaderUser = instanceSettings.jsonData.xHeaderUser;
+                    this.xHeaderKey = instanceSettings.jsonData.xHeaderKey;
+                    this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization;
                 }
-                ClickHouseDatasource.prototype._request = function (query) {
+                ClickHouseDatasource.prototype._request = function (query, requestId) {
                     var options = {
-                        url: this.url
+                        url: this.url,
+                        requestId: requestId,
                     };
                     if (this.usePOST) {
                         options.method = 'POST';
@@ -62,6 +66,10 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     if (this.basicAuth) {
                         options.headers.Authorization = this.basicAuth;
                     }
+                    if (this.useYandexCloudAuthorization) {
+                        options.headers['X-ClickHouse-User'] = this.xHeaderUser;
+                        options.headers['X-ClickHouse-Key'] = this.xHeaderKey;
+                    }
                     if (this.addCorsHeader) {
                         if (this.usePOST) {
                             options.url += "?add_http_cors_header=1";
@@ -77,21 +85,10 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                 ;
                 ClickHouseDatasource.prototype.query = function (options) {
                     var _this = this;
-                    var queries = [], q, adhocFilters = this.templateSrv.getAdhocFilters(this.name), keyColumns = [];
-                    lodash_1.default.map(options.targets, function (target) {
-                        if (!target.hide && target.query) {
-                            var queryModel = new sql_query_1.default(target, _this.templateSrv, options);
-                            q = queryModel.replace(options, adhocFilters);
-                            queries.push(q);
-                            try {
-                                var queryAST = new scanner_1.default(q).toAST();
-                                keyColumns.push(queryAST['group by'] || []);
-                            }
-                            catch (err) {
-                                console.log('AST parser error: ', err);
-                            }
-                        }
-                    });
+                    var queries = lodash_1.default(options.targets)
+                        .filter(function (target) { return !target.hide && target.query; })
+                        .map(function (target) { return _this.createQuery(options, target); })
+                        .value();
                     // No valid targets, return the empty result to save a round trip.
                     if (lodash_1.default.isEmpty(queries)) {
                         var d = this.$q.defer();
@@ -99,13 +96,13 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                         return d.promise;
                     }
                     var allQueryPromise = lodash_1.default.map(queries, function (query) {
-                        return _this._seriesQuery(query);
+                        return _this._seriesQuery(query.stmt, query.requestId);
                     });
                     return this.$q.all(allQueryPromise).then(function (responses) {
                         var result = [], i = 0;
                         lodash_1.default.each(responses, function (response) {
                             var target = options.targets[i];
-                            var keys = keyColumns[i];
+                            var keys = queries[i].keys;
                             i++;
                             if (!response || !response.rows) {
                                 return;
@@ -133,6 +130,24 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     });
                 };
                 ;
+                ClickHouseDatasource.prototype.createQuery = function (options, target) {
+                    var queryModel = new sql_query_1.default(target, this.templateSrv, options);
+                    var adhocFilters = this.templateSrv.getAdhocFilters(this.name);
+                    var stmt = queryModel.replace(options, adhocFilters);
+                    var keys = [];
+                    try {
+                        var queryAST = new scanner_1.default(stmt).toAST();
+                        keys = queryAST['group by'] || [];
+                    }
+                    catch (err) {
+                        console.log('AST parser error: ', err);
+                    }
+                    return {
+                        keys: keys,
+                        requestId: options.panelId + target.refId,
+                        stmt: stmt,
+                    };
+                };
                 ClickHouseDatasource.prototype.annotationQuery = function (options) {
                     var _this = this;
                     if (!options.annotation.query) {
@@ -171,6 +186,7 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     if (options && options.range) {
                         interpolatedQuery = sql_query_1.default.replaceTimeFilters(interpolatedQuery, options.range);
                     }
+                    // todo(nv): fix request id
                     return this._seriesQuery(interpolatedQuery)
                         .then(lodash_1.default.curry(this.responseParser.parse)(query));
                 };
@@ -181,10 +197,10 @@ System.register(['lodash', './sql_series', './sql_query', './response_parser', '
                     });
                 };
                 ;
-                ClickHouseDatasource.prototype._seriesQuery = function (query) {
+                ClickHouseDatasource.prototype._seriesQuery = function (query, requestId) {
                     query = query.replace(/(?:\r\n|\r|\n)/g, ' ');
                     query += ' FORMAT JSON';
-                    return this._request(query);
+                    return this._request(query, requestId);
                 };
                 ;
                 ClickHouseDatasource.prototype.targetContainsTemplate = function (target) {

@@ -1,3 +1,29 @@
+# 1.8.1 (2019-02-01)
+
+## New features:
+
+* Add `timeFilterByColumn` macro (thx to @simPod) #68
+
+## Fixes:
+
+* add requestId to queries so that abandoned one are cancelled (thx to @nvartolomei)
+* bug with parentheses in `$unescape` macros #90
+* bug with treating string as numbers in table view #97
+
+
+# 1.8.0 (2018-11-07)
+
+## New features
+
+* new $perSecond and $perSecondColumns macros (thx to @simPod) #78 #80
+* Date column is now optional #48
+
+## Fixes:
+
+* extend queried timerange for queries with round option to provide a graph without gaps in the rightmost and leftmost points #84
+* adhocs: check whether it is possibly to apply filters by comparing with parsed query or query builder settings #86
+
+
 # 1.7.0 (2018-09-05)
 
 ## New Features

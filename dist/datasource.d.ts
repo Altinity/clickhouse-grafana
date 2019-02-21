@@ -16,14 +16,22 @@ export declare class ClickHouseDatasource {
     addCorsHeader: boolean;
     responseParser: any;
     adhocCtrl: AdhocCtrl;
+    xHeaderUser: string;
+    xHeaderKey: string;
+    useYandexCloudAuthorization: boolean;
     /** @ngInject */
     constructor(instanceSettings: any, $q: any, backendSrv: any, templateSrv: any);
-    _request(query: any): any;
+    _request(query: string, requestId?: string): any;
     query(options: any): any;
+    createQuery(options: any, target: any): {
+        keys: any[];
+        requestId: any;
+        stmt: any;
+    };
     annotationQuery(options: any): any;
     metricFindQuery(query: string, options?: any): any;
     testDatasource(): any;
-    _seriesQuery(query: any): any;
+    _seriesQuery(query: string, requestId?: string): any;
     targetContainsTemplate(target: any): any;
     getTagKeys(): any;
     getTagValues(options: any): Promise<any>;

@@ -30,7 +30,7 @@ System.register(['lodash'], function(exports_1) {
                     lodash_1.default.each(self.series, function (ser) {
                         var r = [];
                         lodash_1.default.each(ser, function (v) {
-                            r.push(SqlSeries._formatValue(v));
+                            r.push(v);
                         });
                         rows.push(r);
                     });

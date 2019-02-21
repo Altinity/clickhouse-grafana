@@ -31,3 +31,10 @@ describe("Query SELECT with $timeFilterByColumn and range with from", () => {
     expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME')).to.be('SELECT * FROM table WHERE column_name >= toDateTime(1545613323)');
   });
 });
+
+describe("$unescape", () => {
+    const query = "SELECT $unescape('count()'), $unescape('if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate') FROM requests WHERE $unescape('client_ID') = 5";
+    it("gets replaced with >= filter", () => {
+        expect(SqlQuery.unescape(query)).to.be('SELECT count(), if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate FROM requests WHERE client_ID = 5');
+    });
+});

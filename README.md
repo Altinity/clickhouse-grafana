@@ -464,19 +464,29 @@ That's why plugin checks prev datapoints and tries to predict last datapoint val
 
 Alerts feature requires changes in `Grafana`'s backend, which can't be extended for now. `Grafana`'s maintainers are working on this feature.
 
-### Build
+### Development
 
-The build works with either NPM or Yarn:
+There are following scripts defined in package.json:
 
-```
-npm run build
+- `build:prod` – production-ready build
+- `build:dev` - development build (no uglify etc.)
+- `build:watch` - automatically rebuilds code on change (handy while developing)
+- `test` - runs test suite using Jest
+- `test:watch` - runs test suite using Jest in watch mode. Automatically reruns tests on source change.
+
+Each script can be run using NPM or Yarn package managers:
+
+```sh
+npm run <script>
 ```
 
-Tests can be run with following command:
+or 
 
+```sh
+yarn run <script>
 ```
-npm run test
-```
+
+(for example `npm run build`)
 
 For test examples please see `spec` folder. We strongly encourage contributors to add tests to check new changes or functionality.
 

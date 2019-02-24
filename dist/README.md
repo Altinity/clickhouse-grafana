@@ -466,13 +466,13 @@ Alerts feature requires changes in `Grafana`'s backend, which can't be extended 
 
 ### Build
 
-The build works with NPM:
+The build works with either NPM or Yarn:
 
 ```
 npm run build
 ```
 
-Tests can be run with Karma:
+Tests can be run with following command:
 
 ```
 npm run test

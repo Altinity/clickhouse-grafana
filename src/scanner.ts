@@ -76,7 +76,9 @@ export default class Scanner {
     }
 
     push(argument) {
-        this.tree[this.rootToken].push(argument);
+        if (Array.isArray(this.tree[this.rootToken])) {
+            this.tree[this.rootToken].push(argument);
+        }
         this.expectedNext = false;
     }
 

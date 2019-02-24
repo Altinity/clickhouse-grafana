@@ -478,6 +478,8 @@ Tests can be run with Karma:
 npm run test
 ```
 
+For test examples please see `spec` folder. We strongly encourage contributors to add tests to check new changes or functionality.
+
 ### Contribute
 
 If you have any idea for an improvement or found a bug do not hesitate to open an issue or submit a pull request.

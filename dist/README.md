@@ -466,29 +466,22 @@ Alerts feature requires changes in `Grafana`'s backend, which can't be extended 
 
 ### Build
 
-The build works with either NPM or Yarn:
+The build works with NPM:
 
 ```
-yarn run build
+npm run build
 ```
 
 Tests can be run with Karma:
 
 ```
-yarn run test
+npm run test
 ```
 
 ### Contribute
 
-Since we developed this plugin only for internal needs we don't have some of Grafana's features:
-
-* Alerts (this feature requires additional changes at backend and can't be solved by js-plugin)
-* Labels
-
-We know that code quality needs a tons of improvements and unit-tests. We will continue working on this. 
-If you have any idea for an improvement or found a bug do not hesitate to open an issue or submit a pull request. 
+If you have any idea for an improvement or found a bug do not hesitate to open an issue or submit a pull request.
 We will appreciate any help from the community which will make working with such amazing products as ClickHouse and Grafana more convenient.
-
 
 Plugin creation was inspired by great [grafana-sqldb-datasource](https://github.com/sraoss/grafana-sqldb-datasource)
 

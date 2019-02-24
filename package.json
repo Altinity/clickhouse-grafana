@@ -3,10 +3,11 @@
     "version": "1.8.1",
     "description": "ClickHouse datasource for Grafana",
     "scripts": {
-        "build": "webpack --config webpack.config.prod.js",
-        "dev": "webpack --mode development",
-        "watch": "webpack --mode development --watch",
-        "test": "jest --config jest.config.js"
+        "build:prod": "webpack --config webpack.config.prod.js",
+        "build:dev": "webpack --mode development",
+        "build:watch": "webpack --mode development --watch",
+        "test": "jest --config jest.config.js",
+        "test:watch": "jest --config jest.config.js --watch"
     },
     "author": "Vertamedia",
     "license": "MIT",
@@ -23,7 +24,6 @@
         "@babel/preset-typescript": "^7.1.0",
         "@types/grafana": "https://git@github.com/CorpGlory/types-grafana.git",
         "@types/jest": "^24.0.6",
-        "@types/lodash": "^4.14.119",
         "@types/lodash-es": "^4.17.1",
         "babel-core": "^6.26.3",
         "babel-jest": "^24.1.0",

@@ -1,6 +1,6 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 
-import {curry, each, filter, flow, isEmpty, map} from 'lodash-es';
+import {curry, each, filter, isEmpty, map} from 'lodash-es';
 
 import SqlSeries from './sql_series';
 import SqlQuery from './sql_query';
@@ -91,12 +91,10 @@ export class ClickHouseDatasource {
     };
 
     query(options) {
-        const queries = flow(
-            filter(target => !target.hide && target.query),
-            map(target => this.createQuery(options, target)),
-        )(options.targets)
-            .value();
-
+        const queries = map(
+            filter(options.targets, target => !target.hide && target.query),
+            target => this.createQuery(options, target)
+        );
         // No valid targets, return the empty result to save a round trip.
         if (isEmpty(queries)) {
             var d = this.$q.defer();

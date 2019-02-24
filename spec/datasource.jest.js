@@ -54,11 +54,11 @@ System.register(["lodash", "test/lib/common", "./../sql_series"], function (expo
                     });
                     var timeSeries = sqlSeries.getTimeSeries();
                     common_1.it("expects two results", function () {
-                        common_1.expect(lodash_1.default.size(timeSeries)).to.be(2);
+                        common_1.expect(lodash_1.default.size(timeSeries)).toBe(2);
                     });
                     common_1.it("should get three datapoints", function () {
-                        common_1.expect(lodash_1.default.size(timeSeries[0].datapoints)).to.be(3);
-                        common_1.expect(lodash_1.default.size(timeSeries[1].datapoints)).to.be(3);
+                        common_1.expect(lodash_1.default.size(timeSeries[0].datapoints)).toBe(3);
+                        common_1.expect(lodash_1.default.size(timeSeries[1].datapoints)).toBe(3);
                     });
                 });
                 common_1.describe("SELECT $columns response", function () {
@@ -99,17 +99,17 @@ System.register(["lodash", "test/lib/common", "./../sql_series"], function (expo
                     });
                     var timeSeries = sqlSeries.getTimeSeries();
                     common_1.it("expects four results", function () {
-                        common_1.expect(lodash_1.default.size(timeSeries)).to.be(4);
+                        common_1.expect(lodash_1.default.size(timeSeries)).toBe(4);
                     });
                     common_1.it("should get three datapoints", function () {
-                        common_1.expect(lodash_1.default.size(timeSeries[0].datapoints)).to.be(4);
-                        common_1.expect(lodash_1.default.size(timeSeries[1].datapoints)).to.be(4);
-                        common_1.expect(lodash_1.default.size(timeSeries[2].datapoints)).to.be(4);
-                        common_1.expect(lodash_1.default.size(timeSeries[3].datapoints)).to.be(4);
+                        common_1.expect(lodash_1.default.size(timeSeries[0].datapoints)).toBe(4);
+                        common_1.expect(lodash_1.default.size(timeSeries[1].datapoints)).toBe(4);
+                        common_1.expect(lodash_1.default.size(timeSeries[2].datapoints)).toBe(4);
+                        common_1.expect(lodash_1.default.size(timeSeries[3].datapoints)).toBe(4);
                     });
                 });
             });
         }
     };
 });
-//# sourceMappingURL=datasource_specs.js.map
+//# sourceMappingURL=datasource.jest.js.map

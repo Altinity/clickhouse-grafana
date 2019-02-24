@@ -1,4 +1,3 @@
-import {describe, it, expect} from './lib/common';
 import Scanner from '../src/scanner';
 
 describe("scanner:", () => {
@@ -92,7 +91,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -121,7 +120,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -153,7 +152,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -201,7 +200,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -220,7 +219,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -240,7 +239,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -260,7 +259,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -279,7 +278,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -338,7 +337,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -361,7 +360,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -403,7 +402,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -444,7 +443,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 
@@ -473,7 +472,7 @@ describe("scanner:", () => {
         };
 
         it("expects equality", () => {
-            expect(scanner.toAST()).to.eql(expectedAST);
+            expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
 });

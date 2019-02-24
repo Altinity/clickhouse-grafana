@@ -1,7 +1,6 @@
-import {describe, it, expect} from './lib/common';
 import Scanner from '../src/scanner';
 import SqlQuery from '../src/sql_query';
-import _ from "lodash";
+import { each } from 'lodash-es';
 
 class Case {
     name: string;
@@ -125,14 +124,14 @@ describe("macros builder:", () => {
         )
     ];
 
-    _.each(testCases, (tc) => {
+    each(testCases, (tc) => {
         if (tc.got !== tc.expected) {
             console.log(tc.got);
             console.log(tc.expected)
         }
         describe(tc.name, () => {
             it("expects equality", () => {
-                expect(tc.got).to.eql(tc.expected);
+                expect(tc.got).toEqual(tc.expected);
             });
         })
     });

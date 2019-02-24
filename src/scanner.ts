@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import { isArray, isEmpty, toLower, toUpper } from 'lodash-es';
 
 export default class Scanner {
     tree: any;
@@ -29,7 +29,7 @@ export default class Scanner {
     }
 
     isToken(token) {
-        return _.toUpper(token) === _.toUpper(this.token);
+        return toUpper(token) === toUpper(this.token);
     }
 
     expectNext() {
@@ -109,7 +109,7 @@ export default class Scanner {
             argument = '';
 
         while (this.next()) {
-            if (!this.isExpectedNext() && isStatement(this.token) && !this.tree.hasOwnProperty(_.toLower(this.token))) {
+            if (!this.isExpectedNext() && isStatement(this.token) && !this.tree.hasOwnProperty(toLower(this.token))) {
                 if (!isClosured(argument)) {
                     argument += this.appendToken(argument);
                     continue;
@@ -391,7 +391,7 @@ var tabSize = '    ', // 4 spaces
 
 function printItems(items, tab = '', separator = '') {
     var result = '';
-    if (_.isArray(items)) {
+    if (isArray(items)) {
         if (items.length === 1) {
             result += ' ' + items[0];
         } else {
@@ -417,7 +417,7 @@ function toAST(s) {
 }
 
 function isSet(obj, prop) {
-    return obj.hasOwnProperty(prop) && !_.isEmpty(obj[prop]);
+    return obj.hasOwnProperty(prop) && !isEmpty(obj[prop]);
 }
 
 function isClosured(argument) {

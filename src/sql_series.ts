@@ -1,4 +1,4 @@
-import _ from 'lodash';
+import {each, isArray} from 'lodash-es';
 
 export default class SqlSeries {
     series: any;
@@ -25,14 +25,14 @@ export default class SqlSeries {
         }
 
         let columns = [];
-        _.each(self.meta, function (col) {
+        each(self.meta, function (col) {
             columns.push({"text": col.name, "type": SqlSeries._toJSType(col.type)})
         });
 
         let rows = [];
-        _.each(self.series, function (ser) {
+        each(self.series, function (ser) {
             let r = [];
-            _.each(ser, function (v) {
+            each(ser, function (v) {
                 r.push(v)
             });
             rows.push(r)
@@ -58,7 +58,7 @@ export default class SqlSeries {
         let timeCol = self.meta[0];
         let lastTimeStamp = self.series[0][timeCol.name];
         let keyColumns = self.keys.filter(name => name != timeCol.name);
-        _.each(self.series, function (row) {
+        each(self.series, function (row) {
             let t = SqlSeries._formatValue(row[timeCol.name]);
             /* Build composite key (categories) from GROUP BY */
             let metricKey = null;
@@ -68,7 +68,7 @@ export default class SqlSeries {
             /* Make sure all series end with a value or nil for current timestamp
              * to render discontiguous timeseries properly. */
             if (lastTimeStamp < t) {
-                _.each(metrics, function (datapoints, seriesName) {
+                each(metrics, function (datapoints, seriesName) {
                     if (datapoints[datapoints.length - 1][1] < lastTimeStamp) {
                         datapoints.push([null, lastTimeStamp]);
                     }
@@ -76,7 +76,7 @@ export default class SqlSeries {
                 lastTimeStamp = t;
             }
             /* For each metric-value pair in row, construct a datapoint */
-            _.each(row, function (val, key) {
+            each(row, function (val, key) {
                 /* Skip timestamp and GROUP BY keys */
                 if ((self.keys.length == 0 && timeCol.name == key) || self.keys.indexOf(key) >= 0) {
                     return;
@@ -86,9 +86,9 @@ export default class SqlSeries {
                 if (metricKey) {
                     key = metricKey;
                 }
-                if (_.isArray(val)) {
+                if (isArray(val)) {
                     /* Expand groupArray into multiple timeseries */
-                    _.each(val, function (arr) {
+                    each(val, function (arr) {
                         SqlSeries._pushDatapoint(metrics, t, arr[0], arr[1]);
                     });
                 } else {
@@ -97,7 +97,7 @@ export default class SqlSeries {
             });
         });
 
-        _.each(metrics, function (datapoints, seriesName) {
+        each(metrics, function (datapoints, seriesName) {
             timeSeries.push({target: seriesName, datapoints: self.extrapolate(datapoints)});
         });
 

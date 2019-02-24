@@ -1,12 +1,11 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 
-import $ from 'jquery';
-import _ from 'lodash';
+import {map} from 'lodash-es';
 import './clickhouse-info';
 import './mode-clickhouse';
 import './snippets/clickhouse';
 import SqlQuery from './sql_query';
-import {QueryCtrl} from 'app/plugins/sdk';
+import {QueryCtrl} from 'grafana/app/plugins/sdk';
 import Scanner from './scanner';
 
 const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
@@ -67,7 +66,7 @@ class SqlQueryCtrl extends QueryCtrl {
             this.target.dateTimeColDataType || {fake: true, value: '-- dateTime : col --'}
         );
 
-        this.resolutions = _.map([1, 2, 3, 4, 5, 10], function (f) {
+        this.resolutions = map([1, 2, 3, 4, 5, 10], function (f) {
             return {factor: f, label: '1/' + f};
         });
 
@@ -162,7 +161,7 @@ class SqlQueryCtrl extends QueryCtrl {
     toggleEdit(e: any, editMode: boolean) {
         if (editMode) {
             this.editMode = true;
-            this.textareaHeight = "height: " + $(e.currentTarget).outerHeight() + "px;";
+            this.textareaHeight = "height: " + e.currentTarget.offsetHeight + "px;";
             return;
         }
 

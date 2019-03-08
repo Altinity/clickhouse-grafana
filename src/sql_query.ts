@@ -100,9 +100,9 @@ export default class SqlQuery {
         this.target.rawQuery = query
             .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
             .replace(/\$timeFilter/g, timeFilter)
-            .replace(/\$table/g, this.target.database + '.' + this.target.table)
-            .replace(/\$dateCol/g, this.target.dateColDataType)
-            .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
+            .replace(/\$table/g, SqlQuery.escapeIdentifier(this.target.database) + '.' + SqlQuery.escapeIdentifier(this.target.table))
+            .replace(/\$dateCol/g, SqlQuery.escapeIdentifier(this.target.dateColDataType))
+            .replace(/\$dateTimeCol/g, SqlQuery.escapeIdentifier(this.target.dateTimeColDataType))
             .replace(/\$interval/g, interval)
             .replace(/\$adhoc/g, renderedAdHocCondition)
             .replace(/(?:\r\n|\r|\n)/g, ' ');
@@ -113,6 +113,14 @@ export default class SqlQuery {
         this.target.rawQuery = SqlQuery.replaceTimeFilters(this.target.rawQuery, this.options.range, dateTimeType, round);
 
         return this.target.rawQuery;
+    }    
+    
+    static escapeIdentifier(identifier: string): string {
+        if (/^[a-zA-Z_][0-9a-zA-Z_]*$/.test(identifier)) {
+            return identifier;
+        } else {
+            return '`' + identifier.replace(/`/g, '``') + '`';
+        }
     }
 
     static replaceTimeFilters(query: string, range: TimeRange, dateTimeType : string = 'DATETIME', round?: number): string {

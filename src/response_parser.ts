@@ -1,31 +1,52 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
-import {each, isObject} from 'lodash-es';
+import {isObject} from 'lodash-es';
 
 export default class ResponseParser {
     constructor(private $q) {
     }
 
-    parse(query, results) {
+    parse(query: string, results: any) : any[] {
         if (!results || results.data.length === 0) {
             return [];
         }
 
-        var sqlResults = results.data;
-        var res = [];
-        each(sqlResults, r => {
-            if (!isObject(r)) {
-                res.push({text: r});
+        const sqlResults = results.data;
+        const res = [];
+
+        const keys = Object.keys(sqlResults[0]);
+        const textColIndex = ResponseParser.findColIndex(keys, '__text');
+        const valueColIndex = ResponseParser.findColIndex(keys, '__value');
+        const keyValuePairs = keys.length === 2 && textColIndex !== -1 && valueColIndex !== -1;
+
+        sqlResults.forEach(result => {
+            if (!isObject(result)) {
+                res.push({ text: result });
                 return
             }
-            let keys = Object.keys(r);
+
+            let keys = Object.keys(result);
             if (keys.length > 1) {
-                res.push(r);
+                if (keyValuePairs) {
+                    res.push({ text: result[keys[textColIndex]], value: result[keys[valueColIndex]]});
+                } else {
+                    res.push(result);
+                }
             } else {
-                res.push({text: r[keys[0]]});
+                res.push({ text: result[keys[0]]});
             }
         });
 
         return res
+    }
+
+    static findColIndex(columns: string[], colName: string) : number {
+        for (let i = 0; i < columns.length; i++) {
+            if (columns[i] === colName) {
+                return i;
+            }
+        }
+
+        return -1;
     }
 
     transformAnnotationResponse(options, data) {

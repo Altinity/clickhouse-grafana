@@ -45,3 +45,21 @@ describe("$unescape", () => {
         expect(SqlQuery.unescape(query)).toBe(expQuery);
     });
 });
+
+describe("Identifiers back-quoting", () => {
+    it("Standard identifier - untouched", () => {
+        expect(SqlQuery.escapeIdentifier("My_Identifier_33")).toBe("My_Identifier_33");
+    });
+    it("Begining with number", () => {
+        expect(SqlQuery.escapeIdentifier("1nfoVista")).toBe("`1nfoVista`");
+    });
+    it("Containing spaces", () => {
+        expect(SqlQuery.escapeIdentifier("My Identifier")).toBe("`My Identifier`");
+    });
+    it("Containing special characters", () => {
+        expect(SqlQuery.escapeIdentifier("My/Identifier")).toBe("`My/Identifier`");
+    });
+    it("Containing back-quote", () => {
+        expect(SqlQuery.escapeIdentifier("My`Bad`Identifier")).toBe("`My``Bad``Identifier`");
+    });
+});

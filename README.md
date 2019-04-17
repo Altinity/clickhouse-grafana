@@ -323,7 +323,7 @@ with 2 variables
   $text textbox 
   
   The following query 
-  ```
+  ```sql
    SELECT
      $timeSeries as t,
      count()
@@ -337,7 +337,7 @@ with 2 variables
   
    if the $var is all selected and the $text is empty , the query will be converted into 
    
-  ```
+  ```sql
     SELECT
       $timeSeries as t,
       count()
@@ -348,7 +348,7 @@ with 2 variables
   ```
   If $var have some element selected and the $text has at least one char , the query will be converted into 
   
-  ```
+  ```sql
   SELECT
       $timeSeries as t,
       count()

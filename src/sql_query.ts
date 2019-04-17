@@ -537,7 +537,7 @@ export default class SqlQuery {
             return "'" + value.replace(/[\\']/g, '\\$&') + "'";
         }
     }
-	static conditionalTest(query,templateSrv) {
+    static conditionalTest(query,templateSrv) {
         let macros = '$conditionalTest(';
         let openMacros = query.indexOf(macros);
         while (openMacros !== -1) {
@@ -552,14 +552,18 @@ export default class SqlQuery {
             // remove the $ from the variable 
             let varinparam = param2.substring(1);
             let done = 0;
-            //no find in the list of variable what is the value 
-			for(var i=0;i<templateSrv.variables.length;i++){
-				var varG = templateSrv.variables[i];
-				if(varG.name===varinparam){
+            //now find in the list of variable what is the value 
+	     for(var i=0;i<templateSrv.variables.length;i++){
+		var varG = templateSrv.variables[i];
+		if(varG.name===varinparam){
                     let closeMacros = openMacros + macros.length + r.result.length + 1;
                     done = 1;
-					if((varG.type==='query' && varG.current.value.length==1 && varG.current.value[0]==='$__all') || 
-					(varG.type==='textbox' && varG.current.value==='')){
+		    if(
+			    // for query variable when all is selected 
+			    // may be add another test on the all activation may be wise.
+			    (varG.type==='query' && varG.current.value.length==1 && varG.current.value[0]==='$__all') ||
+			    // for textbox variable when nothing is entered 
+			    (varG.type==='textbox' && varG.current.value==='')){
                         query = query.substring(0, openMacros)  + ' ' + query.substring(closeMacros, query.length);
                       }else{
                         // replace of the macro with standard test.

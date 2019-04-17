@@ -310,12 +310,12 @@ You can also create nested variables. For example if you had another variable na
 SELECT hostname FROM host WHERE region IN ($region)
 ```
 
-### conditional Predicate 
+### Conditional Predicate 
 
 If you are using templating to feed your predicate , you will face performance degradation when everything is selected as the predicate is not necessary. It's also true for textbox when nothing is enter , you have to write specific sql code to handle that. 
 
-To workaround this issue a new macro $conditionalTest(SQL Predicate,$variable) can be used to remove some part of sql. 
-If the variable is query with all selected or If the variable is a textbox with nothing enter , then the SQL Predicate is not included in the generated query otherwise it does.
+To workaround this issue a new macro $conditionalTest(SQL Predicate,$variable) can be used to remove some part of the query. 
+If the variable is type query with all selected or if the variable is a textbox with nothing enter , then the SQL Predicate is not included in the generated query.
 
 To give an example:
 with 2 variables 
@@ -323,19 +323,21 @@ with 2 variables
   $text textbox 
   
   The following query 
-  
-     SELECT
-      $timeSeries as t,
-      count()
-       FROM $table
-       WHERE $timeFilter
+  ```
+   SELECT
+     $timeSeries as t,
+     count()
+     FROM $table
+     WHERE $timeFilter
       $condionalTest(AND toLowerCase(column) in ($var),$var)
       $condionalTest(AND toLowerCase(column2) like '%$text%',$text)
      GROUP BY t
      ORDER BY t
+  ```
   
    if the $var is all selected and the $text is empty , the query will be converted into 
    
+  ```
     SELECT
       $timeSeries as t,
       count()
@@ -343,10 +345,11 @@ with 2 variables
        WHERE $timeFilter
      GROUP BY t
      ORDER BY t
-
+  ```
   If $var have some element selected and the $text has at least one char , the query will be converted into 
   
-    SELECT
+  ```
+  SELECT
       $timeSeries as t,
       count()
        FROM $table
@@ -355,7 +358,7 @@ with 2 variables
      AND toLowerCase(column2) like '%$text%'
      GROUP BY t
      ORDER BY t
- 
+ ```
  
 ### Working with panels
 

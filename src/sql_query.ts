@@ -97,10 +97,16 @@ export default class SqlQuery {
         if (typeof this.target.dateColDataType == "string" && this.target.dateColDataType.length > 0) {
             timeFilter = SqlQuery.getDateFilter(this.options.rangeRaw.to === 'now') + ' AND ' + timeFilter
         }
+
+        let table = SqlQuery.escapeIdentifier(this.target.table);
+        if (this.target.database) {
+            table =  SqlQuery.escapeIdentifier(this.target.database) + '.' + table;
+        }
+
         this.target.rawQuery = query
             .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
             .replace(/\$timeFilter/g, timeFilter)
-            .replace(/\$table/g, SqlQuery.escapeIdentifier(this.target.database) + '.' + SqlQuery.escapeIdentifier(this.target.table))
+            .replace(/\$table/g, table)
             .replace(/\$dateCol/g, SqlQuery.escapeIdentifier(this.target.dateColDataType))
             .replace(/\$dateTimeCol/g, SqlQuery.escapeIdentifier(this.target.dateTimeColDataType))
             .replace(/\$interval/g, interval)

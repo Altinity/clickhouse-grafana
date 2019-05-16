@@ -30,6 +30,7 @@ class SqlQueryCtrl extends QueryCtrl {
     editMode: boolean;
     textareaHeight: any;
     dateTimeTypeOptions: any;
+    rawQuery: any;
 
     completerCache: any[];
 
@@ -41,7 +42,7 @@ class SqlQueryCtrl extends QueryCtrl {
     showHelp: boolean;
 
     /** @ngInject **/
-    constructor($scope, $injector, templateSrv, private uiSegmentSrv) {
+    constructor($scope, $injector, private templateSrv, private uiSegmentSrv) {
         super($scope, $injector);
 
         this.queryModel = new SqlQuery(this.target, templateSrv, this.panel.scopedVars);
@@ -87,7 +88,6 @@ class SqlQueryCtrl extends QueryCtrl {
         this.target.round = this.target.round || "0s";
         this.target.intervalFactor = this.target.intervalFactor || 1;
         this.target.query = this.target.query || defaultQuery;
-        this.target.formattedQuery = this.target.formattedQuery || this.target.query;
         this.scanner = new Scanner(this.target.query);
         if (this.target.query === defaultQuery) {
             this.target.query = this.format();
@@ -154,10 +154,6 @@ class SqlQueryCtrl extends QueryCtrl {
         }
     }
 
-    toggleEditorMode() {
-        this.target.rawQuery = !this.target.rawQuery;
-    }
-
     toggleEdit(e: any, editMode: boolean) {
         if (editMode) {
             this.editMode = true;
@@ -169,6 +165,15 @@ class SqlQueryCtrl extends QueryCtrl {
             this.editMode = false;
             this.refresh();
         }
+    }
+
+    toggleLastQuerySQL() {
+        if (this.showLastQuerySQL) {
+            const adhocFilters = this.templateSrv.getAdhocFilters(this.datasource.name);
+
+            this.rawQuery = this.queryModel.replace(this.datasource.lastQueryOptions, adhocFilters);
+        }
+        this.showLastQuerySQL = !this.showLastQuerySQL;
     }
 
     getCompleter() {
@@ -269,11 +274,6 @@ class SqlQueryCtrl extends QueryCtrl {
     formatQuery() {
         this.target.query = this.format();
         this.toggleEdit({}, false);
-    }
-
-    toQueryMode() {
-        this.toggleEditorMode();
-        this.refresh();
     }
 
     format() {

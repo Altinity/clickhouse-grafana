@@ -93,11 +93,14 @@ export default class SqlQuery {
         }
 
         query = SqlQuery.unescape(query);
-        let timeFilter = SqlQuery.getDateTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType);
+
+        const timeRangeRaw = this.options && this.options.rangeRaw || options.rangeRaw;
+        let timeFilter = SqlQuery.getDateTimeFilter(timeRangeRaw.to === 'now', dateTimeType);
         if (typeof this.target.dateColDataType == "string" && this.target.dateColDataType.length > 0) {
-            timeFilter = SqlQuery.getDateFilter(this.options.rangeRaw.to === 'now') + ' AND ' + timeFilter
+            timeFilter = SqlQuery.getDateFilter(timeRangeRaw.to === 'now') + ' AND ' + timeFilter
         }
-        this.target.rawQuery = query
+
+        let rawQuery = query
             .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
             .replace(/\$timeFilter/g, timeFilter)
             .replace(/\$table/g, SqlQuery.escapeIdentifier(this.target.database) + '.' + SqlQuery.escapeIdentifier(this.target.table))
@@ -110,11 +113,14 @@ export default class SqlQuery {
         const round = this.target.round === "$step"
           ? interval
           : SqlQuery.convertInterval(this.target.round, 1);
-        this.target.rawQuery = SqlQuery.replaceTimeFilters(this.target.rawQuery, this.options.range, dateTimeType, round);
+        const timeRange = this.options && this.options.range || options.range;
 
-        return this.target.rawQuery;
-    }    
-    
+        rawQuery = SqlQuery.replaceTimeFilters(rawQuery, timeRange, dateTimeType, round);
+        this.target.rawQuery = rawQuery;
+
+        return rawQuery;
+    }
+
     static escapeIdentifier(identifier: string): string {
         if (/^[a-zA-Z_][0-9a-zA-Z_]*$/.test(identifier)) {
             return identifier;

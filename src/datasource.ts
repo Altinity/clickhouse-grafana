@@ -26,6 +26,7 @@ export class ClickHouseDatasource {
     xHeaderUser: string;
     xHeaderKey: string;
     useYandexCloudAuthorization: boolean;
+    lastQueryOptions: any;
 
     /** @ngInject */
     constructor(instanceSettings,
@@ -95,6 +96,9 @@ export class ClickHouseDatasource {
             filter(options.targets, target => !target.hide && target.query),
             target => this.createQuery(options, target)
         );
+
+        this.lastQueryOptions = options;
+
         // No valid targets, return the empty result to save a round trip.
         if (isEmpty(queries)) {
             var d = this.$q.defer();

@@ -1,7 +1,7 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 
-import _ from 'lodash';
-import * as dateMath from 'app/core/utils/datemath';
+import {each, isArray, isEmpty, isString, map} from 'lodash-es';
+import * as dateMath from 'grafana/app/core/utils/datemath';
 import moment from 'moment';
 import Scanner from './scanner';
 
@@ -44,7 +44,7 @@ export default class SqlQuery {
             let topQuery = ast;
             if (adhocFilters.length > 0) {
                 /* Check subqueries for ad-hoc filters */
-                while (!_.isArray(ast.from)) {
+                while (!isArray(ast.from)) {
                     ast = ast.from;
                 }
                 if (!ast.hasOwnProperty('where')) {
@@ -97,12 +97,18 @@ export default class SqlQuery {
         if (typeof this.target.dateColDataType == "string" && this.target.dateColDataType.length > 0) {
             timeFilter = SqlQuery.getDateFilter(this.options.rangeRaw.to === 'now') + ' AND ' + timeFilter
         }
+
+        let table = SqlQuery.escapeIdentifier(this.target.table);
+        if (this.target.database) {
+            table =  SqlQuery.escapeIdentifier(this.target.database) + '.' + table;
+        }
+
         this.target.rawQuery = query
             .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
             .replace(/\$timeFilter/g, timeFilter)
-            .replace(/\$table/g, this.target.database + '.' + this.target.table)
-            .replace(/\$dateCol/g, this.target.dateColDataType)
-            .replace(/\$dateTimeCol/g, this.target.dateTimeColDataType)
+            .replace(/\$table/g, table)
+            .replace(/\$dateCol/g, SqlQuery.escapeIdentifier(this.target.dateColDataType))
+            .replace(/\$dateTimeCol/g, SqlQuery.escapeIdentifier(this.target.dateTimeColDataType))
             .replace(/\$interval/g, interval)
             .replace(/\$adhoc/g, renderedAdHocCondition)
             .replace(/(?:\r\n|\r|\n)/g, ' ');
@@ -113,6 +119,16 @@ export default class SqlQuery {
         this.target.rawQuery = SqlQuery.replaceTimeFilters(this.target.rawQuery, this.options.range, dateTimeType, round);
 
         return this.target.rawQuery;
+    }
+
+    static escapeIdentifier(identifier: string): string {
+        if (/^[a-zA-Z_][0-9a-zA-Z_]*$/.test(identifier)
+            || /\(.*\)/.test(identifier)
+        ) {
+            return identifier;
+        } else {
+            return '`' + identifier.replace(/`/g, '``') + '`';
+        }
     }
 
     static replaceTimeFilters(query: string, range: TimeRange, dateTimeType : string = 'DATETIME', round?: number): string {
@@ -202,7 +218,7 @@ export default class SqlQuery {
     }
 
     static contain(obj: any, field: string): boolean {
-        return obj.hasOwnProperty(field) && !_.isEmpty(obj[field])
+        return obj.hasOwnProperty(field) && !isEmpty(obj[field])
     }
 
     static _parseMacros(macros: string, query: string): string {
@@ -299,7 +315,7 @@ export default class SqlQuery {
 
     static _rate(args, fromQuery: string): string {
         var aliases = [];
-        _.each(args, function (arg) {
+        each(args, function (arg) {
             if (arg.slice(-1) === ')') {
                 throw {message: 'Argument "' + arg + '" cant be used without alias'};
             }
@@ -307,7 +323,7 @@ export default class SqlQuery {
         });
 
         var cols = [];
-        _.each(aliases, function (a) {
+        each(aliases, function (a) {
             cols.push(a + '/runningDifference(t/1000) ' + a + 'Rate');
         });
 
@@ -379,7 +395,7 @@ export default class SqlQuery {
             throw {message: 'Amount of arguments must be > 0 for $perSecond func. Parsed arguments are:  ' + args.join(', ')};
         }
 
-        _.each(args, function (a, i) {
+        each(args, function (a, i) {
             args[i] = 'max(' + a.trim() + ') AS max_' + i
         });
 
@@ -388,7 +404,7 @@ export default class SqlQuery {
 
     static _perSecond(args, fromQuery: string): string {
         let cols = [];
-        _.each(args, function (a, i) {
+        each(args, function (a, i) {
             cols.push('if(runningDifference(max_' + i + ') < 0, nan, ' +
                 'runningDifference(max_' + i + ') / runningDifference(t/1000)) AS max_' + i + '_Rate');
         });
@@ -447,7 +463,7 @@ export default class SqlQuery {
     // date is a moment object
     static convertTimestamp(date: any) {
         //return date.format("'Y-MM-DD HH:mm:ss'")
-        if (_.isString(date)) {
+        if (isString(date)) {
             date = dateMath.parse(date, true);
         }
 
@@ -459,7 +475,7 @@ export default class SqlQuery {
             return date;
         }
 
-        if (_.isString(date)) {
+        if (isString(date)) {
             date = dateMath.parse(date, true);
         }
 
@@ -494,7 +510,7 @@ export default class SqlQuery {
         if (typeof value === 'string') {
             return SqlQuery.clickhouseEscape(value, variable);
         }
-        let escapedValues = _.map(value, function (v) {
+        let escapedValues = map(value, function (v) {
             return SqlQuery.clickhouseEscape(v, variable);
         });
         return escapedValues.join(',');
@@ -520,7 +536,7 @@ export default class SqlQuery {
     static clickhouseEscape(value, variable) {
         var isDigit = true;
         // if at least one of options is not digit
-        _.each(variable.options, function (opt): boolean {
+        each(variable.options, function (opt): boolean {
             if (opt.value === '$__all') {
                 return true;
             }

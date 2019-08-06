@@ -242,7 +242,7 @@ let wsRe = "\\s+",
     intRe = "\\d+",
     powerIntRe = "\\d+e\\d+",
     floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+",
-    stringRe = "('[^']*')|(`[^`]*`)",
+    stringRe = "('[^']*')|(`[^`]*`)|(\"[^\"]*\")",
     binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|->|[-+/%*=<>\\.!]",
     statementRe = "\\b(select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b",
     joinsRe = "(any inner join|any left join|all inner join|all left join" +

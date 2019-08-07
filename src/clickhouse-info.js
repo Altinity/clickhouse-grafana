@@ -163,7 +163,8 @@ ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], functio
         "$columns",
         "$rateColumns",
         "$unescape",
-        "$adhoc"
+        "$adhoc",
+        "$conditionalTest"
     ];
     p.KeywordsRe = function () {
         return this.re(p.Keywords)

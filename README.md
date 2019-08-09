@@ -329,8 +329,8 @@ with 2 variables
      count()
      FROM $table
      WHERE $timeFilter
-      $condionalTest(AND toLowerCase(column) in ($var),$var)
-      $condionalTest(AND toLowerCase(column2) like '%$text%',$text)
+      $conditionalTest(AND toLowerCase(column) in ($var),$var)
+      $conditionalTest(AND toLowerCase(column2) like '%$text%',$text)
      GROUP BY t
      ORDER BY t
   ```

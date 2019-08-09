@@ -309,6 +309,56 @@ You can also create nested variables. For example if you had another variable na
 ```sql
 SELECT hostname FROM host WHERE region IN ($region)
 ```
+
+### Conditional Predicate 
+
+If you are using templating to feed your predicate , you will face performance degradation when everything is selected as the predicate is not necessary. It's also true for textbox when nothing is enter , you have to write specific sql code to handle that. 
+
+To workaround this issue a new macro $conditionalTest(SQL Predicate,$variable) can be used to remove some part of the query. 
+If the variable is type query with all selected or if the variable is a textbox with nothing enter , then the SQL Predicate is not included in the generated query.
+
+To give an example:
+with 2 variables 
+  $var query with include All option 
+  $text textbox 
+  
+  The following query 
+  ```sql
+   SELECT
+     $timeSeries as t,
+     count()
+     FROM $table
+     WHERE $timeFilter
+      $conditionalTest(AND toLowerCase(column) in ($var),$var)
+      $conditionalTest(AND toLowerCase(column2) like '%$text%',$text)
+     GROUP BY t
+     ORDER BY t
+  ```
+  
+   if the $var is all selected and the $text is empty , the query will be converted into 
+   
+  ```sql
+    SELECT
+      $timeSeries as t,
+      count()
+       FROM $table
+       WHERE $timeFilter
+     GROUP BY t
+     ORDER BY t
+  ```
+  If $var have some element selected and the $text has at least one char , the query will be converted into 
+  
+  ```sql
+  SELECT
+      $timeSeries as t,
+      count()
+       FROM $table
+       WHERE $timeFilter
+     AND toLowerCase(column) in ($var)
+     AND toLowerCase(column2) like '%$text%'
+     GROUP BY t
+     ORDER BY t
+ ```
  
 ### Working with panels
 

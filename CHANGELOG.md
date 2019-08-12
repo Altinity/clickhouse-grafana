@@ -1,3 +1,19 @@
+# 1.9.0 (2019-08-12)
+
+## New features:
+
+* Add macro `conditionalTest` (thx to @TH-HA) #122
+* Add support for connect to Yandex.Cloud ClickHouse (thx to @negasus) #106
+
+## Fixes:
+
+* Fix identifier back quoting when there is a function call
+* Fix AST parser errors for quotes (thx to @Fiery-Fenix) #128 
+* Added default database to all requests from datasource options (thx to @Fiery-Fenix) #126
+* Drop lodash fcn composition (thx to @simPod) #110
+* Cleanup build (thx to @simPod) #112
+
+
 # 1.8.1 (2019-02-01)
 
 ## New features:

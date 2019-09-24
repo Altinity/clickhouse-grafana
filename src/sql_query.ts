@@ -578,7 +578,7 @@ export default class SqlQuery {
 			    // for query variable when all is selected 
 			    // may be add another test on the all activation may be wise.
 			    (varG.type==='query' && ((varG.current.value.length==1 && varG.current.value[0]==='$__all') 
-                || (typeof(varG.current.value) === 'string' && varG.current.value === '$_all'))) ||
+                || (typeof(varG.current.value) === 'string' && varG.current.value === '$__all'))) ||
 			    // for textbox variable when nothing is entered 
 			    (varG.type==='textbox' && varG.current.value==='')){
                         query = query.substring(0, openMacros)  + ' ' + query.substring(closeMacros, query.length);

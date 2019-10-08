@@ -1,12 +1,13 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 
 import {map} from 'lodash-es';
-import './clickhouse-info';
-import './mode-clickhouse';
-import './snippets/clickhouse';
-import SqlQuery from './sql_query';
 import {QueryCtrl} from 'grafana/app/plugins/sdk';
+import SqlQuery from './sql_query';
 import Scanner from './scanner';
+
+import chInfo from './clickhouse-info.js';
+import chMode from './mode-clickhouse.js';
+import chSnippets from './snippets/clickhouse.js';
 
 const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
 
@@ -39,6 +40,8 @@ class SqlQueryCtrl extends QueryCtrl {
 
     showLastQuerySQL: boolean;
     showHelp: boolean;
+
+    editorLoaded: boolean = false;
 
     /** @ngInject **/
     constructor($scope, $injector, templateSrv, private uiSegmentSrv) {
@@ -97,6 +100,8 @@ class SqlQueryCtrl extends QueryCtrl {
         if (this.target.database === undefined && !defaultDatabaseSegment.fake) {
             this.databaseChanged();
         }
+
+        this.initEditor();
     }
 
     getCollapsedText() {
@@ -154,8 +159,25 @@ class SqlQueryCtrl extends QueryCtrl {
         }
     }
 
+    initEditor() {
+        if (this.editorLoaded) {
+            return;
+        }
+
+        if (chInfo()) {
+            chMode();
+            chSnippets();
+
+            this.editorLoaded = true;
+        } else {
+            setTimeout(this.initEditor, 500);
+        }
+    }
+
     toggleEditorMode() {
         this.target.rawQuery = !this.target.rawQuery;
+
+        this.initEditor();
     }
 
     toggleEdit(e: any, editMode: boolean) {

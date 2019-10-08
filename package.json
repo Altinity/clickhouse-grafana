@@ -32,7 +32,6 @@
         "clean-webpack-plugin": "^1.0.1",
         "copy-webpack-plugin": "^4.6.0",
         "grafana-sdk-mocks": "github:grafana/grafana-sdk-mocks",
-        "jest": "^24.1.0",
         "ng-annotate-webpack-plugin": "^0.3.0",
         "plugin-typescript": "^8.0.0",
         "sinon": "^3.3.0",
@@ -40,9 +39,9 @@
         "ts-jest": "^23.10.5",
         "ts-loader": "^5.3.3",
         "tslint": "^5.9.1",
-        "typescript": "^3.2.2",
-        "uglifyjs-webpack-plugin": "^2.1.1",
-        "webpack": "^4.29.5",
-        "webpack-cli": "^3.2.3"
+        "typescript": "^3.6.3",
+        "uglifyjs-webpack-plugin": "^2.2.0",
+        "webpack": "^4.41.0",
+        "webpack-cli": "^3.3.9"
     }
 }

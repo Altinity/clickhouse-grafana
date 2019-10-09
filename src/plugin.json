@@ -13,7 +13,7 @@
       "name": "Vertamedia",
       "url": "https://vertamedia.com/"
     },
-    "keywords": ["clickhouse"],
+    "keywords": ["clickhouse", "datasource", "analytics", "timeseries"],
     "logos": {
       "small": "img/clickhouse_logo.svg",
       "large": "img/clickhouse_logo.svg"

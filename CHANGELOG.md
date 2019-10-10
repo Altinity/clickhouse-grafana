@@ -1,3 +1,11 @@
+# 1.9.2 (2019-10-10)
+
+## Fixes:
+* Compatibility fix to support grafana 6.4.x
+* Ad Hoc Filters fix
+* $conditionalTest ALL value option fix
+
+
 # 1.9.0 (2019-08-12)
 
 ## New features:

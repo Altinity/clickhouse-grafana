@@ -39,6 +39,7 @@ export default class SqlQuery {
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1),
             adhocCondition = [];
+
         try {
             let ast = scanner.toAST();
             let topQuery = ast;
@@ -70,7 +71,7 @@ export default class SqlQuery {
                         return
                     }
                     let operator = SqlQuery.clickhouseOperator(af.operator);
-                    let cond = parts[2] + " " + operator + " " + af.value;
+                    let cond = parts[2] + " " + operator + " " + ("'" + af.value + "'");
                     adhocCondition.push(cond);
                     if (ast.where.length > 0) {
                         // OR is not implemented
@@ -81,6 +82,7 @@ export default class SqlQuery {
                 });
                 query = scanner.Print(topQuery);
             }
+
             query = SqlQuery.applyMacros(query, ast)
         } catch (err) {
             console.error('AST parser error: ', err)

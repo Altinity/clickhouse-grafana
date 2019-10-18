@@ -1,3 +1,8 @@
+# 1.9.3 (2019-10-18)
+
+## Fixes:
+* Ad Hoc Filters improvements for complex usage
+
 # 1.9.2 (2019-10-10)
 
 ## Fixes:

@@ -115,6 +115,7 @@ class SqlQueryCtrl extends QueryCtrl {
     getDateColDataTypeSegments() {
         var target = this.target;
         target.dateLoading = true;
+
         return this.querySegment('DATE').then(function (response) {
             target.dateLoading = false;
             return response;
@@ -352,7 +353,8 @@ class SqlQueryCtrl extends QueryCtrl {
                     'WHERE database = \'' + this.target.database + '\' AND ' +
                     'table = \'' + this.target.table + '\' AND ' +
                     'type = \'Date\' ' +
-                    'ORDER BY name';
+                    'ORDER BY name ' +
+                    'UNION ALL SELECT \' \' AS name';
                 break;
             case 'DATETIME':
                 query = 'SELECT name ' +

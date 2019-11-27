@@ -32,32 +32,14 @@
 		</div>
 
 		<div class="gf-form-inline">
-			<div class="gf-form">
-				<label class="gf-form-label query-keyword width-10">
-                    <info-popover mode="right-absolute">
-                        Select
-                        <a href="https://clickhouse.yandex/reference_en.html#Date" target = "_blank" >EventDate</a>
-                        column for binding with Grafana's range selector
-                    </info-popover>
-                    Column:Date
-                    <i ng-if="ctrl.target.dateLoading" class="fa fa-spinner fa-spin"></i>
-				</label>
-			</div>
-
-			<div class="gf-form">
-				<metric-segment segment="ctrl.dateColDataTypeSegment"
-                                get-options="ctrl.getDateColDataTypeSegments()"
-                                on-change="ctrl.dateColDataTypeChanged()"></metric-segment>
-			</div>
-
-            <div class="gf-form width-14">
+			<div class="gf-form width-14">
                 <metric-segment-model property="ctrl.target.dateTimeType"
                                       options="ctrl.dateTimeTypeOptions" css-class="query-keyword width-14 "
                                       custom="false" select-mode="true"
                                       on-change="ctrl.dateTimeTypeChanged()">
                 </metric-segment-model>
                 <info-popover mode="right-absolute" style = "margin-right: 10px;">
-                    Select
+                    Select Event
                     <a href="https://clickhouse.yandex/reference_en.html#DateTime" target = "_blank" >DateTime</a>
                     or UInt32 column for binding with Grafana's range selector
                 </info-popover>
@@ -68,6 +50,27 @@
                                 get-options="ctrl.getDateTimeColDataTypeSegments()"
                                 on-change="ctrl.dateTimeColDataTypeChanged()">
                 </metric-segment>
+            </div>
+
+            <div class="gf-form">
+                <label class="gf-form-label query-keyword width-10">
+                    <info-popover mode="right-absolute">
+                        Select
+                        <a href="https://clickhouse.yandex/reference_en.html#Date" target = "_blank" >Date</a>
+                        column for binding with Grafana's range selector
+                    </info-popover>
+                    Column:Date
+                    <i ng-if="ctrl.target.dateLoading" class="fa fa-spinner fa-spin"></i>
+                </label>
+            </div>
+
+            <style>
+                .typeahead.dropdown-menu a {min-height: 2em;}
+            </style>
+            <div class="gf-form">
+                <metric-segment segment="ctrl.dateColDataTypeSegment"
+                                get-options="ctrl.getDateColDataTypeSegments()"
+                                on-change="ctrl.dateColDataTypeChanged()"></metric-segment>
             </div>
 
             <div class="gf-form gf-form--grow">

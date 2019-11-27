@@ -1,3 +1,9 @@
+# 1.9.4 (2019-11-27)
+
+## Fixes:
+* Ad Hoc Filters small adjustments for numeric values
+* UI optimizations within Metric builder 
+
 # 1.9.3 (2019-10-18)
 
 ## Fixes:

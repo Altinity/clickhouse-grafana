@@ -52,6 +52,7 @@ export default class SqlQuery {
                     ast.where = [];
                 }
                 let target = SqlQuery.target(ast.from[0], this.target);
+
                 adhocFilters.forEach(function (af) {
                     let parts = af.key.split('.');
                     /* Wildcard table, substitute current target table */
@@ -72,7 +73,7 @@ export default class SqlQuery {
                     }
                     let operator = SqlQuery.clickhouseOperator(af.operator);
                     let cond = parts[2] + " " + operator + " "
-                        + ((af.value.indexOf("'") > -1 || af.value.indexOf(", ") > -1) ? af.value : "'" + af.value + "'");
+                        + ((af.value.indexOf("'") > -1 || af.value.indexOf(", ") > -1 || af.value.match(/^\s*\d+\s*$/)) ? af.value : "'" + af.value + "'");
                     adhocCondition.push(cond);
                     if (ast.where.length > 0) {
                         // OR is not implemented

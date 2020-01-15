@@ -96,6 +96,7 @@ export default class SqlQuery {
             renderedAdHocCondition = '(' + adhocCondition.join(' AND ') + ')';
         }
 
+        query = scanner.removeComments(query);
         query = SqlQuery.unescape(query);
         let timeFilter = SqlQuery.getDateTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType);
         if (typeof this.target.dateColDataType == "string" && this.target.dateColDataType.length > 0) {

@@ -234,6 +234,11 @@ export default class Scanner {
         }
         return this.tree;
     }
+
+    removeComments(query)
+    {
+        return query.replace(new RegExp(commentRe), '');
+    }
 }
 
 let wsRe = "\\s+",

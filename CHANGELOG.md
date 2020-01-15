@@ -1,3 +1,8 @@
+# 1.9.5 (2020-01-15)
+
+## Fixes:
+* Comments not supported by sql language parser #95 
+
 # 1.9.4 (2019-11-27)
 
 ## Fixes:

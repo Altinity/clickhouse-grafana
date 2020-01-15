@@ -48,6 +48,9 @@ class SqlQueryCtrl extends QueryCtrl {
         super($scope, $injector);
 
         this.queryModel = new SqlQuery(this.target, templateSrv, this.panel.scopedVars);
+        if (this.datasource.targetsRef) {
+            this.datasource.targetsRef[this.target.refId] = this.target;
+        }
 
         let defaultDatabaseSegment = {fake: true, value: '-- database --'};
         if (this.datasource.defaultDatabase.length > 0) {

@@ -26,6 +26,7 @@ export class ClickHouseDatasource {
     xHeaderUser: string;
     xHeaderKey: string;
     useYandexCloudAuthorization: boolean;
+    targetsRef: any;
 
     /** @ngInject */
     constructor(instanceSettings,
@@ -47,6 +48,7 @@ export class ClickHouseDatasource {
         this.xHeaderUser = instanceSettings.jsonData.xHeaderUser;
         this.xHeaderKey = instanceSettings.jsonData.xHeaderKey;
         this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization;
+        this.targetsRef = {};
     }
 
     _getRequestOptions(query: string, usePOST?: boolean, requestId?: string) {
@@ -161,7 +163,11 @@ export class ClickHouseDatasource {
             let queryAST = new Scanner(stmt).toAST();
             keys = queryAST['group by'] || [];
         } catch (err) {
-            console.log('AST parser error: ', err)
+            console.log('AST parser error: ', err);
+        }
+
+        if (this.targetsRef && this.targetsRef[target.refId]) {
+            this.targetsRef[target.refId].rawQuery = stmt;
         }
 
         return {

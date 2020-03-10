@@ -11,6 +11,8 @@ import chSnippets from './snippets/clickhouse.js';
 
 const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
 
+declare var ace: any;
+
 class SqlQueryCtrl extends QueryCtrl {
     static templateUrl = 'partials/query.editor.html';
 
@@ -197,7 +199,43 @@ class SqlQueryCtrl extends QueryCtrl {
         }
     }
 
+    tryRemoveTextCompleter(mode: string) {
+        if (!ace)
+            return false;
+
+        const { textCompleter } = ace.acequire('ace/ext/language_tools');
+        if (!textCompleter)
+            return false;
+
+        let removed = false;
+        for (const codeEditor of Array.from<any>(document.querySelectorAll(`code-editor[data-mode=${mode}]`))) {
+            if (!codeEditor.env)
+                continue;
+
+            const completers = Array.from(codeEditor.env.editor.completers);
+            const idx = completers.indexOf(textCompleter);
+            if (idx >= 0) {
+                completers.splice(idx, 1);
+                codeEditor.env.editor.completers = completers;
+            }
+            removed = true;
+        }
+        return removed;
+    }
+
+    removeTextCompleter(mode: string) {
+        if (!this.tryRemoveTextCompleter(mode)) {
+            // method called before code-editor is in DOM -> try again in 2s
+            // quite hacky, but there's no proper way to access the codeEditor without
+            // editing the directive (code_editor.ts) in Grafana's source code
+            setTimeout(this.tryRemoveTextCompleter.bind(this, mode), 2000);
+        }
+    }
+
+
     getCompleter() {
+        this.removeTextCompleter("clickhouse");
+        this.initEditor();
         return this;
     }
 

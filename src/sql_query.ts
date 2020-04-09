@@ -31,7 +31,7 @@ export default class SqlQuery {
     }
 
     replace(options, adhocFilters) {
-        var query = this.templateSrv.replace(SqlQuery.conditionalTest(this.target.query.trim(),this.templateSrv), options.scopedVars, SqlQuery.interpolateQueryExpr),
+        var query = this.templateSrv.replace(SqlQuery.conditionalTest(this.target.query.trim(), this.templateSrv), options.scopedVars, SqlQuery.interpolateQueryExpr),
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType
                 ? this.target.dateTimeType
@@ -66,10 +66,10 @@ export default class SqlQuery {
                     /* Expect fully qualified column name at this point */
                     if (parts.length < 3) {
                         console.warn("adhoc filters: filter " + af.key + "` has wrong format");
-                        return
+                        return;
                     }
                     if (target[0] != parts[0] || target[1] != parts[1]) {
-                        return
+                        return;
                     }
                     let operator = SqlQuery.clickhouseOperator(af.operator);
                     let cond = parts[2] + " " + operator + " "
@@ -78,16 +78,16 @@ export default class SqlQuery {
                     if (ast.where.length > 0) {
                         // OR is not implemented
                         // @see https://github.com/grafana/grafana/issues/10918
-                        cond = "AND " + cond
+                        cond = "AND " + cond;
                     }
-                    ast.where.push(cond)
+                    ast.where.push(cond);
                 });
                 query = scanner.Print(topQuery);
             }
 
-            query = SqlQuery.applyMacros(query, ast)
+            query = SqlQuery.applyMacros(query, ast);
         } catch (err) {
-            console.error('AST parser error: ', err)
+            console.error('AST parser error: ', err);
         }
 
         /* Render the ad-hoc condition or evaluate to an always true condition */
@@ -100,12 +100,12 @@ export default class SqlQuery {
         query = SqlQuery.unescape(query);
         let timeFilter = SqlQuery.getDateTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType);
         if (typeof this.target.dateColDataType == "string" && this.target.dateColDataType.length > 0) {
-            timeFilter = SqlQuery.getDateFilter(this.options.rangeRaw.to === 'now') + ' AND ' + timeFilter
+            timeFilter = SqlQuery.getDateFilter(this.options.rangeRaw.to === 'now') + ' AND ' + timeFilter;
         }
 
         let table = SqlQuery.escapeIdentifier(this.target.table);
         if (this.target.database) {
-            table =  SqlQuery.escapeIdentifier(this.target.database) + '.' + table;
+            table = SqlQuery.escapeIdentifier(this.target.database) + '.' + table;
         }
 
         this.target.rawQuery = query
@@ -119,8 +119,8 @@ export default class SqlQuery {
             .replace(/(?:\r\n|\r|\n)/g, ' ');
 
         const round = this.target.round === "$step"
-          ? interval
-          : SqlQuery.convertInterval(this.target.round, 1);
+            ? interval
+            : SqlQuery.convertInterval(this.target.round, 1);
         this.target.rawQuery = SqlQuery.replaceTimeFilters(this.target.rawQuery, this.options.range, dateTimeType, round);
 
         return this.target.rawQuery;
@@ -136,7 +136,7 @@ export default class SqlQuery {
         }
     }
 
-    static replaceTimeFilters(query: string, range: TimeRange, dateTimeType : string = 'DATETIME', round?: number): string {
+    static replaceTimeFilters(query: string, range: TimeRange, dateTimeType: string = 'DATETIME', round?: number): string {
         let from = SqlQuery.convertTimestamp(SqlQuery.round(range.from, round || 0));
         let to = SqlQuery.convertTimestamp(SqlQuery.round(range.to, round || 0));
 
@@ -144,18 +144,18 @@ export default class SqlQuery {
         // data is not affected by round
         if (round > 0) {
             to += (round * 2) - 1;
-            from -= (round * 2) - 1
+            from -= (round * 2) - 1;
         }
 
         return query
-          .replace(
-            /\$timeFilterByColumn\(([\w_]+)\)/g,
-            (match: string, columnName: string) => (
-              `${ columnName } ${ SqlQuery.getFilterSqlForDateTime(range.raw.to === 'now', dateTimeType) }`
+            .replace(
+                /\$timeFilterByColumn\(([\w_]+)\)/g,
+                (match: string, columnName: string) => (
+                    `${columnName} ${SqlQuery.getFilterSqlForDateTime(range.raw.to === 'now', dateTimeType)}`
+                )
             )
-          )
-          .replace(/\$from/g, from.toString())
-          .replace(/\$to/g, to.toString());
+            .replace(/\$from/g, from.toString())
+            .replace(/\$to/g, to.toString());
     }
 
     static getFilterSqlForDateTime(isToNow: boolean, dateTimeType: string) {
@@ -171,7 +171,7 @@ export default class SqlQuery {
     static getConvertFn(dateTimeType: string) {
         return function (t: string): string {
             if (dateTimeType === 'DATETIME') {
-                return 'toDateTime('+ t +')';
+                return 'toDateTime(' + t + ')';
             }
 
             return t;
@@ -180,7 +180,7 @@ export default class SqlQuery {
 
     static target(from: string, target: any): [string, string] {
         if (from.length == 0) {
-            return ['', '']
+            return ['', ''];
         }
         let targetTable, targetDatabase;
         let parts = from.split('.');
@@ -200,7 +200,7 @@ export default class SqlQuery {
         if (targetTable === '$table') {
             targetTable = target.table;
         }
-        return [targetDatabase, targetTable]
+        return [targetDatabase, targetTable];
     }
 
     static applyMacros(query: string, ast: any): string {
@@ -219,17 +219,17 @@ export default class SqlQuery {
         if (SqlQuery.contain(ast, '$perSecondColumns')) {
             return SqlQuery.perSecondColumns(query, ast);
         }
-        return query
+        return query;
     }
 
     static contain(obj: any, field: string): boolean {
-        return obj.hasOwnProperty(field) && !isEmpty(obj[field])
+        return obj.hasOwnProperty(field) && !isEmpty(obj[field]);
     }
 
     static _parseMacros(macros: string, query: string): string {
         let mLen = macros.length;
         if (query.slice(0, mLen + 1) !== macros + '(') {
-            return ""
+            return "";
         }
         let fromIndex = SqlQuery._fromIndex(query);
         return query.slice(fromIndex);
@@ -238,7 +238,7 @@ export default class SqlQuery {
     static columns(query: string, ast: any): string {
         let q = SqlQuery._parseMacros('$columns', query);
         if (q.length < 1) {
-            return query
+            return query;
         }
         let args = ast['$columns'];
         if (args.length !== 2) {
@@ -282,7 +282,7 @@ export default class SqlQuery {
     static rateColumns(query: string, ast: any): string {
         let q = SqlQuery._parseMacros('$rateColumns', query);
         if (q.length < 1) {
-            return query
+            return query;
         }
         let args = ast['$rateColumns'];
         if (args.length !== 2) {
@@ -308,7 +308,7 @@ export default class SqlQuery {
     static rate(query: string, ast: any): string {
         let q = SqlQuery._parseMacros('$rate', query);
         if (q.length < 1) {
-            return query
+            return query;
         }
         let args = ast['$rate'];
         if (args.length < 1) {
@@ -348,7 +348,7 @@ export default class SqlQuery {
     static perSecondColumns(query: string, ast: any): string {
         let q = SqlQuery._parseMacros('$perSecondColumns', query);
         if (q.length < 1) {
-            return query
+            return query;
         }
         let args = ast['$perSecondColumns'];
         if (args.length !== 2) {
@@ -393,7 +393,7 @@ export default class SqlQuery {
     static perSecond(query: string, ast: any): string {
         let q = SqlQuery._parseMacros('$perSecond', query);
         if (q.length < 1) {
-            return query
+            return query;
         }
         let args = ast['$perSecond'];
         if (args.length < 1) {
@@ -401,7 +401,7 @@ export default class SqlQuery {
         }
 
         each(args, function (a, i) {
-            args[i] = 'max(' + a.trim() + ') AS max_' + i
+            args[i] = 'max(' + a.trim() + ') AS max_' + i;
         });
 
         return SqlQuery._perSecond(args, q);
@@ -441,14 +441,14 @@ export default class SqlQuery {
         if (dateTimeType === 'DATETIME') {
             return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
         }
-        return '(intDiv($dateTimeCol, $interval) * $interval) * 1000'
+        return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
     }
 
     static getDateFilter(isToNow: boolean) {
         if (isToNow) {
             return '$dateCol >= toDate($from)';
         }
-        return '$dateCol BETWEEN toDate($from) AND toDate($to)'
+        return '$dateCol BETWEEN toDate($from) AND toDate($to)';
     }
 
     static getDateTimeFilter(isToNow: boolean, dateTimeType: string) {
@@ -456,7 +456,7 @@ export default class SqlQuery {
             if (dateTimeType === 'DATETIME') {
                 return 'toDateTime(' + t + ')';
             }
-            return t
+            return t;
         };
 
         if (isToNow) {
@@ -491,7 +491,7 @@ export default class SqlQuery {
 
     static convertInterval(interval: any, intervalFactor: number): number {
         if (interval === undefined || typeof interval !== 'string' || interval == "") {
-            return 0
+            return 0;
         }
         var m = interval.match(durationSplitRegexp);
         if (m === null) {
@@ -534,7 +534,7 @@ export default class SqlQuery {
                 return "NOT LIKE";
             default:
                 console.warn("adhoc filters: got unsupported operator `" + value + "`");
-                return value
+                return value;
         }
     }
 
@@ -549,7 +549,7 @@ export default class SqlQuery {
                 isDigit = false;
                 return false;
             }
-            return true
+            return true;
         });
 
         if (isDigit) {
@@ -558,57 +558,58 @@ export default class SqlQuery {
             return "'" + value.replace(/[\\']/g, '\\$&') + "'";
         }
     }
-    static conditionalTest(query,templateSrv) {
+
+    static conditionalTest(query, templateSrv) {
         let macros = '$conditionalTest(';
         let openMacros = query.indexOf(macros);
         while (openMacros !== -1) {
-            let r = SqlQuery.betweenBraces(query.substring(openMacros+macros.length, query.length));
+            let r = SqlQuery.betweenBraces(query.substring(openMacros + macros.length, query.length));
             if (r.error.length > 0) {
                 throw {message: '$conditionalIn macros error: ' + r.error};
             }
             let arg = r.result;
-            // first parameters is an expression and require some complex parsing , so parse from the end where you know that the last parameters is a comma with a variable
-            let param1 = arg.substring(0,arg.lastIndexOf(',')).trim();
-            let param2 = arg.substring(arg.lastIndexOf(',')+1).trim();
-            // remove the $ from the variable 
+            // first parameters is an expression and require some complex parsing,
+            // so parse from the end where you know that the last parameters is a comma with a variable
+            let param1 = arg.substring(0, arg.lastIndexOf(',')).trim();
+            let param2 = arg.substring(arg.lastIndexOf(',') + 1).trim();
+            // remove the $ from the variable
             let varinparam = param2.substring(1);
             let done = 0;
-            //now find in the list of variable what is the value 
-	     for(var i=0;i<templateSrv.variables.length;i++){
-		var varG = templateSrv.variables[i];
-		if(varG.name===varinparam){
+            //now find in the list of variable what is the value
+            for (var i = 0; i < templateSrv.variables.length; i++) {
+                var varG = templateSrv.variables[i];
+                if (varG.name === varinparam) {
                     let closeMacros = openMacros + macros.length + r.result.length + 1;
                     done = 1;
-		    if(
-			    // for query variable when all is selected 
-			    // may be add another test on the all activation may be wise.
-			    (varG.type==='query' && ((varG.current.value.length==1 && varG.current.value[0]==='$__all') 
-                || (typeof(varG.current.value) === 'string' && varG.current.value === '$__all'))) ||
-			    // for textbox variable when nothing is entered 
-			    (varG.type==='textbox' && varG.current.value==='')){
-                        query = query.substring(0, openMacros)  + ' ' + query.substring(closeMacros, query.length);
-                      }else{
+                    if (
+                        // for query variable when all is selected
+                        // may be add another test on the all activation may be wise.
+                        (varG.type === 'query' && ((varG.current.value.length == 1 && varG.current.value[0] === '$__all')
+                            || (typeof varG.current.value === 'string' && varG.current.value === '$__all'))) ||
+                        // for textbox variable when nothing is entered
+                        (varG.type === 'textbox' && varG.current.value === '')) {
+                        query = query.substring(0, openMacros) + ' ' + query.substring(closeMacros, query.length);
+                    } else {
                         // replace of the macro with standard test.
-                         query = query.substring(0, openMacros) + ' ' + param1 + ' '+ query.substring(closeMacros, query.length);
+                        query = query.substring(0, openMacros) + ' ' + param1 + ' ' + query.substring(closeMacros, query.length);
                     }
                     break;
                 }
             }
-            if(done==0){
-              throw {message: '$conditionalTest macros error cannot find referenced variable: ' + param2};
+            if (done == 0) {
+                throw {message: '$conditionalTest macros error cannot find referenced variable: ' + param2};
             }
             openMacros = query.indexOf(macros);
         }
-        return query
+        return query;
     }
-
 
 
     static unescape(query) {
         let macros = '$unescape(';
         let openMacros = query.indexOf(macros);
         while (openMacros !== -1) {
-            let r = SqlQuery.betweenBraces(query.substring(openMacros+macros.length, query.length));
+            let r = SqlQuery.betweenBraces(query.substring(openMacros + macros.length, query.length));
             if (r.error.length > 0) {
                 throw {message: '$unescape macros error: ' + r.error};
             }
@@ -618,7 +619,7 @@ export default class SqlQuery {
             query = query.substring(0, openMacros) + arg + query.substring(closeMacros, query.length);
             openMacros = query.indexOf('$unescape(');
         }
-        return query
+        return query;
     }
 
     static betweenBraces(query): any {
@@ -640,8 +641,8 @@ export default class SqlQuery {
             }
         }
         if (openBraces > 1) {
-            r.error = "missing parentheses"
+            r.error = "missing parentheses";
         }
-        return r
+        return r;
     }
 }

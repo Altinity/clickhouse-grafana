@@ -1,4 +1,4 @@
-import { isArray, isEmpty, toLower, toUpper } from 'lodash-es';
+import {isArray, isEmpty, toLower, toUpper} from 'lodash-es';
 
 export default class Scanner {
     tree: any;
@@ -235,8 +235,7 @@ export default class Scanner {
         return this.tree;
     }
 
-    removeComments(query)
-    {
+    removeComments(query) {
         return query.replace(new RegExp(commentRe), '');
     }
 }

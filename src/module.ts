@@ -2,7 +2,7 @@ import {ClickHouseDatasource} from './datasource';
 import {SqlQueryCtrl} from './query_ctrl';
 
 class SqlConfigCtrl {
-  static templateUrl = 'partials/config.html';
+    static templateUrl = 'partials/config.html';
 }
 
 const defaultQuery = `SELECT
@@ -16,19 +16,19 @@ WHERE
 `;
 
 class ClickHouseAnnotationsQueryCtrl {
-  static templateUrl = 'partials/annotations.editor.html';
+    static templateUrl = 'partials/annotations.editor.html';
 
-  annotation: any;
+    annotation: any;
 
-  /** @ngInject **/
-  constructor() {
-    this.annotation.query = this.annotation.query || defaultQuery;
-  }
+    /** @ngInject **/
+    constructor() {
+        this.annotation.query = this.annotation.query || defaultQuery;
+    }
 }
 
 export {
-  ClickHouseDatasource as Datasource,
-  SqlQueryCtrl as QueryCtrl,
-  SqlConfigCtrl as ConfigCtrl,
-  ClickHouseAnnotationsQueryCtrl as AnnotationsQueryCtrl,
+    ClickHouseDatasource as Datasource,
+    SqlQueryCtrl as QueryCtrl,
+    SqlConfigCtrl as ConfigCtrl,
+    ClickHouseAnnotationsQueryCtrl as AnnotationsQueryCtrl,
 };

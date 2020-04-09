@@ -131,9 +131,9 @@ class SqlQueryCtrl extends QueryCtrl {
     dateColDataTypeChanged() {
         let val = this.dateColDataTypeSegment.value;
         if (typeof val === 'string') {
-            this.target.dateColDataType = val.trim()
+            this.target.dateColDataType = val.trim();
         } else {
-            this.target.dateColDataType = val
+            this.target.dateColDataType = val;
         }
     }
 
@@ -160,9 +160,9 @@ class SqlQueryCtrl extends QueryCtrl {
     dateTimeColDataTypeChanged() {
         let val = this.dateTimeColDataTypeSegment.value;
         if (typeof val === 'string') {
-            this.target.dateTimeColDataType = val.trim()
+            this.target.dateTimeColDataType = val.trim();
         } else {
-            this.target.dateTimeColDataType = val
+            this.target.dateTimeColDataType = val;
         }
     }
 
@@ -328,7 +328,7 @@ class SqlQueryCtrl extends QueryCtrl {
 
     queryColumns() {
         var query = this.buildExploreQuery('COLUMNS');
-        return this.datasource.metricFindQuery(query)
+        return this.datasource.metricFindQuery(query);
     }
 
     querySegment(type: string) {

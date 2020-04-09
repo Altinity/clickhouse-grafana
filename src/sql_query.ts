@@ -581,13 +581,16 @@ export default class SqlQuery {
                 if (varG.name === varinparam) {
                     let closeMacros = openMacros + macros.length + r.result.length + 1;
                     done = 1;
+
+                    const value = varG.current.value;
+
                     if (
                         // for query variable when all is selected
                         // may be add another test on the all activation may be wise.
-                        (varG.type === 'query' && ((varG.current.value.length == 1 && varG.current.value[0] === '$__all')
-                            || (typeof varG.current.value === 'string' && varG.current.value === '$__all'))) ||
+                        (varG.type === 'query' && ((value.length == 1 && value[0] === '$__all')
+                            || (typeof value === 'string' && value === '$__all'))) ||
                         // for textbox variable when nothing is entered
-                        (varG.type === 'textbox' && varG.current.value === '')) {
+                        (['textbox', 'custom'].includes(varG.type) && ['', undefined, null].includes(value))) {
                         query = query.substring(0, openMacros) + ' ' + query.substring(closeMacros, query.length);
                     } else {
                         // replace of the macro with standard test.

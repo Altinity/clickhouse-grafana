@@ -1,4 +1,4 @@
-export default function() {
+export default function () {
     if (!window['ace']) {
         return false;
     }
@@ -206,8 +206,8 @@ export default function() {
                     "name": "quantileExactWeighted",
                     "def": "quantileExactWeighted(level)(x, weight)",
                     "docText": "Computes the level quantile exactly. In this case, each value is taken into account with the weight weight - as if it is present weight once. The arguments of the function can be considered as histograms, where the value \"x\" corresponds to the \"column\" of the histogram of the height weight, and the function itself can be considered as the summation of histograms.\n" +
-                    "\n" +
-                    "The algorithm is a hash table. Because of this, in case the transmitted values ​​are often repeated, the function consumes less RAM than the quantileExact. You can use this function instead of quantileExact, specifying the number 1 as the weight."
+                        "\n" +
+                        "The algorithm is a hash table. Because of this, in case the transmitted values ​​are often repeated, the function consumes less RAM than the quantileExact. You can use this function instead of quantileExact, specifying the number 1 as the weight."
                 },
                 {
                     "name": "min",
@@ -218,17 +218,17 @@ export default function() {
                     "name": "varSamp",
                     "def": "varSamp(x)",
                     "docText": "Calculates the amount Σ((x - x̅)2) / (n - 1), where 'n' is the sample size and 'x̅' is the average value of 'x'.\n" +
-                    "\n" +
-                    "It represents an unbiased estimate of the variance of a random variable, if the values passed to the function are a sample of this random amount.\n" +
-                    "\n" +
-                    "Returns Float64. If n <= 1, it returns +∞."
+                        "\n" +
+                        "It represents an unbiased estimate of the variance of a random variable, if the values passed to the function are a sample of this random amount.\n" +
+                        "\n" +
+                        "Returns Float64. If n <= 1, it returns +∞."
                 },
                 {
                     "name": "anyLast",
                     "def": "anyLast(x)",
                     "docText": "Selects the last value encountered. \n" +
-                    "\n" +
-                    " The result is just as indeterminate as for the `any` function."
+                        "\n" +
+                        " The result is just as indeterminate as for the `any` function."
                 },
                 {
                     "name": "argMax",
@@ -244,28 +244,28 @@ export default function() {
                     "name": "any",
                     "def": "any(x)",
                     "docText": "Selects the last value encountered. \n" +
-                    "\n" +
-                    " The result is just as indeterminate as for the `any` function."
+                        "\n" +
+                        " The result is just as indeterminate as for the `any` function."
                 },
                 {
                     "name": "avg",
                     "def": "avg(x)",
                     "docText": "Calculates the average. \n" +
-                    "\n" +
-                    " Only works for numbers. \n" +
-                    "\n" +
-                    " The result is always Float64."
+                        "\n" +
+                        " Only works for numbers. \n" +
+                        "\n" +
+                        " The result is always Float64."
                 },
                 {
                     "name": "sequenceMatch",
                     "def": "sequenceMatch(pattern)(time, cond1, cond2, ...)",
                     "docText": "Pattern matching for event chains.\n" +
-                    "\n" +
-                    "'pattern' is a string containing a pattern to match. The pattern is similar to a regular expression. 'time' is the event time of the DateTime type. 'cond1, cond2 ...' are from one to 32 arguments of the UInt8 type that indicate whether an event condition was met.\n" +
-                    "\n" +
-                    "The function collects a sequence of events in RAM. Then it checks whether this sequence matches the pattern. It returns UInt8 - 0 if the pattern isn't matched, or 1 if it matches.\n" +
-                    "\n" +
-                    "Example: sequenceMatch('(?1).*(?2)')(EventTime, URL LIKE '%company%', URL LIKE '%cart%') - whether there was a chain of events in which pages with the address in company were visited earlier than pages with the address in cart."
+                        "\n" +
+                        "'pattern' is a string containing a pattern to match. The pattern is similar to a regular expression. 'time' is the event time of the DateTime type. 'cond1, cond2 ...' are from one to 32 arguments of the UInt8 type that indicate whether an event condition was met.\n" +
+                        "\n" +
+                        "The function collects a sequence of events in RAM. Then it checks whether this sequence matches the pattern. It returns UInt8 - 0 if the pattern isn't matched, or 1 if it matches.\n" +
+                        "\n" +
+                        "Example: sequenceMatch('(?1).*(?2)')(EventTime, URL LIKE '%company%', URL LIKE '%cart%') - whether there was a chain of events in which pages with the address in company were visited earlier than pages with the address in cart."
                 },
                 {
                     "name": "stddevSamp",
@@ -286,14 +286,14 @@ export default function() {
                     "name": "uniq",
                     "def": "uniq(N)(x)",
                     "docText": "Calculates the number of different argument values, if it is less than or equal to N. \n" +
-                    "\n" +
-                    " If the number of different argument values is greater than N, it returns N + 1."
+                        "\n" +
+                        " If the number of different argument values is greater than N, it returns N + 1."
                 },
                 {
                     "name": "covarSamp",
                     "def": "covarSamp(x, y)",
                     "docText": "Calculates the value of `Σ((x - x̅)(y - y̅)) / (n - 1)`. " +
-                    "Returns Float64. If n <= 1, it returns +∞."
+                        "Returns Float64. If n <= 1, it returns +∞."
                 },
                 {
                     "name": "max",
@@ -324,24 +324,24 @@ export default function() {
                     "name": "groupArray",
                     "def": "groupArray(x)",
                     "docText": "Creates an array of argument values. \n" +
-                    "\n" +
-                    " Values can be added to the array in any (indeterminate) order. \n" +
-                    "\n" +
-                    " In some cases, you can rely on the order of execution. This applies to cases when SELECT comes from a subquery that uses ORDER BY."
+                        "\n" +
+                        " Values can be added to the array in any (indeterminate) order. \n" +
+                        "\n" +
+                        " In some cases, you can rely on the order of execution. This applies to cases when SELECT comes from a subquery that uses ORDER BY."
                 },
                 {
                     "name": "sum",
                     "def": "sum(x)",
                     "docText": "Calculates the sum. \n" +
-                    "\n" +
-                    " Only works for numbers."
+                        "\n" +
+                        " Only works for numbers."
                 },
                 {
                     "name": "median",
                     "def": "median(x, weight)",
                     "docText": "Differs from the `medianTiming` function in that it has a second argument - `weights`. Weight is a non-negative integer. \n" +
-                    "\n" +
-                    " The result is calculated as if the `x` value were passed `weight` number of times to the `medianTiming` function."
+                        "\n" +
+                        " The result is calculated as if the `x` value were passed `weight` number of times to the `medianTiming` function."
                 },
                 {
                     "name": "quantileTiming",
@@ -402,10 +402,10 @@ export default function() {
                     "name": "uniqExact",
                     "def": "uniqExact(x)",
                     "docText": "Calculates the number of different values of the argument, exactly. \n" +
-                    "\n" +
-                    " There is no reason to fear approximations, so it`s better to use the `uniq` function. \n" +
-                    "\n" +
-                    " You should use the `uniqExact` function if you definitely need an exact result. "
+                        "\n" +
+                        " There is no reason to fear approximations, so it`s better to use the `uniq` function. \n" +
+                        "\n" +
+                        " You should use the `uniqExact` function if you definitely need an exact result. "
                 },
                 {
                     "name": "uniqCombined",
@@ -421,8 +421,8 @@ export default function() {
                     "name": "uniqUpTo",
                     "def": "uniqUpTo(N)(x)",
                     "docText": "Calculates the number of different argument values, if it is less than or equal to N. \n" +
-                    "\n" +
-                    " If the number of different argument values is greater than N, it returns N + 1."
+                        "\n" +
+                        " If the number of different argument values is greater than N, it returns N + 1."
                 },
                 {
                     "name": "substring",
@@ -448,8 +448,8 @@ export default function() {
                     "name": "or",
                     "def": "or(v)",
                     "docText": "The same thing as `max_temporary_columns`, but without counting constant columns. \n" +
-                    "\n" +
-                    " Note that constant columns are formed fairly often when running a query, but they require approximately zero computing resources."
+                        "\n" +
+                        " Note that constant columns are formed fairly often when running a query, but they require approximately zero computing resources."
                 },
                 {
                     "name": "extractAll",
@@ -480,10 +480,10 @@ export default function() {
                     "name": "now",
                     "def": "now(v)",
                     "docText": "If the parameter is true, INSERT operation will skip columns with unknown names from input. \n" +
-                    "\n" +
-                    " Otherwise, an exception will be generated, it is default behavior. \n" +
-                    "\n" +
-                    " The parameter works only for JSONEachRow and TSKV input formats."
+                        "\n" +
+                        " Otherwise, an exception will be generated, it is default behavior. \n" +
+                        "\n" +
+                        " The parameter works only for JSONEachRow and TSKV input formats."
                 },
                 {
                     "name": "intDiv",
@@ -499,22 +499,22 @@ export default function() {
                     "name": "intHash32",
                     "def": "intHash32(v)",
                     "docText": "Calculates a 32-bit hash code from any type of integer. \n" +
-                    "\n" +
-                    " This is a relatively fast non-cryptographic hash function of average quality for numbers."
+                        "\n" +
+                        " This is a relatively fast non-cryptographic hash function of average quality for numbers."
                 },
                 {
                     "name": "replaceOne",
                     "def": "replaceOne(haystack, pattern, replacement)",
                     "docText": "Replaces the first occurrence, if it exists, of the `pattern` substring in `haystack` with the `replacement` substring. \n" +
-                    "\n" +
-                    " Hereafter, `pattern` and `replacement` must be constants."
+                        "\n" +
+                        " Hereafter, `pattern` and `replacement` must be constants."
                 },
                 {
                     "name": "cityHash64",
                     "def": "cityHash64(v)",
                     "docText": "Calculates CityHash64 from a string or a similar hash function for any number of any type of arguments. \n" +
-                    "\n" +
-                    " For String-type arguments, CityHash is used. This is a fast non-cryptographic hash function for strings with decent quality"
+                        "\n" +
+                        " For String-type arguments, CityHash is used. This is a fast non-cryptographic hash function for strings with decent quality"
                 },
                 {
                     "name": "OSToRoot",
@@ -525,10 +525,10 @@ export default function() {
                     "name": "sipHash128",
                     "def": "sipHash128(v)",
                     "docText": "Calculates SipHash from a string. \n" +
-                    "\n" +
-                    " Accepts a String-type argument. Returns FixedString(16). \n" +
-                    "\n" +
-                    " Differs from sipHash64 in that the final xor-folding state is only done up to 128 bits."
+                        "\n" +
+                        " Accepts a String-type argument. Returns FixedString(16). \n" +
+                        "\n" +
+                        " Differs from sipHash64 in that the final xor-folding state is only done up to 128 bits."
                 },
                 {
                     "name": "SHA1",
@@ -579,10 +579,10 @@ export default function() {
                     "name": "runningDifference",
                     "def": "runningDifference(x)",
                     "docText": "Calculates the difference between consecutive values in the data block. \n" +
-                    "\n" +
-                    " Result of the function depends on the order of the data in the blocks. \n" +
-                    "\n" +
-                    " It works only inside of the each processed block of data. Data splitting in the blocks is not explicitly controlled by the user. "
+                        "\n" +
+                        " Result of the function depends on the order of the data in the blocks. \n" +
+                        "\n" +
+                        " It works only inside of the each processed block of data. Data splitting in the blocks is not explicitly controlled by the user. "
                 },
                 {
                     "name": "not",
@@ -593,8 +593,8 @@ export default function() {
                     "name": "intHash64",
                     "def": "intHash64(v)",
                     "docText": "Calculates a 64-bit hash code from any type of integer. \n" +
-                    "\n" +
-                    " It works faster than intHash32. Average quality."
+                        "\n" +
+                        " It works faster than intHash32. Average quality."
                 },
                 {
                     "name": "acos",
@@ -610,8 +610,8 @@ export default function() {
                     "name": "and",
                     "def": "and(x, determinator)",
                     "docText": "This function works similarly to the `median` function - it approximates the median. However, in contrast to `median`, the result is deterministic and does not depend on the order of query execution. \n" +
-                    "\n" +
-                    " To achieve this, the function takes a second argument - the `determinator`. "
+                        "\n" +
+                        " To achieve this, the function takes a second argument - the `determinator`. "
                 },
                 {
                     "name": "dictGetDate",
@@ -687,8 +687,8 @@ export default function() {
                     "name": "regionToContinent",
                     "def": "regionToContinent(id[, geobase])",
                     "docText": "Converts a region to a continent. In every other way, this function is the same as `regionToCity`. \n" +
-                    "\n" +
-                    " Example: `regionToContinent(toUInt32(213)) = 10001` converts Moscow (213) to Eurasia (10001)."
+                        "\n" +
+                        " Example: `regionToContinent(toUInt32(213)) = 10001` converts Moscow (213) to Eurasia (10001)."
                 },
                 {
                     "name": "dictGetInt32",
@@ -704,15 +704,15 @@ export default function() {
                     "name": "materialize",
                     "def": "materialize(x)",
                     "docText": "Turns a constant into a full column containing just one value. \n" +
-                    "\n" +
-                    " In ClickHouse, full columns and constants are represented differently in memory. Functions work differently for constant arguments and normal arguments (different code is executed), although the result is almost always the same. This function is for debugging this behavior."
+                        "\n" +
+                        " In ClickHouse, full columns and constants are represented differently in memory. Functions work differently for constant arguments and normal arguments (different code is executed), although the result is almost always the same. This function is for debugging this behavior."
                 },
                 {
                     "name": "regionToCountry",
                     "def": "regionToCountry(id[, geobase])",
                     "docText": "Converts a region to a country. In every other way, this function is the same as `regionToCity`. \n" +
-                    "\n" +
-                    " Example: `regionToCountry(toUInt32(213)) = 225` converts Moscow (213) to Russia (225)."
+                        "\n" +
+                        " Example: `regionToCountry(toUInt32(213)) = 225` converts Moscow (213) to Russia (225)."
                 },
                 {
                     "name": "dictGetDateTime",
@@ -773,8 +773,8 @@ export default function() {
                     "name": "currentDatabase",
                     "def": "currentDatabase()",
                     "docText": "Returns the name of the current database. \n" +
-                    "\n" +
-                    " You can use this function in table engine parameters in a CREATE TABLE query where you need to specify the database."
+                        "\n" +
+                        " You can use this function in table engine parameters in a CREATE TABLE query where you need to specify the database."
                 },
                 {
                     "name": "toRelativeMonthNum",
@@ -820,8 +820,8 @@ export default function() {
                     "name": "toMonday",
                     "def": "toMonday(v)",
                     "docText": "Rounds down a date or date with time to the nearest Monday. \n" +
-                    "\n" +
-                    " Returns the date."
+                        "\n" +
+                        " Returns the date."
                 },
                 {
                     "name": "IPv6NumToString",
@@ -837,8 +837,8 @@ export default function() {
                     "name": "today",
                     "def": "today(v)",
                     "docText": "Accepts zero arguments and returns the current date at one of the moments of request execution. \n" +
-                    "\n" +
-                    " The same as `toDate(now())`."
+                        "\n" +
+                        " The same as `toDate(now())`."
                 },
                 {
                     "name": "emptyArrayToSingle",
@@ -869,10 +869,10 @@ export default function() {
                     "name": "concat",
                     "def": "concat(arr[, separator])",
                     "docText": "Concatenates strings from the array elements, using `separator` as the separator. \n" +
-                    "\n" +
-                    " `separator` is a string constant, an optional parameter. By default it is an empty string. \n" +
-                    "\n" +
-                    " Returns a string."
+                        "\n" +
+                        " `separator` is a string constant, an optional parameter. By default it is an empty string. \n" +
+                        "\n" +
+                        " Returns a string."
                 },
                 {
                     "name": "convertCharset",
@@ -888,8 +888,8 @@ export default function() {
                     "name": "IPv6StringToNum",
                     "def": "IPv6StringToNum(s)",
                     "docText": "The reverse function of IPv6NumToString. If the IPv6 address has an invalid format, it returns a string of null bytes. \n" +
-                    "\n" +
-                    " HEX can be uppercase or lowercase."
+                        "\n" +
+                        " HEX can be uppercase or lowercase."
                 },
                 {
                     "name": "emptyArrayString",
@@ -905,8 +905,8 @@ export default function() {
                     "name": "blockSize",
                     "def": "blockSize()",
                     "docText": "Gets the size of the block. \n" +
-                    "\n" +
-                    " In ClickHouse, queries are always run on blocks (sets of column parts). This function allows getting the size of the block that you called it for."
+                        "\n" +
+                        " In ClickHouse, queries are always run on blocks (sets of column parts). This function allows getting the size of the block that you called it for."
                 },
                 {
                     "name": "toInt64OrZero",
@@ -967,18 +967,18 @@ export default function() {
                     "name": "formatReadableSize",
                     "def": "formatReadableSize(x)",
                     "docText": "Gets a size (number of bytes). Returns a string that contains rounded size with the suffix (KiB, MiB etc.).\n" +
-                    "\n" +
-                    "Example:\n" +
-                    "\n" +
-                    "SELECT\n" +
-                    "    arrayJoin([1, 1024, 1024*1024, 192851925]) AS f_bytes,\n" +
-                    "    formatReadableSize(filesize_bytes) AS filesize\n" +
-                    "┌─f_bytes-─┬─filesize───┐\n" +
-                    "│        1 │ 1.00 B     │\n" +
-                    "│     1024 │ 1.00 KiB   │\n" +
-                    "│  1048576 │ 1.00 MiB   │\n" +
-                    "│192851925 │ 183.92 MiB │\n" +
-                    "└──────────┴────────────┘\n"
+                        "\n" +
+                        "Example:\n" +
+                        "\n" +
+                        "SELECT\n" +
+                        "    arrayJoin([1, 1024, 1024*1024, 192851925]) AS f_bytes,\n" +
+                        "    formatReadableSize(filesize_bytes) AS filesize\n" +
+                        "┌─f_bytes-─┬─filesize───┐\n" +
+                        "│        1 │ 1.00 B     │\n" +
+                        "│     1024 │ 1.00 KiB   │\n" +
+                        "│  1048576 │ 1.00 MiB   │\n" +
+                        "│192851925 │ 183.92 MiB │\n" +
+                        "└──────────┴────────────┘\n"
                 },
                 {
                     "name": "toInt16OrZero",
@@ -999,12 +999,12 @@ export default function() {
                     "name": "regionToPopulation",
                     "def": "regionToPopulation(id[, geobase])",
                     "docText": "Gets the population for a region. \n" +
-                    "\n" +
-                    " The population can be recorded in files with the geobase. See the section `External dictionaries`. \n" +
-                    "\n" +
-                    " If the population is not recorded for the region, it returns 0. \n" +
-                    "\n" +
-                    " In the Yandex geobase, the population might be recorded for child regions, but not for parent regions."
+                        "\n" +
+                        " The population can be recorded in files with the geobase. See the section `External dictionaries`. \n" +
+                        "\n" +
+                        " If the population is not recorded for the region, it returns 0. \n" +
+                        "\n" +
+                        " In the Yandex geobase, the population might be recorded for child regions, but not for parent regions."
                 },
                 {
                     "name": "notIn",
@@ -1015,19 +1015,19 @@ export default function() {
                     "name": "position",
                     "def": "position(haystack, needle)",
                     "docText": "The same as `position`, but the position is returned in Unicode code points. Works under the assumption that the string contains a set of bytes representing a UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception). \n" +
-                    "\n" +
-                    " There's also positionCaseInsensitiveUTF8 function."
+                        "\n" +
+                        " There's also positionCaseInsensitiveUTF8 function."
                 },
                 {
                     "name": "arrayElement",
                     "def": "arrayElement(arr, n), arr[n] operator",
                     "docText": "Get the element with the index `n` from the array `arr`. \n" +
-                    "\n" +
-                    " `n` should be any integer type. \n" +
-                    "\n" +
-                    " Indexes in an array begin from one. \n" +
-                    "\n" +
-                    " Negative indexes are supported - in this case, it selects the corresponding element numbered from the end. "
+                        "\n" +
+                        " `n` should be any integer type. \n" +
+                        "\n" +
+                        " Indexes in an array begin from one. \n" +
+                        "\n" +
+                        " Negative indexes are supported - in this case, it selects the corresponding element numbered from the end. "
                 },
                 {
                     "name": "toStringCutToZero",
@@ -1053,10 +1053,10 @@ export default function() {
                     "name": "sipHash64",
                     "def": "sipHash64(v)",
                     "docText": "Calculates SipHash from a string. \n" +
-                    "\n" +
-                    " Accepts a String-type argument. Returns UInt64. \n" +
-                    "\n" +
-                    " SipHash is a cryptographic hash function. It works at least three times faster than MD5. For more information, see <a href=\"https://131002.net/siphash/\">https://131002.net/siphash/</a>"
+                        "\n" +
+                        " Accepts a String-type argument. Returns UInt64. \n" +
+                        "\n" +
+                        " SipHash is a cryptographic hash function. It works at least three times faster than MD5. For more information, see <a href=\"https://131002.net/siphash/\">https://131002.net/siphash/</a>"
                 },
                 {
                     "name": "emptyArrayUInt16",
@@ -1077,26 +1077,26 @@ export default function() {
                     "name": "arrayFilter",
                     "def": "arrayFilter(func, arr1, ...)",
                     "docText": "Returns an array containing only the elements in `arr1` for which `func` returns something other than 0. \n" +
-                    "\n" +
-                    " Examples: \n" +
-                    "\n" +
-                    " SELECT arrayFilter(x -> x LIKE `%World%`, [`Hello`, `abc World`]) AS res "
+                        "\n" +
+                        " Examples: \n" +
+                        "\n" +
+                        " SELECT arrayFilter(x -> x LIKE `%World%`, [`Hello`, `abc World`]) AS res "
                 },
                 {
                     "name": "toStartOfQuarter",
                     "def": "toStartOfQuarter(v)",
                     "docText": "Rounds down a date or date with time to the first day of the quarter. \n" +
-                    "\n" +
-                    " The first day of the quarter is either 1 January, 1 April, 1 July, or 1 October. Returns the date."
+                        "\n" +
+                        " The first day of the quarter is either 1 January, 1 April, 1 July, or 1 October. Returns the date."
                 },
                 {
                     "name": "divide",
                     "def": "divide(a, b), a / b operator",
                     "docText": "Calculates the quotient of the numbers. The result type is always a floating-point type. \n" +
-                    "\n" +
-                    " It is not integer division. For integer division, use the `intDiv` function. \n" +
-                    "\n" +
-                    " When dividing by zero you get `inf`, `-inf`, or `nan`."
+                        "\n" +
+                        " It is not integer division. For integer division, use the `intDiv` function. \n" +
+                        "\n" +
+                        " When dividing by zero you get `inf`, `-inf`, or `nan`."
                 },
                 {
                     "name": "reverseUTF8",
@@ -1122,8 +1122,8 @@ export default function() {
                     "name": "yesterday",
                     "def": "yesterday(v)",
                     "docText": "Accepts zero arguments and returns yesterday`s date at one of the moments of request execution. \n" +
-                    "\n" +
-                    " The same as `today() - 1`."
+                        "\n" +
+                        " The same as `today() - 1`."
                 },
                 {
                     "name": "toMinute",
@@ -1139,8 +1139,8 @@ export default function() {
                     "name": "minus",
                     "def": "minus(a, b), a - b operator",
                     "docText": "Calculates the difference. The result is always signed. \n" +
-                    "\n" +
-                    " You can also calculate whole numbers from a date or date with time. The idea is the same - see above for `plus`."
+                        "\n" +
+                        " You can also calculate whole numbers from a date or date with time. The idea is the same - see above for `plus`."
                 },
                 {
                     "name": "toDateTime",
@@ -1151,10 +1151,10 @@ export default function() {
                     "name": "modulo",
                     "def": "modulo(a, b), a % b operator",
                     "docText": "Calculates the remainder after division. \n" +
-                    "\n" +
-                    " If arguments are floating-point numbers, they are pre-converted to integers by dropping the decimal portion. The remainder is taken in the same sense as in C++. Truncated division is used for negative numbers. \n" +
-                    "\n" +
-                    " An exception is thrown when dividing by zero or when dividing a minimal negative number by minus one."
+                        "\n" +
+                        " If arguments are floating-point numbers, they are pre-converted to integers by dropping the decimal portion. The remainder is taken in the same sense as in C++. Truncated division is used for negative numbers. \n" +
+                        "\n" +
+                        " An exception is thrown when dividing by zero or when dividing a minimal negative number by minus one."
                 },
                 {
                     "name": "bitmaskToArray",
@@ -1175,8 +1175,8 @@ export default function() {
                     "name": "range",
                     "def": "range(N)",
                     "docText": "Returns an array of numbers from 0 to N-1. \n" +
-                    "\n" +
-                    " Just in case, an exception is thrown if arrays with a total length of more than 100,000,000 elements are created in a data block."
+                        "\n" +
+                        " Just in case, an exception is thrown if arrays with a total length of more than 100,000,000 elements are created in a data block."
                 },
                 {
                     "name": "arrayAll",
@@ -1192,8 +1192,8 @@ export default function() {
                     "name": "unhex",
                     "def": "unhex(str)",
                     "docText": "Accepts a string containing any number of hexadecimal digits, and returns a string containing the corresponding bytes. Supports both uppercase and lowercase letters A-F. The number of hexadecimal digits doesn`t have to be even. If it is odd, the last digit is interpreted as the younger half of the 00-0F byte. If the argument string contains anything other than hexadecimal digits, some implementation-defined result is returned (an exception isn`t thrown). \n" +
-                    "\n" +
-                    " If you want to convert the result to a number, you can use the functions `reverse` and `reinterpretAsType`."
+                        "\n" +
+                        " If you want to convert the result to a number, you can use the functions `reverse` and `reinterpretAsType`."
                 },
                 {
                     "name": "toFloat64",
@@ -1209,8 +1209,8 @@ export default function() {
                     "name": "toStartOfYear",
                     "def": "toStartOfYear(v)",
                     "docText": "Rounds down a date or date with time to the first day of the year. \n" +
-                    "\n" +
-                    " Returns the date."
+                        "\n" +
+                        " Returns the date."
                 },
                 {
                     "name": "bitOr",
@@ -1271,10 +1271,10 @@ export default function() {
                     "name": "has",
                     "def": "has('database', 'table', 'column')",
                     "docText": "Accepts constant String columns - database name, table name and column name. Returns constant UInt8 value, equal to 1 if column exists, otherwise 0.\n" +
-                    "\n" +
-                    " If table doesn't exist than exception is thrown. \n" +
-                    "\n" +
-                    " For elements of nested data structure function checks existence of column. For nested data structure 0 is returned."
+                        "\n" +
+                        " If table doesn't exist than exception is thrown. \n" +
+                        "\n" +
+                        " For elements of nested data structure function checks existence of column. For nested data structure 0 is returned."
                 },
                 {
                     "name": "bitNot",
@@ -1315,8 +1315,8 @@ export default function() {
                     "name": "regionIn",
                     "def": "regionIn(lhs, rhs[, geobase])",
                     "docText": "Checks whether a `lhs` region belongs to a `rhs` region. Returns a UInt8 number equal to 1 if it belongs, or 0 if it doesn`t belong. \n" +
-                    "\n" +
-                    " The relationship is reflexive - any region also belongs to itself."
+                        "\n" +
+                        " The relationship is reflexive - any region also belongs to itself."
                 },
                 {
                     "name": "reinterpretAsUInt8",
@@ -1327,15 +1327,15 @@ export default function() {
                     "name": "dictIsIn",
                     "def": "dictIsIn(v)",
                     "docText": "`dictIsIn(`dict_name`, child_id, ancestor_id)` \n" +
-                    "\n" +
-                    " - For the `dict_name` hierarchical dictionary, finds out whether the `child_id` key is located inside `ancestor_id` (or matches `ancestor_id`). Returns UInt8."
+                        "\n" +
+                        " - For the `dict_name` hierarchical dictionary, finds out whether the `child_id` key is located inside `ancestor_id` (or matches `ancestor_id`). Returns UInt8."
                 },
                 {
                     "name": "toSecond",
                     "def": "toSecond(v)",
                     "docText": "Converts a date with time to a UInt8 number containing the number of the second in the minute (0-59). \n" +
-                    "\n" +
-                    " Leap seconds are not accounted for."
+                        "\n" +
+                        " Leap seconds are not accounted for."
                 },
                 {
                     "name": "least",
@@ -1361,15 +1361,15 @@ export default function() {
                     "name": "SHA224",
                     "def": "SHA224(v)",
                     "docText": "Calculates SHA-1, SHA-224, or SHA-256 from a string and returns the resulting set of bytes as FixedString(20), FixedString(28), or FixedString(32). \n" +
-                    "\n" +
-                    " The function works fairly slowly (SHA-1 processes about 5 million short strings per second per processor core, while SHA-224 and SHA-256 process about 2.2 million). "
+                        "\n" +
+                        " The function works fairly slowly (SHA-1 processes about 5 million short strings per second per processor core, while SHA-224 and SHA-256 process about 2.2 million). "
                 },
                 {
                     "name": "URLHash",
                     "def": "URLHash(url[, N])",
                     "docText": "A fast, decent-quality non-cryptographic hash function for a string obtained from a URL using some type of normalization. \n" +
-                    "\n" +
-                    " URLHash(s) - Calculates a hash from a string without one of the trailing symbols /,? or # at the end, if present"
+                        "\n" +
+                        " URLHash(s) - Calculates a hash from a string without one of the trailing symbols /,? or # at the end, if present"
                 },
                 {
                     "name": "equals",
@@ -1380,8 +1380,8 @@ export default function() {
                     "name": "plus",
                     "def": "plus(a, b), a + b operator",
                     "docText": "Calculates the sum of the numbers. \n" +
-                    "\n" +
-                    " You can also add whole numbers with a date or date and time. In the case of a date, adding a whole number means adding the corresponding number of days. For a date with time, it means adding the corresponding number of seconds."
+                        "\n" +
+                        " You can also add whole numbers with a date or date and time. In the case of a date, adding a whole number means adding the corresponding number of days. For a date with time, it means adding the corresponding number of seconds."
                 },
                 {
                     "name": "less",
@@ -1392,8 +1392,8 @@ export default function() {
                     "name": "regionHierarchy",
                     "def": "regionHierarchy(id[, geobase])",
                     "docText": "Accepts a UInt32 number - the region ID from the Yandex geobase. Returns an array of region IDs consisting of the passed region and all parents along the chain. \n" +
-                    "\n" +
-                    " Example: `regionHierarchy(toUInt32(213)) = [213,1,3,225,10001,10000]`."
+                        "\n" +
+                        " Example: `regionHierarchy(toUInt32(213)) = [213,1,3,225,10001,10000]`."
                 },
                 {
                     "name": "toUInt64OrZero",
@@ -1414,8 +1414,8 @@ export default function() {
                     "name": "bar",
                     "def": "bar(v)",
                     "docText": "Allows building a unicode-art diagram. \n" +
-                    "\n" +
-                    " bar(x, min, max, width) - Draws a band with a width proportional to (x - min) and equal to `width` characters when x"
+                        "\n" +
+                        " bar(x, min, max, width) - Draws a band with a width proportional to (x - min) and equal to `width` characters when x"
                 },
                 {
                     "name": "if",
@@ -1466,10 +1466,10 @@ export default function() {
                     "name": "timeSlots",
                     "def": "timeSlots(StartTime, Duration)",
                     "docText": "For a time interval starting at `StartTime` and continuing for `Duration` seconds, it returns an array of moments in time, consisting of points from this interval rounded down to the half hour. \n" +
-                    "\n" +
-                    " For example, `timeSlots(toDateTime(`2012-01-01 12:20:00`), toUInt32(600)) = [toDateTime(`2012-01-01 12:00:00`), toDateTime(`2012-01-01 12:30:00`)]`. \n" +
-                    "\n" +
-                    " This is necessary for searching for pageviews in the corresponding session."
+                        "\n" +
+                        " For example, `timeSlots(toDateTime(`2012-01-01 12:20:00`), toUInt32(600)) = [toDateTime(`2012-01-01 12:00:00`), toDateTime(`2012-01-01 12:30:00`)]`. \n" +
+                        "\n" +
+                        " This is necessary for searching for pageviews in the corresponding session."
                 },
                 {
                     "name": "toUInt32",
@@ -1520,8 +1520,8 @@ export default function() {
                     "name": "dictGetHierarchy",
                     "def": "dictGetHierarchy(v)",
                     "docText": "`dictGetHierarchy(`dict_name`, id)` \n" +
-                    "\n" +
-                    " - For the `dict_name` hierarchical dictionary, returns an array of dictionary keys starting from `id` and continuing along the chain of parent elements. Returns Array(UInt64)."
+                        "\n" +
+                        " - For the `dict_name` hierarchical dictionary, returns an array of dictionary keys starting from `id` and continuing along the chain of parent elements. Returns Array(UInt64)."
                 },
                 {
                     "name": "dictGetInt64",
@@ -1532,8 +1532,8 @@ export default function() {
                     "name": "CAST",
                     "def": "CAST(x, t)",
                     "docText": "Casts `x` to the `t` data type. \n" +
-                    "\n" +
-                    " The syntax `CAST(x AS t)` is also supported. \n"
+                        "\n" +
+                        " The syntax `CAST(x AS t)` is also supported. \n"
                 },
                 {
                     "name": "toRelativeSecondNum",
@@ -1549,15 +1549,15 @@ export default function() {
                     "name": "toStartOfMonth",
                     "def": "toStartOfMonth(v)",
                     "docText": "Rounds down a date or date with time to the first day of the month. \n" +
-                    "\n" +
-                    " Returns the date."
+                        "\n" +
+                        " Returns the date."
                 },
                 {
                     "name": "rand64",
                     "def": "rand64(v)",
                     "docText": "Returns a pseudo-random UInt64 number, evenly distributed among all UInt64-type numbers. \n" +
-                    "\n" +
-                    " Uses a linear congruential generator."
+                        "\n" +
+                        " Uses a linear congruential generator."
                 },
                 {
                     "name": "toInt8OrZero",
@@ -1613,44 +1613,44 @@ export default function() {
                     "name": "toHour",
                     "def": "toHour(v)",
                     "docText": "Converts a date with time to a UInt8 number containing the number of the hour in 24-hour time (0-23). \n" +
-                    "\n" +
-                    " This function assumes that if clocks are moved ahead, it is by one hour and occurs at 2 a.m., and if clocks are moved back, it is by one hour and occurs at 3 a.m. (which is not always true - even in Moscow the clocks were once changed at a different time)."
+                        "\n" +
+                        " This function assumes that if clocks are moved ahead, it is by one hour and occurs at 2 a.m., and if clocks are moved back, it is by one hour and occurs at 3 a.m. (which is not always true - even in Moscow the clocks were once changed at a different time)."
                 },
                 {
                     "name": "ignore",
                     "def": "ignore(...)",
                     "docText": "A function that accepts any arguments and always returns 0. \n" +
-                    "\n" +
-                    " However, the argument is still calculated. This can be used for benchmarks."
+                        "\n" +
+                        " However, the argument is still calculated. This can be used for benchmarks."
                 },
                 {
                     "name": "arrayJoin",
                     "def": "arrayJoin(v)",
                     "docText": "This is a very unusual function.\n" +
-                    "\n" +
-                    "Normal functions don't change a set of rows, but just change the values in each row (map). Aggregate functions compress a set of rows (fold or reduce). The 'arrayJoin' function takes each row and generates a set of rows (unfold).\n" +
-                    "\n" +
-                    "This function takes an array as an argument, and propagates the source row to multiple rows for the number of elements in the array. All the values in columns are simply copied, except the values in the column where this function is applied - it is replaced with the corresponding array value.\n" +
-                    "\n" +
-                    "A query can use multiple 'arrayJoin' functions. In this case, the transformation is performed multiple times.\n" +
-                    "\n" +
-                    "Note the ARRAY JOIN syntax in the SELECT query, which provides broader possibilities."
+                        "\n" +
+                        "Normal functions don't change a set of rows, but just change the values in each row (map). Aggregate functions compress a set of rows (fold or reduce). The 'arrayJoin' function takes each row and generates a set of rows (unfold).\n" +
+                        "\n" +
+                        "This function takes an array as an argument, and propagates the source row to multiple rows for the number of elements in the array. All the values in columns are simply copied, except the values in the column where this function is applied - it is replaced with the corresponding array value.\n" +
+                        "\n" +
+                        "A query can use multiple 'arrayJoin' functions. In this case, the transformation is performed multiple times.\n" +
+                        "\n" +
+                        "Note the ARRAY JOIN syntax in the SELECT query, which provides broader possibilities."
                 },
                 {
                     "name": "length",
                     "def": "length(v)",
                     "docText": "Returns the length of a string in Unicode code points (not in characters), assuming that the string contains a set of bytes that make up UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception). \n" +
-                    "\n" +
-                    " The result type is UInt64."
+                        "\n" +
+                        " The result type is UInt64."
                 },
                 {
                     "name": "tuple",
                     "def": "tuple(tuple, n), operator x.N",
                     "docText": "A function that allows getting columns from a tuple. \n" +
-                    "\n" +
-                    " `N` is the column index, starting from 1. `N` must be a constant. `N` must be a strict postive integer no greater than the size of the tuple. \n" +
-                    "\n" +
-                    " There is no cost to execute the function."
+                        "\n" +
+                        " `N` is the column index, starting from 1. `N` must be a constant. `N` must be a strict postive integer no greater than the size of the tuple. \n" +
+                        "\n" +
+                        " There is no cost to execute the function."
                 },
                 {
                     "name": "extractURLParameterNames",
@@ -1661,10 +1661,10 @@ export default function() {
                     "name": "tupleElement",
                     "def": "tupleElement(tuple, n), operator x.N",
                     "docText": "A function that allows getting columns from a tuple. \n" +
-                    "\n" +
-                    " `N` is the column index, starting from 1. `N` must be a constant. `N` must be a strict postive integer no greater than the size of the tuple. \n" +
-                    "\n" +
-                    " There is no cost to execute the function."
+                        "\n" +
+                        " `N` is the column index, starting from 1. `N` must be a constant. `N` must be a strict postive integer no greater than the size of the tuple. \n" +
+                        "\n" +
+                        " There is no cost to execute the function."
                 },
                 {
                     "name": "in",
@@ -1690,24 +1690,24 @@ export default function() {
                     "name": "isInfinite",
                     "def": "isInfinite(x)",
                     "docText": "Accepts Float32 and Float64 and returns UInt8 equal to 1 if the argument is infinite, otherwise 0. \n" +
-                    "\n" +
-                    " Note that 0 is returned for a NaN."
+                        "\n" +
+                        " Note that 0 is returned for a NaN."
                 },
                 {
                     "name": "transform",
                     "def": "transform(v)",
                     "docText": "Transforms a value according to the explicitly defined mapping of some elements to other ones. \n" +
-                    "\n" +
-                    " There are two variations of this function: \n" +
-                    "\n" +
-                    " 1. `transform(x, array_from, array_to, default)` "
+                        "\n" +
+                        " There are two variations of this function: \n" +
+                        "\n" +
+                        " 1. `transform(x, array_from, array_to, default)` "
                 },
                 {
                     "name": "rand",
                     "def": "rand(v)",
                     "docText": "Returns a pseudo-random UInt64 number, evenly distributed among all UInt64-type numbers. \n" +
-                    "\n" +
-                    " Uses a linear congruential generator."
+                        "\n" +
+                        " Uses a linear congruential generator."
                 },
                 {
                     "name": "reinterpretAsUInt16",
@@ -1778,8 +1778,8 @@ export default function() {
                     "name": "positionUTF8",
                     "def": "positionUTF8(haystack, needle)",
                     "docText": "The same as `position`, but the position is returned in Unicode code points. Works under the assumption that the string contains a set of bytes representing a UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception). \n" +
-                    "\n" +
-                    " There's also positionCaseInsensitiveUTF8 function."
+                        "\n" +
+                        " There's also positionCaseInsensitiveUTF8 function."
                 },
                 {
                     "name": "roundDuration",
@@ -1805,17 +1805,17 @@ export default function() {
                     "name": "notEmpty",
                     "def": "notEmpty(v)",
                     "docText": "Returns 0 for an empty array, or 1 for a non-empty array. \n" +
-                    "\n" +
-                    " The result type is UInt8. \n" +
-                    "\n" +
-                    " The function also works for strings."
+                        "\n" +
+                        " The result type is UInt8. \n" +
+                        "\n" +
+                        " The function also works for strings."
                 },
                 {
                     "name": "lengthUTF8",
                     "def": "lengthUTF8(v)",
                     "docText": "Returns the length of a string in Unicode code points (not in characters), assuming that the string contains a set of bytes that make up UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception). \n" +
-                    "\n" +
-                    " The result type is UInt64."
+                        "\n" +
+                        " The result type is UInt64."
                 },
                 {
                     "name": "lower",
@@ -1851,26 +1851,26 @@ export default function() {
                     "name": "alphaTokens",
                     "def": "alphaTokens(s)",
                     "docText": "Selects substrings of consecutive bytes from the range a-z and A-Z. \n" +
-                    "\n" +
-                    " Returns an array of selected substrings."
+                        "\n" +
+                        " Returns an array of selected substrings."
                 },
                 {
                     "name": "splitByChar",
                     "def": "splitByChar(separator, s)",
                     "docText": "Splits a string into substrings, using `separator` as the separator. \n" +
-                    "\n" +
-                    " `separator` must be a string constant consisting of exactly one character. \n" +
-                    "\n" +
-                    " Returns an array of selected substrings"
+                        "\n" +
+                        " `separator` must be a string constant consisting of exactly one character. \n" +
+                        "\n" +
+                        " Returns an array of selected substrings"
                 },
                 {
                     "name": "arrayStringConcat",
                     "def": "arrayStringConcat(arr[, separator])",
                     "docText": "Concatenates strings from the array elements, using `separator` as the separator. \n" +
-                    "\n" +
-                    " `separator` is a string constant, an optional parameter. By default it is an empty string. \n" +
-                    "\n" +
-                    " Returns a string."
+                        "\n" +
+                        " `separator` is a string constant, an optional parameter. By default it is an empty string. \n" +
+                        "\n" +
+                        " Returns a string."
                 },
                 {
                     "name": "replaceAll",
@@ -1881,8 +1881,8 @@ export default function() {
                     "name": "replaceRegexpOne",
                     "def": "replaceRegexpOne(haystack, pattern, replacement)",
                     "docText": "Replacement using the `pattern` regular expression. A re2 regular expression. Replaces only the first occurrence, if it exists. \n" +
-                    "\n" +
-                    " A pattern can be specified as `replacement`. "
+                        "\n" +
+                        " A pattern can be specified as `replacement`. "
                 },
                 {
                     "name": "cbrt",
@@ -1893,8 +1893,8 @@ export default function() {
                     "name": "match",
                     "def": "match(pattern)(time, cond1, cond2, ...)",
                     "docText": "Pattern matching for event chains. \n" +
-                    "\n" +
-                    " `pattern` is a string containing a pattern to match. The pattern is similar to a regular expression."
+                        "\n" +
+                        " `pattern` is a string containing a pattern to match. The pattern is similar to a regular expression."
                 },
                 {
                     "name": "cutURLParameter",
@@ -1910,8 +1910,8 @@ export default function() {
                     "name": "domain",
                     "def": "domain(v)",
                     "docText": "- Selects the part of the domain that includes top-level subdomains up to the `first significant subdomain` (see the explanation above). \n" +
-                    "\n" +
-                    " For example, cutToFirstSignificantSubdomain(`https://news.yandex.com.tr/`) = `yandex.com.tr`."
+                        "\n" +
+                        " For example, cutToFirstSignificantSubdomain(`https://news.yandex.com.tr/`) = `yandex.com.tr`."
                 },
                 {
                     "name": "domainWithoutWWW",
@@ -1922,8 +1922,8 @@ export default function() {
                     "name": "firstSignificantSubdomain",
                     "def": "firstSignificantSubdomain(v)",
                     "docText": "- Selects the part of the domain that includes top-level subdomains up to the `first significant subdomain` (see the explanation above). \n" +
-                    "\n" +
-                    " For example, cutToFirstSignificantSubdomain(`https://news.yandex.com.tr/`) = `yandex.com.tr`."
+                        "\n" +
+                        " For example, cutToFirstSignificantSubdomain(`https://news.yandex.com.tr/`) = `yandex.com.tr`."
                 },
                 {
                     "name": "queryString",
@@ -1949,8 +1949,8 @@ export default function() {
                     "name": "cutToFirstSignificantSubdomain",
                     "def": "cutToFirstSignificantSubdomain(v)",
                     "docText": "- Selects the part of the domain that includes top-level subdomains up to the `first significant subdomain` (see the explanation above). \n" +
-                    "\n" +
-                    " For example, cutToFirstSignificantSubdomain(`https://news.yandex.com.tr/`) = `yandex.com.tr`."
+                        "\n" +
+                        " For example, cutToFirstSignificantSubdomain(`https://news.yandex.com.tr/`) = `yandex.com.tr`."
                 },
                 {
                     "name": "cutWWW",
@@ -2036,8 +2036,8 @@ export default function() {
                     "name": "sin",
                     "def": "sin(x)",
                     "docText": "Accepts Float32 and Float64 and returns UInt8 equal to 1 if the argument is infinite, otherwise 0. \n" +
-                    "\n" +
-                    " Note that 0 is returned for a NaN."
+                        "\n" +
+                        " Note that 0 is returned for a NaN."
                 },
                 {
                     "name": "cos",
@@ -2103,51 +2103,51 @@ export default function() {
                     "name": "$rate",
                     "def": "$rate(cols...)",
                     "docText": "Converts query results as `change rate per interval`. Can be used to display changes-per-second." +
-                    "\n" +
-                    "Example:\n $rate(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests"
+                        "\n" +
+                        "Example:\n $rate(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests"
                 },
                 {
                     "name": "$perSecond",
                     "def": "$perSecond(cols...)",
                     "docText": "Similar to $rate macros for Counter-like type of metrics which are only grow. The macros will chose the max" +
-                    "value for each column in every timeSlot and calculate the changes." +
-                    "\n" +
-                    "Example:\n $perSecond(total_requests) FROM requests"
+                        "value for each column in every timeSlot and calculate the changes." +
+                        "\n" +
+                        "Example:\n $perSecond(total_requests) FROM requests"
                 },
                 {
                     "name": "$perSecondColumns",
                     "def": "$perSecondColumns(key, value)",
                     "docText": "A combination of $perSecond and $columns" +
-                    "\n" +
-                    "Example:\n $perSecondColumns(type, total) FROM requests"
+                        "\n" +
+                        "Example:\n $perSecondColumns(type, total) FROM requests"
                 },
                 {
                     "name": "$columns",
                     "def": "$columns(key, value)",
                     "docText": "Query values as array of [key, value], where key will be used as label. Can be used to display multiple lines at graph" +
-                    "\n" +
-                    "Example:\n $columns(OSName, count(*) c) FROM requests"
+                        "\n" +
+                        "Example:\n $columns(OSName, count(*) c) FROM requests"
                 },
                 {
                     "name": "$rateColumns",
                     "def": "$rateColumns(key, value)",
                     "docText": "A combination of `$columns` and `$rate` ." +
-                    "\n" +
-                    "Example:\n $rateColumns(OS, count(*) c) FROM requests"
+                        "\n" +
+                        "Example:\n $rateColumns(OS, count(*) c) FROM requests"
                 },
                 {
                     "name": "$unescape",
                     "def": "$unescape($variable)",
                     "docText": "Unescapes variable value by removing single quotes" +
-                    "\n" +
-                    "Example:\n SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
+                        "\n" +
+                        "Example:\n SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
                 },
                 {
                     "name": "$adhoc",
                     "def": "$adhoc",
                     "docText": "Replaced with a rendered ad-hoc filter expression, or `1` if no ad-hoc filters exist" +
-                    "\n" +
-                    "Example:\n SELECT * FROM (select a, b from table2 WHERE $adhoc) ORDER BY a"
+                        "\n" +
+                        "Example:\n SELECT * FROM (select a, b from table2 WHERE $adhoc) ORDER BY a"
                 }
             ];
         };

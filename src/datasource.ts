@@ -247,7 +247,7 @@ export class ClickHouseDatasource {
         let queryFilter = '';
         each(this.templateSrv.variables, (v) => {
             if (v.name === adhocFilterVariable) {
-                queryFilter = v.query
+                queryFilter = v.query;
             }
         });
         return this.adhocCtrl.GetTagKeys(queryFilter);

@@ -31,11 +31,11 @@ export default class AdhocCtrl {
         }
         let q = this.query;
         if (query.length > 0) {
-            q = query
+            q = query;
         }
         return this.datasource.metricFindQuery(q)
             .then(function (response) {
-                return self.processResponse(response)
+                return self.processResponse(response);
             });
     }
 
@@ -45,7 +45,7 @@ export default class AdhocCtrl {
         if (this.tagValues.hasOwnProperty(options.key)) {
             return Promise.resolve(this.tagValues[options.key]);
         }
-        return Promise.resolve([])
+        return Promise.resolve([]);
     }
 
     processResponse(response) {
@@ -63,7 +63,7 @@ export default class AdhocCtrl {
                 if (options.length > 0) {
                     self.tagValues[text] = [];
                     options.forEach(function (o) {
-                        self.tagValues[text].push({text: o, value: o})
+                        self.tagValues[text].push({text: o, value: o});
                     });
                     self.tagValues[item.name] = self.tagValues[text];
                 }

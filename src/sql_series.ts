@@ -26,16 +26,16 @@ export default class SqlSeries {
 
         let columns = [];
         each(self.meta, function (col) {
-            columns.push({"text": col.name, "type": SqlSeries._toJSType(col.type)})
+            columns.push({"text": col.name, "type": SqlSeries._toJSType(col.type)});
         });
 
         let rows = [];
         each(self.series, function (ser) {
             let r = [];
             each(ser, function (v) {
-                r.push(v)
+                r.push(v);
             });
-            rows.push(r)
+            rows.push(r);
         });
 
         data.push({
@@ -44,7 +44,7 @@ export default class SqlSeries {
             "type": "table"
         });
 
-        return data
+        return data;
     }
 
     toTimeSeries(): any {
@@ -170,20 +170,20 @@ export default class SqlSeries {
             case 'Int64':
                 return "number";
             default:
-                return "string"
+                return "string";
         }
     }
 
     static _formatValue(value: any) {
         if (value === null) {
-            return value
+            return value;
         }
 
         let numeric = Number(value);
         if (isNaN(numeric)) {
-            return value
+            return value;
         } else {
-            return numeric
+            return numeric;
         }
     };
 }

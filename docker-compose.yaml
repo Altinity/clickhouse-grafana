@@ -1,0 +1,49 @@
+version: "3"
+networks:
+  grafana-clickhouse:
+    
+services:
+  clickhouse:
+    image: yandex/clickhouse-server:latest
+    networks:
+      grafana-clickhouse:
+        aliases:
+          - clickhouse
+    ports:
+    - 8123:8123
+    - 9000:9000
+
+  grafana:
+    image: grafana/grafana:latest
+    networks:
+      grafana-clickhouse:
+        aliases:
+          - grafana
+    volumes:
+    - ./:/var/lib/grafana/plugins/vertamedia-clickhouse/
+    - ./grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
+    ports:
+    - 3000:3000
+    depends_on:
+      - clickhouse
+
+  nodejs:
+    image: node:lts
+    working_dir: /grafana-clickhouse
+    volumes:
+    - ./:/grafana-clickhouse
+    # for speedup npm install
+    - /grafana-clickhouse/node_modules
+    command: |
+      bash -xec "
+        npm install --production=false && \
+        npm run build:prod && \
+        npm run test:docker
+      "
+    networks:
+      grafana-clickhouse:
+        aliases:
+          - nodejs
+
+
+

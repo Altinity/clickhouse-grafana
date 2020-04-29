@@ -571,6 +571,23 @@ yarn run <script>
 
 For test examples please see `spec` folder. We strongly encourage contributors to add tests to check new changes or functionality.
 
+### Docker-compose environment for development
+
+There is simple demo stand which mount current `dist` directory inside grafana container, which connected to clickhouse datasource
+
+for run development environment, just run following command
+```sh
+docker-compose up -d
+```
+after that open http://localhost:3000/ to open grafana instance with one clickhouse datasource
+
+typical development process for docker-compose 
+- change source files
+- `npm run test`
+- `npm run build:dev`
+- `docker-compose restart grafana`
+- open http://localhost:3000/
+
 ### Contribute
 
 If you have any idea for an improvement or found a bug do not hesitate to open an issue or submit a pull request.

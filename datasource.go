@@ -79,9 +79,15 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 	for _, dataPoint := range parsedBody.Data {
 		for k, v := range dataPoint {
 			if k != "t" {
-				timestamp, _ := strconv.ParseInt(dataPoint["t"], 10, 64)
-				point, _ := strconv.ParseFloat(v, 64)
-				// TODO how to handle parsing error?
+				timestamp, err := strconv.ParseInt(dataPoint["t"], 10, 64)
+				if err != nil {
+					return nil, fmt.Errorf("unable to parse timestamp with alias t: %v", err)
+				}
+
+				point, err := strconv.ParseFloat(v, 64)
+				if err != nil {
+					return nil, fmt.Errorf("unable to parse value for '%s': %v", k, err)
+				}
 
 				seriesMap[k].Points = append(seriesMap[k].Points, &datasource.Point{
 					Timestamp: timestamp,

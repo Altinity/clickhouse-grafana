@@ -11,6 +11,7 @@ import Scanner from './scanner';
 const adhocFilterVariable = 'adhoc_query_filter';
 
 export class ClickHouseDatasource {
+    id: string;
     type: string;
     name: string;
     supportMetrics: boolean;
@@ -33,6 +34,7 @@ export class ClickHouseDatasource {
                 private $q,
                 private backendSrv,
                 private templateSrv) {
+        this.id = instanceSettings.id;
         this.type = 'clickhouse';
         this.name = instanceSettings.name;
         this.supportMetrics = true;

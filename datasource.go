@@ -10,8 +10,8 @@ import (
 
 	"golang.org/x/net/context"
 
+	"github.com/bitly/go-simplejson"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
-	"github.com/grafana/grafana/pkg/components/simplejson"
 	plugin "github.com/hashicorp/go-plugin"
 	"golang.org/x/net/context/ctxhttp"
 )
@@ -28,7 +28,7 @@ func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.Dataso
 	if err != nil {
 		return nil, err
 	}
-	
+
 	query := modelJson.Get("rawQuery").MustString()
 	request, err := createRequest(req, query)
 	if err != nil {

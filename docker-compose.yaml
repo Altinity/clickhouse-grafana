@@ -17,7 +17,7 @@ services:
     depends_on:
       - clickhouse
 
-  nodejs:
+  frontend_builder:
     image: node:lts
     working_dir: /grafana-clickhouse
     volumes:
@@ -31,7 +31,7 @@ services:
         npm run test:docker
       "
 
-  backend:
+  backend_builder:
     image: golang:1.14
     working_dir: /go/src/grafana-clickhouse
     environment:

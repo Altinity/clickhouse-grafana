@@ -10,11 +10,10 @@ import (
 	"strconv"
 	"strings"
 
-	"golang.org/x/net/context"
-
 	"github.com/bitly/go-simplejson"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
 	plugin "github.com/hashicorp/go-plugin"
+	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
 )
 
@@ -132,7 +131,7 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 	}
 
 	url.RawQuery = params.Encode()
-	request, err := http.NewRequest(method, url.String(), bytes.NewBufferString(body))	
+	request, err := http.NewRequest(method, url.String(), bytes.NewBufferString(body))
 	if err != nil {
 		return nil, err
 	}

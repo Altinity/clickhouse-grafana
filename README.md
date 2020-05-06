@@ -573,7 +573,7 @@ For test examples please see `spec` folder. We strongly encourage contributors t
 
 ### Docker-compose environment for development
 
-There is simple demo which mounts the current `dist` directory inside the grafana container. The grafana container is connected to the docker clickhouse database container.
+This is a simple demo which mounts the current `dist` directory inside the grafana container. The grafana container is connected to the docker clickhouse database container.
 
 To run the development environment:
 ```sh

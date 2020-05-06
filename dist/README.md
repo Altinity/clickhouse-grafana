@@ -613,6 +613,9 @@ To format your go code, use the command:
 docker-compose run --rm backend_builder go fmt .
 ```
 
+The resulting alerts should look like this
+![image](https://user-images.githubusercontent.com/5578150/81031711-fd2fad00-8e41-11ea-9b54-5eb4ca1628f1.png)
+
 ### Contribute
 
 If you have any idea for an improvement or found a bug do not hesitate to open an issue or submit a pull request.

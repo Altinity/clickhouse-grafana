@@ -1,12 +1,14 @@
 package main
 
 import (
+	"bytes"
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"strconv"
+	"strings"
 
 	"golang.org/x/net/context"
 
@@ -22,7 +24,14 @@ type ClickhouseDatasource struct {
 	plugin.NetRPCUnsupportedPlugin
 }
 
-func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.DatasourceRequest) (*datasource.DatasourceResponse, error) {
+func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.DatasourceRequest) (r *datasource.DatasourceResponse, err error) {
+	// catch all panics and override err return value
+	defer func() {
+		if r := recover(); r != nil {
+			err = fmt.Errorf("clickhouse plugin panicked: %#w", r)
+		}
+	}()
+
 	refId := req.Queries[0].RefId
 	modelJson, err := simplejson.NewJson([]byte(req.Queries[0].ModelJson))
 	if err != nil {
@@ -55,18 +64,88 @@ func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.Dataso
 }
 
 func createRequest(req *datasource.DatasourceRequest, query string) (*http.Request, error) {
-	escaped := url.QueryEscape(query + " FORMAT JSON")
+	body := ""
+	method := http.MethodGet
+	headers := http.Header{}
+	url, err := url.Parse(req.Datasource.Url)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse clickhouse url: %w", err)
+	}
 
-	// TODO support other datasource options
+	params := url.Query()
+	params.Add("query", query+" FORMAT JSON")
 
-	return http.NewRequest(http.MethodGet, fmt.Sprintf("%s/?query=%s", req.Datasource.Url, escaped), nil)
+	// TODO Fix basic authorization. We have access to basicAuthPassword but not
+	// the basic auth name. Users will have to use the useYandexCloudAuthorization
+	// option instead for clickhouse auth.
+	secureOptions := req.Datasource.DecryptedSecureJsonData
+	options := make(map[string]interface{})
+	err = json.Unmarshal([]byte(req.Datasource.JsonData), &options)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse clickhouse options: %w", err)
+	}
+
+	for k, v := range options {
+		switch k {
+		case "usePOST":
+			method = http.MethodPost
+			params.Del("query")
+			body = query
+			break
+		case "defaultDatabase":
+			db, _ := v.(string)
+			params.Add("database", db)
+			break
+		case "addCorsHeaders":
+			params.Add("add_http_cors_header", "1")
+			break
+		case "useYandexCloudAuthorization":
+			chUser := ""
+			chKey := ""
+
+			if user, ok := options["xHeaderUser"]; ok {
+				chUser, _ = user.(string)
+			}
+
+			if key, ok := secureOptions["xHeaderKey"]; ok {
+				chKey = key
+			}
+
+			headers.Add("X-ClickHouse-User", chUser)
+			headers.Add("X-ClickHouse-Key", chKey)
+			break
+		default:
+			if strings.HasPrefix(k, "httpHeaderName") {
+				headerKey := strings.Replace(k, "Name", "Value", 1)
+				value := ""
+				name, _ := v.(string)
+				if hv, ok := secureOptions[headerKey]; ok {
+					value = hv
+				}
+
+				return nil, fmt.Errorf("parse key %s", k)
+
+				headers.Add(name, value)
+			}
+			break
+		}
+	}
+
+	url.RawQuery = params.Encode()
+	request, err := http.NewRequest(method, url.String(), bytes.NewBufferString(body))	
+	if err != nil {
+		return nil, err
+	}
+
+	request.Header = headers
+	return request, nil
 }
 
 func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, error) {
 	parsedBody := ClickHouseResponse{}
 	err := json.Unmarshal(body, &parsedBody)
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to parse response json: %s: %w", body, err)
 	}
 
 	seriesMap := map[string]*datasource.TimeSeries{}

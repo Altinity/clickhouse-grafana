@@ -1,5 +1,8 @@
 package main
 
+// See https://github.com/grafana/grafana/blob/master/docs/sources/developers/plugins/backend.md for
+// details on grafana backend plugins
+
 import (
 	"bytes"
 	"encoding/json"
@@ -26,15 +29,15 @@ type ClickhouseDatasource struct {
 func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.DatasourceRequest) (r *datasource.DatasourceResponse, err error) {
 	// catch all panics and override err return value
 	defer func() {
-		if r := recover(); r != nil {
-			err = fmt.Errorf("clickhouse plugin panicked: %#w", r)
+		if panicMsg := recover(); panicMsg != nil {
+			err = fmt.Errorf("clickhouse plugin panicked: %#w", panicMsg)
 		}
 	}()
 
 	refId := req.Queries[0].RefId
 	modelJson, err := simplejson.NewJson([]byte(req.Queries[0].ModelJson))
 	if err != nil {
-		return nil, err
+		return nil, fmt.Errorf("unable to parse query: %w", err)
 	}
 
 	query := modelJson.Get("rawQuery").MustString()
@@ -47,16 +50,17 @@ func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.Dataso
 	if err != nil {
 		return nil, err
 	}
-
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("invalid status code. status: %v", response.Status)
-	}
-
 	defer response.Body.Close()
 
+	// Body must be drained and closed on each request as per the docs: https://golang.org/pkg/net/http/#Client.Do
+	// otherwise the http client connection cannot be reused
 	body, err := ioutil.ReadAll(response.Body)
 	if err != nil {
 		return nil, err
+	}
+
+	if response.StatusCode != http.StatusOK {
+		return nil, fmt.Errorf("invalid status code. status: %v", response.Status)
 	}
 
 	return parseResponse(body, refId)
@@ -74,9 +78,14 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 	params := url.Query()
 	params.Add("query", query+" FORMAT JSON")
 
-	// TODO Fix basic authorization. We have access to basicAuthPassword but not
-	// the basic auth name. Users will have to use the useYandexCloudAuthorization
-	// option instead for clickhouse auth.
+	/*
+	 Note: The current plugins model does not support basic authorization.
+	 We have access to basicAuthPassword but not the basic auth name. Users
+	 will have to use the useYandexCloudAuthorization
+	 option instead for clickhouse auth.
+	 This will be necessary until the new grafana plugin model becomes available:
+	 https://github.com/grafana/grafana-plugin-sdk-go
+	*/
 	secureOptions := req.Datasource.DecryptedSecureJsonData
 	options := make(map[string]interface{})
 	err = json.Unmarshal([]byte(req.Datasource.JsonData), &options)
@@ -99,19 +108,15 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 			params.Add("add_http_cors_header", "1")
 			break
 		case "useYandexCloudAuthorization":
-			chUser := ""
-			chKey := ""
-
 			if user, ok := options["xHeaderUser"]; ok {
-				chUser, _ = user.(string)
+				chUser, _ := user.(string)
+				headers.Add("X-ClickHouse-User", chUser)
 			}
 
-			if key, ok := secureOptions["xHeaderKey"]; ok {
-				chKey = key
+			if key, ok := options["xHeaderKey"]; ok {
+				chKey, _ := key.(string)
+				headers.Add("X-ClickHouse-Key", chKey)
 			}
-
-			headers.Add("X-ClickHouse-User", chUser)
-			headers.Add("X-ClickHouse-Key", chKey)
 			break
 		default:
 			if strings.HasPrefix(k, "httpHeaderName") {
@@ -121,8 +126,6 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 				if hv, ok := secureOptions[headerKey]; ok {
 					value = hv
 				}
-
-				return nil, fmt.Errorf("parse key %s", k)
 
 				headers.Add(name, value)
 			}

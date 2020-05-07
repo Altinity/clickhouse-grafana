@@ -1,9 +1,8 @@
 package main
 
 import (
-	"os"
-
 	"log"
+	"os"
 
 	"github.com/grafana/grafana-plugin-model/go/datasource"
 	plugin "github.com/hashicorp/go-plugin"

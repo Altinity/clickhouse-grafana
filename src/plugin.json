@@ -5,7 +5,9 @@
 
   "metrics": true,
   "annotations": true,
-  "alerting": false,
+  "backend": true,
+  "alerting": true,
+  "executable": "vertamedia-clickhouse-plugin",
 
   "info": {
     "description": "ClickHouse datasource for Grafana",

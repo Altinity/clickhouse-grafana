@@ -571,6 +571,51 @@ yarn run <script>
 
 For test examples please see `spec` folder. We strongly encourage contributors to add tests to check new changes or functionality.
 
+### Docker-compose environment for development
+
+This is a simple demo which mounts the current `dist` directory inside the grafana container. The grafana container is connected to the docker clickhouse database container.
+
+To run the development environment:
+```sh
+docker-compose up -d
+```
+after that open http://localhost:3000/ to open grafana instance with one clickhouse datasource
+
+#### Frontend Builder
+
+The frontend builder is the docker container used to transpile the typescript source code into the javascript found in the `dist` dir. This will affect the grafana query and configuration functionality.
+
+To develop using docker, the process looks like:
+1. change source files
+2. `docker-compose up frontend_builder`
+3. `docker-compose restart grafana`
+4. open http://localhost:3000/
+
+To develop without docker, the process looks like:
+1. change source files
+2. `npm run test`
+3. `npm run build:dev`
+4. `docker-compose restart grafana`
+5. open http://localhost:3000/
+
+#### Backend Builder
+
+The backend builder is the docker container used to compile the golang source code into the `vertamedia-clickhouse-plugin_linux_amd64` binary in the `dist` dir. This will affect the grafana service used for running queries for alerting. The entrypoint for the go code is at `plugin.go`.
+
+To develop using docker, the process looks like:
+1. change source files
+2. `docker-compose up backend_builder`
+3. `docker-compose restart grafana`
+4. open http://localhost:3000/
+
+To format your go code, use the command:
+```sh
+docker-compose run --rm backend_builder go fmt .
+```
+
+The resulting alerts should look like this
+![image](https://user-images.githubusercontent.com/5578150/81031711-fd2fad00-8e41-11ea-9b54-5eb4ca1628f1.png)
+
 ### Contribute
 
 If you have any idea for an improvement or found a bug do not hesitate to open an issue or submit a pull request.

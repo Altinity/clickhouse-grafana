@@ -28,7 +28,7 @@ module.exports = {
     }
   ],
   plugins: [
-    new CleanWebpackPlugin('dist', {allowExternal: true}),
+    new CleanWebpackPlugin('dist', { exclude: ['vertamedia-clickhouse-plugin_linux_amd64']}),
     new webpack.optimize.OccurrenceOrderPlugin(),
     new CopyWebpackPlugin([
       {from: 'plugin.json', to: '.'},

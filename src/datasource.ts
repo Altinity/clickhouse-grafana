@@ -143,7 +143,7 @@ export class ClickHouseDatasource {
                         result.push(data);
                     });
                 } else {
-                    each(sqlSeries.toTimeSeries(), (data) => {
+                    each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
                         result.push(data);
                     });
                 }

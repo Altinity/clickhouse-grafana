@@ -47,7 +47,7 @@ export default class SqlSeries {
         return data
     }
 
-    toTimeSeries(): any {
+    toTimeSeries(extrapolate: boolean): any {
         let self = this, timeSeries = [];
         if (self.series.length === 0) {
             return timeSeries;
@@ -98,7 +98,11 @@ export default class SqlSeries {
         });
 
         each(metrics, function (datapoints, seriesName) {
-            timeSeries.push({target: seriesName, datapoints: self.extrapolate(datapoints)});
+            if (extrapolate) {
+                timeSeries.push({target: seriesName, datapoints: self.extrapolate(datapoints)});
+            } else {
+                timeSeries.push({target: seriesName, datapoints: datapoints});
+            }
         });
 
         return timeSeries;

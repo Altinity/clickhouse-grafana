@@ -540,10 +540,12 @@ Plugin extrapolates last datapoint if timerange is `last N` to avoid displaying 
 when timestamp in table is rounded to minute or bigger.
 If it so then in 99% cases last datapoint will be much less than previous one, because last minute is not finished yet.
 That's why plugin checks prev datapoints and tries to predict last datapoint value just as it was already written into db.
+This behavior could be turned off via "Extrapolation" checkbox in query editor.
 
 > Why no alerts support?
 
-Alerts feature requires changes in `Grafana`'s backend, which can't be extended for now. `Grafana`'s maintainers are working on this feature.
+Alerts feature requires changes in `Grafana`'s backend, which can be extended only for Grafana 6.5+. `Grafana`'s maintainers are working on this feature. 
+Current alerts support for `clickhouse-grafana` datasource in alpha. 
 
 ### Development
 

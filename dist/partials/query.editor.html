@@ -143,6 +143,15 @@
                         ng-change="ctrl.refresh()"></select>
             </div>
         </div>
+        <div class="gf-form">
+            <gf-form-switch class="gf-form width-12"
+                            checked="ctrl.target.extrapolate"
+                            ng-model="crtl.target.extrapolate"
+                            ng-change="ctrl.refresh()"
+                            label="Extrapolation"
+                            tooltip="Turn on if you don't like when last data point in time series much lower then previous">
+            </gf-form-switch>
+        </div>
 
         <div class="gf-form">
             <label class="gf-form-label query-keyword" ng-click="ctrl.showHelp = !ctrl.showHelp">

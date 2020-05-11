@@ -89,6 +89,9 @@ class SqlQueryCtrl extends QueryCtrl {
         ];
 
         this.target.format = this.target.format || 'time_series';
+        if (typeof this.target.extrapolate == 'undefined') {
+            this.target.extrapolate = true
+        }
         this.target.dateTimeType = this.target.dateTimeType || this.dateTimeTypeOptions[0].value;
         this.target.round = this.target.round || "0s";
         this.target.intervalFactor = this.target.intervalFactor || 1;

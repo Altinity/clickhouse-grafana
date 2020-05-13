@@ -209,7 +209,9 @@ export class ClickHouseDatasource {
         let interpolatedQuery;
 
         try {
-            interpolatedQuery = this.templateSrv.replace(query, {}, SqlQuery.interpolateQueryExpr);
+            interpolatedQuery = this.templateSrv.replace(SqlQuery.conditionalTest(
+                query, this.templateSrv
+            ), {}, SqlQuery.interpolateQueryExpr);
         } catch (err) {
             return this.$q.reject(err);
         }
@@ -247,7 +249,7 @@ export class ClickHouseDatasource {
         let queryFilter = '';
         each(this.templateSrv.variables, (v) => {
             if (v.name === adhocFilterVariable) {
-                queryFilter = v.query
+                queryFilter = v.query;
             }
         });
         return this.adhocCtrl.GetTagKeys(queryFilter);

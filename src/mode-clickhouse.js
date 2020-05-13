@@ -1,4 +1,4 @@
-export default function() {
+export default function () {
 
     if (!window['ace']) {
         return false;

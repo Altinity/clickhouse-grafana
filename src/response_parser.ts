@@ -5,7 +5,7 @@ export default class ResponseParser {
     constructor(private $q) {
     }
 
-    parse(query: string, results: any) : any[] {
+    parse(query: string, results: any): any[] {
         if (!results || results.data.length === 0) {
             return [];
         }
@@ -20,26 +20,26 @@ export default class ResponseParser {
 
         sqlResults.forEach(result => {
             if (!isObject(result)) {
-                res.push({ text: result });
-                return
+                res.push({text: result});
+                return;
             }
 
             let keys = Object.keys(result);
             if (keys.length > 1) {
                 if (keyValuePairs) {
-                    res.push({ text: result[keys[textColIndex]], value: result[keys[valueColIndex]]});
+                    res.push({text: result[keys[textColIndex]], value: result[keys[valueColIndex]]});
                 } else {
                     res.push(result);
                 }
             } else {
-                res.push({ text: result[keys[0]]});
+                res.push({text: result[keys[0]]});
             }
         });
 
-        return res
+        return res;
     }
 
-    static findColIndex(columns: string[], colName: string) : number {
+    static findColIndex(columns: string[], colName: string): number {
         for (let i = 0; i < columns.length; i++) {
             if (columns[i] === colName) {
                 return i;

@@ -217,7 +217,11 @@ export class ClickHouseDatasource {
         }
 
         if (options && options.range) {
-            interpolatedQuery = SqlQuery.replaceTimeFilters(interpolatedQuery, options.range);
+            let from = SqlQuery.convertTimestamp(options.range.from);
+            let to = SqlQuery.convertTimestamp(options.range.to);
+            interpolatedQuery = interpolatedQuery.replace(/\$to/g, to).replace(/\$from/g, from);
+            interpolatedQuery = SqlQuery.replaceTimeFilters( interpolatedQuery, options.range);
+            interpolatedQuery = SqlQuery.render( interpolatedQuery, this.templateSrv, options);
         }
 
         // todo(nv): fix request id

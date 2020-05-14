@@ -108,15 +108,24 @@ export default class SqlQuery {
             table = SqlQuery.escapeIdentifier(this.target.database) + '.' + table;
         }
 
-        this.target.rawQuery = query
+        var 
+            myround = this.target.round === "$step"? interval : SqlQuery.convertInterval(this.target.round, 1),
+            from = SqlQuery.convertTimestamp( SqlQuery.round(this.options.range.from, myround)),
+            to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, myround));
+
+        this.target.rawQuery = SqlQuery.render(query
             .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
             .replace(/\$timeFilter/g, timeFilter)
             .replace(/\$table/g, table)
+            .replace(/\$from/g, from)
+            .replace(/\$to/g, to)
             .replace(/\$dateCol/g, SqlQuery.escapeIdentifier(this.target.dateColDataType))
             .replace(/\$dateTimeCol/g, SqlQuery.escapeIdentifier(this.target.dateTimeColDataType))
             .replace(/\$interval/g, interval)
             .replace(/\$adhoc/g, renderedAdHocCondition)
-            .replace(/(?:\r\n|\r|\n)/g, ' ');
+            .replace(/(?:\r\n|\r|\n)/g, ' '),
+            this.templateSrv,
+            options);
 
         const round = this.target.round === "$step"
             ? interval
@@ -648,4 +657,50 @@ export default class SqlQuery {
         }
         return r;
     }
+
+    /**
+     * format <% code
+     * @param html 
+     * @param templateSrv 
+     * @param opts 
+     */
+    static render(html, templateSrv, opts) {
+        var options = {
+          templateSrv: templateSrv,
+          options: opts,
+          isAll: function (v) {
+            var o = templateSrv.variables.find(function (e) {
+              return e.name == v;
+            });
+            return o && o.current.value == "$__all";
+          },
+        };
+        var re = /<%(.+?)%>/g,
+          reExp = /(^( )?(var|if|for|else|switch|case|break|{|}|;))(.*)?/g,
+          code = "with(obj) { var r=[];\n",
+          cursor = 0,
+          result,
+          match;
+        var add = function (line, js) {
+          js
+            ? (code += line.match(reExp) ? line + "\n" : "r.push(" + line + ");\n")
+            : (code +=
+                line != "" ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : "");
+          return add;
+        };
+        while ((match = re.exec(html))) {
+          add(html.slice(cursor, match.index), null)(match[1], true);
+          cursor = match.index + match[0].length;
+        }
+        add(html.substr(cursor, html.length - cursor), null);
+        code = (code + 'return r.join(""); }').replace(/[\r\t\n]/g, " ");
+        try {
+          result = new Function("obj", code).apply(options, [options]);
+        } catch (err) {
+          console.error("'" + err.message + "'", " in \n\nCode:\n", code, "\n");
+          return html;
+        }
+    
+        return result;
+      }
 }

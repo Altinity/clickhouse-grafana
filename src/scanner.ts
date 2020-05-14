@@ -55,15 +55,22 @@ export default class Scanner {
 
     _next() {
         if (this._s.length === 0) {
-            return false;
+          return false;
         }
-        let r = this.re.exec(this._s);
-        if (r === null) {
-            throw("cannot find next token in [" + this._s + "]");
+        // if addnotation
+        if (this._s.startsWith("<%")) {
+          let nPos = this._s.search("%>");
+          this._s = this._s.substring(nPos + 2);
+        } else {
+          let r = this.re.exec(this._s);
+          if (r === null) {
+            throw "cannot find next token in [" + this._s + "]";
+            }
+    
+          this.token = r[0];
+          this._s = this._s.substring(this.token.length);
         }
-
-        this.token = r[0];
-        this._s = this._s.substring(this.token.length);
+    
         return true;
     }
 

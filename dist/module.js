@@ -54513,6 +54513,78 @@ module.exports = function(module) {
 
 /***/ }),
 
+/***/ "./Mutex.ts":
+/*!******************!*\
+  !*** ./Mutex.ts ***!
+  \******************/
+/*! exports provided: default */
+/***/ (function(module, __webpack_exports__, __webpack_require__) {
+
+"use strict";
+__webpack_require__.r(__webpack_exports__);
+var Mutex =
+/** @class */
+function () {
+  function Mutex() {
+    this._queue = [];
+    this._pending = false;
+  }
+
+  Mutex.prototype.isLocked = function () {
+    return this._pending;
+  };
+
+  Mutex.prototype.acquire = function () {
+    var _this = this;
+
+    var ticket = new Promise(function (resolve) {
+      return _this._queue.push(resolve);
+    });
+
+    if (!this._pending) {
+      this._dispatchNext();
+    }
+
+    return ticket;
+  };
+
+  Mutex.prototype.runExclusive = function (callback) {
+    return this.acquire().then(function (release) {
+      var result;
+
+      try {
+        result = callback();
+      } catch (e) {
+        release();
+        throw e;
+      }
+
+      return Promise.resolve(result).then(function (x) {
+        return release(), x;
+      }, function (e) {
+        release();
+        throw e;
+      });
+    });
+  };
+
+  Mutex.prototype._dispatchNext = function () {
+    if (this._queue.length > 0) {
+      this._pending = true;
+
+      this._queue.shift()(this._dispatchNext.bind(this));
+    } else {
+      this._pending = false;
+    }
+  };
+
+  return Mutex;
+}();
+
+/* harmony default export */ __webpack_exports__["default"] = (Mutex);
+
+/***/ }),
+
 /***/ "./adhoc.ts":
 /*!******************!*\
   !*** ./adhoc.ts ***!
@@ -56818,7 +56890,9 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _response_parser__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./response_parser */ "./response_parser.ts");
 /* harmony import */ var _adhoc__WEBPACK_IMPORTED_MODULE_4__ = __webpack_require__(/*! ./adhoc */ "./adhoc.ts");
 /* harmony import */ var _scanner__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./scanner */ "./scanner.ts");
+/* harmony import */ var _Mutex__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./Mutex */ "./Mutex.ts");
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
+
 
 
 
@@ -56851,6 +56925,7 @@ function () {
     this.xHeaderKey = instanceSettings.jsonData.xHeaderKey;
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization;
     this.targetsRef = {};
+    this.mutex = new _Mutex__WEBPACK_IMPORTED_MODULE_6__["default"]();
   }
 
   ClickHouseDatasource.prototype._getRequestOptions = function (query, usePOST, requestId) {
@@ -56901,10 +56976,17 @@ function () {
   ;
 
   ClickHouseDatasource.prototype._request = function (query, requestId) {
+    var _this = this;
+
     var queryParams = this._getRequestOptions(query, this.usePOST, requestId);
 
-    return this.backendSrv.datasourceRequest(queryParams).then(function (result) {
-      return result.data;
+    var lock = this.mutex.acquire();
+    return lock.then(function (release) {
+      return _this.backendSrv.datasourceRequest(queryParams).then(function (result) {
+        return result.data;
+      })["finally"](function () {
+        release();
+      });
     });
   };
 

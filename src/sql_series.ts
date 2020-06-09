@@ -47,7 +47,7 @@ export default class SqlSeries {
         return data;
     }
 
-    toTimeSeries(extrapolate: boolean): any {
+    toTimeSeries(extrapolate: boolean = true): any {
         let self = this, timeSeries = [];
         if (self.series.length === 0) {
             return timeSeries;

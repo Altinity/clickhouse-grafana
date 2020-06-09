@@ -28,6 +28,7 @@
         "@types/jest": "^24.0.6",
         "@types/lodash-es": "^4.17.1",
         "babel-jest": "^25.3.0",
+        "babel-loader": "^8.1.0",
         "clean-webpack-plugin": "^1.0.1",
         "copy-webpack-plugin": "^4.6.0",
         "grafana-sdk-mocks": "github:grafana/grafana-sdk-mocks",

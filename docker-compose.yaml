@@ -9,9 +9,13 @@ services:
 
   grafana:
     image: grafana/grafana:latest
+    #    image: grafana/grafana:6.7.4
     volumes:
     - ./:/var/lib/grafana/plugins/vertamedia-clickhouse/
     - ./grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
+    # @TODO need sign instructions in https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/
+    environment:
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource
     ports:
     - 3000:3000
     depends_on:

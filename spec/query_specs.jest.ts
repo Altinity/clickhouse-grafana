@@ -100,22 +100,22 @@ describe("macros builder:", () => {
         ),
         new Case(
             "$perSecondColumns",
-            "$perSecondColumns(type, total) FROM requests where type in ('udp', 'tcp')",
+            "$perSecondColumns(concat('test',type) AS alias, total) FROM requests WHERE type IN ('udp', 'tcp')",
             'SELECT t,' +
-            ' groupArray((type, max_0_Rate)) AS groupArr' +
+            ' groupArray((alias, max_0_Rate)) AS groupArr' +
             ' FROM (' +
             ' SELECT t,' +
-            ' type,' +
+            ' alias,' +
             ' if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
             ' FROM (' +
             ' SELECT $timeSeries AS t,' +
-            ' type,' +
+            ' concat(\'test\', type) AS alias,' +
             ' max(total) AS max_0' +
             ' FROM requests' +
             ' WHERE $timeFilter' +
-            ' AND type in (\'udp\', \'tcp\')' +
-            ' GROUP BY t, type' +
-            ' ORDER BY type, t' +
+            ' AND type IN (\'udp\', \'tcp\')' +
+            ' GROUP BY t, alias' +
+            ' ORDER BY alias, t' +
             ')' +
             ')' +
             ' GROUP BY t' +

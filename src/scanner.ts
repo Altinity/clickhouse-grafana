@@ -60,6 +60,9 @@ export default class Scanner {
         // if addnotation
         if (this._s.startsWith("<%")) {
           let nPos = this._s.search("%>");
+          if(nPos === -1){
+            throw "unmatched <%/%> [" + this._s + "]";  
+          }
           this._s = this._s.substring(nPos + 2);
         } else {
           let r = this.re.exec(this._s);

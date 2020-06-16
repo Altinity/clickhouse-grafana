@@ -1,4 +1,5 @@
 import Scanner from '../src/scanner';
+import SqlQuery from '../src/sql_query';
 
 describe("scanner:", () => {
     describe("AST case 1", () => {
@@ -504,4 +505,81 @@ describe("scanner:", () => {
             expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
+
+
+    
+
+    describe("SqlQuery parser if % ", () => {
+        
+        let sourceQuery = `
+        <%var x = 2;%>
+        <%if(x === 1){%>
+        SELECT field+<%x%> as incField
+            FROM $table
+            WHERE $timeFilter
+        <%}else{%>
+        SELECT field as sameField
+            FROM $table
+            WHERE $timeFilter
+        <%}%>`;
+        let templateSrv:any;
+        var options = {
+            rangeRaw:{
+                from: "now",
+                to: "now"
+            }  
+        }
+        
+        let renderedQuery = SqlQuery.render(sourceQuery, templateSrv, options).trim();
+        let expectedQuery = "SELECT field as sameField             FROM $table             WHERE $timeFilter";
+            
+        it("expects else branch", () => {
+             expect(renderedQuery).toEqual(expectedQuery);
+        });
+
+        sourceQuery = `
+        <%var x = 1;%>
+        <%if(x === 1){%>
+        SELECT field+<%x%> as incField
+            FROM $table
+            WHERE $timeFilter
+        <%}else{%>
+        SELECT field as sameField
+            FROM $table
+            WHERE $timeFilter
+        <%}%>`;
+
+        renderedQuery = SqlQuery.render(sourceQuery, templateSrv, options).trim();
+        expectedQuery = "SELECT field+1 as incField             FROM $table             WHERE $timeFilter";
+            
+        it("expects if branch", () => {
+             expect(renderedQuery).toEqual(expectedQuery);
+        });
+    
+    });
+
+        describe("SqlQuery parser switch % ", () => {
+
+        let sourceQuery = `
+        <%var col="WIN", so="UNKNOWN";switch(col){case "LIN":so="Linux_distribution";break;case "WIN":so="Windows_distribution";break;}%>
+        select <%so%> as Distribution`;
+
+        let templateSrv:any;
+        var options = {
+            rangeRaw:{
+                from: "now",
+                to: "now"
+            }  
+        }        
+
+        let renderedQuery = SqlQuery.render(sourceQuery, templateSrv, options).trim();
+        let expectedQuery = "select Windows_distribution as Distribution";
+        it("expects switch WIN", () => {
+            expect(renderedQuery).toEqual(expectedQuery);
+       });
+
+
+
+    });
+
 });

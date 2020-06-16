@@ -10,6 +10,10 @@ module.exports = {
   moduleNameMapper: {
     "app/core/utils/datemath": "<rootDir>/node_modules/grafana-sdk-mocks/app/core/utils/datemath.ts",
   },
+  testPathIgnorePatterns: [
+    "/node_modules/",
+    "<rootDir>/.cache/"
+  ],
   transformIgnorePatterns: [
     "<rootDir>/node_modules/(?!lodash-es).+\\.js$"
   ],

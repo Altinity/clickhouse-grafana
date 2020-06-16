@@ -475,4 +475,55 @@ describe("scanner:", () => {
             expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
+
+    describe("AST case 14(quoted literals)", () => {
+        let query = "SELECT $timeSeries as \"t\", count() as \"formatt\" FROM $table WHERE $timeFilter GROUP BY \"t\" ORDER BY \"t\"",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
+            "select": [
+                "$timeSeries as \"t\"",
+                "count() as \"formatt\""
+            ],
+            "from": [
+                "$table"
+            ],
+            "where": [
+                "$timeFilter"
+            ],
+            "group by": [
+                "\"t\""
+            ],
+            "order by": [
+                "\"t\""
+            ],
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).toEqual(expectedAST);
+        });
+    });
+
+    describe("AST case 15 (escaped quotes inside quotes)", () => {
+        let query = "SELECT now() AS t, 'test\\\'value' AS v FROM $table WHERE v=\"test\\\"field\"",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
+            "select": [
+                "now() AS t",
+                "'test\\\'value' AS v"
+            ],
+            "from": [
+                "$table"
+            ],
+            "where": [
+                "v = \"test\\\"field\""
+            ],
+        };
+        it("expects equality", () => {
+            expect(scanner.toAST()).toEqual(expectedAST);
+        });
+    });
 });

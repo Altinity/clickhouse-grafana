@@ -1,4 +1,4 @@
-import { isArray, isEmpty, toLower, toUpper } from 'lodash-es';
+import {isArray, isEmpty, toLower, toUpper} from 'lodash-es';
 
 export default class Scanner {
     tree: any;
@@ -234,6 +234,10 @@ export default class Scanner {
         }
         return this.tree;
     }
+
+    removeComments(query) {
+        return query.replace(new RegExp(commentRe), '');
+    }
 }
 
 let wsRe = "\\s+",
@@ -242,7 +246,7 @@ let wsRe = "\\s+",
     intRe = "\\d+",
     powerIntRe = "\\d+e\\d+",
     floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+",
-    stringRe = "('[^']*')|(`[^`]*`)",
+    stringRe = "('(?:[^'\\\\]|\\\\.)*')|(`(?:[^`\\\\]|\\\\.)*`)|(\"(?:[^\"\\\\]|\\\\.)*\")",
     binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|->|[-+/%*=<>\\.!]",
     statementRe = "\\b(select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b",
     joinsRe = "(any inner join|any left join|all inner join|all left join" +

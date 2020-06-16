@@ -10,27 +10,38 @@
         </code-editor>
 	</div>
 
-    <div class="gf-form-inline">
-        <div class="gf-form">
-            <label class="gf-form-label query-keyword width-7">
-                FROM
-                <i ng-if="ctrl.target.tableLoading" class="fa fa-spinner fa-spin"></i>
-            </label>
+	<div ng-if="!ctrl.target.rawQuery">
+		<div class="gf-form-inline">
+			<div class="gf-form">
+				<label class="gf-form-label query-keyword width-7">
+                    FROM
+                    <i ng-if="ctrl.target.tableLoading" class="fa fa-spinner fa-spin"></i>
+                </label>
 
-            <metric-segment segment="ctrl.databaseSegment"
-                            get-options="ctrl.getDatabaseSegments()"
-                            on-change="ctrl.databaseChanged()"></metric-segment>
-            <metric-segment segment="ctrl.tableSegment"
-                            get-options="ctrl.getTableSegments()"
-                            on-change="ctrl.tableChanged()"></metric-segment>
-        </div>
+				<metric-segment segment="ctrl.databaseSegment"
+                                get-options="ctrl.getDatabaseSegments()"
+                                on-change="ctrl.databaseChanged()"></metric-segment>
+				<metric-segment segment="ctrl.tableSegment"
+                                get-options="ctrl.getTableSegments()"
+                                on-change="ctrl.tableChanged()"></metric-segment>
+			</div>
 
-        <div class="gf-form">
-            <label class="gf-form-label query-keyword width-10">
-                <info-popover mode="right-absolute">
-                    Select
-                    <a href="https://clickhouse.yandex/reference_en.html#Date" target = "_blank" >EventDate</a>
-                    column for binding with Grafana's range selector
+			<div class="gf-form gf-form--grow">
+				<div class="gf-form-label gf-form-label--grow"></div>
+			</div>
+		</div>
+
+		<div class="gf-form-inline">
+			<div class="gf-form width-14">
+                <metric-segment-model property="ctrl.target.dateTimeType"
+                                      options="ctrl.dateTimeTypeOptions" css-class="query-keyword width-14 "
+                                      custom="false" select-mode="true"
+                                      on-change="ctrl.dateTimeTypeChanged()">
+                </metric-segment-model>
+                <info-popover mode="right-absolute" style = "margin-right: 10px;">
+                    Select Event
+                    <a href="https://clickhouse.yandex/reference_en.html#DateTime" target = "_blank" >DateTime</a>
+                    or UInt32 column for binding with Grafana's range selector
                 </info-popover>
                 Column:Date
                 <i ng-if="ctrl.target.dateLoading" class="fa fa-spinner fa-spin"></i>
@@ -43,18 +54,31 @@
                             on-change="ctrl.dateColDataTypeChanged()"></metric-segment>
         </div>
 
-        <div class="gf-form width-14">
-            <metric-segment-model property="ctrl.target.dateTimeType"
-                                    options="ctrl.dateTimeTypeOptions" css-class="query-keyword width-14 "
-                                    custom="false" select-mode="true"
-                                    on-change="ctrl.dateTimeTypeChanged()">
-            </metric-segment-model>
-            <info-popover mode="right-absolute" style = "margin-right: 10px;">
-                Select
-                <a href="https://clickhouse.yandex/reference_en.html#DateTime" target = "_blank" >DateTime</a>
-                or UInt32 column for binding with Grafana's range selector
-            </info-popover>
-        </div>
+            <div class="gf-form">
+                <label class="gf-form-label query-keyword width-10">
+                    <info-popover mode="right-absolute">
+                        Select
+                        <a href="https://clickhouse.yandex/reference_en.html#Date" target = "_blank" >Date</a>
+                        column for binding with Grafana's range selector
+                    </info-popover>
+                    Column:Date
+                    <i ng-if="ctrl.target.dateLoading" class="fa fa-spinner fa-spin"></i>
+                </label>
+            </div>
+
+            <style>
+                .typeahead.dropdown-menu a {min-height: 2em;}
+            </style>
+            <div class="gf-form">
+                <metric-segment segment="ctrl.dateColDataTypeSegment"
+                                get-options="ctrl.getDateColDataTypeSegments()"
+                                on-change="ctrl.dateColDataTypeChanged()"></metric-segment>
+            </div>
+
+            <div class="gf-form gf-form--grow">
+                <div class="gf-form-label gf-form-label--grow"></div>
+            </div>
+		</div>
 
         <div class="gf-form">
             <metric-segment segment="ctrl.dateTimeColDataTypeSegment"
@@ -123,6 +147,15 @@
                         ng-options="f.value as f.text for f in ctrl.formats"
                         ng-change="ctrl.refresh()"></select>
             </div>
+        </div>
+        <div class="gf-form">
+            <gf-form-switch class="gf-form width-12"
+                            checked="ctrl.target.extrapolate"
+                            ng-model="crtl.target.extrapolate"
+                            ng-change="ctrl.refresh()"
+                            label="Extrapolation"
+                            tooltip="Turn on if you don't like when last data point in time series much lower then previous">
+            </gf-form-switch>
         </div>
 
         <div class="gf-form">

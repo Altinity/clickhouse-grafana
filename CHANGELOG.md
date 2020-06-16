@@ -1,3 +1,43 @@
+# 1.9.5 (2020-01-15)
+
+## Fixes:
+* Comments not supported by sql language parser #95 
+
+# 1.9.4 (2019-11-27)
+
+## Fixes:
+* Ad Hoc Filters small adjustments for numeric values
+* UI optimizations within Metric builder 
+
+# 1.9.3 (2019-10-18)
+
+## Fixes:
+* Ad Hoc Filters improvements for complex usage
+
+# 1.9.2 (2019-10-10)
+
+## Fixes:
+* Compatibility fix to support grafana 6.4.x
+* Ad Hoc Filters fix
+* $conditionalTest ALL value option fix
+
+
+# 1.9.0 (2019-08-12)
+
+## New features:
+
+* Add macro `conditionalTest` (thx to @TH-HA) #122
+* Add support for connect to Yandex.Cloud ClickHouse (thx to @negasus) #106
+
+## Fixes:
+
+* Fix identifier back quoting when there is a function call
+* Fix AST parser errors for quotes (thx to @Fiery-Fenix) #128 
+* Added default database to all requests from datasource options (thx to @Fiery-Fenix) #126
+* Drop lodash fcn composition (thx to @simPod) #110
+* Cleanup build (thx to @simPod) #112
+
+
 # 1.8.1 (2019-02-01)
 
 ## New features:

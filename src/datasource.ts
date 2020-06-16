@@ -27,6 +27,7 @@ export class ClickHouseDatasource {
     xHeaderKey: string;
     useYandexCloudAuthorization: boolean;
     lastQueryOptions: any;
+    targetsRef: any;
 
     /** @ngInject */
     constructor(instanceSettings,
@@ -48,20 +49,26 @@ export class ClickHouseDatasource {
         this.xHeaderUser = instanceSettings.jsonData.xHeaderUser;
         this.xHeaderKey = instanceSettings.jsonData.xHeaderKey;
         this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization;
+        this.targetsRef = {};
     }
 
-    _request(query: string, requestId?: string) {
+    _getRequestOptions(query: string, usePOST?: boolean, requestId?: string) {
         let options: any = {
             url: this.url,
             requestId: requestId,
         };
+        let params: Array<String> = [];
 
-        if (this.usePOST) {
+        if (usePOST) {
             options.method = 'POST';
             options.data = query;
         } else {
             options.method = 'GET';
-            options.url += '/?query=' + encodeURIComponent(query);
+            params.push('query=' + encodeURIComponent(query));
+        }
+
+        if (this.defaultDatabase) {
+            params.push('database=' + this.defaultDatabase);
         }
 
         if (this.basicAuth || this.withCredentials) {
@@ -79,14 +86,20 @@ export class ClickHouseDatasource {
         }
 
         if (this.addCorsHeader) {
-            if (this.usePOST) {
-                options.url += "?add_http_cors_header=1";
-            } else {
-                options.url += "&add_http_cors_header=1";
-            }
+            params.push('add_http_cors_header=1');
         }
 
-        return this.backendSrv.datasourceRequest(options).then(result => {
+        if (params.length) {
+            options.url += (options.url.indexOf('?') != -1 ? '&' : '/?') + params.join('&');
+        }
+
+        return options;
+    };
+
+    _request(query: string, requestId?: string) {
+        const queryParams = this._getRequestOptions(query, this.usePOST, requestId);
+
+        return this.backendSrv.datasourceRequest(queryParams).then(result => {
             return result.data;
         });
     };
@@ -134,7 +147,7 @@ export class ClickHouseDatasource {
                         result.push(data);
                     });
                 } else {
-                    each(sqlSeries.toTimeSeries(), (data) => {
+                    each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
                         result.push(data);
                     });
                 }
@@ -154,7 +167,11 @@ export class ClickHouseDatasource {
             let queryAST = new Scanner(stmt).toAST();
             keys = queryAST['group by'] || [];
         } catch (err) {
-            console.log('AST parser error: ', err)
+            console.log('AST parser error: ', err);
+        }
+
+        if (this.targetsRef && this.targetsRef[target.refId]) {
+            this.targetsRef[target.refId].rawQuery = stmt;
         }
 
         return {
@@ -185,12 +202,10 @@ export class ClickHouseDatasource {
         query = queryModel.replace(/(?:\r\n|\r|\n)/g, ' ');
         query += ' FORMAT JSON';
 
+        const queryParams = this._getRequestOptions(query, true);
+
         return this.backendSrv
-            .datasourceRequest({
-                url: this.url,
-                method: 'POST',
-                data: query
-            })
+            .datasourceRequest(queryParams)
             .then(result => this.responseParser.transformAnnotationResponse(params, result.data));
     }
 
@@ -198,7 +213,9 @@ export class ClickHouseDatasource {
         let interpolatedQuery;
 
         try {
-            interpolatedQuery = this.templateSrv.replace(query, {}, SqlQuery.interpolateQueryExpr);
+            interpolatedQuery = this.templateSrv.replace(SqlQuery.conditionalTest(
+                query, this.templateSrv
+            ), {}, SqlQuery.interpolateQueryExpr);
         } catch (err) {
             return this.$q.reject(err);
         }
@@ -236,7 +253,7 @@ export class ClickHouseDatasource {
         let queryFilter = '';
         each(this.templateSrv.variables, (v) => {
             if (v.name === adhocFilterVariable) {
-                queryFilter = v.query
+                queryFilter = v.query;
             }
         });
         return this.adhocCtrl.GetTagKeys(queryFilter);

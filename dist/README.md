@@ -84,7 +84,7 @@ Plugin supports the following marcos:
 * $interval - replaced with selected "Group by time interval" value (as a number of seconds)
 * $timeFilter - replaced with currently selected "Time Range". 
   Requires Column:Date and Column:DateTime or Column:TimeStamp to be selected
-* $timeFilterColumn($column) - replaced with currently selected "Time Range" for column passed as `$column` argument. Use it in queries or query variables as `...WHERE $timeFilterColumn($column)...` or `...WHERE $timeFilterColumn(created_at)...`.
+* $timeFilterByColumn($column) - replaced with currently selected "Time Range" for column passed as `$column` argument. Use it in queries or query variables as `...WHERE $timeFilterColumn($column)...` or `...WHERE $timeFilterColumn(created_at)...`.
 * $timeSeries - replaced with special ClickHouse construction to convert results as time-series data. Use it as "SELECT $timeSeries...". 
 * $unescape - unescapes variable value by removing single quotes. Used for multiple-value string variables: "SELECT $unescape($column) FROM requests WHERE $unescape($column) = 5"
 * $adhoc - replaced with a rendered ad-hoc filter expression, or "1" if no ad-hoc filters exist. Since ad-hoc applies automatically only to outer queries the macros can be used for filtering in inner queries.
@@ -279,6 +279,87 @@ ORDER BY t ASC
 
 ---
 
+## Templating
+ 
+### Query Variable
+ 
+If you add a template variable of the type `Query`, you can write a ClickHouse query that can
+return things like measurement names, key names or key values that are shown as a dropdown select box.
+ 
+For example, you can have a variable that contains all values for the `hostname` column in a table if you specify a query like this in the templating variable *Query* setting.
+ 
+```sql
+SELECT hostname FROM host
+```
+ 
+To use time range dependent macros like `timeFilterByColumn($column)` in your query the refresh mode of the template variable needs to be set to *On Time Range Change*.
+ 
+```sql
+SELECT event_name FROM event_log WHERE $timeFilterByColumn(time_column)
+```
+ 
+Another option is a query that can create a key/value variable. The query should return two columns that are named `__text` and `__value`. The `__text` column value should be unique (if it is not unique then the first value is used). The options in the dropdown will have a text and value that allows you to have a friendly name as text and an id as the value. An example query with `hostname` as the text and `id` as the value:
+ 
+```sql
+SELECT hostname AS __text, id AS __value FROM host
+```
+ 
+You can also create nested variables. For example if you had another variable named `region`. Then you could have the hosts variable only show hosts from the current selected region with a query like this (if `region` is a multi-value variable then use the `IN` comparison operator rather than `=` to match against multiple values):
+ 
+```sql
+SELECT hostname FROM host WHERE region IN ($region)
+```
+
+### Conditional Predicate 
+
+If you are using templating to feed your predicate , you will face performance degradation when everything is selected as the predicate is not necessary. It's also true for textbox when nothing is enter , you have to write specific sql code to handle that. 
+
+To workaround this issue a new macro $conditionalTest(SQL Predicate,$variable) can be used to remove some part of the query. 
+If the variable is type query with all selected or if the variable is a textbox with nothing enter , then the SQL Predicate is not included in the generated query.
+
+To give an example:
+with 2 variables 
+  $var query with include All option 
+  $text textbox 
+  
+  The following query 
+  ```sql
+   SELECT
+     $timeSeries as t,
+     count()
+     FROM $table
+     WHERE $timeFilter
+      $conditionalTest(AND toLowerCase(column) in ($var),$var)
+      $conditionalTest(AND toLowerCase(column2) like '%$text%',$text)
+     GROUP BY t
+     ORDER BY t
+  ```
+  
+   if the $var is all selected and the $text is empty , the query will be converted into 
+   
+  ```sql
+    SELECT
+      $timeSeries as t,
+      count()
+       FROM $table
+       WHERE $timeFilter
+     GROUP BY t
+     ORDER BY t
+  ```
+  If $var have some element selected and the $text has at least one char , the query will be converted into 
+  
+  ```sql
+  SELECT
+      $timeSeries as t,
+      count()
+       FROM $table
+       WHERE $timeFilter
+     AND toLowerCase(column) in ($var)
+     AND toLowerCase(column2) like '%$text%'
+     GROUP BY t
+     ORDER BY t
+ ```
+ 
 ### Working with panels
 
 #### Piechart (https://grafana.com/plugins/grafana-piechart-panel)
@@ -459,26 +540,83 @@ Plugin extrapolates last datapoint if timerange is `last N` to avoid displaying 
 when timestamp in table is rounded to minute or bigger.
 If it so then in 99% cases last datapoint will be much less than previous one, because last minute is not finished yet.
 That's why plugin checks prev datapoints and tries to predict last datapoint value just as it was already written into db.
+This behavior could be turned off via "Extrapolation" checkbox in query editor.
 
 > Why no alerts support?
 
-Alerts feature requires changes in `Grafana`'s backend, which can't be extended for now. `Grafana`'s maintainers are working on this feature.
+Alerts feature requires changes in `Grafana`'s backend, which can be extended only for Grafana 6.5+. `Grafana`'s maintainers are working on this feature. 
+Current alerts support for `clickhouse-grafana` datasource in alpha. 
 
-### Build
+### Development
 
-The build works with either NPM or Yarn:
+There are following scripts defined in package.json:
 
+- `build:prod` – production-ready build
+- `build:dev` - development build (no uglify etc.)
+- `build:watch` - automatically rebuilds code on change (handy while developing)
+- `test` - runs test suite using Jest
+- `test:watch` - runs test suite using Jest in watch mode. Automatically reruns tests on source change.
+
+Each script can be run using NPM or Yarn package managers:
+
+```sh
+npm run <script>
 ```
-npm run build
+
+or 
+
+```sh
+yarn run <script>
 ```
 
-Tests can be run with following command:
-
-```
-npm run test
-```
+(for example `npm run build`)
 
 For test examples please see `spec` folder. We strongly encourage contributors to add tests to check new changes or functionality.
+
+### Docker-compose environment for development
+
+This is a simple demo which mounts the current `dist` directory inside the grafana container. The grafana container is connected to the docker clickhouse database container.
+
+To run the development environment:
+```sh
+docker-compose up -d
+```
+after that open http://localhost:3000/ to open grafana instance with one clickhouse datasource
+
+#### Frontend Builder
+
+The frontend builder is the docker container used to transpile the typescript source code into the javascript found in the `dist` dir. This will affect the grafana query and configuration functionality.
+
+To develop using docker, the process looks like:
+1. change source files
+2. `docker-compose up frontend_builder`
+3. `docker-compose restart grafana`
+4. open http://localhost:3000/
+
+To develop without docker, the process looks like:
+1. change source files
+2. `npm run test`
+3. `npm run build:dev`
+4. `docker-compose restart grafana`
+5. open http://localhost:3000/
+
+#### Backend Builder
+
+The backend builder is the docker container used to compile the golang source code into the `vertamedia-clickhouse-plugin_linux_amd64` binary in the `dist` dir. This will affect the grafana service used for running queries for alerting. The entrypoint for the go code is at `plugin.go`.
+
+To develop using docker, the process looks like:
+1. change source files
+2. `docker-compose up backend_builder`
+3. `docker-compose restart grafana`
+4. open http://localhost:3000/
+
+To format your go code, use the command:
+```sh
+docker-compose run --rm backend_builder go fmt .
+```
+
+The resulting alerts should look like this
+![image](https://user-images.githubusercontent.com/5578150/81031711-fd2fad00-8e41-11ea-9b54-5eb4ca1628f1.png)
 
 ### Contribute
 

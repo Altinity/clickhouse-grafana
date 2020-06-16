@@ -1,12 +1,13 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 
 import {map} from 'lodash-es';
-import './clickhouse-info';
-import './mode-clickhouse';
-import './snippets/clickhouse';
-import SqlQuery from './sql_query';
 import {QueryCtrl} from 'grafana/app/plugins/sdk';
+import SqlQuery from './sql_query';
 import Scanner from './scanner';
+
+import chInfo from './clickhouse-info.js';
+import chMode from './mode-clickhouse.js';
+import chSnippets from './snippets/clickhouse.js';
 
 const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
 
@@ -41,11 +42,16 @@ class SqlQueryCtrl extends QueryCtrl {
     showLastQuerySQL: boolean;
     showHelp: boolean;
 
+    editorLoaded: boolean = false;
+
     /** @ngInject **/
     constructor($scope, $injector, private templateSrv, private uiSegmentSrv) {
         super($scope, $injector);
 
         this.queryModel = new SqlQuery(this.target, templateSrv, this.panel.scopedVars);
+        if (this.datasource.targetsRef) {
+            this.datasource.targetsRef[this.target.refId] = this.target;
+        }
 
         let defaultDatabaseSegment = {fake: true, value: '-- database --'};
         if (this.datasource.defaultDatabase.length > 0) {
@@ -84,6 +90,9 @@ class SqlQueryCtrl extends QueryCtrl {
         ];
 
         this.target.format = this.target.format || 'time_series';
+        if (typeof this.target.extrapolate == 'undefined') {
+            this.target.extrapolate = true
+        }
         this.target.dateTimeType = this.target.dateTimeType || this.dateTimeTypeOptions[0].value;
         this.target.round = this.target.round || "0s";
         this.target.intervalFactor = this.target.intervalFactor || 1;
@@ -97,6 +106,8 @@ class SqlQueryCtrl extends QueryCtrl {
         if (this.target.database === undefined && !defaultDatabaseSegment.fake) {
             this.databaseChanged();
         }
+
+        this.initEditor();
     }
 
     getCollapsedText() {
@@ -110,6 +121,7 @@ class SqlQueryCtrl extends QueryCtrl {
     getDateColDataTypeSegments() {
         var target = this.target;
         target.dateLoading = true;
+
         return this.querySegment('DATE').then(function (response) {
             target.dateLoading = false;
             return response;
@@ -119,9 +131,9 @@ class SqlQueryCtrl extends QueryCtrl {
     dateColDataTypeChanged() {
         let val = this.dateColDataTypeSegment.value;
         if (typeof val === 'string') {
-            this.target.dateColDataType = val.trim()
+            this.target.dateColDataType = val.trim();
         } else {
-            this.target.dateColDataType = val
+            this.target.dateColDataType = val;
         }
     }
 
@@ -148,10 +160,31 @@ class SqlQueryCtrl extends QueryCtrl {
     dateTimeColDataTypeChanged() {
         let val = this.dateTimeColDataTypeSegment.value;
         if (typeof val === 'string') {
-            this.target.dateTimeColDataType = val.trim()
+            this.target.dateTimeColDataType = val.trim();
         } else {
-            this.target.dateTimeColDataType = val
+            this.target.dateTimeColDataType = val;
         }
+    }
+
+    initEditor() {
+        if (this.editorLoaded) {
+            return;
+        }
+
+        if (chInfo()) {
+            chMode();
+            chSnippets();
+
+            this.editorLoaded = true;
+        } else {
+            setTimeout(this.initEditor, 500);
+        }
+    }
+
+    toggleEditorMode() {
+        this.target.rawQuery = !this.target.rawQuery;
+
+        this.initEditor();
     }
 
     toggleEdit(e: any, editMode: boolean) {
@@ -299,7 +332,7 @@ class SqlQueryCtrl extends QueryCtrl {
 
     queryColumns() {
         var query = this.buildExploreQuery('COLUMNS');
-        return this.datasource.metricFindQuery(query)
+        return this.datasource.metricFindQuery(query);
     }
 
     querySegment(type: string) {
@@ -330,7 +363,8 @@ class SqlQueryCtrl extends QueryCtrl {
                     'WHERE database = \'' + this.target.database + '\' AND ' +
                     'table = \'' + this.target.table + '\' AND ' +
                     'type = \'Date\' ' +
-                    'ORDER BY name';
+                    'ORDER BY name ' +
+                    'UNION ALL SELECT \' \' AS name';
                 break;
             case 'DATETIME':
                 query = 'SELECT name ' +

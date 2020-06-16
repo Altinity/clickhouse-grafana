@@ -28,7 +28,7 @@ module.exports = {
     }
   ],
   plugins: [
-    new CleanWebpackPlugin('dist', {allowExternal: true}),
+    new CleanWebpackPlugin('dist', { exclude: ['vertamedia-clickhouse-plugin_linux_amd64']}),
     new webpack.optimize.OccurrenceOrderPlugin(),
     new CopyWebpackPlugin([
       {from: 'plugin.json', to: '.'},
@@ -45,12 +45,9 @@ module.exports = {
     rules: [
       {
         test: /\.tsx?$/,
-        loaders: [
-          {
-            loader: 'babel-loader',
-            options: {presets: ['env']}
-          },
-          'ts-loader'
+        use: [
+          { loader: 'babel-loader' },
+          { loader: 'ts-loader' },
         ],
         exclude: /(node_modules)/,
       },

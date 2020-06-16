@@ -62,4 +62,7 @@ describe("Identifiers back-quoting", () => {
     it("Containing back-quote", () => {
         expect(SqlQuery.escapeIdentifier("My`Bad`Identifier")).toBe("`My``Bad``Identifier`");
     });
+    it("Containing function calls", () => {
+        expect(SqlQuery.escapeIdentifier("toDateTime(someDate)")).toBe("toDateTime(someDate)");
+    });
 });

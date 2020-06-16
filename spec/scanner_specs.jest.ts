@@ -507,6 +507,28 @@ describe("scanner:", () => {
     });
 
 
+  describe("AST case 15 (escaped quotes inside quotes)", () => {
+        let query = "SELECT now() AS t, 'test\\\'value' AS v FROM $table WHERE v=\"test\\\"field\"",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
+            "select": [
+                "now() AS t",
+                "'test\\\'value' AS v"
+            ],
+            "from": [
+                "$table"
+            ],
+            "where": [
+                "v = \"test\\\"field\""
+            ],
+        };
+        it("expects equality", () => {
+            expect(scanner.toAST()).toEqual(expectedAST);
+        });
+    });
+
     
 
     describe("SqlQuery parser if % ", () => {
@@ -558,7 +580,7 @@ describe("scanner:", () => {
     
     });
 
-        describe("SqlQuery parser switch % ", () => {
+    describe("SqlQuery parser switch % ", () => {
 
         let sourceQuery = `
         <%var col="WIN", so="UNKNOWN";switch(col){case "LIN":so="Linux_distribution";break;case "WIN":so="Windows_distribution";break;}%>
@@ -581,5 +603,6 @@ describe("scanner:", () => {
 
 
     });
+
 
 });

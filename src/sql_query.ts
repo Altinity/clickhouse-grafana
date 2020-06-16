@@ -367,7 +367,15 @@ export default class SqlQuery {
         let key = args[0],
             value = 'max(' + args[1].trim() + ') AS max_0',
             havingIndex = q.toLowerCase().indexOf('having'),
-            having = "";
+            having = "",
+            aliasIndex = key.toLowerCase().indexOf(' as '),
+            alias = "perSecondColumns";
+        if (aliasIndex == -1) {
+            key = key + " AS " + alias;
+        } else {
+            alias = key.slice(aliasIndex + 4, key.length);
+        }
+
         if (havingIndex !== -1) {
             having = ' ' + q.slice(havingIndex, q.length);
             q = q.slice(0, havingIndex - 1);
@@ -376,26 +384,23 @@ export default class SqlQuery {
 
         return 'SELECT' +
             ' t,' +
-            ' groupArray((' + key + ', max_0_Rate)) AS groupArr' +
+            ' groupArray((' + alias + ', max_0_Rate)) AS groupArr' +
             ' FROM (' +
             ' SELECT t,' +
-            ' ' + key +
+            ' ' + alias +
             ', if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
             ' FROM (' +
             ' SELECT $timeSeries AS t' +
             ', ' + key +
             ', ' + value + ' ' +
             q +
-            ' GROUP BY t, ' + key +
+            ' GROUP BY t, ' + alias +
             having +
-            ' ORDER BY ' + key + ', t' +
+            ' ORDER BY ' + alias + ', t' +
             ')' +
             ')' +
             ' GROUP BY t' +
             ' ORDER BY t';
-
-
-        return SqlQuery._perSecond(args, q);
     }
 
     // $perSecond(query)

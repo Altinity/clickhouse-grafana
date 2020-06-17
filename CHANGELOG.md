@@ -1,3 +1,16 @@
+# 2.0.0 (2020-06-17)
+
+## Enhancements:
+* compatibility with grafana 7.x, please use environment variable `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource` or `allow_loading_unsigned_plugins=vertamedia-clickhouse-datasource` in plugins section of `grafana.ini` https://github.com/Vertamedia/clickhouse-grafana/pull/192 
+* add grafana 7.x alerting support thanks to Brian Thai https://github.com/bmanth60 
+* add alias support to $perSecondColumns macro https://github.com/Vertamedia/clickhouse-grafana/pull/193
+* Support `custom` variable type and empty values for `$conditionalTest` macro https://github.com/Vertamedia/clickhouse-grafana/pull/178
+* add docker-compose.yaml to improve local development
+
+## Fixes:
+* fix AST for corner case when quotes escaped inside quotes https://github.com/Vertamedia/clickhouse-grafana/pull/123, https://github.com/Vertamedia/clickhouse-grafana/pull/195
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/179,  add "Extrapolation" checkbox to Query Editor 
+
 # 1.9.5 (2020-01-15)
 
 ## Fixes:

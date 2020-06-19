@@ -1,3 +1,8 @@
+# 2.0.1 (2020-06-19)
+
+## Fixes:
+* fix golang alerts for $columns, $perSecond, $perSecondColumns macros https://github.com/Vertamedia/clickhouse-grafana/pull/200
+
 # 2.0.0 (2020-06-17)
 
 ## Enhancements:

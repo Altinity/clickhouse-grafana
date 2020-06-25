@@ -212,7 +212,7 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 	for _, dataPoint := range parsedBody.Data {
 		timestamp, err := strconv.ParseInt(dataPoint[tsMetaName].(string), 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse timestamp with alias t: %w", err)
+			return nil, fmt.Errorf("unable to parse timestamp with alias `%s`: %w", tsMetaName, err)
 		}
 		for k, v := range dataPoint {
 			if k != tsMetaName {

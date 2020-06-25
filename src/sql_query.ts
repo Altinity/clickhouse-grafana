@@ -31,7 +31,7 @@ export default class SqlQuery {
     }
 
     replace(options, adhocFilters) {
-        var query = this.templateSrv.replace(SqlQuery.conditionalTest(this.target.query.trim(), this.templateSrv), options.scopedVars, SqlQuery.interpolateQueryExpr),
+        let query = this.templateSrv.replace(SqlQuery.conditionalTest(this.target.query.trim(), this.templateSrv), options.scopedVars, SqlQuery.interpolateQueryExpr),
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType
                 ? this.target.dateTimeType
@@ -298,7 +298,7 @@ export default class SqlQuery {
     }
 
     static _fromIndex(query: string): number {
-        var fromIndex = query.toLowerCase().indexOf('from');
+        let fromIndex = query.toLowerCase().lastIndexOf('from');
         if (fromIndex === -1) {
             throw {message: 'Could not find FROM-statement at: ' + query};
         }
@@ -319,7 +319,7 @@ export default class SqlQuery {
     }
 
     static _rate(args, fromQuery: string): string {
-        var aliases = [];
+        let aliases = [];
         each(args, function (arg) {
             if (arg.slice(-1) === ')') {
                 throw {message: 'Argument "' + arg + '" cant be used without alias'};

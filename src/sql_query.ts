@@ -5,7 +5,8 @@ import * as dateMath from 'grafana/app/core/utils/datemath';
 import moment from 'moment';
 import Scanner from './scanner';
 
-var durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
+const durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
+const NumberOnlyRegexp = /^[+-]?\d+(\.\d+)?$/;
 
 export interface RawTimeRange {
     from: any | string;
@@ -517,7 +518,7 @@ export default class SqlQuery {
         if (!variable.multi && !variable.includeAll) {
             return value;
         }
-        if (typeof value === 'string') {
+        if (typeof value === 'string' || typeof value === 'number') {
             return SqlQuery.clickhouseEscape(value, variable);
         }
         let escapedValues = map(value, function (v) {
@@ -544,20 +545,41 @@ export default class SqlQuery {
     }
 
     static clickhouseEscape(value, variable) {
-        var isDigit = true;
-        // if at least one of options is not digit
+        let returnAsIs = true;
+        let returnAsArray = false;
+        // if at least one of options is not digit or is array
         each(variable.options, function (opt): boolean {
-            if (opt.value === '$__all') {
+            if (typeof opt.value === 'string' && opt.value === '$__all') {
                 return true;
             }
-            if (!opt.value.match(/^\d+$/)) {
-                isDigit = false;
+            if (typeof opt.value === 'number') {
+                returnAsIs = true;
+                return false;
+            }
+            if (typeof opt.value === 'string' && !NumberOnlyRegexp.test(opt.value)) {
+                returnAsIs = false;
+                return false;
+            }
+            if (opt.value instanceof Array) {
+                returnAsArray = true;
+                each(opt.value, function(v): boolean {
+                    if (typeof v === 'string' && !NumberOnlyRegexp.test(v)) {
+                        returnAsIs = false;
+                        return false;
+                    }
+                    return true;
+                })
                 return false;
             }
             return true;
         });
 
-        if (isDigit) {
+        if (value instanceof Array && returnAsArray) {
+            let arrayValues = map(value, function (v) {
+                return SqlQuery.clickhouseEscape(v, variable);
+            });
+            return "[" + arrayValues.join(', ') + "]";
+        } else if (typeof value == 'number' || (returnAsIs && (typeof value === 'string' && value.match(/^[+-]?\d+(\.\d+)?$/)))) {
             return value;
         } else {
             return "'" + value.replace(/[\\']/g, '\\$&') + "'";

@@ -172,6 +172,26 @@ export default class SqlSeries {
             case 'Int16':
             case 'Int32':
             case 'Int64':
+            case 'Float32':
+            case 'Float64':
+            case 'Decimal':
+            case 'Decimal32':
+            case 'Decimal64':
+            case 'Decimal128':
+            case 'Nullable(UInt8)':
+            case 'Nullable(UInt16)':
+            case 'Nullable(UInt32)':
+            case 'Nullable(UInt64)':
+            case 'Nullable(Int8)':
+            case 'Nullable(Int16)':
+            case 'Nullable(Int32)':
+            case 'Nullable(Int64)':
+            case 'Nullable(Float32)':
+            case 'Nullable(Float64)':
+            case 'Nullable(Decimal)':
+            case 'Nullable(Decimal32)':
+            case 'Nullable(Decimal64)':
+            case 'Nullable(Decimal128)':
                 return "number";
             default:
                 return "string";

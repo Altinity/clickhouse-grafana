@@ -101,8 +101,6 @@ There are some limits in function use because of poor query analysis:
 * Query must begins from function name
 * Only one function can be used per query
 
-
-
 Plugin supports the following functions:
 
 #### $rate(cols...) - converts query results as "change rate per interval"
@@ -113,7 +111,7 @@ $rate(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests
 ```
 
 Query will be transformed into:
-```
+```sql
 SELECT 
     t, 
     good / runningDifference(t / 1000) AS goodRate, 
@@ -136,11 +134,13 @@ FROM
 
 Example usage: 
 ```
-$columns(OSName, count(*) c) FROM requests
+$columns(OSName, count(*) c) 
+FROM requests
+ANY INNER JOIN oses USING (OS)
 ```
 
 Query will be transformed into:
-```
+```sql
 SELECT 
     t, 
     groupArray((OSName, c)) AS groupArr
@@ -178,7 +178,7 @@ $rateColumns(OS, count(*) c) FROM requests
 ```
 
 Query will be transformed into:
-```
+```sql
 SELECT 
     t, 
     arrayMap(lambda(tuple(a), (a.1, a.2 / runningDifference(t / 1000))), groupArr)
@@ -199,11 +199,11 @@ FROM
             t, 
             OS
         ORDER BY 
-            t ASC, 
-            OS ASC
+            t, 
+            OS
     ) 
     GROUP BY t
-    ORDER BY t ASC
+    ORDER BY t
 ) 
 
 ```
@@ -212,24 +212,24 @@ FROM
 
 Example usage:
 ```
-$perSecond(total_requests) FROM requests
+$perSecond(Requests) FROM requests
 ```
 
 Query will be transformed into:
-```
+```sql
 SELECT
     t,
     if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t / 1000)) AS max_0_Rate
 FROM
 (
     SELECT
-        (intDiv(toUInt32(Time), 60) * 60) * 1000 AS t,
-        max(total_requests) AS max_0
+        (intDiv(toUInt32(EventTime), 60) * 60) * 1000 AS t,
+        max(Requests) AS max_0
     FROM requests
-    WHERE ((Date >= toDate(1535711819)) AND (Date <= toDate(1535714715)))
-    AND ((Time >= toDateTime(1535711819)) AND (Time <= toDateTime(1535714715)))
+    WHERE ((EventDate >= toDate(1535711819)) AND (EventDate <= toDate(1535714715)))
+    AND ((EventTime >= toDateTime(1535711819)) AND (EventTime <= toDateTime(1535714715)))
     GROUP BY t
-    ORDER BY t ASC
+    ORDER BY t
 )
 ```
 // see [issue 78](https://github.com/Vertamedia/clickhouse-grafana/issues/78) for the background
@@ -240,40 +240,40 @@ FROM
 
 Example usage:
 ```
-$perSecondColumns(type, total) FROM requests WHERE Type in ('udp','tcp')
+$perSecondColumns(Protocol, Requests) FROM requests WHERE Protocol in ('udp','tcp')
 ```
 
 Query will be transformed into:
-```
+```sql
 SELECT
     t,
-    groupArray((type, max_0_Rate)) AS groupArr
+    groupArray((Protocol, max_0_Rate)) AS groupArr
 FROM
 (
     SELECT
         t,
-        type,
+        Protocol,
         if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t / 1000)) AS max_0_Rate
     FROM
     (
         SELECT
-            (intDiv(toUInt32(Time), 60) * 60) * 1000 AS t,
-            type,
-            max(total) AS max_0
+            (intDiv(toUInt32(EventTime), 60) * 60) * 1000 AS t,
+            Protocol,
+            max(Requests) AS max_0
         FROM requests
-        WHERE ((Date >= toDate(1535711819)) AND (Date <= toDate(1535714715)))
-        AND ((Time >= toDateTime(1535711819)) AND (Time <= toDateTime(1535714715)))
-        AND (Type IN ('udp', 'tcp'))
+        WHERE ((EventDate >= toDate(1535711819)) AND (EventDate <= toDate(1535714715)))
+        AND ((EventTime >= toDateTime(1535711819)) AND (EventTime <= toDateTime(1535714715)))
+        AND (Protocol IN ('udp', 'tcp'))
         GROUP BY
             t,
-            type
+            Protocol
         ORDER BY
-            type ASC,
-            t ASC
+            t, 
+            Protocol
     )
 )
 GROUP BY t
-ORDER BY t ASC
+ORDER BY t
 ```
 // see [issue 80](https://github.com/Vertamedia/clickhouse-grafana/issues/80) for the background
 
@@ -371,25 +371,25 @@ Remember that piechart plugin is not welcome for using in grafana - see https://
 To create "Top 5" diagram we will need two queries: one for 'Top 5' rows and one for 'Other' row.
 
 Top5:
-```
+```sql
 SELECT
-    1, /* fake timestamp value */
+    1 AS t, /* fake timestamp value */
     UserName,
-    sum(Reqs) AS Reqs
+    sum(Requests) AS Reqs
 FROM requests
-GROUP BY UserName
-ORDER BY Reqs desc
+GROUP BY t, UserName
+ORDER BY Reqs DESC
 LIMIT 5
 ```
 
 Other:
-```
+```sql
 SELECT
-    1, /* fake timestamp value */
+    1 AS t, /* fake timestamp value */
     UserName,
-    sum(Reqs) AS Reqs
+    sum(Requests) AS Reqs
 FROM requests
-GROUP BY UserName
+GROUP BY t, UserName
 ORDER BY Reqs
 LIMIT 5,10000000000000 /* select some ridiculous number after first 5 */
 ```
@@ -398,10 +398,10 @@ LIMIT 5,10000000000000 /* select some ridiculous number after first 5 */
 
 There are no any tricks in displaying time-series data. To print summary data, omit time column, and format the result as "Table".
 
-```
+```sql
 SELECT
     UserName,
-    sum(Reqs) as Reqs
+    sum(Requests) as Reqs
 FROM requests
 GROUP BY
     UserName
@@ -436,14 +436,14 @@ If you have a table with country/city codes:
 ```
 SELECT
     1,
-    CountryCode AS c,
-    sum(requests) AS Reqs
+    Country AS c,
+    sum(Requests) AS Reqs
 FROM requests
 GLOBAL ANY INNER JOIN
 (
-    SELECT Country country, CountryCode
+    SELECT Country, CountryCode
     FROM countries
-) USING (country)
+) USING (CountryCode)
 WHERE $timeFilter
 GROUP BY
     c
@@ -534,13 +534,43 @@ Some settings and security params are the same for all datasources. You can find
 
 ### FAQ
 
-> Time series last point is not the real last point
+> Why time series last point is not the real last point?
 
 Plugin extrapolates last datapoint if timerange is `last N` to avoid displaying of constantly decreasing graphs
 when timestamp in table is rounded to minute or bigger.
 If it so then in 99% cases last datapoint will be much less than previous one, because last minute is not finished yet.
 That's why plugin checks prev datapoints and tries to predict last datapoint value just as it was already written into db.
 This behavior could be turned off via "Extrapolation" checkbox in query editor.
+
+> Which table schema used in SQL query examples?
+
+All examples in this plugin use following table schema:
+```sql
+CREATE TABLE IF NOT EXISTS countries(
+    Country LowCardinality(String), 
+    CountryCode LowCardinality(String)
+) ENGINE MergeTree()
+ORDER BY (CountryCode, Country);
+
+CREATE TABLE IF NOT EXISTS oses (
+    OSName LowCardinality(String),
+    OS LowCardinality(String)
+) ENGINE MergeTree() 
+ORDER BY (OS);
+
+CREATE TABLE IF NOT EXISTS requests(
+    EventTime DateTime,
+    EventDate Date,
+    Protocol LowCardinality(String),
+    UserName LowCardinality(String),
+    OS LowCardinality(String),
+    CountryCode LowCardinality(String),
+    Type UInt8,
+    Requests UInt32
+) ENGINE=MergeTree()
+ORDER BY (EventDate, EventTime, Type, OS, Protocol, UserName)
+PARTITION BY toYYYYMM(EventDate);
+```
 
 > Why no alerts support?
 

@@ -4,21 +4,37 @@ services:
   clickhouse:
     image: yandex/clickhouse-server:latest
     ports:
-    - 8123:8123
-    - 9000:9000
+      - 8123:8123
+      - 9000:9000
+    volumes:
+      - ./docker/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
+
+  postgres:
+    image: postgres:latest
+    environment:
+      - POSTGRES_PASSWORD=grafana
+    ports:
+      - 5432:5432
+    volumes:
+      - ./docker/postgres/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
 
   grafana:
-    image: grafana/grafana:latest
-    #    image: grafana/grafana:6.7.4
+#    image: grafana/grafana:latest
+#    image: grafana/grafana:dev
+    image: grafana/grafana:6.7.4
     volumes:
-    - ./:/var/lib/grafana/plugins/vertamedia-clickhouse/
-    - ./grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
+      - ./:/var/lib/grafana/plugins/vertamedia-clickhouse/
+      - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
+      - ./docker/grafana/grafana-postgres-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-postgres-datasource.yaml
+      - ./docker/grafana/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/grafana-dashboards.yaml
+      - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
+
     # @TODO need sign instructions in https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/
     environment:
       - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource
       - GF_INSTALL_PLUGINS=grafana-piechart-panel
     ports:
-    - 3000:3000
+      - 3000:3000
     depends_on:
       - clickhouse
 

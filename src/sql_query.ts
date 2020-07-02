@@ -514,17 +514,21 @@ export default class SqlQuery {
     }
 
     static interpolateQueryExpr(value, variable, defaultFormatFn) {
-        // if no `multiselect` or `include all` - do not escape
-        if (!variable.multi && !variable.includeAll) {
+        // if no (`multiselect` or `include all`) and variable is not Array - do not escape
+        if (!variable.multi && !variable.includeAll && !Array.isArray(value) ) {
             return value;
         }
-        if (typeof value === 'string' || typeof value === 'number') {
+        if (!Array.isArray(value)) {
             return SqlQuery.clickhouseEscape(value, variable);
         }
         let escapedValues = map(value, function (v) {
             return SqlQuery.clickhouseEscape(v, variable);
         });
-        return escapedValues.join(',');
+        if (escapedValues[0][0] === "[") {
+            return escapedValues.join(',');
+        } else {
+            return '[' + escapedValues.join(',') + ']';
+        }
     }
 
     static clickhouseOperator(value) {
@@ -579,7 +583,7 @@ export default class SqlQuery {
                 return SqlQuery.clickhouseEscape(v, variable);
             });
             return "[" + arrayValues.join(', ') + "]";
-        } else if (typeof value == 'number' || (returnAsIs && (typeof value === 'string' && value.match(/^[+-]?\d+(\.\d+)?$/)))) {
+        } else if (typeof value == 'number' || (returnAsIs && (typeof value === 'string' && NumberOnlyRegexp.test(value)))) {
             return value;
         } else {
             return "'" + value.replace(/[\\']/g, '\\$&') + "'";

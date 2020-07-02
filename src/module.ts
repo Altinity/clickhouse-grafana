@@ -6,13 +6,13 @@ class SqlConfigCtrl {
 }
 
 const defaultQuery = `SELECT
-  toUInt32(toDateTime(ts)) * 1000 AS time,
+  toUInt32(ts) * 1000 AS time,
   description AS text,
   tags
 FROM
   event_table
 WHERE
-  ts >= $from AND ts < $to
+  ts >= toDateTime($from) AND ts < toDateTime($to)
 `;
 
 class ClickHouseAnnotationsQueryCtrl {

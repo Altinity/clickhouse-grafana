@@ -4,11 +4,15 @@
       {
         "$$hashKey": "object:69",
         "builtIn": 1,
-        "datasource": "-- Grafana --",
+        "datasource": "clickhouse",
         "enable": true,
-        "hide": true,
-        "iconColor": "rgba(0, 211, 255, 1)",
+        "hide": false,
+        "iconColor": "#F2495C",
+        "limit": 100,
         "name": "Annotations & Alerts",
+        "query": "SELECT \n       toUInt64(event_time)*1000 AS time,\n       if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,2) AND\n  toUInt64(event_time) >= $from AND toUInt64(event_time) < $to\n",
+        "rawQuery": "SELECT         toUInt64(event_time)*1000 AS time,        if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,        arrayStringConcat(['test1', 'test2', service_name],',') AS tags FROM default.test_grafana WHERE   rand() % 100 IN (1,2) AND   toUInt64(event_time) >= 1593686401 AND toUInt64(event_time) < 1593708001",
+        "showIn": 0,
         "type": "dashboard"
       }
     ]
@@ -16,8 +20,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "id": 1,
-  "iteration": 1593662319657,
+  "iteration": 1593707333362,
   "links": [],
   "panels": [
     {
@@ -79,7 +82,7 @@
           "interval": "",
           "intervalFactor": 1,
           "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM $table  WHERE [service_name, ' test array'] IN (${array_var}) AND $timeFilter\r\n",
-          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 15) * 15) * 1000 AS t, service_name, count() c FROM default.test_grafana  WHERE event_time >= toDateTime(1593653000) AND [service_name, ' test array'] IN (['postgresql', ' test array']) AND event_time >= toDateTime(1593653000) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
+          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM default.test_grafana  WHERE event_time >= toDateTime(1593685764) AND [service_name, ' test array'] IN (['mysql', ' test array'],['postgresql', ' test array']) AND event_time >= toDateTime(1593685764) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "table": "test_grafana",
@@ -128,7 +131,7 @@
       }
     }
   ],
-  "schemaVersion": 22,
+  "schemaVersion": 25,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -137,20 +140,13 @@
         "allValue": null,
         "current": {
           "selected": false,
-          "tags": [],
-          "text": "postgresql, test array",
-          "value": [
-            [
-              "postgresql",
-              " test array"
-            ]
-          ]
+          "text": "All",
+          "value": "$__all"
         },
         "datasource": "clickhouse",
         "definition": "SELECT DISTINCT [service_name, ' test array'] FROM default.test_grafana",
         "hide": 0,
         "includeAll": true,
-        "index": -1,
         "label": null,
         "multi": true,
         "name": "array_var",
@@ -188,8 +184,5 @@
   "timezone": "",
   "title": "clickhouse dashboard",
   "uid": "DnOcQSGGz",
-  "variables": {
-    "list": []
-  },
-  "version": 5
+  "version": 1
 }

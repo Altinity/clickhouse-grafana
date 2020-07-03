@@ -11,7 +11,7 @@
         "limit": 100,
         "name": "Annotations & Alerts",
         "query": "SELECT \n       toUInt64(event_time)*1000 AS time,\n       if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,2) AND\n  toUInt64(event_time) >= $from AND toUInt64(event_time) < $to\n",
-        "rawQuery": "SELECT         toUInt64(event_time)*1000 AS time,        if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,        arrayStringConcat(['test1', 'test2', service_name],',') AS tags FROM default.test_grafana WHERE   rand() % 100 IN (1,2) AND   toUInt64(event_time) >= 1593686401 AND toUInt64(event_time) < 1593708001",
+        "rawQuery": "SELECT         toUInt64(event_time)*1000 AS time,        if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,        arrayStringConcat(['test1', 'test2', service_name],',') AS tags FROM default.test_grafana WHERE   rand() % 100 IN (1,2) AND   toUInt64(event_time) >= 1593725204 AND toUInt64(event_time) < 1593746804",
         "showIn": 0,
         "type": "dashboard"
       }
@@ -20,7 +20,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1593707333362,
+  "iteration": 1593745562460,
   "links": [],
   "panels": [
     {
@@ -39,7 +39,7 @@
       "fillGradient": 0,
       "gridPos": {
         "h": 9,
-        "w": 12,
+        "w": 8,
         "x": 0,
         "y": 0
       },
@@ -82,7 +82,7 @@
           "interval": "",
           "intervalFactor": 1,
           "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM $table  WHERE [service_name, ' test array'] IN (${array_var}) AND $timeFilter\r\n",
-          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM default.test_grafana  WHERE event_time >= toDateTime(1593685764) AND [service_name, ' test array'] IN (['mysql', ' test array'],['postgresql', ' test array']) AND event_time >= toDateTime(1593685764) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
+          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM default.test_grafana  WHERE event_time >= toDateTime(1593725067) AND [service_name, ' test array'] IN (['postgresql', ' test array'],['mysql', ' test array']) AND event_time >= toDateTime(1593725067) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "table": "test_grafana",
@@ -93,7 +93,223 @@
       "timeFrom": null,
       "timeRegions": [],
       "timeShift": null,
-      "title": "Panel Title",
+      "title": "Array template variable",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "clickhouse",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "hiddenSeries": false,
+      "id": 3,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "default",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM remote('${remote_host}',default.test_grafana)  WHERE [service_name, ' test array'] IN (${array_var}) AND $timeFilter\r\n",
+          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM remote('localhost:9000',default.test_grafana)  WHERE event_time >= toDateTime(1593725027) AND [service_name, ' test array'] IN (['postgresql', ' test array'],['mysql', ' test array']) AND event_time >= toDateTime(1593725027) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "table": "test_grafana",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "remote and array",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "clickhouse",
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "hiddenSeries": false,
+      "id": 4,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "default",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM cluster('${cluster_name}',default.test_grafana)  WHERE [service_name, ' test array'] IN (${array_var}) AND $timeFilter\r\n",
+          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM cluster('test_shard_localhost',default.test_grafana)  WHERE event_time >= toDateTime(1593725203) AND [service_name, ' test array'] IN (['postgresql', ' test array'],['mysql', ' test array']) AND event_time >= toDateTime(1593725203) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "table": "test_grafana",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "cluster and array",
       "tooltip": {
         "shared": true,
         "sort": 0,
@@ -153,6 +369,115 @@
         "options": [],
         "query": "SELECT DISTINCT [service_name, ' test array'] FROM default.test_grafana",
         "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "localhost:9000",
+          "value": "localhost:9000"
+        },
+        "datasource": "clickhouse",
+        "definition": "SELECT DISTINCT concat(host_name, ':', toString(port)) AS remote_host FROM system.clusters",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "remote_host",
+        "options": [
+          {
+            "selected": false,
+            "text": "127.0.0.1:9000",
+            "value": "127.0.0.1:9000"
+          },
+          {
+            "selected": false,
+            "text": "127.0.0.2:9000",
+            "value": "127.0.0.2:9000"
+          },
+          {
+            "selected": true,
+            "text": "localhost:9000",
+            "value": "localhost:9000"
+          },
+          {
+            "selected": false,
+            "text": "localhost:9440",
+            "value": "localhost:9440"
+          },
+          {
+            "selected": false,
+            "text": "localhost:1",
+            "value": "localhost:1"
+          }
+        ],
+        "query": "SELECT DISTINCT concat(host_name, ':', toString(port)) AS remote_host FROM system.clusters",
+        "refresh": 0,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "tagValuesQuery": "",
+        "tags": [],
+        "tagsQuery": "",
+        "type": "query",
+        "useTags": false
+      },
+      {
+        "allValue": null,
+        "current": {
+          "selected": true,
+          "text": "test_shard_localhost",
+          "value": "test_shard_localhost"
+        },
+        "datasource": "clickhouse",
+        "definition": "SELECT DISTINCT cluster FROM system.clusters",
+        "hide": 0,
+        "includeAll": false,
+        "label": null,
+        "multi": false,
+        "name": "cluster_name",
+        "options": [
+          {
+            "selected": false,
+            "text": "localhost_cluster",
+            "value": "localhost_cluster"
+          },
+          {
+            "selected": false,
+            "text": "test_cluster_two_shards",
+            "value": "test_cluster_two_shards"
+          },
+          {
+            "selected": false,
+            "text": "test_cluster_two_shards_localhost",
+            "value": "test_cluster_two_shards_localhost"
+          },
+          {
+            "selected": true,
+            "text": "test_shard_localhost",
+            "value": "test_shard_localhost"
+          },
+          {
+            "selected": false,
+            "text": "test_shard_localhost_secure",
+            "value": "test_shard_localhost_secure"
+          },
+          {
+            "selected": false,
+            "text": "test_unavailable_shard",
+            "value": "test_unavailable_shard"
+          }
+        ],
+        "query": "SELECT DISTINCT cluster FROM system.clusters",
+        "refresh": 0,
         "regex": "",
         "skipUrlSync": false,
         "sort": 0,

@@ -79,8 +79,8 @@ Plugin supports the following marcos:
 * $table - replaced with selected table name from Query Builder
 * $dateCol - replaced with Date:Col value from Query Builder
 * $dateTimeCol - replaced with Column:DateTime or Column:TimeStamp value from Query Builder
-* $from - replaced with timestamp/1000 value of selected "Time Range:From"
-* $to - replaced with timestamp/1000 value of selected "Time Range:To"
+* $from - replaced with (timestamp with ms)/1000 value of UI selected "Time Range:From"
+* $to - replaced with (timestamp with ms)/1000 value of UI selected "Time Range:To"
 * $interval - replaced with selected "Group by time interval" value (as a number of seconds)
 * $timeFilter - replaced with currently selected "Time Range". 
   Requires Column:Date and Column:DateTime or Column:TimeStamp to be selected
@@ -491,7 +491,7 @@ That should help to control data fetching by ad-hoc queries.
 
 To use time range dependent macros like `$from` and `$to` in your query the refresh mode of the template variable needs to be set to On Time Range Change.
 ```
-SELECT ClientID FROM events WHERE EventTime > $from AND EventTime < $to
+SELECT ClientID FROM events WHERE EventTime > toDateTime($from) AND EventTime < toDateTime($to)
 ```
 
 

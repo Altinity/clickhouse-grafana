@@ -1,6 +1,12 @@
 version: "3"
     
 services:
+  clickhouse-ontime:
+    image: yandex/clickhouse-server:latest
+    volumes:
+      - ./docker/clickhouse/load_ontime.sh:/docker-entrypoint-initdb.d/load_ontime.sh
+      - /var/lib/clickhouse/
+      - /var/log/clickhouse-server/
   clickhouse:
     image: yandex/clickhouse-server:latest
     ports:
@@ -25,6 +31,7 @@ services:
     volumes:
       - ./:/var/lib/grafana/plugins/vertamedia-clickhouse/
       - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
+      - ./docker/grafana/grafana-clickhouse-ontime-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-ontime-datasource.yaml
       - ./docker/grafana/grafana-postgres-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-postgres-datasource.yaml
       - ./docker/grafana/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/grafana-dashboards.yaml
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/

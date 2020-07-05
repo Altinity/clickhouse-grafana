@@ -195,7 +195,7 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 	parsedBody := ClickHouseResponse{}
 	err := json.Unmarshal(body, &parsedBody)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse response json: %s: %w", body, err)
+		return nil, fmt.Errorf("unable to parse response body: %s\n\n parsing error: %w", body, err)
 	}
 
 	seriesMap := map[string]*datasource.TimeSeries{}
@@ -212,7 +212,7 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 	for _, dataPoint := range parsedBody.Data {
 		timestamp, err := strconv.ParseInt(dataPoint[tsMetaName].(string), 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse timestamp with alias `%s`: %w", tsMetaName, err)
+			return nil, fmt.Errorf("unable to parse timestamp with alias=`%s` value=%s error=%w", tsMetaName, dataPoint[tsMetaName].(string), err)
 		}
 		for k, v := range dataPoint {
 			if k != tsMetaName {

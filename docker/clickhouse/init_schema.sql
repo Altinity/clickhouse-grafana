@@ -20,7 +20,9 @@ CREATE TABLE default.test_alerts
     `EventDate` Date,
     `EventTime` DateTime,
     `Value` UInt64
-) ENGINE = Memory;
+) ENGINE = MergeTree()
+  PARTITION BY toYYYYMM(EventTime)
+  ORDER BY (EventTime, Name);
 
 -- INSERT INTO default.test_alerts SELECT concat('test',toString(rand() % 10)) AS Name, toDate(now()) AS EventDate, now() AS EventTime, rand() AS Value FROM numbers(1000);
 

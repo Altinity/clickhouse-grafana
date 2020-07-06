@@ -119,10 +119,18 @@ export default class Scanner {
             } else if (this.token === ',' && isClosured(argument)) {
                 this.push(argument);
                 argument = '';
+                if (this.rootToken == 'where') {
+                    this.push(this.token);
+                }
                 this.expectedNext = true;
             } else if (isClosureChars(this.token) && this.rootToken === 'from') {
                 subQuery = betweenBraces(this._s);
-                this.tree[this.rootToken] = toAST(subQuery);
+                if (!isTableFunc(argument)) {
+                    this.tree[this.rootToken] = toAST(subQuery);
+                } else {
+                    this.push(argument + '(' + subQuery + ')');
+                    argument = '';
+                }
                 this._s = this._s.substring(subQuery.length + 1);
             } else if (isMacroFunc(this.token)) {
                 let func = this.token;
@@ -387,6 +395,7 @@ const wsRe = "\\s+",
     macroRe = "\\$[A-Za-z0-9_$]+",
     skipSpaceRe = "[\\(\\.! \\[]",
 
+    tableFuncRe = "\\b(remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|jdbc|odbc|hdfs|input|generateRandom)\\b",
     builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
         "coalesce|ifnull|isnull|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
         "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +
@@ -441,6 +450,7 @@ const wsRe = "\\s+",
     operatorOnlyRe = new RegExp("^(?:" + operatorRe + ")$", 'i'),
     dataTypeOnlyRe = new RegExp("^(?:" + dataTypeRe + ")$"),
     builtInFuncOnlyRe = new RegExp("^(?:" + builtInFuncRe + ")$"),
+    tableFuncOnlyRe = new RegExp("^(?:" + tableFuncRe + ")$", 'i'),
     macroOnlyRe = new RegExp("^(?:" + macroRe + ")$", 'i'),
     inOnlyRe = new RegExp("^(?:" + inRe + ")$", 'i'),
     condOnlyRe = new RegExp("^(?:" + condRe + ")$", 'i'),
@@ -506,6 +516,10 @@ function isDataType(token) {
 
 function isBuiltInFunc(token) {
     return builtInFuncOnlyRe.test(token);
+}
+
+function isTableFunc(token) {
+    return tableFuncOnlyRe.test(token);
 }
 
 function isClosureChars(token) {

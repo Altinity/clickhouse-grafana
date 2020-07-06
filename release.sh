@@ -12,7 +12,7 @@ git config core.eol lf
 git config core.autocrlf input
 git config user.name "$GITHUB_LOGIN"
 git config user.email "$GITHUB_EMAIL"
-docker-compose down
+docker-compose stop
 docker-compose run frontend_builder
 docker-compose run backend_builder
 bump2version --verbose $1

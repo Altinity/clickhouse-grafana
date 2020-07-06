@@ -46,7 +46,7 @@ export default class SqlQuery {
             let topQuery = ast;
             if (adhocFilters.length > 0) {
                 /* Check subqueries for ad-hoc filters */
-                while (!isArray(ast.from)) {
+                while (ast.hasOwnProperty('from') && !isArray(ast.from)) {
                     ast = ast.from;
                 }
                 if (!ast.hasOwnProperty('where')) {

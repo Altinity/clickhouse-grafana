@@ -11,7 +11,7 @@
         "limit": 100,
         "name": "Annotations & Alerts",
         "query": "SELECT \n       toUInt64(event_time)*1000 AS time,\n       if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,2) AND\n  toUInt64(event_time) >= $from AND toUInt64(event_time) < $to\n",
-        "rawQuery": "SELECT         toUInt64(event_time)*1000 AS time,        if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,        arrayStringConcat(['test1', 'test2', service_name],',') AS tags FROM default.test_grafana WHERE   rand() % 100 IN (1,2) AND   toUInt64(event_time) >= 1593728631 AND toUInt64(event_time) < 1593750231",
+        "rawQuery": "SELECT         toUInt64(event_time)*1000 AS time,        if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,        arrayStringConcat(['test1', 'test2', service_name],',') AS tags FROM default.test_grafana WHERE   rand() % 100 IN (1,2) AND   toUInt64(event_time) >= 1593992152 AND toUInt64(event_time) < 1594013752",
         "showIn": 0,
         "type": "dashboard"
       }
@@ -20,7 +20,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1593745562480,
+  "iteration": 1594013092510,
   "links": [],
   "panels": [
     {
@@ -82,7 +82,7 @@
           "interval": "",
           "intervalFactor": 1,
           "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM $table  WHERE [service_name, ' test array'] IN (${array_var}) AND $timeFilter\r\n",
-          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM default.test_grafana  WHERE event_time >= toDateTime(1593725067) AND [service_name, ' test array'] IN (['postgresql', ' test array'],['mysql', ' test array']) AND event_time >= toDateTime(1593725067) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
+          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM default.test_grafana WHERE event_time >= toDateTime(1593992068) AND     [service_name     ,     ' test array'] IN (['mysql',' test array'],['postgresql',' test array'])     AND event_time >= toDateTime(1593992068)     AND service_name LIKE '%sql%' GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "table": "test_grafana",
@@ -109,6 +109,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:37",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -117,6 +118,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:38",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -189,8 +191,8 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "",
           "intervalFactor": 1,
-          "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM remote('${remote_host}',default.test_grafana)  WHERE [service_name, ' test array'] IN (${array_var}) AND $timeFilter\r\n",
-          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM remote('localhost:9000',default.test_grafana)  WHERE event_time >= toDateTime(1593725770) AND [service_name, ' test array'] IN (['postgresql', ' test array'],['mysql', ' test array']) AND event_time >= toDateTime(1593725770) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
+          "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM remote('${remote_host}',default.test_grafana)  WHERE [service_name, ' test array'] IN (${array_var}) AND $timeFilter",
+          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM remote('localhost:9000',default.test_grafana) WHERE event_time >= toDateTime(1593992191) AND     [service_name     ,     ' test array'] IN (['mysql',' test array'],['postgresql',' test array'])     AND event_time >= toDateTime(1593992191) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "table": "test_grafana",
@@ -217,6 +219,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:357",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -225,6 +228,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:358",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -413,8 +417,8 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "",
           "intervalFactor": 1,
-          "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM $table  WHERE service_name IN (${repeated_service}) AND $timeFilter\r\n",
-          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM default.test_grafana  WHERE event_time >= toDateTime(1593726153) AND service_name IN (['mysql','postgresql']) AND event_time >= toDateTime(1593726153) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
+          "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM $table  WHERE service_name IN (${repeated_service}) AND $timeFilter",
+          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM default.test_grafana WHERE event_time >= toDateTime(1593992104) AND     service_name IN ('mysql')     AND event_time >= toDateTime(1593992104)     AND service_name LIKE '%sql%' GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "table": "test_grafana",
@@ -441,6 +445,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:277",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -449,6 +454,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:278",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -505,7 +511,7 @@
       "points": false,
       "renderer": "flot",
       "repeat": null,
-      "repeatIteration": 1593745562480,
+      "repeatIteration": 1594013092510,
       "repeatPanelId": 5,
       "scopedVars": {
         "repeated_service": {
@@ -531,8 +537,8 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "",
           "intervalFactor": 1,
-          "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM $table  WHERE service_name IN (${repeated_service}) AND $timeFilter\r\n",
-          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM default.test_grafana  WHERE event_time >= toDateTime(1593726153) AND service_name IN (['mysql','postgresql']) AND event_time >= toDateTime(1593726153) GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
+          "query": "$columns(service_name,\r\n    count() c\r\n)\r\nFROM $table  WHERE service_name IN (${repeated_service}) AND $timeFilter",
+          "rawQuery": "SELECT t, groupArray((service_name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, service_name, count() c FROM default.test_grafana WHERE event_time >= toDateTime(1593992104) AND     service_name IN ('mysql')     AND event_time >= toDateTime(1593992104)     AND service_name LIKE '%sql%' GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "table": "test_grafana",
@@ -559,6 +565,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:277",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -567,6 +574,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:278",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -639,7 +647,7 @@
           "interval": "",
           "intervalFactor": 1,
           "query": "SELECT\r\n    $timeSeries AS t,\r\n    service_name,\r\n    _table,\r\n    count() c\r\nFROM merge('default','^test_grafana$')\r\nWHERE service_name IN (${repeated_service}) AND $timeFilter\r\nGROUP BY t, service_name, _table\r\nORDER BY t\r\n",
-          "rawQuery": "SELECT     (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t,     service_name,     _table,     count() c FROM merge('default','^test_grafana$') WHERE service_name IN (['mysql','postgresql']) AND event_time >= toDateTime(1593729034) GROUP BY t, service_name, _table ORDER BY t",
+          "rawQuery": "SELECT     (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t,     service_name,     _table,     count() c FROM merge('default','^test_grafana$') WHERE     service_name IN (['mysql','postgresql'])     AND event_time >= toDateTime(1593991951) GROUP BY     t,     service_name,     _table ORDER BY t",
           "refId": "A",
           "round": "0s",
           "table": "test_grafana",
@@ -666,6 +674,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:37",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -674,6 +683,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:38",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -697,7 +707,6 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "tags": [],
           "text": "All",
           "value": [
             "$__all"
@@ -835,7 +844,6 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "tags": [],
           "text": "mysql + postgresql",
           "value": [
             "mysql",
@@ -860,6 +868,22 @@
         "tagsQuery": "",
         "type": "query",
         "useTags": false
+      },
+      {
+        "datasource": "clickhouse",
+        "filters": [
+          {
+            "condition": "",
+            "key": "default.test_grafana.service_name",
+            "operator": "=~",
+            "value": "%sql%"
+          }
+        ],
+        "hide": 0,
+        "label": null,
+        "name": "adhoc",
+        "skipUrlSync": false,
+        "type": "adhoc"
       }
     ]
   },
@@ -883,5 +907,5 @@
   "timezone": "",
   "title": "clickhouse dashboard",
   "uid": "DnOcQSGGz",
-  "version": 1
+  "version": 3
 }

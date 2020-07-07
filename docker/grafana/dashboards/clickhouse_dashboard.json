@@ -11,7 +11,7 @@
         "limit": 100,
         "name": "Annotations & Alerts",
         "query": "SELECT \n       toUInt64(event_time)*1000 AS time,\n       if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,2) AND\n  toUInt64(event_time) >= $from AND toUInt64(event_time) < $to\n",
-        "rawQuery": "SELECT         toUInt64(event_time)*1000 AS time,        if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,        arrayStringConcat(['test1', 'test2', service_name],',') AS tags FROM default.test_grafana WHERE   rand() % 100 IN (1,2) AND   toUInt64(event_time) >= 1593992152 AND toUInt64(event_time) < 1594013752",
+        "rawQuery": "SELECT         toUInt64(event_time)*1000 AS time,        if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,        arrayStringConcat(['test1', 'test2', service_name],',') AS tags FROM default.test_grafana WHERE   rand() % 100 IN (1,2) AND   toUInt64(event_time) >= 1594101842 AND toUInt64(event_time) < 1594123442",
         "showIn": 0,
         "type": "dashboard"
       }
@@ -20,7 +20,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1594013092510,
+  "iteration": 1594123441539,
   "links": [],
   "panels": [
     {
@@ -490,7 +490,7 @@
         "y": 9
       },
       "hiddenSeries": false,
-      "id": 8,
+      "id": 11,
       "legend": {
         "avg": false,
         "current": false,
@@ -511,7 +511,7 @@
       "points": false,
       "renderer": "flot",
       "repeat": null,
-      "repeatIteration": 1594013092510,
+      "repeatIteration": 1594123441539,
       "repeatPanelId": 5,
       "scopedVars": {
         "repeated_service": {
@@ -684,6 +684,116 @@
         },
         {
           "$$hashKey": "object:38",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "clickhouse",
+      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/127",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {}
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 9,
+        "x": 8,
+        "y": 27
+      },
+      "hiddenSeries": false,
+      "id": 10,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "options": {
+        "dataLinks": []
+      },
+      "percentage": false,
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "default",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT * FROM (\r\n  SELECT\r\n      $timeSeries as t,\r\n      count() as c\r\n  FROM $table\r\n  WHERE $timeFilter\r\n  GROUP BY t\r\n)\r\nORDER BY t",
+          "rawQuery": "SELECT * FROM (     SELECT         (intDiv(toUInt32(event_time), 20) * 20) * 1000 as t,         count() as c     FROM default.test_grafana     WHERE         event_time >= toDateTime(1594103238)         AND service_name LIKE '%sql%'     GROUP BY t ) ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "table": "test_grafana",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "subquery example",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:91",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:92",
           "format": "short",
           "label": null,
           "logBase": 1,

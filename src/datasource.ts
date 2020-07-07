@@ -89,11 +89,11 @@ export class ClickHouseDatasource {
         }
 
         if (params.length) {
-            options.url += (options.url.indexOf('?') != -1 ? '&' : '/?') + params.join('&');
+            options.url += (options.url.indexOf('?') !== -1 ? '&' : '/?') + params.join('&');
         }
 
         return options;
-    };
+    }
 
     _request(query: string, requestId?: string) {
         const queryParams = this._getRequestOptions(query, this.usePOST, requestId);
@@ -101,7 +101,7 @@ export class ClickHouseDatasource {
         return this.backendSrv.datasourceRequest(queryParams).then(result => {
             return result.data;
         });
-    };
+    }
 
     query(options) {
         const queries = map(
@@ -110,7 +110,7 @@ export class ClickHouseDatasource {
         );
         // No valid targets, return the empty result to save a round trip.
         if (isEmpty(queries)) {
-            var d = this.$q.defer();
+            let d = this.$q.defer();
             d.resolve({data: []});
             return d.promise;
         }
@@ -120,7 +120,7 @@ export class ClickHouseDatasource {
         });
 
         return this.$q.all(allQueryPromise).then((responses): any => {
-            var result = [], i = 0;
+            let result = [], i = 0;
             each(responses, (response) => {
                 const target = options.targets[i];
                 const keys = queries[i].keys;
@@ -130,7 +130,7 @@ export class ClickHouseDatasource {
                     return;
                 }
 
-                var sqlSeries = new SqlSeries({
+                let sqlSeries = new SqlSeries({
                     series: response.data,
                     meta: response.meta,
                     keys: keys,
@@ -150,7 +150,7 @@ export class ClickHouseDatasource {
             });
             return {data: result};
         });
-    };
+    }
 
     createQuery(options, target) {
         const queryModel = new SqlQuery(target, this.templateSrv, options);
@@ -223,24 +223,24 @@ export class ClickHouseDatasource {
         // todo(nv): fix request id
         return this._seriesQuery(interpolatedQuery)
             .then(curry(this.responseParser.parse)(query));
-    };
+    }
 
     testDatasource() {
         return this.metricFindQuery('SELECT 1').then(
             () => {
                 return {status: "success", message: "Data source is working", title: "Success"};
             });
-    };
+    }
 
     _seriesQuery(query: string, requestId?: string) {
         query = query.replace(/(?:\r\n|\r|\n)/g, ' ');
         query += ' FORMAT JSON';
         return this._request(query, requestId);
-    };
+    }
 
     targetContainsTemplate(target) {
         return this.templateSrv.variableExists(target.expr);
-    };
+    }
 
     getTagKeys() {
         // check whether variable `adhoc_query_filter` exists to apply additional filtering

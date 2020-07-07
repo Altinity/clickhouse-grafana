@@ -106,7 +106,7 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 		case "usePOST":
 			method = http.MethodPost
 			params.Del("query")
-			body = query
+			body = query+" FORMAT JSON"
 			break
 		case "defaultDatabase":
 			db, _ := v.(string)

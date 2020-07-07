@@ -47,7 +47,7 @@ export default class SqlSeries {
         return data;
     }
 
-    toTimeSeries(extrapolate: boolean = true): any {
+    toTimeSeries(extrapolate = true): any {
         let self = this, timeSeries = [];
         if (self.series.length === 0) {
             return timeSeries;
@@ -57,7 +57,7 @@ export default class SqlSeries {
         // timeCol have to be the first column always
         let timeCol = self.meta[0];
         let lastTimeStamp = self.series[0][timeCol.name];
-        let keyColumns = self.keys.filter(name => name != timeCol.name);
+        let keyColumns = self.keys.filter(name => name !== timeCol.name);
         each(self.series, function (row) {
             let t = SqlSeries._formatValue(row[timeCol.name]);
             /* Build composite key (categories) from GROUP BY */
@@ -78,7 +78,7 @@ export default class SqlSeries {
             /* For each metric-value pair in row, construct a datapoint */
             each(row, function (val, key) {
                 /* Skip timestamp and GROUP BY keys */
-                if ((self.keys.length == 0 && timeCol.name == key) || self.keys.indexOf(key) >= 0) {
+                if ((self.keys.length === 0 && timeCol.name === key) || self.keys.indexOf(key) >= 0) {
                     return;
                 }
                 /* If composite key is specified, e.g. 'category1',
@@ -106,7 +106,7 @@ export default class SqlSeries {
         });
 
         return timeSeries;
-    };
+    }
 
     extrapolate(datapoints) {
         if (datapoints.length < 10 || (!this.tillNow && datapoints[0][0] !== 0)) {
@@ -134,16 +134,17 @@ export default class SqlSeries {
         }
 
         if (durationToEnd < averageDurationBetweenSamples) {
-            diff = ((datapoints[datapoints.length - 2][0] - datapoints[datapoints.length - 3][0]) / datapoints[datapoints.length - 2][0]) * 0.1;
+            let l = datapoints.length;
+            diff = ((datapoints[l - 2][0] - datapoints[l - 3][0]) / datapoints[l - 2][0]) * 0.1;
             diff %= 1;
             if (isNaN(diff)) {
                 diff = 0;
             }
-            datapoints[datapoints.length - 1][0] = datapoints[datapoints.length - 2][0] * (1 + diff);
+            datapoints[l - 1][0] = datapoints[l - 2][0] * (1 + diff);
         }
 
         return datapoints;
-    };
+    }
 
     static _pushDatapoint(metrics: any, timestamp: number, key: string, value: number) {
         if (!metrics[key]) {
@@ -209,5 +210,5 @@ export default class SqlSeries {
         } else {
             return numeric;
         }
-    };
+    }
 }

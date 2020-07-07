@@ -1,3 +1,21 @@
+# 2.0.2 (2020-07-06)
+
+## Enhancements:
+* add alerts support for Windows and MacOSX
+* improve ad-hoc filters for query field values as `SELECT DISTINCT field AS value FROM db.table LIMIT 300`, https://github.com/Vertamedia/clickhouse-grafana/pull/222
+* add ability to multiple JOIN parsing https://github.com/Vertamedia/clickhouse-grafana/pull/206 
+* multiple improvements for docker-compose environments, add automatic dashboards and datasource provisions which help to reproduce most of the corner cases which happens in Grafana + ClickHouse
+
+## Fixes:
+* apply a workaround for UTC timezone for Date and DateTime columns in grafana dashboards https://github.com/Vertamedia/clickhouse-grafana/issues/117
+* clear documentation about timestamp term for $from and $to https://github.com/Vertamedia/clickhouse-grafana/issues/115
+* fix AST parsing corner case in `WHERE [test, 'test']` "," was skipped, fix ah-doc ast FROM recursive parsing https://github.com/Vertamedia/clickhouse-grafana/issues/99
+* fix corner cases for table functions parsing when adhoc filter applied https://github.com/Vertamedia/clickhouse-grafana/issues/130
+* fix multiple grammar issues in README.md
+* fix convert rules for Float, Decimal columns from Clickhouse to Grafana Table plugin https://github.com/Vertamedia/clickhouse-grafana/issues/199 
+* fix corner cases when Grafana Template variable value represented as array of strings https://github.com/Vertamedia/clickhouse-grafana/issues/169
+* fix AST parsing corner cases for $macroFunctions correct position for FROM statement https://github.com/Vertamedia/clickhouse-grafana/issues/187
+  
 # 2.0.1 (2020-06-19)
 
 ## Fixes:

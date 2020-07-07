@@ -70,8 +70,10 @@ services:
       - ./.cache:/go-cache
     command: |
       bash -xec "
-        go build -gcflags=\"all=-N -l\" -o ./dist/vertamedia-clickhouse-plugin_linux_amd64 . && \
-        chmod +x ./dist/vertamedia-clickhouse-plugin_linux_amd64
+        GOOS=linux GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_amd64 . && \
+        GOOS=windows GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_windows_amd64.exe . && \
+        GOOS=darwin GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_darwin_amd64 . && \
+        chmod +x ./dist/vertamedia-clickhouse-plugin*
       "
 
 

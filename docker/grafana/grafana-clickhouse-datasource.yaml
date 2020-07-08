@@ -6,3 +6,6 @@ datasources:
    access: proxy
    url: http://clickhouse:8123
    editable: true
+   jsonData:
+     addCorsHeader: true
+     usePOST: true

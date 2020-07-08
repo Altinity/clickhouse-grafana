@@ -55,7 +55,7 @@ func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.Dataso
 		return nil, err
 	}
 	defer func() {
-		if err := response.Body.Close(); err!=nil {
+		if err := response.Body.Close(); err != nil {
 			log.Fatal("can't close HTTP Response body")
 		}
 	}()
@@ -83,8 +83,11 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 		return nil, fmt.Errorf("unable to parse clickhouse dataSourceUrl: %w", err)
 	}
 
+	if !strings.HasSuffix(strings.ToUpper(query), " FORMAT JSON") {
+		query += " FORMAT JSON"
+	}
 	params := dataSourceUrl.Query()
-	params.Add("query", query+" FORMAT JSON")
+	params.Add("query", query)
 
 	/*
 	 Note: The current plugins model does not support basic authorization.
@@ -104,16 +107,22 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 	for k, v := range options {
 		switch k {
 		case "usePOST":
-			method = http.MethodPost
-			params.Del("query")
-			body = query
+			if v.(bool) == true {
+				method = http.MethodPost
+				params.Del("query")
+				body = query
+			}
 			break
 		case "defaultDatabase":
 			db, _ := v.(string)
-			params.Add("database", db)
+			if db != "" {
+				params.Add("database", db)
+			}
 			break
 		case "addCorsHeaders":
-			params.Add("add_http_cors_header", "1")
+			if v.(bool) == true {
+				params.Add("add_http_cors_header", "1")
+			}
 			break
 		case "useYandexCloudAuthorization":
 			if user, ok := options["xHeaderUser"]; ok {
@@ -203,7 +212,7 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 	// expect first column as timestamp
 	tsMetaName := parsedBody.Meta[0].Name
 	for _, meta := range parsedBody.Meta {
-		if meta.Name != tsMetaName && !strings.HasPrefix(meta.Type,"Array(Tuple("){
+		if meta.Name != tsMetaName && !strings.HasPrefix(meta.Type, "Array(Tuple(") {
 			seriesMap[meta.Name] = &datasource.TimeSeries{Name: meta.Name, Points: []*datasource.Point{}}
 		}
 		metaTypesMap[meta.Name] = meta.Type
@@ -219,7 +228,7 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 				var point float64
 				var err error
 
-				if !strings.HasPrefix(metaTypesMap[k],"Array(Tuple(") {
+				if !strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") {
 
 					point, err = parseFloat64(v)
 					if err != nil {
@@ -239,7 +248,7 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 							case []interface{}:
 								var t []string
 								for _, s := range tuple {
-									t = append(t, fmt.Sprintf("%v",s))
+									t = append(t, fmt.Sprintf("%v", s))
 								}
 								arrayOfTuples = append(arrayOfTuples, t)
 							default:
@@ -263,7 +272,7 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 						}
 						ts.Points = append(ts.Points, &datasource.Point{
 							Timestamp: timestamp,
-							Value: point,
+							Value:     point,
 						})
 					}
 				}
@@ -287,7 +296,6 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 		},
 	}, nil
 }
-
 
 type ClickHouseResponse struct {
 	Meta []ClickHouseMeta

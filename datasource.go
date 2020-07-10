@@ -24,6 +24,17 @@ import (
 	"golang.org/x/net/context/ctxhttp"
 )
 
+type ClickHouseResponse struct {
+	Meta []ClickHouseMeta
+	Data []map[string]interface{}
+	Rows int
+}
+
+type ClickHouseMeta struct {
+	Name string
+	Type string
+}
+
 var httpClient = &http.Client{}
 
 type ClickhouseDatasource struct {
@@ -211,8 +222,16 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 	metaTypesMap := map[string]string{}
 	// expect first column as timestamp
 	tsMetaName := parsedBody.Meta[0].Name
+	hasStringKeys := false
 	for _, meta := range parsedBody.Meta {
-		if meta.Name != tsMetaName && !strings.HasPrefix(meta.Type, "Array(Tuple(") {
+		if strings.Contains(meta.Type, "String") && !strings.HasPrefix(meta.Type, "Array(Tuple(") {
+			hasStringKeys = true
+			break
+		}
+	}
+
+	for _, meta := range parsedBody.Meta {
+		if !hasStringKeys && meta.Name != tsMetaName && !strings.HasPrefix(meta.Type, "Array(Tuple(") {
 			seriesMap[meta.Name] = &datasource.TimeSeries{Name: meta.Name, Points: []*datasource.Point{}}
 		}
 		metaTypesMap[meta.Name] = meta.Type
@@ -223,23 +242,44 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse timestamp with alias=`%s` value=%s error=%w", tsMetaName, dataPoint[tsMetaName].(string), err)
 		}
+
+		stringKeysMetricName := ""
+		for k, v := range dataPoint {
+			if k != tsMetaName && !strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") && strings.Contains(metaTypesMap[k], "String") {
+				stringKeysMetricName += v.(string) + ", "
+			}
+		}
+		if stringKeysMetricName != "" {
+			stringKeysMetricName = stringKeysMetricName[0 : len(stringKeysMetricName)-2]
+		}
+
 		for k, v := range dataPoint {
 			if k != tsMetaName {
 				var point float64
 				var err error
 
-				if !strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") {
+				if !strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") && !strings.Contains(metaTypesMap[k], "String") {
 
 					point, err = parseFloat64(v)
 					if err != nil {
 						return nil, fmt.Errorf("unable to parse value %v for '%s': %w", v, k, err)
 					}
 
-					seriesMap[k].Points = append(seriesMap[k].Points, &datasource.Point{
-						Timestamp: timestamp,
-						Value:     point,
-					})
-				} else {
+					if stringKeysMetricName == "" {
+						seriesMap[k].Points = append(seriesMap[k].Points, &datasource.Point{
+							Timestamp: timestamp,
+							Value:     point,
+						})
+					} else {
+						if _, exists := seriesMap[stringKeysMetricName]; !exists {
+							seriesMap[stringKeysMetricName] = &datasource.TimeSeries{Name: stringKeysMetricName, Points: []*datasource.Point{}}
+						}
+						seriesMap[stringKeysMetricName].Points = append(seriesMap[stringKeysMetricName].Points, &datasource.Point{
+							Timestamp: timestamp,
+							Value:     point,
+						})
+					}
+				} else if strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") {
 					var arrayOfTuples [][]string
 					switch arrays := v.(type) {
 					case []interface{}:
@@ -295,15 +335,4 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 			},
 		},
 	}, nil
-}
-
-type ClickHouseResponse struct {
-	Meta []ClickHouseMeta
-	Data []map[string]interface{}
-	Rows int
-}
-
-type ClickHouseMeta struct {
-	Name string
-	Type string
 }

@@ -25,9 +25,9 @@ services:
       - ./docker/postgres/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
 
   grafana:
-    image: grafana/grafana:latest
+#    image: grafana/grafana:latest
 #    image: grafana/grafana:dev
-#    image: grafana/grafana:6.7.4
+    image: grafana/grafana:6.7.4
     volumes:
       - ./:/var/lib/grafana/plugins/vertamedia-clickhouse/
       - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml

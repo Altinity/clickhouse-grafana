@@ -43,3 +43,23 @@ CREATE TABLE IF NOT EXISTS default.test_depends_on_variable(
         ORDER BY (event_time, bulk_id, city, service_name);
 
 INSERT INTO default.test_depends_on_variable(event_time, bulk_id, city, service_name, too_big_value) SELECT toDateTime(now()-(number*10)) AS event_time, concat('bulk',toString(number%10)) AS bulk_id, if (number%600 > 0,concat('city',toString(number%600)),null) AS city, concat('service',toString(number%1000)) AS service_name, rand64() AS too_big_value FROM numbers(10000);
+
+
+DROP TABLE IF EXISTS default.test_interval;
+CREATE TABLE IF NOT EXISTS default.test_interval
+(
+    d DateTime,
+    x UInt32
+) ENGINE = MergeTree() ORDER BY (d);
+
+INSERT INTO default.test_interval(d,x) SELECT toDateTime(now()-(number*10)) AS d, rand() AS x FROM numbers(1000);
+
+
+SELECT  __text,  __value
+FROM (
+      SELECT
+          splitByChar(',', '1m,10m,30m,1h,6h,12h,1d,7d,14d,30d')                        AS label,
+          splitByChar(',', '60,600,1800,3600,21600,43200,86400,604800,1209600,2592000') AS value
+ )
+ ARRAY  JOIN label as __text, value as __value
+

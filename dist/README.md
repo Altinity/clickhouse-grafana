@@ -9,6 +9,21 @@ OR
 
 Copy files to your [Grafana plugin directory](http://docs.grafana.org/plugins/installation/#grafana-plugin-directory). Restart Grafana, check data sources list at http://your.grafana.instance/datasources/new, choose ClickHouse option.
 
+Unfortunately, grafana 7.x,  currently doesn't support worked signing method for community plugins
+https://community.grafana.com/t/how-to-create-a-signed-backend-plugin/30068/2
+
+so, setup configuration option  
+```
+[plugins]
+allow_loading_unsigned_plugins=vertamedia-clickhouse-datasource
+``` 
+
+or export environment variable
+```
+GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource 
+```
+is required
+
 ### Features:
 
  * Access to CH via HTTP

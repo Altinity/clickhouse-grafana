@@ -28,7 +28,7 @@ CREATE TABLE IF NOT EXISTS default.test_alerts
 
 -- INSERT INTO default.test_alerts SELECT concat('test',toString(rand() % 10)) AS Name, toDate(now()) AS EventDate, now() AS EventTime, rand() AS Value FROM numbers(1000);
 
-INSERT INTO default.test_alerts VALUES  ('test1', toDate(now()), now(), 21);
+INSERT INTO default.test_alerts SELECT 'test2' AS Name, toDate( now() - ( 5400  - (60*number) ) ) AS EventDate, toDateTime( now() - ( 5400  - (60*number) ) ) AS EventTime, if(EventTime BETWEEN now() - INTERVAL 3600 SECOND AND now() - INTERVAL 1800 SECOND, rand() % 20, rand() ) AS Value FROM numbers(180);
 
 DROP TABLE IF EXISTS default.test_depends_on_variable;
 CREATE TABLE IF NOT EXISTS default.test_depends_on_variable(
@@ -53,13 +53,4 @@ CREATE TABLE IF NOT EXISTS default.test_interval
 ) ENGINE = MergeTree() ORDER BY (d);
 
 INSERT INTO default.test_interval(d,x) SELECT toDateTime(now()-(number*10)) AS d, rand() AS x FROM numbers(1000);
-
-
-SELECT  __text,  __value
-FROM (
-      SELECT
-          splitByChar(',', '1m,10m,30m,1h,6h,12h,1d,7d,14d,30d')                        AS label,
-          splitByChar(',', '60,600,1800,3600,21600,43200,86400,604800,1209600,2592000') AS value
- )
- ARRAY  JOIN label as __text, value as __value
 

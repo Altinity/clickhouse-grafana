@@ -112,7 +112,7 @@
           "interval": "",
           "intervalFactor": 1,
           "query": "$columns(Name, sum(Value) c) FROM $table",
-          "rawQuery": "SELECT t, groupArray((Name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(EventTime), 300) * 300) * 1000 AS t, Name, sum(Value) c FROM default.test_alerts WHERE EventDate >= toDate(1594368671) AND EventTime >= toDateTime(1594368671) GROUP BY t, Name ORDER BY t, Name) GROUP BY t ORDER BY t",
+          "rawQuery": "SELECT t, groupArray((Name, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(EventTime), 300) * 300) * 1000 AS t, Name, sum(Value) c FROM default.test_alerts WHERE EventDate >= toDate(1594707193) AND EventTime >= toDateTime(1594707193) GROUP BY t, Name ORDER BY t, Name) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "table": "test_alerts",
@@ -264,8 +264,8 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "",
           "intervalFactor": 1,
-          "query": "SELECT \n $timeSeries AS t,\n Name,\n sum(Value) c\nFROM $table\nWHERE $timeFilter\nGROUP BY t, Name",
-          "rawQuery": "SELECT   (intDiv(toUInt32(EventTime), 300) * 300) * 1000 AS t,  Name,  sum(Value) c FROM default.test_alerts WHERE EventDate >= toDate(1594369833) AND EventTime >= toDateTime(1594369833) GROUP BY t, Name",
+          "query": "SELECT \n $timeSeries AS t,\n Name,\n sum(Value) c\nFROM $table\nWHERE $timeFilter\nGROUP BY t, Name\nORDER BY t",
+          "rawQuery": "SELECT   (intDiv(toUInt32(EventTime), 300) * 300) * 1000 AS t,  Name,  sum(Value) c FROM default.test_alerts WHERE EventDate >= toDate(1594707234) AND EventTime >= toDateTime(1594707234) GROUP BY t, Name ORDER BY t",
           "refId": "A",
           "round": "0s",
           "table": "test_alerts",
@@ -330,9 +330,9 @@
           {
             "evaluator": {
               "params": [
-                20
+                1000
               ],
-              "type": "gt"
+              "type": "lt"
             },
             "operator": {
               "type": "and"
@@ -340,13 +340,13 @@
             "query": {
               "params": [
                 "A",
-                "5m",
-                "now"
+                "1h",
+                "now-30m"
               ]
             },
             "reducer": {
               "params": [],
-              "type": "avg"
+              "type": "min"
             },
             "type": "query"
           }
@@ -417,8 +417,8 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "",
           "intervalFactor": 1,
-          "query": "SELECT \n $timeSeries AS t,\n sum(Value) c\nFROM $table\nWHERE $timeFilter\nGROUP BY t",
-          "rawQuery": "SELECT   (intDiv(toUInt32(EventTime), 300) * 300) * 1000 AS t,  sum(Value) c FROM default.test_alerts WHERE EventDate >= toDate(1594369994) AND EventTime >= toDateTime(1594369994) GROUP BY t",
+          "query": "SELECT \n $timeSeries AS t,\n sum(Value) c\nFROM $table\nWHERE $timeFilter\nGROUP BY t\nORDER BY t",
+          "rawQuery": "SELECT   (intDiv(toUInt32(EventTime), 300) * 300) * 1000 AS t,  sum(Value) c FROM default.test_alerts WHERE EventDate >= toDate(1594708432) AND EventTime >= toDateTime(1594708432) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "table": "test_alerts",
@@ -430,8 +430,8 @@
           "colorMode": "critical",
           "fill": true,
           "line": true,
-          "op": "gt",
-          "value": 20
+          "op": "lt",
+          "value": 1000
         }
       ],
       "timeFrom": null,

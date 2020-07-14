@@ -82,7 +82,7 @@ func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.Dataso
 		return nil, fmt.Errorf("invalid status code. status: %v", response.Status)
 	}
 
-	return parseResponse(body, refId)
+	return parseResponse(body, refId, req.GetTimeRange())
 }
 
 func createRequest(req *datasource.DatasourceRequest, query string) (*http.Request, error) {
@@ -210,7 +210,7 @@ func parseFloat64(v interface{}) (float64, error) {
 	}
 }
 
-func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, error) {
+func parseResponse(body []byte, refId string, timeRange *datasource.TimeRange) (*datasource.DatasourceResponse, error) {
 
 	parsedBody := ClickHouseResponse{}
 	err := json.Unmarshal(body, &parsedBody)
@@ -241,6 +241,11 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 		timestamp, err := strconv.ParseInt(dataPoint[tsMetaName].(string), 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse timestamp with alias=`%s` value=%s error=%w", tsMetaName, dataPoint[tsMetaName].(string), err)
+		}
+
+		// skip datapoints which not contains in alert query relative time range, see https://github.com/Vertamedia/clickhouse-grafana/issues/237
+		if timeRange != nil && (timeRange.FromEpochMs > timestamp || timeRange.ToEpochMs < timestamp) {
+			continue
 		}
 
 		stringKeysMetricName := ""

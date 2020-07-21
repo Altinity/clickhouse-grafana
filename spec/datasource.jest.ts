@@ -5,7 +5,7 @@ import ResponseParser from "../src/response_parser";
 
 describe("clickhouse sql series:", () => {
     describe("SELECT $timeseries response WHERE $adhoc = 1", () => {
-        var response = {
+        let response = {
             "meta":
             [
                 {
@@ -38,12 +38,12 @@ describe("clickhouse sql series:", () => {
             ],
         };
 
-        var sqlSeries = new SqlSeries({
+        let sqlSeries = new SqlSeries({
             series: response.data,
             meta: response.meta,
             table: '',
         });
-        var timeSeries = sqlSeries.toTimeSeries();
+        let timeSeries = sqlSeries.toTimeSeries();
         it("expects two results", () => {
             expect(size(timeSeries)).toBe(2);
         });
@@ -55,7 +55,7 @@ describe("clickhouse sql series:", () => {
     });
 
     describe("SELECT $columns response", () => {
-        var response = {
+        let response = {
             "meta":
                 [
                     {
@@ -89,12 +89,12 @@ describe("clickhouse sql series:", () => {
                 ]
         };
 
-        var sqlSeries = new SqlSeries({
+        let sqlSeries = new SqlSeries({
             series: response.data,
             meta: response.meta,
             table: '',
         });
-        var timeSeries = sqlSeries.toTimeSeries();
+        let timeSeries = sqlSeries.toTimeSeries();
 
         it("expects four results", () => {
             expect(size(timeSeries)).toBe(4);
@@ -109,7 +109,7 @@ describe("clickhouse sql series:", () => {
     });
 
     describe("When performing ad-hoc query", () => {
-        var response = {
+        let response = {
             "meta":
                 [
                     {
@@ -163,7 +163,7 @@ describe("clickhouse sql series:", () => {
         });
 
         let data = rp.parse("", response);
-        adhocCtrl.processResponse(data);
+        adhocCtrl.processTagKeysResponse(data);
         it('should return adhoc filter list', function() {
             let results = adhocCtrl.tagKeys;
             expect(results.length).toBe(6);

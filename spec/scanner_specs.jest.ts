@@ -49,39 +49,43 @@ describe("scanner:", () => {
                     "col1"
                 ]
             },
-            "join": {
-                "type": "GLOBAL ANY LEFT JOIN",
-                "source": {
-                    "root": [],
-                    "select": [
-                        "EventDate",
-                        "col1",
-                        "countIf(col2 GLOBAL IN some_table) AS col2_shared",
-                        "count() AS col_count",
-                        "uniqCombinedIf(col3, col3 GLOBAL IN some_table) AS col3_shared",
-                        "uniqCombined(col3) AS unique_col3"
-                    ],
-                    "from": [
-                        "general_table_all"
-                    ],
-                    "prewhere": [
-                        "Event IN ('type2')",
-                        "AND EventDate <= '2016-12-20'"
-                    ],
-                    "where": [
-                        "(EventDate, col1) GLOBAL IN some_table",
-                        "AND col4 GLOBAL IN some_table"
-                    ],
-                    "group by": [
+            "join": [
+                {
+                    "aliases": [],
+                    "on": [],
+                    "source": {
+                        "from": [
+                            "general_table_all"
+                        ],
+                        "group by": [
+                            "EventDate",
+                            "col1"
+                        ],
+                        "prewhere": [
+                            "Event IN ('type2')",
+                            "AND EventDate <= '2016-12-20'"
+                        ],
+                        "root": [],
+                        "select": [
+                            "EventDate",
+                            "col1",
+                            "countIf(col2 GLOBAL IN some_table) AS col2_shared",
+                            "count() AS col_count",
+                            "uniqCombinedIf(col3, col3 GLOBAL IN some_table) AS col3_shared",
+                            "uniqCombined(col3) AS unique_col3"
+                        ],
+                        "where": [
+                            "(EventDate, col1) GLOBAL IN some_table",
+                            "AND col4 GLOBAL IN some_table"
+                        ]
+                    },
+                    "type": "GLOBAL ANY LEFT JOIN",
+                    "using": [
                         "EventDate",
                         "col1"
                     ]
-                },
-                "using": [
-                    "EventDate",
-                    "col1",
-                ]
-            },
+                }
+            ],
             "order by": [
                 "EventDate",
                 "col1"
@@ -174,21 +178,23 @@ describe("scanner:", () => {
             "from": [
                 "$table"
             ],
-            "join": {
-                "type": "ANY LEFT JOIN",
+            "join": [{
+                "aliases": [],
+                "on": [],
                 "source": {
+                    "from": [
+                        "default.log_events"
+                    ],
                     "root": [],
                     "select": [
                         "*"
-                    ],
-                    "from": [
-                        "default.log_events"
                     ]
                 },
+                "type": "ANY LEFT JOIN",
                 "using": [
                     "EventCode"
                 ]
-            },
+            }],
             "where": [
                 "$timeFilter"
             ],
@@ -528,8 +534,7 @@ describe("scanner:", () => {
             expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
-
-    
+   
 
     describe("SqlQuery parser if % ", () => {
         
@@ -602,6 +607,143 @@ describe("scanner:", () => {
 
 
 
+    });
+
+
+    describe("AST case 16 (subquery + alias)", () => {
+        let query = "SELECT t2.service_name, sum(1.05*rand()) AS test " +
+            "FROM (SELECT event_time, service_name FROM default.test_grafana) AS t2 " +
+            "WHERE $timeFilter " +
+            "GROUP BY service_name " +
+            "ORDER BY test DESC",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "from": {
+                "root": [],
+                "select": [
+                    "event_time",
+                    "service_name"
+                ],
+                "from": [
+                    "default.test_grafana"
+                ],
+                "aliases": [
+                    "AS t2"
+                ],
+            },
+            "group by": [
+                "service_name"
+            ],
+            "order by": [
+                "test DESC"
+            ],
+            "root": [],
+            "select": [
+                "t2.service_name",
+                "sum(1.05 * rand()) AS test"
+            ],
+            "where": [
+                "$timeFilter"
+            ]
+        };
+        it("expects equality", () => {
+            expect(scanner.toAST()).toEqual(expectedAST);
+        });
+    });
+    describe("AST case 17 (subquery + multiple joins)", () => {
+        let query = "SELECT t1.service_name, sum(1.05*rand()) AS test " +
+            "FROM (SELECT DISTINCT service_name FROM default.test_grafana) AS t2 " +
+            "INNER JOIN $table AS t1 " +
+            "ON (t2.service_name=t1.service_name AND 1=1) " +
+            "CROSS JOIN (SELECT DISTINCT service_name FROM default.test_grafana) AS t3 " +
+            "ON t3.service_name=t1.service_name AND 1=1 " +
+            "ANY JOIN default.test_grafana AS t4 " +
+            "USING service_name " +
+            "WHERE $timeFilter " +
+            "GROUP BY t1.service_name ORDER BY test DESC",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
+            "select": [
+                "t1.service_name",
+                "sum(1.05 * rand()) AS test"
+            ],
+            "from": {
+                "from": [
+                    "default.test_grafana"
+                ],
+                "root": [],
+                "select": [
+                    "DISTINCT service_name"
+                ],
+                "aliases": [
+                  "AS t2",
+                ],
+            },
+            "join": [
+                {
+                    "source": [
+                        "$table"
+                    ],
+                    "type": "INNER JOIN",
+                    "aliases": [
+                        "AS",
+                        "t1"
+                    ],
+                    "on": [
+                        "(t2.service_name=t1.service_name AND 1=1)"
+                    ],
+                    "using": [],
+                },
+                {
+                    "source": {
+                        "root": [],
+                        "select": [
+                            "DISTINCT service_name",
+                        ],
+                        "from": [
+                            "default.test_grafana",
+                        ],
+                    },
+                    "type": "CROSS JOIN",
+                    "aliases": [
+                        "AS",
+                        "t3"
+                    ],
+                    "on": [
+                        "t3.service_name=t1.service_name AND 1=1"
+                    ],
+                    "using": [],
+                },
+                {
+                    "source": [
+                        "default.test_grafana",
+                    ],
+                    "type": "ANY JOIN",
+                    "aliases": [
+                        "AS",
+                        "t4"
+                    ],
+                    "on": [],
+                    "using": ["service_name"],
+
+                },
+            ],
+            "where": [
+                "$timeFilter"
+            ],
+            "group by": [
+                "t1.service_name"
+            ],
+            "order by": [
+                "test DESC"
+            ],
+        };
+        it("expects equality", () => {
+            expect(scanner.toAST()).toEqual(expectedAST);
+        });
     });
 
 

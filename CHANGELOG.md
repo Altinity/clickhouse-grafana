@@ -1,3 +1,39 @@
+# 2.0.2 (2020-07-06)
+
+## Enhancements:
+* add alerts support for Windows and MacOSX
+* improve ad-hoc filters for query field values as `SELECT DISTINCT field AS value FROM db.table LIMIT 300`, https://github.com/Vertamedia/clickhouse-grafana/pull/222
+* add ability to multiple JOIN parsing https://github.com/Vertamedia/clickhouse-grafana/pull/206 
+* multiple improvements for docker-compose environments, add automatic dashboards and datasource provisions which help to reproduce most of the corner cases which happens in Grafana + ClickHouse
+
+## Fixes:
+* apply a workaround for UTC timezone for Date and DateTime columns in grafana dashboards https://github.com/Vertamedia/clickhouse-grafana/issues/117
+* clear documentation about timestamp term for $from and $to https://github.com/Vertamedia/clickhouse-grafana/issues/115
+* fix AST parsing corner case in `WHERE [test, 'test']` "," was skipped, fix ah-doc ast FROM recursive parsing https://github.com/Vertamedia/clickhouse-grafana/issues/99
+* fix corner cases for table functions parsing when adhoc filter applied https://github.com/Vertamedia/clickhouse-grafana/issues/130
+* fix multiple grammar issues in README.md
+* fix convert rules for Float, Decimal columns from Clickhouse to Grafana Table plugin https://github.com/Vertamedia/clickhouse-grafana/issues/199 
+* fix corner cases when Grafana Template variable value represented as array of strings https://github.com/Vertamedia/clickhouse-grafana/issues/169
+* fix AST parsing corner cases for $macroFunctions correct position for FROM statement https://github.com/Vertamedia/clickhouse-grafana/issues/187
+  
+# 2.0.1 (2020-06-19)
+
+## Fixes:
+* fix golang alerts for $columns, $perSecond, $perSecondColumns macros https://github.com/Vertamedia/clickhouse-grafana/pull/200
+
+# 2.0.0 (2020-06-17)
+
+## Enhancements:
+* compatibility with grafana 7.x, please use environment variable `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource` or `allow_loading_unsigned_plugins=vertamedia-clickhouse-datasource` in plugins section of `grafana.ini` https://github.com/Vertamedia/clickhouse-grafana/pull/192 
+* add grafana 7.x alerting support thanks to Brian Thai https://github.com/bmanth60 
+* add alias support to $perSecondColumns macro https://github.com/Vertamedia/clickhouse-grafana/pull/193
+* Support `custom` variable type and empty values for `$conditionalTest` macro https://github.com/Vertamedia/clickhouse-grafana/pull/178
+* add docker-compose.yaml to improve local development
+
+## Fixes:
+* fix AST for corner case when quotes escaped inside quotes https://github.com/Vertamedia/clickhouse-grafana/pull/123, https://github.com/Vertamedia/clickhouse-grafana/pull/195
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/179,  add "Extrapolation" checkbox to Query Editor 
+
 # 1.9.5 (2020-01-15)
 
 ## Fixes:

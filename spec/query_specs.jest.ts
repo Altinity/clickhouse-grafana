@@ -19,14 +19,14 @@ describe("macros builder:", () => {
     let testCases = [
         new Case(
             "$rate",
-            "$rate(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests",
+            "$rate(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests",
             'SELECT t,' +
-            ' good/runningDifference(t/1000) goodRate,' +
-            ' bad/runningDifference(t/1000) badRate' +
+            ' from_good/runningDifference(t/1000) from_goodRate,' +
+            ' from_bad/runningDifference(t/1000) from_badRate' +
             ' FROM (' +
             ' SELECT $timeSeries AS t,' +
-            ' countIf(Type = 200) AS good,' +
-            ' countIf(Type != 200) AS bad' +
+            ' countIf(Type = 200) AS from_good,' +
+            ' countIf(Type != 200) AS from_bad' +
             ' FROM requests' +
             ' WHERE $timeFilter' +
             ' GROUP BY t' +
@@ -35,63 +35,63 @@ describe("macros builder:", () => {
         ),
         new Case(
             "$rate negative",
-            "$rated(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests",
-            '$rated(countIf(Type = 200) AS good, countIf(Type != 200) AS bad) FROM requests',
+            "$rated(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests",
+            '$rated(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests',
             SqlQuery.rate
         ),
         new Case(
             "$rateColumns",
-            "$rateColumns((AppType = '' ? 'undefined' : AppType) type, sum(Hits) hits) " +
+            "$rateColumns((AppType = '' ? 'undefined' : AppType) from_type, sum(Hits) from_hits) " +
             " FROM table_all WHERE Event = 'request' AND (-1 IN ($template) OR col IN ($template)) HAVING hits > $interval",
             'SELECT t,' +
             ' arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
             ' FROM' +
             ' (SELECT t,' +
-            ' groupArray((type, hits)) AS groupArr' +
+            ' groupArray((from_type, from_hits)) AS groupArr' +
             ' FROM (' +
             ' SELECT $timeSeries AS t,' +
-            " (AppType = '' ? 'undefined' : AppType) type," +
-            ' sum(Hits) hits' +
+            " (AppType = '' ? 'undefined' : AppType) from_type," +
+            ' sum(Hits) from_hits' +
             ' FROM table_all' +
             ' WHERE $timeFilter' +
             " AND Event = 'request' AND (-1 IN ($template) OR col IN ($template))" +
-            ' GROUP BY t, type' +
+            ' GROUP BY t, from_type' +
             ' HAVING hits > $interval' +
-            ' ORDER BY t, type)' +
+            ' ORDER BY t, from_type)' +
             ' GROUP BY t' +
             ' ORDER BY t)',
             SqlQuery.rateColumns
         ),
         new Case(
             "$columns",
-            "$columns(OSName, count(*) c) FROM requests ANY INNER JOIN oses USING OS",
+            "$columns(from_OSName, count(*) c) FROM requests ANY INNER JOIN oses USING OS",
             'SELECT t,' +
-            ' groupArray((OSName, c)) AS groupArr' +
+            ' groupArray((from_OSName, c)) AS groupArr' +
             ' FROM (' +
             ' SELECT $timeSeries AS t,' +
-            ' OSName,' +
+            ' from_OSName,' +
             ' count(*) c' +
             ' FROM requests' +
             ' ANY INNER JOIN oses USING OS' +
             ' WHERE $timeFilter' +
             ' GROUP BY t,' +
-            ' OSName' +
+            ' from_OSName' +
             ' ORDER BY t,' +
-            ' OSName)' +
+            ' from_OSName)' +
             ' GROUP BY t' +
             ' ORDER BY t',
             SqlQuery.columns
         ),
         new Case(
             "$perSecond",
-            "$perSecond(total, amount) FROM requests",
+            "$perSecond(from_total, from_amount) FROM requests",
             'SELECT t,' +
             ' if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate,' +
             ' if(runningDifference(max_1) < 0, nan, runningDifference(max_1) / runningDifference(t/1000)) AS max_1_Rate' +
             ' FROM (' +
             ' SELECT $timeSeries AS t,' +
-            ' max(total) AS max_0,' +
-            ' max(amount) AS max_1' +
+            ' max(from_total) AS max_0,' +
+            ' max(from_amount) AS max_1' +
             ' FROM requests' +
             ' WHERE $timeFilter' +
             ' GROUP BY t' +
@@ -100,22 +100,22 @@ describe("macros builder:", () => {
         ),
         new Case(
             "$perSecondColumns",
-            "$perSecondColumns(concat('test',type) AS alias, total) FROM requests WHERE type IN ('udp', 'tcp')",
+            "$perSecondColumns(concat('test',type) AS from_alias, from_total) FROM requests WHERE type IN ('udp', 'tcp')",
             'SELECT t,' +
-            ' groupArray((alias, max_0_Rate)) AS groupArr' +
+            ' groupArray((from_alias, max_0_Rate)) AS groupArr' +
             ' FROM (' +
             ' SELECT t,' +
-            ' alias,' +
+            ' from_alias,' +
             ' if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
             ' FROM (' +
             ' SELECT $timeSeries AS t,' +
-            ' concat(\'test\', type) AS alias,' +
-            ' max(total) AS max_0' +
+            ' concat(\'test\', type) AS from_alias,' +
+            ' max(from_total) AS max_0' +
             ' FROM requests' +
             ' WHERE $timeFilter' +
             ' AND type IN (\'udp\', \'tcp\')' +
-            ' GROUP BY t, alias' +
-            ' ORDER BY alias, t' +
+            ' GROUP BY t, from_alias' +
+            ' ORDER BY from_alias, t' +
             ')' +
             ')' +
             ' GROUP BY t' +

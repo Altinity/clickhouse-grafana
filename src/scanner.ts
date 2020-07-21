@@ -1,4 +1,4 @@
-import {isArray, isEmpty, toLower, toUpper} from 'lodash-es';
+import {isArray, isEmpty, toLower} from 'lodash-es';
 
 export default class Scanner {
     tree: any;
@@ -21,21 +21,11 @@ export default class Scanner {
         return this._sOriginal;
     }
 
-    expect(token) {
-        this.expectNext();
-        if (!this.isToken(token)) {
-            throw("expecting [" + token + "], but got [" + this.token + "] at [" + this._s + "]");
-        }
-    }
-
-    isToken(token) {
-        return toUpper(token) === toUpper(this.token);
-    }
-
     expectNext() {
         if (!this.next()) {
             throw("expecting additional token at the end of query [" + this._sOriginal + "]");
         }
+        return true
     }
 
     next() {
@@ -86,7 +76,14 @@ export default class Scanner {
     }
 
     push(argument) {
-        this.tree[this.rootToken].push(argument);
+        if (Array.isArray(this.tree[this.rootToken])) {
+            this.tree[this.rootToken].push(argument);
+        } else if (this.tree[this.rootToken] instanceof Object){
+            if (!this.tree[this.rootToken].hasOwnProperty('aliases')) {
+                this.tree[this.rootToken].aliases = [];
+            }
+            this.tree[this.rootToken].aliases.push(argument);
+        }
         this.expectedNext = false;
     }
 
@@ -132,10 +129,18 @@ export default class Scanner {
             } else if (this.token === ',' && isClosured(argument)) {
                 this.push(argument);
                 argument = '';
+                if (this.rootToken == 'where') {
+                    this.push(this.token);
+                }
                 this.expectedNext = true;
             } else if (isClosureChars(this.token) && this.rootToken === 'from') {
                 subQuery = betweenBraces(this._s);
-                this.tree[this.rootToken] = toAST(subQuery);
+                if (!isTableFunc(argument)) {
+                    this.tree[this.rootToken] = toAST(subQuery);
+                } else {
+                    this.push(argument + '(' + subQuery + ')');
+                    argument = '';
+                }
                 this._s = this._s.substring(subQuery.length + 1);
             } else if (isMacroFunc(this.token)) {
                 let func = this.token;
@@ -187,35 +192,7 @@ export default class Scanner {
                     argument += ' ' + this.token;
                 }
             } else if (isJoin(this.token)) {
-                let joinType = this.token, source;
-                if (!this.next()) {
-                    throw("wrong join signature for `" + joinType + "` at [" + this._s + "]");
-                }
-
-                if (isClosureChars(this.token)) {
-                    subQuery = betweenBraces(this._s);
-                    source = toAST(subQuery);
-                    this._s = this._s.substring(subQuery.length + 1);
-                } else {
-                    source = [this.token];
-                }
-
-                this.expect('using');
-                this.tree['join'] = {type: joinType, source: source, using: []};
-                while (this.next()) {
-                    if (isStatement(this.token)) {
-                        if (argument !== '') {
-                            this.push(argument);
-                            argument = '';
-                        }
-                        this.setRoot(this.token);
-                        break;
-                    }
-                    if (!isID(this.token)) {
-                        continue;
-                    }
-                    this.tree['join'].using.push(this.token);
-                }
+                argument = this.parseJOIN(argument)
             } else if (this.rootToken === 'union all') {
                 let statement = 'union all';
                 this._s = this.token + ' ' + this._s;
@@ -245,12 +222,93 @@ export default class Scanner {
         return this.tree;
     }
 
+    parseJOIN(argument) {
+        if (!this.tree.hasOwnProperty('join')) {
+            this.tree['join'] = [];
+        }
+        let joinType = this.token, source;
+        if (!this.next()) {
+            throw("wrong join signature for `" + joinType + "` at [" + this._s + "]");
+        }
+
+        if (isClosureChars(this.token)) {
+            let subQuery = betweenBraces(this._s);
+            source = toAST(subQuery);
+            this._s = this._s.substring(subQuery.length + 1);
+            this.token = "";
+        } else {
+            source = ""
+            do {
+                if (isID(this.token) && !isTable(source) && this.token.toUpperCase() !== "AS" && !onJoinTokenOnlyRe.test(this.token)) {
+                    source += this.token;
+                } else if (isMacro(this.token)) {
+                    source += this.token;
+                } else if (this.token == ".") {
+                    source += this.token;
+                } else {
+                    break;
+                }
+            } while (this.expectNext())
+            source = [source];
+        }
+        let joinAST = {type: joinType, source: source, aliases: [], using: [], on: []};
+        do {
+            if (this.token !== "" && !onJoinTokenOnlyRe.test(this.token)) {
+                joinAST.aliases.push(this.token);
+            } else if (onJoinTokenOnlyRe.test(this.token)) {
+                break;
+            }
+        } while (this.expectNext())
+        const joinExprToken = toLower(this.token);
+        let joinConditions = "";
+        while (this.next()) {
+            if (isStatement(this.token)) {
+                if (argument !== '') {
+                    this.push(argument);
+                    argument = '';
+                }
+                this.setRoot(this.token);
+                break;
+            }
+            if (isJoin(this.token)) {
+                if (joinConditions !== "") {
+                    joinAST.on.push(joinConditions);
+                    joinConditions = ""
+                }
+                this.tree['join'].push(joinAST);
+                joinAST = null;
+                argument = this.parseJOIN(argument);
+                break;
+            }
+
+            if (joinExprToken=='using') {
+                if (!isID(this.token)) {
+                    continue;
+                }
+                joinAST.using.push(this.token);
+            } else {
+                if (isCond(this.token)) {
+                    joinConditions += " "+this.token.toUpperCase()+" ";
+                } else {
+                    joinConditions += this.token;
+                }
+            }
+        }
+        if (joinAST != null) {
+            if (joinConditions !== "") {
+                joinAST.on.push(joinConditions);
+            }
+            this.tree['join'].push(joinAST);
+        }
+        return argument
+    }
+
     removeComments(query) {
         return query.replace(new RegExp(commentRe), '');
     }
 }
 
-let wsRe = "\\s+",
+const wsRe = "\\s+",
     commentRe = "--[^\n]*|/\\*(?:[^*]|\\*[^/])*\\*/",
     idRe = "[a-zA-Z_][a-zA-Z_0-9]*",
     intRe = "\\d+",
@@ -258,9 +316,87 @@ let wsRe = "\\s+",
     floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+",
     stringRe = "('(?:[^'\\\\]|\\\\.)*')|(`(?:[^`\\\\]|\\\\.)*`)|(\"(?:[^\"\\\\]|\\\\.)*\")",
     binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|->|[-+/%*=<>\\.!]",
-    statementRe = "\\b(select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b",
-    joinsRe = "(any inner join|any left join|all inner join|all left join" +
-        "|global any inner join|global any left join|global all inner join|global all left join)",
+    statementRe = "\\b(with|select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b",
+    // look https://clickhouse.tech/docs/en/sql-reference/statements/select/join/
+    // [GLOBAL] [ANY|ALL] [INNER|LEFT|RIGHT|FULL|CROSS] [OUTER] JOIN
+    joinsRe = "\\b("+
+        "left\\s+array\\s+join|" +
+        "array\\s+join|" +
+        "global\\s+any\\s+inner\\s+outer\\s+join|"+
+        "global\\s+any\\s+inner\\s+join|"+
+        "global\\s+any\\s+left\\s+outer\\s+join|"+
+        "global\\s+any\\s+left\\s+join|"+
+        "global\\s+any\\s+right\\s+outer\\s+join|"+
+        "global\\s+any\\s+right\\s+join|"+
+        "global\\s+any\\s+full\\s+outer\\s+join|"+
+        "global\\s+any\\s+full\\s+join|"+
+        "global\\s+any\\s+cross\\s+outer\\s+join|"+
+        "global\\s+any\\s+cross\\s+join|"+
+        "global\\s+any\\s+outer\\s+join|"+
+        "global\\s+any\\s+join|"+
+        "global\\s+all\\s+inner\\s+outer\\s+join|"+
+        "global\\s+all\\s+inner\\s+join|"+
+        "global\\s+all\\s+left\\s+outer\\s+join|"+
+        "global\\s+all\\s+left\\s+join|"+
+        "global\\s+all\\s+right\\s+outer\\s+join|"+
+        "global\\s+all\\s+right\\s+join|"+
+        "global\\s+all\\s+full\\s+outer\\s+join|"+
+        "global\\s+all\\s+full\\s+join|"+
+        "global\\s+all\\s+cross\\s+outer\\s+join|"+
+        "global\\s+all\\s+cross\\s+join|"+
+        "global\\s+all\\s+outer\\s+join|"+
+        "global\\s+all\\s+join|"+
+        "global\\s+inner\\s+outer\\s+join|"+
+        "global\\s+inner\\s+join|"+
+        "global\\s+left\\s+outer\\s+join|"+
+        "global\\s+left\\s+join|"+
+        "global\\s+right\\s+outer\\s+join|"+
+        "global\\s+right\\s+join|"+
+        "global\\s+full\\s+outer\\s+join|"+
+        "global\\s+full\\s+join|"+
+        "global\\s+cross\\s+outer\\s+join|"+
+        "global\\s+cross\\s+join|"+
+        "global\\s+outer\\s+join|"+
+        "global\\s+join|"+
+        "any\\s+inner\\s+outer\\s+join|"+
+        "any\\s+inner\\s+join|"+
+        "any\\s+left\\s+outer\\s+join|"+
+        "any\\s+left\\s+join|"+
+        "any\\s+right\\s+outer\\s+join|"+
+        "any\\s+right\\s+join|"+
+        "any\\s+full\\s+outer\\s+join|"+
+        "any\\s+full\\s+join|"+
+        "any\\s+cross\\s+outer\\s+join|"+
+        "any\\s+cross\\s+join|"+
+        "any\\s+outer\\s+join|"+
+        "any\\s+join|"+
+        "all\\s+inner\\s+outer\\s+join|"+
+        "all\\s+inner\\s+join|"+
+        "all\\s+left\\s+outer\\s+join|"+
+        "all\\s+left\\s+join|"+
+        "all\\s+right\\s+outer\\s+join|"+
+        "all\\s+right\\s+join|"+
+        "all\\s+full\\s+outer\\s+join|"+
+        "all\\s+full\\s+join|"+
+        "all\\s+cross\\s+outer\\s+join|"+
+        "all\\s+cross\\s+join|"+
+        "all\\s+outer\\s+join|"+
+        "all\\s+join|"+
+        "inner\\s+outer\\s+join|"+
+        "inner\\s+join|"+
+        "left\\s+outer\\s+join|"+
+        "left\\s+join|"+
+        "right\\s+outer\\s+join|"+
+        "right\\s+join|"+
+        "full\\s+outer\\s+join|"+
+        "full\\s+join|"+
+        "cross\\s+outer\\s+join|"+
+        "cross\\s+join|"+
+        "outer\\s+join|"+
+        "join"+
+        ")\\b",
+    onJoinTokenRe = '\\b(using|on)\\b',
+    tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)',
     macroFuncRe = "(\\$rateColumns|\\$perSecondColumns|\\$rate|\\$perSecond|\\$columns)",
     condRe = "\\b(or|and)\\b",
     inRe = "\\b(global in|global not in|not in|in)\\b",
@@ -269,6 +405,7 @@ let wsRe = "\\s+",
     macroRe = "\\$[A-Za-z0-9_$]+",
     skipSpaceRe = "[\\(\\.! \\[]",
 
+    tableFuncRe = "\\b(remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|jdbc|odbc|hdfs|input|generateRandom)\\b",
     builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
         "coalesce|ifnull|isnull|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
         "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +
@@ -318,9 +455,12 @@ let wsRe = "\\s+",
     macroFuncOnlyRe = new RegExp("^(?:" + macroFuncRe + ")$"),
     statementOnlyRe = new RegExp("^(?:" + statementRe + ")$", 'i'),
     joinsOnlyRe = new RegExp("^(?:" + joinsRe + ")$", 'i'),
+    onJoinTokenOnlyRe = new RegExp("^(?:" + onJoinTokenRe + ")$", 'i'),
+    tableNameOnlyRe = new RegExp("^(?:" + tableNameRe + ")$", 'i'),
     operatorOnlyRe = new RegExp("^(?:" + operatorRe + ")$", 'i'),
     dataTypeOnlyRe = new RegExp("^(?:" + dataTypeRe + ")$"),
     builtInFuncOnlyRe = new RegExp("^(?:" + builtInFuncRe + ")$"),
+    tableFuncOnlyRe = new RegExp("^(?:" + tableFuncRe + ")$", 'i'),
     macroOnlyRe = new RegExp("^(?:" + macroRe + ")$", 'i'),
     inOnlyRe = new RegExp("^(?:" + inRe + ")$", 'i'),
     condOnlyRe = new RegExp("^(?:" + condRe + ")$", 'i'),
@@ -329,7 +469,7 @@ let wsRe = "\\s+",
     skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$"),
     binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");
 
-var tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, floatRe, intRe,
+const tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, floatRe, intRe,
     binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
 
 function isSkipSpace(token) {
@@ -346,6 +486,10 @@ function isIn(token) {
 
 function isJoin(token) {
     return joinsOnlyRe.test(token);
+}
+
+function isTable(token) {
+    return tableNameOnlyRe.test(token);
 }
 
 function isWS(token) {
@@ -384,6 +528,10 @@ function isBuiltInFunc(token) {
     return builtInFuncOnlyRe.test(token);
 }
 
+function isTableFunc(token) {
+    return tableFuncOnlyRe.test(token);
+}
+
 function isClosureChars(token) {
     return closureOnlyRe.test(token);
 }
@@ -400,11 +548,11 @@ function isBinary(token) {
     return binaryOnlyRe.test(token);
 }
 
-var tabSize = '    ', // 4 spaces
+const tabSize = '    ', // 4 spaces
     newLine = '\n';
 
 function printItems(items, tab = '', separator = '') {
-    var result = '';
+    let result = '';
     if (isArray(items)) {
         if (items.length === 1) {
             result += ' ' + items[0];
@@ -426,7 +574,7 @@ function printItems(items, tab = '', separator = '') {
 }
 
 function toAST(s) {
-    var scanner = new Scanner(s);
+    let scanner = new Scanner(s);
     return scanner.toAST();
 }
 
@@ -439,8 +587,8 @@ function isClosured(argument) {
 }
 
 function betweenBraces(query) {
-    var openBraces = 1, subQuery = '';
-    for (var i = 0; i < query.length; i++) {
+    let openBraces = 1, subQuery = '';
+    for (let i = 0; i < query.length; i++) {
         if (query.charAt(i) === '(') {
             openBraces++;
         }
@@ -457,7 +605,7 @@ function betweenBraces(query) {
 
 // see https://clickhouse.yandex/reference_ru.html#SELECT
 function print(AST, tab = '') {
-    var result = '';
+    let result = '';
     if (isSet(AST, '$rate')) {
         result += tab + '$rate(';
         result += printItems(AST.$rate, tab, ',') + ')';
@@ -483,6 +631,11 @@ function print(AST, tab = '') {
         result += printItems(AST.$rateColumns, tab, ',') + ')';
     }
 
+    if (isSet(AST, 'with')) {
+        result += tab + 'WITH';
+        result += printItems(AST.with, tab, ',');
+    }
+
     if (isSet(AST, 'select')) {
         result += tab + 'SELECT';
         result += printItems(AST.select, tab, ',');
@@ -493,10 +646,19 @@ function print(AST, tab = '') {
         result += printItems(AST.from, tab);
     }
 
+    if (isSet(AST, 'aliases')) {
+        result += printItems(AST.aliases, '', ' ');
+    }
+
     if (isSet(AST, 'join')) {
-        result += tab + newLine + AST.join.type.toUpperCase() +
-            printItems(AST.join.source, tab) +
-            ' USING ' + printItems(AST.join.using, tab, ',');
+        AST.join.forEach(function (item) {
+            result += newLine + tab + item.type.toUpperCase() + printItems(item.source, tab) + ' ' + printItems(AST.join.aliases, '',' ');
+            if (item.using.length > 0) {
+                result += ' USING ' + printItems(item.using, '', ' ');
+            } else if (item.on.length > 0) {
+                result += ' ON ' + printItems(item.on, tab, ' ');
+            }
+        })
     }
 
     if (isSet(AST, 'prewhere')) {

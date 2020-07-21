@@ -1,5 +1,6 @@
 const queryFilter = "database != 'system'";
 const columnsQuery = "SELECT database, table, name, type FROM system.columns WHERE {filter} ORDER BY database, table";
+const valuesQuery = "SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300";
 const regexEnum = /'(?:[^']+|'')+'/gmi;
 
 export default class AdhocCtrl {
@@ -35,21 +36,12 @@ export default class AdhocCtrl {
         }
         return this.datasource.metricFindQuery(q)
             .then(function (response) {
-                return self.processResponse(response);
+                return self.processTagKeysResponse(response);
             });
     }
 
-    // GetTagValues returns column values according to passed options
-    // It supposed that values were already fetched in GetTagKeys func and stored in `tagValues`
-    GetTagValues(options) {
-        if (this.tagValues.hasOwnProperty(options.key)) {
-            return Promise.resolve(this.tagValues[options.key]);
-        }
-        return Promise.resolve([]);
-    }
-
-    processResponse(response) {
-        var self = this;
+    processTagKeysResponse(response) {
+        let self = this;
         let columnNames = {};
         response.forEach(function (item) {
             let text = item.table + '.' + item.name;
@@ -75,5 +67,45 @@ export default class AdhocCtrl {
             self.tagKeys.push({text: columnName, value: columnName});
         });
         return Promise.resolve(self.tagKeys);
+    }
+
+    // GetTagValues returns column values according to passed options
+    // Values for fields with Enum type were already fetched in GetTagKeys func and stored in `tagValues`
+    // Values for fields which not represented on `tagValues` get from ClickHouse and cached on `tagValues`
+    GetTagValues(options) {
+        let self = this;
+        if (this.tagValues.hasOwnProperty(options.key)) {
+            return Promise.resolve(this.tagValues[options.key]);
+        }
+        let key_items = options.key.split('.');
+        if (key_items.length < 2 || (key_items.length == 2 && this.datasource.defaultDatabase.length == 0) || key_items.length > 3) {
+            return Promise.resolve([]);
+        }
+        let field, database, table;
+        if (key_items.length == 3) {
+            [database, table, field] = key_items;
+        }
+        if (key_items.length == 2) {
+            database = self.datasource.defaultDatabase;
+            [table, field] = key_items;
+        }
+        let q = valuesQuery
+            .replace('{field}', field)
+            .replace('{database}', database)
+            .replace('{table}', table);
+
+        return this.datasource.metricFindQuery(q)
+            .then(function (response) {
+                self.tagValues[options.key] = self.processTagValuesResponse(response);
+                return self.tagValues[options.key];
+            });
+    }
+
+    processTagValuesResponse(response) {
+        let tagValues = [];
+        response.forEach(function (item) {
+            tagValues.push({text: item.text, value: item.text});
+        });
+        return Promise.resolve(tagValues);
     }
 }

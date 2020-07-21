@@ -8,17 +8,32 @@ import (
 	"encoding/json"
 	"fmt"
 	"io/ioutil"
+	"log"
+	"math"
 	"net/http"
 	"net/url"
+	"reflect"
+	"runtime/debug"
 	"strconv"
 	"strings"
 
 	"github.com/bitly/go-simplejson"
 	"github.com/grafana/grafana-plugin-model/go/datasource"
-	plugin "github.com/hashicorp/go-plugin"
+	"github.com/hashicorp/go-plugin"
 	"golang.org/x/net/context"
 	"golang.org/x/net/context/ctxhttp"
 )
+
+type ClickHouseResponse struct {
+	Meta []ClickHouseMeta
+	Data []map[string]interface{}
+	Rows int
+}
+
+type ClickHouseMeta struct {
+	Name string
+	Type string
+}
 
 var httpClient = &http.Client{}
 
@@ -30,7 +45,7 @@ func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.Dataso
 	// catch all panics and override err return value
 	defer func() {
 		if panicMsg := recover(); panicMsg != nil {
-			err = fmt.Errorf("clickhouse plugin panicked: %#w", panicMsg)
+			err = fmt.Errorf("clickhouse plugin panicked: %+v stacktrace:\n%s", panicMsg, debug.Stack())
 		}
 	}()
 
@@ -50,7 +65,11 @@ func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.Dataso
 	if err != nil {
 		return nil, err
 	}
-	defer response.Body.Close()
+	defer func() {
+		if err := response.Body.Close(); err != nil {
+			log.Fatal("can't close HTTP Response body")
+		}
+	}()
 
 	// Body must be drained and closed on each request as per the docs: https://golang.org/pkg/net/http/#Client.Do
 	// otherwise the http client connection cannot be reused
@@ -63,20 +82,23 @@ func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.Dataso
 		return nil, fmt.Errorf("invalid status code. status: %v", response.Status)
 	}
 
-	return parseResponse(body, refId)
+	return parseResponse(body, refId, req.GetTimeRange())
 }
 
 func createRequest(req *datasource.DatasourceRequest, query string) (*http.Request, error) {
 	body := ""
 	method := http.MethodGet
 	headers := http.Header{}
-	url, err := url.Parse(req.Datasource.Url)
+	dataSourceUrl, err := url.Parse(req.Datasource.Url)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse clickhouse url: %w", err)
+		return nil, fmt.Errorf("unable to parse clickhouse dataSourceUrl: %w", err)
 	}
 
-	params := url.Query()
-	params.Add("query", query+" FORMAT JSON")
+	if !strings.HasSuffix(strings.ToUpper(query), " FORMAT JSON") {
+		query += " FORMAT JSON"
+	}
+	params := dataSourceUrl.Query()
+	params.Add("query", query)
 
 	/*
 	 Note: The current plugins model does not support basic authorization.
@@ -96,16 +118,22 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 	for k, v := range options {
 		switch k {
 		case "usePOST":
-			method = http.MethodPost
-			params.Del("query")
-			body = query
+			if v.(bool) == true {
+				method = http.MethodPost
+				params.Del("query")
+				body = query
+			}
 			break
 		case "defaultDatabase":
 			db, _ := v.(string)
-			params.Add("database", db)
+			if db != "" {
+				params.Add("database", db)
+			}
 			break
 		case "addCorsHeaders":
-			params.Add("add_http_cors_header", "1")
+			if v.(bool) == true {
+				params.Add("add_http_cors_header", "1")
+			}
 			break
 		case "useYandexCloudAuthorization":
 			if user, ok := options["xHeaderUser"]; ok {
@@ -133,8 +161,8 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 		}
 	}
 
-	url.RawQuery = params.Encode()
-	request, err := http.NewRequest(method, url.String(), bytes.NewBufferString(body))
+	dataSourceUrl.RawQuery = params.Encode()
+	request, err := http.NewRequest(method, dataSourceUrl.String(), bytes.NewBufferString(body))
 	if err != nil {
 		return nil, err
 	}
@@ -143,42 +171,161 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 	return request, nil
 }
 
-func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, error) {
+var floatType = reflect.TypeOf(float64(0))
+var stringType = reflect.TypeOf("")
+
+func parseFloat64(v interface{}) (float64, error) {
+	switch i := v.(type) {
+	case string:
+		return strconv.ParseFloat(i, 64)
+	case float64:
+		return i, nil
+	case float32:
+		return float64(i), nil
+	case int64:
+		return float64(i), nil
+	case int32:
+		return float64(i), nil
+	case int:
+		return float64(i), nil
+	case uint64:
+		return float64(i), nil
+	case uint32:
+		return float64(i), nil
+	case uint:
+		return float64(i), nil
+	default:
+		tv := reflect.ValueOf(i)
+		tv = reflect.Indirect(tv)
+		if tv.Type().ConvertibleTo(floatType) {
+			fv := tv.Convert(floatType)
+			return fv.Float(), nil
+		} else if tv.Type().ConvertibleTo(stringType) {
+			sv := tv.Convert(stringType)
+			s := sv.String()
+			return strconv.ParseFloat(s, 64)
+		} else {
+			return math.NaN(), fmt.Errorf("can't convert %v to float64", tv.Type())
+		}
+	}
+}
+
+func parseResponse(body []byte, refId string, timeRange *datasource.TimeRange) (*datasource.DatasourceResponse, error) {
+
 	parsedBody := ClickHouseResponse{}
 	err := json.Unmarshal(body, &parsedBody)
 	if err != nil {
-		return nil, fmt.Errorf("unable to parse response json: %s: %w", body, err)
+		return nil, fmt.Errorf("unable to parse response body: %s\n\n parsing error: %w", body, err)
 	}
 
 	seriesMap := map[string]*datasource.TimeSeries{}
+	metaTypesMap := map[string]string{}
+	// expect first column as timestamp
+	tsMetaName := parsedBody.Meta[0].Name
+	hasStringKeys := false
 	for _, meta := range parsedBody.Meta {
-		if meta.Name != "t" {
-			seriesMap[meta.Name] = &datasource.TimeSeries{Name: meta.Name, Points: []*datasource.Point{}}
+		if strings.Contains(meta.Type, "String") && !strings.HasPrefix(meta.Type, "Array(Tuple(") {
+			hasStringKeys = true
+			break
 		}
 	}
 
+	for _, meta := range parsedBody.Meta {
+		if !hasStringKeys && meta.Name != tsMetaName && !strings.HasPrefix(meta.Type, "Array(Tuple(") {
+			seriesMap[meta.Name] = &datasource.TimeSeries{Name: meta.Name, Points: []*datasource.Point{}}
+		}
+		metaTypesMap[meta.Name] = meta.Type
+	}
+
 	for _, dataPoint := range parsedBody.Data {
+		timestamp, err := strconv.ParseInt(dataPoint[tsMetaName].(string), 10, 64)
+		if err != nil {
+			return nil, fmt.Errorf("unable to parse timestamp with alias=`%s` value=%s error=%w", tsMetaName, dataPoint[tsMetaName].(string), err)
+		}
+
+		// skip datapoints which not contains in alert query relative time range, see https://github.com/Vertamedia/clickhouse-grafana/issues/237
+		if timeRange != nil && (timeRange.FromEpochMs > timestamp || timeRange.ToEpochMs < timestamp) {
+			continue
+		}
+
+		stringKeysMetricName := ""
 		for k, v := range dataPoint {
-			if k != "t" {
-				timestamp, err := strconv.ParseInt(dataPoint["t"], 10, 64)
-				if err != nil {
-					return nil, fmt.Errorf("unable to parse timestamp with alias t: %w", err)
-				}
+			if k != tsMetaName && !strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") && strings.Contains(metaTypesMap[k], "String") {
+				stringKeysMetricName += v.(string) + ", "
+			}
+		}
+		if stringKeysMetricName != "" {
+			stringKeysMetricName = stringKeysMetricName[0 : len(stringKeysMetricName)-2]
+		}
 
-				point, err := strconv.ParseFloat(v, 64)
-				if err != nil {
-					return nil, fmt.Errorf("unable to parse value for '%s': %w", k, err)
-				}
+		for k, v := range dataPoint {
+			if k != tsMetaName {
+				var point float64
+				var err error
 
-				seriesMap[k].Points = append(seriesMap[k].Points, &datasource.Point{
-					Timestamp: timestamp,
-					Value:     point,
-				})
+				if !strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") && !strings.Contains(metaTypesMap[k], "String") {
+
+					point, err = parseFloat64(v)
+					if err != nil {
+						return nil, fmt.Errorf("unable to parse value %v for '%s': %w", v, k, err)
+					}
+
+					if stringKeysMetricName == "" {
+						seriesMap[k].Points = append(seriesMap[k].Points, &datasource.Point{
+							Timestamp: timestamp,
+							Value:     point,
+						})
+					} else {
+						if _, exists := seriesMap[stringKeysMetricName]; !exists {
+							seriesMap[stringKeysMetricName] = &datasource.TimeSeries{Name: stringKeysMetricName, Points: []*datasource.Point{}}
+						}
+						seriesMap[stringKeysMetricName].Points = append(seriesMap[stringKeysMetricName].Points, &datasource.Point{
+							Timestamp: timestamp,
+							Value:     point,
+						})
+					}
+				} else if strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") {
+					var arrayOfTuples [][]string
+					switch arrays := v.(type) {
+					case []interface{}:
+						for _, array := range arrays {
+							switch tuple := array.(type) {
+							case []interface{}:
+								var t []string
+								for _, s := range tuple {
+									t = append(t, fmt.Sprintf("%v", s))
+								}
+								arrayOfTuples = append(arrayOfTuples, t)
+							default:
+								return nil, fmt.Errorf("unable to parse data section type=%T in response json: %s", tuple, tuple)
+							}
+						}
+					default:
+						return nil, fmt.Errorf("unable to parse data section type=%T in response json: %s", v, v)
+					}
+					for _, tuple := range arrayOfTuples {
+						tsName := tuple[0]
+						tsValue := tuple[1]
+						ts, isExists := seriesMap[tsName]
+						if !isExists {
+							ts = &datasource.TimeSeries{Name: tsName, Points: []*datasource.Point{}}
+							seriesMap[tsName] = ts
+						}
+						point, err = parseFloat64(tsValue)
+						if err != nil {
+							return nil, fmt.Errorf("unable to parse value %v for '%s': %w", tsValue, tsName, err)
+						}
+						ts.Points = append(ts.Points, &datasource.Point{
+							Timestamp: timestamp,
+							Value:     point,
+						})
+					}
+				}
 			}
 		}
 	}
 
-	series := []*datasource.TimeSeries{}
+	var series []*datasource.TimeSeries
 	for _, timeSeries := range seriesMap {
 		series = append(series, timeSeries)
 	}
@@ -186,22 +333,11 @@ func parseResponse(body []byte, refId string) (*datasource.DatasourceResponse, e
 	metaJSON, _ := json.Marshal(parsedBody.Meta)
 	return &datasource.DatasourceResponse{
 		Results: []*datasource.QueryResult{
-			&datasource.QueryResult{
+			{
 				Series:   series,
 				RefId:    refId,
 				MetaJson: string(metaJSON),
 			},
 		},
 	}, nil
-}
-
-type ClickHouseResponse struct {
-	Meta []ClickHouseMeta
-	Data []map[string]string
-	Rows int
-}
-
-type ClickHouseMeta struct {
-	Name string
-	Type string
 }

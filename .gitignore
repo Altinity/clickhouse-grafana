@@ -1,5 +1,7 @@
-node_modules
+coverage/
+node_modules/
 npm-debug.log
 yarn.lock
 package-lock.json
 .cache
+.release_env

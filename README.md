@@ -3,26 +3,29 @@
 ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.yandex) as a backend database.  
 
 ### Quick start
-Install from [grafana.net](https://grafana.net/plugins/vertamedia-clickhouse-datasource)
 
-OR
-
-Copy files to your [Grafana plugin directory](http://docs.grafana.org/plugins/installation/#grafana-plugin-directory). Restart Grafana, check data sources list at http://your.grafana.instance/datasources/new, choose ClickHouse option.
-
-Unfortunately, grafana 7.x,  currently doesn't support worked signing method for community plugins
+#### Grafana 7.x setup notes
+Grafana team currently doesn't provide worked signing method for community plugins
 https://community.grafana.com/t/how-to-create-a-signed-backend-plugin/30068/2
 
-so, setup configuration option  
+so, for properly setup you need change configuration option  
 ```
 [plugins]
 allow_loading_unsigned_plugins=vertamedia-clickhouse-datasource
 ``` 
 
-or export environment variable
+or setup environment variable
 ```
 GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource 
 ```
-is required
+
+
+You can install plugin from [grafana.net](https://grafana.net/plugins/vertamedia-clickhouse-datasource)
+
+OR
+
+Copy files to your [Grafana plugin directory](http://docs.grafana.org/plugins/installation/#grafana-plugin-directory). Restart Grafana, check data sources list at http://your.grafana.instance/datasources/new, choose ClickHouse option.
+
 
 ### Features:
 

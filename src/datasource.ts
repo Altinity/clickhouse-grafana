@@ -7,6 +7,7 @@ import SqlQuery from './sql_query';
 import ResponseParser from './response_parser';
 import AdhocCtrl from './adhoc';
 import Scanner from './scanner';
+import Mutex from './Mutex';
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
@@ -27,6 +28,7 @@ export class ClickHouseDatasource {
     xHeaderKey: string;
     useYandexCloudAuthorization: boolean;
     targetsRef: any;
+    mutex: Mutex;
 
     /** @ngInject */
     constructor(instanceSettings,
@@ -49,6 +51,7 @@ export class ClickHouseDatasource {
         this.xHeaderKey = instanceSettings.jsonData.xHeaderKey;
         this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization;
         this.targetsRef = {};
+        this.mutex = new Mutex();
     }
 
     _getRequestOptions(query: string, usePOST?: boolean, requestId?: string) {
@@ -98,8 +101,13 @@ export class ClickHouseDatasource {
     _request(query: string, requestId?: string) {
         const queryParams = this._getRequestOptions(query, this.usePOST, requestId);
 
-        return this.backendSrv.datasourceRequest(queryParams).then(result => {
-            return result.data;
+        var lock = this.mutex.acquire();
+        return lock.then(release => {
+            return this.backendSrv.datasourceRequest(queryParams).then(result => {
+                return result.data;
+            }).finally(()=>{
+                release();
+            });
         });
     }
 
@@ -217,7 +225,11 @@ export class ClickHouseDatasource {
         }
 
         if (options && options.range) {
-            interpolatedQuery = SqlQuery.replaceTimeFilters(interpolatedQuery, options.range);
+            let from = SqlQuery.convertTimestamp(options.range.from);
+            let to = SqlQuery.convertTimestamp(options.range.to);
+            interpolatedQuery = interpolatedQuery.replace(/\$to/g, to).replace(/\$from/g, from);
+            interpolatedQuery = SqlQuery.replaceTimeFilters( interpolatedQuery, options.range);
+            interpolatedQuery = SqlQuery.render( interpolatedQuery, this.templateSrv, options);
         }
 
         // todo(nv): fix request id

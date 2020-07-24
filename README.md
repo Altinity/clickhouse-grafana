@@ -295,6 +295,51 @@ ORDER BY t
 ```
 // see [issue 80](https://github.com/Vertamedia/clickhouse-grafana/issues/80) for the background
 
+### SQL Logic/Scripting
+
+Plugin allows using simple scripting conditional syntax, which will be evaluated before the SQL calls.
+The conditional should be included between <% %> signs.
+Possible keywords are:
+
+* var - define a variable used in the code. 
+```
+	<%var X=1%>
+```
+* if/else - conditional
+```
+	<%if($to - $from) > 3600){%>
+		select 'Please zoom in to view file actions...' as Info
+	<%}else{%>
+		select <column> as Info from <Table> where <Timestamp Column> between $from and $to
+	<%}%>
+```
+* for - cycle
+```
+	<%var X=1;
+  	for (i = 1; i < 5; i++) {
+		    X=X*i;
+	}%>
+	SELECT
+	    $timeSeries as t,
+	    count()*<%X%>
+	FROM $table
+	WHERE $timeFilter
+	GROUP BY t
+	ORDER BY t
+```
+* switch/case/break
+```
+	<%var col="WIN_NAME";
+	switch("$graph1"){
+		case "Extensions":col="EXTENSION";break;
+		case "Shares":col="SHARE_NAME";break;
+		case "Volumes":col="VOLUME_NAME";break;
+		case "SVM":col="SVM_NAME";break;
+	}%>
+```
+
+Important - the scripting is evaluated only once and before the CH calls !
+
 ---
 
 ## Templating

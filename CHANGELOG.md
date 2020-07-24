@@ -1,3 +1,26 @@
+# 2.0.3 (2020-07-24)
+
+## Enhancements:
+* add setup notes for Grafana 7.x to README
+* add SQL preprocessing logic on browser side with <% js code subset %>, https://github.com/Vertamedia/clickhouse-grafana/pull/186, thanks @fgbogdan
+* improve alerts query processing for use case when `query(query_name, from, to)` time range is less than visible dashboard time range, see https://github.com/Vertamedia/clickhouse-grafana/issues/237
+* improve alerts json parsing in golang part for case when we have string fields in response which interprets as series name, see https://github.com/Vertamedia/clickhouse-grafana/issues/230
+* properly parsing POST queries in golang part of plugin, https://github.com/Vertamedia/clickhouse-grafana/pull/228, thanks @it1804
+
+
+## Fixes:
+* add Vagrantfile for statefull environment and allow to upgrade scenario like  grafana 7.1.0 + grafana-cli upgrade-all
+  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/244
+  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/243
+* add multiple dashboard examples for github issues:
+  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/240 
+  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/135 
+  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/245 
+  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/238   
+  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/232
+  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/127
+  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/141
+  
 # 2.0.2 (2020-07-06)
 
 ## Enhancements:

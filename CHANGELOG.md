@@ -1,3 +1,8 @@
+# 2.0.4 (2020-07-25)
+
+## Fixes:
+  * fix multi-value variables behavior - https://github.com/Vertamedia/clickhouse-grafana/issues/252
+
 # 2.0.3 (2020-07-24)
 
 ## Enhancements:

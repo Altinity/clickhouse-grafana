@@ -535,11 +535,7 @@ export default class SqlQuery {
         let escapedValues = map(value, function (v) {
             return SqlQuery.clickhouseEscape(v, variable);
         });
-        if (escapedValues[0][0] === "[") {
-            return escapedValues.join(',');
-        } else {
-            return '[' + escapedValues.join(',') + ']';
-        }
+        return escapedValues.join(',');
     }
 
     static clickhouseOperator(value) {

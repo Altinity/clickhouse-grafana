@@ -16,21 +16,99 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1593703304840,
+  "iteration": 1595835607648,
   "links": [],
   "panels": [
+    {
+      "datasource": "postgres",
+      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/254",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": null
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 9,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "showHeader": true
+      },
+      "pluginVersion": "7.1.1",
+      "targets": [
+        {
+          "format": "table",
+          "group": [],
+          "metricColumn": "none",
+          "rawQuery": true,
+          "rawSql": "SELECT\n  '32E11' AS t1,\n  '32E1' AS t2,\n  'test' AS t3\nFROM test_grafana\nWHERE\n  $__timeFilter(event_time)\nORDER BY 1",
+          "refId": "A",
+          "select": [
+            [
+              {
+                "params": [
+                  "too_big_value"
+                ],
+                "type": "column"
+              }
+            ]
+          ],
+          "table": "test_grafana",
+          "timeColumn": "event_time",
+          "timeColumnType": "timestamp",
+          "where": [
+            {
+              "name": "$__timeFilter",
+              "params": [],
+              "type": "macro"
+            }
+          ]
+        }
+      ],
+      "timeFrom": null,
+      "timeShift": null,
+      "title": "PosrgeSQL + Table numeric 32E11 interperations",
+      "type": "table"
+    },
     {
       "aliasColors": {},
       "bars": false,
       "dashLength": 10,
       "dashes": false,
       "datasource": "postgres",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
         "h": 8,
-        "w": 12,
-        "x": 0,
+        "w": 10,
+        "x": 9,
         "y": 0
       },
       "hiddenSeries": false,
@@ -48,10 +126,8 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
-      "options": {
-        "dataLinks": []
-      },
       "percentage": false,
+      "pluginVersion": "7.1.1",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -109,6 +185,7 @@
       },
       "yaxes": [
         {
+          "$$hashKey": "object:83",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -117,6 +194,7 @@
           "show": true
         },
         {
+          "$$hashKey": "object:84",
           "format": "short",
           "label": null,
           "logBase": 1,
@@ -131,7 +209,7 @@
       }
     }
   ],
-  "schemaVersion": 22,
+  "schemaVersion": 26,
   "style": "dark",
   "tags": [],
   "templating": {
@@ -139,8 +217,7 @@
       {
         "allValue": null,
         "current": {
-          "selected": false,
-          "tags": [],
+          "selected": true,
           "text": "All",
           "value": [
             "$__all"
@@ -150,7 +227,6 @@
         "definition": "SELECT DISTINCT ARRAY_TO_STRING(ARRAY[service_name, ' test array'], ',') FROM test_grafana",
         "hide": 0,
         "includeAll": true,
-        "index": -1,
         "label": null,
         "multi": true,
         "name": "array_var",
@@ -189,8 +265,5 @@
   "timezone": "",
   "title": "postgres dashboard",
   "uid": "3jn2UdMGk",
-  "variables": {
-    "list": []
-  },
   "version": 1
 }

@@ -1,6 +1,6 @@
 import Scanner from '../src/scanner';
 import SqlQuery from '../src/sql_query';
-import { each } from 'lodash-es';
+import {each} from 'lodash-es';
 
 class Case {
     name: string;
@@ -127,7 +127,7 @@ describe("macros builder:", () => {
     each(testCases, (tc) => {
         if (tc.got !== tc.expected) {
             console.log(tc.got);
-            console.log(tc.expected)
+            console.log(tc.expected);
         }
         describe(tc.name, () => {
             it("expects equality", () => {
@@ -135,5 +135,21 @@ describe("macros builder:", () => {
             });
         })
     });
+});
+
+/*
+ check https://github.com/Vertamedia/clickhouse-grafana/issues/187
+ check https://github.com/Vertamedia/clickhouse-grafana/issues/256
+*/
+describe("$rate and from in field name", () => {
+    const query = "$rate(countIf(service_name='mysql' AND from_user='alice') AS mysql_alice, countIf(service_name='postgres') AS postgres)\n" +
+        "FROM $table\n" +
+        "WHERE from_user='bob'";
+    const expQuery = "SELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob' GROUP BY t ORDER BY t)";
+    const scanner = new Scanner(query);
+    it("gets replaced with right FROM query", () => {
+        expect(SqlQuery.applyMacros(query, scanner.toAST() )).toBe(expQuery);
+    });
+
 });
 

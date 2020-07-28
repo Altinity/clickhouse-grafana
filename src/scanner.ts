@@ -25,7 +25,7 @@ export default class Scanner {
         if (!this.next()) {
             throw("expecting additional token at the end of query [" + this._sOriginal + "]");
         }
-        return true
+        return true;
     }
 
     next() {
@@ -50,20 +50,20 @@ export default class Scanner {
         // if addnotation
         if (this._s.startsWith("<%")) {
           let nPos = this._s.search("%>");
-          if(nPos === -1){
-            throw "unmatched <%/%> [" + this._s + "]";  
+          if (nPos === -1) {
+            throw "unmatched <%/%> [" + this._s + "]";
           }
           this._s = this._s.substring(nPos + 2);
         } else {
           let r = this.re.exec(this._s);
-          if (r === null) {
+            if (r === null) {
             throw "cannot find next token in [" + this._s + "]";
             }
-    
+
           this.token = r[0];
           this._s = this._s.substring(this.token.length);
         }
-    
+
         return true;
     }
 
@@ -129,7 +129,7 @@ export default class Scanner {
             } else if (this.token === ',' && isClosured(argument)) {
                 this.push(argument);
                 argument = '';
-                if (this.rootToken == 'where') {
+                if (this.rootToken === 'where') {
                     this.push(this.token);
                 }
                 this.expectedNext = true;
@@ -192,7 +192,7 @@ export default class Scanner {
                     argument += ' ' + this.token;
                 }
             } else if (isJoin(this.token)) {
-                argument = this.parseJOIN(argument)
+                argument = this.parseJOIN(argument);
             } else if (this.rootToken === 'union all') {
                 let statement = 'union all';
                 this._s = this.token + ' ' + this._s;
@@ -237,18 +237,18 @@ export default class Scanner {
             this._s = this._s.substring(subQuery.length + 1);
             this.token = "";
         } else {
-            source = ""
+            source = "";
             do {
                 if (isID(this.token) && !isTable(source) && this.token.toUpperCase() !== "AS" && !onJoinTokenOnlyRe.test(this.token)) {
                     source += this.token;
                 } else if (isMacro(this.token)) {
                     source += this.token;
-                } else if (this.token == ".") {
+                } else if (this.token === ".") {
                     source += this.token;
                 } else {
                     break;
                 }
-            } while (this.expectNext())
+            } while (this.expectNext());
             source = [source];
         }
         let joinAST = {type: joinType, source: source, aliases: [], using: [], on: []};
@@ -258,7 +258,7 @@ export default class Scanner {
             } else if (onJoinTokenOnlyRe.test(this.token)) {
                 break;
             }
-        } while (this.expectNext())
+        } while (this.expectNext());
         const joinExprToken = toLower(this.token);
         let joinConditions = "";
         while (this.next()) {
@@ -273,7 +273,7 @@ export default class Scanner {
             if (isJoin(this.token)) {
                 if (joinConditions !== "") {
                     joinAST.on.push(joinConditions);
-                    joinConditions = ""
+                    joinConditions = "";
                 }
                 this.tree['join'].push(joinAST);
                 joinAST = null;
@@ -281,7 +281,7 @@ export default class Scanner {
                 break;
             }
 
-            if (joinExprToken=='using') {
+            if (joinExprToken === 'using') {
                 if (!isID(this.token)) {
                     continue;
                 }
@@ -300,7 +300,7 @@ export default class Scanner {
             }
             this.tree['join'].push(joinAST);
         }
-        return argument
+        return argument;
     }
 
     removeComments(query) {
@@ -658,7 +658,7 @@ function print(AST, tab = '') {
             } else if (item.on.length > 0) {
                 result += ' ON ' + printItems(item.on, tab, ' ');
             }
-        })
+        });
     }
 
     if (isSet(AST, 'prewhere')) {

@@ -111,8 +111,7 @@ export default class SqlQuery {
             table = SqlQuery.escapeIdentifier(this.target.database) + '.' + table;
         }
 
-        var 
-            myround = this.target.round === "$step"? interval : SqlQuery.convertInterval(this.target.round, 1),
+        let myround = this.target.round === "$step"? interval : SqlQuery.convertInterval(this.target.round, 1),
             from = SqlQuery.convertTimestamp( SqlQuery.round(this.options.range.from, myround)),
             to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, myround));
 
@@ -310,11 +309,13 @@ export default class SqlQuery {
     }
 
     static _fromIndex(query: string): number {
-        let fromIndex = query.toLowerCase().lastIndexOf('from');
-        if (fromIndex === -1) {
+        let fromRe = new RegExp('\\s+FROM\\s+','gim');
+        let matches = Array.from(query.matchAll(fromRe));
+        if (matches.length === 0) {
             throw {message: 'Could not find FROM-statement at: ' + query};
         }
-        return fromIndex;
+        let fromRelativeIndex = query.slice(matches[matches.length-1].index).toLocaleLowerCase().indexOf("from");
+        return matches[matches.length-1].index + fromRelativeIndex;
     }
 
     static rate(query: string, ast: any): string {
@@ -689,32 +690,32 @@ export default class SqlQuery {
 
     /**
      * format <% code
-     * @param html 
-     * @param templateSrv 
-     * @param opts 
+     * @param html
+     * @param templateSrv
+     * @param opts
      */
     static render(html, templateSrv, opts) {
-        var options = {
+        let options = {
           templateSrv: templateSrv,
           options: opts,
           isAll: function (v) {
-            var o = templateSrv.variables.find(function (e) {
-              return e.name == v;
+            let o = templateSrv.variables.find(function (e) {
+              return e.name === v;
             });
-            return o && o.current.value == "$__all";
+            return o && o.current.value === "$__all";
           },
         };
-        var re = /<%(.+?)%>/g,
-          reExp = /(^( )?(var|if|for|else|switch|case|break|{|}|;))(.*)?/g,
+        let re = /<%(.+?)%>/g,
+          jsRe = /(^( )?(var|if|for|else|switch|case|break|{|}|;))(.*)?/g,
           code = "with(obj) { var r=[];\n",
           cursor = 0,
           result,
           match;
-        var add = function (line, js) {
+        let add = function (line, js) {
           js
-            ? (code += line.match(reExp) ? line + "\n" : "r.push(" + line + ");\n")
+            ? (code += line.match(jsRe) ? line + "\n" : "r.push(" + line + ");\n")
             : (code +=
-                line != "" ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : "");
+                line !== "" ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : "");
           return add;
         };
         while ((match = re.exec(html))) {
@@ -729,7 +730,6 @@ export default class SqlQuery {
           console.error("'" + err.message + "'", " in \n\nCode:\n", code, "\n");
           return html;
         }
-    
         return result;
       }
 }

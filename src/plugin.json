@@ -29,12 +29,12 @@
         "url": "https://github.com/Vertamedia/clickhouse-grafana"
       }
     ],
-    "version": "2.0.4",
+    "version": "2.0.5",
     "updated": "2020-07-31"
   },
 
   "dependencies": {
-    "grafanaVersion": "6.5",
+    "grafanaDependency": ">=4.6.0",
     "plugins": []
   }
 }

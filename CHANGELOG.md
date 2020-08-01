@@ -1,3 +1,8 @@
+# 2.0.5 (2020-08-01)
+
+## Fixes:
+  * fix plugin.json for pass plugin validator
+  
 # 2.0.4 (2020-07-25)
 
 ## Fixes:

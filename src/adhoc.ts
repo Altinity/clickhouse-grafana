@@ -45,7 +45,7 @@ export default class AdhocCtrl {
         let columnNames = {};
         response.forEach(function (item) {
             let text = item.table + '.' + item.name;
-            if (self.datasource.defaultDatabase.length == 0) {
+            if (self.datasource.defaultDatabase.length === 0) {
                 text = item.database + '.' + text;
             }
             let value = item.name;
@@ -78,14 +78,14 @@ export default class AdhocCtrl {
             return Promise.resolve(this.tagValues[options.key]);
         }
         let key_items = options.key.split('.');
-        if (key_items.length < 2 || (key_items.length == 2 && this.datasource.defaultDatabase.length == 0) || key_items.length > 3) {
+        if (key_items.length < 2 || (key_items.length === 2 && this.datasource.defaultDatabase.length === 0) || key_items.length > 3) {
             return Promise.resolve([]);
         }
         let field, database, table;
-        if (key_items.length == 3) {
+        if (key_items.length === 3) {
             [database, table, field] = key_items;
         }
-        if (key_items.length == 2) {
+        if (key_items.length === 2) {
             database = self.datasource.defaultDatabase;
             [table, field] = key_items;
         }

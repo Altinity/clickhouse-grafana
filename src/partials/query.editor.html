@@ -146,10 +146,19 @@
         <div class="gf-form">
             <gf-form-switch class="gf-form width-12"
                             checked="ctrl.target.extrapolate"
-                            ng-model="crtl.target.extrapolate"
+                            ng-model="ctrl.target.extrapolate"
                             ng-change="ctrl.refresh()"
                             label="Extrapolation"
                             tooltip="Turn on if you don't like when last data point in time series much lower then previous">
+            </gf-form-switch>
+        </div>
+        <div class="gf-form">
+            <gf-form-switch class="gf-form width-12"
+                            checked="ctrl.target.skip_comments"
+                            ng-model="ctrl.target.skip_comments"
+                            ng-change="ctrl.refresh()"
+                            label="Skip comments"
+                            tooltip="Turn off if you would like pass comments in SQL query to server">
             </gf-form-switch>
         </div>
 

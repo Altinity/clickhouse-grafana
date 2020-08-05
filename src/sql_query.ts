@@ -98,8 +98,9 @@ export default class SqlQuery {
         if (adhocCondition.length > 0) {
             renderedAdHocCondition = '(' + adhocCondition.join(' AND ') + ')';
         }
-
-        query = scanner.removeComments(query);
+        if (this.target.skip_comments) {
+            query = scanner.removeComments(query);
+        }
         query = SqlQuery.unescape(query);
         let timeFilter = SqlQuery.getDateTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType);
         if (typeof this.target.dateColDataType === "string" && this.target.dateColDataType.length > 0) {
@@ -111,23 +112,20 @@ export default class SqlQuery {
             table = SqlQuery.escapeIdentifier(this.target.database) + '.' + table;
         }
 
-        let myround = this.target.round === "$step"? interval : SqlQuery.convertInterval(this.target.round, 1),
-            from = SqlQuery.convertTimestamp( SqlQuery.round(this.options.range.from, myround)),
+        let myround = this.target.round === "$step" ? interval : SqlQuery.convertInterval(this.target.round, 1),
+            from = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.from, myround)),
             to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, myround));
 
-        this.target.rawQuery = SqlQuery.render(query
-            .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
-            .replace(/\$timeFilter/g, timeFilter)
-            .replace(/\$table/g, table)
-            .replace(/\$from/g, from)
-            .replace(/\$to/g, to)
-            .replace(/\$dateCol/g, SqlQuery.escapeIdentifier(this.target.dateColDataType))
-            .replace(/\$dateTimeCol/g, SqlQuery.escapeIdentifier(this.target.dateTimeColDataType))
-            .replace(/\$interval/g, interval)
-            .replace(/\$adhoc/g, renderedAdHocCondition)
-            .replace(/(?:\r\n|\r|\n)/g, ' '),
-            this.templateSrv,
-            options);
+        this.target.rawQuery = query
+                .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
+                .replace(/\$timeFilter/g, timeFilter)
+                .replace(/\$table/g, table)
+                .replace(/\$from/g, from)
+                .replace(/\$to/g, to)
+                .replace(/\$dateCol/g, SqlQuery.escapeIdentifier(this.target.dateColDataType))
+                .replace(/\$dateTimeCol/g, SqlQuery.escapeIdentifier(this.target.dateTimeColDataType))
+                .replace(/\$interval/g, interval)
+                .replace(/\$adhoc/g, renderedAdHocCondition);
 
         const round = this.target.round === "$step"
             ? interval
@@ -237,28 +235,29 @@ export default class SqlQuery {
         return obj.hasOwnProperty(field) && !isEmpty(obj[field]);
     }
 
-    static _parseMacros(macros: string, query: string): string {
+    static _parseMacros(macros: string, query: string): string[] {
         let mLen = macros.length;
-        if (query.slice(0, mLen + 1) !== macros + '(') {
-            return "";
+        let mPos = query.indexOf(macros);
+        if (mPos === -1 || query.slice(mPos, mPos + mLen + 1) !== macros + '(') {
+            return [query, ""];
         }
         let fromIndex = SqlQuery._fromIndex(query);
-        return query.slice(fromIndex);
+        return [query.slice(0, mPos), query.slice(fromIndex)];
     }
 
     static columns(query: string, ast: any): string {
-        let q = SqlQuery._parseMacros('$columns', query);
-        if (q.length < 1) {
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacros('$columns', query);
+        if (fromQuery.length < 1) {
             return query;
         }
         let args = ast['$columns'];
         if (args.length !== 2) {
             throw {message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + ast.$columns.join(', ')};
         }
-        return SqlQuery._columns(args[0], args[1], q);
+        return SqlQuery._columns(args[0], args[1], beforeMacrosQuery, fromQuery);
     }
 
-    static _columns(key: string, value: string, fromQuery: string): string {
+    static _columns(key: string, value: string, beforeMacrosQuery, fromQuery: string): string {
         if (key.slice(-1) === ')' || value.slice(-1) === ')') {
             throw {message: 'Some of passed arguments are without aliases: ' + key + ', ' + value};
         }
@@ -274,7 +273,7 @@ export default class SqlQuery {
         }
         fromQuery = SqlQuery._applyTimeFilter(fromQuery);
 
-        return 'SELECT' +
+        return beforeMacrosQuery + 'SELECT' +
             ' t,' +
             ' groupArray((' + keyAlias + ', ' + valueAlias + ')) AS groupArr' +
             ' FROM (' +
@@ -291,8 +290,8 @@ export default class SqlQuery {
     }
 
     static rateColumns(query: string, ast: any): string {
-        let q = SqlQuery._parseMacros('$rateColumns', query);
-        if (q.length < 1) {
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacros('$rateColumns', query);
+        if (fromQuery.length < 1) {
             return query;
         }
         let args = ast['$rateColumns'];
@@ -300,8 +299,8 @@ export default class SqlQuery {
             throw {message: 'Amount of arguments must equal 2 for $rateColumns func. Parsed arguments are: ' + args.join(', ')};
         }
 
-        query = SqlQuery._columns(args[0], args[1], q);
-        return 'SELECT t' +
+        query = SqlQuery._columns(args[0], args[1], "", fromQuery);
+        return beforeMacrosQuery+'SELECT t' +
             ', arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
             ' FROM (' +
             query +
@@ -309,18 +308,18 @@ export default class SqlQuery {
     }
 
     static _fromIndex(query: string): number {
-        let fromRe = new RegExp('\\s+FROM\\s+','gim');
+        let fromRe = new RegExp('\\s+FROM\\s+', 'gim');
         let matches = Array.from(query.matchAll(fromRe));
         if (matches.length === 0) {
             throw {message: 'Could not find FROM-statement at: ' + query};
         }
-        let fromRelativeIndex = query.slice(matches[matches.length-1].index).toLocaleLowerCase().indexOf("from");
-        return matches[matches.length-1].index + fromRelativeIndex;
+        let fromRelativeIndex = query.slice(matches[matches.length - 1].index).toLocaleLowerCase().indexOf("from");
+        return matches[matches.length - 1].index + fromRelativeIndex;
     }
 
     static rate(query: string, ast: any): string {
-        let q = SqlQuery._parseMacros('$rate', query);
-        if (q.length < 1) {
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacros('$rate', query);
+        if (fromQuery.length < 1) {
             return query;
         }
         let args = ast['$rate'];
@@ -328,10 +327,10 @@ export default class SqlQuery {
             throw {message: 'Amount of arguments must be > 0 for $rate func. Parsed arguments are:  ' + args.join(', ')};
         }
 
-        return SqlQuery._rate(args, q);
+        return SqlQuery._rate(args, beforeMacrosQuery, fromQuery);
     }
 
-    static _rate(args, fromQuery: string): string {
+    static _rate(args, beforeMacrosQuery, fromQuery: string): string {
         let aliases = [];
         each(args, function (arg) {
             if (arg.slice(-1) === ')') {
@@ -346,7 +345,7 @@ export default class SqlQuery {
         });
 
         fromQuery = SqlQuery._applyTimeFilter(fromQuery);
-        return 'SELECT ' +
+        return beforeMacrosQuery+'SELECT ' +
             't,' +
             ' ' + cols.join(', ') +
             ' FROM (' +
@@ -359,8 +358,8 @@ export default class SqlQuery {
     }
 
     static perSecondColumns(query: string, ast: any): string {
-        let q = SqlQuery._parseMacros('$perSecondColumns', query);
-        if (q.length < 1) {
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacros('$perSecondColumns', query);
+        if (fromQuery.length < 1) {
             return query;
         }
         let args = ast['$perSecondColumns'];
@@ -370,7 +369,7 @@ export default class SqlQuery {
 
         let key = args[0],
             value = 'max(' + args[1].trim() + ') AS max_0',
-            havingIndex = q.toLowerCase().indexOf('having'),
+            havingIndex = fromQuery.toLowerCase().indexOf('having'),
             having = "",
             aliasIndex = key.toLowerCase().indexOf(' as '),
             alias = "perSecondColumns";
@@ -381,12 +380,12 @@ export default class SqlQuery {
         }
 
         if (havingIndex !== -1) {
-            having = ' ' + q.slice(havingIndex, q.length);
-            q = q.slice(0, havingIndex - 1);
+            having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
+            fromQuery = fromQuery.slice(0, havingIndex - 1);
         }
-        q = SqlQuery._applyTimeFilter(q);
+        fromQuery = SqlQuery._applyTimeFilter(fromQuery);
 
-        return 'SELECT' +
+        return beforeMacrosQuery + 'SELECT' +
             ' t,' +
             ' groupArray((' + alias + ', max_0_Rate)) AS groupArr' +
             ' FROM (' +
@@ -397,7 +396,7 @@ export default class SqlQuery {
             ' SELECT $timeSeries AS t' +
             ', ' + key +
             ', ' + value + ' ' +
-            q +
+            fromQuery +
             ' GROUP BY t, ' + alias +
             having +
             ' ORDER BY ' + alias + ', t' +
@@ -409,8 +408,8 @@ export default class SqlQuery {
 
     // $perSecond(query)
     static perSecond(query: string, ast: any): string {
-        let q = SqlQuery._parseMacros('$perSecond', query);
-        if (q.length < 1) {
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacros('$perSecond', query);
+        if (fromQuery.length < 1) {
             return query;
         }
         let args = ast['$perSecond'];
@@ -422,10 +421,10 @@ export default class SqlQuery {
             args[i] = 'max(' + a.trim() + ') AS max_' + i;
         });
 
-        return SqlQuery._perSecond(args, q);
+        return SqlQuery._perSecond(args, beforeMacrosQuery, fromQuery);
     }
 
-    static _perSecond(args, fromQuery: string): string {
+    static _perSecond(args, beforeMacrosQuery, fromQuery: string): string {
         let cols = [];
         each(args, function (a, i) {
             cols.push('if(runningDifference(max_' + i + ') < 0, nan, ' +
@@ -433,7 +432,7 @@ export default class SqlQuery {
         });
 
         fromQuery = SqlQuery._applyTimeFilter(fromQuery);
-        return 'SELECT ' +
+        return beforeMacrosQuery + 'SELECT ' +
             't,' +
             ' ' + cols.join(', ') +
             ' FROM (' +
@@ -527,7 +526,7 @@ export default class SqlQuery {
 
     static interpolateQueryExpr(value, variable, defaultFormatFn) {
         // if no (`multiselect` or `include all`) and variable is not Array - do not escape
-        if (!variable.multi && !variable.includeAll && !Array.isArray(value) ) {
+        if (!variable.multi && !variable.includeAll && !Array.isArray(value)) {
             return value;
         }
         if (!Array.isArray(value)) {
@@ -574,7 +573,7 @@ export default class SqlQuery {
             }
             if (opt.value instanceof Array) {
                 returnAsArray = true;
-                each(opt.value, function(v): boolean {
+                each(opt.value, function (v): boolean {
                     if (typeof v === 'string' && !NumberOnlyRegexp.test(v)) {
                         returnAsIs = false;
                         return false;
@@ -688,48 +687,4 @@ export default class SqlQuery {
         return r;
     }
 
-    /**
-     * format <% code
-     * @param html
-     * @param templateSrv
-     * @param opts
-     */
-    static render(html, templateSrv, opts) {
-        let options = {
-          templateSrv: templateSrv,
-          options: opts,
-          isAll: function (v) {
-            let o = templateSrv.variables.find(function (e) {
-              return e.name === v;
-            });
-            return o && o.current.value === "$__all";
-          },
-        };
-        let re = /<%(.+?)%>/g,
-          jsRe = /(^( )?(var|if|for|else|switch|case|break|{|}|;))(.*)?/g,
-          code = "with(obj) { var r=[];\n",
-          cursor = 0,
-          result,
-          match;
-        let add = function (line, js) {
-          js
-            ? (code += line.match(jsRe) ? line + "\n" : "r.push(" + line + ");\n")
-            : (code +=
-                line !== "" ? 'r.push("' + line.replace(/"/g, '\\"') + '");\n' : "");
-          return add;
-        };
-        while ((match = re.exec(html))) {
-          add(html.slice(cursor, match.index), null)(match[1], true);
-          cursor = match.index + match[0].length;
-        }
-        add(html.substr(cursor, html.length - cursor), null);
-        code = (code + 'return r.join(""); }').replace(/[\r\t\n]/g, " ");
-        try {
-          result = new Function("obj", code).apply(options, [options]);
-        } catch (err) {
-          console.error("'" + err.message + "'", " in \n\nCode:\n", code, "\n");
-          return html;
-        }
-        return result;
-      }
 }

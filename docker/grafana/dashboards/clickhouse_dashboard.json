@@ -11,7 +11,7 @@
         "limit": 100,
         "name": "Annotations & Alerts",
         "query": "SELECT \n       toUInt64(event_time)*1000 AS time,\n       if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,2) AND\n  toUInt64(event_time) >= $from AND toUInt64(event_time) < $to\n",
-        "rawQuery": "SELECT         toUInt64(event_time)*1000 AS time,        if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,        arrayStringConcat(['test1', 'test2', service_name],',') AS tags FROM default.test_grafana WHERE   rand() % 100 IN (1,2) AND   toUInt64(event_time) >= 1595907720 AND toUInt64(event_time) < 1595929320",
+        "rawQuery": "SELECT \n       toUInt64(event_time)*1000 AS time,\n       if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,2) AND\n  toUInt64(event_time) >= 1596607387 AND toUInt64(event_time) < 1596628987",
         "showIn": 0,
         "type": "dashboard"
       }
@@ -20,7 +20,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1595929318326,
+  "iteration": 1596628986889,
   "links": [],
   "panels": [
     {
@@ -392,8 +392,8 @@
       "scopedVars": {
         "repeated_service": {
           "selected": true,
-          "text": "mysql",
-          "value": "mysql"
+          "text": "postgresql",
+          "value": "postgresql"
         }
       },
       "seriesOverrides": [],
@@ -487,7 +487,7 @@
         "y": 9
       },
       "hiddenSeries": false,
-      "id": 15,
+      "id": 17,
       "legend": {
         "avg": false,
         "current": false,
@@ -506,13 +506,13 @@
       "points": false,
       "renderer": "flot",
       "repeat": null,
-      "repeatIteration": 1595929318326,
+      "repeatIteration": 1596628986889,
       "repeatPanelId": 5,
       "scopedVars": {
         "repeated_service": {
           "selected": true,
-          "text": "postgresql",
-          "value": "postgresql"
+          "text": "mysql",
+          "value": "mysql"
         }
       },
       "seriesOverrides": [],
@@ -915,6 +915,116 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse",
+      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/265",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {},
+          "links": []
+        },
+        "overrides": []
+      },
+      "fill": 1,
+      "fillGradient": 0,
+      "gridPos": {
+        "h": 9,
+        "w": 8,
+        "x": 0,
+        "y": 36
+      },
+      "hiddenSeries": false,
+      "id": 16,
+      "legend": {
+        "avg": false,
+        "current": false,
+        "max": false,
+        "min": false,
+        "show": true,
+        "total": false,
+        "values": false
+      },
+      "lines": true,
+      "linewidth": 1,
+      "nullPointMode": "null",
+      "percentage": false,
+      "pluginVersion": "7.1.1",
+      "pointradius": 2,
+      "points": false,
+      "renderer": "flot",
+      "seriesOverrides": [],
+      "spaceLength": 10,
+      "stack": false,
+      "steppedLine": false,
+      "targets": [
+        {
+          "database": "default",
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "/* test comment1 */\r\n-- test comment2\r\n/* \r\n  test multiline comment3\r\n*/  \r\n$rate(countIf(service_name='mysql' AND from_user='alice') AS mysql_alice, countIf(service_name='postgres') AS postgres) \r\nFROM $table\r\nWHERE from_user='bob'\r\n\r\n/* comment4 */\r\n-- comment 5",
+          "rawQuery": " /* test comment1 */\n-- test comment2\r\n/* \r\n  test multiline comment3\r\n*/\n\nSELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM default.test_grafana\n\nWHERE event_time >= toDateTime(1596607472) AND\n    from_user = 'bob'/* comment4 */\n-- comment 5\n\n    AND service_name LIKE '%sql%' GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": false,
+          "table": "test_grafana",
+          "tableLoading": false
+        }
+      ],
+      "thresholds": [],
+      "timeFrom": null,
+      "timeRegions": [],
+      "timeShift": null,
+      "title": "turn off skip_comments example",
+      "tooltip": {
+        "shared": true,
+        "sort": 0,
+        "value_type": "individual"
+      },
+      "type": "graph",
+      "xaxis": {
+        "buckets": null,
+        "mode": "time",
+        "name": null,
+        "show": true,
+        "values": []
+      },
+      "yaxes": [
+        {
+          "$$hashKey": "object:91",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        },
+        {
+          "$$hashKey": "object:92",
+          "format": "short",
+          "label": null,
+          "logBase": 1,
+          "max": null,
+          "min": null,
+          "show": true
+        }
+      ],
+      "yaxis": {
+        "align": false,
+        "alignLevel": null
+      }
+    },
+    {
+      "aliasColors": {},
+      "bars": false,
+      "dashLength": 10,
+      "dashes": false,
+      "datasource": "clickhouse",
       "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/256",
       "fieldConfig": {
         "defaults": {
@@ -929,7 +1039,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 36
+        "y": 27
       },
       "hiddenSeries": false,
       "id": 14,
@@ -1165,10 +1275,10 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "text": "mysql + postgresql",
+          "text": "postgresql + mysql",
           "value": [
-            "mysql",
-            "postgresql"
+            "postgresql",
+            "mysql"
           ]
         },
         "datasource": "clickhouse",
@@ -1228,5 +1338,5 @@
   "timezone": "",
   "title": "clickhouse dashboard",
   "uid": "DnOcQSGGz",
-  "version": 10
+  "version": 1
 }

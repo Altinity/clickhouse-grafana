@@ -513,7 +513,7 @@ describe("scanner:", () => {
     });
 
 
-  describe("AST case 15 (escaped quotes inside quotes)", () => {
+    describe("AST case 15 (escaped quotes inside quotes)", () => {
         let query = "SELECT now() AS t, 'test\\\'value' AS v FROM $table WHERE v=\"test\\\"field\"",
             scanner = new Scanner(query);
 
@@ -533,80 +533,6 @@ describe("scanner:", () => {
         it("expects equality", () => {
             expect(scanner.toAST()).toEqual(expectedAST);
         });
-    });
-   
-
-    describe("SqlQuery parser if % ", () => {
-        
-        let sourceQuery = `
-        <%var x = 2;%>
-        <%if(x === 1){%>
-        SELECT field+<%x%> as incField
-            FROM $table
-            WHERE $timeFilter
-        <%}else{%>
-        SELECT field as sameField
-            FROM $table
-            WHERE $timeFilter
-        <%}%>`;
-        let templateSrv:any;
-        var options = {
-            rangeRaw:{
-                from: "now",
-                to: "now"
-            }  
-        }
-        
-        let renderedQuery = SqlQuery.render(sourceQuery, templateSrv, options).trim();
-        let expectedQuery = "SELECT field as sameField             FROM $table             WHERE $timeFilter";
-            
-        it("expects else branch", () => {
-             expect(renderedQuery).toEqual(expectedQuery);
-        });
-
-        sourceQuery = `
-        <%var x = 1;%>
-        <%if(x === 1){%>
-        SELECT field+<%x%> as incField
-            FROM $table
-            WHERE $timeFilter
-        <%}else{%>
-        SELECT field as sameField
-            FROM $table
-            WHERE $timeFilter
-        <%}%>`;
-
-        renderedQuery = SqlQuery.render(sourceQuery, templateSrv, options).trim();
-        expectedQuery = "SELECT field+1 as incField             FROM $table             WHERE $timeFilter";
-            
-        it("expects if branch", () => {
-             expect(renderedQuery).toEqual(expectedQuery);
-        });
-    
-    });
-
-    describe("SqlQuery parser switch % ", () => {
-
-        let sourceQuery = `
-        <%var col="WIN", so="UNKNOWN";switch(col){case "LIN":so="Linux_distribution";break;case "WIN":so="Windows_distribution";break;}%>
-        select <%so%> as Distribution`;
-
-        let templateSrv:any;
-        var options = {
-            rangeRaw:{
-                from: "now",
-                to: "now"
-            }  
-        }        
-
-        let renderedQuery = SqlQuery.render(sourceQuery, templateSrv, options).trim();
-        let expectedQuery = "select Windows_distribution as Distribution";
-        it("expects switch WIN", () => {
-            expect(renderedQuery).toEqual(expectedQuery);
-       });
-
-
-
     });
 
 
@@ -651,6 +577,7 @@ describe("scanner:", () => {
             expect(scanner.toAST()).toEqual(expectedAST);
         });
     });
+
     describe("AST case 17 (subquery + multiple joins)", () => {
         let query = "SELECT t1.service_name, sum(1.05*rand()) AS test " +
             "FROM (SELECT DISTINCT service_name FROM default.test_grafana) AS t2 " +
@@ -679,7 +606,7 @@ describe("scanner:", () => {
                     "DISTINCT service_name"
                 ],
                 "aliases": [
-                  "AS t2",
+                    "AS t2",
                 ],
             },
             "join": [
@@ -746,5 +673,40 @@ describe("scanner:", () => {
         });
     });
 
+    describe("AST case 18 (comment + macros)", () => {
+        let query = "/* test comment1 */\n" +
+            "-- test comment2\n" +
+            "/* \n" +
+            "  test multiline comment3\n" +
+            "*/  \n" +
+            "$rate(countIf(service_name='mysql' AND from_user='alice') AS mysql_alice, countIf(service_name='postgres') AS postgres) \n" +
+            "FROM $table\n" +
+            "WHERE from_user='bob' /* comment after query */",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [
+                "/* test comment1 */\n" +
+                "-- test comment2\n" +
+                "/* \n" +
+                "  test multiline comment3\n" +
+                "*/\n"
+            ],
+            "select": [],
+            "$rate": [
+                "countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice",
+                "countIf(service_name = 'postgres') AS postgres"
+            ],
+            "from": [
+                "$table",
+            ],
+            "where": [
+                "from_user = 'bob'/* comment after query */\n",
+            ],
+        };
+        it("expects equality", () => {
+            expect(scanner.toAST()).toEqual(expectedAST);
+        });
+    });
 
 });

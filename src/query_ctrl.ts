@@ -41,7 +41,7 @@ class SqlQueryCtrl extends QueryCtrl {
     showLastQuerySQL: boolean;
     showHelp: boolean;
 
-    editorLoaded: boolean = false;
+    editorLoaded = false;
 
     /** @ngInject **/
     constructor($scope, $injector, templateSrv, private uiSegmentSrv) {
@@ -89,8 +89,11 @@ class SqlQueryCtrl extends QueryCtrl {
         ];
 
         this.target.format = this.target.format || 'time_series';
-        if (typeof this.target.extrapolate == 'undefined') {
-            this.target.extrapolate = true
+        if (typeof this.target.extrapolate === 'undefined') {
+            this.target.extrapolate = true;
+        }
+        if (typeof this.target.skip_comments === 'undefined') {
+            this.target.skip_comments = true;
         }
         this.target.dateTimeType = this.target.dateTimeType || this.dateTimeTypeOptions[0].value;
         this.target.round = this.target.round || "0s";
@@ -119,7 +122,7 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     getDateColDataTypeSegments() {
-        var target = this.target;
+        let target = this.target;
         target.dateLoading = true;
 
         return this.querySegment('DATE').then(function (response) {
@@ -138,7 +141,7 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     dateTimeTypeChanged() {
-        var self = this;
+        let self = this;
         this.getDateTimeColDataTypeSegments().then(function (segments) {
             if (segments.length === 0) {
                 return;
@@ -149,7 +152,7 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     getDateTimeColDataTypeSegments() {
-        var target = this.target;
+        let target = this.target;
         target.datetimeLoading = true;
         return this.querySegment(target.dateTimeType).then(function (response) {
             target.datetimeLoading = false;
@@ -231,13 +234,13 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     static _convertToHTML(item: any) {
-        var desc = item.value,
+        let desc = item.value,
             space_index = 0,
             start = 0,
             line = "",
             next_line_end = 60,
             lines = [];
-        for (var i = 0; i < desc.length; i++) {
+        for (let i = 0; i < desc.length; i++) {
             if (desc[i] === ' ') {
                 space_index = i;
             } else if (i >= next_line_end && space_index !== 0) {
@@ -250,7 +253,7 @@ class SqlQueryCtrl extends QueryCtrl {
         }
         line = desc.slice(start);
         lines.push(line);
-        return ["<b>", item.text, "</b>", "<hr></hr>", lines.join("&nbsp<br>")].join("");
+        return ["<b>", item.text, "</b>", "<hr/>", lines.join("&nbsp<br>")].join("");
     }
 
     getDatabaseSegments() {
@@ -265,7 +268,7 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     getTableSegments() {
-        var target = this.target;
+        let target = this.target;
         target.tableLoading = true;
         return this.querySegment('TABLES').then(function (response) {
             target.tableLoading = false;
@@ -278,7 +281,7 @@ class SqlQueryCtrl extends QueryCtrl {
         this.applySegment(this.dateColDataTypeSegment, this.fakeSegment('-- date : col --'));
         this.applySegment(this.dateTimeColDataTypeSegment, this.fakeSegment('-- dateTime : col --'));
 
-        var self = this;
+        let self = this;
         this.getDateColDataTypeSegments().then(function (segments) {
             if (segments.length === 0) {
                 return;
@@ -327,12 +330,12 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     queryColumns() {
-        var query = this.buildExploreQuery('COLUMNS');
+        let query = this.buildExploreQuery('COLUMNS');
         return this.datasource.metricFindQuery(query);
     }
 
     querySegment(type: string) {
-        var query = this.buildExploreQuery(type);
+        let query = this.buildExploreQuery(type);
         return this.datasource.metricFindQuery(query)
             .then(this.uiSegmentSrv.transformToSegments(false))
             .catch(this.handleQueryError.bind(this));
@@ -345,7 +348,7 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     buildExploreQuery(type) {
-        var query;
+        let query;
         switch (type) {
             case 'TABLES':
                 query = 'SELECT name ' +
@@ -391,7 +394,7 @@ class SqlQueryCtrl extends QueryCtrl {
                 break;
         }
         return query;
-    };
+    }
 }
 
 export {SqlQueryCtrl};

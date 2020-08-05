@@ -34,10 +34,6 @@ export default class Scanner {
                 // skip whitespace
                 continue;
             }
-            if (isComment(this.token)) {
-                // skip comment
-                continue;
-            }
             return true;
         }
         return false;
@@ -45,24 +41,15 @@ export default class Scanner {
 
     _next() {
         if (this._s.length === 0) {
-          return false;
+            return false;
         }
-        // if addnotation
-        if (this._s.startsWith("<%")) {
-          let nPos = this._s.search("%>");
-          if (nPos === -1) {
-            throw "unmatched <%/%> [" + this._s + "]";
-          }
-          this._s = this._s.substring(nPos + 2);
-        } else {
-          let r = this.re.exec(this._s);
-            if (r === null) {
+        let r = this.re.exec(this._s);
+        if (r === null) {
             throw "cannot find next token in [" + this._s + "]";
-            }
-
-          this.token = r[0];
-          this._s = this._s.substring(this.token.length);
         }
+
+        this.token = r[0];
+        this._s = this._s.substring(this.token.length);
 
         return true;
     }
@@ -78,7 +65,7 @@ export default class Scanner {
     push(argument) {
         if (Array.isArray(this.tree[this.rootToken])) {
             this.tree[this.rootToken].push(argument);
-        } else if (this.tree[this.rootToken] instanceof Object){
+        } else if (this.tree[this.rootToken] instanceof Object) {
             if (!this.tree[this.rootToken].hasOwnProperty('aliases')) {
                 this.tree[this.rootToken].aliases = [];
             }
@@ -207,6 +194,9 @@ export default class Scanner {
                 let ast = toAST(this._s);
                 this._s = '';
                 this.tree[statement].push(ast);
+            } else if (isComment(this.token)) {
+                //comment is part of push element, and will be add after next statement
+                argument += this.token + "\n";
             } else if (isClosureChars(this.token) || this.token === '.') {
                 argument += this.token;
             } else if (this.token === ',') {
@@ -288,7 +278,7 @@ export default class Scanner {
                 joinAST.using.push(this.token);
             } else {
                 if (isCond(this.token)) {
-                    joinConditions += " "+this.token.toUpperCase()+" ";
+                    joinConditions += " " + this.token.toUpperCase() + " ";
                 } else {
                     joinConditions += this.token;
                 }
@@ -304,7 +294,7 @@ export default class Scanner {
     }
 
     removeComments(query) {
-        return query.replace(new RegExp(commentRe), '');
+        return query.replace(new RegExp(commentRe,'g'), '');
     }
 }
 
@@ -319,81 +309,81 @@ const wsRe = "\\s+",
     statementRe = "\\b(with|select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b",
     // look https://clickhouse.tech/docs/en/sql-reference/statements/select/join/
     // [GLOBAL] [ANY|ALL] [INNER|LEFT|RIGHT|FULL|CROSS] [OUTER] JOIN
-    joinsRe = "\\b("+
+    joinsRe = "\\b(" +
         "left\\s+array\\s+join|" +
         "array\\s+join|" +
-        "global\\s+any\\s+inner\\s+outer\\s+join|"+
-        "global\\s+any\\s+inner\\s+join|"+
-        "global\\s+any\\s+left\\s+outer\\s+join|"+
-        "global\\s+any\\s+left\\s+join|"+
-        "global\\s+any\\s+right\\s+outer\\s+join|"+
-        "global\\s+any\\s+right\\s+join|"+
-        "global\\s+any\\s+full\\s+outer\\s+join|"+
-        "global\\s+any\\s+full\\s+join|"+
-        "global\\s+any\\s+cross\\s+outer\\s+join|"+
-        "global\\s+any\\s+cross\\s+join|"+
-        "global\\s+any\\s+outer\\s+join|"+
-        "global\\s+any\\s+join|"+
-        "global\\s+all\\s+inner\\s+outer\\s+join|"+
-        "global\\s+all\\s+inner\\s+join|"+
-        "global\\s+all\\s+left\\s+outer\\s+join|"+
-        "global\\s+all\\s+left\\s+join|"+
-        "global\\s+all\\s+right\\s+outer\\s+join|"+
-        "global\\s+all\\s+right\\s+join|"+
-        "global\\s+all\\s+full\\s+outer\\s+join|"+
-        "global\\s+all\\s+full\\s+join|"+
-        "global\\s+all\\s+cross\\s+outer\\s+join|"+
-        "global\\s+all\\s+cross\\s+join|"+
-        "global\\s+all\\s+outer\\s+join|"+
-        "global\\s+all\\s+join|"+
-        "global\\s+inner\\s+outer\\s+join|"+
-        "global\\s+inner\\s+join|"+
-        "global\\s+left\\s+outer\\s+join|"+
-        "global\\s+left\\s+join|"+
-        "global\\s+right\\s+outer\\s+join|"+
-        "global\\s+right\\s+join|"+
-        "global\\s+full\\s+outer\\s+join|"+
-        "global\\s+full\\s+join|"+
-        "global\\s+cross\\s+outer\\s+join|"+
-        "global\\s+cross\\s+join|"+
-        "global\\s+outer\\s+join|"+
-        "global\\s+join|"+
-        "any\\s+inner\\s+outer\\s+join|"+
-        "any\\s+inner\\s+join|"+
-        "any\\s+left\\s+outer\\s+join|"+
-        "any\\s+left\\s+join|"+
-        "any\\s+right\\s+outer\\s+join|"+
-        "any\\s+right\\s+join|"+
-        "any\\s+full\\s+outer\\s+join|"+
-        "any\\s+full\\s+join|"+
-        "any\\s+cross\\s+outer\\s+join|"+
-        "any\\s+cross\\s+join|"+
-        "any\\s+outer\\s+join|"+
-        "any\\s+join|"+
-        "all\\s+inner\\s+outer\\s+join|"+
-        "all\\s+inner\\s+join|"+
-        "all\\s+left\\s+outer\\s+join|"+
-        "all\\s+left\\s+join|"+
-        "all\\s+right\\s+outer\\s+join|"+
-        "all\\s+right\\s+join|"+
-        "all\\s+full\\s+outer\\s+join|"+
-        "all\\s+full\\s+join|"+
-        "all\\s+cross\\s+outer\\s+join|"+
-        "all\\s+cross\\s+join|"+
-        "all\\s+outer\\s+join|"+
-        "all\\s+join|"+
-        "inner\\s+outer\\s+join|"+
-        "inner\\s+join|"+
-        "left\\s+outer\\s+join|"+
-        "left\\s+join|"+
-        "right\\s+outer\\s+join|"+
-        "right\\s+join|"+
-        "full\\s+outer\\s+join|"+
-        "full\\s+join|"+
-        "cross\\s+outer\\s+join|"+
-        "cross\\s+join|"+
-        "outer\\s+join|"+
-        "join"+
+        "global\\s+any\\s+inner\\s+outer\\s+join|" +
+        "global\\s+any\\s+inner\\s+join|" +
+        "global\\s+any\\s+left\\s+outer\\s+join|" +
+        "global\\s+any\\s+left\\s+join|" +
+        "global\\s+any\\s+right\\s+outer\\s+join|" +
+        "global\\s+any\\s+right\\s+join|" +
+        "global\\s+any\\s+full\\s+outer\\s+join|" +
+        "global\\s+any\\s+full\\s+join|" +
+        "global\\s+any\\s+cross\\s+outer\\s+join|" +
+        "global\\s+any\\s+cross\\s+join|" +
+        "global\\s+any\\s+outer\\s+join|" +
+        "global\\s+any\\s+join|" +
+        "global\\s+all\\s+inner\\s+outer\\s+join|" +
+        "global\\s+all\\s+inner\\s+join|" +
+        "global\\s+all\\s+left\\s+outer\\s+join|" +
+        "global\\s+all\\s+left\\s+join|" +
+        "global\\s+all\\s+right\\s+outer\\s+join|" +
+        "global\\s+all\\s+right\\s+join|" +
+        "global\\s+all\\s+full\\s+outer\\s+join|" +
+        "global\\s+all\\s+full\\s+join|" +
+        "global\\s+all\\s+cross\\s+outer\\s+join|" +
+        "global\\s+all\\s+cross\\s+join|" +
+        "global\\s+all\\s+outer\\s+join|" +
+        "global\\s+all\\s+join|" +
+        "global\\s+inner\\s+outer\\s+join|" +
+        "global\\s+inner\\s+join|" +
+        "global\\s+left\\s+outer\\s+join|" +
+        "global\\s+left\\s+join|" +
+        "global\\s+right\\s+outer\\s+join|" +
+        "global\\s+right\\s+join|" +
+        "global\\s+full\\s+outer\\s+join|" +
+        "global\\s+full\\s+join|" +
+        "global\\s+cross\\s+outer\\s+join|" +
+        "global\\s+cross\\s+join|" +
+        "global\\s+outer\\s+join|" +
+        "global\\s+join|" +
+        "any\\s+inner\\s+outer\\s+join|" +
+        "any\\s+inner\\s+join|" +
+        "any\\s+left\\s+outer\\s+join|" +
+        "any\\s+left\\s+join|" +
+        "any\\s+right\\s+outer\\s+join|" +
+        "any\\s+right\\s+join|" +
+        "any\\s+full\\s+outer\\s+join|" +
+        "any\\s+full\\s+join|" +
+        "any\\s+cross\\s+outer\\s+join|" +
+        "any\\s+cross\\s+join|" +
+        "any\\s+outer\\s+join|" +
+        "any\\s+join|" +
+        "all\\s+inner\\s+outer\\s+join|" +
+        "all\\s+inner\\s+join|" +
+        "all\\s+left\\s+outer\\s+join|" +
+        "all\\s+left\\s+join|" +
+        "all\\s+right\\s+outer\\s+join|" +
+        "all\\s+right\\s+join|" +
+        "all\\s+full\\s+outer\\s+join|" +
+        "all\\s+full\\s+join|" +
+        "all\\s+cross\\s+outer\\s+join|" +
+        "all\\s+cross\\s+join|" +
+        "all\\s+outer\\s+join|" +
+        "all\\s+join|" +
+        "inner\\s+outer\\s+join|" +
+        "inner\\s+join|" +
+        "left\\s+outer\\s+join|" +
+        "left\\s+join|" +
+        "right\\s+outer\\s+join|" +
+        "right\\s+join|" +
+        "full\\s+outer\\s+join|" +
+        "full\\s+join|" +
+        "cross\\s+outer\\s+join|" +
+        "cross\\s+join|" +
+        "outer\\s+join|" +
+        "join" +
         ")\\b",
     onJoinTokenRe = '\\b(using|on)\\b',
     tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)',
@@ -555,7 +545,7 @@ function printItems(items, tab = '', separator = '') {
     let result = '';
     if (isArray(items)) {
         if (items.length === 1) {
-            result += ' ' + items[0];
+            result += ' ' + items[0] + newLine;
         } else {
             result += newLine;
             items.forEach(function (item, i) {
@@ -606,6 +596,10 @@ function betweenBraces(query) {
 // see https://clickhouse.yandex/reference_ru.html#SELECT
 function print(AST, tab = '') {
     let result = '';
+    if (isSet(AST, 'root')) {
+        result += printItems(AST.root, "\n", "\n");
+    }
+
     if (isSet(AST, '$rate')) {
         result += tab + '$rate(';
         result += printItems(AST.$rate, tab, ',') + ')';
@@ -652,7 +646,7 @@ function print(AST, tab = '') {
 
     if (isSet(AST, 'join')) {
         AST.join.forEach(function (item) {
-            result += newLine + tab + item.type.toUpperCase() + printItems(item.source, tab) + ' ' + printItems(AST.join.aliases, '',' ');
+            result += newLine + tab + item.type.toUpperCase() + printItems(item.source, tab) + ' ' + printItems(AST.join.aliases, '', ' ');
             if (item.using.length > 0) {
                 result += ' USING ' + printItems(item.using, '', ' ');
             } else if (item.on.length > 0) {

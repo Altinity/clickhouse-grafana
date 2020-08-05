@@ -19,8 +19,8 @@ describe("macros builder:", () => {
     let testCases = [
         new Case(
             "$rate",
-            "$rate(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests",
-            'SELECT t,' +
+            "/* comment */ $rate(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests",
+            '/* comment */ SELECT t,' +
             ' from_good/runningDifference(t/1000) from_goodRate,' +
             ' from_bad/runningDifference(t/1000) from_badRate' +
             ' FROM (' +
@@ -41,9 +41,9 @@ describe("macros builder:", () => {
         ),
         new Case(
             "$rateColumns",
-            "$rateColumns((AppType = '' ? 'undefined' : AppType) from_type, sum(Hits) from_hits) " +
+            "/* comment */ $rateColumns((AppType = '' ? 'undefined' : AppType) from_type, sum(Hits) from_hits) " +
             " FROM table_all WHERE Event = 'request' AND (-1 IN ($template) OR col IN ($template)) HAVING hits > $interval",
-            'SELECT t,' +
+            '/* comment */ SELECT t,' +
             ' arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
             ' FROM' +
             ' (SELECT t,' +
@@ -64,8 +64,8 @@ describe("macros builder:", () => {
         ),
         new Case(
             "$columns",
-            "$columns(from_OSName, count(*) c) FROM requests ANY INNER JOIN oses USING OS",
-            'SELECT t,' +
+            "/* comment */$columns(from_OSName, count(*) c) FROM requests ANY INNER JOIN oses USING OS",
+            '/* comment */SELECT t,' +
             ' groupArray((from_OSName, c)) AS groupArr' +
             ' FROM (' +
             ' SELECT $timeSeries AS t,' +
@@ -84,8 +84,8 @@ describe("macros builder:", () => {
         ),
         new Case(
             "$perSecond",
-            "$perSecond(from_total, from_amount) FROM requests",
-            'SELECT t,' +
+            "/* comment */\n$perSecond(from_total, from_amount) FROM requests",
+            '/* comment */\nSELECT t,' +
             ' if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate,' +
             ' if(runningDifference(max_1) < 0, nan, runningDifference(max_1) / runningDifference(t/1000)) AS max_1_Rate' +
             ' FROM (' +
@@ -100,8 +100,8 @@ describe("macros builder:", () => {
         ),
         new Case(
             "$perSecondColumns",
-            "$perSecondColumns(concat('test',type) AS from_alias, from_total) FROM requests WHERE type IN ('udp', 'tcp')",
-            'SELECT t,' +
+            "/* comment */\n$perSecondColumns(concat('test',type) AS from_alias, from_total) FROM requests WHERE type IN ('udp', 'tcp')",
+            '/* comment */\nSELECT t,' +
             ' groupArray((from_alias, max_0_Rate)) AS groupArr' +
             ' FROM (' +
             ' SELECT t,' +
@@ -137,19 +137,26 @@ describe("macros builder:", () => {
     });
 });
 
+
 /*
  check https://github.com/Vertamedia/clickhouse-grafana/issues/187
  check https://github.com/Vertamedia/clickhouse-grafana/issues/256
+ check https://github.com/Vertamedia/clickhouse-grafana/issues/265
 */
-describe("$rate and from in field name", () => {
-    const query = "$rate(countIf(service_name='mysql' AND from_user='alice') AS mysql_alice, countIf(service_name='postgres') AS postgres)\n" +
+describe("comments and $rate and from in field name + render", () => {
+    const query = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\n$rate(countIf(service_name='mysql' AND from_user='alice') AS mysql_alice, countIf(service_name='postgres') AS postgres)\n" +
         "FROM $table\n" +
         "WHERE from_user='bob'";
-    const expQuery = "SELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob' GROUP BY t ORDER BY t)";
+    const expQuery = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\nSELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob' GROUP BY t ORDER BY t)";
     const scanner = new Scanner(query);
+    let templateSrv: any;
+    const options = {
+        rangeRaw: {
+            from: "now-10m",
+            to: "now"
+        }
+    };
     it("gets replaced with right FROM query", () => {
         expect(SqlQuery.applyMacros(query, scanner.toAST() )).toBe(expQuery);
     });
-
 });
-

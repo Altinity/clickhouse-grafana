@@ -101,7 +101,7 @@ export class ClickHouseDatasource {
     _request(query: string, requestId?: string) {
         const queryParams = this._getRequestOptions(query, this.usePOST, requestId);
 
-        var lock = this.mutex.acquire();
+        let lock = this.mutex.acquire();
         return lock.then(release => {
             return this.backendSrv.datasourceRequest(queryParams).then(result => {
                 return result.data;
@@ -229,7 +229,7 @@ export class ClickHouseDatasource {
             let to = SqlQuery.convertTimestamp(options.range.to);
             interpolatedQuery = interpolatedQuery.replace(/\$to/g, to).replace(/\$from/g, from);
             interpolatedQuery = SqlQuery.replaceTimeFilters( interpolatedQuery, options.range);
-            interpolatedQuery = SqlQuery.render( interpolatedQuery, this.templateSrv, options);
+            interpolatedQuery = interpolatedQuery.replace(/(?:\r\n|\r|\n)/g, ' ');
         }
 
         // todo(nv): fix request id
@@ -245,7 +245,6 @@ export class ClickHouseDatasource {
     }
 
     _seriesQuery(query: string, requestId?: string) {
-        query = query.replace(/(?:\r\n|\r|\n)/g, ' ');
         query += ' FORMAT JSON';
         return this._request(query, requestId);
     }

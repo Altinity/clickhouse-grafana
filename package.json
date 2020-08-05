@@ -7,6 +7,7 @@
         "build:dev": "webpack --mode development",
         "build:watch": "webpack --mode development --watch",
         "test": "jest --config jest.config.js",
+        "test:coverage": "jest --coverage --config jest.config.js",
         "test:watch": "jest --config jest.config.js --watch",
         "test:docker": "jest --ci --config jest.config.js",
         "test:docker:watch": "jest --ci --config jest.config.js --watch"

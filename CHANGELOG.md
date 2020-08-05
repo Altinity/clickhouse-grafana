@@ -1,3 +1,11 @@
+# 2.0.6 (2020-08-05)
+
+## Enhancement:
+  * add "Skip comments" checkbox to query editor to pass SQL comments to server, fix https://github.com/Vertamedia/clickhouse-grafana/issues/265
+  
+## Security   
+  * rollback SQL+javascript preprocessing logic on browser side to avoid XSS scripting, sorry @fgbogdan
+
 # 2.0.5 (2020-08-01)
 
 ## Fixes:

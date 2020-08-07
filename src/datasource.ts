@@ -7,7 +7,6 @@ import SqlQuery from './sql_query';
 import ResponseParser from './response_parser';
 import AdhocCtrl from './adhoc';
 import Scanner from './scanner';
-import Mutex from './Mutex';
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
@@ -28,7 +27,6 @@ export class ClickHouseDatasource {
     xHeaderKey: string;
     useYandexCloudAuthorization: boolean;
     targetsRef: any;
-    mutex: Mutex;
 
     /** @ngInject */
     constructor(instanceSettings,
@@ -51,7 +49,6 @@ export class ClickHouseDatasource {
         this.xHeaderKey = instanceSettings.jsonData.xHeaderKey;
         this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization;
         this.targetsRef = {};
-        this.mutex = new Mutex();
     }
 
     _getRequestOptions(query: string, usePOST?: boolean, requestId?: string) {
@@ -101,13 +98,8 @@ export class ClickHouseDatasource {
     _request(query: string, requestId?: string) {
         const queryParams = this._getRequestOptions(query, this.usePOST, requestId);
 
-        let lock = this.mutex.acquire();
-        return lock.then(release => {
-            return this.backendSrv.datasourceRequest(queryParams).then(result => {
-                return result.data;
-            }).finally(()=>{
-                release();
-            });
+        return this.backendSrv.datasourceRequest(queryParams).then(result => {
+            return result.data;
         });
     }
 

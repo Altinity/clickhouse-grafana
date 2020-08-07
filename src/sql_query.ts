@@ -136,12 +136,10 @@ export default class SqlQuery {
     }
 
     static escapeIdentifier(identifier: string): string {
-        if (/^[a-zA-Z_][0-9a-zA-Z_]*$/.test(identifier)
-            || /\(.*\)/.test(identifier)
-        ) {
+        if ( /^[a-zA-Z][0-9a-zA-Z_]+$/.test(identifier) || /\(.*\)/.test(identifier) || /[\/\*\+\-]/.test(identifier)) {
             return identifier;
         } else {
-            return '`' + identifier.replace(/`/g, '``') + '`';
+            return '"' + identifier.replace(/"/g, '\\"') + '"';
         }
     }
 

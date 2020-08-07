@@ -1,3 +1,9 @@
+# 2.0.7 (2020-08-07)
+
+## Fixes:
+  * fix parallel query execution, see https://github.com/Vertamedia/clickhouse-grafana/pull/273
+  * fix identifiers quotes, see https://github.com/Vertamedia/clickhouse-grafana/issues/266
+  
 # 2.0.6 (2020-08-05)
 
 ## Enhancement:

@@ -1,6 +1,6 @@
-import SqlQuery, { TimeRange } from '../src/sql_query';
+import SqlQuery, {TimeRange} from '../src/sql_query';
 import moment from "moment";
-import { RawTimeRangeStub } from './lib/raw_time_range_stub';
+import {RawTimeRangeStub} from './lib/raw_time_range_stub';
 
 describe("Query SELECT with $timeFilterByColumn and range with from and to:", () => {
   const query = "SELECT * FROM table WHERE $timeFilterByColumn(column_name)";
@@ -51,16 +51,21 @@ describe("Identifiers back-quoting", () => {
         expect(SqlQuery.escapeIdentifier("My_Identifier_33")).toBe("My_Identifier_33");
     });
     it("Begining with number", () => {
-        expect(SqlQuery.escapeIdentifier("1nfoVista")).toBe("`1nfoVista`");
+        expect(SqlQuery.escapeIdentifier("1nfoVista")).toBe("\"1nfoVista\"");
     });
     it("Containing spaces", () => {
-        expect(SqlQuery.escapeIdentifier("My Identifier")).toBe("`My Identifier`");
+        expect(SqlQuery.escapeIdentifier("My Identifier")).toBe("\"My Identifier\"");
     });
-    it("Containing special characters", () => {
-        expect(SqlQuery.escapeIdentifier("My/Identifier")).toBe("`My/Identifier`");
+    it("Containing arithmetic operation special characters", () => {
+        expect(SqlQuery.escapeIdentifier("a / 1000")).toBe("a / 1000");
+        expect(SqlQuery.escapeIdentifier("a + b")).toBe("a + b");
+        expect(SqlQuery.escapeIdentifier("b - c")).toBe("b - c");
+        expect(SqlQuery.escapeIdentifier("5*c")).toBe("5*c");
+        expect(SqlQuery.escapeIdentifier("a / 1000 + b - 5*c")).toBe("a / 1000 + b - 5*c");
+        expect(SqlQuery.escapeIdentifier("a / 1000 + b - 5*c")).toBe("a / 1000 + b - 5*c");
     });
-    it("Containing back-quote", () => {
-        expect(SqlQuery.escapeIdentifier("My`Bad`Identifier")).toBe("`My``Bad``Identifier`");
+    it("Containing double-quote", () => {
+        expect(SqlQuery.escapeIdentifier("My\"Bad\"Identifier")).toBe("\"My\\\"Bad\\\"Identifier\"");
     });
     it("Containing function calls", () => {
         expect(SqlQuery.escapeIdentifier("toDateTime(someDate)")).toBe("toDateTime(someDate)");

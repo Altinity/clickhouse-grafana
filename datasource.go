@@ -7,21 +7,16 @@ import (
 	"bytes"
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
-	"log"
 	"math"
 	"net/http"
 	"net/url"
 	"reflect"
-	"runtime/debug"
 	"strconv"
 	"strings"
+	"time"
 
-	"github.com/bitly/go-simplejson"
-	"github.com/grafana/grafana-plugin-model/go/datasource"
-	"github.com/hashicorp/go-plugin"
-	"golang.org/x/net/context"
-	"golang.org/x/net/context/ctxhttp"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 )
 
 type ClickHouseResponse struct {
@@ -35,61 +30,19 @@ type ClickHouseMeta struct {
 	Type string
 }
 
+type DataSourceMeta struct {
+	Type  string
+	Index int
+}
+
 var httpClient = &http.Client{}
 
-type ClickhouseDatasource struct {
-	plugin.NetRPCUnsupportedPlugin
-}
-
-func (t *ClickhouseDatasource) Query(ctx context.Context, req *datasource.DatasourceRequest) (r *datasource.DatasourceResponse, err error) {
-	// catch all panics and override err return value
-	defer func() {
-		if panicMsg := recover(); panicMsg != nil {
-			err = fmt.Errorf("clickhouse plugin panicked: %+v stacktrace:\n%s", panicMsg, debug.Stack())
-		}
-	}()
-
-	refId := req.Queries[0].RefId
-	modelJson, err := simplejson.NewJson([]byte(req.Queries[0].ModelJson))
-	if err != nil {
-		return nil, fmt.Errorf("unable to parse query: %w", err)
-	}
-
-	query := modelJson.Get("rawQuery").MustString()
-	request, err := createRequest(req, query)
-	if err != nil {
-		return nil, err
-	}
-
-	response, err := ctxhttp.Do(ctx, httpClient, request)
-	if err != nil {
-		return nil, err
-	}
-	defer func() {
-		if err := response.Body.Close(); err != nil {
-			log.Fatal("can't close HTTP Response body")
-		}
-	}()
-
-	// Body must be drained and closed on each request as per the docs: https://golang.org/pkg/net/http/#Client.Do
-	// otherwise the http client connection cannot be reused
-	body, err := ioutil.ReadAll(response.Body)
-	if err != nil {
-		return nil, err
-	}
-
-	if response.StatusCode != http.StatusOK {
-		return nil, fmt.Errorf("invalid status code. status: %v", response.Status)
-	}
-
-	return parseResponse(body, refId, req.GetTimeRange())
-}
-
-func createRequest(req *datasource.DatasourceRequest, query string) (*http.Request, error) {
+func createRequest(req *backend.QueryDataRequest, query string) (*http.Request, error) {
 	body := ""
 	method := http.MethodGet
 	headers := http.Header{}
-	dataSourceUrl, err := url.Parse(req.Datasource.Url)
+	settings := req.PluginContext.DataSourceInstanceSettings
+	dataSourceUrl, err := url.Parse(settings.URL)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse clickhouse dataSourceUrl: %w", err)
 	}
@@ -100,17 +53,10 @@ func createRequest(req *datasource.DatasourceRequest, query string) (*http.Reque
 	params := dataSourceUrl.Query()
 	params.Add("query", query)
 
-	/*
-	 Note: The current plugins model does not support basic authorization.
-	 We have access to basicAuthPassword but not the basic auth name. Users
-	 will have to use the useYandexCloudAuthorization
-	 option instead for clickhouse auth.
-	 This will be necessary until the new grafana plugin model becomes available:
-	 https://github.com/grafana/grafana-plugin-sdk-go
-	*/
-	secureOptions := req.Datasource.DecryptedSecureJsonData
+	// TODO: Update to support basic auth
+	secureOptions := settings.DecryptedSecureJSONData
 	options := make(map[string]interface{})
-	err = json.Unmarshal([]byte(req.Datasource.JsonData), &options)
+	err = json.Unmarshal([]byte(settings.JSONData), &options)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse clickhouse options: %w", err)
 	}
@@ -210,81 +156,87 @@ func parseFloat64(v interface{}) (float64, error) {
 	}
 }
 
-func parseResponse(body []byte, refId string, timeRange *datasource.TimeRange) (*datasource.DatasourceResponse, error) {
+func isTypeArrayTuple(t string) bool {
+	return strings.HasPrefix(t, "Array(Tuple(")
+}
 
+func isTypeString(t string) bool {
+	return strings.Contains(t, "String")
+}
+
+func clickhouseResponseToFrame(body []byte, query backend.DataQuery) (*data.Frame, error) {
 	parsedBody := ClickHouseResponse{}
 	err := json.Unmarshal(body, &parsedBody)
 	if err != nil {
 		return nil, fmt.Errorf("unable to parse response body: %s\n\n parsing error: %w", body, err)
 	}
 
-	seriesMap := map[string]*datasource.TimeSeries{}
-	metaTypesMap := map[string]string{}
+	metaTypesMap := map[string]DataSourceMeta{}
 	// expect first column as timestamp
-	tsMetaName := parsedBody.Meta[0].Name
-	hasStringKeys := false
+	timestampMetaName := parsedBody.Meta[0].Name
+
+	// Create frame from clickhouse meta
+	frame := data.NewFrame("Wide")
+
+	// Parse clickhouse meta for field information
+	fieldIdx := 0
 	for _, meta := range parsedBody.Meta {
-		if strings.Contains(meta.Type, "String") && !strings.HasPrefix(meta.Type, "Array(Tuple(") {
-			hasStringKeys = true
-			break
+		metaTypesMap[meta.Name] = DataSourceMeta{
+			Type:  meta.Type,
+			Index: fieldIdx,
 		}
+
+		if meta.Name == timestampMetaName {
+			frame.Fields = append(frame.Fields, data.NewField(meta.Name, nil, make([]time.Time, parsedBody.Rows)))
+		} else {
+			frame.Fields = append(frame.Fields, data.NewField(meta.Name, nil, make([]float64, parsedBody.Rows)))
+		}
+
+		fieldIdx++
 	}
 
-	for _, meta := range parsedBody.Meta {
-		if !hasStringKeys && meta.Name != tsMetaName && !strings.HasPrefix(meta.Type, "Array(Tuple(") {
-			seriesMap[meta.Name] = &datasource.TimeSeries{Name: meta.Name, Points: []*datasource.Point{}}
-		}
-		metaTypesMap[meta.Name] = meta.Type
-	}
-
-	for _, dataPoint := range parsedBody.Data {
-		timestamp, err := strconv.ParseInt(dataPoint[tsMetaName].(string), 10, 64)
+	// Map clickhouse data to types
+	for i, dataPoint := range parsedBody.Data {
+		timestamp, err := strconv.ParseInt(dataPoint[timestampMetaName].(string), 10, 64)
 		if err != nil {
-			return nil, fmt.Errorf("unable to parse timestamp with alias=`%s` value=%s error=%w", tsMetaName, dataPoint[tsMetaName].(string), err)
+			return nil, fmt.Errorf("unable to parse timestamp with alias=`%s` value=%s error=%w", timestampMetaName, dataPoint[timestampMetaName].(string), err)
 		}
 
-		// skip datapoints which not contains in alert query relative time range, see https://github.com/Vertamedia/clickhouse-grafana/issues/237
-		if timeRange != nil && (timeRange.FromEpochMs > timestamp || timeRange.ToEpochMs < timestamp) {
+		// skip datapoints that aren't in alert query relative time range, see https://github.com/Vertamedia/clickhouse-grafana/issues/237
+		if query.TimeRange.From.Unix() > timestamp || query.TimeRange.To.Unix() < timestamp {
 			continue
 		}
 
 		stringKeysMetricName := ""
 		for k, v := range dataPoint {
-			if k != tsMetaName && !strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") && strings.Contains(metaTypesMap[k], "String") {
+			if k != timestampMetaName && !isTypeArrayTuple(metaTypesMap[k].Type) && isTypeString(metaTypesMap[k].Type) {
 				stringKeysMetricName += v.(string) + ", "
 			}
 		}
+
 		if stringKeysMetricName != "" {
 			stringKeysMetricName = stringKeysMetricName[0 : len(stringKeysMetricName)-2]
 		}
 
+		frame.Set(metaTypesMap[timestampMetaName].Index, i, time.Unix(timestamp, 0))
+
 		for k, v := range dataPoint {
-			if k != tsMetaName {
+			if k != timestampMetaName {
 				var point float64
 				var err error
 
-				if !strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") && !strings.Contains(metaTypesMap[k], "String") {
-
+				if !isTypeArrayTuple(metaTypesMap[k].Type) && !isTypeString(metaTypesMap[k].Type) {
 					point, err = parseFloat64(v)
 					if err != nil {
 						return nil, fmt.Errorf("unable to parse value %v for '%s': %w", v, k, err)
 					}
 
 					if stringKeysMetricName == "" {
-						seriesMap[k].Points = append(seriesMap[k].Points, &datasource.Point{
-							Timestamp: timestamp,
-							Value:     point,
-						})
+						frame.Set(metaTypesMap[k].Index, i, point)
 					} else {
-						if _, exists := seriesMap[stringKeysMetricName]; !exists {
-							seriesMap[stringKeysMetricName] = &datasource.TimeSeries{Name: stringKeysMetricName, Points: []*datasource.Point{}}
-						}
-						seriesMap[stringKeysMetricName].Points = append(seriesMap[stringKeysMetricName].Points, &datasource.Point{
-							Timestamp: timestamp,
-							Value:     point,
-						})
+						frame.Set(metaTypesMap[stringKeysMetricName].Index, i, point)
 					}
-				} else if strings.HasPrefix(metaTypesMap[k], "Array(Tuple(") {
+				} else if isTypeArrayTuple(metaTypesMap[k].Type) {
 					var arrayOfTuples [][]string
 					switch arrays := v.(type) {
 					case []interface{}:
@@ -303,41 +255,22 @@ func parseResponse(body []byte, refId string, timeRange *datasource.TimeRange) (
 					default:
 						return nil, fmt.Errorf("unable to parse data section type=%T in response json: %s", v, v)
 					}
+
 					for _, tuple := range arrayOfTuples {
 						tsName := tuple[0]
 						tsValue := tuple[1]
-						ts, isExists := seriesMap[tsName]
-						if !isExists {
-							ts = &datasource.TimeSeries{Name: tsName, Points: []*datasource.Point{}}
-							seriesMap[tsName] = ts
-						}
+
 						point, err = parseFloat64(tsValue)
 						if err != nil {
 							return nil, fmt.Errorf("unable to parse value %v for '%s': %w", tsValue, tsName, err)
 						}
-						ts.Points = append(ts.Points, &datasource.Point{
-							Timestamp: timestamp,
-							Value:     point,
-						})
+
+						frame.Set(metaTypesMap[tsName].Index, i, point)
 					}
 				}
 			}
 		}
 	}
 
-	var series []*datasource.TimeSeries
-	for _, timeSeries := range seriesMap {
-		series = append(series, timeSeries)
-	}
-
-	metaJSON, _ := json.Marshal(parsedBody.Meta)
-	return &datasource.DatasourceResponse{
-		Results: []*datasource.QueryResult{
-			{
-				Series:   series,
-				RefId:    refId,
-				MetaJson: string(metaJSON),
-			},
-		},
-	}, nil
+	return frame, nil
 }

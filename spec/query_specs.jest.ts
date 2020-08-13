@@ -1,6 +1,7 @@
 import Scanner from '../src/scanner';
 import SqlQuery from '../src/sql_query';
 import {each} from 'lodash-es';
+import moment from "moment";
 
 class Case {
     name: string;
@@ -143,7 +144,7 @@ describe("macros builder:", () => {
  check https://github.com/Vertamedia/clickhouse-grafana/issues/256
  check https://github.com/Vertamedia/clickhouse-grafana/issues/265
 */
-describe("comments and $rate and from in field name + render", () => {
+describe("comments and $rate and from in field name", () => {
     const query = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\n$rate(countIf(service_name='mysql' AND from_user='alice') AS mysql_alice, countIf(service_name='postgres') AS postgres)\n" +
         "FROM $table\n" +
         "WHERE from_user='bob'";

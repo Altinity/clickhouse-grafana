@@ -1,38 +1,19 @@
-# 2.0.7 (2020-08-07)
-
-## Fixes:
-  * fix parallel query execution, see https://github.com/Vertamedia/clickhouse-grafana/pull/273
-  * fix identifiers quotes, see https://github.com/Vertamedia/clickhouse-grafana/issues/266
-  
-# 2.0.6 (2020-08-05)
+# 2.1.0 (2020-08-13)
 
 ## Enhancement:
-  * add "Skip comments" checkbox to query editor to pass SQL comments to server, fix https://github.com/Vertamedia/clickhouse-grafana/issues/265
-  
-## Security   
-  * rollback SQL+javascript preprocessing logic on browser side to avoid XSS scripting, sorry @fgbogdan
-
-# 2.0.5 (2020-08-01)
-
-## Fixes:
-  * fix plugin.json for pass plugin validator
-  
-# 2.0.4 (2020-07-25)
-
-## Fixes:
-  * fix multi-value variables behavior - https://github.com/Vertamedia/clickhouse-grafana/issues/252
-
-# 2.0.3 (2020-07-24)
-
-## Enhancements:
+* add "Skip comments" checkbox to query editor to pass SQL comments to server, fix https://github.com/Vertamedia/clickhouse-grafana/issues/265
 * add setup notes for Grafana 7.x to README
 * add SQL preprocessing logic on browser side with <% js code subset %>, https://github.com/Vertamedia/clickhouse-grafana/pull/186, thanks @fgbogdan
 * improve alerts query processing for use case when `query(query_name, from, to)` time range is less than visible dashboard time range, see https://github.com/Vertamedia/clickhouse-grafana/issues/237
 * improve alerts json parsing in golang part for case when we have string fields in response which interprets as series name, see https://github.com/Vertamedia/clickhouse-grafana/issues/230
 * properly parsing POST queries in golang part of plugin, https://github.com/Vertamedia/clickhouse-grafana/pull/228, thanks @it1804
 
-
 ## Fixes:
+* fix corner cases for $macro + subquery, see https://github.com/Vertamedia/clickhouse-grafana/issues/276 and https://github.com/Vertamedia/clickhouse-grafana/issues/277  
+* fix parallel query execution, see https://github.com/Vertamedia/clickhouse-grafana/pull/273
+* fix identifiers quotes, see https://github.com/Vertamedia/clickhouse-grafana/issues/276, https://github.com/Vertamedia/clickhouse-grafana/issues/277
+* fix plugin.json for pass `grafana-plugin-repository` plugin validator
+* fix multi-value variables behavior - https://github.com/Vertamedia/clickhouse-grafana/issues/252
 * add Vagrantfile for statefull environment and allow to upgrade scenario like  grafana 7.1.0 + grafana-cli upgrade-all
   * fix https://github.com/Vertamedia/clickhouse-grafana/issues/244
   * fix https://github.com/Vertamedia/clickhouse-grafana/issues/243

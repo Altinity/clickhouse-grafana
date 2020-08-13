@@ -1,4 +1,5 @@
 import sinon from 'sinon';
+// @ts-ignore
 import dateMath from 'app/core/utils/datemath';
 
 export default class TimeSrvStub {

@@ -45,7 +45,7 @@ export default class SqlQuery {
 
         try {
             let ast = scanner.toAST();
-            let topQuery = ast;
+            let topQueryAST = ast;
             if (adhocFilters.length > 0) {
                 /* Check sub queries for ad-hoc filters */
                 while (ast.hasOwnProperty('from') && !isArray(ast.from)) {
@@ -85,10 +85,10 @@ export default class SqlQuery {
                     }
                     ast.where.push(cond);
                 });
-                query = scanner.Print(topQuery);
+                query = scanner.Print(topQueryAST);
             }
 
-            query = SqlQuery.applyMacros(query, ast);
+            query = SqlQuery.applyMacros(query, topQueryAST);
         } catch (err) {
             console.error('AST parser error: ', err);
         }
@@ -233,18 +233,18 @@ export default class SqlQuery {
         return obj.hasOwnProperty(field) && !isEmpty(obj[field]);
     }
 
-    static _parseMacros(macros: string, query: string): string[] {
-        let mLen = macros.length;
-        let mPos = query.indexOf(macros);
-        if (mPos === -1 || query.slice(mPos, mPos + mLen + 1) !== macros + '(') {
+    static _parseMacro(macro: string, query: string): string[] {
+        let mLen = macro.length;
+        let mPos = query.indexOf(macro);
+        if (mPos === -1 || query.slice(mPos, mPos + mLen + 1) !== macro + '(') {
             return [query, ""];
         }
-        let fromIndex = SqlQuery._fromIndex(query);
+        let fromIndex = SqlQuery._fromIndex(query, macro);
         return [query.slice(0, mPos), query.slice(fromIndex)];
     }
 
     static columns(query: string, ast: any): string {
-        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacros('$columns', query);
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacro('$columns', query);
         if (fromQuery.length < 1) {
             return query;
         }
@@ -288,7 +288,7 @@ export default class SqlQuery {
     }
 
     static rateColumns(query: string, ast: any): string {
-        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacros('$rateColumns', query);
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacro('$rateColumns', query);
         if (fromQuery.length < 1) {
             return query;
         }
@@ -305,18 +305,18 @@ export default class SqlQuery {
             ')';
     }
 
-    static _fromIndex(query: string): number {
-        let fromRe = new RegExp('\\s+FROM\\s+', 'gim');
-        let matches = Array.from(query.matchAll(fromRe));
-        if (matches.length === 0) {
+    static _fromIndex(query, macro: string): number {
+        let fromRe = new RegExp("\\"+macro+"\\([\\w\\s\\S]+\\)(\\s+FROM\\s+)", 'gim');
+        let matches = fromRe.exec(query);
+        if (matches === null || matches.length === 0) {
             throw {message: 'Could not find FROM-statement at: ' + query};
         }
-        let fromRelativeIndex = query.slice(matches[matches.length - 1].index).toLocaleLowerCase().indexOf("from");
-        return matches[matches.length - 1].index + fromRelativeIndex;
+        let fromRelativeIndex = matches[matches.length - 1].toLocaleLowerCase().indexOf("from");
+        return fromRe.lastIndex - matches[matches.length - 1].length + fromRelativeIndex;
     }
 
     static rate(query: string, ast: any): string {
-        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacros('$rate', query);
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacro('$rate', query);
         if (fromQuery.length < 1) {
             return query;
         }
@@ -356,7 +356,7 @@ export default class SqlQuery {
     }
 
     static perSecondColumns(query: string, ast: any): string {
-        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacros('$perSecondColumns', query);
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacro('$perSecondColumns', query);
         if (fromQuery.length < 1) {
             return query;
         }
@@ -406,7 +406,7 @@ export default class SqlQuery {
 
     // $perSecond(query)
     static perSecond(query: string, ast: any): string {
-        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacros('$perSecond', query);
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacro('$perSecond', query);
         if (fromQuery.length < 1) {
             return query;
         }

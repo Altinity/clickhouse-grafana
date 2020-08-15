@@ -191,6 +191,8 @@ func clickhouseResponseToFrame(body []byte, query backend.DataQuery) (*data.Fram
 		if meta.Name == timestampMetaName {
 			frame.Fields = append(frame.Fields, data.NewField(meta.Name, nil, make([]time.Time, parsedBody.Rows)))
 		} else {
+			// TODO convert meta to the appropriate slice
+			// TODO parse tuple names properly
 			frame.Fields = append(frame.Fields, data.NewField(meta.Name, nil, make([]float64,parsedBody.Rows)))
 		}
 
@@ -283,6 +285,7 @@ func clickhouseResponseToFrame(body []byte, query backend.DataQuery) (*data.Fram
 							return nil, fmt.Errorf("unable to parse value %v for '%s': %w", tsValue, tsName, err)
 						}
 
+						// TODO get the correct indexes for the tuple...
 						frame.Set(metaInfo.Index, i, point)
 					}
 				}

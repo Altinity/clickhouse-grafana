@@ -95,6 +95,7 @@ func (ds *ClickhouseDatasource) QueryData(ctx context.Context, req *backend.Quer
 
 	retResp = backend.NewQueryDataResponse()
 	retErr = ds.im.Do(req.PluginContext, func(settings *ClickhouseDatasourceInstanceSettings) error {
+		// TODO loop through each query and process
 		modelJson, err := simplejson.NewJson([]byte(req.Queries[0].JSON))
 		if err != nil {
 			return fmt.Errorf("unable to parse query: %w", err)
@@ -106,7 +107,7 @@ func (ds *ClickhouseDatasource) QueryData(ctx context.Context, req *backend.Quer
 			return err
 		}
 
-		response, err := ctxhttp.Do(ctx, httpClient, request)
+		response, err := ctxhttp.Do(ctx, settings.httpClient, request)
 		if err != nil {
 			return err
 		}
@@ -134,6 +135,13 @@ func (ds *ClickhouseDatasource) QueryData(ctx context.Context, req *backend.Quer
 			Frames: []*data.Frame{resp},
 			Error:  err,
 		}
+
+		/*
+		if err == nil {
+			st, _ := resp.StringTable(-1, -1)
+			backend.Logger.Debug(fmt.Sprintf("Query dataframe result %s", st))
+		}
+		*/
 
 		return nil
 	})

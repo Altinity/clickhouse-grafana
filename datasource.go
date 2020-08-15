@@ -35,8 +35,6 @@ type DataSourceMeta struct {
 	Index int
 }
 
-var httpClient = &http.Client{}
-
 func createRequest(req *backend.QueryDataRequest, query string) (*http.Request, error) {
 	body := ""
 	method := http.MethodGet
@@ -171,12 +169,16 @@ func clickhouseResponseToFrame(body []byte, query backend.DataQuery) (*data.Fram
 		return nil, fmt.Errorf("unable to parse response body: %s\n\n parsing error: %w", body, err)
 	}
 
+	backend.Logger.Debug("Processing clickhouse results...")
+
 	metaTypesMap := map[string]DataSourceMeta{}
 	// expect first column as timestamp
 	timestampMetaName := parsedBody.Meta[0].Name
 
 	// Create frame from clickhouse meta
 	frame := data.NewFrame("Wide")
+
+	backend.Logger.Debug(fmt.Sprintf("Processing clickhouse meta... %#v", parsedBody.Meta))
 
 	// Parse clickhouse meta for field information
 	fieldIdx := 0
@@ -189,27 +191,32 @@ func clickhouseResponseToFrame(body []byte, query backend.DataQuery) (*data.Fram
 		if meta.Name == timestampMetaName {
 			frame.Fields = append(frame.Fields, data.NewField(meta.Name, nil, make([]time.Time, parsedBody.Rows)))
 		} else {
-			frame.Fields = append(frame.Fields, data.NewField(meta.Name, nil, make([]float64, parsedBody.Rows)))
+			frame.Fields = append(frame.Fields, data.NewField(meta.Name, nil, make([]float64,parsedBody.Rows)))
 		}
 
 		fieldIdx++
 	}
 
+	backend.Logger.Debug(fmt.Sprintf("Gathered meta fields: %#v", metaTypesMap))
+
 	// Map clickhouse data to types
 	for i, dataPoint := range parsedBody.Data {
+//		backend.Logger.Debug(fmt.Sprintf("Processing datapoint, %#v", dataPoint))
 		timestamp, err := strconv.ParseInt(dataPoint[timestampMetaName].(string), 10, 64)
 		if err != nil {
 			return nil, fmt.Errorf("unable to parse timestamp with alias=`%s` value=%s error=%w", timestampMetaName, dataPoint[timestampMetaName].(string), err)
 		}
 
+		backend.Logger.Debug(fmt.Sprintf("Processing datapoint %#v", dataPoint))
 		// skip datapoints that aren't in alert query relative time range, see https://github.com/Vertamedia/clickhouse-grafana/issues/237
-		if query.TimeRange.From.Unix() > timestamp || query.TimeRange.To.Unix() < timestamp {
+		if query.TimeRange.From.UnixNano() / int64(time.Millisecond) > timestamp || query.TimeRange.To.UnixNano() / int64(time.Millisecond) < timestamp {
 			continue
 		}
 
 		stringKeysMetricName := ""
 		for k, v := range dataPoint {
-			if k != timestampMetaName && !isTypeArrayTuple(metaTypesMap[k].Type) && isTypeString(metaTypesMap[k].Type) {
+			metaInfo, exists := metaTypesMap[k]
+			if exists && k != timestampMetaName && !isTypeArrayTuple(metaInfo.Type) && isTypeString(metaInfo.Type) {
 				stringKeysMetricName += v.(string) + ", "
 			}
 		}
@@ -218,6 +225,7 @@ func clickhouseResponseToFrame(body []byte, query backend.DataQuery) (*data.Fram
 			stringKeysMetricName = stringKeysMetricName[0 : len(stringKeysMetricName)-2]
 		}
 
+		backend.Logger.Debug(fmt.Sprintf("Datapoint timestamp %s", time.Unix(timestamp, 0)))
 		frame.Set(metaTypesMap[timestampMetaName].Index, i, time.Unix(timestamp, 0))
 
 		for k, v := range dataPoint {
@@ -225,18 +233,26 @@ func clickhouseResponseToFrame(body []byte, query backend.DataQuery) (*data.Fram
 				var point float64
 				var err error
 
-				if !isTypeArrayTuple(metaTypesMap[k].Type) && !isTypeString(metaTypesMap[k].Type) {
+				metaInfo, exists := metaTypesMap[k]
+
+				if !exists {
+					continue
+				}
+
+				if !isTypeArrayTuple(metaInfo.Type) && !isTypeString(metaInfo.Type) {
 					point, err = parseFloat64(v)
 					if err != nil {
 						return nil, fmt.Errorf("unable to parse value %v for '%s': %w", v, k, err)
 					}
 
+					backend.Logger.Debug(fmt.Sprintf("Datapoint value %f", point))
 					if stringKeysMetricName == "" {
-						frame.Set(metaTypesMap[k].Index, i, point)
+						frame.Set(metaInfo.Index, i, point)
 					} else {
+						backend.Logger.Debug(fmt.Sprintf("Metric name: %s value %f index %i", stringKeysMetricName, point, metaTypesMap[stringKeysMetricName].Index))
 						frame.Set(metaTypesMap[stringKeysMetricName].Index, i, point)
 					}
-				} else if isTypeArrayTuple(metaTypesMap[k].Type) {
+				} else if isTypeArrayTuple(metaInfo.Type) {
 					var arrayOfTuples [][]string
 					switch arrays := v.(type) {
 					case []interface{}:
@@ -260,12 +276,14 @@ func clickhouseResponseToFrame(body []byte, query backend.DataQuery) (*data.Fram
 						tsName := tuple[0]
 						tsValue := tuple[1]
 
+						backend.Logger.Debug(fmt.Sprintf("Tuple %s of value %s with fieldIdx %i", tsName, tsValue, metaTypesMap[tsName].Index))
+
 						point, err = parseFloat64(tsValue)
 						if err != nil {
 							return nil, fmt.Errorf("unable to parse value %v for '%s': %w", tsValue, tsName, err)
 						}
 
-						frame.Set(metaTypesMap[tsName].Index, i, point)
+						frame.Set(metaInfo.Index, i, point)
 					}
 				}
 			}

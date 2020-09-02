@@ -8,8 +8,7 @@ services:
       - /var/lib/clickhouse/
       - /var/log/clickhouse-server/
   clickhouse:
-    # image: yandex/clickhouse-server:latest
-    image: yandex/clickhouse-server:19.16
+    image: yandex/clickhouse-server:${CLICKHOUSE_VERSION:-latest}
     ports:
       - 8123:8123
       - 9000:9000
@@ -26,10 +25,7 @@ services:
       - ./docker/postgres/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
 
   grafana:
-    image: grafana/grafana:latest
-#    image: grafana/grafana:dev
-#    image: grafana/grafana:6.7.4
-#    image: grafana/grafana:6.6.2
+    image: grafana/grafana:${GRAFANA_VERSION:-latest}
     volumes:
       - ./:/var/lib/grafana/plugins/vertamedia-clickhouse/
       - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml

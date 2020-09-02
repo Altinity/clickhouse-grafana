@@ -199,3 +199,130 @@ describe("$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adho
     });
 });
 
+/* check https://github.com/Vertamedia/clickhouse-grafana/issues/282 */
+describe("check replace with $adhoc macros", () => {
+    const query = "SELECT\n" +
+        "    $timeSeries as t,\n" +
+        "    count()\n" +
+        "FROM $table\n" +
+        "WHERE $timeFilter AND $adhoc\n" +
+        "GROUP BY t\n" +
+        "ORDER BY t";
+    const expQuery = "SELECT\n" +
+        "    (intDiv(toUInt32(TimeFlowStart), 15) * 15) * 1000 as t,\n" +
+        "    count()\n" +
+        "FROM default.flows_raw\n\n" +
+        "WHERE\n" +
+        "    TimeFlowStart BETWEEN toDate(1545613320) AND toDate(1546300740) AND TimeFlowStart BETWEEN toDateTime(1545613320) AND toDateTime(1546300740)\n" +
+        "    AND (SrcAS = 1299)\n" +
+        "GROUP BY t\n\n" +
+        "ORDER BY t\n";
+    let templateSrv = new TemplateSrvStub();
+    const adhocFilters = [
+        {
+            key: "default.flows_raw.SrcAS",
+            operator: "=",
+            value: "1299"
+        },
+    ];
+    let target = {
+        query: query,
+        interval: "15s",
+        intervalFactor: 1,
+        skip_comments: false,
+        table: "flows_raw",
+        database: "default",
+        dateTimeType: "DATETIME",
+        dateColDataType: "TimeFlowStart",
+        dateTimeColDataType: "TimeFlowStart",
+        round: "1m",
+        rawQuery: "",
+    };
+    const options = {
+        rangeRaw: {
+            from: moment('2018-12-24 01:02:03Z'),
+            to: moment('2018-12-31 23:59:59Z'),
+        },
+        range: {
+            from: moment('2018-12-24 01:02:03Z'),
+            to: moment('2018-12-31 23:59:59Z'),
+        },
+        scopedVars: {
+            __interval: {
+                text: "15s",
+                value: "15s",
+            },
+            __interval_ms: {
+                text: "15000",
+                value: 15000,
+            },
+        },
+    };
+    let sql_query = new SqlQuery(target, templateSrv, options);
+    it("applyMacros with $adhoc", () => {
+        expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+    });
+
+});
+
+/* check https://github.com/Vertamedia/clickhouse-grafana/issues/284 */
+describe("check replace with $columns and concat and ARRAY JOIN", () => {
+    const query = "$columns(\n" +
+        "substring(concat(JobName as JobName,' # ' , Metrics.Name as MetricName), 1, 50) as JobSource,\n" +
+        "sum(Metrics.Value) as Kafka_lag_max)\n" +
+        "FROM $table\n" +
+        "ARRAY JOIN Metrics";
+    const expQuery = "SELECT t, groupArray((JobSource, Kafka_lag_max)) AS groupArr FROM ( SELECT (intDiv(toUInt32(dateTimeColumn), 15) * 15) * 1000 AS t, substring(concat(JobName as JobName, ' # ', Metrics.Name as MetricName), 1, 50) as JobSource, sum(Metrics.Value) as Kafka_lag_max FROM default.test_array_join_nested\n" +
+        "\n" +
+        "ARRAY JOIN Metrics\n" +
+        " \n\n" +
+        "WHERE dateTimeColumn BETWEEN toDate(1545613320) AND toDate(1546300740) AND dateTimeColumn BETWEEN toDateTime(1545613320) AND toDateTime(1546300740) AND JobName LIKE 'Job'\n" +
+        " GROUP BY t, JobSource ORDER BY t, JobSource) GROUP BY t ORDER BY t";
+    let templateSrv = new TemplateSrvStub();
+    const adhocFilters = [
+        {
+            key: "default.test_array_join_nested.JobName",
+            operator: "=~",
+            value: "Job"
+        },
+    ];
+    let target = {
+        query: query,
+        interval: "15s",
+        intervalFactor: 1,
+        skip_comments: false,
+        table: "test_array_join_nested",
+        database: "default",
+        dateTimeType: "DATETIME",
+        dateColDataType: "dateTimeColumn",
+        dateTimeColDataType: "dateTimeColumn",
+        round: "1m",
+        rawQuery: "",
+    };
+    const options = {
+        rangeRaw: {
+            from: moment('2018-12-24 01:02:03Z'),
+            to: moment('2018-12-31 23:59:59Z'),
+        },
+        range: {
+            from: moment('2018-12-24 01:02:03Z'),
+            to: moment('2018-12-31 23:59:59Z'),
+        },
+        scopedVars: {
+            __interval: {
+                text: "15s",
+                value: "15s",
+            },
+            __interval_ms: {
+                text: "15000",
+                value: 15000,
+            },
+        },
+    };
+    let sql_query = new SqlQuery(target, templateSrv, options);
+    it("replace with $columns and ARRAY JOIN", () => {
+        expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+    });
+
+});
+

@@ -68,7 +68,7 @@ export default class SqlQuery {
                     }
                     /* Expect fully qualified column name at this point */
                     if (parts.length < 3) {
-                        console.warn("adhoc filters: filter " + af.key + "` has wrong format");
+                        console.warn("adhoc filters: filter `" + af.key + "` has wrong format");
                         return;
                     }
                     if (target[0] !== parts[0] || target[1] !== parts[1]) {
@@ -83,7 +83,10 @@ export default class SqlQuery {
                         // @see https://github.com/grafana/grafana/issues/10918
                         cond = "AND " + cond;
                     }
-                    ast.where.push(cond);
+                    // push condition only when $adhoc not exists
+                    if (query.indexOf('$adhoc') === -1) {
+                        ast.where.push(cond);
+                    }
                 });
                 query = scanner.Print(topQueryAST);
             }

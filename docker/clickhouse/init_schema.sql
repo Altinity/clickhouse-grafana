@@ -55,3 +55,15 @@ CREATE TABLE IF NOT EXISTS default.test_interval
 
 INSERT INTO default.test_interval(d,x) SELECT toDateTime(now()-(number*10)) AS d, rand() AS x FROM numbers(1000);
 
+
+DROP TABLE IF EXISTS default.test_array_join_nested;
+CREATE TABLE IF NOT EXISTS default.test_array_join_nested(
+    d DateTime,
+    JobName LowCardinality(String),
+    Metrics Nested (
+        Name LowCardinality(String),
+        Value UInt64
+    )
+) ENGINE = MergeTree() ORDER BY (d);
+
+INSERT INTO default.test_array_join_nested(d, JobName, Metrics.Name, Metrics.Value) SELECT toDateTime(now()-(number*10)) AS d, if(number%2,'Job2','Job1') AS JobName, (SELECT groupArray(if( rand() % 2,'metric1','metric2')) FROM numbers(10)) AS metrics_name,(SELECT groupArray(rand() % (number + 10)) FROM numbers(10)) AS metrics_value FROM numbers(1000);

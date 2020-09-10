@@ -31,6 +31,7 @@ services:
       - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
       - ./docker/grafana/grafana-clickhouse-ontime-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-ontime-datasource.yaml
       - ./docker/grafana/grafana-postgres-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-postgres-datasource.yaml
+      - ./docker/grafana/grafana-trickster-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-trickster-datasource.yaml
       - ./docker/grafana/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/grafana-dashboards.yaml
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
 
@@ -40,6 +41,15 @@ services:
       - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
     ports:
       - 3000:3000
+    depends_on:
+      - clickhouse
+
+  trickster:
+    image: tricksterio/trickster:${TRICKSTER_VERSION:-latest}
+    volumes:
+      - ./docker/trickster/trickster.conf:/etc/trickster/trickster.conf
+    ports:
+      - 8480:8480
     depends_on:
       - clickhouse
 

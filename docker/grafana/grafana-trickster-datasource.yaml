@@ -1,0 +1,12 @@
+﻿apiVersion: 1
+
+datasources:
+ - name: trickster
+   type: vertamedia-clickhouse-datasource
+   access: proxy
+   url: http://trickster:8480/click1/
+   editable: true
+   jsonData:
+     addCorsHeader: true
+     # trickster doesn't pass SQL query via POST request body
+     usePOST: false

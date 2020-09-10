@@ -66,4 +66,15 @@ CREATE TABLE IF NOT EXISTS default.test_array_join_nested(
     )
 ) ENGINE = MergeTree() ORDER BY (d);
 
-INSERT INTO default.test_array_join_nested(d, JobName, Metrics.Name, Metrics.Value) SELECT toDateTime(now()-(number*10)) AS d, if(number%2,'Job2','Job1') AS JobName, (SELECT groupArray(if( rand() % 2,'metric1','metric2')) FROM numbers(10)) AS metrics_name,(SELECT groupArray(rand() % (number + 10)) FROM numbers(10)) AS metrics_value FROM numbers(1000);
+INSERT INTO default.test_array_join_nested(d, JobName, Metrics.Name, Metrics.Value)
+SELECT d, JobName, groupArray(metricname) AS metrics_name_arr, groupArray(metricval) AS metrics_value_arr
+FROM (
+      SELECT
+          if(number%2,'Job2','Job1') AS JobName,
+          toDateTime(now()-(number*10)) AS d,
+          arrayJoin(['metric1', 'metric2']) AS metricname,
+          rand64(cityHash64(arrayJoin(range(5)), number, metricname))%10 metricval
+      FROM numbers(1000)
+      ORDER BY d, metricname
+         )
+GROUP BY d, JobName;

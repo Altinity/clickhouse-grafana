@@ -76,7 +76,7 @@ export default class SqlQuery {
                     }
                     let operator = SqlQuery.clickhouseOperator(af.operator);
                     // tslint:disable-next-line:max-line-length
-                    let cond = parts[2] + " " + operator + " " + ((af.value.indexOf("'") > -1 || af.value.indexOf(", ") > -1 || af.value.match(/^\s*\d+\s*$/)) ? af.value : "'" + af.value + "'");
+                    let cond = parts[2] + " " + operator + " " + ((typeof(af.value) === "number" || af.value.indexOf("'") > -1 || af.value.indexOf(", ") > -1 || af.value.match(/^\s*\d+\s*$/)) ? af.value : "'" + af.value + "'");
                     adhocCondition.push(cond);
                     if (ast.where.length > 0) {
                         // OR is not implemented

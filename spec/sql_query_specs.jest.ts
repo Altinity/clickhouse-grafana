@@ -14,6 +14,8 @@ describe("Query SELECT with $timeFilterByColumn and range with from and to:", ()
     it("gets replaced with BETWEEN filter", () => {
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME'))
             .toBe('SELECT * FROM table WHERE column_name BETWEEN toDateTime(1545613323) AND toDateTime(1546300799)');
+        expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME64'))
+            .toBe('SELECT * FROM table WHERE column_name BETWEEN toDateTime64(1545613323, 3) AND toDateTime64(1546300799, 3)');
     });
 });
 
@@ -29,7 +31,65 @@ describe("Query SELECT with $timeFilterByColumn and range with from", () => {
     };
 
     it("gets replaced with >= filter", () => {
-        expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME')).toBe('SELECT * FROM table WHERE column_name >= toDateTime(1545613323)');
+        expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME'))
+            .toBe('SELECT * FROM table WHERE column_name >= toDateTime(1545613323)');
+        expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME64'))
+            .toBe('SELECT * FROM table WHERE column_name >= toDateTime64(1545613323, 3)'
+        );
+    });
+});
+
+
+describe("Query SELECT with $timeSeries $timeFilter and DATETIME64", () => {
+    const query = "SELECT $timeSeries as t, sum(x) AS metric\n" +
+        "FROM $table\n" +
+        "WHERE $timeFilter\n" +
+        "GROUP BY t\n" +
+        "ORDER BY t";
+    const expQuery = "SELECT (intDiv(toFloat64(\"d\"), 15) * 15) as t, sum(x) AS metric\n" +
+        "FROM default.test_datetime64\n" +
+        "WHERE \"d\" BETWEEN toDateTime64(1545613320, 3) AND toDateTime64(1546300740, 3)\n" +
+        "GROUP BY t\n" +
+        "ORDER BY t";
+    let templateSrv = new TemplateSrvStub();
+    const adhocFilters = [
+    ];
+    let target = {
+        query: query,
+        interval: "15s",
+        intervalFactor: 1,
+        skip_comments: false,
+        table: "test_datetime64",
+        database: "default",
+        dateTimeType: "DATETIME64",
+        dateColDataType: "",
+        dateTimeColDataType: "d",
+        round: "1m",
+        rawQuery: "",
+    };
+    const options = {
+        rangeRaw: {
+            from: moment('2018-12-24 01:02:03Z'),
+            to: moment('2018-12-31 23:59:59Z'),
+        },
+        range: {
+            from: moment('2018-12-24 01:02:03Z'),
+            to: moment('2018-12-31 23:59:59Z'),
+        },
+        scopedVars: {
+            __interval: {
+                text: "15s",
+                value: "15s",
+            },
+            __interval_ms: {
+                text: "15000",
+                value: 15000,
+            },
+        },
+    };
+    let sql_query = new SqlQuery(target, templateSrv, options);
+    it("applyMacros $timeSeries with $timeFilter with DATETIME64", () => {
+        expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
     });
 });
 

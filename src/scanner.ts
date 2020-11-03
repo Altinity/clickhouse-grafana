@@ -596,7 +596,7 @@ function betweenBraces(query) {
     return subQuery;
 }
 
-// see https://clickhouse.yandex/reference_ru.html#SELECT
+// see https://clickhouse.tech/docs/en/sql-reference/statements/select/
 function print(AST, tab = '') {
     let result = '';
     if (isSet(AST, 'root')) {

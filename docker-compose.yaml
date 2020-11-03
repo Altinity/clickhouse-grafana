@@ -13,6 +13,7 @@ services:
       - 8123:8123
       - 9000:9000
     volumes:
+      - /var/log/clickhouse-server
       - ./docker/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
 
   postgres:
@@ -68,7 +69,7 @@ services:
       "
 
   backend_builder:
-    image: golang:1.14
+    image: golang:1.15
     working_dir: /go/src/grafana-clickhouse
     environment:
       GOCACHE: "/go-cache"

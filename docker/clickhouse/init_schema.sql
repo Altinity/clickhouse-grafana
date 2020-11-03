@@ -78,3 +78,13 @@ FROM (
       ORDER BY d, metricname
          )
 GROUP BY d, JobName;
+
+
+DROP TABLE IF EXISTS default.test_datetime64;
+CREATE TABLE IF NOT EXISTS default.test_datetime64
+(
+    d DateTime64(6),
+    x UInt32
+) ENGINE = MergeTree() ORDER BY (d);
+
+INSERT INTO default.test_datetime64(d,x) SELECT toDateTime64(now64(6)-(number*10), 6) AS d, rand() AS x FROM numbers(1000);

@@ -184,6 +184,9 @@ export default class SqlQuery {
                 return 'toDateTime(' + t + ')';
             }
 
+            if (dateTimeType === 'DATETIME64') {
+                return 'toDateTime64(' + t + ', 3)';
+            }
             return t;
         };
     }
@@ -459,6 +462,9 @@ export default class SqlQuery {
         if (dateTimeType === 'DATETIME') {
             return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
         }
+        if (dateTimeType === 'DATETIME64') {
+            return '(intDiv(toFloat64($dateTimeCol), $interval) * $interval)';
+        }
         return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
     }
 
@@ -473,6 +479,9 @@ export default class SqlQuery {
         let convertFn = function (t: string): string {
             if (dateTimeType === 'DATETIME') {
                 return 'toDateTime(' + t + ')';
+            }
+            if (dateTimeType === 'DATETIME64') {
+                return 'toDateTime64(' + t + ', 3)';
             }
             return t;
         };

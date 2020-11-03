@@ -38,19 +38,24 @@ describe("When meta and data keys do not have the same index", () => {
     const response = {
         "meta": [
             {
-                "name": "foo",
+                "name": "c",
                 "type": "String",
             },
             {
-                "name": "bar",
+                "name": "a",
+                "type": "String",
+            },
+            {
+                "name": "b",
                 "type": "String",
             },
         ],
 
         "data": [
             {
-                "bar": "bar_value",
-                "foo": "foo_value",
+                "b": "b_value",
+                "c": "c_value",
+                "a": "a_value",
             },
         ],
     };
@@ -60,6 +65,6 @@ describe("When meta and data keys do not have the same index", () => {
     const data = responseParser.parse("SELECT col1 AS foo, col2 AS bar FROM host", response);
 
     it('should return key-value pairs', function () {
-        expect(data[0]).toStrictEqual({"bar": "bar_value", "foo": "foo_value"});
+        expect(data[0]).toStrictEqual({"a": "a_value", "b": "b_value", "c": "c_value"});
     });
 });

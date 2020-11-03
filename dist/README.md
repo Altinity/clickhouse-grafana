@@ -1,6 +1,6 @@
 # ClickHouse datasource for Grafana 4.6+
 
-ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.yandex) as a backend database.  
+ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.tech) as a backend database.  
 
 ### Quick start
 
@@ -71,8 +71,9 @@ Query setup interface:
 
 First row `FROM` contains two options: database and table. Table values depends on a selected database.
 Second row contains selectors for time filtering:
-* Column:Date ([EventDate](https://clickhouse.yandex/reference_en.html#Date))
-* Column:DateTime ([DateTime](https://clickhouse.yandex/reference_en.html#DateTime)) or Column:TimeStamp (UInt32).
+* Column:Date ([EventDate](https://clickhouse.tech/docs/en/sql-reference/data-types/date/))
+* Column:DateTime ([DateTime](https://clickhouse.tech/docs/en/sql-reference/data-types/datetime/))
+* Column:TimeStamp ([UInt32](https://clickhouse.tech/docs/en/sql-reference/data-types/int-uint/)).
 
 > Plugin will try to detect date columns automatically
 

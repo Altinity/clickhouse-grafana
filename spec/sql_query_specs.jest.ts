@@ -15,7 +15,7 @@ describe("Query SELECT with $timeFilterByColumn and range with from and to:", ()
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME'))
             .toBe('SELECT * FROM table WHERE column_name BETWEEN toDateTime(1545613323) AND toDateTime(1546300799)');
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME64'))
-            .toBe('SELECT * FROM table WHERE column_name BETWEEN toDateTime64(1545613323, 3) AND toDateTime64(1546300799, 3)');
+            .toBe('SELECT * FROM table WHERE toDateTime64(column_name, 3) >= toDateTime64(1545613323, 3) AND toDateTime64(column_name, 3) <= toDateTime64(1546300799, 3)');
     });
 });
 
@@ -34,7 +34,7 @@ describe("Query SELECT with $timeFilterByColumn and range with from", () => {
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME'))
             .toBe('SELECT * FROM table WHERE column_name >= toDateTime(1545613323)');
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME64'))
-            .toBe('SELECT * FROM table WHERE column_name >= toDateTime64(1545613323, 3)'
+            .toBe('SELECT * FROM table WHERE toDateTime64(column_name, 3) >= toDateTime64(1545613323, 3)'
         );
     });
 });
@@ -46,9 +46,9 @@ describe("Query SELECT with $timeSeries $timeFilter and DATETIME64", () => {
         "WHERE $timeFilter\n" +
         "GROUP BY t\n" +
         "ORDER BY t";
-    const expQuery = "SELECT (intDiv(toFloat64(\"d\"), 15) * 15) as t, sum(x) AS metric\n" +
+    const expQuery = "SELECT (intDiv(toFloat64(\"d\") * 1000, 15) * 15) as t, sum(x) AS metric\n" +
         "FROM default.test_datetime64\n" +
-        "WHERE \"d\" BETWEEN toDateTime64(1545613320, 3) AND toDateTime64(1546300740, 3)\n" +
+        "WHERE toDateTime64(\"d\", 3) >= toDateTime64(1545613320, 3) AND toDateTime64(\"d\", 3) <= toDateTime64(1546300740, 3)\n" +
         "GROUP BY t\n" +
         "ORDER BY t";
     let templateSrv = new TemplateSrvStub();
@@ -166,8 +166,8 @@ describe("$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adho
         "        count() as count\n" +
         "    FROM default.test_grafana\n" +
         "\n" +
-        "    WHERE event_date BETWEEN toDate(1545613320) AND toDate(1546300740) AND event_time BETWEEN toDateTime(1545613320) AND toDateTime(1546300740) AND\n" +
-        "        event_date BETWEEN toDate(1545613320) AND toDate(1546300740) AND event_time BETWEEN toDateTime(1545613320) AND toDateTime(1546300740)\n" +
+        "    WHERE event_date BETWEEN toDate(1545613320) AND toDate(1546300740) AND event_time >= toDateTime(1545613320) AND event_time <= toDateTime(1546300740) AND\n" +
+        "        event_date BETWEEN toDate(1545613320) AND toDate(1546300740) AND event_time >= toDateTime(1545613320) AND event_time <= toDateTime(1546300740)\n" +
         "        AND toLowerCase(service_name) IN ('mysql','postgresql')\n" +
         "        AND test = 'value'\n" +
         "        AND test2 LIKE '%value%'\n" +
@@ -273,7 +273,7 @@ describe("check replace with $adhoc macros", () => {
         "    count()\n" +
         "FROM default.flows_raw\n\n" +
         "WHERE\n" +
-        "    TimeFlowStart BETWEEN toDate(1545613320) AND toDate(1546300740) AND TimeFlowStart BETWEEN toDateTime(1545613320) AND toDateTime(1546300740)\n" +
+        "    TimeFlowStart BETWEEN toDate(1545613320) AND toDate(1546300740) AND TimeFlowStart >= toDateTime(1545613320) AND TimeFlowStart <= toDateTime(1546300740)\n" +
         "    AND (SrcAS = 1299)\n" +
         "GROUP BY t\n\n" +
         "ORDER BY t\n";
@@ -336,7 +336,7 @@ describe("check replace with $columns and concat and ARRAY JOIN", () => {
         "\n" +
         "ARRAY JOIN Metrics\n" +
         " \n\n" +
-        "WHERE dateTimeColumn BETWEEN toDate(1545613320) AND toDate(1546300740) AND dateTimeColumn BETWEEN toDateTime(1545613320) AND toDateTime(1546300740) AND JobName LIKE 'Job'\n" +
+        "WHERE dateTimeColumn BETWEEN toDate(1545613320) AND toDate(1546300740) AND dateTimeColumn >= toDateTime(1545613320) AND dateTimeColumn <= toDateTime(1546300740) AND JobName LIKE 'Job'\n" +
         " GROUP BY t, JobSource ORDER BY t, JobSource) GROUP BY t ORDER BY t";
     let templateSrv = new TemplateSrvStub();
     const adhocFilters = [

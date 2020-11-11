@@ -472,7 +472,7 @@ export default class SqlQuery {
             return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
         }
         if (dateTimeType === 'DATETIME64') {
-            return '(intDiv(toFloat64($dateTimeCol) * 1000, $interval) * $interval)';
+            return '(intDiv(toFloat64($dateTimeCol) * 1000, ($interval * 1000)) * ($interval * 1000))';
         }
         return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
     }

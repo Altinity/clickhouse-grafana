@@ -46,7 +46,7 @@ describe("Query SELECT with $timeSeries $timeFilter and DATETIME64", () => {
         "WHERE $timeFilter\n" +
         "GROUP BY t\n" +
         "ORDER BY t";
-    const expQuery = "SELECT (intDiv(toFloat64(\"d\") * 1000, 15) * 15) as t, sum(x) AS metric\n" +
+    const expQuery = "SELECT (intDiv(toFloat64(\"d\") * 1000, (15 * 1000)) * (15 * 1000)) as t, sum(x) AS metric\n" +
         "FROM default.test_datetime64\n" +
         "WHERE toDateTime64(\"d\", 3) >= toDateTime64(1545613320, 3) AND toDateTime64(\"d\", 3) <= toDateTime64(1546300740, 3)\n" +
         "GROUP BY t\n" +

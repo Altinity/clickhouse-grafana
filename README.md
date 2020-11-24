@@ -4,11 +4,12 @@ ClickHouse datasource plugin provides a support for [ClickHouse](https://clickho
 
 ### Quick start
 
-#### Grafana 7.x setup notes
-Grafana team currently doesn't provide worked signing method for community plugins
-https://community.grafana.com/t/how-to-create-a-signed-backend-plugin/30068/2
+#### Grafana 7.x setup notes for plugin version before 2.2.0
+When 2.0.x and 2.1.x vertamedia-clickhouse-grafana plugin versions released Grafana team didn't provide worked signing method for community plugins.
+Current sign process describe on [grafana.com](https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/)
 
-so, for properly setup you need change configuration option  
+
+so, for properly setup 2.0.x and 2.1.x plugins you need change configuration option  
 ```
 [plugins]
 allow_loading_unsigned_plugins=vertamedia-clickhouse-datasource
@@ -20,16 +21,17 @@ GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource
 ```
 
 
-You can install plugin from [grafana.net](https://grafana.net/plugins/vertamedia-clickhouse-datasource)
+You can install plugin from [grafana.com](https://grafana.com/plugins/vertamedia-clickhouse-datasource)
 
 OR
 
-Copy files to your [Grafana plugin directory](http://docs.grafana.org/plugins/installation/#grafana-plugin-directory). Restart Grafana, check data sources list at http://your.grafana.instance/datasources/new, choose ClickHouse option.
+Copy files to your [Grafana plugin directory](https://grafana.com/docs/grafana/latest/plugins/installation/#install-plugin-on-local-grafana). 
+Restart Grafana, check data sources list at http://your.grafana.instance/datasources/new, choose ClickHouse option.
 
 
 ### Features:
 
- * Access to CH via HTTP
+ * Access to CH via HTTP / HTTPS
  * Query setup
  * Raw SQL editor
  * Query formatting

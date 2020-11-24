@@ -10,7 +10,8 @@
         "test:coverage": "jest --coverage --config jest.config.js",
         "test:watch": "jest --config jest.config.js --watch",
         "test:docker": "jest --ci --config jest.config.js",
-        "test:docker:watch": "jest --ci --config jest.config.js --watch"
+        "test:docker:watch": "jest --ci --config jest.config.js --watch",
+        "sign": "bash -xec \"source ./.release_env && node ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js plugin:sign\""
     },
     "author": "Vertamedia",
     "license": "MIT",
@@ -23,6 +24,7 @@
         "systemjs": "^2.1.1"
     },
     "devDependencies": {
+        "@grafana/toolkit": "^7.4.0-pre-ryan.1",
         "@babel/core": "^7.9.0",
         "@babel/preset-env": "^7.9.5",
         "@babel/preset-typescript": "^7.9.0",

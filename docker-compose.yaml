@@ -60,13 +60,13 @@ services:
     volumes:
     - ./:/grafana-clickhouse
     # for speedup npm install
-    - /grafana-clickhouse/node_modules
+    - "node_modules:/grafana-clickhouse/node_modules"
     command: |
-      bash -xec "
-        npm install --production=false && \
+      bash -xec '
+        if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install --production=false; fi && \
         npm run build:prod && \
         npm run test:docker
-      "
+      '
 
   backend_builder:
     image: golang:1.15
@@ -85,4 +85,19 @@ services:
         chmod +x ./dist/vertamedia-clickhouse-plugin*
       "
 
+  plugin_signer:
+    image: node:lts
+    working_dir: /grafana-clickhouse
+    volumes:
+      - ./:/grafana-clickhouse
+      # for speedup npm install
+      - "node_modules:/grafana-clickhouse/node_modules"
+    command: |
+      bash -xec "
+        if [[ ! -f ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js ]]; then npm install --production=false; fi && \
+        source /grafana-clickhouse/.release_env && \
+        node ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js plugin:sign
+      "
 
+volumes:
+  node_modules:

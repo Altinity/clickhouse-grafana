@@ -19,4 +19,7 @@ dos2unix ./dist/*
 git add .
 git commit -m "prepare to new release, $(grep current_version .bumpversion.cfg)"
 bump2version --verbose $1
+docker-compose run plugin_signer
+git add .
+git commit -s -m "sign plugin, $(grep current_version .bumpversion.cfg)"
 git push

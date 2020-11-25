@@ -7,11 +7,11 @@
         "datasource": "clickhouse",
         "enable": true,
         "hide": false,
-        "iconColor": "#F2495C",
+        "iconColor": "#5794F2",
         "limit": 100,
-        "name": "Annotations & Alerts",
-        "query": "SELECT \n       toUInt64(event_time)*1000 AS time,\n       if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,2) AND\n  toUInt64(event_time) >= $from AND toUInt64(event_time) < $to\n",
-        "rawQuery": "SELECT \n       toUInt64(event_time)*1000 AS time,\n       if(rand() % 2 = 1, '[begin] description', '[end] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,2) AND\n  toUInt64(event_time) >= 1599013285 AND toUInt64(event_time) < 1599034885",
+        "name": "Annotations & Alerts + Regions",
+        "query": "SELECT \n       toUInt64(event_time) * 1000 AS time,\n       (toUInt64(event_time) + (rand() % 600)) * 1000 AS time_end,\n       if(rand() % 2 = 1, '[alert] title', '[annotation] title') AS title,\n       if(rand() % 2 = 1, '[alert] description', '[annotation] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,50) AND\n  toUInt64(event_time) >= $from AND toUInt64(event_time) < $to\n",
+        "rawQuery": "SELECT \n       toUInt64(event_time) * 1000 AS time,\n       (toUInt64(event_time) + (rand() % 600)) * 1000 AS time_end,\n       if(rand() % 2 = 1, '[alert] title', '[annotation] title') AS title,\n       if(rand() % 2 = 1, '[alert] description', '[annotation] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,50) AND\n  toUInt64(event_time) >= 1606291685 AND toUInt64(event_time) < 1606313285",
         "showIn": 0,
         "type": "dashboard"
       }
@@ -20,7 +20,7 @@
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
-  "iteration": 1599034883750,
+  "iteration": 1606312298003,
   "links": [],
   "panels": [
     {
@@ -57,8 +57,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -165,8 +168,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -273,8 +279,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -379,8 +388,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -495,13 +507,15 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
-      "repeat": null,
-      "repeatIteration": 1599034883750,
+      "repeatIteration": 1606312298003,
       "repeatPanelId": 5,
       "scopedVars": {
         "repeated_service": {
@@ -612,8 +626,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -720,8 +737,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -828,8 +848,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -936,8 +959,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1045,8 +1071,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1154,8 +1183,11 @@
       "lines": true,
       "linewidth": 1,
       "nullPointMode": "null",
+      "options": {
+        "alertThreshold": true
+      },
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1247,7 +1279,7 @@
         "h": 9,
         "w": 8,
         "x": 8,
-        "y": 45
+        "y": 36
       },
       "hiddenSeries": false,
       "id": 20,
@@ -1264,7 +1296,7 @@
       "linewidth": 1,
       "nullPointMode": "null",
       "percentage": false,
-      "pluginVersion": "7.1.3",
+      "pluginVersion": "7.3.3",
       "pointradius": 2,
       "points": false,
       "renderer": "flot",
@@ -1338,6 +1370,7 @@
       }
     }
   ],
+  "refresh": false,
   "schemaVersion": 26,
   "style": "dark",
   "tags": [],
@@ -1347,13 +1380,16 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "text": "All",
+          "text": [
+            "All"
+          ],
           "value": [
             "$__all"
           ]
         },
         "datasource": "clickhouse",
         "definition": "SELECT DISTINCT [service_name, ' test array'] FROM default.test_grafana",
+        "error": null,
         "hide": 0,
         "includeAll": true,
         "label": null,
@@ -1380,6 +1416,7 @@
         },
         "datasource": "clickhouse",
         "definition": "SELECT DISTINCT concat(host_name, ':', toString(port)) AS remote_host FROM system.clusters",
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -1432,6 +1469,7 @@
         },
         "datasource": "clickhouse",
         "definition": "SELECT DISTINCT cluster FROM system.clusters",
+        "error": null,
         "hide": 0,
         "includeAll": false,
         "label": null,
@@ -1484,7 +1522,10 @@
         "allValue": null,
         "current": {
           "selected": true,
-          "text": "postgresql + mysql",
+          "text": [
+            "postgresql",
+            "mysql"
+          ],
           "value": [
             "postgresql",
             "mysql"
@@ -1492,6 +1533,7 @@
         },
         "datasource": "clickhouse",
         "definition": "SELECT DISTINCT service_name FROM default.test_grafana",
+        "error": null,
         "hide": 0,
         "includeAll": true,
         "label": null,
@@ -1511,6 +1553,7 @@
       },
       {
         "datasource": "clickhouse",
+        "error": null,
         "filters": [
           {
             "condition": "",

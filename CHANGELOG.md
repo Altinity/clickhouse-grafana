@@ -1,3 +1,20 @@
+# 2.2.0 (2020-11-30)
+## Enhancement:
+
+* add region support to annotation query, try to fix wrong column orders for table format, fix https://github.com/Vertamedia/clickhouse-grafana/issues/303
+* add plugin sign process, fix https://github.com/Vertamedia/clickhouse-grafana/issues/212
+* add `DateTime64` support, fix https://github.com/Vertamedia/clickhouse-grafana/issues/292
+* add `linux\arm64` backend plugin build
+* improve ARRAY JOIN parsing, fix https://github.com/Vertamedia/clickhouse-grafana/issues/284
+* improve `docker-compose.yaml` add ability to redefine `GRAFANA_VERSION` and `CLICKHOUSE_VERSION` via environment variables `latest` by default
+
+## Fixes:
+* add `*.js.map` and `*.js` from src and spec folder to .gitignore
+* don't apply adhoc filters twice when used $adhoc macros, fix https://github.com/Vertamedia/clickhouse-grafana/issues/282
+* fix corner case for table format with wrong columns order between meta and data response section, fix https://github.com/Vertamedia/clickhouse-grafana/issues/281
+* add trickster to docker-compose environment
+* actualize links in README.md
+
 # 2.1.0 (2020-08-13)
 
 ## Enhancement:

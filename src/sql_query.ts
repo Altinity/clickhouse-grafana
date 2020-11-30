@@ -120,15 +120,15 @@ export default class SqlQuery {
             to = SqlQuery.convertTimestamp(SqlQuery.round(this.options.range.to, myround));
 
         this.target.rawQuery = query
-            .replace(/\$timeSeries/g, SqlQuery.getTimeSeries(dateTimeType))
-            .replace(/\$timeFilter/g, timeFilter)
-            .replace(/\$table/g, table)
-            .replace(/\$from/g, from)
-            .replace(/\$to/g, to)
-            .replace(/\$dateCol/g, SqlQuery.escapeIdentifier(this.target.dateColDataType))
-            .replace(/\$dateTimeCol/g, SqlQuery.escapeIdentifier(this.target.dateTimeColDataType))
-            .replace(/\$interval/g, interval)
-            .replace(/\$adhoc/g, renderedAdHocCondition);
+            .replace(/\$timeSeries\b/g, SqlQuery.getTimeSeries(dateTimeType))
+            .replace(/\$timeFilter\b/g, timeFilter)
+            .replace(/\$table\b/g, table)
+            .replace(/\$from\b/g, from)
+            .replace(/\$to\b/g, to)
+            .replace(/\$dateCol\b/g, SqlQuery.escapeIdentifier(this.target.dateColDataType))
+            .replace(/\$dateTimeCol\b/g, SqlQuery.escapeIdentifier(this.target.dateTimeColDataType))
+            .replace(/\$interval\b/g, interval)
+            .replace(/\$adhoc\b/g, renderedAdHocCondition);
 
         const round = this.target.round === "$step"
             ? interval

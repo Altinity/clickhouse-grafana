@@ -386,3 +386,57 @@ describe("check replace with $columns and concat and ARRAY JOIN", () => {
 
 });
 
+
+/* check https://github.com/Vertamedia/clickhouse-grafana/issues/294 */
+describe("combine $timeFilterByColumn and $dateTimeCol", () => {
+    const query = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter AND $timeFilterByColumn($dateTimeCol) AND $timeFilterByColumn(another_column) GROUP BY t";
+    const expQuery = "SELECT (intDiv(toUInt32(tm), 15) * 15) * 1000 as t, count() FROM default.test_table " +
+        "WHERE dt BETWEEN toDate(1545613320) AND toDate(1546300740) AND tm >= toDateTime(1545613320) AND tm <= toDateTime(1546300740) " +
+        "AND tm BETWEEN toDateTime(1545613201) AND toDateTime(1546300859) " +
+        "AND another_column BETWEEN toDateTime(1545613201) AND toDateTime(1546300859) " +
+        "GROUP BY t";
+
+    let templateSrv = new TemplateSrvStub();
+    const adhocFilters = [
+    ];
+    let target = {
+        query: query,
+        interval: "15s",
+        intervalFactor: 1,
+        skip_comments: false,
+        table: "test_table",
+        database: "default",
+        dateTimeType: "DATETIME",
+        dateColDataType: "dt",
+        dateTimeColDataType: "tm",
+        round: "1m",
+        rawQuery: "",
+    };
+
+    const options = {
+        rangeRaw: {
+            from: moment('2018-12-24 01:02:03Z'),
+            to: moment('2018-12-31 23:59:59Z'),
+        },
+        range: {
+            from: moment('2018-12-24 01:02:03Z'),
+            to: moment('2018-12-31 23:59:59Z'),
+            raw: RawTimeRangeStub,
+        },
+        scopedVars: {
+            __interval: {
+                text: "15s",
+                value: "15s",
+            },
+            __interval_ms: {
+                text: "15000",
+                value: 15000,
+            },
+        },
+    };
+    let sql_query = new SqlQuery(target, templateSrv, options);
+    it("replace with $timeFilterByColumn($dateTimeCol)", () => {
+        expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+    });
+
+});

@@ -609,7 +609,7 @@ We will appreciate any help from the community which will make working with such
 
 ### Development 
 
-see [CONTRIBUTING.md](CONTRIBUTING.md) for Development and Pull request Contributing instructions 
+see [CONTRIBUTING.md](https://github.com/Vertamedia/clickhouse-grafana/blob/master/CONTRIBUTING.md) for Development and Pull request Contributing instructions 
    
 License
 -------

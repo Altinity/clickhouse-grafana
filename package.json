@@ -24,10 +24,10 @@
         "systemjs": "^2.1.1"
     },
     "devDependencies": {
-        "@grafana/toolkit": "^7.4.0-pre-ryan.1",
         "@babel/core": "^7.9.0",
         "@babel/preset-env": "^7.9.5",
         "@babel/preset-typescript": "^7.9.0",
+        "@grafana/toolkit": "^7.3.5",
         "@types/grafana": "https://git@github.com/CorpGlory/types-grafana.git",
         "@types/jest": "^24.9.1",
         "@types/lodash-es": "^4.17.1",

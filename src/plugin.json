@@ -23,6 +23,20 @@
       "small": "img/clickhouse_logo.svg",
       "large": "img/clickhouse_logo.svg"
     },
+    "screenshots": [
+      {
+        "name": "Connection properties",
+        "path": "img/datasource.png"
+      },
+      {
+        "name": "Query editor",
+        "path": "img/query_editor.png"
+      },
+      {
+        "name": "Annotations editor",
+        "path": "img/annotations.png"
+      }
+    ],
     "links": [
       {
         "name": "GitHub",

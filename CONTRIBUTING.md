@@ -7,6 +7,7 @@ There are following scripts defined in package.json:
 - `build:watch` - automatically rebuild frontend TypeScript+HTML part of codebase on change (handy while developing)
 - `test` - runs frontend test suite using Jest
 - `test:watch` - runs frontend test suite using Jest in watch mode. Automatically reruns tests on source change.
+- `sign` - runs grafana plugin sign in `dist` directory
 
 Each script can be run using NPM or Yarn package managers:
 
@@ -90,7 +91,7 @@ set -xeuo pipefail
     - `./release.sh patch` - for minor hotfix releases
     - `./release.sh minor` - for minor and backward compatible improvements releases
     - `./release.sh major` - for major or backward incompatible improvements releases
-- this script will run `frontend` and `backend` builders via `docker-compose` and run tests and make git commit + git push if test pass
+- this script will run `frontend_builder`, `backend_builder`, `plugin_signer` via `docker-compose` and run tests and make git commit + git push if test pass
 
 #### Final manual steps
 - after git push to your github fork, please open new pull request between your fork and `master` branch in https://github.com/Vertamedia/clickhouse-grafana

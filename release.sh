@@ -22,4 +22,4 @@ bump2version --verbose $1
 docker-compose run plugin_signer
 git add .
 git commit -s -m "sign plugin, $(grep current_version .bumpversion.cfg)"
-git push
+git push --tags

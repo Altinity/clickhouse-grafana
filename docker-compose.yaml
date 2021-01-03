@@ -40,6 +40,7 @@ services:
       # @TODO sign instructions in https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/
       # - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource
       - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
+      - GF_APP_MODE=development
     ports:
       - 3000:3000
     depends_on:
@@ -74,9 +75,10 @@ services:
     environment:
       GOCACHE: "/go-cache"
     volumes:
-      - ./:/go/src/grafana-clickhouse
+      - ./backend:/go/src/grafana-clickhouse
       - ./.cache:/go/pkg/mod
       - ./.cache:/go-cache
+      - ./dist:/go/src/grafana-clickhouse/dist
     command: |
       bash -xec "
         GOOS=linux GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_amd64 . && \
@@ -97,8 +99,7 @@ services:
     command: |
       bash -xec "
         if [[ ! -f ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js ]]; then npm install --production=false; fi && \
-        source /grafana-clickhouse/.release_env && \
-        node ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js plugin:sign
+        npm run sign
       "
 
 volumes:

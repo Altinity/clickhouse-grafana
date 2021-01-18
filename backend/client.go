@@ -4,10 +4,10 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"net/url"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"io/ioutil"
 	"net/http"
+	"net/url"
 	"time"
 )
 

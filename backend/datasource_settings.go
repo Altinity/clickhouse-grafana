@@ -23,7 +23,7 @@ type SecureSettings struct {
 }
 
 type DatasourceSettings struct {
-	URL string	
+	URL      string
 	Username string         `json:"username"`
 	Secure   SecureSettings `json:"secureJsonData"`
 }

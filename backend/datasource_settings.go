@@ -12,6 +12,9 @@ func NewDatasourceSettings(setting backend.DataSourceInstanceSettings) (instance
 		return nil, err
 	}
 
+	dsSettings.URL = setting.URL
+
+	// Set settings object?
 	return &dsSettings, nil
 }
 
@@ -20,6 +23,7 @@ type SecureSettings struct {
 }
 
 type DatasourceSettings struct {
+	URL string	
 	Username string         `json:"username"`
 	Secure   SecureSettings `json:"secureJsonData"`
 }

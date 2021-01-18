@@ -32,7 +32,6 @@ func (ds *ClickHouseDatasource) getClient(ctx backend.PluginContext) (*ClickHous
 	}
 
 	return &ClickHouseClient{
-		context: ctx,
 		settings: im.(*DatasourceSettings),
 	}, nil
 }
@@ -40,7 +39,7 @@ func (ds *ClickHouseDatasource) getClient(ctx backend.PluginContext) (*ClickHous
 func (ds *ClickHouseDatasource) query(ctx backend.PluginContext, query *Query) backend.DataResponse {
 
 	onErr := func(err error) backend.DataResponse {
-		backend.Logger.Error(fmt.Sprintf("Datasource query error: %w", err.Error())
+		backend.Logger.Error(fmt.Sprintf("Datasource query error: %w", err.Error()))
 		return backend.DataResponse{Error: err}
 	}
 

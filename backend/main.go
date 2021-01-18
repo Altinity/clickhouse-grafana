@@ -2,7 +2,6 @@ package main
 
 import (
 	"encoding/json"
-	"errors"
 	"fmt"
 	"os"
 
@@ -13,7 +12,7 @@ import (
 func parseJson(jsonData []byte, res interface{}) error {
 	err := json.Unmarshal(jsonData, &res)
 	if err != nil {
-		return fmt.Errorf("Unable to parse json %s. Error: %w", jsonData, err))
+		return fmt.Errorf("Unable to parse json %s. Error: %w", jsonData, err)
 	} else {
 		return nil
 	}

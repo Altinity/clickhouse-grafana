@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
+	"net/url"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"io/ioutil"
 	"net/http"
@@ -11,7 +12,6 @@ import (
 )
 
 type ClickHouseClient struct {
-	context backend.PluginContext
 	settings *DatasourceSettings
 }
 
@@ -19,11 +19,11 @@ type ClickHouseClient struct {
 func (client *ClickHouseClient) Query(query string) (*Response, error) {
 
 	onErr := func(err error) (*Response, error) {
-		backend.Logger.Error(fmt.Sprintf("clickhouse client query error: %w", err)
+		backend.Logger.Error(fmt.Sprintf("clickhouse client query error: %w", err))
 		return nil, err
 	}
 
-	datasourceUrl, err := url.Parse(client.context.URL)
+	datasourceUrl, err := url.Parse(client.settings.URL)
 	if err != nil {
 		return onErr(fmt.Errorf("unable to parse clickhouse dataSourceUrl: %w", err))
 	}
@@ -32,7 +32,7 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 
 	req, err := http.NewRequest(
 		"POST",
-		dataSourceUrl,
+		datasourceUrl.String(),
 		bytes.NewBufferString(query))
 	if err != nil {
 		return onErr(err)

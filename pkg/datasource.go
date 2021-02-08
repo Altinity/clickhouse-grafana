@@ -47,6 +47,7 @@ func (ds *ClickHouseDatasource) query(ctx backend.PluginContext, query *Query) b
 	if err != nil {
 		return onErr(err)
 	}
+
 	res, err := client.Query(query.Format())
 	if err != nil {
 		return onErr(err)

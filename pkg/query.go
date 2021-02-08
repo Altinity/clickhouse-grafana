@@ -14,7 +14,7 @@ var TimeZoneQuery = fmt.Sprintf("SELECT %s FORMAT JSON;", TimeZoneFieldName)
 
 type Query struct {
 	RefId string `json:"refId"`
-	Query string `json:"query"`
+	Query string `json:"rawQuery"`
 }
 
 func (query *Query) Format() string {

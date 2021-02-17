@@ -8,8 +8,8 @@ Hash: SHA512
   "signedByOrg": "vertamedia",
   "signedByOrgName": "Vertamedia",
   "plugin": "vertamedia-clickhouse-datasource",
-  "version": "2.2.0",
-  "time": 1608089153471,
+  "version": "2.2.2",
+  "time": 1613544113523,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "img/annotations.png": "09cc19df992fede5c4dd830f7b3c7a783702feced07ea9693d417ec127077b00",
@@ -22,21 +22,21 @@ Hash: SHA512
     "partials/annotations.editor.html": "14d2d5add7f13c7c722e33bbc53ef83750fb624e5f7d6efee4a9568addc2ab78",
     "partials/config.html": "51ba130304c63c1a00590a9dc94c8351ff6277e4cf695720de57bff87aeec744",
     "partials/query.editor.html": "eb9ab7af412a922ea2ce09c86b99a75ba70000977a5fd882b8e327a2a27e1904",
-    "plugin.json": "625340b320494c41964bc8ab3c105a3430036b39a570f09f9e2fcd413b9e88e0",
+    "plugin.json": "9de19dc46b3490cd0cf98597fea2e9c3a131d818962354ca07e5b4116a83f20c",
     "README.md": "3194fcabb4b7ea1666d2d805a633555afbbe8f45e1e6cd73e3c21d0456cd5f46",
-    "vertamedia-clickhouse-plugin_darwin_amd64": "91e4623eb08f5e34b3f4c3a5fc7b2a1f7e1f7bf08e92e4ccf1ab9789f2d4a45e",
-    "vertamedia-clickhouse-plugin_linux_amd64": "d82fbdc64533a1747a6ef86b3ffab580016d88316122b51343aa4f3a9e6a117d",
-    "vertamedia-clickhouse-plugin_linux_arm64": "4b43a09498406d9d3dbdea1a1aeeb1b95d076e143e0105425e6e019ba2f63072",
-    "vertamedia-clickhouse-plugin_windows_amd64.exe": "6220ab6550e602876e9abaeabf012e0736db3fac84278384149d266037ffe5fd"
+    "vertamedia-clickhouse-plugin_darwin_amd64": "eb06f9664650e8c32b5aed3e31a9f77a0382e8ab6c02af430020c12545eb5187",
+    "vertamedia-clickhouse-plugin_linux_amd64": "b81329a550f52a6be5fd2d48c0576192292333f36a9a639946e1eed3c80fe596",
+    "vertamedia-clickhouse-plugin_linux_arm64": "fca6c79215cac71d30a0c7fdd9b8a35321f13a8cd3e8bbb21c48d33096de11f8",
+    "vertamedia-clickhouse-plugin_windows_amd64.exe": "e2514972d9531ee7c6db187a86915e3dcd3c1e35db2a65785a0ce9e23b8ee4e6"
   }
 }
 -----BEGIN PGP SIGNATURE-----
 Version: OpenPGP.js v4.10.1
 Comment: https://openpgpjs.org
 
-wqIEARMKAAYFAl/ZfkEACgkQfk0ManCIZud6xAIJAf8QB6f71+ohWwCEmSJv
-vX9sFze8x+fbNrM7DUcfYX9zUIlyjz/DJE9Ov6IeNIljtOQUIS6BcntlKHMu
-C8cjUWarAgkBs3PIlX//llif04PXuldQ97xHgUAqNpQbdu0CTRDwzPLr1UWJ
-xepBURNx1JcSE/qWxHnersRRYRqLeqPa5ZtdMKY=
-=mTmG
+wqIEARMKAAYFAmAsurEACgkQfk0ManCIZudsXQIJAQYzQBo09zX8/qdh47vi
+C5QxQLGBQGnjfitTmN6R3y0d5WGkaNVIc03w93EZHMccrsQ3cbWKZR4FDtoI
+UTUboroEAgkBqqS7B2ZNNReUIkcN2Yml6hmSnQnIEPpzdk5MmZZFF3wFdgwu
+fQoXHFxBu4S3bOBEvAYg80H3HzG7Wn3wYAzmp4k=
+=w7dM
 -----END PGP SIGNATURE-----

@@ -1,4 +1,4 @@
-# 2.2.1 (2021-02-17)
+# 2.2.3 (2021-02-17)
 ## Enhancement:
 
 * automate plugin sign process via github actions, fix wrong executable file permissions

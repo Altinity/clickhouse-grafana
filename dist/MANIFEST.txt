@@ -9,19 +9,19 @@ Hash: SHA512
   "signedByOrgName": "Vertamedia",
   "plugin": "vertamedia-clickhouse-datasource",
   "version": "2.2.2",
-  "time": 1613544113523,
+  "time": 1613547947717,
   "keyId": "7e4d0c6a708866e7",
   "files": {
-    "img/annotations.png": "09cc19df992fede5c4dd830f7b3c7a783702feced07ea9693d417ec127077b00",
-    "img/clickhouse_logo.svg": "111c2048c9bad4a11b0273cf17839696d98968c04cdcc5ea0716bdc973f2e8e4",
-    "img/datasource.png": "8d6dcdddfad512abed8c251404f652383f63ad17bc5c7cbe3e67ad9e6fa0327f",
-    "img/query_editor.png": "b8d50f644d413b15aaf0d7b71fdfa4423f1a045761ec368b19a15e3d1aaf9308",
+    "img\\annotations.png": "09cc19df992fede5c4dd830f7b3c7a783702feced07ea9693d417ec127077b00",
+    "img\\clickhouse_logo.svg": "111c2048c9bad4a11b0273cf17839696d98968c04cdcc5ea0716bdc973f2e8e4",
+    "img\\datasource.png": "8d6dcdddfad512abed8c251404f652383f63ad17bc5c7cbe3e67ad9e6fa0327f",
+    "img\\query_editor.png": "b8d50f644d413b15aaf0d7b71fdfa4423f1a045761ec368b19a15e3d1aaf9308",
     "LICENSE": "a434fc6dd97d5c425c6edbeff0276afd60ab5fffab3ed2c563f95a389502d074",
     "module.js": "3c7c7e44b69f8ce10a6727a5896452f270ba8edda0adfd01ee7cf67c4b8c41e7",
     "module.js.map": "b42c39c5041378a3bd66ad99acc2d453d030af94aadb5331ef241ecb4c2a934f",
-    "partials/annotations.editor.html": "14d2d5add7f13c7c722e33bbc53ef83750fb624e5f7d6efee4a9568addc2ab78",
-    "partials/config.html": "51ba130304c63c1a00590a9dc94c8351ff6277e4cf695720de57bff87aeec744",
-    "partials/query.editor.html": "eb9ab7af412a922ea2ce09c86b99a75ba70000977a5fd882b8e327a2a27e1904",
+    "partials\\annotations.editor.html": "14d2d5add7f13c7c722e33bbc53ef83750fb624e5f7d6efee4a9568addc2ab78",
+    "partials\\config.html": "51ba130304c63c1a00590a9dc94c8351ff6277e4cf695720de57bff87aeec744",
+    "partials\\query.editor.html": "eb9ab7af412a922ea2ce09c86b99a75ba70000977a5fd882b8e327a2a27e1904",
     "plugin.json": "9de19dc46b3490cd0cf98597fea2e9c3a131d818962354ca07e5b4116a83f20c",
     "README.md": "3194fcabb4b7ea1666d2d805a633555afbbe8f45e1e6cd73e3c21d0456cd5f46",
     "vertamedia-clickhouse-plugin_darwin_amd64": "eb06f9664650e8c32b5aed3e31a9f77a0382e8ab6c02af430020c12545eb5187",
@@ -34,9 +34,9 @@ Hash: SHA512
 Version: OpenPGP.js v4.10.1
 Comment: https://openpgpjs.org
 
-wqIEARMKAAYFAmAsurEACgkQfk0ManCIZudsXQIJAQYzQBo09zX8/qdh47vi
-C5QxQLGBQGnjfitTmN6R3y0d5WGkaNVIc03w93EZHMccrsQ3cbWKZR4FDtoI
-UTUboroEAgkBqqS7B2ZNNReUIkcN2Yml6hmSnQnIEPpzdk5MmZZFF3wFdgwu
-fQoXHFxBu4S3bOBEvAYg80H3HzG7Wn3wYAzmp4k=
-=w7dM
+wqAEARMKAAYFAmAsyasACgkQfk0ManCIZud1rAIGMNh6OQaogjTwlAHSD911
+ProsJCRMDkaoeUmQcdtnu8c/sL/bFFpLYUnYB/7Q1+fOzufrYkagoRRP2Zm9
+VQDmBb0CCLxHRHJOceWAfxKUSXJS0iCXrM2ha0TAuuuH9h4comPx69KjXvIt
+bhWrq5u8ikVnzA90OgXCQ6pSuEpdKKp0+6u5
+=R2pT
 -----END PGP SIGNATURE-----

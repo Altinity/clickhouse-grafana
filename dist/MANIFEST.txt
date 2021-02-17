@@ -8,8 +8,8 @@ Hash: SHA512
   "signedByOrg": "vertamedia",
   "signedByOrgName": "Vertamedia",
   "plugin": "vertamedia-clickhouse-datasource",
-  "version": "2.2.2",
-  "time": 1613544113523,
+  "version": "2.2.3",
+  "time": 1613546387194,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "img/annotations.png": "09cc19df992fede5c4dd830f7b3c7a783702feced07ea9693d417ec127077b00",
@@ -22,7 +22,7 @@ Hash: SHA512
     "partials/annotations.editor.html": "14d2d5add7f13c7c722e33bbc53ef83750fb624e5f7d6efee4a9568addc2ab78",
     "partials/config.html": "51ba130304c63c1a00590a9dc94c8351ff6277e4cf695720de57bff87aeec744",
     "partials/query.editor.html": "eb9ab7af412a922ea2ce09c86b99a75ba70000977a5fd882b8e327a2a27e1904",
-    "plugin.json": "9de19dc46b3490cd0cf98597fea2e9c3a131d818962354ca07e5b4116a83f20c",
+    "plugin.json": "7e322a287a2bd93abde0a5f02aeb64b7e00d14f3f65a011f39036c572981e812",
     "README.md": "3194fcabb4b7ea1666d2d805a633555afbbe8f45e1e6cd73e3c21d0456cd5f46",
     "vertamedia-clickhouse-plugin_darwin_amd64": "eb06f9664650e8c32b5aed3e31a9f77a0382e8ab6c02af430020c12545eb5187",
     "vertamedia-clickhouse-plugin_linux_amd64": "b81329a550f52a6be5fd2d48c0576192292333f36a9a639946e1eed3c80fe596",
@@ -34,9 +34,9 @@ Hash: SHA512
 Version: OpenPGP.js v4.10.1
 Comment: https://openpgpjs.org
 
-wqIEARMKAAYFAmAsurEACgkQfk0ManCIZudsXQIJAQYzQBo09zX8/qdh47vi
-C5QxQLGBQGnjfitTmN6R3y0d5WGkaNVIc03w93EZHMccrsQ3cbWKZR4FDtoI
-UTUboroEAgkBqqS7B2ZNNReUIkcN2Yml6hmSnQnIEPpzdk5MmZZFF3wFdgwu
-fQoXHFxBu4S3bOBEvAYg80H3HzG7Wn3wYAzmp4k=
-=w7dM
+wqEEARMKAAYFAmAsw5MACgkQfk0ManCIZucH7AIInTOR3xlAzk/Iu7PhAZQI
+j9G4bACbwjFUcRBZiWiIcr6hW7XuVYu4vTEst1RVGuIesCbq611UYCOED1Co
+fT5Zk5sCCQE/Hb0xVqA2gNj2AExBo7/9ZaqYlsbpfO6Plw1wmYJJhnSXmRkf
+AUi5If4qqVLGa7vrUrRNBosEgYdNVSiWrwHcgQ==
+=WLWv
 -----END PGP SIGNATURE-----

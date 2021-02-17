@@ -16,8 +16,10 @@ docker-compose stop
 docker-compose run frontend_builder
 docker-compose run backend_builder
 dos2unix ./dist/*
+chmod +rx ./dist
+chmod +rx -R ./dist/vertamedia-clickhouse-plugin*
 git add .
-git commit -m "prepare to new release, $(grep current_version .bumpversion.cfg)"
+git diff-index --quiet HEAD || git commit -m "prepare to new release, $(grep current_version .bumpversion.cfg)"
 bump2version --verbose $1
 docker-compose run plugin_signer
 git add .

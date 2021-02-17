@@ -15,8 +15,8 @@ jobs:
       - name: Setup packages
         id: setup-packages
         run: |
-          apt-get update -y
-          apt-get install -y zip zstd jq git
+          sudo apt-get update -y
+          sudo apt-get install -y zip zstd jq git
 
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.2

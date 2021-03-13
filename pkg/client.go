@@ -4,11 +4,13 @@ import (
 	"bytes"
 	"errors"
 	"fmt"
-	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
+	"encoding/json"
+
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 
 type ClickHouseClient struct {
@@ -55,9 +57,9 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 	}
 
 	var jsonResp = Response{}
-	jsonErr := parseJson(body, &jsonResp)
-	if jsonErr != nil {
-		return onErr(jsonErr)
+	err = json.Unmarshal(body, &jsonResp)
+	if err != nil {
+		return onErr(fmt.Errorf("Unable to parse json %s. Error: %w", body, err))
 	}
 
 	return &jsonResp, nil

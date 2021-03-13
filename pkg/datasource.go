@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"encoding/json"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
@@ -75,9 +76,9 @@ func (ds *ClickHouseDatasource) QueryData(
 
 	for _, query := range req.Queries {
 		var q = Query{}
-		err := parseJson(query.JSON, &q)
+		err := json.Unmarshal(query.JSON, &q)
 		if err != nil {
-			return onErr(err)
+			return onErr(fmt.Errorf("Unable to parse json %s. Error: %w", query.JSON, err))
 		}
 
 		response.Responses[q.RefId] = ds.query(req.PluginContext, &q)

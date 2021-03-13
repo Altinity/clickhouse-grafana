@@ -74,7 +74,7 @@ services:
     environment:
       GOCACHE: "/go-cache"
     volumes:
-      - ./backend:/go/src/grafana-clickhouse
+      - ./pkg:/go/src/grafana-clickhouse
       - ./.cache:/go/pkg/mod
       - ./.cache:/go-cache
       - ./dist:/go/src/grafana-clickhouse/dist

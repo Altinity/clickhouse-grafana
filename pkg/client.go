@@ -25,9 +25,9 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 		return nil, err
 	}
 
-	datasourceUrl, err := url.Parse(client.settings.URL)
+	datasourceUrl, err := url.Parse(client.settings.Instance.URL)
 	if err != nil {
-		return onErr(fmt.Errorf("unable to parse clickhouse dataSourceUrl: %w", err))
+		return onErr(fmt.Errorf("unable to parse clickhouse datasource url: %w", err))
 	}
 
 	httpClient := &http.Client{}
@@ -40,8 +40,14 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 		return onErr(err)
 	}
 
-	req.Header.Set("X-ClickHouse-User", client.settings.Username)
-	req.Header.Set("X-ClickHouse-Key", client.settings.Secure.Password)
+	if (client.settings.Instance.BasicAuthEnabled) {
+		password, _ := client.settings.Instance.DecryptedSecureJSONData["basicAuthPassword"]
+		req.Header.Set("X-ClickHouse-User", client.settings.Instance.BasicAuthUser)
+		req.Header.Set("X-ClickHouse-Key", password)
+	} else if (client.settings.UseYandexCloudAuthorization) {
+		req.Header.Set("X-ClickHouse-User", client.settings.XHeaderUser)
+		req.Header.Set("X-ClickHouse-Key", client.settings.XHeaderKey)
+	}
 
 	resp, err := httpClient.Do(req)
 	if err != nil {

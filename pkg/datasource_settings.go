@@ -3,32 +3,36 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	
+
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
 )
 
-func NewDatasourceSettings(setting backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+func NewDatasourceSettings(settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
 	var dsSettings = DatasourceSettings{}
-	err := json.Unmarshal(setting.JSONData, &dsSettings)
+
+	err := json.Unmarshal(settings.JSONData, &dsSettings)
 	if err != nil {
-		return nil, fmt.Errorf("Unable to parse json %s. Error: %w", setting.JSONData, err)
+		return nil, fmt.Errorf("Unable to parse json %s. Error: %w", settings.JSONData, err)
 	}
 
-	dsSettings.URL = setting.URL
+	dsSettings.Instance = settings
 
-	// Set settings object?
+	backend.Logger.Warn(fmt.Sprintf("unmarshaled settings: %#v", dsSettings))
+
 	return &dsSettings, nil
 }
 
-type SecureSettings struct {
-	Password string `json:"password"`
-}
-
+// TODO Support custom headers
 type DatasourceSettings struct {
-	URL      string
-	Username string         `json:"username"`
-	Secure   SecureSettings `json:"secureJsonData"`
+	Instance backend.DataSourceInstanceSettings
+
+	AddCorsHeader bool `json:"addCorsHeader"`
+	DefaultDatabase string `json:"defaultDatabase"`
+	UsePost bool `json:"usePOST"`
+	UseYandexCloudAuthorization bool `json:"useYandexCloudAuthorization"`
+	XHeaderKey string `json:"xHeaderKey"`
+	XHeaderUser string `json:"xHeaderUser"`
 }
 
 func (s *DatasourceSettings) Dispose() {}

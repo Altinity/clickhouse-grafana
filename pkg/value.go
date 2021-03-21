@@ -87,14 +87,6 @@ func parseTimeValue(value interface{}, fieldName string, layout string, timezone
 	return NullValue(fieldName, []*time.Time{})
 }
 
-func parseArrayValue(value interface{}, fieldName string) *Value {
-	return NullValue(fieldName, []*string{})
-}
-
-func parseTupleValue(value interface{}, fieldName string) *Value {
-	return NullValue(fieldName, []*string{})
-}
-
 func ParseValue(valueType string, value interface{}, fieldName string, timezone *time.Location) *Value {
 	if strings.HasPrefix(valueType, "LowCardinality") {
 		return ParseValue(strings.TrimSuffix(strings.TrimPrefix(valueType, "LowCardinality("), ")"),
@@ -110,6 +102,7 @@ func ParseValue(valueType string, value interface{}, fieldName string, timezone 
 			return parseStringValue(value, fieldName)
 		case "UInt64":
 			// This can be a time or uint64 value
+			// Assume that t is the field name used for timestamp
 			if fieldName == "t" {
 				return parseTimeValue(value, fieldName, dateTimeLayout, timezone)
 			}
@@ -125,17 +118,6 @@ func ParseValue(valueType string, value interface{}, fieldName string, timezone 
 				return parseTimeValue(value, fieldName, dateTimeLayout, timezone)
 			} else if strings.HasPrefix(valueType, datePrefix) {
 				return parseTimeValue(value, fieldName, dateLayout, timezone)
-			} else if strings.HasPrefix(valueType, "Array") {
-				// This means more than one value per field?
-				// should be []interface{}
-				byteValue, _ := json.Marshal(value)
-				return parseStringValue(string(byteValue), fieldName)
-			} else if strings.HasPrefix(valueType, "Tuple") {
-				// How do you parse Tuples into their types?
-				// "Value [[[test2 14466868838]]] has compound type [Array(Tuple(String, UInt64))] and will be returned as string"
-				// Should result in [][]string and [][]
-				byteValue, _ := json.Marshal(value)
-				return parseStringValue(string(byteValue), fieldName)
 			} else {
 				backend.Logger.Warn(
 					fmt.Sprintf("Value [%v] has compound type [%v] and will be returned as string", value, valueType))

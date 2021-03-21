@@ -50,10 +50,13 @@ type ClickHouseField struct {
 	FrameField *data.Field
 	Name       string
 	Type       string
+	IsCompound bool
+	Fields []*ClickHouseField
 	TimeZone   *time.Location
 }
 
 func (f *ClickHouseField) Append(value interface{}) {
+	// If iscompoundtype
 	v := ParseValue(f.Type, value, f.Name, f.TimeZone)
 	if v == nil {
 		backend.Logger.Warn(fmt.Sprintf("Value [%v / %v] wouldn't be added to Field", value, f.Type))
@@ -62,6 +65,7 @@ func (f *ClickHouseField) Append(value interface{}) {
 			f.FrameField = v.Field
 		}
 
+		// TODO get the correct field to append
 		f.FrameField.Append(v.Val)
 	}
 }

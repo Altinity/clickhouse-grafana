@@ -18,8 +18,6 @@ func NewDatasourceSettings(settings backend.DataSourceInstanceSettings) (instanc
 
 	dsSettings.Instance = settings
 
-	backend.Logger.Warn(fmt.Sprintf("unmarshaled settings: %#v", dsSettings))
-
 	return &dsSettings, nil
 }
 

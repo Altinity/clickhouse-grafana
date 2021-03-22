@@ -72,7 +72,7 @@ The resulting alerts should look like this
 ![image](https://user-images.githubusercontent.com/5578150/81031711-fd2fad00-8e41-11ea-9b54-5eb4ca1628f1.png)
 
 
-### Howto Make new release
+### How to make a new release
 
 - fork https://github.com/Vertamedia/clickhouse-grafana and make git clone, if necessary
 - look at https://github.com/Vertamedia/clickhouse-grafana/commits/master and add necessary items to [CHANGELOG.md](CHANGELOG.md)

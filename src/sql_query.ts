@@ -321,7 +321,7 @@ export default class SqlQuery {
     }
 
     static _fromIndex(query, macro: string): number {
-        let fromRe = new RegExp("\\" + macro + "\\([\\w\\s\\S]+\\)(\\s+FROM\\s+)", 'gim');
+        let fromRe = new RegExp("\\" + macro + "\\([\\w\\s\\S]+?\\)(\\s+FROM\\s+)", 'gim');
         let matches = fromRe.exec(query);
         if (matches === null || matches.length === 0) {
             throw {message: 'Could not find FROM-statement at: ' + query};

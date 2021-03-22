@@ -62,13 +62,13 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 		return onErr(errors.New(string(body)))
 	}
 
-	var jsonResp = Response{}
-	err = json.Unmarshal(body, &jsonResp)
+	var jsonResp = &Response{}
+	err = json.Unmarshal(body, jsonResp)
 	if err != nil {
 		return onErr(fmt.Errorf("Unable to parse json %s. Error: %w", body, err))
 	}
 
-	return &jsonResp, nil
+	return jsonResp, nil
 }
 
 func (client *ClickHouseClient) FetchTimeZone() *time.Location {

@@ -25,12 +25,12 @@ func NewDatasourceSettings(settings backend.DataSourceInstanceSettings) (instanc
 type DatasourceSettings struct {
 	Instance backend.DataSourceInstanceSettings
 
-	AddCorsHeader bool `json:"addCorsHeader"`
-	DefaultDatabase string `json:"defaultDatabase"`
-	UsePost bool `json:"usePOST"`
-	UseYandexCloudAuthorization bool `json:"useYandexCloudAuthorization"`
-	XHeaderKey string `json:"xHeaderKey"`
-	XHeaderUser string `json:"xHeaderUser"`
+	AddCorsHeader               bool   `json:"addCorsHeader"`
+	DefaultDatabase             string `json:"defaultDatabase"`
+	UsePost                     bool   `json:"usePOST"`
+	UseYandexCloudAuthorization bool   `json:"useYandexCloudAuthorization"`
+	XHeaderKey                  string `json:"xHeaderKey"`
+	XHeaderUser                 string `json:"xHeaderUser"`
 }
 
 func (s *DatasourceSettings) Dispose() {}

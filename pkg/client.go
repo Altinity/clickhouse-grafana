@@ -2,13 +2,13 @@ package main
 
 import (
 	"bytes"
+	"encoding/json"
 	"errors"
 	"fmt"
 	"io/ioutil"
 	"net/http"
 	"net/url"
 	"time"
-	"encoding/json"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
@@ -40,11 +40,11 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 		return onErr(err)
 	}
 
-	if (client.settings.Instance.BasicAuthEnabled) {
+	if client.settings.Instance.BasicAuthEnabled {
 		password, _ := client.settings.Instance.DecryptedSecureJSONData["basicAuthPassword"]
 		req.Header.Set("X-ClickHouse-User", client.settings.Instance.BasicAuthUser)
 		req.Header.Set("X-ClickHouse-Key", password)
-	} else if (client.settings.UseYandexCloudAuthorization) {
+	} else if client.settings.UseYandexCloudAuthorization {
 		req.Header.Set("X-ClickHouse-User", client.settings.XHeaderUser)
 		req.Header.Set("X-ClickHouse-Key", client.settings.XHeaderKey)
 	}

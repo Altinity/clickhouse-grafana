@@ -67,6 +67,22 @@ func parseInt64Value(value interface{}, fieldName string) *Value {
 	return NullValue(fieldName, []*int64{})
 }
 
+func parseTimestampValue(value interface{}, fieldName string, layout string, timezone *time.Location) *Value {
+	if value != nil {
+		strValue := fmt.Sprintf("%v", value)
+		i64v, err := strconv.ParseInt(strValue, 10, 64)
+
+		if err == nil {
+			// Convert millisecond timestamp to nanosecond timestamp for parsing
+			timeValue := time.Unix(0, i64v * int64(time.Millisecond))
+
+			return NewValue(&timeValue, fieldName, []*time.Time{})
+		}
+	}
+
+	return NullValue(fieldName, []*time.Time{})
+}
+
 func parseTimeValue(value interface{}, fieldName string, layout string, timezone *time.Location) *Value {
 	if value != nil {
 		strValue := fmt.Sprintf("%v", value)
@@ -75,13 +91,7 @@ func parseTimeValue(value interface{}, fieldName string, layout string, timezone
 		if err == nil {
 			return NewValue(&t, fieldName, []*time.Time{})
 		} else {
-			i64v, err := strconv.ParseInt(strValue, 10, 64)
-
-			if err == nil {
-				timeValue := time.Unix(i64v, i64v)
-
-				return NewValue(&timeValue, fieldName, []*time.Time{})
-			}
+			return parseTimestampValue(value, fieldName, layout, timezone)
 		}
 	}
 
@@ -105,8 +115,9 @@ func ParseValue(valueType string, value interface{}, fieldName string, timezone 
 			// This can be a time or uint64 value
 			// Assume that t is the field name used for timestamp
 			if fieldName == "t" {
-				return parseTimeValue(value, fieldName, dateTimeLayout, timezone)
+				return parseTimestampValue(value, fieldName, dateTimeLayout, timezone)
 			}
+
 			return parseUInt64Value(value, fieldName)
 		case "Int64":
 			return parseInt64Value(value, fieldName)

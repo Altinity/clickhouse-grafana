@@ -2,12 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/grafana/grafana-plugin-sdk-go/backend"
-	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"reflect"
-	"regexp"
 	"strings"
 	"time"
+
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/data"
 )
 
 var datePrefix = "Date"
@@ -15,7 +15,6 @@ var dateTimePrefix = "DateTime"
 var timeZonePrefix = "('"
 var dateTZPrefix = datePrefix + timeZonePrefix
 var dateTimeTZPrefix = dateTimePrefix + timeZonePrefix
-var compoundValueRegEx = regexp.MustCompile(`\[(.*)\]`)
 
 type FetchTZ = func() *time.Location
 

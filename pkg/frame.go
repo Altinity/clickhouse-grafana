@@ -8,49 +8,39 @@ import (
 )
 
 var compoundTypeRegEx = regexp.MustCompile(`(Array|Tuple)\(([A-Za-z0-9,() ]+)\)`)
+var seriesTypeRegEx = regexp.MustCompile(`Array\(Tuple\(String, ([A-Za-z0-9]+)\)\)`)
 
 type ClickHouseFrame struct {
 	RefId  string
 	Name   string
-	Fields []*ClickHouseField
+	Fields []ClickHouseField
 }
 
 func NewFrame(refId string, name string, fieldsMeta []*FieldMeta, tz FetchTZ) *ClickHouseFrame {
-	fields := make([]*ClickHouseField, len(fieldsMeta))
+	fields := make([]ClickHouseField, len(fieldsMeta))
 
 	for i, meta := range fieldsMeta {
-		fields[i] = NewField(meta.Name, meta.Type, tz)
-
-		field := fields[i]
-		fieldType := meta.Type
-		compoundName := meta.Name
-		for compoundTypeRegEx.MatchString(fieldType) {
-			compoundMeta := compoundTypeRegEx.FindStringSubmatch(fieldType)
-			compoundType := compoundMeta[1]
-			fieldType = compoundMeta[2]
-
-			compoundName += "-" + compoundType
-
-			if field.Fields != nil {
-				field = field.Fields[0]
-			}
-
-			field.IsCompound = true
-			field.Fields = make([]*ClickHouseField, 1)
-			field.Fields[0] = NewField(compoundName, compoundType, tz)
+		// If this is a series tuple, where the meta looks like
+		// Array(Tuple(String, UInt64))
+		// Then instantiate a series type
+		if strings.HasPrefix(meta.Type, "Array(Tuple(String,") {
+			seriesMeta := seriesTypeRegEx.FindStringSubmatch(meta.Type)
+			seriesType := seriesMeta[1]
+			fields[i] = NewSeriesField(meta.Name, meta.Type, tz, seriesType)
+			continue
 		}
 
-		// Parse the last compound item
-		if field.IsCompound {
-			compoundMeta := strings.Split(fieldType, ",")
-			compoundParts := make([]*ClickHouseField, len(compoundMeta))
-			for i := 0; i < len(compoundMeta); i++ {
-				compoundType := strings.TrimSpace(compoundMeta[i])
-				compoundParts[i] = NewField(compoundName+"-"+compoundType, compoundType, tz)
-			}
-			field.Fields[0].IsCompound = true
-			field.Fields[0].Fields = compoundParts
+		// If this is a non-series compound type, where the meta looks like
+		// Array(Int64)
+		// or Array(Tuple(Int64, Int64))
+		// Then instantiate a compound type
+		if compoundTypeRegEx.MatchString(meta.Type) {
+			fields[i] = NewCompoundField(meta.Name, meta.Type, tz)
+			continue
 		}
+
+		// Default to a simple field
+		fields[i] = NewSimpleField(meta.Name, meta.Type, tz)
 	}
 
 	frame := &ClickHouseFrame{
@@ -62,9 +52,9 @@ func NewFrame(refId string, name string, fieldsMeta []*FieldMeta, tz FetchTZ) *C
 	return frame
 }
 
-func (f *ClickHouseFrame) getField(name string) *ClickHouseField {
+func (f *ClickHouseFrame) getField(name string) ClickHouseField {
 	for _, field := range f.Fields {
-		if field != nil && field.Name == name {
+		if field != nil && field.FieldName() == name {
 			return field
 		}
 	}
@@ -82,7 +72,7 @@ func (f *ClickHouseFrame) AddRow(row map[string]interface{}) {
 }
 
 func (f *ClickHouseFrame) ToDataFrame() *data.Frame {
-	// Extract fields length with compound fields
+	// Get total number of frame fields
 	numFields := 0
 	for _, field := range f.Fields {
 		numFields += field.Length()

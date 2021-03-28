@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"reflect"
 	"strings"
 	"time"
 
@@ -40,50 +39,29 @@ func fetchTimeZone(fieldType string, loadTZ FetchTZ) *time.Location {
 	}
 }
 
-func NewField(name string, fieldType string, tz FetchTZ) *ClickHouseField {
-	return &ClickHouseField{
+func NewSimpleField(name string, fieldType string, tz FetchTZ) ClickHouseField {
+	return &ClickHouseSimpleField{
 		Name:     name,
 		Type:     fieldType,
 		TimeZone: fetchTimeZone(fieldType, tz),
 	}
 }
 
-type ClickHouseField struct {
+type ClickHouseField interface {
+	Flatten() []*data.Field
+	Append(value interface{})
+	Length() int
+	FieldName() string
+}
+
+type ClickHouseSimpleField struct {
 	FrameField *data.Field
 	Name       string
 	Type       string
-	IsCompound bool
-	Fields     []*ClickHouseField
 	TimeZone   *time.Location
 }
 
-func (f *ClickHouseField) Value() {
-
-}
-
-func (f *ClickHouseField) Append(value interface{}) {
-	// If compound type, pass the value through
-	if f.IsCompound {
-		// We assume compound types will be a slice (array/tuple)
-		slice := reflect.ValueOf(value)
-
-		// Safety check
-		if f.Fields != nil && slice.Len() == len(f.Fields) {
-			for i := 0; i < slice.Len(); i++ {
-				switch f.Type {
-				case "Array":
-					fallthrough
-				case "Tuple":
-					f.Fields[i].Append(slice.Index(i).Interface())
-				default:
-					f.Fields[i].Append(value)
-				}
-			}
-		}
-
-		return
-	}
-
+func (f *ClickHouseSimpleField) Append(value interface{}) {
 	// Add value for simple type
 	v := ParseValue(f.Type, value, f.Name, f.TimeZone)
 	if v == nil {
@@ -97,29 +75,14 @@ func (f *ClickHouseField) Append(value interface{}) {
 	}
 }
 
-func (f *ClickHouseField) Flatten() []*data.Field {
-	ret := make([]*data.Field, 0)
-	for _, field := range f.Fields {
-		ret = append(ret, field.Flatten()...)
-	}
-
-	if f.Fields == nil {
-		return []*data.Field{f.FrameField}
-	}
-
-	return ret
+func (f *ClickHouseSimpleField) Flatten() []*data.Field {
+	return []*data.Field{f.FrameField}
 }
 
-func (f *ClickHouseField) Length() int {
-	ret := 0
+func (f *ClickHouseSimpleField) Length() int {
+	return 1
+}
 
-	for _, field := range f.Fields {
-		ret += field.Length()
-	}
-
-	if f.Fields == nil {
-		return 1
-	}
-
-	return ret
+func (f *ClickHouseSimpleField) FieldName() string {
+	return f.Name
 }

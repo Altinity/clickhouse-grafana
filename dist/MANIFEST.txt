@@ -9,7 +9,7 @@ Hash: SHA512
   "signedByOrgName": "Vertamedia",
   "plugin": "vertamedia-clickhouse-datasource",
   "version": "2.2.3",
-  "time": 1616445961576,
+  "time": 1616962296718,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "LICENSE": "a434fc6dd97d5c425c6edbeff0276afd60ab5fffab3ed2c563f95a389502d074",
@@ -24,19 +24,19 @@ Hash: SHA512
     "partials/config.html": "51ba130304c63c1a00590a9dc94c8351ff6277e4cf695720de57bff87aeec744",
     "partials/query.editor.html": "eb9ab7af412a922ea2ce09c86b99a75ba70000977a5fd882b8e327a2a27e1904",
     "plugin.json": "7e322a287a2bd93abde0a5f02aeb64b7e00d14f3f65a011f39036c572981e812",
-    "vertamedia-clickhouse-plugin_darwin_amd64": "7531b4d83b439f2f0ad2dae79f524ad71fd165fbe725fd0e1a503828a70ecf5c",
-    "vertamedia-clickhouse-plugin_linux_amd64": "29055a15daa4d2d8401083cd24e51063ffec3db4bce8d1532a7c6fb2a6aefc09",
-    "vertamedia-clickhouse-plugin_linux_arm64": "a76e19447452366cfe332be114866bf589e4dfa0ab8ae94cb74fdc461075e999",
-    "vertamedia-clickhouse-plugin_windows_amd64.exe": "48610c3d616f26bebac7e530fc3da6df07fb0f08d55039121f1edd76797dff89"
+    "vertamedia-clickhouse-plugin_darwin_amd64": "70bc6246c380c573ae21a13e47f3705da62bd9f0eae55e52f4731bb250d4aa11",
+    "vertamedia-clickhouse-plugin_linux_amd64": "77524bf1d5fa859c20a3dcf10f60aa21e98e7fe5bfa09de41ba8c0b9050187ab",
+    "vertamedia-clickhouse-plugin_linux_arm64": "c5d82e0ebc1b355a21794f53a280c6c072d6b6acf2c80fd6ff4a59a2d91fad49",
+    "vertamedia-clickhouse-plugin_windows_amd64.exe": "026f533783ccba63ce438388d0c634f1b319533867a44bd1edcf09927a7e6c78"
   }
 }
 -----BEGIN PGP SIGNATURE-----
 Version: OpenPGP.js v4.10.1
 Comment: https://openpgpjs.org
 
-wqEEARMKAAYFAmBZAgkACgkQfk0ManCIZud8HQIInB/gaHkQIddYCKXkmJBJ
-OTbqDplgpG5vUhjCZYR1Ly0u6DInTDZdeDa/mfhgFCDYsB7yXHGZOZzfMeUd
-iYLGL8kCCQFUARTJVBn0t3zqYe+XL+D2JpRKr+i2L3yvVtKlE6djCnYiWJ52
-uQeGxxL4rTXVoYa8RbwcYaeRz5qMRT4pdgQQaQ==
-=d3L3
+wqEEARMKAAYFAmBg4vgACgkQfk0ManCIZud3ZQIIjd/KWJZJUzcNEjgcDSeA
+utpZ/gvIFsjVtSvEWuR//7jyj169rIrCNkHRwXqDxTCOsrUarFBCHOU7rbEl
+SyY8K00CCQEOwgJHSPvMJ4saFuzCVuiHnKHpseMV/wcEaZGp3grPtTgk2pPh
+QzgPiSnngikq8vVJubaQU47zqNaNSfLoqy0thg==
+=N2sp
 -----END PGP SIGNATURE-----

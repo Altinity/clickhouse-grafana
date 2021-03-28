@@ -74,7 +74,7 @@ func parseTimestampValue(value interface{}, fieldName string, layout string, tim
 
 		if err == nil {
 			// Convert millisecond timestamp to nanosecond timestamp for parsing
-			timeValue := time.Unix(0, i64v * int64(time.Millisecond))
+			timeValue := time.Unix(0, i64v*int64(time.Millisecond))
 
 			return NewValue(&timeValue, fieldName, []*time.Time{})
 		}

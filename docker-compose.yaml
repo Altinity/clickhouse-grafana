@@ -12,10 +12,13 @@ services:
     ports:
       - 8123:8123
       - 9000:9000
+      - 5432:5432
+      - 3306:3306
     volumes:
       - /var/log/clickhouse-server
       - ./docker/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
       - ./docker/clickhouse/postgres_dictionary.xml:/etc/clickhouse-server/postgres_dictionary.xml
+      - ./docker/clickhouse/listen_ports.xml:/etc/clickhouse-server/config.d/listen_ports.xml
 
   postgres:
     image: postgres:latest

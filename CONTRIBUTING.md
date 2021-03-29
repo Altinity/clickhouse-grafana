@@ -55,7 +55,7 @@ To develop without build inside a docker, the development process for frontend p
 
 #### Backend Builder
 
-The backend builder is the docker container used to compile the golang source code into the `vertamedia-clickhouse-plugin_linux_amd64` binary in the `dist` dir. This will affect the grafana service used for running queries for alerting. The entrypoint for the go code is at `plugin.go`.
+The backend builder is the docker container used to compile the golang source code into the `vertamedia-clickhouse-plugin_linux_amd64` binary in the `dist` dir. This will affect the grafana service used for running queries for alerting. The entrypoint for the go code is at `pkg/main.go`.
 
 To develop using docker, the development process for backend part of code looks like:
 1. change source files

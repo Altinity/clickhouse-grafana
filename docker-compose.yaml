@@ -75,9 +75,10 @@ services:
     environment:
       GOCACHE: "/go-cache"
     volumes:
-      - ./:/go/src/grafana-clickhouse
+      - ./pkg:/go/src/grafana-clickhouse
       - ./.cache:/go/pkg/mod
       - ./.cache:/go-cache
+      - ./dist:/go/src/grafana-clickhouse/dist
     command: |
       bash -xec "
         GOOS=linux GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_amd64 . && \
@@ -98,8 +99,7 @@ services:
     command: |
       bash -xec "
         if [[ ! -f ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js ]]; then npm install --production=false; fi && \
-        source /grafana-clickhouse/.release_env && \
-        node ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js plugin:sign
+        npm run sign
       "
 
 volumes:

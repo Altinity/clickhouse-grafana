@@ -1,5 +1,10 @@
 import {each, isArray} from 'lodash-es';
 
+import {
+    FieldType,
+    MutableDataFrame,
+} from '@grafana/data';
+
 export default class SqlSeries {
     series: any;
     keys: any;
@@ -16,6 +21,27 @@ export default class SqlSeries {
         this.from = options.from;
         this.to = options.to;
         this.keys = options.keys || [];
+    }
+
+    toLogs(): any {
+        let self = this;
+
+        const frame = new MutableDataFrame({fields: []});
+        frame.meta = {};
+        frame.meta.preferredVisualisationType = 'logs';
+        if (this.series.length === 0) {
+            return frame;
+        }
+
+        each(self.meta, function (col) {
+            frame.addField({name: col.name, type: SqlSeries._toFieldType(col.type)});
+        });
+
+        each(self.series, function (ser) {
+            frame.add(ser);
+        });
+
+        return frame;
     }
 
     toTable(): any {
@@ -161,6 +187,45 @@ export default class SqlSeries {
         }
 
         metrics[key].push([SqlSeries._formatValue(value), timestamp]);
+    }
+
+    static _toFieldType(type: string): FieldType {
+        switch (type) {
+            case 'UInt8':
+            case 'UInt16':
+            case 'UInt32':
+            case 'UInt64':
+            case 'Int8':
+            case 'Int16':
+            case 'Int32':
+            case 'Int64':
+            case 'Float32':
+            case 'Float64':
+            case 'Decimal':
+            case 'Decimal32':
+            case 'Decimal64':
+            case 'Decimal128':
+            case 'Nullable(UInt8)':
+            case 'Nullable(UInt16)':
+            case 'Nullable(UInt32)':
+            case 'Nullable(UInt64)':
+            case 'Nullable(Int8)':
+            case 'Nullable(Int16)':
+            case 'Nullable(Int32)':
+            case 'Nullable(Int64)':
+            case 'Nullable(Float32)':
+            case 'Nullable(Float64)':
+            case 'Nullable(Decimal)':
+            case 'Nullable(Decimal32)':
+            case 'Nullable(Decimal64)':
+            case 'Nullable(Decimal128)':
+                return FieldType.number;
+            case 'DateTime':
+            case 'DateTime64':
+                return FieldType.time;
+            default:
+                return FieldType.string;
+        }
     }
 
     static _toJSType(type: any): string {

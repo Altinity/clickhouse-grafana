@@ -1,6 +1,12 @@
 ///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
 
 import {curry, each, filter, isEmpty, map} from 'lodash-es';
+import {Observable} from 'rxjs';
+import {
+    DataQueryResponse,
+    DataFrame
+} from '@grafana/data';
+
 
 import SqlSeries from './sql_series';
 import SqlQuery from './sql_query';
@@ -103,7 +109,7 @@ export class ClickHouseDatasource {
         });
     }
 
-    query(options) {
+    query(options): Observable<DataQueryResponse> {
         const queries = map(
             filter(options.targets, target => !target.hide && target.query),
             target => this.createQuery(options, target)
@@ -120,7 +126,8 @@ export class ClickHouseDatasource {
         });
 
         return this.$q.all(allQueryPromise).then((responses): any => {
-            let result = [], i = 0;
+            const dataFrame: DataFrame[] = [];
+            let i = 0;
             each(responses, (response) => {
                 const target = options.targets[i];
                 const keys = queries[i].keys;
@@ -140,15 +147,17 @@ export class ClickHouseDatasource {
                 });
                 if (target.format === 'table') {
                     each(sqlSeries.toTable(), (data) => {
-                        result.push(data);
+                        dataFrame.push(data);
+                    });
+                } else if (target.format === 'time_series') {
+                    each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
+                        dataFrame.push(data);
                     });
                 } else {
-                    each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
-                        result.push(data);
-                    });
+                    dataFrame.push(sqlSeries.toLogs());
                 }
             });
-            return {data: result};
+            return {data: dataFrame};
         });
     }
 
@@ -220,7 +229,7 @@ export class ClickHouseDatasource {
             let from = SqlQuery.convertTimestamp(options.range.from);
             let to = SqlQuery.convertTimestamp(options.range.to);
             interpolatedQuery = interpolatedQuery.replace(/\$to/g, to).replace(/\$from/g, from);
-            interpolatedQuery = SqlQuery.replaceTimeFilters( interpolatedQuery, options.range);
+            interpolatedQuery = SqlQuery.replaceTimeFilters(interpolatedQuery, options.range);
             interpolatedQuery = interpolatedQuery.replace(/(?:\r\n|\r|\n)/g, ' ');
         }
 

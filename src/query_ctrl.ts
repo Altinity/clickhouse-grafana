@@ -87,6 +87,7 @@ class SqlQueryCtrl extends QueryCtrl {
         this.formats = [
             {text: 'Time series', value: 'time_series'},
             {text: 'Table', value: 'table'},
+            {text: 'Logs', value: 'logs'},
         ];
 
         this.target.format = this.target.format || 'time_series';

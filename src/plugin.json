@@ -3,6 +3,7 @@
   "type": "datasource",
   "name": "ClickHouse",
   "metrics": true,
+  "logs": true,
   "annotations": true,
   "backend": true,
   "alerting": true,
@@ -46,7 +47,6 @@
     "version": "2.2.3",
     "updated": "2020-07-31"
   },
-
   "dependencies": {
     "grafanaDependency": ">=4.6.0",
     "plugins": []

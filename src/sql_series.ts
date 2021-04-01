@@ -222,6 +222,8 @@ export default class SqlSeries {
                 return FieldType.number;
             case 'DateTime':
             case 'DateTime64':
+            case 'DateTime64(3)':
+            case 'DateTime64(6)':
                 return FieldType.time;
             default:
                 return FieldType.string;

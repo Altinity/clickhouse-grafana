@@ -13,7 +13,7 @@ describe("Query SELECT with $timeFilterByColumn and range with from and to:", ()
 
     it("gets replaced with BETWEEN filter", () => {
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME'))
-            .toBe('SELECT * FROM table WHERE column_name BETWEEN toDateTime(1545613323) AND toDateTime(1546300799)');
+            .toBe('SELECT * FROM table WHERE column_name >= toDateTime(1545613323) AND column_name <= toDateTime(1546300799)');
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME64'))
             .toBe('SELECT * FROM table WHERE toDateTime64(column_name, 3) >= toDateTime64(1545613323, 3) AND toDateTime64(column_name, 3) <= toDateTime64(1546300799, 3)');
     });
@@ -32,10 +32,17 @@ describe("Query SELECT with $timeFilterByColumn and range with from", () => {
 
     it("gets replaced with >= filter", () => {
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME'))
-            .toBe('SELECT * FROM table WHERE column_name >= toDateTime(1545613323)');
+            .toBe(
+                'SELECT * FROM table WHERE ' +
+                'column_name >= toDateTime(' + range.from.unix() + ') AND ' +
+                'column_name <= toDateTime(' + range.to.unix() + ')'
+            );
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME64'))
-            .toBe('SELECT * FROM table WHERE toDateTime64(column_name, 3) >= toDateTime64(1545613323, 3)'
-        );
+            .toBe(
+                'SELECT * FROM table WHERE ' +
+                'toDateTime64(column_name, 3) >= toDateTime64(' + range.from.unix() + ', 3) AND ' +
+                'toDateTime64(column_name, 3) <= toDateTime64(' + range.to.unix() + ', 3)'
+            );
     });
 });
 
@@ -52,8 +59,7 @@ describe("Query SELECT with $timeSeries $timeFilter and DATETIME64", () => {
         "GROUP BY t\n" +
         "ORDER BY t";
     let templateSrv = new TemplateSrvStub();
-    const adhocFilters = [
-    ];
+    const adhocFilters = [];
     let target = {
         query: query,
         interval: "15s",
@@ -166,8 +172,8 @@ describe("$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adho
         "        count() as count\n" +
         "    FROM default.test_grafana\n" +
         "\n" +
-        "    WHERE event_date BETWEEN toDate(1545613320) AND toDate(1546300740) AND event_time >= toDateTime(1545613320) AND event_time <= toDateTime(1546300740) AND\n" +
-        "        event_date BETWEEN toDate(1545613320) AND toDate(1546300740) AND event_time >= toDateTime(1545613320) AND event_time <= toDateTime(1546300740)\n" +
+        "    WHERE event_date >= toDate(1545613320) AND event_date <= toDate(1546300740) AND event_time >= toDateTime(1545613320) AND event_time <= toDateTime(1546300740) AND\n" +
+        "        event_date >= toDate(1545613320) AND event_date <= toDate(1546300740) AND event_time >= toDateTime(1545613320) AND event_time <= toDateTime(1546300740)\n" +
         "        AND toLowerCase(service_name) IN ('mysql','postgresql')\n" +
         "        AND test = 'value'\n" +
         "        AND test2 LIKE '%value%'\n" +
@@ -241,7 +247,7 @@ describe("$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adho
                 value: 20000,
             },
             repeated_service: {
-                value: ['mysql','postgresql'],
+                value: ['mysql', 'postgresql'],
                 multi: true,
                 includeAll: true,
                 options: [
@@ -273,7 +279,7 @@ describe("check replace with $adhoc macros", () => {
         "    count()\n" +
         "FROM default.flows_raw\n\n" +
         "WHERE\n" +
-        "    TimeFlowStart BETWEEN toDate(1545613320) AND toDate(1546300740) AND TimeFlowStart >= toDateTime(1545613320) AND TimeFlowStart <= toDateTime(1546300740)\n" +
+        "    TimeFlowStart >= toDate(1545613320) AND TimeFlowStart <= toDate(1546300740) AND TimeFlowStart >= toDateTime(1545613320) AND TimeFlowStart <= toDateTime(1546300740)\n" +
         "    AND (SrcAS = 1299)\n" +
         "GROUP BY t\n\n" +
         "ORDER BY t\n";
@@ -336,7 +342,7 @@ describe("check replace with $columns and concat and ARRAY JOIN", () => {
         "\n" +
         "ARRAY JOIN Metrics\n" +
         " \n\n" +
-        "WHERE dateTimeColumn BETWEEN toDate(1545613320) AND toDate(1546300740) AND dateTimeColumn >= toDateTime(1545613320) AND dateTimeColumn <= toDateTime(1546300740) AND JobName LIKE 'Job'\n" +
+        "WHERE dateTimeColumn >= toDate(1545613320) AND dateTimeColumn <= toDate(1546300740) AND dateTimeColumn >= toDateTime(1545613320) AND dateTimeColumn <= toDateTime(1546300740) AND JobName LIKE 'Job'\n" +
         " GROUP BY t, JobSource ORDER BY t, JobSource) GROUP BY t ORDER BY t";
     let templateSrv = new TemplateSrvStub();
     const adhocFilters = [
@@ -391,14 +397,13 @@ describe("check replace with $columns and concat and ARRAY JOIN", () => {
 describe("combine $timeFilterByColumn and $dateTimeCol", () => {
     const query = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter AND $timeFilterByColumn($dateTimeCol) AND $timeFilterByColumn(another_column) GROUP BY t";
     const expQuery = "SELECT (intDiv(toUInt32(tm), 15) * 15) * 1000 as t, count() FROM default.test_table " +
-        "WHERE dt BETWEEN toDate(1545613320) AND toDate(1546300740) AND tm >= toDateTime(1545613320) AND tm <= toDateTime(1546300740) " +
-        "AND tm BETWEEN toDateTime(1545613201) AND toDateTime(1546300859) " +
-        "AND another_column BETWEEN toDateTime(1545613201) AND toDateTime(1546300859) " +
+        "WHERE dt >= toDate(1545613320) AND dt <= toDate(1546300740) AND tm >= toDateTime(1545613320) AND tm <= toDateTime(1546300740) " +
+        "AND tm >= toDateTime(1545613201) AND tm <= toDateTime(1546300859) " +
+        "AND another_column >= toDateTime(1545613201) AND another_column <= toDateTime(1546300859) " +
         "GROUP BY t";
 
     let templateSrv = new TemplateSrvStub();
-    const adhocFilters = [
-    ];
+    const adhocFilters = [];
     let target = {
         query: query,
         interval: "15s",

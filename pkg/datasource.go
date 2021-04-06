@@ -49,7 +49,7 @@ func (ds *ClickHouseDatasource) query(ctx backend.PluginContext, query *Query) b
 		return onErr(err)
 	}
 
-	res, err := client.Query(query.Format())
+	res, err := client.Query(query.FormatQuery())
 	if err != nil {
 		return onErr(err)
 	}
@@ -75,7 +75,10 @@ func (ds *ClickHouseDatasource) QueryData(
 	response := backend.NewQueryDataResponse()
 
 	for _, query := range req.Queries {
-		var q = Query{}
+		var q = Query{
+			From: query.TimeRange.From,
+			To:   query.TimeRange.To,
+		}
 		err := json.Unmarshal(query.JSON, &q)
 		if err != nil {
 			return onErr(fmt.Errorf("Unable to parse json %s. Error: %w", query.JSON, err))

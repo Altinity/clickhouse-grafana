@@ -12,10 +12,13 @@ services:
     ports:
       - 8123:8123
       - 9000:9000
+      - 5432:5432
+      - 3306:3306
     volumes:
       - /var/log/clickhouse-server
       - ./docker/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
       - ./docker/clickhouse/postgres_dictionary.xml:/etc/clickhouse-server/postgres_dictionary.xml
+      - ./docker/clickhouse/listen_ports.xml:/etc/clickhouse-server/config.d/listen_ports.xml
 
   postgres:
     image: postgres:latest
@@ -70,22 +73,21 @@ services:
       '
 
   backend_builder:
-    image: golang:1.15
+    image: golang:1.16
     working_dir: /go/src/grafana-clickhouse
     environment:
       GOCACHE: "/go-cache"
     volumes:
-      - ./pkg:/go/src/grafana-clickhouse
+      - ./:/go/src/grafana-clickhouse
       - ./.cache:/go/pkg/mod
       - ./.cache:/go-cache
-      - ./dist:/go/src/grafana-clickhouse/dist
     command: |
       bash -xec "
-        GOOS=linux GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_amd64 . && \
-        GOOS=linux GOARCH=arm64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_arm64 . && \
-        GOOS=windows GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_windows_amd64.exe . && \
-        GOOS=darwin GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_darwin_amd64 . && \
-        # GOOS=darwin GOARCH=arm64 go build -o ./dist/vertamedia-clickhouse-plugin_darwin_arm64 . && \
+        GOOS=linux GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_amd64 ./pkg/ && \
+        GOOS=linux GOARCH=arm64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_arm64 ./pkg/ && \
+        GOOS=windows GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_windows_amd64.exe ./pkg/ && \
+        GOOS=darwin GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_darwin_amd64 ./pkg/ && \
+        GOOS=darwin GOARCH=arm64 go build -o ./dist/vertamedia-clickhouse-plugin_darwin_arm64 ./pkg/ && \
         chmod +x ./dist/vertamedia-clickhouse-plugin*
       "
 

@@ -105,9 +105,9 @@ export default class SqlQuery {
             query = scanner.removeComments(query);
         }
         query = SqlQuery.unescape(query);
-        let timeFilter = SqlQuery.getDateTimeFilter(this.options.rangeRaw.to === 'now', dateTimeType);
+        let timeFilter = SqlQuery.getDateTimeFilter(dateTimeType);
         if (typeof this.target.dateColDataType === "string" && this.target.dateColDataType.length > 0) {
-            timeFilter = SqlQuery.getDateFilter(this.options.rangeRaw.to === 'now') + ' AND ' + timeFilter;
+            timeFilter = SqlQuery.getDateFilter() + ' AND ' + timeFilter;
         }
 
         let table = SqlQuery.escapeIdentifier(this.target.table);
@@ -161,30 +161,22 @@ export default class SqlQuery {
             .replace(
                 /\$timeFilterByColumn\(([\w_]+)\)/g,
                 (match: string, columnName: string) => (
-                    `${SqlQuery.getFilterSqlForDateTime(columnName, range.raw.to === 'now', dateTimeType)}`
+                    `${SqlQuery.getFilterSqlForDateTime(columnName, dateTimeType)}`
                 )
             )
             .replace(/\$from/g, from.toString())
             .replace(/\$to/g, to.toString());
     }
 
-    static getFilterSqlForDateTime(columnName: string, isToNow: boolean, dateTimeType: string) {
+    static getFilterSqlForDateTime(columnName: string, dateTimeType: string) {
         const convertFn = this.getConvertFn(dateTimeType);
-
-        if (isToNow) {
-            /* @TODO remove IF when resolve https://github.com/ClickHouse/ClickHouse/issues/16655 */
-            if (dateTimeType === "DATETIME64") {
-                return `${convertFn(columnName)} >= ${convertFn('$from')}`;
-            }
-            return `${columnName} >= ${convertFn('$from')}`;
-        }
 
         /* @TODO remove IF when resolve https://github.com/ClickHouse/ClickHouse/issues/16655 */
         if (dateTimeType === "DATETIME64") {
             return `${convertFn(columnName)} >= ${convertFn('$from')} AND ${convertFn(columnName)} <= ${convertFn('$to')}`;
         }
 
-        return `${columnName} BETWEEN ${convertFn('$from')} AND ${convertFn('$to')}`;
+        return `${columnName} >= ${convertFn('$from')} AND ${columnName} <= ${convertFn('$to')}`;
     }
 
     static getConvertFn(dateTimeType: string) {
@@ -477,14 +469,11 @@ export default class SqlQuery {
         return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
     }
 
-    static getDateFilter(isToNow: boolean) {
-        if (isToNow) {
-            return '$dateCol >= toDate($from)';
-        }
-        return '$dateCol BETWEEN toDate($from) AND toDate($to)';
+    static getDateFilter() {
+        return '$dateCol >= toDate($from) AND $dateCol <= toDate($to)';
     }
 
-    static getDateTimeFilter(isToNow: boolean, dateTimeType: string) {
+    static getDateTimeFilter(dateTimeType: string) {
         let convertFn = function (t: string): string {
             if (dateTimeType === 'DATETIME') {
                 return 'toDateTime(' + t + ')';
@@ -495,13 +484,6 @@ export default class SqlQuery {
             return t;
         };
 
-        if (isToNow) {
-            /* @TODO remove IF statement after resolve https://github.com/ClickHouse/ClickHouse/issues/16655 */
-            if (dateTimeType === 'DATETIME64') {
-                return convertFn('$dateTimeCol') + ' >= ' + convertFn('$from');
-            }
-            return '$dateTimeCol >= ' + convertFn('$from');
-        }
         /* @TODO remove IF statement after resolve https://github.com/ClickHouse/ClickHouse/issues/16655 */
         if (dateTimeType === 'DATETIME64') {
             return convertFn('$dateTimeCol') + ' >= ' + convertFn('$from') + ' AND ' +

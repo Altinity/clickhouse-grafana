@@ -1,4 +1,4 @@
-# 2.2.4 (2021-04-23)
+# 2.3.1 (2021-04-23)
 ## Breaking changes
 
 * On latest Grafana 7.x releases, template variables SQL queries shall return only scalar types of values, see https://github.com/Vertamedia/clickhouse-grafana/issues/328
@@ -11,6 +11,7 @@
 
 ## Fixes:
 
+* fix github actions backend build
 * fix UNION ALL parsing, see https://github.com/Vertamedia/clickhouse-grafana/issues/319
 * fix many issues with alerting
   * https://github.com/Vertamedia/clickhouse-grafana/issues/305

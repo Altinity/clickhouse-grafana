@@ -13,6 +13,10 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 
+const TimeZoneFieldName = "timezone()"
+
+var TimeZoneQuery = fmt.Sprintf("SELECT %s FORMAT JSON;", TimeZoneFieldName)
+
 type ClickHouseClient struct {
 	settings *DatasourceSettings
 }
@@ -20,7 +24,7 @@ type ClickHouseClient struct {
 func (client *ClickHouseClient) Query(query string) (*Response, error) {
 
 	onErr := func(err error) (*Response, error) {
-		backend.Logger.Error(fmt.Sprintf("clickhouse client query error: %w", err))
+		backend.Logger.Error(fmt.Sprintf("clickhouse client query error: %v", err))
 		return nil, err
 	}
 
@@ -64,7 +68,7 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 	var jsonResp = &Response{}
 	err = json.Unmarshal(body, jsonResp)
 	if err != nil {
-		return onErr(fmt.Errorf("Unable to parse json %s. Error: %w", body, err))
+		return onErr(fmt.Errorf("unable to parse json %s. Error: %w", body, err))
 	}
 
 	return jsonResp, nil

@@ -7,7 +7,6 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
-	"github.com/grafana/grafana-plugin-sdk-go/data"
 	"golang.org/x/net/context"
 )
 
@@ -40,7 +39,7 @@ func (ds *ClickHouseDatasource) getClient(ctx backend.PluginContext) (*ClickHous
 func (ds *ClickHouseDatasource) query(ctx backend.PluginContext, query *Query) backend.DataResponse {
 
 	onErr := func(err error) backend.DataResponse {
-		backend.Logger.Error(fmt.Sprintf("Datasource query error: %w", err))
+		backend.Logger.Error(fmt.Sprintf("Datasource query error: %s", err))
 		return backend.DataResponse{Error: err}
 	}
 
@@ -48,19 +47,21 @@ func (ds *ClickHouseDatasource) query(ctx backend.PluginContext, query *Query) b
 	if err != nil {
 		return onErr(err)
 	}
-
-	res, err := client.Query(query.FormatQuery())
+	sql := query.ApplyTimeRangeToQuery()
+	clickhouseResponse, err := client.Query(sql)
 	if err != nil {
 		return onErr(err)
 	}
-	frame := res.toFrame(query.RefId, client.FetchTimeZone)
-	response := backend.DataResponse{}
 
-	if frame != nil {
-		response.Frames = []*data.Frame{frame}
+	frames, err := clickhouseResponse.toFrames(query, client.FetchTimeZone)
+	if err != nil {
+		return onErr(err)
 	}
 
-	return response
+	backend.Logger.Debug("queryResponse: ", sql, frames)
+	return backend.DataResponse{
+		Frames: frames,
+	}
 }
 
 func (ds *ClickHouseDatasource) QueryData(
@@ -68,7 +69,7 @@ func (ds *ClickHouseDatasource) QueryData(
 	req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
 
 	onErr := func(err error) (*backend.QueryDataResponse, error) {
-		backend.Logger.Error(fmt.Sprintf("QueryData error: %w", err))
+		backend.Logger.Error(fmt.Sprintf("QueryData error: %v", err))
 		return nil, err
 	}
 
@@ -81,7 +82,7 @@ func (ds *ClickHouseDatasource) QueryData(
 		}
 		err := json.Unmarshal(query.JSON, &q)
 		if err != nil {
-			return onErr(fmt.Errorf("Unable to parse json %s. Error: %w", query.JSON, err))
+			return onErr(fmt.Errorf("unable to parse json %s. Error: %w", query.JSON, err))
 		}
 
 		response.Responses[q.RefId] = ds.query(req.PluginContext, &q)
@@ -95,7 +96,7 @@ func (ds *ClickHouseDatasource) CheckHealth(
 	req *backend.CheckHealthRequest) (*backend.CheckHealthResult, error) {
 
 	onErr := func(err error) (*backend.CheckHealthResult, error) {
-		backend.Logger.Error(fmt.Sprintf("HealthCheck error: %w", err))
+		backend.Logger.Error(fmt.Sprintf("HealthCheck error: %v", err))
 		return &backend.CheckHealthResult{
 			Status:  backend.HealthStatusError,
 			Message: err.Error(),

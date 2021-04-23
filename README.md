@@ -42,9 +42,10 @@ Restart Grafana, check data sources list at http://your.grafana.instance/datasou
  * SingleStat view
  * Ad-hoc filters
  * Annotations
+ * Alerts support
 
 
-### Access to CH via HTTP
+### Access to CH via HTTP / HTTPS
 Page configuration is standard
 
 ![settings](https://cloud.githubusercontent.com/assets/2902918/25473216/3ebd20fc-2b37-11e7-9743-fbbf2c5bdd3f.png)
@@ -93,7 +94,7 @@ Raw Editor allows custom SQL queries to be written:
 Raw Editor allows typing queries, get info about functions and macros, format queries as Clickhouse do. 
 Under the Editor you can find a raw query (all macros and functions have already been replaced) which will be sent directly to ClickHouse. 
 
-### Macros
+### Macros support
 
 Plugin supports the following marcos:
 
@@ -333,7 +334,7 @@ SELECT hostname FROM host WHERE region IN ($region)
 
 ### Conditional Predicate 
 
-If you are using templating to feed your predicate, you will face performance degradation when everything will select as the predicate, and it's not necessary. It's also true for textbox when nothing is enter, you have to write specific sql code to handle that. 
+If you are using templating to feed your predicate, you will face performance degradation when everything will select as the predicate, and it's not necessary. It's also true for textbox when nothing is entered, you have to write specific sql code to handle that. 
 
 To workaround this issue a new macro $conditionalTest(SQL Predicate,$variable) can be used to remove some part of the query. 
 If the variable is type query with all selected or if the variable is a textbox with nothing enter, then the SQL Predicate is not include in the generated query.
@@ -415,7 +416,7 @@ ORDER BY Reqs
 LIMIT 5,10000000000000 /* select some ridiculous number after first 5 */
 ```
 
-#### Table (https://grafana.com/plugins/table)
+#### Table view (https://grafana.com/plugins/table)
 
 There are don't contain any tricks in displaying time-series data. To print summary data, omit time column, and format the result as "Table".
 
@@ -509,13 +510,40 @@ SELECT database, table, name, type FROM system.columns WHERE table='myTable' ORD
 That should help to control data fetching by ad-hoc queries.
 
 
-### Query variables
+### Template variable values via Query 
 
 To use time range dependent macros like `$from` and `$to` in your query the refresh mode of the template variable needs to be set to On Time Range Change.
 ```
 SELECT ClientID FROM events WHERE EventTime > toDateTime($from) AND EventTime < toDateTime($to)
 ```
 
+### Annotations
+
+Plugin support Annotations with regions. To enable this feature open Dashboard `settings` and add new annotation query with `clickhouse` datasource with properly field names. 
+
+![Annotation query example](https://user-images.githubusercontent.com/105560/115864672-a35c3480-a450-11eb-88f4-1103a00c6563.png)
+
+![Annotation with regions graph panel](https://user-images.githubusercontent.com/105560/115865059-3d23e180-a451-11eb-91ce-1159aef29541.png)
+
+### Alerts support
+
+To enable alerts open "alerts" tab in panel, and define alert expression as described on [grafana.com](https://grafana.com/docs/grafana/latest/alerting/create-alerts/)
+
+Be careful with Template variables values, currently grafana doesn't support template variables in alert queries itself.
+Also, grafana UI doesn't pass template variables values to a backend, after you change it on frontend UI.
+
+So, the clickhouse grafana plugin can use template variables values, because we have "Generated SQL" which pass to backend "as is"
+To ensure template variables values will properly pass to a backend part of the plugin.
+Please choose the required template variables values for your alerts in UI dropdown,
+ensure values properly rendered in "Generated SQL" (maybe need change SQL queries in query editor)
+and save a whole dashboard to the Grafana server
+
+WARNING: `Test alert` button doesn't save a current state of alert rules to a backend part of the plugin.
+
+If the "Generated SQL" properly passed into backend part of plugin, you will see something like this:
+![Graph panel with alerts](https://user-images.githubusercontent.com/105560/115866047-95a7ae80-a452-11eb-9dd0-8e85b89e99ec.png)
+
+You also can try to troubleshoot alerts in clickhouse grafana plugin when enable `level=debug` in `log` section `grafana.ini` or via `GF_LOG_LEVEL=debug` environment variable.
 
 ### Configure the Datasource with Provisioning
 It’s now possible to configure datasources using config files with Grafana’s provisioning system.
@@ -596,11 +624,12 @@ PARTITION BY toYYYYMM(EventDate);
 
 > What about alerts support?
 
-Alerts feature requires changes in `Grafana`'s backend, which can be extended only for Grafana 6.5+. `Grafana`'s maintainers are working on this feature. 
-Current alerts support for `clickhouse-grafana` datasource plugin in beta and support only for amd64 architecture for Linux, MacOSX, Windows. 
+Alerts feature requires changes in `Grafana`'s backend, which can be extended only for Grafana 6.5+. `Grafana`'s maintainers are working on this feature.
+Current alerts support for `clickhouse-grafana` datasource plugin in beta.
 
-The resulting alerts should look like this
-![image](https://user-images.githubusercontent.com/5578150/81031711-fd2fad00-8e41-11ea-9b54-5eb4ca1628f1.png)
+For clickhouse grafana plugin 2.2.3+ support only for amd64 architecture for Linux, macOS, Windows and arm64 Linux, macOS (m1). 
+Only amd64 prior 2.2.3 version.
+
 
 ### Contributing
 
@@ -614,4 +643,3 @@ see [CONTRIBUTING.md](https://github.com/Vertamedia/clickhouse-grafana/blob/mast
 License
 -------
 MIT License, please see [LICENSE](https://github.com/Vertamedia/clickhouse-grafana/blob/master/LICENSE) for details.
-

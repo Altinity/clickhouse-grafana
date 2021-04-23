@@ -27,7 +27,7 @@ CREATE TABLE IF NOT EXISTS default.test_alerts
   PARTITION BY toYYYYMM(EventTime)
   ORDER BY (EventTime, Name);
 
-INSERT INTO default.test_alerts SELECT 'test2' AS Name, toDate( now() - ( 5400  - (60*number) ) ) AS EventDate, toDateTime( now() - ( 5400  - (60*number) ) ) AS EventTime, if((EventTime BETWEEN now() - INTERVAL 3600 SECOND AND now() + INTERVAL 300 SECOND) OR (EventTime BETWEEN now() + INTERVAL 1200 SECOND AND now() + INTERVAL 1800 SECOND), rand() % 20, rand() ) AS Value FROM numbers(1000);
+INSERT INTO default.test_alerts SELECT if(rand() % 2, 'test2','test1') AS Name, toDate( now() - ( 5400  - (60*number) ) ) AS EventDate, toDateTime( now() - ( 5400  - (60*number) ) ) AS EventTime, if((EventTime BETWEEN now() - INTERVAL 3600 SECOND AND now() + INTERVAL 600 SECOND) OR (EventTime BETWEEN now() + INTERVAL 1200 SECOND AND now() + INTERVAL 1800 SECOND), rand() % 20, rand() ) AS Value FROM numbers(180);
 
 DROP TABLE IF EXISTS default.test_depends_on_variable;
 CREATE TABLE IF NOT EXISTS default.test_depends_on_variable(

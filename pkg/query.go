@@ -1,7 +1,6 @@
 package main
 
 import (
-	"fmt"
 	"regexp"
 	"strconv"
 	"strings"
@@ -11,9 +10,6 @@ import (
 var FormatJson = "FORMAT JSON"
 
 var DefaultQuery = "SELECT 1 FORMAT JSON;"
-
-var TimeZoneFieldName = "timezone()"
-var TimeZoneQuery = fmt.Sprintf("SELECT %s FORMAT JSON;", TimeZoneFieldName)
 
 /* TODO Ugly hack cover 80% corner cases, think about how to port sql_query.ts+scanner.ts to Golang, or try to figure out howto tricksterproxy.io parse SQL query to detect timeRange */
 
@@ -27,7 +23,7 @@ type Query struct {
 	To       time.Time
 }
 
-func (query *Query) FormatQuery() string {
+func (query *Query) ApplyTimeRangeToQuery() string {
 	fmtQuery := strings.Trim(query.RawQuery, ";\r\n\t ")
 
 	if !strings.HasSuffix(fmtQuery, FormatJson) {

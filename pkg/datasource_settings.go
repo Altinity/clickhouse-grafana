@@ -8,20 +8,7 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
 )
 
-func NewDatasourceSettings(settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
-	var dsSettings = DatasourceSettings{}
-
-	err := json.Unmarshal(settings.JSONData, &dsSettings)
-	if err != nil {
-		return nil, fmt.Errorf("Unable to parse json %s. Error: %w", settings.JSONData, err)
-	}
-
-	dsSettings.Instance = settings
-
-	return &dsSettings, nil
-}
-
-// TODO Support custom headers
+// DatasourceSettings TODO Add Support custom headers
 type DatasourceSettings struct {
 	Instance backend.DataSourceInstanceSettings
 
@@ -31,6 +18,19 @@ type DatasourceSettings struct {
 	UseYandexCloudAuthorization bool   `json:"useYandexCloudAuthorization"`
 	XHeaderKey                  string `json:"xHeaderKey"`
 	XHeaderUser                 string `json:"xHeaderUser"`
+}
+
+func NewDatasourceSettings(settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+	var dsSettings = DatasourceSettings{}
+
+	err := json.Unmarshal(settings.JSONData, &dsSettings)
+	if err != nil {
+		return nil, fmt.Errorf("unable to parse settings json %s. Error: %w", settings.JSONData, err)
+	}
+
+	dsSettings.Instance = settings
+
+	return &dsSettings, nil
 }
 
 func (s *DatasourceSettings) Dispose() {}

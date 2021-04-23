@@ -8,8 +8,8 @@ Hash: SHA512
   "signedByOrg": "vertamedia",
   "signedByOrgName": "Vertamedia",
   "plugin": "vertamedia-clickhouse-datasource",
-  "version": "2.2.3",
-  "time": 1619170902087,
+  "version": "2.3.0",
+  "time": 1619184402195,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "img/annotations.png": "09cc19df992fede5c4dd830f7b3c7a783702feced07ea9693d417ec127077b00",
@@ -22,22 +22,22 @@ Hash: SHA512
     "partials/annotations.editor.html": "14d2d5add7f13c7c722e33bbc53ef83750fb624e5f7d6efee4a9568addc2ab78",
     "partials/config.html": "51ba130304c63c1a00590a9dc94c8351ff6277e4cf695720de57bff87aeec744",
     "partials/query.editor.html": "eb9ab7af412a922ea2ce09c86b99a75ba70000977a5fd882b8e327a2a27e1904",
-    "plugin.json": "7e322a287a2bd93abde0a5f02aeb64b7e00d14f3f65a011f39036c572981e812",
-    "README.md": "3194fcabb4b7ea1666d2d805a633555afbbe8f45e1e6cd73e3c21d0456cd5f46",
-    "vertamedia-clickhouse-plugin_darwin_amd64": "a8ae79471d47035aca70cf665d089aa223e2626795690d9028fc96c4af22d3fc",
-    "vertamedia-clickhouse-plugin_darwin_arm64": "9b73d1c63c964f680b31b44419e68acafb384366145d5e1336c12b0ad0c69299",
-    "vertamedia-clickhouse-plugin_linux_amd64": "832d80be856d15956ab6738423dac4874c4f9e3d14fb84d90d5602e2f27d7cc0",
-    "vertamedia-clickhouse-plugin_linux_arm64": "04966495be291fa68990d4396efdafb545cbb4b19b9e5063d513a466f600730c",
-    "vertamedia-clickhouse-plugin_windows_amd64.exe": "063a0b9c6755ede52790bc5c7e664b03cee02419c32ecb73a47178f9d16917d2"
+    "plugin.json": "e8bf8d30d5112242b3e67ffa72832569c4df7c6575fe065825aacde3b4c0424c",
+    "README.md": "4d15621e239ba32ddb0f6743e74abdac71819fb24aca22d5370a5121d0d27d6a",
+    "vertamedia-clickhouse-plugin_darwin_amd64": "5c07673faa32b561d4b72da749d497e4c55cdcce4fee708f5e880b1a5ac51093",
+    "vertamedia-clickhouse-plugin_darwin_arm64": "f936e418c9aa0d9c95ee9aaec5c6ff74d4b9e6f8824bd724c9642e2d61ecb174",
+    "vertamedia-clickhouse-plugin_linux_amd64": "82de94bcf60aef49023ef0650298a310dab49f6be30704471e773086fc63e23b",
+    "vertamedia-clickhouse-plugin_linux_arm64": "081844c5463332a8e1fa3062fcafaa22276088f76be45e42c1056eb37f9c7fb5",
+    "vertamedia-clickhouse-plugin_windows_amd64.exe": "12f0db0c68fb42bb66b2c39a9c357e379196a265a75c6448f88ba1d8d108d019"
   }
 }
 -----BEGIN PGP SIGNATURE-----
 Version: OpenPGP.js v4.10.1
 Comment: https://openpgpjs.org
 
-wqIEARMKAAYFAmCCllYACgkQfk0ManCIZudwIgIJASMZzi2TWJ+Shkdx+5zE
-gsbGfSJ+TLnjOl2cr7VgzEPNCaMGFIr5BrjeNdnfuTAlRnHNIIICw/1t5Ing
-XezVGdFXAgkB72Yck5CKnJSHPUNB6yVc/gJbyVaDLF39yY+KDciftouNXRLO
-ZesrJhq88klhAwEgW8CZqffGEQrwUtTrWI5pM3k=
-=C/jd
+wqIEARMKAAYFAmCCyxIACgkQfk0ManCIZuerPQIJAYkx5y15QMNWWDoT5aNQ
+Yqo67U/3pxzfwMX3okJByoNdB0yga/f/9E9UdUzGo8zpSffRpOcZsH4sNom3
+jaq+KL42AgkBeZtGjdnuPubvcmlJ0vk7SMXmod+SLq7qDXS3sDEVWfFtsy4X
+WJeWYQWrmrO2+NM9DxKcu7mColDmeMYtfVhi2VA=
+=5fZ2
 -----END PGP SIGNATURE-----

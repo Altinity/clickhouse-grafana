@@ -45,8 +45,7 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 
 	if client.settings.Instance.BasicAuthEnabled {
 		password, _ := client.settings.Instance.DecryptedSecureJSONData["basicAuthPassword"]
-		req.Header.Set("X-ClickHouse-User", client.settings.Instance.BasicAuthUser)
-		req.Header.Set("X-ClickHouse-Key", password)
+		req.SetBasicAuth(client.settings.Instance.BasicAuthUser, password)
 	} else if client.settings.UseYandexCloudAuthorization {
 		req.Header.Set("X-ClickHouse-User", client.settings.XHeaderUser)
 		req.Header.Set("X-ClickHouse-Key", client.settings.XHeaderKey)

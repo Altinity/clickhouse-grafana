@@ -273,6 +273,9 @@ func ParseValue(fieldName string, fieldType string, tz *time.Location, value int
 
 			return parseUInt64Value(value, isNullable)
 		case "Int64":
+			if fieldName == "t" {
+				return parseTimestampValue(value, isNullable)
+			}
 			return parseInt64Value(value, isNullable)
 		default:
 			if strings.HasPrefix(fieldType, "Decimal") {

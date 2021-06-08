@@ -78,9 +78,11 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 	valueDataFieldMap := map[string]*data.Field{}
 
 	for _, row := range r.Data {
-		timestampValue := ParseValue(
-			timestampFieldName, timestampFieldType, timeZonesMap[timestampFieldName], row[timestampFieldName], false,
-		).(time.Time)
+		value := ParseValue(timestampFieldName, timestampFieldType, timeZonesMap[timestampFieldName], row[timestampFieldName], false)
+		timestampValue, ok := value.(time.Time)
+		if !ok {
+			return nil, fmt.Errorf("Unexpected type from ParseValue of field %s. Expected time.Time, got %T.", timestampFieldName, value)
+		}
 
 		if hasLabelFields {
 			framePrefix := r.generateFrameNameByLabels(row, metaTypes, labelFieldsMap)

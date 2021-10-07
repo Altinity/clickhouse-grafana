@@ -15,7 +15,7 @@ describe("Query SELECT with $timeFilterByColumn and range with from and to:", ()
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME'))
             .toBe('SELECT * FROM table WHERE column_name >= toDateTime(1545613323) AND column_name <= toDateTime(1546300799)');
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME64'))
-            .toBe('SELECT * FROM table WHERE toDateTime64(column_name, 3) >= toDateTime64(1545613323, 3) AND toDateTime64(column_name, 3) <= toDateTime64(1546300799, 3)');
+            .toBe('SELECT * FROM table WHERE column_name >= toDateTime64(1545613323, 3) AND column_name <= toDateTime64(1546300799, 3)');
     });
 });
 
@@ -40,8 +40,8 @@ describe("Query SELECT with $timeFilterByColumn and range with from", () => {
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME64'))
             .toBe(
                 'SELECT * FROM table WHERE ' +
-                'toDateTime64(column_name, 3) >= toDateTime64(' + range.from.unix() + ', 3) AND ' +
-                'toDateTime64(column_name, 3) <= toDateTime64(' + range.to.unix() + ', 3)'
+                'column_name >= toDateTime64(' + range.from.unix() + ', 3) AND ' +
+                'column_name <= toDateTime64(' + range.to.unix() + ', 3)'
             );
     });
 });
@@ -55,7 +55,7 @@ describe("Query SELECT with $timeSeries $timeFilter and DATETIME64", () => {
         "ORDER BY t";
     const expQuery = "SELECT (intDiv(toFloat64(\"d\") * 1000, (15 * 1000)) * (15 * 1000)) as t, sum(x) AS metric\n" +
         "FROM default.test_datetime64\n" +
-        "WHERE toDateTime64(\"d\", 3) >= toDateTime64(1545613320, 3) AND toDateTime64(\"d\", 3) <= toDateTime64(1546300740, 3)\n" +
+        "WHERE \"d\" >= toDateTime64(1545613320, 3) AND \"d\" <= toDateTime64(1546300740, 3)\n" +
         "GROUP BY t\n" +
         "ORDER BY t";
     let templateSrv = new TemplateSrvStub();

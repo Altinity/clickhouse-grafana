@@ -170,12 +170,6 @@ export default class SqlQuery {
 
     static getFilterSqlForDateTime(columnName: string, dateTimeType: string) {
         const convertFn = this.getConvertFn(dateTimeType);
-
-        /* @TODO remove IF when resolve https://github.com/ClickHouse/ClickHouse/issues/16655 */
-        if (dateTimeType === "DATETIME64") {
-            return `${convertFn(columnName)} >= ${convertFn('$from')} AND ${convertFn(columnName)} <= ${convertFn('$to')}`;
-        }
-
         return `${columnName} >= ${convertFn('$from')} AND ${columnName} <= ${convertFn('$to')}`;
     }
 
@@ -483,12 +477,6 @@ export default class SqlQuery {
             }
             return t;
         };
-
-        /* @TODO remove IF statement after resolve https://github.com/ClickHouse/ClickHouse/issues/16655 */
-        if (dateTimeType === 'DATETIME64') {
-            return convertFn('$dateTimeCol') + ' >= ' + convertFn('$from') + ' AND ' +
-                   convertFn('$dateTimeCol') + ' <= ' + convertFn('$to');
-        }
         return '$dateTimeCol >= ' + convertFn('$from') + ' AND $dateTimeCol <= ' + convertFn('$to');
     }
 

@@ -793,5 +793,38 @@ describe("scanner:", () => {
         });
     });
 
+    /* fix https://github.com/Vertamedia/clickhouse-grafana/issues/374 */
+    describe("AST case 20 (`--` inside of quotes)", () => {
+        let query = "--test one line comment1\n" +
+            "SELECT *\n" +
+            "FROM $table\n" +
+            "WHERE title='-- test not comment1' -- test inline comment1\n" +
+            "AND user_info='test -- not comment2' -- test inline comment2",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": ["--test one line comment1\n"],
+            "select": ["*"],
+            "from": [
+                "$table",
+            ],
+            "where": [
+                "title = '-- test not comment1'-- test inline comment1\n",
+                "AND user_info = 'test -- not comment2'-- test inline comment2\n",
+            ],
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).toEqual(expectedAST);
+            expect(scanner.removeComments(query)).toEqual(
+                "\n" +
+                "SELECT *\n" +
+                "FROM $table\n" +
+                "WHERE title='-- test not comment1' \n" +
+                "AND user_info='test -- not comment2' ",
+            );
+        });
+    });
+
 
 });

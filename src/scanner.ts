@@ -302,7 +302,8 @@ export default class Scanner {
 }
 
 const wsRe = "\\s+",
-    commentRe = "--[^\n]*|/\\*(?:[^*]|\\*[^/])*\\*/",
+    commentRe = "--(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|" +
+        "/\\*(?:[^*]|\\*[^/])*\\*/",
     idRe = "[a-zA-Z_][a-zA-Z_0-9]*",
     intRe = "\\d+",
     powerIntRe = "\\d+e\\d+",

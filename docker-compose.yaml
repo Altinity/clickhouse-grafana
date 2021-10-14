@@ -34,6 +34,7 @@ services:
     volumes:
       - ./:/var/lib/grafana/plugins/vertamedia-clickhouse/
       - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
+      - ./docker/grafana/grafana-clickhouse-datasource-x-auth.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-x-auth.yaml
       - ./docker/grafana/grafana-clickhouse-ontime-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-ontime-datasource.yaml
       - ./docker/grafana/grafana-postgres-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-postgres-datasource.yaml
       - ./docker/grafana/grafana-trickster-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-trickster-datasource.yaml

@@ -1,14 +1,14 @@
 ﻿apiVersion: 1
 
 datasources:
-  - name: clickhouse
+  - name: clickhouse-x-auth
     type: vertamedia-clickhouse-datasource
     access: proxy
     url: http://clickhouse:8123
-    basicAuth: true
-    basicAuthPassword: ""
-    basicAuthUser: "default"
     editable: true
     jsonData:
       addCorsHeader: true
       usePOST: true
+      useYandexCloudAuthorization: true
+      xHeaderKey: ""
+      xHeaderUser: "default"

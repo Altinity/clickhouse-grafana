@@ -390,7 +390,7 @@ export default class SqlQuery {
             ' FROM (' +
             ' SELECT t,' +
             ' ' + alias +
-            ', if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
+            ', if(runningDifference(max_0) < 0 OR neighbor('+ alias +',-1,'+ alias +') != '+ alias +', nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
             ' FROM (' +
             ' SELECT $timeSeries AS t' +
             ', ' + key +

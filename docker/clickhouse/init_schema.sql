@@ -86,3 +86,14 @@ CREATE TABLE IF NOT EXISTS default.test_datetime64
 ) ENGINE = MergeTree() ORDER BY (d);
 
 INSERT INTO default.test_datetime64(d,x) SELECT toDateTime64(now64(6)-(number*10), 3) AS d, rand() AS x FROM numbers(1000);
+
+
+DROP TABLE IF EXISTS default.test_rate_and_per_seconds;
+CREATE TABLE IF NOT EXISTS default.test_rate_and_per_seconds (
+    d DateTime,
+    category LowCardinality(String),
+    counter Int64
+) ENGINE = MergeTree() ORDER BY (d);
+
+INSERT INTO default.test_rate_and_per_seconds SELECT now() - 10*number, 'category1', number % 200  FROM numbers(10000);
+INSERT INTO default.test_rate_and_per_seconds SELECT now() - 15*number, 'category2', number % 300  FROM numbers(10000);

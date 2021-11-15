@@ -144,7 +144,7 @@ export default function () {
             "stddevSampIf", "substring", "substringUTF8", "sum", "sumArray", "sumArrayIf", "sumIf", "timeSlot", "toDate", "toDateTime",
             "toDayOfMonth", "toDayOfWeek", "toFixedString", "toFloat32", "toFloat64", "toHour", "toInt16", "toInt32", "toInt64", "toInt8",
             "toMinute", "toMonday", "toMonth", "toRelativeDayNum", "toRelativeHourNum", "toRelativeMinuteNum", "toRelativeMonthNum",
-            "toRelativeSecondNum", "toRelativeWeekNum", "toRelativeYearNum", "toSecond", "toStartOfFiveMinute", "toStartOfHour",
+            "toRelativeSecondNum", "toRelativeWeekNum", "toRelativeYearNum", "toSecond", "toStartOfFiveMinute", "toStartOfFifteenMinutes", "toStartOfHour",
             "toStartOfMinute", "toStartOfMonth", "toStartOfQuarter", "toStartOfYear", "toString", "toStringCutToZero", "toTime", "toUInt16",
             "toUInt32", "toUInt64", "toUInt8", "toYear", "today", "topLevelDomain", "ucase", "unhex", "uniq", "uniqArray", "uniqArrayIf",
             "uniqArrayIf", "uniqCombined", "uniqCombinedIf", "uniqExact", "uniqExactIf", "uniqHLL12", "uniqUpTo", "upper", "upperUTF8", "varPop", "varPopIf",
@@ -160,6 +160,7 @@ export default function () {
             "$timeFilter",
             "$timeFilterByColumn",
             "$timeSeries",
+            "$naturalTimeSeries",
             "$rate",
             "$perSecond",
             "$perSecondColumns",
@@ -811,6 +812,11 @@ export default function () {
                     "name": "toStartOfFiveMinute",
                     "def": "toStartOfFiveMinute(v)",
                     "docText": "Rounds down a date with time to the start of the 5 minute (00:00, 00:05, 00:10...)."
+                },
+                {
+                  "name": "toStartOfFifteenMinutes",
+                  "def": "toStartOfFifteenMinutes(v)",
+                  "docText": "Rounds down a date with time to the start of the 15 minute (00:00, 00:15, 00:30...)."
                 },
                 {
                     "name": "toUInt16OrZero",
@@ -2099,6 +2105,11 @@ export default function () {
                     "name": "$timeSeries",
                     "def": "$timeSeries",
                     "docText": "Replaced with special ClickHouse construction to convert results as time-series data. Use it as `SELECT $timeSeries...`. Require `Column:DateTime` or `Column:TimeStamp` to be selected"
+                },
+                {
+                    "name": "$naturalTimeSeries",
+                    "def": "$naturalTimeSeries",
+                    "docText": "Replaced with special ClickHouse construction to convert results as time-series data in logical/natural units. Use it as `SELECT $timeSeries...`. Require `Column:DateTime` or `Column:TimeStamp` to be selected"
                 },
                 {
                     "name": "$rate",

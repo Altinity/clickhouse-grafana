@@ -52,6 +52,8 @@ services:
     environment:
       - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
       - GF_LOG_LEVEL=debug
+      # - GF_UNIFIED_ALERTING_ENABLED=true
+      # - GF_ALERTING_ENABLED=false
     ports:
       - 3000:3000
     depends_on:

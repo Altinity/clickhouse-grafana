@@ -15,17 +15,18 @@ describe("Query SELECT with $timeFilterByColumn and range with from and to:", ()
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME'))
             .toBe('SELECT * FROM table WHERE column_name >= toDateTime(1545613323) AND column_name <= toDateTime(1546300799)');
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME64'))
-            .toBe('SELECT * FROM table WHERE column_name >= toDateTime64(1545613323, 3) AND column_name <= toDateTime64(1546300799, 3)');
+            .toBe('SELECT * FROM table WHERE column_name >= toDateTime64(1545613323000/1000, 3) AND column_name <= toDateTime64(1546300799000/1000, 3)');
     });
 });
 
-describe("Query SELECT with $timeFilterByColumn and range with from", () => {
+describe("Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range with from", () => {
     const query = "SELECT * FROM table WHERE $timeFilterByColumn(column_name)";
+    const query64 = "SELECT * FROM table WHERE $timeFilter64ByColumn(column_name)";
     const range: TimeRange = {
-        from: moment('2018-12-24 01:02:03Z'),
+        from: moment('2018-12-24 01:02:03.200Z'),
         to: moment(),
         raw: {
-            from: moment('2018-12-24 01:02:03Z'),
+            from: moment('2018-12-24 01:02:03.200Z'),
             to: 'now',
         },
     };
@@ -40,8 +41,20 @@ describe("Query SELECT with $timeFilterByColumn and range with from", () => {
         expect(SqlQuery.replaceTimeFilters(query, range, 'DATETIME64'))
             .toBe(
                 'SELECT * FROM table WHERE ' +
-                'column_name >= toDateTime64(' + range.from.unix() + ', 3) AND ' +
-                'column_name <= toDateTime64(' + range.to.unix() + ', 3)'
+                'column_name >= toDateTime64(' + range.from.unix() + '200/1000, 3) AND ' +
+                'column_name <= toDateTime64(' + range.to.valueOf() + '/1000, 3)'
+            );
+        expect(SqlQuery.replaceTimeFilters(query64, range, 'DATETIME'))
+            .toBe(
+                'SELECT * FROM table WHERE ' +
+                'column_name >= toDateTime64(' + range.from.unix() + '200/1000, 3) AND ' +
+                'column_name <= toDateTime64(' + range.to.valueOf() + '/1000, 3)'
+            );
+        expect(SqlQuery.replaceTimeFilters(query64, range, 'DATETIME64'))
+            .toBe(
+                'SELECT * FROM table WHERE ' +
+                'column_name >= toDateTime64(' + range.from.unix() + '200/1000, 3) AND ' +
+                'column_name <= toDateTime64(' + range.to.valueOf() + '/1000, 3)'
             );
     });
 });

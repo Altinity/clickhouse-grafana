@@ -165,13 +165,26 @@ export default class SqlQuery {
                     `${SqlQuery.getFilterSqlForDateTime(columnName, dateTimeType)}`
                 )
             )
+            .replace(
+                /\$timeFilter64ByColumn\(([\w_]+)\)/g,
+                (match: string, columnName: string) => (
+                    `${SqlQuery.getFilterSqlForDateTime(columnName, 'DATETIME64')}`
+                )
+            )
             .replace(/\$from/g, from.toString())
-            .replace(/\$to/g, to.toString());
+            .replace(/\$to/g, to.toString())
+            .replace(/\$__from/g, range.from.valueOf())
+            .replace(/\$__to/g, range.to.valueOf())
+            ;
     }
 
     static getFilterSqlForDateTime(columnName: string, dateTimeType: string) {
         const convertFn = this.getConvertFn(dateTimeType);
-        return `${columnName} >= ${convertFn('$from')} AND ${columnName} <= ${convertFn('$to')}`;
+        let from = '$from'; let to = '$to';
+        if (dateTimeType === 'DATETIME64') {
+            from = '$__from/1000'; to = '$__to/1000';
+        }
+        return `${columnName} >= ${convertFn(from)} AND ${columnName} <= ${convertFn(to)}`;
     }
 
     static getConvertFn(dateTimeType: string) {

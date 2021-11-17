@@ -159,6 +159,7 @@ export default function () {
             "$interval",
             "$timeFilter",
             "$timeFilterByColumn",
+            "$timeFilter64ByColumn",
             "$timeSeries",
             "$naturalTimeSeries",
             "$rate",

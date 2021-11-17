@@ -19,6 +19,13 @@ services:
       - ./docker/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
       - ./docker/clickhouse/postgres_dictionary.xml:/etc/clickhouse-server/postgres_dictionary.xml
       - ./docker/clickhouse/listen_ports.xml:/etc/clickhouse-server/config.d/listen_ports.xml
+      - ./docker/clickhouse/ca-key.pem:/etc/clickhouse-server/ca-key.pem
+      - ./docker/clickhouse/ca-cert.pem:/etc/clickhouse-server/ca-cert.pem
+      - ./docker/clickhouse/server-cert.pem:/etc/clickhouse-server/server-cert.pem
+      - ./docker/clickhouse/server-key.pem:/etc/clickhouse-server/server-key.pem
+      - ./docker/clickhouse/client-cert.pem:/etc/clickhouse-server/client-cert.pem
+      - ./docker/clickhouse/client-key.pem:/etc/clickhouse-server/client-key.pem
+      - ./docker/clickhouse/dhparam.pem:/etc/clickhouse-server/dhparam.pem
 
   postgres:
     image: postgres:latest
@@ -34,6 +41,7 @@ services:
     volumes:
       - ./:/var/lib/grafana/plugins/vertamedia-clickhouse/
       - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
+      - ./docker/grafana/grafana-clickhouse-datasource-get.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-get.yaml
       - ./docker/grafana/grafana-clickhouse-datasource-x-auth.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-x-auth.yaml
       - ./docker/grafana/grafana-clickhouse-ontime-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-ontime-datasource.yaml
       - ./docker/grafana/grafana-postgres-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-postgres-datasource.yaml

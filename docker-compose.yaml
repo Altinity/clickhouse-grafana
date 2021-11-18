@@ -31,8 +31,6 @@ services:
     image: postgres:latest
     environment:
       - POSTGRES_PASSWORD=grafana
-    ports:
-      - 5432:5432
     volumes:
       - ./docker/postgres/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
 

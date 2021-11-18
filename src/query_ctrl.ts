@@ -15,7 +15,7 @@ async function delay(ms = 0) {
 
 async function runChMode() {
     while (!window['ace']) {
-        await delay(10);
+        await delay(50);
     }
 
     chInfo();
@@ -419,6 +419,12 @@ class SqlQueryCtrl extends QueryCtrl {
                 break;
         }
         return query;
+    }
+
+    refresh() {
+        // @todo https://github.com/Vertamedia/clickhouse-grafana/issues/380#issuecomment-971598622
+        // this.datasource.createQuery(this.panelCtrl, this.target);
+        super.refresh();
     }
 }
 

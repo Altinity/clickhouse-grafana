@@ -3,7 +3,7 @@
 	<div class="gf-form" ng-if="ctrl.target.rawQuery">
         <code-editor content="ctrl.target.query"
                      datasource="ctrl.datasource"
-                     on-change="ctrl.panelCtrl.refresh()"
+                     on-change="ctrl.panelCtrl.refresh(); ctrl.refresh()"
                      get-completer="ctrl.getCompleter()"
                      data-mode="clickhouse"
                      data-max-lines="200">

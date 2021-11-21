@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+	"golang.org/x/sync/errgroup"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
@@ -36,19 +37,19 @@ func (ds *ClickHouseDatasource) getClient(ctx backend.PluginContext) (*ClickHous
 	}, nil
 }
 
-func (ds *ClickHouseDatasource) query(ctx backend.PluginContext, query *Query) backend.DataResponse {
+func (ds *ClickHouseDatasource) executeQuery(pluginContext backend.PluginContext, ctx context.Context, query *Query) backend.DataResponse {
 
 	onErr := func(err error) backend.DataResponse {
-		backend.Logger.Error(fmt.Sprintf("Datasource query error: %s", err))
+		backend.Logger.Error(fmt.Sprintf("Datasource executeQuery error: %s", err))
 		return backend.DataResponse{Error: err}
 	}
 
-	client, err := ds.getClient(ctx)
+	client, err := ds.getClient(pluginContext)
 	if err != nil {
 		return onErr(err)
 	}
 	sql := query.ApplyTimeRangeToQuery()
-	clickhouseResponse, err := client.Query(sql)
+	clickhouseResponse, err := client.Query(ctx, sql)
 	if err != nil {
 		return onErr(err)
 	}
@@ -64,6 +65,25 @@ func (ds *ClickHouseDatasource) query(ctx backend.PluginContext, query *Query) b
 	}
 }
 
+func (ds *ClickHouseDatasource) evalQuery(pluginContext backend.PluginContext, ctx context.Context, evalQuery *EvalQuery) backend.DataResponse {
+	onErr := func(err error) backend.DataResponse {
+		backend.Logger.Error(fmt.Sprintf("Datasource evalQuery error: %s", err))
+		return backend.DataResponse{Error: err}
+	}
+
+	sql, err := evalQuery.ApplyMacrosAndTimeRangeToQuery()
+	if err != nil {
+		return onErr(err)
+	}
+
+	q := Query{
+		From:     evalQuery.From,
+		To:       evalQuery.To,
+		RawQuery: sql,
+	}
+	return ds.executeQuery(pluginContext, ctx, &q)
+}
+
 func (ds *ClickHouseDatasource) QueryData(
 	ctx context.Context,
 	req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
@@ -74,18 +94,36 @@ func (ds *ClickHouseDatasource) QueryData(
 	}
 
 	response := backend.NewQueryDataResponse()
-
+	wg, wgCtx := errgroup.WithContext(ctx)
 	for _, query := range req.Queries {
-		var q = Query{
+		var evalQ = EvalQuery{
 			From: query.TimeRange.From,
 			To:   query.TimeRange.To,
 		}
-		err := json.Unmarshal(query.JSON, &q)
-		if err != nil {
-			return onErr(fmt.Errorf("unable to parse json %s. Error: %w", query.JSON, err))
+		err := json.Unmarshal(query.JSON, &evalQ)
+		if err == nil {
+			wg.Go(func() error {
+				response.Responses[evalQ.RefId] = ds.evalQuery(req.PluginContext, wgCtx, &evalQ)
+				return nil
+			})
 		}
-
-		response.Responses[q.RefId] = ds.query(req.PluginContext, &q)
+		if err != nil {
+			var q = Query{
+				From: query.TimeRange.From,
+				To:   query.TimeRange.To,
+			}
+			err := json.Unmarshal(query.JSON, &q)
+			if err != nil {
+				return onErr(fmt.Errorf("unable to parse json %s. Error: %w", query.JSON, err))
+			}
+			wg.Go(func() error {
+				response.Responses[q.RefId] = ds.executeQuery(req.PluginContext, wgCtx, &q)
+				return nil
+			})
+		}
+	}
+	if err := wg.Wait(); err != nil {
+		return onErr(fmt.Errorf("one of executeQuery go-routine return error: %v", err))
 	}
 
 	return response, nil
@@ -107,7 +145,7 @@ func (ds *ClickHouseDatasource) CheckHealth(
 	if err != nil {
 		return onErr(err)
 	}
-	_, err = client.Query(DefaultQuery)
+	_, err = client.Query(ctx, DefaultQuery)
 	if err != nil {
 		return onErr(err)
 	}

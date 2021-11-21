@@ -1,8 +1,9 @@
 module github.com/VertaMedia/clickhouse-grafana
 
 require (
-	github.com/grafana/grafana-plugin-sdk-go v0.116.0
+	github.com/grafana/grafana-plugin-sdk-go v0.117.0
 	golang.org/x/net v0.0.0-20210903162142-ad29c8ab022f
+	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
 )
 
 require (

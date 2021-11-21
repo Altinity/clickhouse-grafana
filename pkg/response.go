@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"fmt"
 	"regexp"
 	"strings"
@@ -17,6 +18,7 @@ type FieldMeta struct {
 type Response struct {
 	Meta []*FieldMeta             `json:"meta"`
 	Data []map[string]interface{} `json:"data"`
+	ctx  context.Context
 }
 
 var complexTypeRE = regexp.MustCompile("Array|Tuple|Map")
@@ -81,7 +83,7 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 		value := ParseValue(timestampFieldName, timestampFieldType, timeZonesMap[timestampFieldName], row[timestampFieldName], false)
 		timestampValue, ok := value.(time.Time)
 		if !ok {
-			return nil, fmt.Errorf("Unexpected type from ParseValue of field %s. Expected time.Time, got %T.", timestampFieldName, value)
+			return nil, fmt.Errorf("Unexpected type from ParseValue of field %s. Expected time.Time, got %T ", timestampFieldName, value)
 		}
 
 		if hasLabelFields {
@@ -141,7 +143,7 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 }
 
 func (r *Response) analyzeResponseMeta(fetchTZ FetchTZFunc) (map[string]*time.Location, map[string]string) {
-	ServerTZ := fetchTZ()
+	ServerTZ := fetchTZ(r.ctx)
 	timeZonesMap := map[string]*time.Location{}
 	metaTypes := map[string]string{}
 

@@ -2,6 +2,7 @@ package main
 
 import (
 	"bytes"
+	"context"
 	"crypto/tls"
 	"crypto/x509"
 	"encoding/json"
@@ -23,7 +24,7 @@ type ClickHouseClient struct {
 	settings *DatasourceSettings
 }
 
-func (client *ClickHouseClient) Query(query string) (*Response, error) {
+func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Response, error) {
 
 	onErr := func(err error) (*Response, error) {
 		backend.Logger.Error(fmt.Sprintf("clickhouse client query error: %v", err))
@@ -39,18 +40,12 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 	tlsConfig := &tls.Config{}
 	var req *http.Request
 	if client.settings.UsePost {
-		req, err = http.NewRequest(
-			"POST",
-			datasourceUrl.String(),
-			bytes.NewBufferString(query))
+		req, err = http.NewRequest("POST", datasourceUrl.String(), bytes.NewBufferString(query))
 		if err != nil {
 			return onErr(err)
 		}
 	} else {
-		req, err = http.NewRequest(
-			"GET",
-			datasourceUrl.String(),
-			bytes.NewBufferString(""))
+		req, err = http.NewRequest("GET", datasourceUrl.String(), nil)
 		if err != nil {
 			return onErr(err)
 		}
@@ -94,7 +89,7 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 	if tlsCACertExists || (tlsClientCertExists && tlsClientKeyExists) {
 		httpClient.Transport = &http.Transport{TLSClientConfig: tlsConfig}
 	}
-
+	req = req.WithContext(ctx)
 	resp, err := httpClient.Do(req)
 	if err != nil {
 		return onErr(err)
@@ -108,7 +103,7 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 		return onErr(errors.New(string(body)))
 	}
 
-	var jsonResp = &Response{}
+	var jsonResp = &Response{ctx: ctx}
 	err = json.Unmarshal(body, jsonResp)
 	if err != nil {
 		return onErr(fmt.Errorf("unable to parse json %s. Error: %w", body, err))
@@ -117,8 +112,8 @@ func (client *ClickHouseClient) Query(query string) (*Response, error) {
 	return jsonResp, nil
 }
 
-func (client *ClickHouseClient) FetchTimeZone() *time.Location {
-	res, err := client.Query(TimeZoneQuery)
+func (client *ClickHouseClient) FetchTimeZone(ctx context.Context) *time.Location {
+	res, err := client.Query(ctx, TimeZoneQuery)
 
 	if err == nil && res != nil && len(res.Data) > 0 && res.Data[0] != nil {
 		return ParseTimeZone(fmt.Sprintf("%v", res.Data[0][TimeZoneFieldName]))

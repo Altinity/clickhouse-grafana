@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 	"reflect"
@@ -27,7 +28,7 @@ var dateTimeLayout = dateLayout + " 15:04:05"
 var dateTime64Layout3 = dateTimeLayout + ".000"
 var dateTime64Layout6 = dateTimeLayout + ".000000"
 
-type FetchTZFunc = func() *time.Location
+type FetchTZFunc = func(ctx context.Context) *time.Location
 type Value interface{}
 
 func ParseTimeZone(tz string) *time.Location {

@@ -21,12 +21,12 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v2.1.2
         with:
-          node-version: '12.x'
+          node-version: '16.x'
 
       - name: Setup Go environment
         uses: actions/setup-go@v2
         with:
-          go-version: '1.15'
+          go-version: '1.17'
 
       - name: Cache node_modules
         id: cache-node-modules
@@ -64,6 +64,7 @@ jobs:
 
       - name: Build backend
         run: |
+          go test -timeout 1m -failfast -tags=integration -v ./pkg/ && \
           GOOS=linux GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_amd64 ./pkg/ && \
           GOOS=linux GOARCH=arm64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_arm64 ./pkg/ && \
           GOOS=windows GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_windows_amd64.exe ./pkg/ && \
@@ -113,10 +114,10 @@ jobs:
       - name: Lint plugin
         run: |
           git clone https://github.com/grafana/plugin-validator /tmp/plugin-validator
-          pushd /tmp/plugin-validator/cmd/plugincheck
+          pushd /tmp/plugin-validator/pkg/cmd/plugincheck2
           go install
           popd
-          plugincheck /tmp/${{ steps.metadata.outputs.archive }} -strict
+          plugincheck2 -config=/tmp/plugin-validator/config/strict.yaml -strict /tmp/${{ steps.metadata.outputs.archive }}
 
       - name: Create release
         id: create_release

@@ -50,8 +50,8 @@ services:
     environment:
       - GF_INSTALL_PLUGINS=grafana-piechart-panel,grafana-worldmap-panel
       - GF_LOG_LEVEL=debug
-      # - GF_UNIFIED_ALERTING_ENABLED=true
-      # - GF_ALERTING_ENABLED=false
+      - GF_UNIFIED_ALERTING_ENABLED=true
+      - GF_ALERTING_ENABLED=false
     ports:
       - 3000:3000
     depends_on:
@@ -85,12 +85,14 @@ services:
     working_dir: /go/src/grafana-clickhouse
     environment:
       GOCACHE: "/go-cache"
+      RUN_TESTS: "${RUN_TESTS:-.+}"
     volumes:
       - ./:/go/src/grafana-clickhouse
       - ./.cache:/go/pkg/mod
       - ./.cache:/go-cache
     command: |
       bash -xec "
+        go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ &&
         GOOS=linux GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_amd64 ./pkg/ && \
         GOOS=linux GOARCH=arm64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_arm64 ./pkg/ && \
         GOOS=windows GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_windows_amd64.exe ./pkg/ && \

@@ -140,7 +140,7 @@ export default class SqlQuery {
     }
 
     static escapeIdentifier(identifier: string): string {
-        if (/^[a-zA-Z][0-9a-zA-Z_]+$/.test(identifier) || /\(.*\)/.test(identifier) || /[\/\*\+\-]/.test(identifier)) {
+        if (/^[a-zA-Z][0-9a-zA-Z_]+$/.test(identifier) || /\(.*\)/.test(identifier) || /[\/*+\-]/.test(identifier)) {
             return identifier;
         } else {
             return '"' + identifier.replace(/"/g, '\\"') + '"';
@@ -459,7 +459,7 @@ export default class SqlQuery {
 
     static _applyTimeFilter(query: string): string {
         if (query.toLowerCase().indexOf('where') !== -1) {
-            query = query.replace(/where/i, 'WHERE $timeFilter AND');
+            query = query.replace(/where/gi, 'WHERE $timeFilter AND');
         } else {
             query += ' WHERE $timeFilter';
         }

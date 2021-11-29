@@ -6,12 +6,16 @@ class Case {
     name: string;
     got: string;
     expected: string;
+    fn: any;
+    scanner: Scanner;
+    query: string;
 
     constructor(name: string, query: string, expected: string, fn: any) {
         this.name = name;
         this.expected = expected;
-        let scanner = new Scanner(query);
-        this.got = fn(query, scanner.toAST());
+        this.query = query;
+        this.fn = fn;
+        this.scanner = new Scanner(query);
     }
 }
 
@@ -125,6 +129,9 @@ describe("macros builder:", () => {
     ];
 
     each(testCases, (tc) => {
+        let ast = tc.scanner.toAST();
+        tc.got = tc.fn(tc.query, ast);
+
         if (tc.got !== tc.expected) {
             console.log(tc.got);
             console.log(tc.expected);
@@ -199,11 +206,13 @@ describe("columns + union all + with", () => {
         "    category,\n" +
         "    sum(too_big_value) / total_value as agg_value\n" +
         " FROM $table\n" +
-        " WHERE $timeFilter\n" +
+        " WHERE $timeFilter AND $timeFilter\n" +
         " GROUP BY t,category\n" +
         ") GROUP BY t, category ORDER BY t, category) GROUP BY t ORDER BY t";
     const scanner = new Scanner(query);
+    let ast = scanner.toAST();
+    let actual = SqlQuery.applyMacros(query, ast);
     it("gets replaced with right FROM query", () => {
-        expect(SqlQuery.applyMacros(query, scanner.toAST() )).toBe(expQuery);
+        expect(actual).toBe(expQuery);
     });
 });

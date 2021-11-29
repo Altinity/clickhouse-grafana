@@ -1,6 +1,7 @@
-# 2.4.0 (2021-11-17)
+# 2.4.0 (2021-11-29)
 
 ## Enhancement:
+* Add support for Grafana 8.x unified alerts, fix https://github.com/Vertamedia/clickhouse-grafana/issues/380
 * Add TLS support for backend alerts part of plugin https://github.com/Vertamedia/clickhouse-grafana/issues/356#issuecomment-906732530
 * Add $naturalTimeSeries macro, look details in https://github.com/Vertamedia/clickhouse-grafana/pull/89/files#diff-cd9133eda7b58ef9c9264190db4534a1be53216edbda9ac57256fbd800368c03R383-R412
 * Update golang-plugin-sdk-go to latest version

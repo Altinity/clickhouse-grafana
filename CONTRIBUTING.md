@@ -97,7 +97,7 @@ set -xeuo pipefail
 - after git push to your github fork, please open new pull request between your fork and `master` branch in https://github.com/Vertamedia/clickhouse-grafana
   copy/paste CHANGELOG.md items for new release to Pull Request message.           
 - after merge pull request in https://github.com/Vertamedia/clickhouse-grafana/, 
-  please open https://github.com/Vertamedia/clickhouse-grafana/releases create new release or request tp somebody of [contributors](https://github.com/Vertamedia/clickhouse-grafana/graphs/contributors).
+  please open https://github.com/Vertamedia/clickhouse-grafana/releases create new release or request to somebody of [contributors](https://github.com/Vertamedia/clickhouse-grafana/graphs/contributors).
 - after create new release on https://github.com/Vertamedia/clickhouse-grafana/releases,
   please create new pull request in https://github.com/grafana/grafana-plugin-repository, please follow `grafana-plugin-repository` pull request message styleguide, 
   copy/paste CHANGELOG.md items for new release to Pull Request message.           

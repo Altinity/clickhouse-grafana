@@ -9,6 +9,22 @@ import chInfo from './clickhouse-info.js';
 import chMode from './mode-clickhouse.js';
 import chSnippets from './snippets/clickhouse.js';
 
+async function delay(ms = 0) {
+    return new Promise(r => setTimeout(r, ms));
+}
+
+async function runChMode() {
+    while (!window['ace']) {
+        await delay(50);
+    }
+
+    chInfo();
+    chMode();
+    chSnippets();
+}
+
+runChMode().catch(console.error);
+
 const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
 
 class SqlQueryCtrl extends QueryCtrl {
@@ -181,7 +197,7 @@ class SqlQueryCtrl extends QueryCtrl {
 
             this.editorLoaded = true;
         } else {
-            setTimeout(this.initEditor, 500);
+            setTimeout(this.initEditor, 150);
         }
     }
 
@@ -403,6 +419,12 @@ class SqlQueryCtrl extends QueryCtrl {
                 break;
         }
         return query;
+    }
+
+    refresh() {
+        // @todo https://github.com/Vertamedia/clickhouse-grafana/issues/380#issuecomment-971598622
+        // this.datasource.createQuery(this.panelCtrl, this.target);
+        super.refresh();
     }
 }
 

@@ -1,3 +1,23 @@
+# 2.4.0 (2021-11-29)
+
+## Enhancement:
+* Add support for Grafana 8.x unified alerts, fix https://github.com/Vertamedia/clickhouse-grafana/issues/380
+* Add TLS support for backend alerts part of plugin https://github.com/Vertamedia/clickhouse-grafana/issues/356#issuecomment-906732530
+* Add $naturalTimeSeries macro, look details in https://github.com/Vertamedia/clickhouse-grafana/pull/89/files#diff-cd9133eda7b58ef9c9264190db4534a1be53216edbda9ac57256fbd800368c03R383-R412
+* Update golang-plugin-sdk-go to latest version
+* Properly format Value in Table format, look details https://github.com/Vertamedia/clickhouse-grafana/pull/379
+* Remove toDateTime64 casting for column when time column is already DateTime64 to improve performance. Change test to ensure the casting is removed from the query, fix https://github.com/Vertamedia/clickhouse-grafana/issues/360
+* implements `$timeFilter64ByColumn(column_name)` macro, fix https://github.com/Vertamedia/clickhouse-grafana/issues/343
+
+## Fixes:
+
+* implements properly GET and POST support for alert queries, fix https://github.com/Vertamedia/clickhouse-grafana/issues/353
+* SQL syntax highlight now works always, fix https://github.com/Vertamedia/clickhouse-grafana/issues/174, fix https://github.com/Vertamedia/clickhouse-grafana/issues/381
+* SQL syntax highlight, fix https://github.com/Vertamedia/clickhouse-grafana/issues/174, fix https://github.com/Vertamedia/clickhouse-grafana/issues/381 
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/376, 
+* fix negative behavior for $perSecondColumns https://github.com/Vertamedia/clickhouse-grafana/issues/337
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/374, ignore `--` inside quotas as comment 
+
 # 2.3.1 (2021-04-23)
 ## Breaking changes
 

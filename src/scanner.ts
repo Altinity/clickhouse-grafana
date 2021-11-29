@@ -399,7 +399,7 @@ const wsRe = "\\s+",
     macroRe = "\\$[A-Za-z0-9_$]+",
     skipSpaceRe = "[\\(\\.! \\[]",
 
-    tableFuncRe = "\\b(remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|jdbc|odbc|hdfs|input|generateRandom)\\b",
+    tableFuncRe = "\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b",
     builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
         "coalesce|ifnull|isnull|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
         "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +

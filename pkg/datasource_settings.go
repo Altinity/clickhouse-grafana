@@ -18,6 +18,7 @@ type DatasourceSettings struct {
 	UseYandexCloudAuthorization bool   `json:"useYandexCloudAuthorization"`
 	XHeaderKey                  string `json:"xHeaderKey"`
 	XHeaderUser                 string `json:"xHeaderUser"`
+	TLSSkipVerify               bool   `json:"tlsSkipVerify"`
 }
 
 func NewDatasourceSettings(settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {

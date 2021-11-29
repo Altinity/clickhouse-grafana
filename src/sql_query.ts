@@ -121,6 +121,7 @@ export default class SqlQuery {
 
         this.target.rawQuery = query
             .replace(/\$timeSeries\b/g, SqlQuery.getTimeSeries(dateTimeType))
+            .replace(/\$naturalTimeSeries/g, SqlQuery.getNaturalTimeSeries(dateTimeType, from, to))
             .replace(/\$timeFilter\b/g, timeFilter)
             .replace(/\$table\b/g, table)
             .replace(/\$from\b/g, from)
@@ -139,7 +140,7 @@ export default class SqlQuery {
     }
 
     static escapeIdentifier(identifier: string): string {
-        if (/^[a-zA-Z][0-9a-zA-Z_]+$/.test(identifier) || /\(.*\)/.test(identifier) || /[\/\*\+\-]/.test(identifier)) {
+        if (/^[a-zA-Z][0-9a-zA-Z_]+$/.test(identifier) || /\(.*\)/.test(identifier) || /[\/*+\-]/.test(identifier)) {
             return identifier;
         } else {
             return '"' + identifier.replace(/"/g, '\\"') + '"';
@@ -164,13 +165,26 @@ export default class SqlQuery {
                     `${SqlQuery.getFilterSqlForDateTime(columnName, dateTimeType)}`
                 )
             )
+            .replace(
+                /\$timeFilter64ByColumn\(([\w_]+)\)/g,
+                (match: string, columnName: string) => (
+                    `${SqlQuery.getFilterSqlForDateTime(columnName, 'DATETIME64')}`
+                )
+            )
             .replace(/\$from/g, from.toString())
-            .replace(/\$to/g, to.toString());
+            .replace(/\$to/g, to.toString())
+            .replace(/\$__from/g, range.from.valueOf())
+            .replace(/\$__to/g, range.to.valueOf())
+            ;
     }
 
     static getFilterSqlForDateTime(columnName: string, dateTimeType: string) {
         const convertFn = this.getConvertFn(dateTimeType);
-        return `${columnName} >= ${convertFn('$from')} AND ${columnName} <= ${convertFn('$to')}`;
+        let from = '$from'; let to = '$to';
+        if (dateTimeType === 'DATETIME64') {
+            from = '$__from/1000'; to = '$__to/1000';
+        }
+        return `${columnName} >= ${convertFn(from)} AND ${columnName} <= ${convertFn(to)}`;
     }
 
     static getConvertFn(dateTimeType: string) {
@@ -390,7 +404,7 @@ export default class SqlQuery {
             ' FROM (' +
             ' SELECT t,' +
             ' ' + alias +
-            ', if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
+            ', if(runningDifference(max_0) < 0 OR neighbor('+ alias +',-1,'+ alias +') != '+ alias +', nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
             ' FROM (' +
             ' SELECT $timeSeries AS t' +
             ', ' + key +
@@ -445,12 +459,46 @@ export default class SqlQuery {
 
     static _applyTimeFilter(query: string): string {
         if (query.toLowerCase().indexOf('where') !== -1) {
-            query = query.replace(/where/i, 'WHERE $timeFilter AND');
+            query = query.replace(/where/gi, 'WHERE $timeFilter AND');
         } else {
             query += ' WHERE $timeFilter';
         }
 
         return query;
+    }
+
+    static getNaturalTimeSeries(dateTimeType: string, from: number, to: number): string {
+        let SOME_MINUTES = 60 * 20;
+        let FEW_HOURS = 60 * 60 * 4;
+        let SOME_HOURS = 60 * 60 * 24;
+        let MANY_HOURS = 60 * 60 * 72;
+        let FEW_DAYS = 60 * 60 * 24 * 15;
+        let MANY_WEEKS = 60 * 60 * 24 * 7 * 15;
+        let FEW_MONTHS = 60 * 60 * 24 * 30 * 10;
+        let FEW_YEARS = 60 * 60 * 24 * 365 * 6;
+        if (dateTimeType === 'DATETIME' || dateTimeType === 'DATETIME64') {
+            let duration = to - from;
+            if (duration < SOME_MINUTES) {
+                return 'toUInt32($dateTimeCol) * 1000';
+            } else if (duration < FEW_HOURS) {
+                return 'toUInt32(toStartOfMinute($dateTimeCol)) * 1000';
+            } else if (duration < SOME_HOURS) {
+                return 'toUInt32(toStartOfFiveMinute($dateTimeCol)) * 1000';
+            } else if (duration < MANY_HOURS) {
+                return 'toUInt32(toStartOfFifteenMinutes($dateTimeCol)) * 1000';
+            } else if (duration < FEW_DAYS) {
+                return 'toUInt32(toStartOfHour($dateTimeCol)) * 1000';
+            } else if (duration < MANY_WEEKS) {
+                return 'toUInt32(toStartOfDay($dateTimeCol)) * 1000';
+            } else if (duration < FEW_MONTHS) {
+                return 'toUInt32(toDateTime(toMonday($dateTimeCol))) * 1000';
+            } else if (duration < FEW_YEARS) {
+                return 'toUInt32(toDateTime(toStartOfMonth($dateTimeCol))) * 1000';
+            } else {
+                return 'toUInt32(toDateTime(toStartOfQuarter($dateTimeCol))) * 1000';
+            }
+        }
+        return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
     }
 
     static getTimeSeries(dateTimeType: string): string {

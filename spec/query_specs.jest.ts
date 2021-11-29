@@ -1,18 +1,21 @@
 import Scanner from '../src/scanner';
 import SqlQuery from '../src/sql_query';
 import {each} from 'lodash-es';
-import moment from "moment";
 
 class Case {
     name: string;
     got: string;
     expected: string;
+    fn: any;
+    scanner: Scanner;
+    query: string;
 
     constructor(name: string, query: string, expected: string, fn: any) {
         this.name = name;
         this.expected = expected;
-        let scanner = new Scanner(query);
-        this.got = fn(query, scanner.toAST())
+        this.query = query;
+        this.fn = fn;
+        this.scanner = new Scanner(query);
     }
 }
 
@@ -107,7 +110,7 @@ describe("macros builder:", () => {
             ' FROM (' +
             ' SELECT t,' +
             ' from_alias,' +
-            ' if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
+            ' if(runningDifference(max_0) < 0 OR neighbor(from_alias,-1,from_alias) != from_alias, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
             ' FROM (' +
             ' SELECT $timeSeries AS t,' +
             ' concat(\'test\', type) AS from_alias,' +
@@ -126,6 +129,9 @@ describe("macros builder:", () => {
     ];
 
     each(testCases, (tc) => {
+        let ast = tc.scanner.toAST();
+        tc.got = tc.fn(tc.query, ast);
+
         if (tc.got !== tc.expected) {
             console.log(tc.got);
             console.log(tc.expected);
@@ -134,7 +140,7 @@ describe("macros builder:", () => {
             it("expects equality", () => {
                 expect(tc.got).toEqual(tc.expected);
             });
-        })
+        });
     });
 });
 
@@ -150,13 +156,6 @@ describe("comments and $rate and from in field name", () => {
         "WHERE from_user='bob'";
     const expQuery = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\nSELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob' GROUP BY t ORDER BY t)";
     const scanner = new Scanner(query);
-    let templateSrv: any;
-    const options = {
-        rangeRaw: {
-            from: "now-10m",
-            to: "now"
-        }
-    };
     it("gets replaced with right FROM query", () => {
         expect(SqlQuery.applyMacros(query, scanner.toAST() )).toBe(expQuery);
     });
@@ -165,60 +164,55 @@ describe("comments and $rate and from in field name", () => {
 /* fix https://github.com/Vertamedia/clickhouse-grafana/issues/319 */
 describe("columns + union all + with", () => {
     const query = "$columns(\n" +
-        "  service_name,   \n" +
+        "  category,   \n" +
         "  sum(agg_value) as value\n" +
         ")\n" +
         "FROM (\n" +
         "\n" +
         " SELECT\n" +
         "    $timeSeries as t,\n" +
-        "    service_name,\n" +
+        "    category,\n" +
         "    sum(too_big_value) as agg_value\n" +
         " FROM $table\n" +
         " WHERE $timeFilter\n" +
-        " GROUP BY t,service_name\n" +
+        " GROUP BY t,category\n" +
         " \n" +
         " UNION ALL\n" +
         " \n" +
         " WITH (SELECT sum(too_big_value) FROM $table) AS total_value\n" +
         " SELECT\n" +
         "    $timeSeries as t,\n" +
-        "    service_name,\n" +
+        "    category,\n" +
         "    sum(too_big_value) / total_value as agg_value\n" +
         " FROM $table\n" +
         " WHERE $timeFilter\n" +
-        " GROUP BY t,service_name\n" +
+        " GROUP BY t,category\n" +
         ")";
-    const expQuery = "SELECT t, groupArray((service_name, value)) AS groupArr FROM ( SELECT $timeSeries AS t, service_name, sum(agg_value) as value FROM (\n" +
+    const expQuery = "SELECT t, groupArray((category, value)) AS groupArr FROM ( SELECT $timeSeries AS t, category, sum(agg_value) as value FROM (\n" +
         "\n" +
         " SELECT\n" +
         "    $timeSeries as t,\n" +
-        "    service_name,\n" +
+        "    category,\n" +
         "    sum(too_big_value) as agg_value\n" +
         " FROM $table\n" +
         " WHERE $timeFilter AND $timeFilter\n" +
-        " GROUP BY t,service_name\n" +
+        " GROUP BY t,category\n" +
         " \n" +
         " UNION ALL\n" +
         " \n" +
         " WITH (SELECT sum(too_big_value) FROM $table) AS total_value\n" +
         " SELECT\n" +
         "    $timeSeries as t,\n" +
-        "    service_name,\n" +
+        "    category,\n" +
         "    sum(too_big_value) / total_value as agg_value\n" +
         " FROM $table\n" +
-        " WHERE $timeFilter\n" +
-        " GROUP BY t,service_name\n" +
-        ") GROUP BY t, service_name ORDER BY t, service_name) GROUP BY t ORDER BY t";
+        " WHERE $timeFilter AND $timeFilter\n" +
+        " GROUP BY t,category\n" +
+        ") GROUP BY t, category ORDER BY t, category) GROUP BY t ORDER BY t";
     const scanner = new Scanner(query);
-    let templateSrv: any;
-    const options = {
-        rangeRaw: {
-            from: "now-10m",
-            to: "now"
-        }
-    };
+    let ast = scanner.toAST();
+    let actual = SqlQuery.applyMacros(query, ast);
     it("gets replaced with right FROM query", () => {
-        expect(SqlQuery.applyMacros(query, scanner.toAST() )).toBe(expQuery);
+        expect(actual).toBe(expQuery);
     });
 });

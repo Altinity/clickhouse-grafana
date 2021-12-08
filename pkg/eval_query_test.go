@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"reflect"
 	"sort"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 type macrosTestCase struct {
@@ -1145,7 +1146,7 @@ func TestEvalQueryTimeSeriesTimeFilsterAndDateTime64(t *testing.T) {
 		Query:          query,
 		From:           from,
 		To:             to,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_datetime64",
@@ -1212,7 +1213,7 @@ func TestEvalQueryColumnsMacrosAndArrayJoin(t *testing.T) {
 	r.NoError(err)
 	q := EvalQuery{
 		Query:          query,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_array_join_nested",
@@ -1246,7 +1247,7 @@ func TestEvalQueryTimeFilterByColumnAndDateTimeCol(t *testing.T) {
 	r.NoError(err)
 	q := EvalQuery{
 		Query:          query,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_table",
@@ -1278,7 +1279,7 @@ func TestEvalQueryNaturalTimeSeries(t *testing.T) {
 	r.NoError(err)
 	q := EvalQuery{
 		Query:          query,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_table",

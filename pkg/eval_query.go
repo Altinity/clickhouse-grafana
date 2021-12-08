@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/dlclark/regexp2"
 	"math"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/dlclark/regexp2"
 )
 
 /* var NumberOnlyRegexp = regexp.MustCompile(`^[+-]?\d+(\.\d+)?$`) */
@@ -28,7 +29,7 @@ var toMsMacroRegexp = regexp.MustCompile(`\$__to\b`)
 
 type EvalQuery struct {
 	RefId          string `json:"refId"`
-	RawQuery       bool   `json:"rawQuery"`
+	RawQuery       string `json:"rawQuery"`
 	Query          string `json:"query"`
 	DateTimeCol    string `json:"dateTimeColDataType"`
 	DateCol        string `json:"dateColDataType"`
@@ -38,7 +39,7 @@ type EvalQuery struct {
 	Format         string `json:"format"`
 	Round          string `json:"round"`
 	IntervalFactor int    `json:"intervalFactor"`
-	Interval       int    `json:"interval"`
+	Interval       string `json:"interval"`
 	Database       string `json:"database"`
 	Table          string `json:"table"`
 	MaxDataPoints  int64
@@ -65,7 +66,8 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		q.IntervalFactor = 1
 	}
 	i := 1 * time.Second
-	if q.Interval == 0 {
+	var myInterval int
+	if q.Interval == "" {
 		if q.MaxDataPoints > 0 {
 			i = q.To.Sub(q.From) / time.Duration(q.MaxDataPoints)
 		} else {
@@ -74,10 +76,12 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		if i < 1*time.Second {
 			i = 1 * time.Second
 		}
-		q.Interval, err = q.convertInterval(fmt.Sprintf("%fs", math.Floor(i.Seconds())), q.IntervalFactor)
+		myInterval, err = q.convertInterval(fmt.Sprintf("%fs", math.Floor(i.Seconds())), q.IntervalFactor)
 		if err != nil {
 			return "", err
 		}
+	} else {
+		myInterval, err = q.convertInterval(q.Interval, q.IntervalFactor)
 	}
 	scanner := newScanner(query)
 	ast, err := scanner.toAST()
@@ -117,7 +121,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		return "", err
 	}
 	if q.Round == "$step" {
-		myRound = q.Interval
+		myRound = myInterval
 	}
 	from := q.convertTimestamp(q.round(q.From, myRound))
 	to := q.convertTimestamp(q.round(q.To, myRound))
@@ -130,7 +134,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	query = toMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", to))
 	query = dateColMacroRegexp.ReplaceAllString(query, q.escapeIdentifier(q.DateCol))
 	query = dateTimeColMacroRegexp.ReplaceAllString(query, q.escapeIdentifier(q.DateTimeCol))
-	query = intervalMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.Interval))
+	query = intervalMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", myInterval))
 
 	query = q.replaceTimeFilters(query, myRound)
 

@@ -112,10 +112,9 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 									switch tuple := array.(type) {
 									case []interface{}:
 										tsName := ParseValue(fieldName, labelType, timeZonesMap[fieldName], tuple[0], false)
-										tsValue := ParseValue(fieldName, valueType, timeZonesMap[fieldName], tuple[1], false)
 										r.createFrameIfNotExistsAndAddPoint(
 											query, framesMap, tsName.(string), timeStampDataFieldMap, timestampFieldName, valueDataFieldMap,
-											fieldName, valueType, timestampValue, timeZonesMap, tsValue,
+											fieldName, valueType, timestampValue, timeZonesMap, tuple[1],
 										)
 
 									default:

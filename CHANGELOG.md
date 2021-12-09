@@ -13,7 +13,6 @@
 
 * implements properly GET and POST support for alert queries, fix https://github.com/Vertamedia/clickhouse-grafana/issues/353
 * SQL syntax highlight now works always, fix https://github.com/Vertamedia/clickhouse-grafana/issues/174, fix https://github.com/Vertamedia/clickhouse-grafana/issues/381
-* SQL syntax highlight, fix https://github.com/Vertamedia/clickhouse-grafana/issues/174, fix https://github.com/Vertamedia/clickhouse-grafana/issues/381 
 * fix https://github.com/Vertamedia/clickhouse-grafana/issues/376, 
 * fix negative behavior for $perSecondColumns https://github.com/Vertamedia/clickhouse-grafana/issues/337
 * fix https://github.com/Vertamedia/clickhouse-grafana/issues/374, ignore `--` inside quotas as comment 

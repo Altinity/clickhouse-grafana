@@ -88,6 +88,8 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 
 		if hasLabelFields {
 			framePrefix := r.generateFrameNameByLabels(row, metaTypes, labelFieldsMap)
+			frameLabels := r.generateFrameLabelsByLables(row, metaTypes, labelFieldsMap)
+
 			for fieldName, fieldValue := range row {
 				_, isLabel := labelFieldsMap[fieldName]
 				if fieldName != timestampFieldName && !isLabel {
@@ -96,6 +98,7 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 						frameName += ", " + fieldName
 					}
 					r.createFrameIfNotExistsAndAddPoint(query, framesMap, frameName, timeStampDataFieldMap, timestampFieldName, valueDataFieldMap, fieldName, metaTypes[fieldName], timestampValue, timeZonesMap, fieldValue)
+					valueDataFieldMap[frameName].Labels = frameLabels
 				}
 			}
 		} else {
@@ -183,6 +186,18 @@ func (r *Response) generateFrameNameByLabels(row map[string]interface{}, metaTyp
 		frameName = frameName[0 : len(frameName)-2]
 	}
 	return frameName
+}
+
+func (r *Response) generateFrameLabelsByLables(row map[string]interface{}, metaTypes map[string]string, labelFieldsMap map[string]int) map[string]string {
+	labels := map[string]string{}
+	for fieldName, fieldValue := range row {
+		if _, isLabel := labelFieldsMap[fieldName]; isLabel {
+			fieldType := metaTypes[fieldName]
+			labels[fieldName] = fmt.Sprintf("%v", ParseValue(fieldName, fieldType, nil, fieldValue, false))
+		}
+	}
+
+	return labels
 }
 
 func (r *Response) toFramesTable(query *Query, fetchTZ FetchTZFunc) (data.Frames, error) {

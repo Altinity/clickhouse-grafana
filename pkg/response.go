@@ -88,7 +88,7 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 
 		if hasLabelFields {
 			framePrefix := r.generateFrameNameByLabels(row, metaTypes, labelFieldsMap)
-			frameLabels := r.generateFrameLabelsByLables(row, metaTypes, labelFieldsMap)
+			frameLabels := r.generateFrameLabelsByLabels(row, metaTypes, labelFieldsMap)
 
 			for fieldName, fieldValue := range row {
 				_, isLabel := labelFieldsMap[fieldName]
@@ -188,7 +188,7 @@ func (r *Response) generateFrameNameByLabels(row map[string]interface{}, metaTyp
 	return frameName
 }
 
-func (r *Response) generateFrameLabelsByLables(row map[string]interface{}, metaTypes map[string]string, labelFieldsMap map[string]int) map[string]string {
+func (r *Response) generateFrameLabelsByLabels(row map[string]interface{}, metaTypes map[string]string, labelFieldsMap map[string]int) map[string]string {
 	labels := map[string]string{}
 	for fieldName, fieldValue := range row {
 		if _, isLabel := labelFieldsMap[fieldName]; isLabel {

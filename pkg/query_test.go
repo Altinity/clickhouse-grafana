@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"reflect"
 	"sort"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 type macrosTestCase struct {
@@ -15,7 +16,7 @@ type macrosTestCase struct {
 	query    string
 	got      string
 	expected string
-	scanner  EvalQueryScanner
+	scanner  QueryScanner
 	fn       func(string, *EvalAST) (string, error)
 }
 
@@ -30,7 +31,7 @@ func newMacrosTestCase(name, query, expected string, fn func(string, *EvalAST) (
 }
 
 func TestMacrosBuilder(t *testing.T) {
-	q := EvalQuery{}
+	q := Query{}
 	testCases := []macrosTestCase{
 		newMacrosTestCase(
 			"$rate",
@@ -160,7 +161,7 @@ func TestCommentsAndRateMacrosWithFromKeywordInFieldName(t *testing.T) {
 		"WHERE from_user='bob'"
 	const expQuery = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\nSELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob' GROUP BY t ORDER BY t)"
 	r := require.New(t)
-	q := EvalQuery{}
+	q := Query{}
 	scanner := newScanner(query)
 	ast, err := scanner.toAST()
 	r.NoError(err)
@@ -221,7 +222,7 @@ func TestColumnsMacrosWithUnionAllAndWithKeyword(t *testing.T) {
 		" GROUP BY t,category\n" +
 		") GROUP BY t, category ORDER BY t, category) GROUP BY t ORDER BY t"
 	r := require.New(t)
-	q := EvalQuery{}
+	q := Query{}
 	scanner := newScanner(query)
 	ast, err := scanner.toAST()
 	r.NoError(err)
@@ -233,7 +234,7 @@ func TestColumnsMacrosWithUnionAllAndWithKeyword(t *testing.T) {
 type astTestCase struct {
 	name        string
 	query       string
-	scanner     EvalQueryScanner
+	scanner     QueryScanner
 	expectedAST *EvalAST
 }
 
@@ -1063,7 +1064,7 @@ func TestScannerAST(t *testing.T) {
 	)
 }
 
-func TestEvalQueryTimeFilterByColumnAndRange(t *testing.T) {
+func TestQueryTimeFilterByColumnAndRange(t *testing.T) {
 	const description = "Query SELECT with $timeFilterByColumn and range with from and to"
 	const query = "SELECT * FROM table WHERE $timeFilterByColumn(column_name)"
 	r := require.New(t)
@@ -1071,7 +1072,7 @@ func TestEvalQueryTimeFilterByColumnAndRange(t *testing.T) {
 	r.NoError(err)
 	to, err := time.Parse("2006-01-02 15:04:05Z", `2018-12-31 23:59:59Z`)
 	r.NoError(err)
-	q := EvalQuery{
+	q := Query{
 		Query: query,
 		From:  from,
 		To:    to,
@@ -1092,7 +1093,7 @@ func TestEvalQueryTimeFilterByColumnAndRange(t *testing.T) {
 
 }
 
-func TestEvalQueryTimeFilter64ByColumnAndRangeMs(t *testing.T) {
+func TestQueryTimeFilter64ByColumnAndRangeMs(t *testing.T) {
 	const description = "Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range with from"
 	const query = "SELECT * FROM table WHERE $timeFilterByColumn(column_name)"
 	const query64 = "SELECT * FROM table WHERE $timeFilter64ByColumn(column_name)"
@@ -1100,7 +1101,7 @@ func TestEvalQueryTimeFilter64ByColumnAndRangeMs(t *testing.T) {
 	from, err := time.Parse("2006-01-02 15:04:05.000Z", "2018-12-24 01:02:03.200Z")
 	to := time.Now()
 	r.NoError(err)
-	eQ := EvalQuery{
+	eQ := Query{
 		From: from,
 		To:   to,
 	}
@@ -1122,7 +1123,7 @@ func TestEvalQueryTimeFilter64ByColumnAndRangeMs(t *testing.T) {
 	}
 }
 
-func TestEvalQueryTimeSeriesTimeFilsterAndDateTime64(t *testing.T) {
+func TestQueryTimeSeriesTimeFilsterAndDateTime64(t *testing.T) {
 	const description = "Query SELECT with $timeSeries $timeFilter and DATETIME64"
 	const query = "SELECT $timeSeries as t, sum(x) AS metric\n" +
 		"FROM $table\n" +
@@ -1141,11 +1142,11 @@ func TestEvalQueryTimeSeriesTimeFilsterAndDateTime64(t *testing.T) {
 	to, err := time.Parse("2006-01-02 15:04:05Z", `2018-12-31 23:59:59Z`)
 	r.NoError(err)
 
-	q := EvalQuery{
+	q := Query{
 		Query:          query,
 		From:           from,
 		To:             to,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_datetime64",
@@ -1169,7 +1170,7 @@ func TestUnescapeMacros(t *testing.T) {
 	const expQuery = "SELECT count(), if(runningDifference(max_0) < 0, " +
 		"nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate " +
 		"FROM requests WHERE client_ID = 5"
-	q := EvalQuery{}
+	q := Query{}
 	r := require.New(t)
 	unescapedQuery, err := q.unescape(query)
 	r.NoError(err)
@@ -1178,7 +1179,7 @@ func TestUnescapeMacros(t *testing.T) {
 }
 
 func TestEscapeIdentifier(t *testing.T) {
-	q := EvalQuery{}
+	q := Query{}
 	r := require.New(t)
 	r.Equal("My_Identifier_33", q.escapeIdentifier("My_Identifier_33"), "Standard identifier - untouched")
 	r.Equal("\"1nfoVista\"", q.escapeIdentifier("1nfoVista"), "Begining with number")
@@ -1194,7 +1195,7 @@ func TestEscapeIdentifier(t *testing.T) {
 }
 
 /* check https://github.com/Vertamedia/clickhouse-grafana/issues/284 */
-func TestEvalQueryColumnsMacrosAndArrayJoin(t *testing.T) {
+func TestQueryColumnsMacrosAndArrayJoin(t *testing.T) {
 	const description = "check replace with $columns and concat and ARRAY JOIN"
 	const query = "$columns(\n" +
 		"substring(concat(JobName as JobName,' # ' , Metrics.Name as MetricName), 1, 50) as JobSource,\n" +
@@ -1210,9 +1211,9 @@ func TestEvalQueryColumnsMacrosAndArrayJoin(t *testing.T) {
 	r.NoError(err)
 	to, err := time.Parse("2006-01-02 15:04:05Z", `2018-12-31 23:59:59Z`)
 	r.NoError(err)
-	q := EvalQuery{
+	q := Query{
 		Query:          query,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_array_join_nested",
@@ -1230,7 +1231,7 @@ func TestEvalQueryColumnsMacrosAndArrayJoin(t *testing.T) {
 }
 
 /* check https://github.com/Vertamedia/clickhouse-grafana/issues/294 */
-func TestEvalQueryTimeFilterByColumnAndDateTimeCol(t *testing.T) {
+func TestQueryTimeFilterByColumnAndDateTimeCol(t *testing.T) {
 	const description = "combine $timeFilterByColumn and $dateTimeCol"
 	const query = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter AND $timeFilterByColumn($dateTimeCol) AND $timeFilterByColumn(another_column) GROUP BY t"
 	const expQuery = "SELECT (intDiv(toUInt32(tm), 15) * 15) * 1000 as t, count() FROM default.test_table " +
@@ -1244,9 +1245,9 @@ func TestEvalQueryTimeFilterByColumnAndDateTimeCol(t *testing.T) {
 	r.NoError(err)
 	to, err := time.Parse("2006-01-02 15:04:05Z", `2018-12-31 23:59:59Z`)
 	r.NoError(err)
-	q := EvalQuery{
+	q := Query{
 		Query:          query,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_table",
@@ -1264,7 +1265,7 @@ func TestEvalQueryTimeFilterByColumnAndDateTimeCol(t *testing.T) {
 }
 
 /* check $naturalTimeSeries https://github.com/Vertamedia/clickhouse-grafana/pull/89 */
-func TestEvalQueryNaturalTimeSeries(t *testing.T) {
+func TestQueryNaturalTimeSeries(t *testing.T) {
 	const description = "check $naturalTimeSeries"
 	const query = "SELECT $naturalTimeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t"
 	const expQuery = "SELECT toUInt32(toDateTime(toStartOfMonth(tm))) * 1000 as t, count() " +
@@ -1276,9 +1277,9 @@ func TestEvalQueryNaturalTimeSeries(t *testing.T) {
 	r.NoError(err)
 	to, err := time.Parse("2006-01-02 15:04:05Z", `2021-12-31 23:59:59Z`)
 	r.NoError(err)
-	q := EvalQuery{
+	q := Query{
 		Query:          query,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_table",

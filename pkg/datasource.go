@@ -3,6 +3,7 @@ package main
 import (
 	"encoding/json"
 	"fmt"
+
 	"golang.org/x/sync/errgroup"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -48,7 +49,10 @@ func (ds *ClickHouseDatasource) executeQuery(pluginContext backend.PluginContext
 	if err != nil {
 		return onErr(err)
 	}
-	sql := query.ApplyTimeRangeToQuery()
+	sql, err := query.ApplyMacrosAndTimeRangeToQuery()
+	if err != nil {
+		return onErr(err)
+	}
 	clickhouseResponse, err := client.Query(ctx, sql)
 	if err != nil {
 		return onErr(err)
@@ -65,25 +69,6 @@ func (ds *ClickHouseDatasource) executeQuery(pluginContext backend.PluginContext
 	}
 }
 
-func (ds *ClickHouseDatasource) evalQuery(pluginContext backend.PluginContext, ctx context.Context, evalQuery *EvalQuery) backend.DataResponse {
-	onErr := func(err error) backend.DataResponse {
-		backend.Logger.Error(fmt.Sprintf("Datasource evalQuery error: %s", err))
-		return backend.DataResponse{Error: err}
-	}
-
-	sql, err := evalQuery.ApplyMacrosAndTimeRangeToQuery()
-	if err != nil {
-		return onErr(err)
-	}
-
-	q := Query{
-		From:     evalQuery.From,
-		To:       evalQuery.To,
-		RawQuery: sql,
-	}
-	return ds.executeQuery(pluginContext, ctx, &q)
-}
-
 func (ds *ClickHouseDatasource) QueryData(
 	ctx context.Context,
 	req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
@@ -96,33 +81,20 @@ func (ds *ClickHouseDatasource) QueryData(
 	response := backend.NewQueryDataResponse()
 	wg, wgCtx := errgroup.WithContext(ctx)
 	for _, query := range req.Queries {
-		var evalQ = EvalQuery{
+		var q = Query{
 			From:          query.TimeRange.From,
 			To:            query.TimeRange.To,
 			MaxDataPoints: query.MaxDataPoints,
 		}
-		err := json.Unmarshal(query.JSON, &evalQ)
-		if err == nil {
-			wg.Go(func() error {
-				response.Responses[evalQ.RefId] = ds.evalQuery(req.PluginContext, wgCtx, &evalQ)
-				return nil
-			})
-		}
+		err := json.Unmarshal(query.JSON, &q)
 		if err != nil {
-			backend.Logger.Warn("unable to parse json %s into EvalQuery struct  Error: %w", query.JSON, err)
-			var q = Query{
-				From: query.TimeRange.From,
-				To:   query.TimeRange.To,
-			}
-			err := json.Unmarshal(query.JSON, &q)
-			if err != nil {
-				return onErr(fmt.Errorf("unable to parse json %s into Query struct Error: %w", query.JSON, err))
-			}
-			wg.Go(func() error {
-				response.Responses[q.RefId] = ds.executeQuery(req.PluginContext, wgCtx, &q)
-				return nil
-			})
+			return onErr(fmt.Errorf("unable to parse json %s into Query struct Error: %w", query.JSON, err))
 		}
+		wg.Go(func() error {
+			response.Responses[q.RefId] = ds.executeQuery(req.PluginContext, wgCtx, &q)
+			return nil
+		})
+
 	}
 	if err := wg.Wait(); err != nil {
 		return onErr(fmt.Errorf("one of executeQuery go-routine return error: %v", err))

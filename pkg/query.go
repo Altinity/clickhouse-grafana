@@ -12,6 +12,8 @@ import (
 
 var DefaultQuery = "SELECT 1 FORMAT JSON"
 
+var FormatJson = "FORMAT JSON"
+
 /* var NumberOnlyRegexp = regexp.MustCompile(`^[+-]?\d+(\.\d+)?$`) */
 
 var timeSeriesMacroRegexp = regexp.MustCompile(`\$timeSeries\b`)
@@ -138,6 +140,10 @@ func (q *Query) replace(query string) (string, error) {
 	query = intervalMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", myInterval))
 
 	query = q.replaceTimeFilters(query, myRound)
+
+	if !strings.HasSuffix(query, FormatJson) {
+		query = query + " " + FormatJson
+	}
 
 	return query, nil
 }

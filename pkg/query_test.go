@@ -1134,7 +1134,7 @@ func TestQueryTimeSeriesTimeFilsterAndDateTime64(t *testing.T) {
 		"FROM default.test_datetime64\n" +
 		"WHERE \"d\" >= toDateTime64(1545613320, 3) AND \"d\" <= toDateTime64(1546300740, 3)\n" +
 		"GROUP BY t\n" +
-		"ORDER BY t"
+		"ORDER BY t FORMAT JSON"
 
 	r := require.New(t)
 	from, err := time.Parse("2006-01-02 15:04:05Z", `2018-12-24 01:02:03Z`)
@@ -1205,7 +1205,7 @@ func TestQueryColumnsMacrosAndArrayJoin(t *testing.T) {
 		// new lines was removed, because we don't use adhoc filters
 	const expQuery = "SELECT t, groupArray((JobSource, Kafka_lag_max)) AS groupArr FROM ( SELECT (intDiv(toUInt32(dateTimeColumn), 15) * 15) * 1000 AS t, substring(concat(JobName as JobName, ' # ', Metrics.Name as MetricName), 1, 50) as JobSource, sum(Metrics.Value) as Kafka_lag_max FROM default.test_array_join_nested\n" +
 		"ARRAY JOIN Metrics " +
-		"WHERE dateTimeColumn >= toDate(1545613320) AND dateTimeColumn <= toDate(1546300740) AND dateTimeColumn >= toDateTime(1545613320) AND dateTimeColumn <= toDateTime(1546300740) GROUP BY t, JobSource ORDER BY t, JobSource) GROUP BY t ORDER BY t"
+		"WHERE dateTimeColumn >= toDate(1545613320) AND dateTimeColumn <= toDate(1546300740) AND dateTimeColumn >= toDateTime(1545613320) AND dateTimeColumn <= toDateTime(1546300740) GROUP BY t, JobSource ORDER BY t, JobSource) GROUP BY t ORDER BY t FORMAT JSON"
 	r := require.New(t)
 	from, err := time.Parse("2006-01-02 15:04:05Z", `2018-12-24 01:02:03Z`)
 	r.NoError(err)
@@ -1238,7 +1238,7 @@ func TestQueryTimeFilterByColumnAndDateTimeCol(t *testing.T) {
 		"WHERE dt >= toDate(1545613320) AND dt <= toDate(1546300740) AND tm >= toDateTime(1545613320) AND tm <= toDateTime(1546300740) " +
 		"AND tm >= toDateTime(1545613201) AND tm <= toDateTime(1546300859) " +
 		"AND another_column >= toDateTime(1545613201) AND another_column <= toDateTime(1546300859) " +
-		"GROUP BY t"
+		"GROUP BY t FORMAT JSON"
 
 	r := require.New(t)
 	from, err := time.Parse("2006-01-02 15:04:05Z", `2018-12-24 01:02:03Z`)
@@ -1270,7 +1270,7 @@ func TestQueryNaturalTimeSeries(t *testing.T) {
 	const query = "SELECT $naturalTimeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t"
 	const expQuery = "SELECT toUInt32(toDateTime(toStartOfMonth(tm))) * 1000 as t, count() " +
 		"FROM default.test_table WHERE dt >= toDate(1545613320) AND dt <= toDate(1640995140) " +
-		"AND tm >= toDateTime(1545613320) AND tm <= toDateTime(1640995140) GROUP BY t"
+		"AND tm >= toDateTime(1545613320) AND tm <= toDateTime(1640995140) GROUP BY t FORMAT JSON"
 
 	r := require.New(t)
 	from, err := time.Parse("2006-01-02 15:04:05Z", `2018-12-24 01:02:03Z`)

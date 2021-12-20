@@ -1,3 +1,11 @@
+# 2.4.1 (2021-12-20)
+
+## Enhancements:
+* update dependencies, try to fix critical nodejs dependencies issues
+
+## Fixes:
+* fix unnecessary warning Logging message on backend part
+
 # 2.4.0 (2021-11-29)
 
 ## Enhancement:

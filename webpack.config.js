@@ -48,6 +48,12 @@ module.exports = {
       {
         test: /\.tsx?$/,
         use: [
+          {
+            loader: 'ng-annotate-loader',
+            options: {
+              ngAnnotate: 'ng-annotate-patched'
+            }
+          },
           { loader: 'babel-loader' },
           { loader: 'ts-loader' },
         ],

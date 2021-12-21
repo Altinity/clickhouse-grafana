@@ -1,5 +1,4 @@
 const baseWebpackConfig = require('./webpack.config');
-const NgAnnotatePlugin = require('ng-annotate-webpack-plugin');
 const TerserPlugin = require("terser-webpack-plugin");
 
 baseWebpackConfig.mode = 'production';
@@ -12,5 +11,4 @@ baseWebpackConfig.optimization = {
   ],
 }
 
-baseWebpackConfig.plugins.push(new NgAnnotatePlugin());
 module.exports = baseWebpackConfig;

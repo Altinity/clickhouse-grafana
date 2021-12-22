@@ -1,3 +1,20 @@
+# 2.4.1 (2021-12-20)
+
+## Enhancements:
+* update dependencies, try to fix critical nodejs dependencies issues
+
+## Fixes:
+* fix unnecessary warning Logging message on backend part
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/366
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/357
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/345
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/342
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/385
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/317
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/336
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/320
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/326
+
 # 2.4.0 (2021-11-29)
 
 ## Enhancement:
@@ -13,7 +30,6 @@
 
 * implements properly GET and POST support for alert queries, fix https://github.com/Vertamedia/clickhouse-grafana/issues/353
 * SQL syntax highlight now works always, fix https://github.com/Vertamedia/clickhouse-grafana/issues/174, fix https://github.com/Vertamedia/clickhouse-grafana/issues/381
-* SQL syntax highlight, fix https://github.com/Vertamedia/clickhouse-grafana/issues/174, fix https://github.com/Vertamedia/clickhouse-grafana/issues/381 
 * fix https://github.com/Vertamedia/clickhouse-grafana/issues/376, 
 * fix negative behavior for $perSecondColumns https://github.com/Vertamedia/clickhouse-grafana/issues/337
 * fix https://github.com/Vertamedia/clickhouse-grafana/issues/374, ignore `--` inside quotas as comment 

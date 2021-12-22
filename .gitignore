@@ -6,3 +6,4 @@ yarn.lock
 .release_env
 .env
 ubuntu*.log
+dist/**.LICENSE.txt

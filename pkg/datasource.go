@@ -96,30 +96,29 @@ func (ds *ClickHouseDatasource) QueryData(
 	response := backend.NewQueryDataResponse()
 	wg, wgCtx := errgroup.WithContext(ctx)
 	for _, query := range req.Queries {
-		var evalQ = EvalQuery{
-			From:          query.TimeRange.From,
-			To:            query.TimeRange.To,
-			MaxDataPoints: query.MaxDataPoints,
+		var q = Query{
+			From: query.TimeRange.From,
+			To:   query.TimeRange.To,
 		}
-		err := json.Unmarshal(query.JSON, &evalQ)
+		err := json.Unmarshal(query.JSON, &q)
 		if err == nil {
 			wg.Go(func() error {
-				response.Responses[evalQ.RefId] = ds.evalQuery(req.PluginContext, wgCtx, &evalQ)
+				response.Responses[q.RefId] = ds.executeQuery(req.PluginContext, wgCtx, &q)
 				return nil
 			})
 		}
 		if err != nil {
-			backend.Logger.Warn("unable to parse json %s into EvalQuery struct  Error: %w", query.JSON, err)
-			var q = Query{
-				From: query.TimeRange.From,
-				To:   query.TimeRange.To,
+			var evalQ = EvalQuery{
+				From:          query.TimeRange.From,
+				To:            query.TimeRange.To,
+				MaxDataPoints: query.MaxDataPoints,
 			}
-			err := json.Unmarshal(query.JSON, &q)
+			err := json.Unmarshal(query.JSON, &evalQ)
 			if err != nil {
 				return onErr(fmt.Errorf("unable to parse json %s into Query struct Error: %w", query.JSON, err))
 			}
 			wg.Go(func() error {
-				response.Responses[q.RefId] = ds.executeQuery(req.PluginContext, wgCtx, &q)
+				response.Responses[evalQ.RefId] = ds.evalQuery(req.PluginContext, wgCtx, &evalQ)
 				return nil
 			})
 		}

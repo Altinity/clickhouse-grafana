@@ -146,8 +146,8 @@ github.com/google/renameio v0.1.0/go.mod h1:KWCgfxg9yswjAJkECMjeO8J8rahYeXnNhOm4
 github.com/google/uuid v1.1.2/go.mod h1:TIyPZe4MgqvfeYDBFedMoGGpEw/LqOeaOT+nhxU+yHo=
 github.com/googleapis/gax-go/v2 v2.0.4/go.mod h1:0Wqv26UfaUD9n4G6kQubkQ+KchISgw+vpHVxEJEs9eg=
 github.com/googleapis/gax-go/v2 v2.0.5/go.mod h1:DWXyrwAJ9X0FpwwEdw+IPEYBICEFu5mhpdKc/us6bOk=
-github.com/grafana/grafana-plugin-sdk-go v0.118.0 h1:n2hU2Hkq0vzUG7g1meS77/yvZZWgEPiPtGuG4I1Jl94=
-github.com/grafana/grafana-plugin-sdk-go v0.118.0/go.mod h1:Mhy+5mC6rSqEhnzop1wEh//n/fgkzNK5pRgg3DfCp4g=
+github.com/grafana/grafana-plugin-sdk-go v0.121.0 h1:4+dXoezL9L40iu7ym4u7ZJ4OE57NaVc4WSHlbxtCtGM=
+github.com/grafana/grafana-plugin-sdk-go v0.121.0/go.mod h1:Mhy+5mC6rSqEhnzop1wEh//n/fgkzNK5pRgg3DfCp4g=
 github.com/grpc-ecosystem/go-grpc-middleware v1.3.0 h1:+9834+KizmvFV7pXQGSXQTsaWhq2GjuNUt0aUU0YBYw=
 github.com/grpc-ecosystem/go-grpc-middleware v1.3.0/go.mod h1:z0ButlSOZa5vEBq9m2m2hlwIgKw+rp3sdCBRoJY+30Y=
 github.com/grpc-ecosystem/go-grpc-prometheus v1.2.0 h1:Ovs26xHkKqVztRpIrF/92BcuyuQ/YW4NSIpoGtfXNho=

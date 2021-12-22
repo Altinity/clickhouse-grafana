@@ -1,12 +1,8 @@
 const path = require('path');
-const webpack = require('webpack');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
-const CleanWebpackPlugin = require('clean-webpack-plugin');
+const { CleanWebpackPlugin } = require('clean-webpack-plugin');
 
 module.exports = {
-  node: {
-    fs: 'empty'
-  },
   context: path.join(__dirname, 'src'),
   entry: {
     'module': './module.ts',
@@ -20,7 +16,7 @@ module.exports = {
   externals: [
     'lodash',
     function (context, request, callback) {
-      var prefix = 'grafana/';
+      let prefix = 'grafana/';
       if (request.indexOf(prefix) === 0) {
         return callback(null, request.substr(prefix.length));
       }
@@ -28,24 +24,36 @@ module.exports = {
     }
   ],
   plugins: [
-    new CleanWebpackPlugin('dist', { exclude: ['MANIFEST.txt','vertamedia-clickhouse-plugin_linux_amd64','vertamedia-clickhouse-plugin_linux_arm64','vertamedia-clickhouse-plugin_darwin_amd64','vertamedia-clickhouse-plugin_darwin_arm64','vertamedia-clickhouse-plugin_windows_amd64.exe']}),
-    new webpack.optimize.OccurrenceOrderPlugin(),
-    new CopyWebpackPlugin([
-      {from: 'plugin.json', to: '.'},
-      {from: '../README.md', to: '.'},
-      {from: '../LICENSE', to: '.'},
-      {from: 'img/*', to: '.'},
-      {from: 'partials/*', to: '.'},
-    ]),
+    new CleanWebpackPlugin({
+      cleanOnceBeforeBuildPatterns: ['!vertamedia-clickhouse-plugin**', 'MANIFEST.txt'],
+    }),
+    new CopyWebpackPlugin({
+      patterns: [
+        {from: 'plugin.json', to: '.'},
+        {from: '../README.md', to: '.'},
+        {from: '../LICENSE', to: '.'},
+        {from: 'img/*', to: '.'},
+        {from: 'partials/*', to: '.'},
+      ]
+    }),
   ],
   resolve: {
-    extensions: ['.ts', '.tsx', '.js']
+    extensions: ['.ts', '.tsx', '.js'],
+    fallback: {
+      fs: false
+    }
   },
   module: {
     rules: [
       {
         test: /\.tsx?$/,
         use: [
+          {
+            loader: 'ng-annotate-loader',
+            options: {
+              ngAnnotate: 'ng-annotate-patched'
+            }
+          },
           { loader: 'babel-loader' },
           { loader: 'ts-loader' },
         ],

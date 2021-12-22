@@ -109,3 +109,19 @@ CREATE TABLE IF NOT EXISTS default.test_alerts_low_frequency (
 
 INSERT INTO default.test_alerts_low_frequency SELECT now() + ((number-500)*600) + ( rand()%180 - 90 ) d, toDate(d), 'category1', number % 200  FROM numbers(1000);
 INSERT INTO default.test_alerts_low_frequency SELECT now() + ((number-500)*600) + ( rand()%180 - 90 ) d, toDate(d), 'category2', number % 200  FROM numbers(1000);
+
+
+
+CREATE TABLE IF NOT EXISTS default.nested_array_join_example
+(
+    time DateTime,
+    dataMap Nested (
+        key String,
+        value UInt64
+    )
+)
+ENGINE = MergeTree
+PARTITION BY toYYYYMMDD(time)
+ORDER BY time;
+
+INSERT INTO default.nested_array_join_example(time, dataMap.key, dataMap.value) VALUES (now()-INTERVAL 2 MINUTE, ['a', 'b'], [1, 2]), (now()-INTERVAL 2 MINUTE, ['a', 'b'], [3, 4]), (now()-INTERVAL 1 MINUTE, ['a', 'b'], [5, 6]), (now()-INTERVAL 1 MINUTE, ['a', 'b'], [7, 8]), (now(), ['a', 'b'], [9, 10]);

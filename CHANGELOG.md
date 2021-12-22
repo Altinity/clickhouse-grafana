@@ -5,6 +5,15 @@
 
 ## Fixes:
 * fix unnecessary warning Logging message on backend part
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/366
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/357
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/345
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/342
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/385
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/317
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/336
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/320
+* fix https://github.com/Vertamedia/clickhouse-grafana/issues/326
 
 # 2.4.0 (2021-11-29)
 

@@ -38,7 +38,8 @@ type EvalQuery struct {
 	Format         string `json:"format"`
 	Round          string `json:"round"`
 	IntervalFactor int    `json:"intervalFactor"`
-	Interval       int    `json:"interval"`
+	Interval       string `json:"interval"`
+	IntervalSec    int
 	Database       string `json:"database"`
 	Table          string `json:"table"`
 	MaxDataPoints  int64
@@ -65,7 +66,14 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		q.IntervalFactor = 1
 	}
 	i := 1 * time.Second
-	if q.Interval == 0 {
+	if q.Interval != "" {
+		duration, err := time.ParseDuration(q.Interval)
+		if err != nil {
+			return "", err
+		}
+		q.IntervalSec = int(math.Floor(duration.Seconds()))
+	}
+	if q.IntervalSec <= 0 {
 		if q.MaxDataPoints > 0 {
 			i = q.To.Sub(q.From) / time.Duration(q.MaxDataPoints)
 		} else {
@@ -74,7 +82,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		if i < 1*time.Second {
 			i = 1 * time.Second
 		}
-		q.Interval, err = q.convertInterval(fmt.Sprintf("%fs", math.Floor(i.Seconds())), q.IntervalFactor)
+		q.IntervalSec, err = q.convertInterval(fmt.Sprintf("%fs", math.Floor(i.Seconds())), q.IntervalFactor)
 		if err != nil {
 			return "", err
 		}
@@ -117,7 +125,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		return "", err
 	}
 	if q.Round == "$step" {
-		myRound = q.Interval
+		myRound = q.IntervalSec
 	}
 	from := q.convertTimestamp(q.round(q.From, myRound))
 	to := q.convertTimestamp(q.round(q.To, myRound))
@@ -130,7 +138,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	query = toMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", to))
 	query = dateColMacroRegexp.ReplaceAllString(query, q.escapeIdentifier(q.DateCol))
 	query = dateTimeColMacroRegexp.ReplaceAllString(query, q.escapeIdentifier(q.DateTimeCol))
-	query = intervalMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.Interval))
+	query = intervalMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.IntervalSec))
 
 	query = q.replaceTimeFilters(query, myRound)
 

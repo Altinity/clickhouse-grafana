@@ -1,3 +1,8 @@
+# 2.4.2 (2021-12-29)
+
+## Fixes:
+* fix unified alerts interval https://github.com/Vertamedia/clickhouse-grafana/issues/400
+
 # 2.4.1 (2021-12-20)
 
 ## Enhancements:

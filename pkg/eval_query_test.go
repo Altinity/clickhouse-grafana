@@ -1145,7 +1145,7 @@ func TestEvalQueryTimeSeriesTimeFilsterAndDateTime64(t *testing.T) {
 		Query:          query,
 		From:           from,
 		To:             to,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_datetime64",
@@ -1201,7 +1201,7 @@ func TestEvalQueryColumnsMacrosAndArrayJoin(t *testing.T) {
 		"sum(Metrics.Value) as Kafka_lag_max)\n" +
 		"FROM $table\n" +
 		"ARRAY JOIN Metrics"
-		// new lines was removed, because we don't use adhoc filters
+	// new lines was removed, because we don't use adhoc filters
 	const expQuery = "SELECT t, groupArray((JobSource, Kafka_lag_max)) AS groupArr FROM ( SELECT (intDiv(toUInt32(dateTimeColumn), 15) * 15) * 1000 AS t, substring(concat(JobName as JobName, ' # ', Metrics.Name as MetricName), 1, 50) as JobSource, sum(Metrics.Value) as Kafka_lag_max FROM default.test_array_join_nested\n" +
 		"ARRAY JOIN Metrics " +
 		"WHERE dateTimeColumn >= toDate(1545613320) AND dateTimeColumn <= toDate(1546300740) AND dateTimeColumn >= toDateTime(1545613320) AND dateTimeColumn <= toDateTime(1546300740) GROUP BY t, JobSource ORDER BY t, JobSource) GROUP BY t ORDER BY t"
@@ -1212,7 +1212,7 @@ func TestEvalQueryColumnsMacrosAndArrayJoin(t *testing.T) {
 	r.NoError(err)
 	q := EvalQuery{
 		Query:          query,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_array_join_nested",
@@ -1246,7 +1246,7 @@ func TestEvalQueryTimeFilterByColumnAndDateTimeCol(t *testing.T) {
 	r.NoError(err)
 	q := EvalQuery{
 		Query:          query,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_table",
@@ -1278,7 +1278,7 @@ func TestEvalQueryNaturalTimeSeries(t *testing.T) {
 	r.NoError(err)
 	q := EvalQuery{
 		Query:          query,
-		Interval:       15,
+		Interval:       "15s",
 		IntervalFactor: 1,
 		SkipComments:   false,
 		Table:          "test_table",

@@ -1,6 +1,6 @@
 {
     "name": "vertamedia-clickhouse",
-    "version": "2.4.1",
+    "version": "2.4.2",
     "description": "ClickHouse datasource for Grafana",
     "scripts": {
         "build:prod": "webpack --config webpack.config.prod.js",

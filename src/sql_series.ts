@@ -32,8 +32,8 @@ export default class SqlSeries {
         let rows = [];
         each(self.series, function (ser) {
             let r = [];
-            each(columns, function (col) {
-                r.push(SqlSeries._formatValue(ser[col.text]));
+            each(columns, function (col, index) {
+                r.push(SqlSeries._formatValueByType(ser[col.text], SqlSeries._toJSType(self.meta[index].type)));
             });
             rows.push(r);
         });
@@ -206,6 +206,19 @@ export default class SqlSeries {
 
         let numeric = Number(value);
         if (isNaN(numeric)) {
+            return value;
+        } else {
+            return numeric;
+        }
+    }
+
+    static _formatValueByType(value: any, t: string) {
+        if (value === null) {
+            return value;
+        }
+
+        let numeric = Number(value);
+        if (isNaN(numeric) || t !== "number") {
             return value;
         } else {
             return numeric;

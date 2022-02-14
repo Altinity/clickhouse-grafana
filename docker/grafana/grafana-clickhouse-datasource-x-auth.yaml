@@ -5,6 +5,7 @@ datasources:
     type: vertamedia-clickhouse-datasource
     access: proxy
     url: https://clickhouse:8443
+    basicAuth: false
     editable: true
     jsonData:
       addCorsHeader: true
@@ -13,8 +14,8 @@ datasources:
       tlsAuthWithCACert: true
       usePOST: true
       useYandexCloudAuthorization: true
-      xHeaderKey: ""
-      xHeaderUser: "default"
+      xHeaderKey: "demo"
+      xHeaderUser: "demo"
     # look to docker/clickhouse/listen_ports.xml to details about how to generate self-signed cert + custom CA
     # validation with `curl -vvv --cacert /etc/clickhouse-server/ca-cert.pem --cert /etc/clickhouse-server/client-cert.pem --key /etc/clickhouse-server/client-key.pem "https://clickhouse:8443/"` inside clickhouse container
     secureJsonData:

@@ -26,6 +26,7 @@ services:
       - ./docker/clickhouse/client-cert.pem:/etc/clickhouse-server/client-cert.pem
       - ./docker/clickhouse/client-key.pem:/etc/clickhouse-server/client-key.pem
       - ./docker/clickhouse/dhparam.pem:/etc/clickhouse-server/dhparam.pem
+      - ./docker/clickhouse/users.xml:/etc/clickhouse-server/users.d/users.xml
 
   postgres:
     image: postgres:latest

@@ -5,10 +5,10 @@ import (
 	"fmt"
 	"golang.org/x/sync/errgroup"
 
+	"context"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
-	"golang.org/x/net/context"
 )
 
 func GetDatasourceServeOpts() datasource.ServeOpts {

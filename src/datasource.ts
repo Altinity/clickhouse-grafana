@@ -165,8 +165,8 @@ export class ClickHouseDatasource {
         } catch (err) {
             console.log('AST parser error: ', err);
         }
-
-        if (this.targetsRef && this.targetsRef[target.refId]) {
+        //fix behavior for grafana 6.x, https://github.com/Vertamedia/clickhouse-grafana/issues/406
+        if (this.targetsRef && this.targetsRef[target.refId] && this.targetsRef[target.refId].query === target.query) {
             this.targetsRef[target.refId].rawQuery = stmt;
         }
 

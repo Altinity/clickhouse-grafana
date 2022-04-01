@@ -165,7 +165,7 @@ export class ClickHouseDatasource {
         } catch (err) {
             console.log('AST parser error: ', err);
         }
-        //fix behavior for grafana 6.x, https://github.com/Vertamedia/clickhouse-grafana/issues/406
+        //fix behavior for grafana 6.x, https://github.com/Altinity/clickhouse-grafana/issues/406
         if (this.targetsRef && this.targetsRef[target.refId] && this.targetsRef[target.refId].query === target.query) {
             this.targetsRef[target.refId].rawQuery = stmt;
         }
@@ -247,7 +247,7 @@ export class ClickHouseDatasource {
 
     getTagKeys() {
         // check whether variable `adhoc_query_filter` exists to apply additional filtering
-        // @see https://github.com/Vertamedia/clickhouse-grafana/issues/75
+        // @see https://github.com/Altinity/clickhouse-grafana/issues/75
         // @see https://github.com/grafana/grafana/issues/13109
         let queryFilter = '';
         each(this.templateSrv.variables, (v) => {

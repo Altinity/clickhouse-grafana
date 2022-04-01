@@ -54,15 +54,15 @@ Page configuration is standard
 
 There is a small feature - ClickHouse treats HTTP Basic Authentication credentials as a database user and will try to run queries using its name.
 
-#### [CHProxy](https://github.com/Vertamedia/chproxy) (optional)
-Using of [CHProxy](https://github.com/Vertamedia/chproxy) will bring additional features:
-* Easily setup `HTTPS` access to ClickHouse as shown [here](https://github.com/Vertamedia/chproxy#authorize-users-by-passwords-via-https)
+#### [CHProxy](https://github.com/ContentSquare/chproxy) (optional)
+Using of [CHProxy](https://github.com/ContentSquare/chproxy) will bring additional features:
+* Easily setup `HTTPS` access to ClickHouse as shown [here](https://github.com/ContentSquare/chproxy#authorize-users-by-passwords-via-https)
 to provide secure access.
-* Limit concurrency and execution time for requests from `Grafana` as shown [here](https://github.com/Vertamedia/chproxy#spread-selects-from-reporting-apps-among-cluster-nodes)
+* Limit concurrency and execution time for requests from `Grafana` as shown [here](https://github.com/ContentSquare/chproxy#spread-selects-from-reporting-apps-among-cluster-nodes)
 to prevent `ClickHouse` overloading from `Grafana`.
 * Protection against request bursts for dashboards with numerous graphs. `CHProxy` allows queueing requests and execute them sequentially.
-To learn more - read about params `max_queue_size` and `max_queue_time` at [CHProxy](https://github.com/Vertamedia/chproxy) page.
-* Response caching for the most frequent queries as shown [here](https://github.com/Vertamedia/chproxy#caching).
+To learn more - read about params `max_queue_size` and `max_queue_time` at [CHProxy](https://github.com/ContentSquare/chproxy) page.
+* Response caching for the most frequent queries as shown [here](https://github.com/ContentSquare/chproxy#caching).
 `Caching` will protect `ClickHouse` from excessive refreshes and will be optimal option for popular dashboards.
 > Hint - if you need to cache requests like `last 24h` where timestamp changes constantly then try to use `Round` option at `Raw Editor`
 
@@ -117,7 +117,7 @@ A description of macros is available by typing their names in Raw Editor
 
 ### Functions
 
-Functions are just templates of SQL queries, and you can check the final query at [Raw SQL Editor mode](https://github.com/Vertamedia/clickhouse-grafana/blob/master/README.md#raw-sql-editor). 
+Functions are just templates of SQL queries, and you can check the final query at [Raw SQL Editor mode](https://github.com/Altinity/clickhouse-grafana/blob/master/README.md#raw-sql-editor). 
 If you need some additional complexity - just copy raw sql into Raw Editor and make according changes. Remember that macros are still available to use. 
 
 There are some limits in function use because of poor query analysis:
@@ -256,7 +256,7 @@ FROM
     ORDER BY t
 )
 ```
-// see [issue 78](https://github.com/Vertamedia/clickhouse-grafana/issues/78) for the background
+// see [issue 78](https://github.com/Altinity/clickhouse-grafana/issues/78) for the background
 
 ---
 
@@ -299,7 +299,7 @@ FROM
 GROUP BY t
 ORDER BY t
 ```
-// see [issue 80](https://github.com/Vertamedia/clickhouse-grafana/issues/80) for the background
+// see [issue 80](https://github.com/Altinity/clickhouse-grafana/issues/80) for the background
 
 ---
 
@@ -640,8 +640,8 @@ We will appreciate any help from the community which will make working with such
 
 ### Development 
 
-see [CONTRIBUTING.md](https://github.com/Vertamedia/clickhouse-grafana/blob/master/CONTRIBUTING.md) for Development and Pull request Contributing instructions 
+see [CONTRIBUTING.md](https://github.com/Altinity/clickhouse-grafana/blob/master/CONTRIBUTING.md) for Development and Pull request Contributing instructions 
    
 License
 -------
-MIT License, please see [LICENSE](https://github.com/Vertamedia/clickhouse-grafana/blob/master/LICENSE) for details.
+MIT License, please see [LICENSE](https://github.com/Altinity/clickhouse-grafana/blob/master/LICENSE) for details.

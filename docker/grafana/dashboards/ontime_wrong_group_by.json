@@ -30,7 +30,7 @@
         "type": "vertamedia-clickhouse-datasource",
         "uid": "P47848BA71AAEDADA"
       },
-      "description": "https://github.com/Vertamedia/clickhouse-grafana/issues/317",
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/317",
       "fieldConfig": {
         "defaults": {
           "color": {

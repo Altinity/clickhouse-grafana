@@ -34,7 +34,7 @@ describe("Parse response:", () => {
     });
 });
 
-// check annotation response https://github.com/Vertamedia/clickhouse-grafana/issues/303
+// check annotation response https://github.com/Altinity/clickhouse-grafana/issues/303
 describe("Check transformAnnotationResponse", () => {
     // @ts-ignore
     const responseParser = new ResponseParser(this.$q);

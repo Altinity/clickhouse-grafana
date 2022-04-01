@@ -13,7 +13,7 @@
         "test:docker:watch": "jest --ci --config jest.config.js --watch",
         "sign": "bash -xec \"source ./.release_env && node ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js plugin:sign\""
     },
-    "author": "Vertamedia",
+    "author": "Altinity",
     "license": "MIT",
     "dependencies": {
         "babel-loader": "^8.2.3",

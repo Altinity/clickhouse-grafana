@@ -38,7 +38,7 @@ services:
   grafana:
     image: grafana/grafana:${GRAFANA_VERSION:-latest}
     volumes:
-      - ./:/var/lib/grafana/plugins/vertamedia-clickhouse/
+      - ./:/var/lib/grafana/plugins/altinity-clickhouse/
       - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
       - ./docker/grafana/grafana-clickhouse-datasource-get.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-get.yaml
       - ./docker/grafana/grafana-clickhouse-datasource-x-auth.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-x-auth.yaml
@@ -82,7 +82,7 @@ services:
       '
 
   backend_builder:
-    image: golang:1.17
+    image: golang:1.18
     working_dir: /go/src/grafana-clickhouse
     environment:
       GOCACHE: "/go-cache"
@@ -94,12 +94,12 @@ services:
     command: |
       bash -xec "
         go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ &&
-        GOOS=linux GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_amd64 ./pkg/ && \
-        GOOS=linux GOARCH=arm64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_arm64 ./pkg/ && \
-        GOOS=windows GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_windows_amd64.exe ./pkg/ && \
-        GOOS=darwin GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_darwin_amd64 ./pkg/ && \
-        GOOS=darwin GOARCH=arm64 go build -o ./dist/vertamedia-clickhouse-plugin_darwin_arm64 ./pkg/ && \
-        chmod +x ./dist/vertamedia-clickhouse-plugin*
+        GOOS=linux GOARCH=amd64 go build -o ./dist/atinity-clickhouse-plugin_linux_amd64 ./pkg/ && \
+        GOOS=linux GOARCH=arm64 go build -o ./dist/altinity-clickhouse-plugin_linux_arm64 ./pkg/ && \
+        GOOS=windows GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_windows_amd64.exe ./pkg/ && \
+        GOOS=darwin GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_darwin_amd64 ./pkg/ && \
+        GOOS=darwin GOARCH=arm64 go build -o ./dist/altinity-clickhouse-plugin_darwin_arm64 ./pkg/ && \
+        chmod +x ./dist/altinity-clickhouse-plugin*
       "
 
   plugin_signer:

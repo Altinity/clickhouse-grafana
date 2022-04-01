@@ -151,7 +151,7 @@ describe("Identifiers back-quoting", () => {
     });
 });
 
-/* check https://github.com/Vertamedia/clickhouse-grafana/issues/276 */
+/* check https://github.com/Altinity/clickhouse-grafana/issues/276 */
 describe("$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adhocFilters", () => {
     const query = "$rateColumns(\n" +
         "    'User.' || toString(from_user) || ', Serv.' || toString(service_name) as key,\n" +
@@ -278,7 +278,7 @@ describe("$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adho
     });
 });
 
-/* check https://github.com/Vertamedia/clickhouse-grafana/issues/282 */
+/* check https://github.com/Altinity/clickhouse-grafana/issues/282 */
 describe("check replace with $adhoc macros", () => {
     const query = "SELECT\n" +
         "    $timeSeries as t,\n" +
@@ -344,7 +344,7 @@ describe("check replace with $adhoc macros", () => {
 
 });
 
-/* check https://github.com/Vertamedia/clickhouse-grafana/issues/284 */
+/* check https://github.com/Altinity/clickhouse-grafana/issues/284 */
 describe("check replace with $columns and concat and ARRAY JOIN", () => {
     const query = "$columns(\n" +
         "substring(concat(JobName as JobName,' # ' , Metrics.Name as MetricName), 1, 50) as JobSource,\n" +
@@ -406,7 +406,7 @@ describe("check replace with $columns and concat and ARRAY JOIN", () => {
 });
 
 
-/* check https://github.com/Vertamedia/clickhouse-grafana/issues/294 */
+/* check https://github.com/Altinity/clickhouse-grafana/issues/294 */
 describe("combine $timeFilterByColumn and $dateTimeCol", () => {
     const query = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter AND $timeFilterByColumn($dateTimeCol) AND $timeFilterByColumn(another_column) GROUP BY t";
     const expQuery = "SELECT (intDiv(toUInt32(tm), 15) * 15) * 1000 as t, count() FROM default.test_table " +
@@ -459,7 +459,7 @@ describe("combine $timeFilterByColumn and $dateTimeCol", () => {
 
 });
 
-/* check $naturalTimeSeries https://github.com/Vertamedia/clickhouse-grafana/pull/89 */
+/* check $naturalTimeSeries https://github.com/Altinity/clickhouse-grafana/pull/89 */
 describe("check $naturalTimeSeries", () => {
     const query = "SELECT $naturalTimeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t";
     const expQuery = "SELECT toUInt32(toDateTime(toStartOfMonth(tm))) * 1000 as t, count() " +

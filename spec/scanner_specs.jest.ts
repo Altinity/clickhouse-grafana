@@ -709,7 +709,7 @@ describe("scanner:", () => {
         });
     });
 
-    /* fix https://github.com/Vertamedia/clickhouse-grafana/issues/319 */
+    /* fix https://github.com/Altinity/clickhouse-grafana/issues/319 */
     describe("AST case 19 ($columns + union all + with + sub query)", () => {
         let query = "$columns(\n" +
             "  service_name,   \n" +
@@ -793,7 +793,7 @@ describe("scanner:", () => {
         });
     });
 
-    /* fix https://github.com/Vertamedia/clickhouse-grafana/issues/374 */
+    /* fix https://github.com/Altinity/clickhouse-grafana/issues/374 */
     describe("AST case 20 (`--` inside of quotes)", () => {
         let query = "--test one line comment1\n" +
             "SELECT *\n" +

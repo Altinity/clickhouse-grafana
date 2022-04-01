@@ -67,7 +67,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse",
-      "description": "fix https://github.com/Vertamedia/clickhouse-grafana/issues/335 and fix https://github.com/Vertamedia/clickhouse-grafana/issues/334\n",
+      "description": "fix https://github.com/Altinity/clickhouse-grafana/issues/335 and fix https://github.com/Altinity/clickhouse-grafana/issues/334\n",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {
@@ -992,7 +992,7 @@
         "notifications": []
       },
       "datasource": "clickhouse-x-auth",
-      "description": "Reproduce https://github.com/Vertamedia/clickhouse-grafana/issues/384 behavior",
+      "description": "Reproduce https://github.com/Altinity/clickhouse-grafana/issues/384 behavior",
       "fieldConfig": {
         "defaults": {
           "color": {

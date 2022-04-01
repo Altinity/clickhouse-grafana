@@ -12,7 +12,7 @@
       }
     ]
   },
-  "description": "reproduce reproduce https://github.com/Vertamedia/clickhouse-grafana/issues/117",
+  "description": "reproduce reproduce https://github.com/Altinity/clickhouse-grafana/issues/117",
   "editable": true,
   "gnetId": null,
   "graphTooltip": 0,
@@ -25,7 +25,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse-ontime",
-      "description": "reproduce https://github.com/Vertamedia/clickhouse-grafana/issues/117",
+      "description": "reproduce https://github.com/Altinity/clickhouse-grafana/issues/117",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -75,7 +75,7 @@
         {
           "targetBlank": true,
           "title": "",
-          "url": "https://github.com/Vertamedia/clickhouse-grafana/issues/117"
+          "url": "https://github.com/Altinity/clickhouse-grafana/issues/117"
         }
       ],
       "nullPointMode": "null",

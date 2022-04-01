@@ -24,7 +24,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse",
-      "description": "try to reproduce https://github.com/Vertamedia/clickhouse-grafana/issues/135",
+      "description": "try to reproduce https://github.com/Altinity/clickhouse-grafana/issues/135",
       "fieldConfig": {
         "defaults": {
           "custom": {}

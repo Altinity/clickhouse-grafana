@@ -422,7 +422,7 @@ class SqlQueryCtrl extends QueryCtrl {
     }
 
     refresh() {
-        // @todo https://github.com/Vertamedia/clickhouse-grafana/issues/380#issuecomment-971598622
+        // @todo https://github.com/Altinity/clickhouse-grafana/issues/380#issuecomment-971598622
         // this.datasource.createQuery(this.panelCtrl, this.target);
         super.refresh();
     }

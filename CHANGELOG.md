@@ -7,7 +7,7 @@
 # 2.4.2 (2021-12-29)
 
 ## Fixes:
-* fix unified alerts interval https://github.com/Vertamedia/clickhouse-grafana/issues/400
+* fix unified alerts interval https://github.com/Altinity/clickhouse-grafana/issues/400
 
 # 2.4.1 (2021-12-20)
 
@@ -16,55 +16,55 @@
 
 ## Fixes:
 * fix unnecessary warning Logging message on backend part
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/366
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/357
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/345
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/342
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/385
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/317
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/336
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/320
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/326
+* fix https://github.com/Altinity/clickhouse-grafana/issues/366
+* fix https://github.com/Altinity/clickhouse-grafana/issues/357
+* fix https://github.com/Altinity/clickhouse-grafana/issues/345
+* fix https://github.com/Altinity/clickhouse-grafana/issues/342
+* fix https://github.com/Altinity/clickhouse-grafana/issues/385
+* fix https://github.com/Altinity/clickhouse-grafana/issues/317
+* fix https://github.com/Altinity/clickhouse-grafana/issues/336
+* fix https://github.com/Altinity/clickhouse-grafana/issues/320
+* fix https://github.com/Altinity/clickhouse-grafana/issues/326
 
 # 2.4.0 (2021-11-29)
 
 ## Enhancement:
-* Add support for Grafana 8.x unified alerts, fix https://github.com/Vertamedia/clickhouse-grafana/issues/380
-* Add TLS support for backend alerts part of plugin https://github.com/Vertamedia/clickhouse-grafana/issues/356#issuecomment-906732530
-* Add $naturalTimeSeries macro, look details in https://github.com/Vertamedia/clickhouse-grafana/pull/89/files#diff-cd9133eda7b58ef9c9264190db4534a1be53216edbda9ac57256fbd800368c03R383-R412
+* Add support for Grafana 8.x unified alerts, fix https://github.com/Altinity/clickhouse-grafana/issues/380
+* Add TLS support for backend alerts part of plugin https://github.com/Altinity/clickhouse-grafana/issues/356#issuecomment-906732530
+* Add $naturalTimeSeries macro, look details in https://github.com/Altinity/clickhouse-grafana/pull/89/files#diff-cd9133eda7b58ef9c9264190db4534a1be53216edbda9ac57256fbd800368c03R383-R412
 * Update golang-plugin-sdk-go to latest version
-* Properly format Value in Table format, look details https://github.com/Vertamedia/clickhouse-grafana/pull/379
-* Remove toDateTime64 casting for column when time column is already DateTime64 to improve performance. Change test to ensure the casting is removed from the query, fix https://github.com/Vertamedia/clickhouse-grafana/issues/360
-* implements `$timeFilter64ByColumn(column_name)` macro, fix https://github.com/Vertamedia/clickhouse-grafana/issues/343
+* Properly format Value in Table format, look details https://github.com/Altinity/clickhouse-grafana/pull/379
+* Remove toDateTime64 casting for column when time column is already DateTime64 to improve performance. Change test to ensure the casting is removed from the query, fix https://github.com/Altinity/clickhouse-grafana/issues/360
+* implements `$timeFilter64ByColumn(column_name)` macro, fix https://github.com/Altinity/clickhouse-grafana/issues/343
 
 ## Fixes:
 
-* implements properly GET and POST support for alert queries, fix https://github.com/Vertamedia/clickhouse-grafana/issues/353
-* SQL syntax highlight now works always, fix https://github.com/Vertamedia/clickhouse-grafana/issues/174, fix https://github.com/Vertamedia/clickhouse-grafana/issues/381
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/376, 
-* fix negative behavior for $perSecondColumns https://github.com/Vertamedia/clickhouse-grafana/issues/337
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/374, ignore `--` inside quotas as comment 
+* implements properly GET and POST support for alert queries, fix https://github.com/Altinity/clickhouse-grafana/issues/353
+* SQL syntax highlight now works always, fix https://github.com/Altinity/clickhouse-grafana/issues/174, fix https://github.com/Altinity/clickhouse-grafana/issues/381
+* fix https://github.com/Altinity/clickhouse-grafana/issues/376, 
+* fix negative behavior for $perSecondColumns https://github.com/Altinity/clickhouse-grafana/issues/337
+* fix https://github.com/Altinity/clickhouse-grafana/issues/374, ignore `--` inside quotas as comment 
 
 # 2.3.1 (2021-04-23)
 ## Breaking changes
 
-* On latest Grafana 7.x releases, template variables SQL queries shall return only scalar types of values, see https://github.com/Vertamedia/clickhouse-grafana/issues/328
+* On latest Grafana 7.x releases, template variables SQL queries shall return only scalar types of values, see https://github.com/Altinity/clickhouse-grafana/issues/328
 
 ## Enhancement:
 
 * add support Apple M1 ;)
 * switch to new grafana plugin Golang SDK, thanks to @bmanth60 and @valeriakononenko for help
-* add BasicAuth support for alerts, see https://github.com/Vertamedia/clickhouse-grafana/issues/267
+* add BasicAuth support for alerts, see https://github.com/Altinity/clickhouse-grafana/issues/267
 
 ## Fixes:
 
 * fix github actions backend build
-* fix UNION ALL parsing, see https://github.com/Vertamedia/clickhouse-grafana/issues/319
+* fix UNION ALL parsing, see https://github.com/Altinity/clickhouse-grafana/issues/319
 * fix many issues with alerting
-  * https://github.com/Vertamedia/clickhouse-grafana/issues/305
-  * https://github.com/Vertamedia/clickhouse-grafana/issues/327
-  * https://github.com/Vertamedia/clickhouse-grafana/issues/334
-  * https://github.com/Vertamedia/clickhouse-grafana/issues/335
+  * https://github.com/Altinity/clickhouse-grafana/issues/305
+  * https://github.com/Altinity/clickhouse-grafana/issues/327
+  * https://github.com/Altinity/clickhouse-grafana/issues/334
+  * https://github.com/Altinity/clickhouse-grafana/issues/335
     
  
 
@@ -77,83 +77,83 @@
 # 2.2.0 (2020-11-30)
 ## Enhancement:
 
-* add region support to annotation query, try to fix wrong column orders for table format, fix https://github.com/Vertamedia/clickhouse-grafana/issues/303
-* add plugin sign process, fix https://github.com/Vertamedia/clickhouse-grafana/issues/212
-* add `DateTime64` support, fix https://github.com/Vertamedia/clickhouse-grafana/issues/292
+* add region support to annotation query, try to fix wrong column orders for table format, fix https://github.com/Altinity/clickhouse-grafana/issues/303
+* add plugin sign process, fix https://github.com/Altinity/clickhouse-grafana/issues/212
+* add `DateTime64` support, fix https://github.com/Altinity/clickhouse-grafana/issues/292
 * add `linux\arm64` backend plugin build
-* improve ARRAY JOIN parsing, fix https://github.com/Vertamedia/clickhouse-grafana/issues/284
+* improve ARRAY JOIN parsing, fix https://github.com/Altinity/clickhouse-grafana/issues/284
 * improve `docker-compose.yaml` add ability to redefine `GRAFANA_VERSION` and `CLICKHOUSE_VERSION` via environment variables `latest` by default
 
 ## Fixes:
 * add `*.js.map` and `*.js` from src and spec folder to .gitignore
-* don't apply adhoc filters twice when used $adhoc macros, fix https://github.com/Vertamedia/clickhouse-grafana/issues/282
-* fix corner case for table format with wrong columns order between meta and data response section, fix https://github.com/Vertamedia/clickhouse-grafana/issues/281
+* don't apply adhoc filters twice when used $adhoc macros, fix https://github.com/Altinity/clickhouse-grafana/issues/282
+* fix corner case for table format with wrong columns order between meta and data response section, fix https://github.com/Altinity/clickhouse-grafana/issues/281
 * add trickster to docker-compose environment
 * actualize links in README.md
 
 # 2.1.0 (2020-08-13)
 
 ## Enhancement:
-* add "Skip comments" checkbox to query editor to pass SQL comments to server, fix https://github.com/Vertamedia/clickhouse-grafana/issues/265
+* add "Skip comments" checkbox to query editor to pass SQL comments to server, fix https://github.com/Altinity/clickhouse-grafana/issues/265
 * add setup notes for Grafana 7.x to README
-* add SQL preprocessing logic on browser side with <% js code subset %>, https://github.com/Vertamedia/clickhouse-grafana/pull/186, thanks @fgbogdan
-* improve alerts query processing for use case when `query(query_name, from, to)` time range is less than visible dashboard time range, see https://github.com/Vertamedia/clickhouse-grafana/issues/237
-* improve alerts json parsing in golang part for case when we have string fields in response which interprets as series name, see https://github.com/Vertamedia/clickhouse-grafana/issues/230
-* properly parsing POST queries in golang part of plugin, https://github.com/Vertamedia/clickhouse-grafana/pull/228, thanks @it1804
+* add SQL preprocessing logic on browser side with <% js code subset %>, https://github.com/Altinity/clickhouse-grafana/pull/186, thanks @fgbogdan
+* improve alerts query processing for use case when `query(query_name, from, to)` time range is less than visible dashboard time range, see https://github.com/Altinity/clickhouse-grafana/issues/237
+* improve alerts json parsing in golang part for case when we have string fields in response which interprets as series name, see https://github.com/Altinity/clickhouse-grafana/issues/230
+* properly parsing POST queries in golang part of plugin, https://github.com/Altinity/clickhouse-grafana/pull/228, thanks @it1804
 
 ## Fixes:
-* fix corner cases for $macro + subquery, see https://github.com/Vertamedia/clickhouse-grafana/issues/276 and https://github.com/Vertamedia/clickhouse-grafana/issues/277  
-* fix parallel query execution, see https://github.com/Vertamedia/clickhouse-grafana/pull/273
-* fix identifiers quotes, see https://github.com/Vertamedia/clickhouse-grafana/issues/276, https://github.com/Vertamedia/clickhouse-grafana/issues/277
+* fix corner cases for $macro + subquery, see https://github.com/Altinity/clickhouse-grafana/issues/276 and https://github.com/Altinity/clickhouse-grafana/issues/277  
+* fix parallel query execution, see https://github.com/Altinity/clickhouse-grafana/pull/273
+* fix identifiers quotes, see https://github.com/Altinity/clickhouse-grafana/issues/276, https://github.com/Altinity/clickhouse-grafana/issues/277
 * fix plugin.json for pass `grafana-plugin-repository` plugin validator
-* fix multi-value variables behavior - https://github.com/Vertamedia/clickhouse-grafana/issues/252
+* fix multi-value variables behavior - https://github.com/Altinity/clickhouse-grafana/issues/252
 * add Vagrantfile for statefull environment and allow to upgrade scenario like  grafana 7.1.0 + grafana-cli upgrade-all
-  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/244
-  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/243
+  * fix https://github.com/Altinity/clickhouse-grafana/issues/244
+  * fix https://github.com/Altinity/clickhouse-grafana/issues/243
 * add multiple dashboard examples for github issues:
-  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/240 
-  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/135 
-  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/245 
-  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/238   
-  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/232
-  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/127
-  * fix https://github.com/Vertamedia/clickhouse-grafana/issues/141
+  * fix https://github.com/Altinity/clickhouse-grafana/issues/240 
+  * fix https://github.com/Altinity/clickhouse-grafana/issues/135 
+  * fix https://github.com/Altinity/clickhouse-grafana/issues/245 
+  * fix https://github.com/Altinity/clickhouse-grafana/issues/238   
+  * fix https://github.com/Altinity/clickhouse-grafana/issues/232
+  * fix https://github.com/Altinity/clickhouse-grafana/issues/127
+  * fix https://github.com/Altinity/clickhouse-grafana/issues/141
   
 # 2.0.2 (2020-07-06)
 
 ## Enhancements:
 * add alerts support for Windows and MacOSX
-* improve ad-hoc filters for query field values as `SELECT DISTINCT field AS value FROM db.table LIMIT 300`, https://github.com/Vertamedia/clickhouse-grafana/pull/222
-* add ability to multiple JOIN parsing https://github.com/Vertamedia/clickhouse-grafana/pull/206 
+* improve ad-hoc filters for query field values as `SELECT DISTINCT field AS value FROM db.table LIMIT 300`, https://github.com/Altinity/clickhouse-grafana/pull/222
+* add ability to multiple JOIN parsing https://github.com/Altinity/clickhouse-grafana/pull/206 
 * multiple improvements for docker-compose environments, add automatic dashboards and datasource provisions which help to reproduce most of the corner cases which happens in Grafana + ClickHouse
 
 ## Fixes:
-* apply a workaround for UTC timezone for Date and DateTime columns in grafana dashboards https://github.com/Vertamedia/clickhouse-grafana/issues/117
-* clear documentation about timestamp term for $from and $to https://github.com/Vertamedia/clickhouse-grafana/issues/115
-* fix AST parsing corner case in `WHERE [test, 'test']` "," was skipped, fix ah-doc ast FROM recursive parsing https://github.com/Vertamedia/clickhouse-grafana/issues/99
-* fix corner cases for table functions parsing when adhoc filter applied https://github.com/Vertamedia/clickhouse-grafana/issues/130
+* apply a workaround for UTC timezone for Date and DateTime columns in grafana dashboards https://github.com/Altinity/clickhouse-grafana/issues/117
+* clear documentation about timestamp term for $from and $to https://github.com/Altinity/clickhouse-grafana/issues/115
+* fix AST parsing corner case in `WHERE [test, 'test']` "," was skipped, fix ah-doc ast FROM recursive parsing https://github.com/Altinity/clickhouse-grafana/issues/99
+* fix corner cases for table functions parsing when adhoc filter applied https://github.com/Altinity/clickhouse-grafana/issues/130
 * fix multiple grammar issues in README.md
-* fix convert rules for Float, Decimal columns from Clickhouse to Grafana Table plugin https://github.com/Vertamedia/clickhouse-grafana/issues/199 
-* fix corner cases when Grafana Template variable value represented as array of strings https://github.com/Vertamedia/clickhouse-grafana/issues/169
-* fix AST parsing corner cases for $macroFunctions correct position for FROM statement https://github.com/Vertamedia/clickhouse-grafana/issues/187
+* fix convert rules for Float, Decimal columns from Clickhouse to Grafana Table plugin https://github.com/Altinity/clickhouse-grafana/issues/199 
+* fix corner cases when Grafana Template variable value represented as array of strings https://github.com/Altinity/clickhouse-grafana/issues/169
+* fix AST parsing corner cases for $macroFunctions correct position for FROM statement https://github.com/Altinity/clickhouse-grafana/issues/187
   
 # 2.0.1 (2020-06-19)
 
 ## Fixes:
-* fix golang alerts for $columns, $perSecond, $perSecondColumns macros https://github.com/Vertamedia/clickhouse-grafana/pull/200
+* fix golang alerts for $columns, $perSecond, $perSecondColumns macros https://github.com/Altinity/clickhouse-grafana/pull/200
 
 # 2.0.0 (2020-06-17)
 
 ## Enhancements:
-* compatibility with grafana 7.x, please use environment variable `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource` or `allow_loading_unsigned_plugins=vertamedia-clickhouse-datasource` in plugins section of `grafana.ini` https://github.com/Vertamedia/clickhouse-grafana/pull/192 
+* compatibility with grafana 7.x, please use environment variable `GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource` or `allow_loading_unsigned_plugins=vertamedia-clickhouse-datasource` in plugins section of `grafana.ini` https://github.com/Altinity/clickhouse-grafana/pull/192 
 * add grafana 7.x alerting support thanks to Brian Thai https://github.com/bmanth60 
-* add alias support to $perSecondColumns macro https://github.com/Vertamedia/clickhouse-grafana/pull/193
-* Support `custom` variable type and empty values for `$conditionalTest` macro https://github.com/Vertamedia/clickhouse-grafana/pull/178
+* add alias support to $perSecondColumns macro https://github.com/Altinity/clickhouse-grafana/pull/193
+* Support `custom` variable type and empty values for `$conditionalTest` macro https://github.com/Altinity/clickhouse-grafana/pull/178
 * add docker-compose.yaml to improve local development
 
 ## Fixes:
-* fix AST for corner case when quotes escaped inside quotes https://github.com/Vertamedia/clickhouse-grafana/pull/123, https://github.com/Vertamedia/clickhouse-grafana/pull/195
-* fix https://github.com/Vertamedia/clickhouse-grafana/issues/179,  add "Extrapolation" checkbox to Query Editor 
+* fix AST for corner case when quotes escaped inside quotes https://github.com/Altinity/clickhouse-grafana/pull/123, https://github.com/Altinity/clickhouse-grafana/pull/195
+* fix https://github.com/Altinity/clickhouse-grafana/issues/179,  add "Extrapolation" checkbox to Query Editor 
 
 # 1.9.5 (2020-01-15)
 
@@ -253,7 +253,7 @@
 
 * new datasource setting - `default database`. If set it will be prefilled in the query builder, and used to make ad-hoc filters more convenient (thx to @vavrusa)
 * support wildcard ad-hoc filters for dashboards using multiple tables (thx to @vavrusa)
-* parse dimensions from GROUP BY to simplify querying (see [piechart](https://github.com/Vertamedia/clickhouse-grafana#piechart-httpsgrafanacompluginsgrafana-piechart-panel) and [worldmap](https://github.com/Vertamedia/clickhouse-grafana#worldmap-panel-httpsgithubcomgrafanaworldmap-panel) examples) (thx to @vavrusa)
+* parse dimensions from GROUP BY to simplify querying (see [piechart](https://github.com/Altinity/clickhouse-grafana#piechart-httpsgrafanacompluginsgrafana-piechart-panel) and [worldmap](https://github.com/Altinity/clickhouse-grafana#worldmap-panel-httpsgithubcomgrafanaworldmap-panel) examples) (thx to @vavrusa)
 * `$timeCol` to `$dateCol` renamed to be more clear with column types (thx to @simPod)
 
 
@@ -328,8 +328,8 @@ as Ad-hoc's `database.table`
 # 1.2.5 (2017-12-05)
 
 ## Fixes
-* support template variables with different `text` and `value` values [#27](https://github.com/Vertamedia/clickhouse-grafana/issues/27)
-* fix visual glitches [#29](https://github.com/Vertamedia/clickhouse-grafana/issues/29)
+* support template variables with different `text` and `value` values [#27](https://github.com/Altinity/clickhouse-grafana/issues/27)
+* fix visual glitches [#29](https://github.com/Altinity/clickhouse-grafana/issues/29)
 
 
 # 1.2.4 (2017-11-22)
@@ -347,10 +347,10 @@ as Ad-hoc's `database.table`
 # 1.2.2 (2017-11-20)
 
 ## Fixes
-* fix error with absent `getCollapsedText` [#24](https://github.com/Vertamedia/clickhouse-grafana/issues/24)
-* suppress errors while parsing AST [#24](https://github.com/Vertamedia/clickhouse-grafana/issues/24)
-* show generated SQL in textarea [#24](https://github.com/Vertamedia/clickhouse-grafana/issues/24)
-* do not round timestamp after converting [#25](https://github.com/Vertamedia/clickhouse-grafana/issues/25)
+* fix error with absent `getCollapsedText` [#24](https://github.com/Altinity/clickhouse-grafana/issues/24)
+* suppress errors while parsing AST [#24](https://github.com/Altinity/clickhouse-grafana/issues/24)
+* show generated SQL in textarea [#24](https://github.com/Altinity/clickhouse-grafana/issues/24)
+* do not round timestamp after converting [#25](https://github.com/Altinity/clickhouse-grafana/issues/25)
 * increase max-height of query editor
 
 
@@ -358,8 +358,8 @@ as Ad-hoc's `database.table`
 
 ## Fixes
 * add forgotten completions
-* process NULL values [#19](https://github.com/Vertamedia/clickhouse-grafana/issues/19)
-* sort by key value in `$columns` macro [#16](https://github.com/Vertamedia/clickhouse-grafana/issues/16)
+* process NULL values [#19](https://github.com/Altinity/clickhouse-grafana/issues/19)
+* sort by key value in `$columns` macro [#16](https://github.com/Altinity/clickhouse-grafana/issues/16)
 
 
 # 1.2.0 (2017-11-15)
@@ -372,5 +372,5 @@ as Ad-hoc's `database.table`
 # 1.1.0 (2017-11-13)
 
 ## New Features
-* Allow `UInt32` as Timestamp column [#15](https://github.com/Vertamedia/clickhouse-grafana/issues/15)
-* Add `Format as Table` format [#17](https://github.com/Vertamedia/clickhouse-grafana/issues/17)
+* Allow `UInt32` as Timestamp column [#15](https://github.com/Altinity/clickhouse-grafana/issues/15)
+* Add `Format as Table` format [#17](https://github.com/Altinity/clickhouse-grafana/issues/17)

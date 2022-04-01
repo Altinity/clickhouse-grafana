@@ -99,7 +99,7 @@
       ],
       "datasource": "clickhouse",
       "decimals": 0,
-      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/124",
+      "description": "see https://github.com/Altinity/clickhouse-grafana/issues/124",
       "esMetric": "Count",
       "fieldConfig": {
         "defaults": {

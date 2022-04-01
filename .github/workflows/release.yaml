@@ -65,12 +65,12 @@ jobs:
       - name: Build backend
         run: |
           go test -timeout 1m -failfast -tags=integration -v ./pkg/ && \
-          GOOS=linux GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_amd64 ./pkg/ && \
-          GOOS=linux GOARCH=arm64 go build -o ./dist/vertamedia-clickhouse-plugin_linux_arm64 ./pkg/ && \
-          GOOS=windows GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_windows_amd64.exe ./pkg/ && \
-          GOOS=darwin GOARCH=amd64 go build -o ./dist/vertamedia-clickhouse-plugin_darwin_amd64 ./pkg/ && \
-          # GOOS=darwin GOARCH=arm64 go build -o ./dist/vertamedia-clickhouse-plugin_darwin_arm64 ./pkg/ && \
-          chmod +x ./dist/vertamedia-clickhouse-plugin*
+          GOOS=linux GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ && \
+          GOOS=linux GOARCH=arm64 go build -o ./dist/altinity-clickhouse-plugin_linux_arm64 ./pkg/ && \
+          GOOS=windows GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_windows_amd64.exe ./pkg/ && \
+          GOOS=darwin GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_darwin_amd64 ./pkg/ && \
+          # GOOS=darwin GOARCH=arm64 go build -o ./dist/altinity-clickhouse-plugin_darwin_arm64 ./pkg/ && \
+          chmod +x ./dist/altinity-clickhouse-plugin*
 
       - name: Sign plugin
         env:

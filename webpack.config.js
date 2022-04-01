@@ -25,7 +25,7 @@ module.exports = {
   ],
   plugins: [
     new CleanWebpackPlugin({
-      cleanOnceBeforeBuildPatterns: ['!vertamedia-clickhouse-plugin**', 'MANIFEST.txt'],
+      cleanOnceBeforeBuildPatterns: ['!altinity-clickhouse-plugin**', 'MANIFEST.txt'],
     }),
     new CopyWebpackPlugin({
       patterns: [

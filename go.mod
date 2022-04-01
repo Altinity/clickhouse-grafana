@@ -1,4 +1,4 @@
-module github.com/VertaMedia/clickhouse-grafana
+module github.com/Altinity/clickhouse-grafana
 
 require (
 	github.com/dlclark/regexp2 v1.4.0
@@ -52,4 +52,4 @@ require (
 	gopkg.in/yaml.v3 v3.0.0-20200615113413-eeeca48fe776 // indirect
 )
 
-go 1.17
+go 1.18

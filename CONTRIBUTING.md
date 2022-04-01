@@ -55,7 +55,7 @@ To develop without build inside a docker, the development process for frontend p
 
 #### Backend Builder
 
-The backend builder is the docker container used to compile the golang source code into the `vertamedia-clickhouse-plugin_linux_amd64` binary in the `dist` dir. This will affect the grafana service used for running queries for alerting. The entrypoint for the go code is at `pkg/main.go`.
+The backend builder is the docker container used to compile the golang source code into the `altinity-clickhouse-plugin_*` binaries in the `dist` dir. This will affect the grafana service used for running queries for alerting. The entrypoint for the go code is at `pkg/main.go`.
 
 To develop using docker, the development process for backend part of code looks like:
 1. change source files
@@ -74,8 +74,8 @@ The resulting alerts should look like this
 
 ### How to make a new release
 
-- fork https://github.com/Vertamedia/clickhouse-grafana and make git clone, if necessary
-- look at https://github.com/Vertamedia/clickhouse-grafana/commits/master and add necessary items to [CHANGELOG.md](CHANGELOG.md)
+- fork https://github.com/Altinity/clickhouse-grafana and make git clone, if necessary
+- look at https://github.com/Altinity/clickhouse-grafana/commits/master and add necessary items to [CHANGELOG.md](CHANGELOG.md)
 - install Python3 and run `pip3 install -U bump2version`
 - read https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token to getting value for `GITHUB_TOKEN`
 - create .release_env file in root of your git working copy with following content:
@@ -94,10 +94,10 @@ set -xeuo pipefail
 - this script will run `frontend_builder`, `backend_builder`, `plugin_signer` via `docker-compose` and run tests and make git commit + git push if test pass
 
 #### Final manual steps
-- after git push to your github fork, please open new pull request between your fork and `master` branch in https://github.com/Vertamedia/clickhouse-grafana
+- after git push to your github fork, please open new pull request between your fork and `master` branch in https://github.com/Altinity/clickhouse-grafana
   copy/paste CHANGELOG.md items for new release to Pull Request message.           
-- after merge pull request in https://github.com/Vertamedia/clickhouse-grafana/, 
-  please open https://github.com/Vertamedia/clickhouse-grafana/releases create new release or request to somebody of [contributors](https://github.com/Vertamedia/clickhouse-grafana/graphs/contributors).
-- after create new release on https://github.com/Vertamedia/clickhouse-grafana/releases,
+- after merge pull request in https://github.com/Altinity/clickhouse-grafana/, 
+  please open https://github.com/Altinity/clickhouse-grafana/releases create new release or request to somebody of [contributors](https://github.com/Altinity/clickhouse-grafana/graphs/contributors).
+- after create new release on https://github.com/Altinity/clickhouse-grafana/releases,
   please create new pull request in https://github.com/grafana/grafana-plugin-repository, please follow `grafana-plugin-repository` pull request message styleguide, 
   copy/paste CHANGELOG.md items for new release to Pull Request message.           

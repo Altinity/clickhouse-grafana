@@ -28,7 +28,7 @@
   "panels": [
     {
       "datasource": "clickhouse",
-      "description": "https://github.com/Vertamedia/clickhouse-grafana/issues/337",
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/337",
       "fieldConfig": {
         "defaults": {
           "color": {

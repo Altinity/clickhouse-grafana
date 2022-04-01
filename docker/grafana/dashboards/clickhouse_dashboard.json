@@ -708,7 +708,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse",
-      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/127",
+      "description": "see https://github.com/Altinity/clickhouse-grafana/issues/127",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -819,7 +819,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse",
-      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/252",
+      "description": "see https://github.com/Altinity/clickhouse-grafana/issues/252",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -930,7 +930,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse",
-      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/265",
+      "description": "see https://github.com/Altinity/clickhouse-grafana/issues/265",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -1042,7 +1042,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse",
-      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/256",
+      "description": "see https://github.com/Altinity/clickhouse-grafana/issues/256",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -1154,7 +1154,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse",
-      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/276",
+      "description": "see https://github.com/Altinity/clickhouse-grafana/issues/276",
       "fieldConfig": {
         "defaults": {
           "custom": {}
@@ -1266,7 +1266,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse",
-      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/284",
+      "description": "see https://github.com/Altinity/clickhouse-grafana/issues/284",
       "fieldConfig": {
         "defaults": {
           "custom": {}

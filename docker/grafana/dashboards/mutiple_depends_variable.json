@@ -25,7 +25,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "clickhouse",
-      "description": "see  https://github.com/Vertamedia/clickhouse-grafana/issues/232",
+      "description": "see  https://github.com/Altinity/clickhouse-grafana/issues/232",
       "fill": 1,
       "fillGradient": 0,
       "gridPos": {

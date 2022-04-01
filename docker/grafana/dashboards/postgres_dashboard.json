@@ -29,7 +29,7 @@
   "panels": [
     {
       "datasource": "postgres",
-      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/254",
+      "description": "see https://github.com/Altinity/clickhouse-grafana/issues/254",
       "fieldConfig": {
         "defaults": {
           "custom": {
@@ -140,7 +140,7 @@
       "dashLength": 10,
       "dashes": false,
       "datasource": "postgres",
-      "description": "https://github.com/Vertamedia/clickhouse-grafana/issues/384",
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/384",
       "fieldConfig": {
         "defaults": {
           "links": []

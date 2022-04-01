@@ -150,9 +150,9 @@ func TestMacrosBuilder(t *testing.T) {
 
 /*
  comments and $rate and from in field name
- check https://github.com/Vertamedia/clickhouse-grafana/issues/187
- check https://github.com/Vertamedia/clickhouse-grafana/issues/256
- check https://github.com/Vertamedia/clickhouse-grafana/issues/265
+ check https://github.com/Altinity/clickhouse-grafana/issues/187
+ check https://github.com/Altinity/clickhouse-grafana/issues/256
+ check https://github.com/Altinity/clickhouse-grafana/issues/265
 */
 func TestCommentsAndRateMacrosWithFromKeywordInFieldName(t *testing.T) {
 	const query = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\n$rate(countIf(service_name='mysql' AND from_user='alice') AS mysql_alice, countIf(service_name='postgres') AS postgres)\n" +
@@ -171,7 +171,7 @@ func TestCommentsAndRateMacrosWithFromKeywordInFieldName(t *testing.T) {
 
 /*
  columns + union all + with
- fix https://github.com/Vertamedia/clickhouse-grafana/issues/319
+ fix https://github.com/Altinity/clickhouse-grafana/issues/319
 */
 func TestColumnsMacrosWithUnionAllAndWithKeyword(t *testing.T) {
 	const query = "$columns(\n" +
@@ -932,7 +932,7 @@ func TestScannerAST(t *testing.T) {
 			}},
 		),
 
-		/* fix https://github.com/Vertamedia/clickhouse-grafana/issues/319 */
+		/* fix https://github.com/Altinity/clickhouse-grafana/issues/319 */
 		newASTTestCase(
 			"AST case 19 ($columns + union all + with + sub query)",
 			"$columns(\n"+
@@ -1011,7 +1011,7 @@ func TestScannerAST(t *testing.T) {
 			}},
 		),
 
-		/* fix https://github.com/Vertamedia/clickhouse-grafana/issues/374 */
+		/* fix https://github.com/Altinity/clickhouse-grafana/issues/374 */
 		newASTTestCase(
 			"AST case 20 (`--` inside of quotes)",
 			"--test one line comment1\n"+
@@ -1193,7 +1193,7 @@ func TestEscapeIdentifier(t *testing.T) {
 
 }
 
-/* check https://github.com/Vertamedia/clickhouse-grafana/issues/284 */
+/* check https://github.com/Altinity/clickhouse-grafana/issues/284 */
 func TestEvalQueryColumnsMacrosAndArrayJoin(t *testing.T) {
 	const description = "check replace with $columns and concat and ARRAY JOIN"
 	const query = "$columns(\n" +
@@ -1229,7 +1229,7 @@ func TestEvalQueryColumnsMacrosAndArrayJoin(t *testing.T) {
 	r.Equal(expQuery, actualQuery, description)
 }
 
-/* check https://github.com/Vertamedia/clickhouse-grafana/issues/294 */
+/* check https://github.com/Altinity/clickhouse-grafana/issues/294 */
 func TestEvalQueryTimeFilterByColumnAndDateTimeCol(t *testing.T) {
 	const description = "combine $timeFilterByColumn and $dateTimeCol"
 	const query = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter AND $timeFilterByColumn($dateTimeCol) AND $timeFilterByColumn(another_column) GROUP BY t"
@@ -1263,7 +1263,7 @@ func TestEvalQueryTimeFilterByColumnAndDateTimeCol(t *testing.T) {
 	r.Equal(expQuery, actualQuery, description)
 }
 
-/* check $naturalTimeSeries https://github.com/Vertamedia/clickhouse-grafana/pull/89 */
+/* check $naturalTimeSeries https://github.com/Altinity/clickhouse-grafana/pull/89 */
 func TestEvalQueryNaturalTimeSeries(t *testing.T) {
 	const description = "check $naturalTimeSeries"
 	const query = "SELECT $naturalTimeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t"

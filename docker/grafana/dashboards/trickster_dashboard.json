@@ -20,7 +20,7 @@
   "panels": [
     {
       "datasource": "trickster",
-      "description": "see https://github.com/Vertamedia/clickhouse-grafana/issues/281",
+      "description": "see https://github.com/Altinity/clickhouse-grafana/issues/281",
       "fieldConfig": {
         "defaults": {
           "custom": {

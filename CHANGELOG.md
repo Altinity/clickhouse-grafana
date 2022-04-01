@@ -1,4 +1,4 @@
-# 2.4.4 (2022-03-02)
+# 2.4.4 (2022-04-01)
 
 ## Fixes:
 * replace Vertamedia Altinity logo

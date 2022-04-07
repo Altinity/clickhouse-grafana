@@ -1,7 +1,7 @@
 {
   "id": "vertamedia-clickhouse-datasource",
   "type": "datasource",
-  "name": "ClickHouse",
+  "name": "Altinity plugin for ClickHouse",
   "metrics": true,
   "annotations": true,
   "backend": true,

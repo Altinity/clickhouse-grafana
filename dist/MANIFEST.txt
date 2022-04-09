@@ -9,7 +9,7 @@ Hash: SHA512
   "signedByOrgName": "Vertamedia",
   "plugin": "vertamedia-clickhouse-datasource",
   "version": "2.4.4",
-  "time": 1648800007444,
+  "time": 1649523376592,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "altinity-clickhouse-plugin_darwin_amd64": "52409de5e2ef20334e2a7b561ac4d2d386ba86958a0ebe1c9122d4050333f131",
@@ -23,12 +23,12 @@ Hash: SHA512
     "img/datasource.png": "8d6dcdddfad512abed8c251404f652383f63ad17bc5c7cbe3e67ad9e6fa0327f",
     "img/query_editor.png": "b8d50f644d413b15aaf0d7b71fdfa4423f1a045761ec368b19a15e3d1aaf9308",
     "LICENSE": "1c9e6884726a2b6231e089c028974e78adfee1648037cd94782bfae30ed99789",
-    "module.js": "b78b989f22e8688d20e6fe34821423d9c3fc8c051e3b378bd99dce2a8431cbab",
-    "module.js.map": "87ca5b4c6ab88692dac570e9ee5b809904abc0b0f65787e0db8d7306f874102a",
+    "module.js": "0102644c5b7038d5771aec18e3dacceef1b7f2e773c90a0759c8dce635b4a19a",
+    "module.js.map": "a8fc197d259a864e295eb9ae9908e417ed8ed4d480a6fbedf61e7fb30033db69",
     "partials/annotations.editor.html": "14d2d5add7f13c7c722e33bbc53ef83750fb624e5f7d6efee4a9568addc2ab78",
     "partials/config.html": "51ba130304c63c1a00590a9dc94c8351ff6277e4cf695720de57bff87aeec744",
     "partials/query.editor.html": "b013c5f8547fd5f7e4723c21b274b27fb652214a78ee2bec95a31ff99f8c2b76",
-    "plugin.json": "9666c5f3748f59e83fa8b530bca26f2036c0609b01bfae2aedae93b0616f9743",
+    "plugin.json": "d6b21b52d94aa6a759714a26c0d417b4e7d77c7e2d35a563e2fcd9807fcb89de",
     "README.md": "37131bc5bacb380f11d1195ab1dc97aac3b32e379e920ca365e9c071bd2815fb",
     "vertamedia-clickhouse-plugin_darwin_arm64": "353a561723dc98308e74823c19018a43cf518ffbb6a62276fda8c73c4b824db4",
     "vertamedia-clickhouse-plugin_linux_amd64": "7f3d9c7c6e6da1b04cb3e40cdd49f73eb6ccf549ed22b01b74ec1152e4e9976b",
@@ -39,10 +39,10 @@ Hash: SHA512
 Version: OpenPGP.js v4.10.10
 Comment: https://openpgpjs.org
 
-wrgEARMKAAYFAmJGsQcAIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
-cIhm50e3AgdZOopBbDS77TxWNBd9ahXCWGPMAUJKhMxCW3bAM3kd8kdhmjVg
-qK3IkOGSmZY9xcm7RA77+wjbcXG8Is2tnqZy/AIJAd8n21oYwvM9Xb+qLYSb
-tNyIgk4r5iMILA9FbzcukYeo8t3I2/lHIiTCRW/5iL31KMuHRt/kM6w0mLci
-QS9YkWgc
-=1xiT
+wrgEARMKAAYFAmJRurAAIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
+cIhm54mBAgiYooRNHlTFV/1mhgTcBPFuPxzMfgwjnsXGv90nBelpNvD90ADA
+yxYvREnXxg4VSLNy9YlLuSVXt7WPfnMX5Kdb7AIJAavQhy/n8AwmABJPIk7f
+KXn0BhNuK//XSB+Zj3aLJENEvpfW6G3RYDxwDKM072VTHqBPXxvVgwKDqoTc
+O6bpFJPM
+=LP/Y
 -----END PGP SIGNATURE-----

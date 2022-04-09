@@ -21,7 +21,8 @@
         "lodash-es": "^4.17.21",
         "moment": "^2.29.2",
         "q": "^1.5.1",
-        "systemjs": "^6.11.0"
+        "systemjs": "^6.11.0",
+	"minimist": ">=1.2.6"		
     },
     "devDependencies": {
         "@babel/core": "^7.16.5",

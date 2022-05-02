@@ -57,7 +57,13 @@ export default class SqlQuery {
                 let target = SqlQuery.target(ast.from[0], this.target);
 
                 adhocFilters.forEach(function (af) {
-                    let parts = af.key.split('.');
+                    let parts;
+                    let partsKey = af.key;
+                    if (partsKey.includes('.')) {
+                        parts = [target[0], target[1], partsKey];
+                    } else {
+                        parts = af.key.split('.');
+                    }
                     /* Wildcard table, substitute current target table */
                     if (parts.length === 1) {
                         parts.unshift(target[1]);

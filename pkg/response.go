@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"regexp"
+	"sort"
 	"strings"
 	"time"
 
@@ -176,10 +177,15 @@ func (r *Response) createFrameIfNotExistsAndAddPoint(query *Query, framesMap map
 
 func (r *Response) generateFrameNameByLabels(row map[string]interface{}, metaTypes map[string]string, labelFieldsMap map[string]int) string {
 	frameName := ""
-	for fieldName, fieldValue := range row {
+	srow := make([]string, 0, len(row))
+	for k := range row {
+		srow = append(srow, k)
+	}
+	sort.Strings(srow)
+	for _, fieldName := range srow {
 		if _, isLabel := labelFieldsMap[fieldName]; isLabel {
 			fieldType := metaTypes[fieldName]
-			frameName += fmt.Sprintf("%v", ParseValue(fieldName, fieldType, nil, fieldValue, false)) + ", "
+			frameName += fmt.Sprintf("%v", ParseValue(fieldName, fieldType, nil, row[fieldName], false)) + ", "
 		}
 	}
 	if frameName != "" {

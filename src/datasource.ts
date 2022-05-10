@@ -131,6 +131,7 @@ export class ClickHouseDatasource {
                 }
 
                 let sqlSeries = new SqlSeries({
+                    refId: target.refId,
                     series: response.data,
                     meta: response.meta,
                     keys: keys,
@@ -142,6 +143,8 @@ export class ClickHouseDatasource {
                     each(sqlSeries.toTable(), (data) => {
                         result.push(data);
                     });
+                } else if (target.format === 'logs') {
+                    result.push(sqlSeries.toLogs());
                 } else {
                     each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
                         result.push(data);

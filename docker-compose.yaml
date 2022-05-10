@@ -1,5 +1,5 @@
 version: "3"
-    
+
 services:
   clickhouse-ontime:
     image: yandex/clickhouse-server:latest
@@ -53,6 +53,7 @@ services:
       - GF_LOG_LEVEL=debug
       - GF_UNIFIED_ALERTING_ENABLED=true
       - GF_ALERTING_ENABLED=false
+      - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource
     ports:
       - 3000:3000
     depends_on:

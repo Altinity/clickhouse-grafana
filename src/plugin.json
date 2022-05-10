@@ -6,6 +6,7 @@
   "annotations": true,
   "backend": true,
   "alerting": true,
+  "logs": true,
   "executable": "altinity-clickhouse-plugin",
   "info": {
     "description": "Altinity Grafana datasource for ClickHouse",
@@ -46,7 +47,6 @@
     "version": "2.4.4",
     "updated": "2020-07-31"
   },
-
   "dependencies": {
     "grafanaDependency": ">=4.6.0",
     "plugins": []

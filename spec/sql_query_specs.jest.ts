@@ -299,7 +299,7 @@ describe("check replace with $adhoc macros", () => {
     let templateSrv = new TemplateSrvStub();
     const adhocFilters = [
         {
-            key: "default.flows_raw.SrcAS",
+            key: "SrcAS",
             operator: "=",
             value: "1299"
         },
@@ -360,7 +360,7 @@ describe("check replace with $columns and concat and ARRAY JOIN", () => {
     let templateSrv = new TemplateSrvStub();
     const adhocFilters = [
         {
-            key: "default.test_array_join_nested.JobName",
+            key: "JobName",
             operator: "=~",
             value: "Job"
         },

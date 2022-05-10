@@ -16,13 +16,14 @@
     "author": "Altinity",
     "license": "MIT",
     "dependencies": {
+        "@grafana/data": "^8.5.2",
         "babel-loader": "^8.2.3",
         "brace": "^0.11.1",
         "lodash-es": "^4.17.21",
+        "minimist": ">=1.2.6",
         "moment": "^2.29.2",
         "q": "^1.5.1",
-        "systemjs": "^6.11.0",
-	"minimist": ">=1.2.6"		
+        "systemjs": "^6.11.0"
     },
     "devDependencies": {
         "@babel/core": "^7.16.5",

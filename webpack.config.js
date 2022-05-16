@@ -41,7 +41,7 @@ module.exports = {
     extensions: ['.ts', '.tsx', '.js'],
     fallback: {
       fs: false,
-      stream: false
+      stream: require.resolve("stream-browserify")
     }
   },
   module: {

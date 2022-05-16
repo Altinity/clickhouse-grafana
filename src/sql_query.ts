@@ -59,7 +59,7 @@ export default class SqlQuery {
                 adhocFilters.forEach(function (af) {
                     let parts;
                     let partsKey = af.key;
-                    if (partsKey.includes('.')) {
+                    if (!partsKey.includes('.')) {
                         parts = [target[0], target[1], partsKey];
                     } else {
                         parts = af.key.split('.');

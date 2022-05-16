@@ -2,6 +2,7 @@ import {size} from 'lodash-es';
 import SqlSeries from '../src/sql_series';
 import AdhocCtrl from "../src/adhoc";
 import ResponseParser from "../src/response_parser";
+import { FieldType, MutableDataFrame } from '@grafana/data';
 
 describe("clickhouse sql series:", () => {
     describe("SELECT $timeseries response WHERE $adhoc = 1", () => {
@@ -187,7 +188,92 @@ describe("clickhouse sql series:", () => {
         });
     });
 
+    describe("When performing logs query", () => {
+        let response = {
+            "meta":
+                [
+                    {
+                        "name": "t",
+                        "type": "UInt64"
+                    },
+                    {
+                        "name": "content",
+                        "type": "String"
+                    },
+                    {
+                        "name": "level",
+                        "type": "LowCardinality(String)"
+                    },
+                    {
+                        "name": "id",
+                        "type": "String"
+                    }
+                ],
 
+            "data":
+                [
+                    {
+                        "t": "1485445140000",
+                        "content": "Log line 1",
+                        "level": "Warning",
+                        "id": "1234"
+                    },
+                    {
+                        "t": "1485445200000",
+                        "content": "Log line 1",
+                        "level": "Warning",
+                        "id": "1234"
+                    },
+                    {
+                        "t": "1485445260000",
+                        "content": "Log line 2",
+                        "level": "Info",
+                        "id": "5678"
+                    },
+                    {
+                        "t": "1485445320000",
+                        "content": "Log line 3",
+                        "level": "Unknown",
+                        "id": "0000"
+                    }
+                ]
+        };
+
+        let sqlSeries = new SqlSeries({
+            refId: 'A',
+            series: response.data,
+            meta: response.meta,
+            table: '',
+        });
+        let timeSeries = sqlSeries.toLogs();
+
+        it("expects MutableDataFrame", () => {
+            expect(timeSeries).toBeInstanceOf(MutableDataFrame)
+        });
+
+        it("should have refId", () => {
+            expect(timeSeries.refId).toBe('A');
+        });
+
+        it("should have preffered visualization option logs", () => {
+            expect(timeSeries.meta.preferredVisualisationType).toBe('logs');
+        });
+
+        it("should get four fields in DataFrame", () => {
+            expect(size(timeSeries.fields)).toBe(4);
+        });
+
+        it("should get first field in DataFrame as time", () => {
+            expect(timeSeries.fields[0].type).toBe(FieldType.time);
+        });
+
+        it("should get four datapoints for each field in DataFrame", () => {
+            expect(size(timeSeries.fields[0].values)).toBe(4);
+            expect(size(timeSeries.fields[1].values)).toBe(4);
+            expect(size(timeSeries.fields[2].values)).toBe(4);
+            expect(size(timeSeries.fields[3].values)).toBe(4);
+        });
+    });
 });
 
 // check https://github.com/Altinity/clickhouse-grafana/issues/281

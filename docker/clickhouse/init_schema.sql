@@ -39,7 +39,7 @@ CREATE TABLE IF NOT EXISTS default.test_depends_on_variable(
 )
     ENGINE = MergeTree()
         PARTITION BY toYYYYMM(event_time)
-        ORDER BY (event_time, bulk_id, city, service_name);
+        ORDER BY (event_time, bulk_id, service_name);
 
 INSERT INTO default.test_depends_on_variable(event_time, bulk_id, city, service_name, too_big_value) SELECT toDateTime(now()-(number*10)) AS event_time, concat('bulk',toString(number%10)) AS bulk_id, if (number%600 > 0,concat('city',toString(number%600)),null) AS city, concat('service',toString(number%1000)) AS service_name, rand64() AS too_big_value FROM numbers(10000);
 

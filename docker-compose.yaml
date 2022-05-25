@@ -10,10 +10,10 @@ services:
   clickhouse:
     image: clickhouse/clickhouse-server:${CLICKHOUSE_VERSION:-latest}
     ports:
-      - 8123:8123
-      - 9000:9000
-      - 5432:5432
-      - 3306:3306
+      - "8123:8123"
+      - "9000:9000"
+      - "5432:5432"
+      - "3306:3306"
     volumes:
       - /var/log/clickhouse-server
       - ./docker/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
@@ -55,7 +55,7 @@ services:
       - GF_ALERTING_ENABLED=false
       - GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS=vertamedia-clickhouse-datasource
     ports:
-      - 3000:3000
+      - "3000:3000"
     depends_on:
       - clickhouse
 
@@ -64,7 +64,7 @@ services:
     volumes:
       - ./docker/trickster/trickster.conf:/etc/trickster/trickster.conf
     ports:
-      - 8480:8480
+      - "8480:8480"
     depends_on:
       - clickhouse
 
@@ -95,7 +95,7 @@ services:
     command: |
       bash -xec "
         go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ &&
-        GOOS=linux GOARCH=amd64 go build -o ./dist/atinity-clickhouse-plugin_linux_amd64 ./pkg/ && \
+        GOOS=linux GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ && \
         GOOS=linux GOARCH=arm64 go build -o ./dist/altinity-clickhouse-plugin_linux_arm64 ./pkg/ && \
         GOOS=windows GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_windows_amd64.exe ./pkg/ && \
         GOOS=darwin GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_darwin_amd64 ./pkg/ && \

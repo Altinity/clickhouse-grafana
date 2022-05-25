@@ -1,6 +1,8 @@
-import {each, isArray} from 'lodash-es';
+import { each, isArray } from 'lodash-es';
+import { FieldType, MutableDataFrame } from '@grafana/data';
 
 export default class SqlSeries {
+    refId: string;
     series: any;
     keys: any;
     meta: any;
@@ -10,6 +12,7 @@ export default class SqlSeries {
 
     /** @ngInject */
     constructor(options) {
+        this.refId = options.refId;
         this.series = options.series;
         this.meta = options.meta;
         this.tillNow = options.tillNow;
@@ -45,6 +48,36 @@ export default class SqlSeries {
         });
 
         return data;
+    }
+
+    toLogs(): any {
+        const frame = new MutableDataFrame({
+            refId: this.refId,
+            meta: {
+                preferredVisualisationType: 'logs',
+            },
+            fields: []
+        });
+
+        if (this.series.length === 0) {
+            return frame;
+        }
+
+        each(this.meta, function (col, index) {
+            let type = SqlSeries._toFieldType(col.type)
+            // Assuming that fist column is time
+            // That's special case for 'Column:TimeStamp'
+            if (index == 0 && col.type == 'UInt64') {
+                type = FieldType.time
+            }
+            frame.addField({name: col.name, type: type});
+        });
+
+        each(this.series, function (ser) {
+            frame.add(ser);
+        });
+
+        return frame;
     }
 
     toTimeSeries(extrapolate = true): any {
@@ -196,6 +229,58 @@ export default class SqlSeries {
                 return "number";
             default:
                 return "string";
+        }
+    }
+
+    static _toFieldType(type: string): FieldType {
+        switch (type) {
+            case 'UInt8':
+            case 'UInt16':
+            case 'UInt32':
+            case 'UInt64':
+            case 'Int8':
+            case 'Int16':
+            case 'Int32':
+            case 'Int64':
+            case 'Float32':
+            case 'Float64':
+            case 'Decimal':
+            case 'Decimal32':
+            case 'Decimal64':
+            case 'Decimal128':
+            case 'Nullable(UInt8)':
+            case 'Nullable(UInt16)':
+            case 'Nullable(UInt32)':
+            case 'Nullable(UInt64)':
+            case 'Nullable(Int8)':
+            case 'Nullable(Int16)':
+            case 'Nullable(Int32)':
+            case 'Nullable(Int64)':
+            case 'Nullable(Float32)':
+            case 'Nullable(Float64)':
+            case 'Nullable(Decimal)':
+            case 'Nullable(Decimal32)':
+            case 'Nullable(Decimal64)':
+            case 'Nullable(Decimal128)':
+                return FieldType.number;
+            case 'Date':
+            case 'DateTime':
+            case 'DateTime64':
+            case 'DateTime64(3)':
+            case 'DateTime64(6)':
+            case 'Nullable(Date)':
+            case 'Nullable(DateTime)':
+            case 'Nullable(DateTime64)':
+            case 'Nullable(DateTime64(3))':
+            case 'Nullable(DateTime64(6))':
+                return FieldType.time;
+            case 'IPv6':
+            case 'IPv4':
+            case 'Nullable(IPv6)':
+            case 'Nullable(IPv4)':
+                return FieldType.other;
+            default:
+                return FieldType.string;
         }
     }
 

@@ -1,6 +1,7 @@
 const path = require('path');
 const CopyWebpackPlugin = require('copy-webpack-plugin');
 const { CleanWebpackPlugin } = require('clean-webpack-plugin');
+const { ProvidePlugin } = require("webpack");
 
 module.exports = {
   context: path.join(__dirname, 'src'),
@@ -24,6 +25,9 @@ module.exports = {
     }
   ],
   plugins: [
+    new ProvidePlugin({
+      process: 'process/browser',
+    }),
     new CleanWebpackPlugin({
       cleanOnceBeforeBuildPatterns: ['!altinity-clickhouse-plugin**', 'MANIFEST.txt'],
     }),
@@ -39,9 +43,12 @@ module.exports = {
   ],
   resolve: {
     extensions: ['.ts', '.tsx', '.js'],
+    alias: {
+      process: 'process/browser',
+    },
     fallback: {
       fs: false,
-      stream: require.resolve("stream-browserify")
+      stream: require.resolve('stream-browserify')
     }
   },
   module: {

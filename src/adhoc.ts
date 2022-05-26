@@ -1,4 +1,4 @@
-const queryFilter = "database != 'system'";
+const queryFilter = "database NOT IN ('system','INFORMATION_SCHEMA')";
 const columnsQuery = "SELECT database, table, name, type FROM system.columns WHERE {filter} ORDER BY database, table";
 const valuesQuery = "SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300";
 const regexEnum = /'(?:[^']+|'')+'/gmi;

@@ -13,6 +13,14 @@
         "test:docker:watch": "jest --ci --config jest.config.js --watch --detectOpenHandles",
         "sign": "bash -xec \"source ./.release_env && node ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js plugin:sign\""
     },
+    "engines": {
+      "node": ">=16.5.0 <17"
+    },
+    "os": [
+      "darwin",
+      "linux",
+      "windows"
+    ],
     "author": "Altinity",
     "license": "MIT",
     "dependencies": {

@@ -159,7 +159,7 @@ describe("clickhouse sql series:", () => {
         let rp = new ResponseParser(this.$q);
         let adhocCtrl = new AdhocCtrl({defaultDatabase: "default"});
         it('should be inited', function () {
-            expect(adhocCtrl.query).toBe('SELECT database, table, name, type FROM system.columns WHERE database = \'default\' AND database != \'system\' ORDER BY database, table');
+            expect(adhocCtrl.query).toBe('SELECT database, table, name, type FROM system.columns WHERE database = \'default\' AND database NOT IN (\'system\',\'INFORMATION_SCHEMA\') ORDER BY database, table');
             expect(adhocCtrl.datasource.defaultDatabase).toBe('default');
         });
 
@@ -248,14 +248,14 @@ describe("clickhouse sql series:", () => {
         let timeSeries = sqlSeries.toLogs();
 
         it("expects MutableDataFrame", () => {
-            expect(timeSeries).toBeInstanceOf(MutableDataFrame)
+            expect(timeSeries).toBeInstanceOf(MutableDataFrame);
         });
 
         it("should have refId", () => {
             expect(timeSeries.refId).toBe('A');
         });
 
-        it("should have preffered visualization option logs", () => {
+        it("should have preferred visualization option logs", () => {
             expect(timeSeries.meta.preferredVisualisationType).toBe('logs');
         });
 

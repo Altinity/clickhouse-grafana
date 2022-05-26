@@ -9,7 +9,7 @@ Hash: SHA512
   "signedByOrgName": "Vertamedia",
   "plugin": "vertamedia-clickhouse-datasource",
   "version": "2.4.4",
-  "time": 1653544891589,
+  "time": 1653553726957,
   "keyId": "7e4d0c6a708866e7",
   "files": {
     "altinity-clickhouse-plugin_darwin_amd64": "5fef84030bbf58a6bb1a7620182ad0429833955d3955448a3e5680f82f4fa10d",
@@ -23,8 +23,8 @@ Hash: SHA512
     "img/datasource.png": "8d6dcdddfad512abed8c251404f652383f63ad17bc5c7cbe3e67ad9e6fa0327f",
     "img/query_editor.png": "b8d50f644d413b15aaf0d7b71fdfa4423f1a045761ec368b19a15e3d1aaf9308",
     "LICENSE": "1c9e6884726a2b6231e089c028974e78adfee1648037cd94782bfae30ed99789",
-    "module.js": "1997f84e03bb62c9ef2712a57246713da7d0945ba6663ad8160b6a05b6712a97",
-    "module.js.map": "5b0ce83496f02e40060983639d50e2e313cdf3a73fe03ce87e6e2f68c3985a4a",
+    "module.js": "7047334a125a453659d03947d82db75926d0adbe8c69763c9d2f4505bf6f8018",
+    "module.js.map": "07d2ccb5540bc1b909c6aeca9f21c0dfad57c8a3b84c758f244af193ce55cefe",
     "partials/annotations.editor.html": "14d2d5add7f13c7c722e33bbc53ef83750fb624e5f7d6efee4a9568addc2ab78",
     "partials/config.html": "51ba130304c63c1a00590a9dc94c8351ff6277e4cf695720de57bff87aeec744",
     "partials/query.editor.html": "b013c5f8547fd5f7e4723c21b274b27fb652214a78ee2bec95a31ff99f8c2b76",
@@ -36,10 +36,10 @@ Hash: SHA512
 Version: OpenPGP.js v4.10.10
 Comment: https://openpgpjs.org
 
-wrkEARMKAAYFAmKPF7sAIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
-cIhm53+zAgkBfKvcSZ1948A/Hw2rkUqtBxrs5XYS8vH+5hxRqTLhFB1XYYcV
-TY0ieV7hPk/U39FfK6lRENiQ3K1Syce0SmP0XdMCCQEhQT4TepqMbT8lN81U
-tN2tUSF0zpw4vxmFbu8kL+6LWUgJXegsg5k/YJtr34ITot5BXstuK+W9Dk/G
-iXCirCAsZQ==
-=pjWz
+wrcEARMKAAYFAmKPOj8AIQkQfk0ManCIZucWIQTzOyW2kQdOhGNlcPN+TQxq
+cIhm5wv9AgICLrOoJFBABLBOwSXo9bYu5AEQ/c+MdESssxk0JJkzFj88vUom
+SDGvNmaAcAqtMmijzooioI5vuL4Nv6BWXKCDmQIIhdwNyOTe2hgZsO/BleDu
+7O7sXn9Q0/tQbei3fu06gN70F8fxbKwTO7cDLWeymI6M3/Di6U/itZmIWXmL
+CM+z1ok=
+=DOfx
 -----END PGP SIGNATURE-----

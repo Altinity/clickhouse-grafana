@@ -21,16 +21,17 @@ CREATE TABLE IF NOT EXISTS default.test_logs
     event_time    DateTime,
     content  LowCardinality(String),
     level     LowCardinality(String),
-    id       LowCardinality(String),
+    id       UUID,
+    label    LowCardinality(String),
     detected_field Float64
 )
     ENGINE = MergeTree()
         PARTITION BY toYYYYMM(event_time)
         ORDER BY (event_time, level);
 
-INSERT INTO default.test_logs(event_time, content, level, id, detected_field) SELECT toDateTime(now()-(number*10)) AS event_time, concat('Warn Log line ', toString(number)) as content, 'Warn' AS level, if(rand() % 2 = 1,'abc','cba') AS id, 1000000000.05 AS detected_field FROM numbers(1000);
-INSERT INTO default.test_logs(event_time, content, level, id, detected_field) SELECT toDateTime(now()+(number*10)) AS event_time, concat('Info Log line ', toString(number)) as content, 'Info' AS level, if(rand() % 2 = 1,'abc','cba') AS id, 1000000000.05 AS detected_field FROM numbers(1000);
-INSERT INTO default.test_logs(event_time, content, level, id, detected_field) SELECT toDateTime(now()+((500+number)*10)) AS event_time, concat('Unknown Log line ', toString(number)) as content, 'Unknown' AS level, if(rand() % 2 = 1,'abc','cba') AS id, 1000000000.05 AS detected_field FROM numbers(1000);
+INSERT INTO default.test_logs(event_time, content, level, id, label, detected_field) SELECT toDateTime(now()-(number*10)) AS event_time, concat('Warn Log line ', toString(number)) as content, 'Warn' AS level, generateUUIDv4() as id, if(rand() % 2 = 1,'abc','cba') AS label, 1000000000.05 AS detected_field FROM numbers(1000);
+INSERT INTO default.test_logs(event_time, content, level, id, label, detected_field) SELECT toDateTime(now()+(number*10)) AS event_time, concat('Info Log line ', toString(number)) as content, 'Info' AS level, generateUUIDv4() as id, if(rand() % 2 = 1,'abc','cba') AS label, 1000000000.05 AS detected_field FROM numbers(1000);
+INSERT INTO default.test_logs(event_time, content, level, id, label, detected_field) SELECT toDateTime(now()+((500+number)*10)) AS event_time, concat('Unknown Log line ', toString(number)) as content, 'Unknown' AS level, generateUUIDv4() as id, if(rand() % 2 = 1,'abc','cba') AS label, 1000000000.05 AS detected_field FROM numbers(1000);
 
 DROP TABLE IF EXISTS default.test_alerts;
 CREATE TABLE IF NOT EXISTS default.test_alerts

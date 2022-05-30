@@ -32,7 +32,8 @@ export class ClickHouseDatasource {
     constructor(instanceSettings,
                 private $q,
                 private backendSrv,
-                private templateSrv) {
+                private templateSrv,
+                private $rootScope) {
         this.type = 'clickhouse';
         this.name = instanceSettings.name;
         this.supportMetrics = true;
@@ -144,7 +145,7 @@ export class ClickHouseDatasource {
                         result.push(data);
                     });
                 } else if (target.format === 'logs') {
-                    result.push(sqlSeries.toLogs());
+                    result = sqlSeries.toLogs();
                 } else {
                     each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
                         result.push(data);
@@ -153,6 +154,52 @@ export class ClickHouseDatasource {
             });
             return {data: result};
         });
+    }
+
+    modifyQuery(query: any, action: any): any {
+        let scanner = new Scanner(query.query ?? '');
+        let queryAST = scanner.toAST();
+        let where = queryAST['where'] || [];
+        const labelFilter = action.key + " = '" + action.value + "'";
+
+        switch (action.type) {
+          case 'ADD_FILTER': {
+            if (where.length == 0) {
+                where.push(labelFilter);
+                break;
+            }
+
+            let alreadyAdded = false;
+            each(where, (w: string) => {
+                if (w.includes(labelFilter)) {
+                    alreadyAdded = true;
+                }
+            })
+            if (!alreadyAdded) {
+                where.push('AND ' + labelFilter);
+            }
+            break;
+          }
+          case 'ADD_FILTER_OUT': {
+            if (where.length === 0) {
+                break;
+            }
+            where.forEach((w: string, i: number) => {
+                if (w.includes(labelFilter)) {
+                    where.splice(i, 1)
+                }
+            })
+            break;
+          }
+          default:
+            break;
+        }
+
+        const modifiedQuery = scanner.Print(queryAST);
+        // There is no other options to notify query editor from datasource than passing event through root scope
+        // After migration to React - this hack will not be needed anymore, query editor refresh is bundled
+        this.$rootScope.$emit('clickhouse/explore/modifyQuery', {refId: query.refId, query: modifiedQuery});
+        return {...query, query: modifiedQuery};
     }
 
     createQuery(options, target) {

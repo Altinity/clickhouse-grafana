@@ -1,5 +1,5 @@
-import { each, isArray } from 'lodash-es';
-import { FieldType, MutableDataFrame } from '@grafana/data';
+import { each, isArray, find, pickBy, omitBy } from 'lodash-es';
+import { FieldType, MutableDataFrame, DataFrame } from '@grafana/data';
 
 export default class SqlSeries {
     refId: string;
@@ -50,34 +50,70 @@ export default class SqlSeries {
         return data;
     }
 
-    toLogs(): any {
-        const frame = new MutableDataFrame({
-            refId: this.refId,
-            meta: {
-                preferredVisualisationType: 'logs',
-            },
-            fields: []
-        });
+    toLogs(): DataFrame[] {
+        const dataFrame: DataFrame[] = [];
+        const self = this;
+        const reservedFields = ['level', 'id'];
 
         if (this.series.length === 0) {
-            return frame;
+            return dataFrame;
         }
 
-        each(this.meta, function (col, index) {
-            let type = SqlSeries._toFieldType(col.type)
+        let types = {};
+        let labelFields = [];
+        // Trying to find message field
+        // If we have a "content" field - take it
+        let messageField = find(this.meta, ['name', 'content'])?.name;
+        // If not - take the first string field
+        if (messageField === undefined) {
+            messageField = find(this.meta, (o: any) => SqlSeries._toFieldType(o.type) == FieldType.string)?.name;
+        }
+        // If no string fields - this query is unusable for logs, because Grafana requires at least one text field
+        if (messageField === undefined) {
+            return dataFrame;
+        }
+
+        each(this.meta, function (col: any, index: number) {
+            let type = SqlSeries._toFieldType(col.type);
             // Assuming that fist column is time
             // That's special case for 'Column:TimeStamp'
             if (index == 0 && col.type == 'UInt64') {
-                type = FieldType.time
+                type = FieldType.time;
             }
-            frame.addField({name: col.name, type: type});
+            if (type == FieldType.string && col.name != messageField && !reservedFields.includes(col.name)) {
+                labelFields.push(col.name);
+            }
+
+            types[col.name] = type;
         });
 
-        each(this.series, function (ser) {
-            frame.add(ser);
+        each(this.series, function (ser: any) {
+            const frame = new MutableDataFrame({
+                refId: self.refId,
+                meta: {
+                    preferredVisualisationType: 'logs',
+                },
+                fields: []
+            });
+            const labels = pickBy(ser, (_value: any, key: string) => labelFields.includes(key));
+
+            each(ser, function (_value: any, key: string) {
+                // Skip unknwon keys for in case
+                if (!(key in types)) {
+                    return;
+                }
+                if (key == messageField) {
+                    frame.addField({name: key, type: types[key], labels: labels});
+                } else if (!labelFields.includes(key)) {
+                    frame.addField({name: key, type: types[key]});
+                }
+            })
+
+            frame.add(omitBy(ser, (_value: any, key: string) => labelFields.includes(key)));
+            dataFrame.push(frame);
         });
 
-        return frame;
+        return dataFrame;
     }
 
     toTimeSeries(extrapolate = true): any {

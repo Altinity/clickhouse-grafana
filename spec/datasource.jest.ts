@@ -207,6 +207,10 @@ describe("clickhouse sql series:", () => {
                     {
                         "name": "id",
                         "type": "String"
+                    },
+                    {
+                        "name": "host",
+                        "type": "String"
                     }
                 ],
 
@@ -216,25 +220,29 @@ describe("clickhouse sql series:", () => {
                         "t": "1485445140000",
                         "content": "Log line 1",
                         "level": "Warning",
-                        "id": "1234"
+                        "id": "1234",
+                        "host": "localhost"
                     },
                     {
                         "t": "1485445200000",
                         "content": "Log line 1",
                         "level": "Warning",
-                        "id": "1234"
+                        "id": "1234",
+                        "host": "localhost"
                     },
                     {
                         "t": "1485445260000",
                         "content": "Log line 2",
                         "level": "Info",
-                        "id": "5678"
+                        "id": "5678",
+                        "host": "localhost"
                     },
                     {
                         "t": "1485445320000",
                         "content": "Log line 3",
                         "level": "Unknown",
-                        "id": "0000"
+                        "id": "0000",
+                        "host": "localhost"
                     }
                 ]
         };
@@ -245,33 +253,39 @@ describe("clickhouse sql series:", () => {
             meta: response.meta,
             table: '',
         });
-        let timeSeries = sqlSeries.toLogs();
+        let logs = sqlSeries.toLogs();
 
-        it("expects MutableDataFrame", () => {
-            expect(timeSeries).toBeInstanceOf(MutableDataFrame);
+        it("expects array of MutableDataFrames", () => {
+            expect(size(logs)).toBe(4)
+            expect(logs[0]).toBeInstanceOf(MutableDataFrame);
         });
 
         it("should have refId", () => {
-            expect(timeSeries.refId).toBe('A');
+            expect(logs[0].refId).toBe('A');
         });
 
         it("should have preferred visualization option logs", () => {
-            expect(timeSeries.meta.preferredVisualisationType).toBe('logs');
+            expect(logs[0].meta.preferredVisualisationType).toBe('logs');
         });
 
         it("should get four fields in DataFrame", () => {
-            expect(size(timeSeries.fields)).toBe(4);
+            expect(size(logs[0].fields)).toBe(4);
         });
 
         it("should get first field in DataFrame as time", () => {
-            expect(timeSeries.fields[0].type).toBe(FieldType.time);
+            expect(logs[0].fields[0].type).toBe(FieldType.time);
         });
 
-        it("should get four datapoints for each field in DataFrame", () => {
-            expect(size(timeSeries.fields[0].values)).toBe(4);
-            expect(size(timeSeries.fields[1].values)).toBe(4);
-            expect(size(timeSeries.fields[2].values)).toBe(4);
-            expect(size(timeSeries.fields[3].values)).toBe(4);
+        it("should get second field in DataFrame as content with labels", () => {
+            expect(logs[0].fields[1]).toHaveProperty('labels');
+            expect(logs[0].fields[1].labels).toHaveProperty('host');
+        });
+
+        it("should get one datapoints for each field in each DataFrame", () => {
+            expect(size(logs[0].fields[0].values)).toBe(1);
+            expect(size(logs[0].fields[1].values)).toBe(1);
+            expect(size(logs[0].fields[2].values)).toBe(1);
+            expect(size(logs[0].fields[3].values)).toBe(1);
         });
     });
 });

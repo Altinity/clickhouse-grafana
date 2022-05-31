@@ -115,9 +115,23 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 								for _, array := range arrays {
 									switch tuple := array.(type) {
 									case []interface{}:
-										tsName := ParseValue(fieldName, labelType, timeZonesMap[fieldName], tuple[0], false)
+										tsName := ParseValue(fieldName, labelType, timeZonesMap[fieldName], tuple[0], true)
+										tsNameString := "null"
+										switch tsName.(type) {
+										case *string:
+											if tsName.(*string) != nil {
+												tsNameString = *tsName.(*string)
+											} else {
+												tsNameString = "null"
+											}
+										case string:
+											tsNameString = tsName.(string)
+											if tsNameString == "" {
+												tsNameString = "null"
+											}
+										}
 										r.createFrameIfNotExistsAndAddPoint(
-											query, framesMap, tsName.(string), timeStampDataFieldMap, timestampFieldName, valueDataFieldMap,
+											query, framesMap, tsNameString, timeStampDataFieldMap, timestampFieldName, valueDataFieldMap,
 											fieldName, valueType, timestampValue, timeZonesMap, tuple[1],
 										)
 

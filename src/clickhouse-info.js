@@ -2163,16 +2163,20 @@ export default function () {
                         "Example:\n SELECT * FROM (select a, b from table2 WHERE $adhoc) ORDER BY a"
                 },
                {
-                 "name": "conditionalTest",
+                 "name": "$conditionalTest",
                  "def": "$conditionalTest(SQL predicate,$variable)",
                  "docText": "Will add `SQL predicate` filter expression only if $variable have non empty value" +
                    "\n" +
-                   "Example:\n  SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter\n" +
-                   "      $conditionalTest(AND toLowerCase(column) in ($var),$var)\n" +
-                   "      $conditionalTest(AND toLowerCase(column2) like '%$text%',$text)\n" +
-                   "      $conditionalTest(AND toLowerCase(column3) ilike ${text_with_single_quote:sqlstring},$text_with_single_quote)\n" +
-                   "     GROUP BY t\n" +
-                   "     ORDER BY t"
+                   "Example:\n" +
+                   "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter\n" +
+                   "  $conditionalTest(AND toLowerCase(column) in ($var),$var)\n" +
+                   "  $conditionalTest(AND toLowerCase(column2) like '%$text%',$text)\n" +
+                   "  $conditionalTest(\n" +
+                   "    AND toLowerCase(column3) ilike ${text_with_single_quote:sqlstring},\n" +
+                   "    $text_with_single_quote\n" +
+                   "  )\n" +
+                   "GROUP BY t\n" +
+                   "ORDER BY t"
 
                },
             ];

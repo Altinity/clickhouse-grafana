@@ -64,11 +64,11 @@ export default class SqlSeries {
         }
 
         each(this.meta, function (col, index) {
-            let type = SqlSeries._toFieldType(col.type)
+            let type = SqlSeries._toFieldType(col.type);
             // Assuming that fist column is time
             // That's special case for 'Column:TimeStamp'
-            if (index == 0 && col.type == 'UInt64') {
-                type = FieldType.time
+            if (index === 0 && col.type === 'UInt64') {
+                type = FieldType.time;
             }
             frame.addField({name: col.name, type: type});
         });

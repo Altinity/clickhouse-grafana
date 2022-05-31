@@ -7,6 +7,7 @@ import SqlQuery from './sql_query';
 import ResponseParser from './response_parser';
 import AdhocCtrl from './adhoc';
 import Scanner from './scanner';
+import { TemplateSrv } from 'grafana/app/features/templating/template_srv';
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
@@ -32,7 +33,7 @@ export class ClickHouseDatasource {
     constructor(instanceSettings,
                 private $q,
                 private backendSrv,
-                private templateSrv,
+                private templateSrv: TemplateSrv,
                 private $rootScope) {
         this.type = 'clickhouse';
         this.name = instanceSettings.name;
@@ -257,11 +258,23 @@ export class ClickHouseDatasource {
 
     metricFindQuery(query: string, options?: any) {
         let interpolatedQuery;
-
+        const wildcardChar = '%';
+        const searchFilterVariableName = '__searchFilter';
         try {
+            let scopedVars = {};
+            if (query.indexOf(searchFilterVariableName) !== -1) {
+                const searchFilterValue = options && options.searchFilter ? `${options.searchFilter}${wildcardChar}` : `${wildcardChar}`;
+                scopedVars = {
+                    __searchFilter: {
+                        value: searchFilterValue,
+                        text: '',
+                    }
+                };
+                query = this.templateSrv.replace(query, scopedVars, SqlQuery.interpolateQueryExpr);
+            }
             interpolatedQuery = this.templateSrv.replace(SqlQuery.conditionalTest(
                 query, this.templateSrv
-            ), {}, SqlQuery.interpolateQueryExpr);
+            ), scopedVars, SqlQuery.interpolateQueryExpr);
         } catch (err) {
             return this.$q.reject(err);
         }

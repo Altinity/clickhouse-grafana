@@ -1,0 +1,195 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 24,
+  "iteration": 1654002947578,
+  "links": [],
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "reproduce https://github.com/Altinity/clickhouse-grafana/issues/421",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom"
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "WITH topx AS (\n   SELECT DISTINCT CASE WHEN ${split:text} = '' THEN 'other' ELSE ${split:text} END AS filter, count() AS cnt \n   FROM $table WHERE $timeFilter AND $adhoc  GROUP BY ${split:text} \n   ORDER BY cnt DESC LIMIT 10\n)\n\nSELECT\n    $timeSeries as t,\n    CASE WHEN ${split:text} IN (SELECT filter FROM topx) THEN ${split:text} ELSE 'other' END AS spl,\n    count()\nFROM $table\n\nWHERE $timeFilter AND $adhoc\nGROUP BY t, spl\n\nORDER BY t, spl\n",
+          "rawQuery": "WITH topx AS(SELECT DISTINCT CASE WHEN service_name = '' THEN 'other' ELSE service_name END AS filter, count() AS cnt FROM default.test_grafana WHERE event_time >= toDateTime(1653989320) AND event_time <= toDateTime(1654010920) AND (country = 'NL') GROUP BY service_name ORDER BY cnt DESC LIMIT 10)\nSELECT\n    (intDiv(toUInt32(event_time), 20) * 20) * 1000 as t,\n    CASE WHEN service_name IN (\n    SELECT filter\n\n    FROM topx\n),\n    THEN service_name ELSE 'other' END AS spl,\n    count()\nFROM default.test_grafana\n\nWHERE\n    event_time >= toDateTime(1653989320) AND event_time <= toDateTime(1654010920)\n    AND (country = 'NL')\nGROUP BY\n    t,\n    spl\nORDER BY\n    t,\n    spl",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "test_grafana",
+          "tableLoading": false
+        }
+      ],
+      "title": "variable formatting $variable::text and adhoc",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 36,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "P7E099F39B84EA795"
+        },
+        "filters": [
+          {
+            "condition": "",
+            "key": "default.test_grafana.country",
+            "operator": "=",
+            "value": "NL"
+          }
+        ],
+        "hide": 0,
+        "name": "adhoc_variable",
+        "skipUrlSync": false,
+        "type": "adhoc"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "service_name",
+          "value": "service_name"
+        },
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "P7E099F39B84EA795"
+        },
+        "definition": "SELECT name FROM system.columns WHERE database='default' AND table='test_grafana' AND type ILIKE '%String%'",
+        "hide": 0,
+        "includeAll": false,
+        "multi": false,
+        "name": "split",
+        "options": [],
+        "query": "SELECT name FROM system.columns WHERE database='default' AND table='test_grafana' AND type ILIKE '%String%'",
+        "refresh": 1,
+        "regex": "",
+        "skipUrlSync": false,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "$adhoc + ${variable:text} formatting",
+  "uid": "Bnh59Trnk",
+  "version": 2,
+  "weekStart": ""
+}

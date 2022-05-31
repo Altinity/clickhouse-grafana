@@ -21,12 +21,16 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "iteration": 1654018129313,
   "links": [],
   "liveNow": false,
   "panels": [
     {
-      "datasource": "clickhouse",
-      "description": "",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "reproduce https://github.com/Altinity/clickhouse-grafana/issues/125 and https://github.com/Altinity/clickhouse-grafana/issues/331",
       "gridPos": {
         "h": 9,
         "w": 12,
@@ -47,6 +51,10 @@
       "targets": [
         {
           "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
           "dateColDataType": "",
           "dateLoading": false,
           "dateTimeColDataType": "event_time",
@@ -55,9 +63,10 @@
           "extrapolate": true,
           "format": "logs",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
           "intervalFactor": 1,
-          "query": "SELECT *\nFROM $table\nWHERE $timeFilter",
-          "rawQuery": "SELECT *\nFROM default.test_logs\nWHERE event_time >= toDateTime(1652167981) AND event_time <= toDateTime(1652189581)",
+          "query": "SELECT *\nFROM $table\n\nWHERE $timeFilter AND $adhoc\n$conditionalTest(AND content ILIKE ${filter:sqlstring},$filter)",
+          "rawQuery": "SELECT *\nFROM default.test_logs\n\nWHERE event_time >= toDateTime(1653997717) AND event_time <= toDateTime(1654019317) AND 1\n AND content ILIKE '%Info%line 11%' ",
           "refId": "A",
           "round": "0s",
           "skip_comments": true,
@@ -81,9 +90,28 @@
         },
         "filters": [],
         "hide": 0,
-        "name": "adhoc",
+        "name": "adhoc_variable",
         "skipUrlSync": false,
         "type": "adhoc"
+      },
+      {
+        "current": {
+          "selected": false,
+          "text": "%Info%line 11%",
+          "value": "%Info%line 11%"
+        },
+        "hide": 0,
+        "name": "filter",
+        "options": [
+          {
+            "selected": true,
+            "text": "%Info%line 11%",
+            "value": "%Info%line 11%"
+          }
+        ],
+        "query": "%Info%line 11%",
+        "skipUrlSync": false,
+        "type": "textbox"
       }
     ]
   },

@@ -7,6 +7,7 @@
 * remove INFORMATION_SCHEMA from adhoc control, fix https://github.com/Altinity/clickhouse-grafana/issues/426
 * legacy binaries in dist folder after 2.4.4 release plugin name changed, fix https://github.com/Altinity/clickhouse-grafana/issues/419
 * resolve corner case for `SELECT x IN (SELECT ...)`, fix https://github.com/Altinity/clickhouse-grafana/issues/421
+* tested textbox variables with `${variable:sqlstring}` format, fix https://github.com/Altinity/clickhouse-grafana/issues/225
 
 # 2.4.4 (2022-04-01)
 

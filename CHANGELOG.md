@@ -3,9 +3,10 @@
 * Add support for Logs visualization, fix https://github.com/Altinity/clickhouse-grafana/issues/331, thanks @Fiery-Fenix and @pixelsquared 
 
 ## Fixes:
-* fix Nullable types in alert label name in backend part, fix https://github.com/Altinity/clickhouse-grafana/issues/405
+* allow Nullable types in alert label name in backend part, fix https://github.com/Altinity/clickhouse-grafana/issues/405
 * remove INFORMATION_SCHEMA from adhoc control, fix https://github.com/Altinity/clickhouse-grafana/issues/426
-* fix legacy binaries in dist folder after 2.4.4 release plugin name changed, fix https://github.com/Altinity/clickhouse-grafana/issues/419
+* legacy binaries in dist folder after 2.4.4 release plugin name changed, fix https://github.com/Altinity/clickhouse-grafana/issues/419
+* resolve corner case for `SELECT x IN (SELECT ...)`, fix https://github.com/Altinity/clickhouse-grafana/issues/421
 
 # 2.4.4 (2022-04-01)
 

@@ -104,6 +104,10 @@ export default class Scanner {
 
         while (this.next()) {
             if (!this.isExpectedNext() && isStatement(this.token) && !this.tree.hasOwnProperty(toLower(this.token))) {
+                if (this.token.toUpperCase() === 'WITH' && this.rootToken === 'order by') {
+                    argument += this.appendToken(argument);
+                    continue;
+                }
                 if (!isClosured(argument)) {
                     argument += this.appendToken(argument);
                     continue;

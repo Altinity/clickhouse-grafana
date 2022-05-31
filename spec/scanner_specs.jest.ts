@@ -1,5 +1,4 @@
 import Scanner from '../src/scanner';
-import SqlQuery from '../src/sql_query';
 
 describe("scanner:", () => {
     describe("AST case 1", () => {
@@ -826,5 +825,37 @@ describe("scanner:", () => {
         });
     });
 
+    /* fix https://github.com/Altinity/clickhouse-grafana/issues/422 */
+    describe("AST case 21 (adhoc + ORDER BY ... WITH FILL)", () => {
+        let query = "SELECT\n" +
+                "    $timeSeries as t,\n" +
+                "    sum(too_big_value) * 8 / $interval AS B\n" +
+                "FROM $table\n" +
+                "\n" +
+                "WHERE\n" +
+                "    event_time BETWEEN $from AND $to\n" +
+                "    $adhoc \n" +
+                "GROUP BY t\n" +
+                "ORDER BY t WITH FILL STEP ($interval*1000*5)",
+            scanner = new Scanner(query);
+
+        let expectedAST = {
+            "root": [],
+            "select": ["$timeSeries as t","sum(too_big_value) * 8 / $interval AS B"],
+            "from": [
+                "$table",
+            ],
+            "where": [
+                "event_time BETWEEN $from",
+                "AND $to $adhoc",
+            ],
+            "group by": ["t"],
+            "order by": ["t WITH FILL STEP($interval * 1000 * 5)"]
+        };
+
+        it("expects equality", () => {
+            expect(scanner.toAST()).toEqual(expectedAST);
+        });
+    });
 
 });

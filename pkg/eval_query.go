@@ -790,6 +790,10 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 			break
 		}
 		if !s.isExpectedNext() && isStatement(s.Token) && !s.Tree.hasOwnProperty(strings.ToLower(s.Token)) {
+			if strings.ToUpper(s.Token) == "WITH" && s.RootToken == "order by" {
+				argument += s.appendToken(argument)
+				continue
+			}
 			if !isClosured(argument) {
 				argument += s.appendToken(argument)
 				continue

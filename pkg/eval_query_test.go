@@ -1035,6 +1035,39 @@ func TestScannerAST(t *testing.T) {
 				}},
 			}},
 		),
+		/* fix https://github.com/Altinity/clickhouse-grafana/issues/422 */
+		newASTTestCase(
+			"AST case 21 (adhoc + ORDER BY ... WITH FILL)",
+			"SELECT\n"+
+				"    $timeSeries as t,\n"+
+				"    sum(too_big_value) * 8 / $interval AS B\n"+
+				"FROM $table\n"+
+				"\n"+
+				"WHERE\n"+
+				"    event_time BETWEEN $from AND $to\n"+
+				"    $adhoc \n"+
+				"GROUP BY t\n"+
+				"ORDER BY t WITH FILL STEP ($interval*1000*5)",
+			&EvalAST{Obj: map[string]interface{}{
+				"root": newEvalAST(false),
+				"select": &EvalAST{Arr: []interface{}{
+					"$timeSeries as t", "sum(too_big_value) * 8 / $interval AS B",
+				}},
+				"from": &EvalAST{Arr: []interface{}{
+					"$table",
+				}},
+				"where": &EvalAST{Arr: []interface{}{
+					"event_time BETWEEN $from",
+					"AND $to $adhoc",
+				}},
+				"group by": &EvalAST{Arr: []interface{}{
+					"t",
+				}},
+				"order by": &EvalAST{Arr: []interface{}{
+					"t WITH FILL STEP($interval * 1000 * 5)",
+				}},
+			}},
+		),
 	}
 	r := require.New(t)
 	for _, tc := range testCases {
@@ -1049,8 +1082,8 @@ func TestScannerAST(t *testing.T) {
 		r.NoError(err)
 		r.True(check, "%s: expected AST\n%+v\nactual AST\n%+v", tc.name, expectedJSON, actualJSON)
 	}
-
-	tc := testCases[len(testCases)-1]
+	// advanced check TestCase AST 20
+	tc := testCases[19]
 	expected, err := tc.scanner.RemoveComments(tc.query)
 	r.NoError(err)
 	r.Equal(

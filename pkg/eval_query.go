@@ -857,7 +857,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 				if subAST, err = toAST(subQuery); err != nil {
 					return nil, err
 				}
-				if subAST.hasOwnProperty("root") {
+				if subAST.hasOwnProperty("root") && len(subAST.Obj["root"].(*EvalAST).Arr) > 0 {
 					var subArr = subAST.Obj["root"].(*EvalAST)
 					argument += " ("
 					for _, item := range subArr.Arr {
@@ -866,8 +866,10 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 					argument = argument + ")"
 				} else {
 					argument += " (" + newLine + printAST(subAST, tabSize) + ")"
-					s.push(argument)
-					argument = ""
+					if s.RootToken != "select" {
+						s.push(argument)
+						argument = ""
+					}
 				}
 				s._s = s._s[len(subQuery)+1:]
 			} else {
@@ -1338,7 +1340,7 @@ func printItems(items *EvalAST, tab string, separator string) string {
 				}
 			}
 		}
-	} else {
+	} else if len(items.Obj) > 0 {
 		result = newLine + "(" + newLine + printAST(items, tab+tabSize) + newLine + ")"
 	}
 

@@ -2,7 +2,7 @@ module github.com/Altinity/clickhouse-grafana
 
 require (
 	github.com/dlclark/regexp2 v1.4.0
-	github.com/grafana/grafana-plugin-sdk-go v0.134.0
+	github.com/grafana/grafana-plugin-sdk-go v0.135.0
 	github.com/stretchr/testify v1.7.1
 	golang.org/x/sync v0.0.0-20220513210516-0976fa681c29
 )

@@ -1068,6 +1068,53 @@ func TestScannerAST(t *testing.T) {
 				}},
 			}},
 		),
+		/* fix https://github.com/Altinity/clickhouse-grafana/issues/421 */
+		newASTTestCase(
+			"AST case 22 (WITH + adhoc + SELECT x IN ( ... )",
+			"WITH topx AS (\n"+
+				"   SELECT DISTINCT CASE WHEN service_name = '' THEN 'other' ELSE service_name END AS filter, count() AS cnt \n"+
+				"   FROM $table WHERE $timeFilter AND $adhoc  GROUP BY service_name \n"+
+				"   ORDER BY cnt DESC LIMIT 10\n"+
+				")\n"+
+				"\n"+
+				"SELECT\n"+
+				"    $timeSeries as t,\n"+
+				"    CASE WHEN service_name IN (SELECT filter FROM topx) THEN service_name ELSE 'other' END AS spl,\n"+
+				"    count()\n"+
+				"FROM $table\n"+
+				"\n"+
+				"WHERE $timeFilter AND $adhoc\n"+
+				"GROUP BY t, spl\n"+
+				"ORDER BY t, spl\n",
+			&EvalAST{Obj: map[string]interface{}{
+				"root": newEvalAST(false),
+				"with": &EvalAST{Arr: []interface{}{
+					"topx AS(SELECT DISTINCT CASE WHEN service_name = '' THEN 'other' ELSE service_name END AS filter, count() AS cnt FROM $table WHERE $timeFilter AND $adhoc GROUP BY service_name ORDER BY cnt DESC LIMIT 10)",
+				}},
+				"select": &EvalAST{Arr: []interface{}{
+					"$timeSeries as t",
+					"CASE WHEN service_name IN (\n" +
+						"    SELECT filter\n" +
+						"\n" +
+						"    FROM topx\n" +
+						") THEN service_name ELSE 'other' END AS spl",
+					"count()",
+				}},
+				"from": &EvalAST{Arr: []interface{}{
+					"$table",
+				}},
+				"where": &EvalAST{Arr: []interface{}{
+					"$timeFilter",
+					"AND $adhoc",
+				}},
+				"group by": &EvalAST{Arr: []interface{}{
+					"t", "spl",
+				}},
+				"order by": &EvalAST{Arr: []interface{}{
+					"t", "spl",
+				}},
+			}},
+		),
 	}
 	r := require.New(t)
 	for _, tc := range testCases {

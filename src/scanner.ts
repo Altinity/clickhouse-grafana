@@ -168,8 +168,10 @@ export default class Scanner {
                         argument = argument + ')';
                     } else {
                         argument += ' (' + newLine + print(subAST, tabSize) + ')';
-                        this.push(argument);
-                        argument = '';
+                        if (this.rootToken !== 'select') {
+                            this.push(argument);
+                            argument = '';
+                        }
                     }
                     this._s = this._s.substring(subQuery.length + 1);
                 } else {

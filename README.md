@@ -570,9 +570,14 @@ You also can try to troubleshoot alerts in clickhouse grafana plugin when enable
 
 ## Logs support
 
-To render your ClickHouse data as Logs, please use special format in "Format as" dropdown in Query Editor called "Logs". Grafana recognizes data as logs and shows logs visualization automatically in Explore UI if you have set this parameter to "Logs" option. On dashboards you can use [Logs panel](https://grafana.com/docs/grafana/latest/visualizations/logs-panel/) as well.
+To render your ClickHouse data as Logs, please use special format in "Format as" dropdown in Query Editor called "Logs". This option helps Grafana recognizes data as logs and shows logs visualization automatically in Explore UI. On dashboards you can use [Logs panel](https://grafana.com/docs/grafana/latest/visualizations/logs-panel/) as well.
 
 To return suitable for logs data - query should return at least one time field (assumed that it will be first field) and one text field from the ClickHouse.
+
+Plugin is also transforming all text fields, except log line, into the labels using following rules:
+
+* Log line will be taken either from dedicated `content` field or from first in order text field in result
+* All other text fields will be treated as a labels
 
 There are few dedicated fields that are recognized by Grafana:
 

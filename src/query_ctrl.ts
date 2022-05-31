@@ -60,7 +60,7 @@ class SqlQueryCtrl extends QueryCtrl {
     editorLoaded = false;
 
     /** @ngInject **/
-    constructor($scope, $injector, templateSrv, private uiSegmentSrv) {
+    constructor($scope, $injector, templateSrv, private uiSegmentSrv, private $rootScope) {
         super($scope, $injector);
 
         this.queryModel = new SqlQuery(this.target, templateSrv, this.panel.scopedVars);
@@ -128,7 +128,18 @@ class SqlQueryCtrl extends QueryCtrl {
             this.databaseChanged();
         }
 
+        // There is no other options to notify query editor from datasource, than passing event through root scope
+        // After migration to React - this hack will not be needed anymore, query editor refresh is bundled
+        this.$rootScope.$on('clickhouse/explore/modifyQuery', this.modifyQuery.bind(this));
         this.initEditor();
+    }
+
+    modifyQuery(_, newQuery: any) {
+        const refId = newQuery?.refId;
+        if (this.target.refId === refId) {
+            this.target.query = newQuery?.query;
+            this.toggleEdit({}, false);
+        }
     }
 
     getCollapsedText() {

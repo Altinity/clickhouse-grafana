@@ -1,6 +1,7 @@
 # 2.5.0 (2022-05-31)
 ## Enhancements:
 * Add support for Logs visualization, fix https://github.com/Altinity/clickhouse-grafana/issues/331, thanks @Fiery-Fenix and @pixelsquared 
+* Add $conditionalTest to editor auto-complete
 
 ## Fixes:
 * allow Nullable types in alert label name in backend part, fix https://github.com/Altinity/clickhouse-grafana/issues/405

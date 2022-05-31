@@ -6,7 +6,7 @@ export default function () {
     ace.define("ace/mode/clickhouse_info", ["require", "exports", "module"], function (require, exports, module) {
         "use strict";
 
-        var p = {};
+        let p = {};
         p.Keywords = [
             "SELECT",
             "CASE",
@@ -1821,7 +1821,7 @@ export default function () {
                 {
                     "name": "lengthUTF8",
                     "def": "lengthUTF8(v)",
-                    "docText": "Returns the length of a string in Unicode code points (not in characters), assuming that the string contains a set of bytes that make up UTF-8 encoded text. If this assumption is not met, it returns some result (it doesn`t throw an exception). \n" +
+                    "docText": "Returns the length of a string in Unicode code points (not in characters), assuming that the string contains a set of bytes that make up UTF-8 encoded text. If this assumption is not met, it returns some result (it doesnt throw an exception). \n" +
                         "\n" +
                         " The result type is UInt64."
                 },
@@ -2161,7 +2161,20 @@ export default function () {
                     "docText": "Replaced with a rendered ad-hoc filter expression, or `1` if no ad-hoc filters exist" +
                         "\n" +
                         "Example:\n SELECT * FROM (select a, b from table2 WHERE $adhoc) ORDER BY a"
-                }
+                },
+               {
+                 "name": "conditionalTest",
+                 "def": "$conditionalTest(SQL predicate,$variable)",
+                 "docText": "Will add `SQL predicate` filter expression only if $variable have non empty value" +
+                   "\n" +
+                   "Example:\n  SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter\n" +
+                   "      $conditionalTest(AND toLowerCase(column) in ($var),$var)\n" +
+                   "      $conditionalTest(AND toLowerCase(column2) like '%$text%',$text)\n" +
+                   "      $conditionalTest(AND toLowerCase(column3) ilike ${text_with_single_quote:sqlstring},$text_with_single_quote)\n" +
+                   "     GROUP BY t\n" +
+                   "     ORDER BY t"
+
+               },
             ];
         };
 

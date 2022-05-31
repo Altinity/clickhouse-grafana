@@ -354,13 +354,14 @@ SELECT hostname FROM host WHERE region IN ($region)
 
 If you are using templating to feed your predicate, you will face performance degradation when everything will select as the predicate, and it's not necessary. It's also true for textbox when nothing is entered, you have to write specific sql code to handle that.
 
-To workaround this issue a new macro $conditionalTest(SQL Predicate,$variable) can be used to remove some part of the query.
+To resolve this issue a new macro $conditionalTest(SQL Predicate,$variable) can be used to remove some part of the query.
 If the variable is type query with all selected or if the variable is a textbox with nothing enter, then the SQL Predicate is not include in the generated query.
 
 To give an example:
 with 2 variables
   $var query with include All option
   $text textbox
+  $text_with_single_quote textbox with single quote
 
   The following query
 
@@ -372,6 +373,7 @@ with 2 variables
      WHERE $timeFilter
       $conditionalTest(AND toLowerCase(column) in ($var),$var)
       $conditionalTest(AND toLowerCase(column2) like '%$text%',$text)
+      $conditionalTest(AND toLowerCase(column3) ilike ${text_with_single_quote:sqlstring},$text_with_single_quote)
      GROUP BY t
      ORDER BY t
   ```

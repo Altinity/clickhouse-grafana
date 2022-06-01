@@ -5,7 +5,7 @@ if [[ $# -lt 1 ]]; then
     exit 1
 fi
 if [[ $OSTYPE == *linux* ]]; then
-    echo 1 > /proc/sys/vm/drop_caches
+    echo 1 > /proc/sys/vm/drop_caches || true
 fi
 source .release_env
 git config core.eol lf

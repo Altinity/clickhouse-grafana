@@ -14,6 +14,7 @@ const adhocFilterVariable = 'adhoc_query_filter';
 export class ClickHouseDatasource {
     type: string;
     name: string;
+    uid: string;
     supportMetrics: boolean;
     url: string;
     directUrl: string;
@@ -35,8 +36,9 @@ export class ClickHouseDatasource {
                 private backendSrv,
                 private templateSrv: TemplateSrv,
                 private $rootScope) {
-        this.type = 'clickhouse';
+        this.type = instanceSettings.type ?? 'clickhouse';
         this.name = instanceSettings.name;
+        this.uid = instanceSettings.uid;
         this.supportMetrics = true;
         this.responseParser = new ResponseParser(this.$q);
         this.url = instanceSettings.url;
@@ -324,4 +326,26 @@ export class ClickHouseDatasource {
     getTagValues(options) {
         return this.adhocCtrl.GetTagValues(options);
     }
+
+    interpolateVariablesInQueries(queries: any, scopedVars: any) {
+        let expandedQueries = queries;
+        if (queries && queries.length > 0) {
+            expandedQueries = queries.map((query) => {
+                const expandedQuery = {
+                    ...query,
+                    datasource: this.getRef(),
+                    query: this.templateSrv.replace(SqlQuery.conditionalTest(
+                        query.query, this.templateSrv
+                    ), scopedVars, SqlQuery.interpolateQueryExpr),
+                };
+                return expandedQuery;
+            });
+        }
+        return expandedQueries;
+    }
+
+    getRef() {
+        return { type: this.type, uid: this.uid };
+    }
+
 }

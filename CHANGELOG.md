@@ -4,6 +4,7 @@
 * Add $conditionalTest to editor auto-complete
 * Add support $__searchFilter to template variable queries, fix https://github.com/Altinity/clickhouse-grafana/issues/354
 * Add allow sub-seconds time resolution with $timeSeriesMs and $timeFilterMs support, fix https://github.com/Altinity/clickhouse-grafana/issues/344, fix https://github.com/Altinity/clickhouse-grafana/issues/398
+* Expand template variable values when open context menu `Explore`, fix https://github.com/Altinity/clickhouse-grafana/issues/346
 
 ## Fixes:
 * allow Nullable types in alert label name in backend part, fix https://github.com/Altinity/clickhouse-grafana/issues/405

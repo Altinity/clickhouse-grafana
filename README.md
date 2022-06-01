@@ -33,7 +33,7 @@ Restart Grafana, check data sources list at Configuration -> Datasources -> New,
 
 ![Datasources](https://user-images.githubusercontent.com/105560/171434732-944f05a3-cf10-466a-b24e-7ba929b54dbb.png)
 ![Add new datasource](https://user-images.githubusercontent.com/105560/171435032-126105fe-18d9-425d-b65b-ba334d341dc4.png)
-![Datasource types]((https://user-images.githubusercontent.com/105560/171435316-ed096a40-c0e8-417a-b8ed-371ae61773b2.png))
+![Datasource types](https://user-images.githubusercontent.com/105560/171435316-ed096a40-c0e8-417a-b8ed-371ae61773b2.png)
 
 
 ## Features

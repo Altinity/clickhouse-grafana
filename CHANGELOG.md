@@ -7,6 +7,7 @@
 * Expand template variable values when open context menu `Explore`, fix https://github.com/Altinity/clickhouse-grafana/issues/346
 
 ## Fixes:
+* remove legacy binaries in dist folder, fix https://github.com/Altinity/clickhouse-grafana/issues/419
 * allow Nullable types in alert label name in backend part, fix https://github.com/Altinity/clickhouse-grafana/issues/405
 * remove INFORMATION_SCHEMA from adhoc control, fix https://github.com/Altinity/clickhouse-grafana/issues/426
 * legacy binaries in dist folder after 2.4.4 release plugin name changed, fix https://github.com/Altinity/clickhouse-grafana/issues/419

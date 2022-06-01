@@ -1,6 +1,8 @@
 import SqlQuery, {TimeRange} from '../src/sql_query';
 import moment from "moment";
+// @ts-ignore
 import {RawTimeRangeStub} from './lib/raw_time_range_stub';
+// @ts-ignore
 import TemplateSrvStub from './lib/template_srv_stub';
 
 describe("Query SELECT with $timeFilterByColumn and range with from and to:", () => {
@@ -508,4 +510,57 @@ describe("check $naturalTimeSeries", () => {
         expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
     });
 
+});
+
+/* check $timeSeriesMs and $timeFilterMs https://github.com/Altinity/clickhouse-grafana/issues/344 */
+describe("Query SELECT with $timeSeriesMs $timeFilterMs and DATETIME64", () => {
+    const query = "SELECT $timeSeriesMs as t, sum(x) AS metric\n" +
+        "FROM $table\n" +
+        "WHERE $timeFilterMs\n" +
+        "GROUP BY t\n" +
+        "ORDER BY t";
+    const expQuery = "SELECT (intDiv(toFloat64(\"d\") * 1000, 100) * 100) as t, sum(x) AS metric\n" +
+        "FROM default.test_datetime64\n" +
+        "WHERE \"d\" >= toDateTime64(1545613323200/1000, 3) AND \"d\" <= toDateTime64(1546300799200/1000, 3)\n" +
+        "GROUP BY t\n" +
+        "ORDER BY t";
+    let templateSrv = new TemplateSrvStub();
+    const adhocFilters = [];
+    let target = {
+        query: query,
+        interval: "100ms",
+        intervalFactor: 1,
+        skip_comments: false,
+        table: "test_datetime64",
+        database: "default",
+        dateTimeType: "DATETIME64",
+        dateColDataType: "",
+        dateTimeColDataType: "d",
+        round: "100ms",
+        rawQuery: "",
+    };
+    const options = {
+        rangeRaw: {
+            from: moment('2018-12-24 01:02:03.200Z'),
+            to: moment('2018-12-31 23:59:59.200Z'),
+        },
+        range: {
+            from: moment('2018-12-24 01:02:03.200Z'),
+            to: moment('2018-12-31 23:59:59.200Z'),
+        },
+        scopedVars: {
+            __interval: {
+                text: "100ms",
+                value: "100ms",
+            },
+            __interval_ms: {
+                text: "100",
+                value: 100,
+            },
+        },
+    };
+    let sql_query = new SqlQuery(target, templateSrv, options);
+    it("applyMacros $timeSeriesMs with $timeFilterMs with DATETIME64", () => {
+        expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+    });
 });

@@ -3,6 +3,7 @@
 * Add support for Logs visualization, fix https://github.com/Altinity/clickhouse-grafana/issues/331, thanks @Fiery-Fenix and @pixelsquared 
 * Add $conditionalTest to editor auto-complete
 * Add support $__searchFilter to template variable queries, fix https://github.com/Altinity/clickhouse-grafana/issues/354
+* Add allow sub-seconds time resolution with $timeSeriesMs and $timeFilterMs support, fix https://github.com/Altinity/clickhouse-grafana/issues/354, fix https://github.com/Altinity/clickhouse-grafana/issues/398
 
 ## Fixes:
 * allow Nullable types in alert label name in backend part, fix https://github.com/Altinity/clickhouse-grafana/issues/405

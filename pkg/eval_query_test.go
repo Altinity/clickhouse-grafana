@@ -1202,7 +1202,7 @@ func TestEvalQueryTimeFilter64ByColumnAndRangeMs(t *testing.T) {
 	}
 }
 
-func TestEvalQueryTimeSeriesTimeFilsterAndDateTime64(t *testing.T) {
+func TestEvalQueryTimeSeriesTimeFilterAndDateTime64(t *testing.T) {
 	const description = "Query SELECT with $timeSeries $timeFilter and DATETIME64"
 	const query = "SELECT $timeSeries as t, sum(x) AS metric\n" +
 		"FROM $table\n" +
@@ -1375,4 +1375,44 @@ func TestEvalQueryNaturalTimeSeries(t *testing.T) {
 	r.NoError(err)
 	r.Equal(expQuery, actualQuery, description)
 
+}
+
+/* check $timeSeriesMs $timeFilterMs https://github.com/Altinity/clickhouse-grafana/issues/344, https://github.com/Altinity/clickhouse-grafana/issues/398 */
+func TestEvalQueryTimeSeriesMsTimeFilterMsAndDateTime64(t *testing.T) {
+	const description = "Query SELECT with $timeSeriesMs $timeFilterMs and DATETIME64"
+	const query = "SELECT $timeSeriesMs as t, sum(x) AS metric\n" +
+		"FROM $table\n" +
+		"WHERE $timeFilterMs\n" +
+		"GROUP BY t\n" +
+		"ORDER BY t"
+	const expQuery = "SELECT (intDiv(toFloat64(\"d\") * 1000, 100) * 100) as t, sum(x) AS metric\n" +
+		"FROM default.test_datetime64\n" +
+		"WHERE \"d\" >= toDateTime64(1545613323200/1000, 3) AND \"d\" <= toDateTime64(1546300799200/1000, 3)\n" +
+		"GROUP BY t\n" +
+		"ORDER BY t"
+
+	r := require.New(t)
+	from, err := time.Parse("2006-01-02 15:04:05.000Z", `2018-12-24 01:02:03.200Z`)
+	r.NoError(err)
+	to, err := time.Parse("2006-01-02 15:04:05.000Z", `2018-12-31 23:59:59.200Z`)
+	r.NoError(err)
+
+	q := EvalQuery{
+		Query:          query,
+		From:           from,
+		To:             to,
+		Interval:       "100ms",
+		IntervalFactor: 1,
+		SkipComments:   false,
+		Table:          "test_datetime64",
+		Database:       "default",
+		DateTimeType:   "DATETIME64",
+		DateCol:        "",
+		DateTimeCol:    "d",
+		Round:          "100ms",
+	}
+	actualQuery, err := q.replace(query)
+	r.NoError(err)
+
+	r.Equal(expQuery, actualQuery, description+" unexpected result")
 }

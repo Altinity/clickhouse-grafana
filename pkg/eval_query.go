@@ -12,8 +12,10 @@ import (
 /* var NumberOnlyRegexp = regexp.MustCompile(`^[+-]?\d+(\.\d+)?$`) */
 
 var timeSeriesMacroRegexp = regexp.MustCompile(`\$timeSeries\b`)
+var timeSeriesMsMacroRegexp = regexp.MustCompile(`\$timeSeriesMs\b`)
 var naturalTimeSeriesMacroRegexp = regexp.MustCompile(`\$naturalTimeSeries\b`)
 var timeFilterMacroRegexp = regexp.MustCompile(`\$timeFilter\b`)
+var timeFilterMsMacroRegexp = regexp.MustCompile(`\$timeFilterMs\b`)
 var tableMacroRegexp = regexp.MustCompile(`\$table\b`)
 var fromMacroRegexp = regexp.MustCompile(`\$from\b`)
 var toMacroRegexp = regexp.MustCompile(`\$to\b`)
@@ -25,6 +27,7 @@ var timeFilter64ByColumnMacroRegexp = regexp.MustCompile(`\$timeFilter64ByColumn
 
 var fromMsMacroRegexp = regexp.MustCompile(`\$__from\b`)
 var toMsMacroRegexp = regexp.MustCompile(`\$__to\b`)
+var intervalMsMacroRegexp = regexp.MustCompile(`\$__interval_ms\b`)
 
 type EvalQuery struct {
 	RefId          string `json:"refId"`
@@ -40,6 +43,7 @@ type EvalQuery struct {
 	IntervalFactor int    `json:"intervalFactor"`
 	Interval       string `json:"interval"`
 	IntervalSec    int
+	IntervalMs     int
 	Database       string `json:"database"`
 	Table          string `json:"table"`
 	MaxDataPoints  int64
@@ -66,12 +70,14 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		q.IntervalFactor = 1
 	}
 	i := 1 * time.Second
+	ms := 1 * time.Millisecond
 	if q.Interval != "" {
 		duration, err := time.ParseDuration(q.Interval)
 		if err != nil {
 			return "", err
 		}
 		q.IntervalSec = int(math.Floor(duration.Seconds()))
+		q.IntervalMs = int(duration.Milliseconds())
 	}
 	if q.IntervalSec <= 0 {
 		if q.MaxDataPoints > 0 {
@@ -79,10 +85,19 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		} else {
 			i = q.To.Sub(q.From) / 100
 		}
+		if i > 1*time.Millisecond && q.IntervalMs <= 0 {
+			ms = i
+		}
 		if i < 1*time.Second {
 			i = 1 * time.Second
 		}
-		q.IntervalSec, err = q.convertInterval(fmt.Sprintf("%fs", math.Floor(i.Seconds())), q.IntervalFactor)
+		q.IntervalSec, err = q.convertInterval(fmt.Sprintf("%fs", math.Floor(i.Seconds())), q.IntervalFactor, false)
+		if err != nil {
+			return "", err
+		}
+	}
+	if q.IntervalMs <= 0 {
+		q.IntervalMs, err = q.convertInterval(fmt.Sprintf("%dms", ms.Milliseconds()), q.IntervalFactor, true)
 		if err != nil {
 			return "", err
 		}
@@ -111,8 +126,10 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	}
 
 	timeFilter := q.getDateTimeFilter(q.DateTimeType)
+	timeFilterMs := q.getDateTimeFilterMs(q.DateTimeType)
 	if q.DateCol != "" {
 		timeFilter = q.getDateFilter() + " AND " + timeFilter
+		timeFilterMs = q.getDateFilter() + " AND " + timeFilterMs
 	}
 
 	table := q.escapeIdentifier(q.Table)
@@ -120,7 +137,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		table = q.escapeIdentifier(q.Database) + "." + table
 	}
 
-	myRound, err := q.convertInterval(q.Round, q.IntervalFactor)
+	myRound, err := q.convertInterval(q.Round, q.IntervalFactor, false)
 	if err != nil {
 		return "", err
 	}
@@ -131,14 +148,19 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	to := q.convertTimestamp(q.round(q.To, myRound))
 
 	query = timeSeriesMacroRegexp.ReplaceAllString(query, strings.Replace(q.getTimeSeries(q.DateTimeType), "$", "$$", -1))
+	query = timeSeriesMsMacroRegexp.ReplaceAllString(query, strings.Replace(q.getTimeSeriesMs(q.DateTimeType), "$", "$$", -1))
 	query = naturalTimeSeriesMacroRegexp.ReplaceAllString(query, strings.Replace(q.getNaturalTimeSeries(q.DateTimeType, from, to), "$", "$$", -1))
 	query = timeFilterMacroRegexp.ReplaceAllString(query, strings.Replace(timeFilter, "$", "$$", -1))
+	query = timeFilterMsMacroRegexp.ReplaceAllString(query, strings.Replace(timeFilterMs, "$", "$$", -1))
 	query = tableMacroRegexp.ReplaceAllString(query, table)
 	query = fromMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", from))
 	query = toMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", to))
+	query = fromMsMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.From.UnixMilli()))
+	query = toMsMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.To.UnixMilli()))
 	query = dateColMacroRegexp.ReplaceAllString(query, q.escapeIdentifier(q.DateCol))
 	query = dateTimeColMacroRegexp.ReplaceAllString(query, q.escapeIdentifier(q.DateTimeCol))
 	query = intervalMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.IntervalSec))
+	query = intervalMsMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.IntervalMs))
 
 	query = q.replaceTimeFilters(query, myRound)
 
@@ -541,6 +563,16 @@ func (q *EvalQuery) getTimeSeries(dateTimeType string) string {
 	return "(intDiv($dateTimeCol, $interval) * $interval) * 1000"
 }
 
+func (q *EvalQuery) getTimeSeriesMs(dateTimeType string) string {
+	if dateTimeType == "DATETIME" {
+		return "(intDiv(toUInt32($dateTimeCol) * 1000, $__interval_ms) * $__interval_ms)"
+	}
+	if dateTimeType == "DATETIME64" {
+		return "(intDiv(toFloat64($dateTimeCol) * 1000, $__interval_ms) * $__interval_ms)"
+	}
+	return "(intDiv($dateTimeCol, $__interval_ms) * $__interval_ms)"
+}
+
 func (q *EvalQuery) getDateFilter() string {
 	return "$dateCol >= toDate($from) AND $dateCol <= toDate($to)"
 }
@@ -558,6 +590,19 @@ func (q *EvalQuery) getDateTimeFilter(dateTimeType string) string {
 	return "$dateTimeCol >= " + convertFn("$from") + " AND $dateTimeCol <= " + convertFn("$to")
 }
 
+func (q *EvalQuery) getDateTimeFilterMs(dateTimeType string) string {
+	convertFn := func(t string) string {
+		if dateTimeType == "DATETIME" {
+			return "toDateTime(" + t + ")"
+		}
+		if dateTimeType == "DATETIME64" {
+			return "toDateTime64(" + t + ", 3)"
+		}
+		return t
+	}
+	return "$dateTimeCol >= " + convertFn("$__from/1000") + " AND $dateTimeCol <= " + convertFn("$__to/1000")
+}
+
 func (q *EvalQuery) convertTimestamp(dt time.Time) int64 {
 	return dt.UnixMilli() / 1000
 }
@@ -569,7 +614,7 @@ func (q *EvalQuery) round(dt time.Time, round int) time.Time {
 	return dt.Truncate(time.Duration(round) * time.Second)
 }
 
-func (q *EvalQuery) convertInterval(interval string, intervalFactor int) (int, error) {
+func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool) (int, error) {
 	if interval == "" {
 		return 0, nil
 	}
@@ -577,8 +622,8 @@ func (q *EvalQuery) convertInterval(interval string, intervalFactor int) (int, e
 	if err != nil {
 		return 0, err
 	}
-	if d < 1*time.Second {
-		d = 1 * time.Second
+	if ms {
+		return int(math.Ceil(float64(d.Milliseconds()) * float64(intervalFactor))), nil
 	}
 	return int(math.Ceil(d.Seconds() * float64(intervalFactor))), nil
 }

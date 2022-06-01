@@ -41,6 +41,7 @@ export default class SqlQuery {
                 : 'DATETIME',
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1),
+            intervalMs = SqlQuery.convertInterval(i, this.target.intervalFactor || 1, true),
             adhocCondition = [];
 
         try {
@@ -112,8 +113,10 @@ export default class SqlQuery {
         }
         query = SqlQuery.unescape(query);
         let timeFilter = SqlQuery.getDateTimeFilter(dateTimeType);
+        let timeFilterMs = SqlQuery.getDateTimeFilterMs(dateTimeType);
         if (typeof this.target.dateColDataType === "string" && this.target.dateColDataType.length > 0) {
             timeFilter = SqlQuery.getDateFilter() + ' AND ' + timeFilter;
+            timeFilterMs = SqlQuery.getDateFilter() + ' AND ' + timeFilterMs;
         }
 
         let table = SqlQuery.escapeIdentifier(this.target.table);
@@ -127,14 +130,17 @@ export default class SqlQuery {
 
         this.target.rawQuery = query
             .replace(/\$timeSeries\b/g, SqlQuery.getTimeSeries(dateTimeType))
+            .replace(/\$timeSeriesMs\b/g, SqlQuery.getTimeSeriesMs(dateTimeType))
             .replace(/\$naturalTimeSeries/g, SqlQuery.getNaturalTimeSeries(dateTimeType, from, to))
             .replace(/\$timeFilter\b/g, timeFilter)
+            .replace(/\$timeFilterMs\b/g, timeFilterMs)
             .replace(/\$table\b/g, table)
             .replace(/\$from\b/g, from)
             .replace(/\$to\b/g, to)
             .replace(/\$dateCol\b/g, SqlQuery.escapeIdentifier(this.target.dateColDataType))
             .replace(/\$dateTimeCol\b/g, SqlQuery.escapeIdentifier(this.target.dateTimeColDataType))
             .replace(/\$interval\b/g, interval)
+            .replace(/\$__interval_ms\b/g, intervalMs)
             .replace(/\$adhoc\b/g, renderedAdHocCondition);
 
         const round = this.target.round === "$step"
@@ -517,6 +523,16 @@ export default class SqlQuery {
         return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
     }
 
+    static getTimeSeriesMs(dateTimeType: string): string {
+        if (dateTimeType === 'DATETIME') {
+            return '(intDiv(toUInt32($dateTimeCol) * 1000, $__interval_ms) * $__interval_ms)';
+        }
+        if (dateTimeType === 'DATETIME64') {
+            return '(intDiv(toFloat64($dateTimeCol) * 1000, $__interval_ms) * $__interval_ms)';
+        }
+        return '(intDiv($dateTimeCol, $__interval_ms) * $__interval_ms)';
+    }
+
     static getDateFilter() {
         return '$dateCol >= toDate($from) AND $dateCol <= toDate($to)';
     }
@@ -532,6 +548,19 @@ export default class SqlQuery {
             return t;
         };
         return '$dateTimeCol >= ' + convertFn('$from') + ' AND $dateTimeCol <= ' + convertFn('$to');
+    }
+
+    static getDateTimeFilterMs(dateTimeType: string) {
+        let convertFn = function (t: string): string {
+            if (dateTimeType === 'DATETIME') {
+                return 'toDateTime(' + t + ')';
+            }
+            if (dateTimeType === 'DATETIME64') {
+                return 'toDateTime64(' + t + ', 3)';
+            }
+            return '(' + t + ')';
+        };
+        return '$dateTimeCol >= ' + convertFn('$__from/1000') + ' AND $dateTimeCol <= ' + convertFn('$__to/1000');
     }
 
     // date is a moment object
@@ -558,7 +587,7 @@ export default class SqlQuery {
         return moment(rounded);
     }
 
-    static convertInterval(interval: any, intervalFactor: number): number {
+    static convertInterval(interval: any, intervalFactor: number, ms?: boolean): number {
         if (interval === undefined || typeof interval !== 'string' || interval === "") {
             return 0;
         }
@@ -566,14 +595,12 @@ export default class SqlQuery {
         if (m === null) {
             throw {message: 'Received interval is invalid: ' + interval};
         }
-
-        let dur = moment.duration(parseInt(m[1]), m[2]);
-        let sec = dur.asSeconds();
-        if (sec < 1) {
-            sec = 1;
+        let duration = moment.duration(parseInt(m[1]), m[2]);
+        let result = duration.asSeconds();
+        if (ms) {
+            result = duration.asMilliseconds();
         }
-
-        return Math.ceil(sec * intervalFactor);
+        return Math.ceil(result * intervalFactor);
     }
 
     static interpolateQueryExpr(value, variable, defaultFormatFn) {
@@ -699,7 +726,7 @@ export default class SqlQuery {
 
 
     static unescape(query) {
-        let macros = '$unescape(';
+        const macros = '$unescape(';
         let openMacros = query.indexOf(macros);
         while (openMacros !== -1) {
             let r = SqlQuery.betweenBraces(query.substring(openMacros + macros.length, query.length));
@@ -707,10 +734,10 @@ export default class SqlQuery {
                 throw {message: '$unescape macros error: ' + r.error};
             }
             let arg = r.result;
-            arg = arg.replace(/[']+/g, '');
+            arg = arg.replace(/'+/g, '');
             let closeMacros = openMacros + macros.length + r.result.length + 1;
             query = query.substring(0, openMacros) + arg + query.substring(closeMacros, query.length);
-            openMacros = query.indexOf('$unescape(');
+            openMacros = query.indexOf(macros);
         }
         return query;
     }

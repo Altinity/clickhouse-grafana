@@ -349,9 +349,11 @@ export default function () {
             "$to",
             "$interval",
             "$timeFilter",
+            "$timeFilterMs",
             "$timeFilterByColumn",
             "$timeFilter64ByColumn",
             "$timeSeries",
+            "$timeSeriesMs",
             "$naturalTimeSeries",
             "$rate",
             "$perSecond",
@@ -2299,19 +2301,29 @@ export default function () {
                     "docText": "Replaced with currently selected `Time Range`. Requires `Column:Date` and `Column:DateTime` or `Column:TimeStamp` or `Column:DateTime64` to be selected"
                 },
                 {
+                    "name": "$timeFilterMs",
+                    "def": "$timeFilterMs",
+                    "docText": "Replaced with currently selected `Time Range` with Millisecond precision. Requires `Column:DateTime64` to be selected"
+                },
+                {
                   "name": "$timeFilterByColumn",
                   "def": "$timeFilterByColumn(column_name)",
                   "docText": "Replaced with currently selected `Time Range`. Requires column name with type `Date` and `DateTime` or `DateTime64`",
                 },
-              {
-                "name": "$timeFilter64ByColumn",
-                "def": "$timeFilter64ByColumn(column_name)",
-                "docText": "Replaced with currently selected `Time Range` with sub-seconds values. Requires column name with type `DateTime64`",
-              },
+                {
+                  "name": "$timeFilter64ByColumn",
+                  "def": "$timeFilter64ByColumn(column_name)",
+                  "docText": "Replaced with currently selected `Time Range` with sub-seconds values. Requires column name with type `DateTime64`",
+                },
                 {
                     "name": "$timeSeries",
                     "def": "$timeSeries",
-                    "docText": "Replaced with special ClickHouse construction to convert results as time-series data. Use it as `SELECT $timeSeries...`. Require `Column:DateTime` or `Column:TimeStamp` to be selected"
+                    "docText": "Replaced with special ClickHouse construction to convert results as time-series data. Use it as `SELECT $timeSeries...`. Require `Column:DateTime` or `Column:TimeStamp` or `Column:DateTime64` to be selected"
+                },
+                {
+                    "name": "$timeSeriesMs",
+                    "def": "$timeSeriesMs",
+                    "docText": "Replaced with special ClickHouse construction to convert results as time-series data with Milliseconds precision. Use it as `SELECT $timeSeriesMs...`. Require `Column:DateTime64` to be selected"
                 },
                 {
                     "name": "$naturalTimeSeries",

@@ -29,7 +29,12 @@ You can install plugin from [grafana.com](https://grafana.com/plugins/vertamedia
 OR
 
 Copy files to your [Grafana plugin directory](https://grafana.com/docs/grafana/latest/plugins/installation/#install-plugin-on-local-grafana).
-Restart Grafana, check data sources list at [http://localhost:3000/datasources/new](http://localhost:3000/datasources/new), choose ClickHouse option.
+Restart Grafana, check data sources list at Configuration -> Datasources -> New, choose ClickHouse option.
+
+![Datasources](https://user-images.githubusercontent.com/105560/171434732-944f05a3-cf10-466a-b24e-7ba929b54dbb.png)
+![Add new datasource](https://user-images.githubusercontent.com/105560/171435032-126105fe-18d9-425d-b65b-ba334d341dc4.png)
+![Datasource types]((https://user-images.githubusercontent.com/105560/171435316-ed096a40-c0e8-417a-b8ed-371ae61773b2.png))
+
 
 ## Features
 

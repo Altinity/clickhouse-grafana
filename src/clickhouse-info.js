@@ -35,7 +35,6 @@ export default function () {
             "OUTER",
             "DESC",
             "ASC",
-            "UNION",
             "CREATE",
             "TABLE",
             "PRIMARY",
@@ -78,6 +77,7 @@ export default function () {
             "GROUP BY",
             "ORDER BY",
             "UNION ALL",
+            "UNION DISTINCT",
             "ALTER"
         ];
         p.DataTypes = [

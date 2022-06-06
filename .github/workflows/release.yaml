@@ -34,8 +34,6 @@ jobs:
         with:
           path: node_modules
           key: ${{ runner.os }}-${{ matrix.node-version }}-nodemodules-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.node-version }}-nodemodules-
 
       - name: Cache golang
         id: cache-golang
@@ -43,8 +41,6 @@ jobs:
         with:
           path: /go/pkg/mod
           key: ${{ runner.os }}-${{ matrix.golang-version }}-golang-${{ hashFiles('**/go.sum') }}
-          restore-keys: |
-            ${{ runner.os }}-${{ matrix.golang-version }}-golang-
 
       - name: Install nodejs dependencies
         run: npm install --production=false

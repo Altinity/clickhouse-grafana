@@ -39,6 +39,7 @@ services:
     image: grafana/grafana:${GRAFANA_VERSION:-latest}
     volumes:
       - ./:/var/lib/grafana/plugins/altinity-clickhouse/
+      - ./docker/grafana/grafanalabs-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafanalabs-clickhouse-datasource.yaml
       - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
       - ./docker/grafana/grafana-clickhouse-datasource-get.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-get.yaml
       - ./docker/grafana/grafana-clickhouse-datasource-x-auth.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-x-auth.yaml
@@ -49,7 +50,7 @@ services:
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
 
     environment:
-      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel
+      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
       # @todo wait grafana 9.0 implementation alerts provisioning https://github.com/grafana/grafana/issues/40983#issuecomment-1137770772
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}

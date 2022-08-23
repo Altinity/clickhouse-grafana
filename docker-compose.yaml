@@ -36,7 +36,7 @@ services:
       - ./docker/postgres/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
 
   grafana:
-    image: grafana/grafana:${GRAFANA_VERSION:-latest}
+    image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-latest}
     volumes:
       - ./:/var/lib/grafana/plugins/altinity-clickhouse/
       - ./docker/grafana/grafanalabs-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafanalabs-clickhouse-datasource.yaml
@@ -58,6 +58,30 @@ services:
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
     ports:
       - "3000:3000"
+    depends_on:
+      - clickhouse
+
+  grafana_external_install:
+    image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-latest}
+    volumes:
+      - ./docker/grafana/grafanalabs-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafanalabs-clickhouse-datasource.yaml
+      - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
+      - ./docker/grafana/grafana-clickhouse-datasource-get.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-get.yaml
+      - ./docker/grafana/grafana-clickhouse-datasource-x-auth.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-x-auth.yaml
+      - ./docker/grafana/grafana-clickhouse-ontime-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-ontime-datasource.yaml
+      - ./docker/grafana/grafana-postgres-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-postgres-datasource.yaml
+      - ./docker/grafana/grafana-trickster-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-trickster-datasource.yaml
+      - ./docker/grafana/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/grafana-dashboards.yaml
+      - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
+
+    environment:
+      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,vertamedia-clickhouse-datasource
+      GF_LOG_LEVEL: debug
+      # @todo wait grafana 9.0 implementation alerts provisioning https://github.com/grafana/grafana/issues/40983#issuecomment-1137770772
+      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
+      GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
+    ports:
+      - "3001:3000"
     depends_on:
       - clickhouse
 

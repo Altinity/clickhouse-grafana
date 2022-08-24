@@ -1,4 +1,4 @@
-# 2.5.1 (2022-05-31)
+# 2.5.1 (2022-08-24)
 ## Enhancements:
 * Switch to go1.19, update go package dependencies
 

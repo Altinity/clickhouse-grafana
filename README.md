@@ -557,7 +557,7 @@ Plugin support Annotations with regions. To enable this feature open Dashboard `
 
 ## Alerts support
 
-To enable alerts open "alerts" tab in panel, and define alert expression as described on [grafana.com](https://grafana.com/docs/grafana/latest/alerting/create-alerts/)
+To enable alerts open "alerts" tab in panel, and define alert expression as described on [grafana.com](https://grafana.com/docs/grafana/latest/alerting/)
 
 Be careful with Template variables values, currently grafana doesn't support template variables in alert queries itself.
 Also, grafana UI doesn't pass template variables values to a backend, after you change it on frontend UI.

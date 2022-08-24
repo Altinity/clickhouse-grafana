@@ -1,3 +1,10 @@
+# 2.5.1 (2022-05-31)
+## Enhancements:
+* Switch to go1.19, update go package dependencies
+
+## Fixes:
+* properly escaping database and table identifiers, fix https://github.com/Altinity/clickhouse-grafana/issues/440
+
 # 2.5.0 (2022-05-31)
 ## Enhancements:
 * Add support for Logs visualization, fix https://github.com/Altinity/clickhouse-grafana/issues/331, thanks @Fiery-Fenix and @pixelsquared 

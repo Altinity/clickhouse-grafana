@@ -153,6 +153,34 @@ describe("Identifiers back-quoting", () => {
     });
 });
 
+/* fix https://github.com/Altinity/clickhouse-grafana/issues/440 */
+describe("Table Identifiers back-quoting", () => {
+    it("Standard identifier - untouched", () => {
+        expect(SqlQuery.escapeTableIdentifier("My_Identifier_33")).toBe("My_Identifier_33");
+    });
+    it("Begining with number", () => {
+        expect(SqlQuery.escapeTableIdentifier("1nfoVista")).toBe("`1nfoVista`");
+    });
+    it("Containing spaces", () => {
+        expect(SqlQuery.escapeTableIdentifier("My Identifier")).toBe("`My Identifier`");
+    });
+    it("Containing single quote", () => {
+        expect(SqlQuery.escapeTableIdentifier("My`Identifier")).toBe("`My\\`Identifier`");
+    });
+
+    it("Containing arithmetic operation special characters", () => {
+        expect(SqlQuery.escapeTableIdentifier("a / 1000")).toBe("`a / 1000`");
+        expect(SqlQuery.escapeTableIdentifier("a + b")).toBe("`a + b`");
+        expect(SqlQuery.escapeTableIdentifier("b - c")).toBe("`b - c`");
+        expect(SqlQuery.escapeTableIdentifier("5*c")).toBe("`5*c`");
+        expect(SqlQuery.escapeTableIdentifier("a / 1000 + b - 5*c")).toBe("`a / 1000 + b - 5*c`");
+        expect(SqlQuery.escapeTableIdentifier("a / 1000 + b - 5*c")).toBe("`a / 1000 + b - 5*c`");
+    });
+    it("Containing double-quote", () => {
+        expect(SqlQuery.escapeTableIdentifier("My\"Bad\"Identifier")).toBe("`My\"Bad\"Identifier`");
+    });
+});
+
 /* check https://github.com/Altinity/clickhouse-grafana/issues/276 */
 describe("$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adhocFilters", () => {
     const query = "$rateColumns(\n" +

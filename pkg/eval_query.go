@@ -132,9 +132,9 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		timeFilterMs = q.getDateFilter() + " AND " + timeFilterMs
 	}
 
-	table := q.escapeIdentifier(q.Table)
+	table := q.escapeTableIdentifier(q.Table)
 	if q.Database != "" {
-		table = q.escapeIdentifier(q.Database) + "." + table
+		table = q.escapeTableIdentifier(q.Database) + "." + table
 	}
 
 	myRound, err := q.convertInterval(q.Round, q.IntervalFactor, false)
@@ -172,6 +172,14 @@ func (q *EvalQuery) escapeIdentifier(identifier string) string {
 		return identifier
 	} else {
 		return `"` + strings.Replace(identifier, `"`, `\"`, -1) + `"`
+	}
+}
+
+func (q *EvalQuery) escapeTableIdentifier(identifier string) string {
+	if regexp.MustCompile(`^[a-zA-Z][0-9a-zA-Z_]+$`).MatchString(identifier) {
+		return identifier
+	} else {
+		return "`" + strings.Replace(identifier, "`", "\\`", -1) + "`"
 	}
 }
 

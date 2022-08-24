@@ -159,6 +159,14 @@ export default class SqlQuery {
         }
     }
 
+    static escapeTableIdentifier(identifier: string): string {
+        if (/^[a-zA-Z][0-9a-zA-Z_]+$/.test(identifier)) {
+            return identifier;
+        } else {
+            return '`' + identifier.replace(/`/g, '\\`') + '`';
+        }
+    }
+
     static replaceTimeFilters(query: string, range: TimeRange, dateTimeType = 'DATETIME', round?: number): string {
         let from = SqlQuery.convertTimestamp(SqlQuery.round(range.from, round || 0));
         let to = SqlQuery.convertTimestamp(SqlQuery.round(range.to, round || 0));

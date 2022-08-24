@@ -149,10 +149,10 @@ func TestMacrosBuilder(t *testing.T) {
 }
 
 /*
- comments and $rate and from in field name
- check https://github.com/Altinity/clickhouse-grafana/issues/187
- check https://github.com/Altinity/clickhouse-grafana/issues/256
- check https://github.com/Altinity/clickhouse-grafana/issues/265
+comments and $rate and from in field name
+check https://github.com/Altinity/clickhouse-grafana/issues/187
+check https://github.com/Altinity/clickhouse-grafana/issues/256
+check https://github.com/Altinity/clickhouse-grafana/issues/265
 */
 func TestCommentsAndRateMacrosWithFromKeywordInFieldName(t *testing.T) {
 	const query = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\n$rate(countIf(service_name='mysql' AND from_user='alice') AS mysql_alice, countIf(service_name='postgres') AS postgres)\n" +
@@ -170,8 +170,8 @@ func TestCommentsAndRateMacrosWithFromKeywordInFieldName(t *testing.T) {
 }
 
 /*
- columns + union all + with
- fix https://github.com/Altinity/clickhouse-grafana/issues/319
+columns + union all + with
+fix https://github.com/Altinity/clickhouse-grafana/issues/319
 */
 func TestColumnsMacrosWithUnionAllAndWithKeyword(t *testing.T) {
 	const query = "$columns(\n" +
@@ -1270,7 +1270,20 @@ func TestEscapeIdentifier(t *testing.T) {
 	r.Equal("\"My\\\"Bad\\\"Identifier\"", q.escapeIdentifier("My\"Bad\"Identifier"), "Containing double-quote")
 
 	r.Equal("toDateTime(someDate)", q.escapeIdentifier("toDateTime(someDate)"), "Containing function calls")
+}
 
+func TestEscapeTableIdentifier(t *testing.T) {
+	q := EvalQuery{}
+	r := require.New(t)
+	r.Equal("My_Identifier_33", q.escapeTableIdentifier("My_Identifier_33"), "Standard identifier - untouched")
+	r.Equal("`\"1nfoVista\"`", q.escapeTableIdentifier("\"1nfoVista\""), "Begining with number and quotes")
+	r.Equal("`My Identifier`", q.escapeTableIdentifier("My Identifier"), "Containing spaces")
+	r.Equal("`My\\`Identifier`", q.escapeTableIdentifier("My`Identifier"), "Containing single quote")
+
+	for _, query := range []string{"a / 1000", "a + b", "b - c", "5*c", "a / 1000 + b - 5*c"} {
+		r.Equal("`"+query+"`", q.escapeTableIdentifier(query), "Containing arithmetic operation special characters")
+	}
+	r.Equal("`My\"Bad\"Identifier`", q.escapeTableIdentifier("My\"Bad\"Identifier"), "Containing double-quote")
 }
 
 /* check https://github.com/Altinity/clickhouse-grafana/issues/284 */

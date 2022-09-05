@@ -1,3 +1,10 @@
+# 2.5.2 (2022-09-05)
+## Enhancements:
+* add Node graph example, fix https://github.com/Altinity/clickhouse-grafana/issues/352
+
+## Fixes:
+* properly escaping database and table identifiers on client-side, fix https://github.com/Altinity/clickhouse-grafana/issues/440, add more tests
+
 # 2.5.1 (2022-08-24)
 ## Enhancements:
 * Switch to go1.19, update go package dependencies

@@ -19,3 +19,12 @@ CREATE TABLE IF NOT EXISTS test_grafana_dict(service_name VARCHAR(100), service_
 ALTER TABLE test_grafana_dict OWNER TO grafana;
 
 INSERT INTO test_grafana_dict(service_name, service_type) VALUES ('mysql','sql'),('postgresql','sql');
+
+DROP TABLE IF EXISTS nodes_graph_example;
+CREATE TABLE IF NOT EXISTS nodes_graph_example (
+    source LowCardinality(String),
+    target LowCardinality(String),
+    bytes UInt64
+) ENGINE=MergeTree() ORDER BY (source, target);
+
+INSERT INTO nodes_graph_example VALUES('src1','dst1', 10), ('src2','dst1', 10), ('src2','dst1', 10);

@@ -1272,6 +1272,7 @@ func TestEscapeIdentifier(t *testing.T) {
 	r.Equal("toDateTime(someDate)", q.escapeIdentifier("toDateTime(someDate)"), "Containing function calls")
 }
 
+/* fix https://github.com/Altinity/clickhouse-grafana/issues/440 */
 func TestEscapeTableIdentifier(t *testing.T) {
 	q := EvalQuery{}
 	r := require.New(t)
@@ -1423,6 +1424,38 @@ func TestEvalQueryTimeSeriesMsTimeFilterMsAndDateTime64(t *testing.T) {
 		DateCol:        "",
 		DateTimeCol:    "d",
 		Round:          "100ms",
+	}
+	actualQuery, err := q.replace(query)
+	r.NoError(err)
+
+	r.Equal(expQuery, actualQuery, description+" unexpected result")
+}
+
+/* fix https://github.com/Altinity/clickhouse-grafana/issues/440 */
+func TestTableMacroProperlyEscaping(t *testing.T) {
+	const description = "Query SELECT with special character in table"
+	const query = "SELECT $timeSeries as t, sum(x) AS metric\n" +
+		"FROM $table\n" +
+		"GROUP BY t\n" +
+		"ORDER BY t"
+	const expQuery = "SELECT (intDiv(toFloat64(\"d\") * 1000, (1 * 1000)) * (1 * 1000)) as t, sum(x) AS metric\n" +
+		"FROM default.`test-table-escaping`\n" +
+		"GROUP BY t\n" +
+		"ORDER BY t"
+
+	r := require.New(t)
+
+	q := EvalQuery{
+		Query:          query,
+		Interval:       "1s",
+		IntervalFactor: 1,
+		SkipComments:   false,
+		Table:          "test-table-escaping",
+		Database:       "default",
+		DateTimeType:   "DATETIME64",
+		DateCol:        "",
+		DateTimeCol:    "d",
+		Round:          "1s",
 	}
 	actualQuery, err := q.replace(query)
 	r.NoError(err)

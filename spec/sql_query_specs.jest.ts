@@ -592,3 +592,55 @@ describe("Query SELECT with $timeSeriesMs $timeFilterMs and DATETIME64", () => {
         expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
     });
 });
+
+
+/* fix https://github.com/Altinity/clickhouse-grafana/issues/440 */
+describe("Query SELECT with special character in table", () => {
+    const query = "SELECT $timeSeries as t, sum(x) AS metric\n" +
+        "FROM $table\n" +
+        "GROUP BY t\n" +
+        "ORDER BY t";
+    const expQuery = "SELECT (intDiv(toFloat64(\"d\") * 1000, (1 * 1000)) * (1 * 1000)) as t, sum(x) AS metric\n" +
+        "FROM default.`test-table-escaping`\n" +
+        "GROUP BY t\n" +
+        "ORDER BY t";
+    let templateSrv = new TemplateSrvStub();
+    const adhocFilters = [];
+    let target = {
+        query: query,
+        interval: "1s",
+        intervalFactor: 1,
+        skip_comments: false,
+        table: "test-table-escaping",
+        database: "default",
+        dateTimeType: "DATETIME64",
+        dateColDataType: "",
+        dateTimeColDataType: "d",
+        round: "1s",
+        rawQuery: "",
+    };
+    const options = {
+        rangeRaw: {
+            from: moment('2018-12-24 01:02:03.200Z'),
+            to: moment('2018-12-31 23:59:59.200Z'),
+        },
+        range: {
+            from: moment('2018-12-24 01:02:03.200Z'),
+            to: moment('2018-12-31 23:59:59.200Z'),
+        },
+        scopedVars: {
+            __interval: {
+                text: "1s",
+                value: "1s",
+            },
+            __interval_ms: {
+                text: "1000",
+                value: 1000,
+            },
+        },
+    };
+    let sql_query = new SqlQuery(target, templateSrv, options);
+    it("applyMacros $table with escaping", () => {
+        expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+    });
+});

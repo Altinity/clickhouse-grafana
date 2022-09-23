@@ -142,3 +142,12 @@ PARTITION BY toYYYYMMDD(time)
 ORDER BY time;
 
 INSERT INTO default.nested_array_join_example(time, dataMap.key, dataMap.value) VALUES (now()-INTERVAL 2 MINUTE, ['a', 'b'], [1, 2]), (now()-INTERVAL 2 MINUTE, ['a', 'b'], [3, 4]), (now()-INTERVAL 1 MINUTE, ['a', 'b'], [5, 6]), (now()-INTERVAL 1 MINUTE, ['a', 'b'], [7, 8]), (now(), ['a', 'b'], [9, 10]);
+
+DROP TABLE IF EXISTS nodes_graph_example;
+CREATE TABLE IF NOT EXISTS nodes_graph_example (
+    source LowCardinality(String),
+    target LowCardinality(String),
+    bytes UInt64
+    ) ENGINE=MergeTree() ORDER BY (source, target);
+
+INSERT INTO nodes_graph_example VALUES('src1','dst1', 10), ('src2','dst1', 10), ('src2','dst1', 10);

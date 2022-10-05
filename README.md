@@ -608,25 +608,41 @@ datasources:
    type: vertamedia-clickhouse-datasource
    access: proxy
    url: http://localhost:8123
-
    # <bool> enable/disable basic auth
-   basicAuth:
+   basicAuth: false
    # <string> basic auth username
-   basicAuthUser:
-   # <string> basic auth password
-   basicAuthPassword:
+   basicAuthUser: "default"
    # <bool> enable/disable with credentials headers
-   withCredentials:
+   withCredentials: false
    # <bool> mark as default datasource. Max one per org
-   isDefault:
+   isDefault: false
    # <map> fields that will be converted to json and stored in json_data
    jsonData:
-      # <bool> enable/disable sending 'add_http_cors_header=1' parameter
-      addCorsHeader:
-      # <bool> enable/disable using POST method for sending queries
-      usePOST:
-      # <string> default database name
-      defaultDatabase:
+     # <bool> enable/disable sending 'add_http_cors_header=1' parameter
+     addCorsHeader: false
+     # <bool> enable/disable using POST method for sending queries
+     usePOST: false
+     # <string> default database name
+     defaultDatabase: ""
+     # <bool> enable/disable tls authorization
+     tlsAuth: false
+     # <bool> enable/disable tls authorization with custom ca
+     tlsAuthWithCACert: false
+     # <bool> enable/disable authorization with X-ClickHouse-* headers
+     useYandexCloudAuthorization: true
+     # <string> X-ClickHouse-User header value for authorization
+     xHeaderKey: ""
+     # <string> X-ClickHouse-Key header value for authorization
+     xHeaderUser: ""
+   secureJsonData:
+       # <string> basic auth password
+       basicAuthPassword: ""
+       # <string> custom certificate authority for TLS https connection, base64 encoded 
+       tlsCACert: ""
+       # <string> custom client certificate for TLS https connection, base64 encoded 
+       tlsClientCert: ""
+       # <string> custom client secret key for TLS https connection, base64 encoded 
+       tlsClientKey: ""
 ```
 
 Some settings and security params are the same for all datasources. You can find them [here](http://docs.grafana.org/administration/provisioning/#example-datasource-config-file).

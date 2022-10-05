@@ -6,7 +6,8 @@ datasources:
     access: proxy
     url: http://clickhouse:8123
     basicAuth: true
-    basicAuthPassword: ""
+    secureJsonData:
+      basicAuthPassword: ""
     basicAuthUser: "default"
     editable: true
     jsonData:

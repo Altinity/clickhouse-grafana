@@ -1,3 +1,7 @@
+# 2.5.3 
+## Em
+* add secureJsonData description for datasource in README, fix https://github.com/Altinity/clickhouse-grafana/issues/452
+
 # 2.5.2 (2022-09-05)
 ## Enhancements:
 * add Node graph example, fix https://github.com/Altinity/clickhouse-grafana/issues/352

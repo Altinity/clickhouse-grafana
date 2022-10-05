@@ -28,6 +28,11 @@ services:
       - ./docker/clickhouse/dhparam.pem:/etc/clickhouse-server/dhparam.pem
       - ./docker/clickhouse/users.xml:/etc/clickhouse-server/users.d/users.xml
 
+  mysql:
+    image: mysql:latest
+    environment:
+      - MYSQL_ROOT_PASSWORD=grafana
+
   postgres:
     image: postgres:latest
     environment:

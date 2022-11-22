@@ -1,4 +1,4 @@
-# 2.5.3 (todo) 
+# 2.5.3 (2022-11-22) 
 ## Enhancements:
 * add secureJsonData description for datasource in README, fix https://github.com/Altinity/clickhouse-grafana/issues/452
 * add $delta, $deltaColumns, $increase, $increaseColumns, fix https://github.com/Altinity/clickhouse-grafana/issues/455

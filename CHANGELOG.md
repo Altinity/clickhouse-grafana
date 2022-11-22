@@ -1,6 +1,10 @@
-# 2.5.3 
-## Em
+# 2.5.3 (todo) 
+## Enhancements:
 * add secureJsonData description for datasource in README, fix https://github.com/Altinity/clickhouse-grafana/issues/452
+* add $delta, $deltaColumns, $increase, $increaseColumns, fix https://github.com/Altinity/clickhouse-grafana/issues/455
+
+## Fixes:
+* add CGO_ENABLED=0 when build plugin, fix https://github.com/Altinity/clickhouse-grafana/issues/447
 
 # 2.5.2 (2022-09-05)
 ## Enhancements:

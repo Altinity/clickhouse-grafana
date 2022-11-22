@@ -268,6 +268,18 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	if q.contain(ast, "$perSecondColumns") {
 		return q.perSecondColumns(query, ast)
 	}
+	if q.contain(ast, "$delta") {
+		return q.delta(query, ast)
+	}
+	if q.contain(ast, "$deltaColumns") {
+		return q.deltaColumns(query, ast)
+	}
+	if q.contain(ast, "$increase") {
+		return q.increase(query, ast)
+	}
+	if q.contain(ast, "$increaseColumns") {
+		return q.increaseColumns(query, ast)
+	}
 	return query, nil
 }
 
@@ -456,11 +468,117 @@ func (q *EvalQuery) perSecondColumns(query string, ast *EvalAST) (string, error)
 
 	return beforeMacrosQuery + "SELECT" +
 		" t," +
-		" groupArray((" + alias + ", max_0_Rate)) AS groupArr" +
+		" groupArray((" + alias + ", max_0_PerSecond)) AS groupArr" +
 		" FROM (" +
 		" SELECT t," +
 		" " + alias +
-		", if(runningDifference(max_0) < 0 OR neighbor(" + alias + ",-1," + alias + ") != " + alias + ", nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate" +
+		", if(runningDifference(max_0) < 0 OR neighbor(" + alias + ",-1," + alias + ") != " + alias + ", nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond" +
+		" FROM (" +
+		" SELECT $timeSeries AS t" +
+		", " + key +
+		", " + value + " " +
+		fromQuery +
+		" GROUP BY t, " + alias +
+		having +
+		" ORDER BY " + alias + ", t" +
+		")" +
+		")" +
+		" GROUP BY t" +
+		" ORDER BY t", nil
+}
+
+func (q *EvalQuery) deltaColumns(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$deltaColumns", query)
+	if err != nil {
+		return "", err
+	}
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var args = ast.Obj["$deltaColumns"].(*EvalAST).Arr
+	if len(args) != 2 {
+		return "", fmt.Errorf("amount of arguments must equal 2 for $deltaColumns func. Parsed arguments are: %v", args)
+	}
+
+	var key = args[0].(string)
+	var value = "max(" + strings.Trim(args[1].(string), " \xA0\t\r\n") + ") AS max_0"
+	var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
+	var having = ""
+	var aliasIndex = strings.Index(strings.ToLower(key), " as ")
+	var alias = "deltaColumns"
+	if aliasIndex == -1 {
+		key = key + " AS " + alias
+	} else {
+		alias = key[aliasIndex+4:]
+	}
+
+	if havingIndex != -1 {
+		having = " " + fromQuery[havingIndex:]
+		fromQuery = fromQuery[0 : havingIndex-1]
+	}
+	fromQuery = q._applyTimeFilter(fromQuery)
+
+	return beforeMacrosQuery + "SELECT" +
+		" t," +
+		" groupArray((" + alias + ", max_0_Delta)) AS groupArr" +
+		" FROM (" +
+		" SELECT t," +
+		" " + alias +
+		", if(neighbor(" + alias + ",-1," + alias + ") != " + alias + ", 0, runningDifference(max_0)) AS max_0_Delta" +
+		" FROM (" +
+		" SELECT $timeSeries AS t" +
+		", " + key +
+		", " + value + " " +
+		fromQuery +
+		" GROUP BY t, " + alias +
+		having +
+		" ORDER BY " + alias + ", t" +
+		")" +
+		")" +
+		" GROUP BY t" +
+		" ORDER BY t", nil
+}
+
+func (q *EvalQuery) increaseColumns(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$increaseColumns", query)
+	if err != nil {
+		return "", err
+	}
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var args = ast.Obj["$increaseColumns"].(*EvalAST).Arr
+	if len(args) != 2 {
+		return "", fmt.Errorf("amount of arguments must equal 2 for $increaseColumns func. Parsed arguments are: %v", args)
+	}
+
+	var key = args[0].(string)
+	var value = "max(" + strings.Trim(args[1].(string), " \xA0\t\r\n") + ") AS max_0"
+	var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
+	var having = ""
+	var aliasIndex = strings.Index(strings.ToLower(key), " as ")
+	var alias = "increaseColumns"
+	if aliasIndex == -1 {
+		key = key + " AS " + alias
+	} else {
+		alias = key[aliasIndex+4:]
+	}
+
+	if havingIndex != -1 {
+		having = " " + fromQuery[havingIndex:]
+		fromQuery = fromQuery[0 : havingIndex-1]
+	}
+	fromQuery = q._applyTimeFilter(fromQuery)
+
+	return beforeMacrosQuery + "SELECT" +
+		" t," +
+		" groupArray((" + alias + ", max_0_Increase)) AS groupArr" +
+		" FROM (" +
+		" SELECT t," +
+		" " + alias +
+		", if(runningDifference(max_0) < 0 OR neighbor(" + alias + ",-1," + alias + ") != " + alias + ", 0, runningDifference(max_0)) AS max_0_Increase" +
 		" FROM (" +
 		" SELECT $timeSeries AS t" +
 		", " + key +
@@ -500,7 +618,89 @@ func (q *EvalQuery) _perSecond(args []interface{}, beforeMacrosQuery, fromQuery 
 	var argsStr = make([]string, len(args))
 	for i, item := range args {
 		argsStr[i] = item.(string)
-		cols[i] = fmt.Sprintf("if(runningDifference(max_%d) < 0, nan, runningDifference(max_%d) / runningDifference(t/1000)) AS max_%d_Rate", i, i, i)
+		cols[i] = fmt.Sprintf("if(runningDifference(max_%d) < 0, nan, runningDifference(max_%d) / runningDifference(t/1000)) AS max_%d_PerSecond", i, i, i)
+	}
+
+	fromQuery = q._applyTimeFilter(fromQuery)
+	return beforeMacrosQuery + "SELECT " +
+		"t," +
+		" " + strings.Join(cols, ", ") +
+		" FROM (" +
+		" SELECT $timeSeries AS t," +
+		" " + strings.Join(argsStr, ", ") +
+		" " + fromQuery +
+		" GROUP BY t" +
+		" ORDER BY t" +
+		")", nil
+}
+
+func (q *EvalQuery) delta(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$delta", query)
+	if err != nil {
+		return "", err
+	}
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var args = ast.Obj["$delta"].(*EvalAST).Arr
+	if len(args) < 1 {
+		return "", fmt.Errorf("amount of arguments must be > 0 for $delta func. Parsed arguments are: %v", args)
+	}
+	for i, a := range args {
+		args[i] = fmt.Sprintf("max("+strings.Trim(a.(string), " \xA0\t\r\n")+") AS max_%d", i)
+	}
+
+	return q._delta(args, beforeMacrosQuery, fromQuery)
+}
+
+func (q *EvalQuery) _delta(args []interface{}, beforeMacrosQuery, fromQuery string) (string, error) {
+	var cols = make([]string, len(args))
+	var argsStr = make([]string, len(args))
+	for i, item := range args {
+		argsStr[i] = item.(string)
+		cols[i] = fmt.Sprintf("runningDifference(max_%d) AS max_%d_Delta", i, i)
+	}
+
+	fromQuery = q._applyTimeFilter(fromQuery)
+	return beforeMacrosQuery + "SELECT " +
+		"t," +
+		" " + strings.Join(cols, ", ") +
+		" FROM (" +
+		" SELECT $timeSeries AS t," +
+		" " + strings.Join(argsStr, ", ") +
+		" " + fromQuery +
+		" GROUP BY t" +
+		" ORDER BY t" +
+		")", nil
+}
+
+func (q *EvalQuery) increase(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$increase", query)
+	if err != nil {
+		return "", err
+	}
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var args = ast.Obj["$increase"].(*EvalAST).Arr
+	if len(args) < 1 {
+		return "", fmt.Errorf("amount of arguments must be > 0 for $increase func. Parsed arguments are: %v", args)
+	}
+	for i, a := range args {
+		args[i] = fmt.Sprintf("max("+strings.Trim(a.(string), " \xA0\t\r\n")+") AS max_%d", i)
+	}
+
+	return q._increase(args, beforeMacrosQuery, fromQuery)
+}
+
+func (q *EvalQuery) _increase(args []interface{}, beforeMacrosQuery, fromQuery string) (string, error) {
+	var cols = make([]string, len(args))
+	var argsStr = make([]string, len(args))
+	for i, item := range args {
+		argsStr[i] = item.(string)
+		cols[i] = fmt.Sprintf("if(runningDifference(max_%d) < 0, 0, runningDifference(max_%d)) AS max_%d_Increase", i, i, i)
 	}
 
 	fromQuery = q._applyTimeFilter(fromQuery)
@@ -961,7 +1161,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 			s._s = ""
 			s.Tree.pushObj(statement, ast)
 		} else if isComment(s.Token) {
-			//comment is part of push element, and will be add after next statement
+			//comment is part of push element, and will add after next statement
 			argument += s.Token + "\n"
 		} else if isClosureChars(s.Token) || s.Token == "." {
 			argument += s.Token
@@ -1211,7 +1411,7 @@ const joinsRe = "\\b(" +
 	")\\b"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$rateColumns|\\$perSecondColumns|\\$rate|\\$perSecond|\\$columns)"
+const macroFuncRe = "(\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
 const condRe = "\\b(or|and)\\b"
 const inRe = "\\b(global in|global not in|not in|in)\\b"
 const closureRe = "[\\(\\)\\[\\]]"

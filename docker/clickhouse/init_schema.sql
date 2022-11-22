@@ -112,8 +112,8 @@ CREATE TABLE IF NOT EXISTS default.test_rate_and_per_seconds (
     counter Int64
 ) ENGINE = MergeTree() ORDER BY (d);
 
-INSERT INTO default.test_rate_and_per_seconds SELECT now() - 10*number, 'category1', number % 200  FROM numbers(10000);
-INSERT INTO default.test_rate_and_per_seconds SELECT now() - 15*number, 'category2', number % 300  FROM numbers(10000);
+INSERT INTO default.test_rate_and_per_seconds SELECT now() - 10*number, 'category1', 200 - (number % 200)  FROM numbers(10000);
+INSERT INTO default.test_rate_and_per_seconds SELECT now() - 15*number, 'category2', 300 - (number % 300)  FROM numbers(10000);
 
 
 DROP TABLE IF EXISTS default.test_alerts_low_frequency;

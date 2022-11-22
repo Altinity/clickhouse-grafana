@@ -358,6 +358,10 @@ export default function () {
             "$rate",
             "$perSecond",
             "$perSecondColumns",
+            "$delta",
+            "$deltaColumns",
+            "$increase",
+            "$increaseColumns",
             "$columns",
             "$rateColumns",
             "$unescape",
@@ -2346,11 +2350,39 @@ export default function () {
                         "Example:\n $perSecond(total_requests) FROM requests"
                 },
                 {
+                    "name": "$delta",
+                    "def": "$delta(cols...)",
+                    "docText": "The macros will chose the max value for each column in every timeSlot and calculate the delta. Could have negative values" +
+                        "\n" +
+                        "Example:\n $delta(total_requests) FROM requests"
+                },
+                {
+                    "name": "$increase",
+                    "def": "$increase(cols...)",
+                    "docText": "The macros will chose the max value for each column in every timeSlot and calculate the delta. Have only positive values" +
+                        "\n" +
+                        "Example:\n $increase(total_requests) FROM requests"
+                },
+                {
                     "name": "$perSecondColumns",
                     "def": "$perSecondColumns(key, value)",
                     "docText": "A combination of $perSecond and $columns" +
                         "\n" +
                         "Example:\n $perSecondColumns(type, total) FROM requests"
+                },
+                {
+                    "name": "$deltaColumns",
+                    "def": "$deltaColumns(key, value)",
+                    "docText": "A combination of $delta and $columns" +
+                        "\n" +
+                        "Example:\n $deltaColumns(type, total) FROM requests"
+                },
+                {
+                    "name": "$increaseColumns",
+                    "def": "$increaseColumns(key, value)",
+                    "docText": "A combination of $increase and $columns" +
+                        "\n" +
+                        "Example:\n $increaseColumns(type, total) FROM requests"
                 },
                 {
                     "name": "$columns",

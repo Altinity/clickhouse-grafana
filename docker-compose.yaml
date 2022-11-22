@@ -116,7 +116,7 @@ services:
     image: golang:1.19
     working_dir: /go/src/grafana-clickhouse
     environment:
-      GOCACHE: "/go-cache"p
+      GOCACHE: "/go-cache"
       RUN_TESTS: "${RUN_TESTS:-.+}"
       CGO_ENABLED: "0"
     volumes:

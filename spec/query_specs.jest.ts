@@ -90,8 +90,8 @@ describe("macros builder:", () => {
             "$perSecond",
             "/* comment */\n$perSecond(from_total, from_amount) FROM requests",
             '/* comment */\nSELECT t,' +
-            ' if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate,' +
-            ' if(runningDifference(max_1) < 0, nan, runningDifference(max_1) / runningDifference(t/1000)) AS max_1_Rate' +
+            ' if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond,' +
+            ' if(runningDifference(max_1) < 0, nan, runningDifference(max_1) / runningDifference(t/1000)) AS max_1_PerSecond' +
             ' FROM (' +
             ' SELECT $timeSeries AS t,' +
             ' max(from_total) AS max_0,' +
@@ -103,14 +103,46 @@ describe("macros builder:", () => {
             SqlQuery.perSecond
         ),
         new Case(
+            "$delta",
+            "/* comment */\n$delta(from_total, from_amount) FROM requests",
+            '/* comment */\nSELECT t,' +
+            ' runningDifference(max_0) AS max_0_Delta,' +
+            ' runningDifference(max_1) AS max_1_Delta' +
+            ' FROM (' +
+            ' SELECT $timeSeries AS t,' +
+            ' max(from_total) AS max_0,' +
+            ' max(from_amount) AS max_1' +
+            ' FROM requests' +
+            ' WHERE $timeFilter' +
+            ' GROUP BY t' +
+            ' ORDER BY t)',
+            SqlQuery.delta
+        ),
+        new Case(
+            "$increase",
+            "/* comment */\n$increase(from_total, from_amount) FROM requests",
+            '/* comment */\nSELECT t,' +
+            ' if(runningDifference(max_0) < 0, 0, runningDifference(max_0)) AS max_0_Increase,' +
+            ' if(runningDifference(max_1) < 0, 0, runningDifference(max_1)) AS max_1_Increase' +
+            ' FROM (' +
+            ' SELECT $timeSeries AS t,' +
+            ' max(from_total) AS max_0,' +
+            ' max(from_amount) AS max_1' +
+            ' FROM requests' +
+            ' WHERE $timeFilter' +
+            ' GROUP BY t' +
+            ' ORDER BY t)',
+            SqlQuery.increase
+        ),
+        new Case(
             "$perSecondColumns",
             "/* comment */\n$perSecondColumns(concat('test',type) AS from_alias, from_total) FROM requests WHERE type IN ('udp', 'tcp')",
             '/* comment */\nSELECT t,' +
-            ' groupArray((from_alias, max_0_Rate)) AS groupArr' +
+            ' groupArray((from_alias, max_0_PerSecond)) AS groupArr' +
             ' FROM (' +
             ' SELECT t,' +
             ' from_alias,' +
-            ' if(runningDifference(max_0) < 0 OR neighbor(from_alias,-1,from_alias) != from_alias, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
+            ' if(runningDifference(max_0) < 0 OR neighbor(from_alias,-1,from_alias) != from_alias, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond' +
             ' FROM (' +
             ' SELECT $timeSeries AS t,' +
             ' concat(\'test\', type) AS from_alias,' +
@@ -125,7 +157,55 @@ describe("macros builder:", () => {
             ' GROUP BY t' +
             ' ORDER BY t',
             SqlQuery.perSecondColumns
-        )
+        ),
+        new Case(
+            "$deltaColumns",
+            "/* comment */\n$deltaColumns(concat('test',type) AS from_alias, from_total) FROM requests WHERE type IN ('udp', 'tcp')",
+            '/* comment */\nSELECT t,' +
+            ' groupArray((from_alias, max_0_Delta)) AS groupArr' +
+            ' FROM (' +
+            ' SELECT t,' +
+            ' from_alias,' +
+            ' if(neighbor(from_alias,-1,from_alias) != from_alias, 0, runningDifference(max_0)) AS max_0_Delta' +
+            ' FROM (' +
+            ' SELECT $timeSeries AS t,' +
+            ' concat(\'test\', type) AS from_alias,' +
+            ' max(from_total) AS max_0' +
+            ' FROM requests' +
+            ' WHERE $timeFilter' +
+            ' AND type IN (\'udp\', \'tcp\')' +
+            ' GROUP BY t, from_alias' +
+            ' ORDER BY from_alias, t' +
+            ')' +
+            ')' +
+            ' GROUP BY t' +
+            ' ORDER BY t',
+            SqlQuery.deltaColumns
+        ),
+        new Case(
+            "$increaseColumns",
+            "/* comment */\n$increaseColumns(concat('test',type) AS from_alias, from_total) FROM requests WHERE type IN ('udp', 'tcp')",
+            '/* comment */\nSELECT t,' +
+            ' groupArray((from_alias, max_0_Increase)) AS groupArr' +
+            ' FROM (' +
+            ' SELECT t,' +
+            ' from_alias,' +
+            ' if(runningDifference(max_0) < 0 OR neighbor(from_alias,-1,from_alias) != from_alias, 0, runningDifference(max_0)) AS max_0_Increase' +
+            ' FROM (' +
+            ' SELECT $timeSeries AS t,' +
+            ' concat(\'test\', type) AS from_alias,' +
+            ' max(from_total) AS max_0' +
+            ' FROM requests' +
+            ' WHERE $timeFilter' +
+            ' AND type IN (\'udp\', \'tcp\')' +
+            ' GROUP BY t, from_alias' +
+            ' ORDER BY from_alias, t' +
+            ')' +
+            ')' +
+            ' GROUP BY t' +
+            ' ORDER BY t',
+            SqlQuery.increaseColumns
+        ),
     ];
 
     each(testCases, (tc) => {

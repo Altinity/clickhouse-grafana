@@ -261,6 +261,18 @@ export default class SqlQuery {
         if (SqlQuery.contain(ast, '$perSecondColumns')) {
             return SqlQuery.perSecondColumns(query, ast);
         }
+        if (SqlQuery.contain(ast, '$increase')) {
+            return SqlQuery.increase(query, ast);
+        }
+        if (SqlQuery.contain(ast, '$increaseColumns')) {
+            return SqlQuery.increaseColumns(query, ast);
+        }
+        if (SqlQuery.contain(ast, '$delta')) {
+            return SqlQuery.delta(query, ast);
+        }
+        if (SqlQuery.contain(ast, '$deltaColumns')) {
+            return SqlQuery.deltaColumns(query, ast);
+        }
         return query;
     }
 
@@ -406,25 +418,15 @@ export default class SqlQuery {
             having = "",
             aliasIndex = key.toLowerCase().indexOf(' as '),
             alias = "perSecondColumns";
-        if (aliasIndex === -1) {
-            key = key + " AS " + alias;
-        } else {
-            alias = key.slice(aliasIndex + 4, key.length);
-        }
-
-        if (havingIndex !== -1) {
-            having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
-            fromQuery = fromQuery.slice(0, havingIndex - 1);
-        }
-        fromQuery = SqlQuery._applyTimeFilter(fromQuery);
+        [key, alias, having, fromQuery] = SqlQuery._detectAliasAndApplyTimeFilter(aliasIndex, key, alias, havingIndex, having, fromQuery);
 
         return beforeMacrosQuery + 'SELECT' +
             ' t,' +
-            ' groupArray((' + alias + ', max_0_Rate)) AS groupArr' +
+            ' groupArray((' + alias + ', max_0_PerSecond)) AS groupArr' +
             ' FROM (' +
             ' SELECT t,' +
             ' ' + alias +
-            ', if(runningDifference(max_0) < 0 OR neighbor('+ alias +',-1,'+ alias +') != '+ alias +', nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_Rate' +
+            ', if(runningDifference(max_0) < 0 OR neighbor('+ alias +',-1,'+ alias +') != '+ alias +', nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond' +
             ' FROM (' +
             ' SELECT $timeSeries AS t' +
             ', ' + key +
@@ -437,6 +439,100 @@ export default class SqlQuery {
             ')' +
             ' GROUP BY t' +
             ' ORDER BY t';
+    }
+
+    static increaseColumns(query: string, ast: any): string {
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacro('$increaseColumns', query);
+        if (fromQuery.length < 1) {
+            return query;
+        }
+        let args = ast['$increaseColumns'];
+        if (args.length !== 2) {
+            throw {message: 'Amount of arguments must equal 2 for $increaseColumns func. Parsed arguments are: ' + args.join(', ')};
+        }
+
+        let key = args[0],
+            value = 'max(' + args[1].trim() + ') AS max_0',
+            havingIndex = fromQuery.toLowerCase().indexOf('having'),
+            having = "",
+            aliasIndex = key.toLowerCase().indexOf(' as '),
+            alias = "increaseColumns";
+
+        [key, alias, having, fromQuery] = SqlQuery._detectAliasAndApplyTimeFilter(aliasIndex, key, alias, havingIndex, having, fromQuery);
+
+        return beforeMacrosQuery + 'SELECT' +
+            ' t,' +
+            ' groupArray((' + alias + ', max_0_Increase)) AS groupArr' +
+            ' FROM (' +
+            ' SELECT t,' +
+            ' ' + alias +
+            ', if(runningDifference(max_0) < 0 OR neighbor('+ alias +',-1,'+ alias +') != '+ alias +', 0, runningDifference(max_0)) AS max_0_Increase' +
+            ' FROM (' +
+            ' SELECT $timeSeries AS t' +
+            ', ' + key +
+            ', ' + value + ' ' +
+            fromQuery +
+            ' GROUP BY t, ' + alias +
+            having +
+            ' ORDER BY ' + alias + ', t' +
+            ')' +
+            ')' +
+            ' GROUP BY t' +
+            ' ORDER BY t';
+    }
+
+    static deltaColumns(query: string, ast: any): string {
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacro('$deltaColumns', query);
+        if (fromQuery.length < 1) {
+            return query;
+        }
+        let args = ast['$deltaColumns'];
+        if (args.length !== 2) {
+            throw {message: 'Amount of arguments must equal 2 for $deltaColumns func. Parsed arguments are: ' + args.join(', ')};
+        }
+
+        let key = args[0],
+            value = 'max(' + args[1].trim() + ') AS max_0',
+            havingIndex = fromQuery.toLowerCase().indexOf('having'),
+            having = "",
+            aliasIndex = key.toLowerCase().indexOf(' as '),
+            alias = "deltaColumns";
+        [key, alias, having, fromQuery] = SqlQuery._detectAliasAndApplyTimeFilter(aliasIndex, key, alias, havingIndex, having, fromQuery);
+
+        return beforeMacrosQuery + 'SELECT' +
+            ' t,' +
+            ' groupArray((' + alias + ', max_0_Delta)) AS groupArr' +
+            ' FROM (' +
+            ' SELECT t,' +
+            ' ' + alias +
+            ', if(neighbor('+ alias +',-1,'+ alias +') != '+ alias +', 0, runningDifference(max_0)) AS max_0_Delta' +
+            ' FROM (' +
+            ' SELECT $timeSeries AS t' +
+            ', ' + key +
+            ', ' + value + ' ' +
+            fromQuery +
+            ' GROUP BY t, ' + alias +
+            having +
+            ' ORDER BY ' + alias + ', t' +
+            ')' +
+            ')' +
+            ' GROUP BY t' +
+            ' ORDER BY t';
+    }
+
+    static _detectAliasAndApplyTimeFilter(aliasIndex: number, key, alias: string, havingIndex: number, having: string, fromQuery: string) {
+        if (aliasIndex === -1) {
+            key = key + " AS " + alias;
+        } else {
+            alias = key.slice(aliasIndex + 4, key.length);
+        }
+
+        if (havingIndex !== -1) {
+            having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
+            fromQuery = fromQuery.slice(0, havingIndex - 1);
+        }
+        fromQuery = SqlQuery._applyTimeFilter(fromQuery);
+        return [key, alias, having, fromQuery];
     }
 
     // $perSecond(query)
@@ -461,7 +557,81 @@ export default class SqlQuery {
         let cols = [];
         each(args, function (a, i) {
             cols.push('if(runningDifference(max_' + i + ') < 0, nan, ' +
-                'runningDifference(max_' + i + ') / runningDifference(t/1000)) AS max_' + i + '_Rate');
+                'runningDifference(max_' + i + ') / runningDifference(t/1000)) AS max_' + i + '_PerSecond');
+        });
+
+        fromQuery = SqlQuery._applyTimeFilter(fromQuery);
+        return beforeMacrosQuery + 'SELECT ' +
+            't,' +
+            ' ' + cols.join(', ') +
+            ' FROM (' +
+            ' SELECT $timeSeries AS t,' +
+            ' ' + args.join(', ') +
+            ' ' + fromQuery +
+            ' GROUP BY t' +
+            ' ORDER BY t' +
+            ')';
+    }
+
+    // $increase(query)
+    static increase(query: string, ast: any): string {
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacro('$increase', query);
+        if (fromQuery.length < 1) {
+            return query;
+        }
+        let args = ast['$increase'];
+        if (args.length < 1) {
+            throw {message: 'Amount of arguments must be > 0 for $increase func. Parsed arguments are:  ' + args.join(', ')};
+        }
+
+        each(args, function (a, i) {
+            args[i] = 'max(' + a.trim() + ') AS max_' + i;
+        });
+
+        return SqlQuery._increase(args, beforeMacrosQuery, fromQuery);
+    }
+
+    static _increase(args, beforeMacrosQuery, fromQuery: string): string {
+        let cols = [];
+        each(args, function (a, i) {
+            cols.push('if(runningDifference(max_' + i + ') < 0, 0, runningDifference(max_' + i + ')) AS max_' + i + '_Increase');
+        });
+
+        fromQuery = SqlQuery._applyTimeFilter(fromQuery);
+        return beforeMacrosQuery + 'SELECT ' +
+            't,' +
+            ' ' + cols.join(', ') +
+            ' FROM (' +
+            ' SELECT $timeSeries AS t,' +
+            ' ' + args.join(', ') +
+            ' ' + fromQuery +
+            ' GROUP BY t' +
+            ' ORDER BY t' +
+            ')';
+    }
+
+    // $delta(query)
+    static delta(query: string, ast: any): string {
+        let [beforeMacrosQuery, fromQuery] = SqlQuery._parseMacro('$delta', query);
+        if (fromQuery.length < 1) {
+            return query;
+        }
+        let args = ast['$delta'];
+        if (args.length < 1) {
+            throw {message: 'Amount of arguments must be > 0 for $delta func. Parsed arguments are:  ' + args.join(', ')};
+        }
+
+        each(args, function (a, i) {
+            args[i] = 'max(' + a.trim() + ') AS max_' + i;
+        });
+
+        return SqlQuery._delta(args, beforeMacrosQuery, fromQuery);
+    }
+
+    static _delta(args, beforeMacrosQuery, fromQuery: string): string {
+        let cols = [];
+        each(args, function (a, i) {
+            cols.push('runningDifference(max_' + i + ') AS max_' + i + '_Delta');
         });
 
         fromQuery = SqlQuery._applyTimeFilter(fromQuery);

@@ -28,7 +28,7 @@ describe("macros builder:", () => {
             ' from_good/runningDifference(t/1000) from_goodRate,' +
             ' from_bad/runningDifference(t/1000) from_badRate' +
             ' FROM (' +
-            ' SELECT $timeSeries AS t,' +
+            ' SELECT $timeSeries AS break,' +
             ' countIf(Type = 200) AS from_good,' +
             ' countIf(Type != 200) AS from_bad' +
             ' FROM requests' +

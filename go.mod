@@ -2,7 +2,7 @@ module github.com/Altinity/clickhouse-grafana
 
 require (
 	github.com/dlclark/regexp2 v1.7.0
-	github.com/grafana/grafana-plugin-sdk-go v0.140.0
+	github.com/grafana/grafana-plugin-sdk-go v0.144.0
 	github.com/stretchr/testify v1.7.2
 	golang.org/x/sync v0.0.0-20220929204114-8fcdb60fdcc0
 )
@@ -24,6 +24,7 @@ require (
 	github.com/hashicorp/yamux v0.1.1 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/compress v1.15.11 // indirect
+	github.com/magefile/mage v1.13.0 // indirect
 	github.com/mattetti/filebuffer v1.0.1 // indirect
 	github.com/mattn/go-colorable v0.1.13 // indirect
 	github.com/mattn/go-isatty v0.0.16 // indirect

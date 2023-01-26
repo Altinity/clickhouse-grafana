@@ -24,8 +24,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 27,
-  "iteration": 1659161247712,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -76,6 +74,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -131,7 +131,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -233,6 +234,8 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
@@ -288,7 +291,8 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
           "mode": "single",
@@ -344,25 +348,89 @@
             }
           },
           "queryType": "sql",
-          "rawSql": "SELECT $__timeInterval(EventTime) as time, Name, sum(Value) \r\nFROM default.test_alerts \r\nWHERE $__timeFilter(EventTime) GROUP BY Name, time \r\nORDER BY time ASC",
+          "rawSql": "SELECT $__timeInterval(EventTime) as time, Name, sum(Value) \r\nFROM default.test_alerts \r\nWHERE $__timeFilter(EventTime) \r\nAND Name IN (${service_name})\r\nGROUP BY Name, time \r\nORDER BY time ASC",
           "refId": "A"
         }
       ],
       "title": "query editor",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "P4F4839B759FB0509"
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 5,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "builderOptions": {
+            "database": "default",
+            "fields": [
+              "*"
+            ],
+            "filters": [
+              {
+                "condition": "AND",
+                "filterType": "custom",
+                "key": "event_time",
+                "operator": "WITH IN DASHBOARD TIME RANGE",
+                "type": "DateTime",
+                "value": "TODAY"
+              }
+            ],
+            "limit": null,
+            "metrics": [],
+            "mode": "list",
+            "orderBy": [],
+            "table": "test_logs",
+            "timeField": "",
+            "timeFieldType": "datetime"
+          },
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "P4F4839B759FB0509"
+          },
+          "format": 1,
+          "queryType": "builder",
+          "rawSql": "SELECT * FROM default.test_logs WHERE   ( event_time  >= $__fromTime AND event_time <= $__toTime )",
+          "refId": "A"
+        }
+      ],
+      "title": "Logs + query builder",
+      "type": "logs"
     }
   ],
   "refresh": false,
-  "schemaVersion": 36,
+  "schemaVersion": 37,
   "style": "dark",
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
-          "selected": false,
-          "text": "test2",
-          "value": "test2"
+          "selected": true,
+          "text": [
+            "test2"
+          ],
+          "value": [
+            "test2"
+          ]
         },
         "datasource": {
           "type": "grafana-clickhouse-datasource",
@@ -402,6 +470,6 @@
   "timezone": "",
   "title": "grafana labs dashboard",
   "uid": "GgMuISkVz",
-  "version": 5,
+  "version": 1,
   "weekStart": ""
 }

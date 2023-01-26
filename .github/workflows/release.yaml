@@ -84,19 +84,19 @@ jobs:
           export GRAFANA_PLUGIN_ARTIFACT=${GRAFANA_PLUGIN_ID}-${GRAFANA_PLUGIN_VERSION}.zip
           export GRAFANA_PLUGIN_ARTIFACT_CHECKSUM=${GRAFANA_PLUGIN_ARTIFACT}.md5
 
-          echo "::set-output name=plugin-id::${GRAFANA_PLUGIN_ID}"
-          echo "::set-output name=plugin-version::${GRAFANA_PLUGIN_VERSION}"
-          echo "::set-output name=plugin-type::${GRAFANA_PLUGIN_TYPE}"
-          echo "::set-output name=archive::${GRAFANA_PLUGIN_ARTIFACT}"
-          echo "::set-output name=archive-checksum::${GRAFANA_PLUGIN_ARTIFACT_CHECKSUM}"
+          echo "plugin-id=${GRAFANA_PLUGIN_ID}" >> $GITHUB_OUTPUT
+          echo "plugin-version=${GRAFANA_PLUGIN_VERSION}" >> $GITHUB_OUTPUT
+          echo "plugin-type=${GRAFANA_PLUGIN_TYPE}" >> $GITHUB_OUTPUT
+          echo "archive=${GRAFANA_PLUGIN_ARTIFACT}" >> $GITHUB_OUTPUT
+          echo "archive-checksum=${GRAFANA_PLUGIN_ARTIFACT_CHECKSUM}" >> $GITHUB_OUTPUT
 
-          echo ::set-output name=github-tag::${GITHUB_REF#refs/*/}
+          echo "github-tag=${GITHUB_REF#refs/*/}" >> $GITHUB_OUTPUT
 
       - name: Read changelog
         id: changelog
         run: |
           awk '/^# / {s++} s == 1 {print}' CHANGELOG.md > /tmp/release_notes.md
-          echo "::set-output name=path::/tmp/release_notes.md"
+          echo "path=/tmp/release_notes.md" >> $GITHUB_OUTPUT
 
       - name: Package plugin
         id: package-plugin
@@ -106,7 +106,7 @@ jobs:
           pushd /tmp/
           zip ${{ steps.metadata.outputs.archive }} ${{ steps.metadata.outputs.plugin-id }} -r
           md5sum ${{ steps.metadata.outputs.archive }} > /tmp/${{ steps.metadata.outputs.archive-checksum }}
-          echo "::set-output name=checksum::$(cat /tmp/${{ steps.metadata.outputs.archive-checksum }} | cut -d' ' -f1)"
+          echo "checksum=$(cat /tmp/${{ steps.metadata.outputs.archive-checksum }} | cut -d' ' -f1)" >> $GITHUB_OUTPUT
           popd
 
       - name: Lint plugin

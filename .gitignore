@@ -7,3 +7,4 @@ yarn.lock
 .env
 ubuntu*.log
 dist/**.LICENSE.txt
+.idea/

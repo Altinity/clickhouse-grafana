@@ -644,3 +644,136 @@ describe("Query SELECT with special character in table", () => {
         expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
     });
 });
+
+/* check https://github.com/Altinity/clickhouse-grafana/issues/276 */
+describe("Query with Mustache templating", () => {
+    const query = "{{#METRIC_FIRST_BYTE}}\n" +
+        "    SELECT\n" +
+        "        toStartOfMinute(event_time) AS event_time,\n" +
+        "        service_name,\n" +
+        "        from_user,\n" +
+        "        count() as count\n" +
+        "    FROM $table\n" +
+        "\n" +
+        "    WHERE\n" +
+        "        $timeFilter\n" +
+        "        $conditionalTest(AND toLowerCase(service_name) IN ($metric),$metric)\n" +
+        "    GROUP BY\n" +
+        "        event_time,\n" +
+        "        from_user,\n" +
+        "        service_name\n" +
+        "{{/METRIC_FIRST_BYTE}}\n" +
+        "{{#METRIC_FIRST_PAINT}}\n" +
+        "    SELECT\n" +
+        "        toStartOfMinute(event_time) AS event_time,\n" +
+        "        service_name,\n" +
+        "        from_user,\n" +
+        "        count() as count\n" +
+        "    FROM $table\n" +
+        "\n" +
+        "    WHERE\n" +
+        "        $timeFilter\n" +
+        "        $conditionalTest(AND toLowerCase(service_name) IN ($metric),$metric)\n" +
+        "    GROUP BY\n" +
+        "        event_time,\n" +
+        "        from_user,\n" +
+        "        service_name\n" +
+        "{{/METRIC_FIRST_PAINT}}";
+    const expQuery = "SELECT\n" +
+    "    toStartOfMinute(event_time) AS event_time,\n" +
+    "    service_name,\n" +
+    "    from_user,\n" +
+    "    count() as count\n" +
+    "FROM default.test_grafana\n" +
+    "\n" +
+    "WHERE\n" +
+    "    event_date >= toDate(1545613320) AND event_date <= toDate(1546300740) AND event_time >= toDateTime(1545613320) AND event_time <= toDateTime(1546300740)\n" +
+    "    AND toLowerCase(service_name) IN ('first_byte','first_paint')\n" +
+    "    AND test = 'value'\n" +
+    "    AND test2 LIKE '%value%'\n" +
+    "    AND test3 NOT LIKE '%value%'\n" +
+    "GROUP BY\n" +
+    "    event_time,\n" +
+    "    from_user,\n" +
+    "    service_name";
+    let templateSrv = new TemplateSrvStub();
+    templateSrv.variables = [
+        {
+            name: "metric",
+            type: "query",
+            current: {
+                value: ["first_byte", "first_paint"],
+            },
+            options: [
+                {selected: false, value: "$__all"},
+                {selected: true, value: "first_byte"},
+                {selected: true, value: "first_paint"},
+            ]
+        },
+    ];
+    const adhocFilters = [
+        {
+            key: "test",
+            operator: "=",
+            value: "value"
+        },
+        {
+            key: "test2",
+            operator: "=~",
+            value: "%value%"
+        },
+        {
+            key: "test3",
+            operator: "!~",
+            value: "%value%"
+        },
+    ];
+    let target = {
+        query: query,
+        interval: "20s",
+        intervalFactor: 1,
+        skip_comments: false,
+        table: "test_grafana",
+        database: "default",
+        dateTimeType: "DATETIME",
+        dateColDataType: "event_date",
+        dateTimeColDataType: "event_time",
+        round: "1m",
+        rawQuery: "",
+    };
+    const options = {
+        rangeRaw: {
+            from: moment('2018-12-24 01:02:03Z'),
+            to: moment('2018-12-31 23:59:59Z'),
+        },
+        range: {
+            from: moment('2018-12-24 01:02:03Z'),
+            to: moment('2018-12-31 23:59:59Z'),
+        },
+        scopedVars: {
+            __interval: {
+                text: "20s",
+                value: "20s",
+            },
+            __interval_ms: {
+                text: "20000",
+                value: 20000,
+            },
+            metric: {
+                value: ['first_byte', 'first_paint'],
+                multi: true,
+                includeAll: true,
+                options: [
+                    {selected: false, value: "$__all"},
+                    {selected: true, value: "first_byte"},
+                    {selected: true, value: "first_paint"},
+                ]
+            },
+        },
+    };
+    let sql_query = new SqlQuery(target, templateSrv, options);
+
+    it("applyMacros with subQuery and adHocFilters", () => {
+        expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+    });
+});

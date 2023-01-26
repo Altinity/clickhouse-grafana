@@ -3,6 +3,7 @@
 import {each, isArray, isEmpty, isString, map} from 'lodash-es';
 import * as dateMath from 'grafana/app/core/utils/datemath';
 import moment from 'moment';
+import Mustache from 'mustache';
 import Scanner from './scanner';
 
 const durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
@@ -32,8 +33,12 @@ export default class SqlQuery {
     }
 
     replace(options, adhocFilters) {
+        const view = {
+            METRIC_FIRST_BYTE: true
+        };
+
         let query = this.templateSrv.replace(
-            SqlQuery.conditionalTest(this.target.query.trim(), this.templateSrv), options.scopedVars, SqlQuery.interpolateQueryExpr
+            SqlQuery.conditionalTest(Mustache.render(this.target.query.trim(), view), this.templateSrv), options.scopedVars, SqlQuery.interpolateQueryExpr
             ),
             scanner = new Scanner(query),
             dateTimeType = this.target.dateTimeType

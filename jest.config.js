@@ -1,8 +1,9 @@
 module.exports = {
   verbose: true,
   roots: ["<rootDir>"],
+  preset: "ts-jest",
   transform: {
-    "\\.(js|jsx)$": "babel-jest",
+    "\\.(js|jsx)?$": "babel-jest",
     "\\.(ts|tsx)?$": "ts-jest",
   },
   testRegex: "(\\.|/)([jt]est)\\.ts$",
@@ -15,14 +16,6 @@ module.exports = {
     "<rootDir>/.cache/"
   ],
   transformIgnorePatterns: [
-    "<rootDir>/node_modules/(?!lodash-es).+\\.js$"
+    "node_modules/(?!(lodash-es|d3-|grafana-sdk-mocks))",
   ],
-  globals: {
-    "ts-jest": {
-      tsconfig: {
-        strictNullChecks: false,
-        noImplicitAny: false,
-      },
-    },
-  },
 };

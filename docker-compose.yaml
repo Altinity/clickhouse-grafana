@@ -113,7 +113,7 @@ services:
       '
 
   backend_builder:
-    image: golang:1.19
+    image: golang:1.20
     working_dir: /go/src/grafana-clickhouse
     environment:
       GOCACHE: "/go-cache"
@@ -126,11 +126,11 @@ services:
     command: |
       bash -xec "
         go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ &&
-        GOOS=linux GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ && \
-        GOOS=linux GOARCH=arm64 go build -o ./dist/altinity-clickhouse-plugin_linux_arm64 ./pkg/ && \
-        GOOS=windows GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_windows_amd64.exe ./pkg/ && \
-        GOOS=darwin GOARCH=amd64 go build -o ./dist/altinity-clickhouse-plugin_darwin_amd64 ./pkg/ && \
-        GOOS=darwin GOARCH=arm64 go build -o ./dist/altinity-clickhouse-plugin_darwin_arm64 ./pkg/ && \
+        GOOS=linux GOARCH=amd64 go build -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ && \
+        GOOS=linux GOARCH=arm64 go build -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_arm64 ./pkg/ && \
+        GOOS=windows GOARCH=amd64 go build -buildvcs=false -o ./dist/altinity-clickhouse-plugin_windows_amd64.exe ./pkg/ && \
+        GOOS=darwin GOARCH=amd64 go build -buildvcs=false -o ./dist/altinity-clickhouse-plugin_darwin_amd64 ./pkg/ && \
+        GOOS=darwin GOARCH=arm64 go build -buildvcs=false -o ./dist/altinity-clickhouse-plugin_darwin_arm64 ./pkg/ && \
         chmod +x ./dist/altinity-clickhouse-plugin*
       "
 

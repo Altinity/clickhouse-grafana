@@ -73,7 +73,7 @@ jobs:
       - name: Sign plugin
         env:
           GRAFANA_API_KEY: ${{ secrets.GRAFANA_API_KEY }} # Requires a Grafana API key from Grafana.com.
-        run: node ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js plugin:sign
+        run: node ./node_modules/@grafana/sign-plugin/dist/bin/run.js --distDir=./dist
 
       - name: Get plugin metadata
         id: metadata

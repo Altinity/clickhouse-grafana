@@ -143,7 +143,7 @@ services:
       - "node_modules:/grafana-clickhouse/node_modules"
     command: |
       bash -xec "
-        if [[ ! -f ./node_modules/@grafana/toolkit/bin/grafana-toolkit.js ]]; then npm install --production=false; fi && \
+        if [[ ! -f ./node_modules/@grafana/sign-plugin/dist/bin/run.js ]]; then npm install --production=false; fi && \
         npm run sign
       "
 

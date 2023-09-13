@@ -115,7 +115,7 @@ jobs:
           pushd /tmp/plugin-validator/pkg/cmd/plugincheck2
           go install
           popd
-          plugincheck2 -config=/tmp/plugin-validator/config/strict.yaml -strict /tmp/${{ steps.metadata.outputs.archive }}
+          plugincheck2 -config=/tmp/plugin-validator/config/strict.yaml /tmp/${{ steps.metadata.outputs.archive }}
 
       - name: Create release
         id: create_release

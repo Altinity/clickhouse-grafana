@@ -1,3 +1,11 @@
+# 2.5.4 (2023-09-13)
+## Enhancements:
+* switch to go 1.21
+
+## Fixes:
+* fix `$conditionalTest` macro behavior when drop-down template variable doesn't have `All value`, have `Multi value` and zero values is selected, fix https://github.com/Altinity/clickhouse-grafana/issues/485
+* fix some function descriptions in ACE query editor
+
 # 2.5.3 (2022-11-22) 
 ## Enhancements:
 * add secureJsonData description for datasource in README, fix https://github.com/Altinity/clickhouse-grafana/issues/452

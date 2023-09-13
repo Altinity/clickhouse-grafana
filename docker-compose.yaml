@@ -113,7 +113,7 @@ services:
       '
 
   backend_builder:
-    image: golang:1.20
+    image: golang:1.21
     working_dir: /go/src/grafana-clickhouse
     environment:
       GOCACHE: "/go-cache"

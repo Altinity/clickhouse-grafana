@@ -407,12 +407,12 @@ export default function () {
                     "def": "quantileExactWeighted(level)(x, weight)",
                     "docText": "Computes the level quantile exactly. In this case, each value is taken into account with the weight weight - as if it is present weight once. The arguments of the function can be considered as histograms, where the value \"x\" corresponds to the \"column\" of the histogram of the height weight, and the function itself can be considered as the summation of histograms.\n" +
                         "\n" +
-                        "The algorithm is a hash table. Because of this, in case the transmitted values ​​are often repeated, the function consumes less RAM than the quantileExact. You can use this function instead of quantileExact, specifying the number 1 as the weight."
+                        "The algorithm is a hash table. Because of this, in case the transmitted values are often repeated, the function consumes less RAM than the quantileExact. You can use this function instead of quantileExact, specifying the number 1 as the weight."
                 },
                 {
                     "name": "min",
                     "def": "min(v)",
-                    "docText": "Minimal execution speed in rows per second. Checked on every data block when `timeout_before_checking_execution_speed` expires. If the execution speed is lower, an exception is thrown."
+                    "docText": "Aggregate function that calculates the minimum across a group of values."
                 },
                 {
                     "name": "varSamp",
@@ -498,7 +498,7 @@ export default function () {
                 {
                     "name": "max",
                     "def": "max(v)",
-                    "docText": "Maximum number of bytes (uncompressed data) that can be passed to a remote server or saved in a temporary table when using GLOBAL IN."
+                    "docText": "Aggregate function that calculates the maximum across a group of values."
                 },
                 {
                     "name": "quantileTDigest",

@@ -1,4 +1,5 @@
 {
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
   "id": "vertamedia-clickhouse-datasource",
   "type": "datasource",
   "name": "Altinity plugin for ClickHouse",
@@ -44,11 +45,26 @@
         "url": "https://github.com/Altinity/clickhouse-grafana"
       }
     ],
-    "version": "2.5.4",
-    "updated": "2020-07-31"
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
   },
   "dependencies": {
-    "grafanaDependency": ">=4.6.0",
+    "grafanaDependency": ">=10.0.3",
     "plugins": []
-  }
+  },
+  "routes": [
+    {
+      "path": "xHeaderKey",
+      "headers": [
+        {
+          "name": "X-ClickHouse-User",
+          "content": "{{ .JsonData.xHeaderUser }}"
+        },
+        {
+          "name": "X-ClickHouse-Key",
+          "content": "{{ .SecureJsonData.xHeaderKey }}"
+        }
+      ]
+    }
+  ]
 }

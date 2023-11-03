@@ -1,8 +1,9 @@
-import {isObject} from 'lodash';
+///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
+import {isObject} from 'lodash-es';
 import {AnnotationEvent} from '@grafana/data';
 
 export default class ResponseParser {
-    constructor(private $q: any) {
+    constructor(private $q) {
     }
 
     parse(query: string, results: any): any[] {
@@ -11,16 +12,14 @@ export default class ResponseParser {
         }
 
         const sqlResults = results.data;
-        let res: any[] = [];
+        let res = [];
 
-        const keys = sqlResults.meta.map((item: any) => {
-            return item.name
-        });
+        const keys = Object.keys(sqlResults[0]);
         const textColIndex = ResponseParser.findColIndex(keys, '__text');
         const valueColIndex = ResponseParser.findColIndex(keys, '__value');
         const keyValuePairs = keys.length === 2 && textColIndex !== -1 && valueColIndex !== -1;
 
-        sqlResults.data.forEach( (result: {[key: string]: any}) => {
+        sqlResults.forEach(result => {
             if (!isObject(result)) {
                 res.push({text: result});
                 return;
@@ -29,17 +28,12 @@ export default class ResponseParser {
             let keys = Object.keys(result);
             if (keys.length > 1) {
                 if (keyValuePairs) {
-                    const textKey = keys[textColIndex] as keyof typeof result;
-                    const valueKey = keys[valueColIndex] as keyof typeof result;
-                    if (textKey in result && valueKey in result) {
-                        res.push({text: result[textKey], value: result[valueKey]});
-                    }
+                    res.push({text: result[keys[textColIndex]], value: result[keys[valueColIndex]]});
                 } else {
                     res.push(result);
                 }
             } else {
-                const textKey = keys[0] as keyof typeof result;
-                res.push({text: result[textKey]});
+                res.push({text: result[keys[0]]});
             }
         });
 
@@ -56,7 +50,7 @@ export default class ResponseParser {
         return -1;
     }
 
-    transformAnnotationResponse(options: any, data: any) {
+    transformAnnotationResponse(options, data) {
         const rows = data.data;
         const columns = data.meta;
         const result = [];

@@ -1,17 +1,17 @@
-import { each, isArray, find, pickBy, omitBy } from 'lodash';
+import { each, isArray, find, pickBy, omitBy } from 'lodash-es';
 import { FieldType, MutableDataFrame, DataFrame } from '@grafana/data';
 
 export default class SqlSeries {
     refId: string;
     series: any;
     keys: any;
-    meta: any[];
+    meta: any;
     tillNow: any;
     from: any;
     to: any;
 
     /** @ngInject */
-    constructor(options: any) {
+    constructor(options) {
         this.refId = options.refId;
         this.series = options.series;
         this.meta = options.meta;
@@ -22,20 +22,19 @@ export default class SqlSeries {
     }
 
     toTable(): any {
-        let self = this;
-        let data: Array<{ columns: any[]; rows: any[]; type: string; }> = [];
+        let self = this, data = [];
         if (this.series.length === 0) {
             return data;
         }
 
-        let columns: any[] = [];
+        let columns = [];
         each(self.meta, function (col) {
             columns.push({"text": col.name, "type": SqlSeries._toJSType(col.type)});
         });
 
-        let rows: any[] = [];
+        let rows = [];
         each(self.series, function (ser) {
-            let r: any[] = [];
+            let r = [];
             each(columns, function (col, index) {
                 r.push(SqlSeries._formatValueByType(ser[col.text], SqlSeries._toJSType(self.meta[index].type)));
             });
@@ -60,8 +59,8 @@ export default class SqlSeries {
             return dataFrame;
         }
 
-        let types: {[key: string]: any} = {};
-        let labelFields: any[] = [];
+        let types = {};
+        let labelFields = [];
         // Trying to find message field
         // If we have a "content" field - take it
         let messageField = find(this.meta, ['name', 'content'])?.name;
@@ -118,22 +117,22 @@ export default class SqlSeries {
     }
 
     toTimeSeries(extrapolate = true): any {
-        let self = this, timeSeries: any[] = [];
+        let self = this, timeSeries = [];
         if (self.series.length === 0) {
             return timeSeries;
         }
 
-        let metrics: { [key: string]: any[] } = {};
+        let metrics = {};
         // timeCol have to be the first column always
         let timeCol = self.meta[0];
         let lastTimeStamp = self.series[0][timeCol.name];
-        let keyColumns = self.keys.filter( (name: string) => { return name !== timeCol.name; });
+        let keyColumns = self.keys.filter(name => name !== timeCol.name);
         each(self.series, function (row) {
             let t = SqlSeries._formatValue(row[timeCol.name]);
             /* Build composite key (categories) from GROUP BY */
-            let metricKey: any = null;
+            let metricKey = null;
             if (keyColumns.length > 0) {
-                metricKey = keyColumns.map((name: string) => row[name]).join(', ');
+                metricKey = keyColumns.map(name => row[name]).join(', ');
             }
             /* Make sure all series end with a value or nil for current timestamp
              * to render discontinuous timeseries properly. */
@@ -178,7 +177,7 @@ export default class SqlSeries {
         return timeSeries;
     }
 
-    extrapolate(datapoints: any) {
+    extrapolate(datapoints) {
         if (datapoints.length < 10 || (!this.tillNow && datapoints[0][0] !== 0)) {
             return datapoints;
         }
@@ -221,7 +220,7 @@ export default class SqlSeries {
             metrics[key] = [];
             /* Fill null values for each new series */
             for (let seriesName in metrics) {
-                metrics[seriesName].forEach((v: any) => {
+                metrics[seriesName].forEach(v => {
                     if (v[1] < timestamp) {
                         metrics[key].push([null, v[1]]);
                     }

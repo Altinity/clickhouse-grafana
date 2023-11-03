@@ -3,9 +3,9 @@ const columnsQuery = "SELECT database, table, name, type FROM system.columns WHE
 const valuesQuery = "SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300";
 const regexEnum = /'(?:[^']+|'')+'/gmi;
 
-export default class AdHocFilter {
+export default class AdhocCtrl {
     tagKeys: any[];
-    tagValues: {[key: string]: any} = {};
+    tagValues: any[];
     datasource: any;
     query: string;
 
@@ -25,26 +25,26 @@ export default class AdHocFilter {
     // if no filters applied all tables from all databases will be fetched
     // if datasource setting `defaultDatabase` is set only tables from that database will be fetched
     // if query param passed it will be performed instead of default
-    GetTagKeys(query?: string) {
+    GetTagKeys(query?) {
         let self = this;
         if (this.tagKeys.length > 0) {
             return Promise.resolve(this.tagKeys);
         }
         let q = this.query;
-        if (query && query.length > 0) {
+        if (query.length > 0) {
             q = query;
         }
         return this.datasource.metricFindQuery(q)
-            .then(function (response: any) {
+            .then(function (response) {
                 return self.processTagKeysResponse(response);
             });
     }
 
-    processTagKeysResponse(response: any) {
+    processTagKeysResponse(response) {
         let self = this;
-        let columnNames: {[key: string]: any} = {}
-        response.forEach(function (item: any) {
-            let text: string = item.table + '.' + item.name;
+        let columnNames = {};
+        response.forEach(function (item) {
+            let text = item.table + '.' + item.name;
             if (self.datasource.defaultDatabase.length === 0) {
                 text = item.database + '.' + text;
             }
@@ -54,7 +54,7 @@ export default class AdHocFilter {
                 let options = item.type.match(regexEnum);
                 if (options.length > 0) {
                     self.tagValues[text] = [];
-                    options.forEach(function (o: any) {
+                    options.forEach(function (o) {
                         self.tagValues[text].push({text: o, value: o});
                     });
                     self.tagValues[item.name] = self.tagValues[text];
@@ -72,7 +72,7 @@ export default class AdHocFilter {
     // GetTagValues returns column values according to passed options
     // Values for fields with Enum type were already fetched in GetTagKeys func and stored in `tagValues`
     // Values for fields which not represented on `tagValues` get from ClickHouse and cached on `tagValues`
-    GetTagValues(options: any) {
+    GetTagValues(options) {
         let self = this;
         if (this.tagValues.hasOwnProperty(options.key)) {
             return Promise.resolve(this.tagValues[options.key]);
@@ -95,15 +95,15 @@ export default class AdHocFilter {
             .replace('{table}', table);
 
         return this.datasource.metricFindQuery(q)
-            .then(function (response: any) {
+            .then(function (response) {
                 self.tagValues[options.key] = self.processTagValuesResponse(response);
                 return self.tagValues[options.key];
             });
     }
 
-    processTagValuesResponse(response: any) {
-        let tagValues: any[] = [];
-        response.forEach(function (item: any) {
+    processTagValuesResponse(response) {
+        let tagValues = [];
+        response.forEach(function (item) {
             tagValues.push({text: item.text, value: item.text});
         });
         return Promise.resolve(tagValues);

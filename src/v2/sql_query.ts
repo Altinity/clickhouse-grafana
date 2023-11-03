@@ -1,13 +1,12 @@
-import {isArray, isEmpty, isString, each, map} from 'lodash';
-import dayjs from 'dayjs';
+///<reference path="../node_modules/grafana-sdk-mocks/app/headers/common.d.ts" />
+
+import {each, isArray, isEmpty, isString, map} from 'lodash-es';
+import * as dateMath from 'grafana/app/core/utils/datemath';
+import moment from 'moment';
 import Scanner from './scanner';
 
 const durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
 const NumberOnlyRegexp = /^[+-]?\d+(\.\d+)?$/;
-
-import {TemplateSrv} from '@grafana/runtime';
-
-import {TypedVariableModel, dateMath} from '@grafana/data';
 
 export interface RawTimeRange {
     from: any | string;
@@ -22,16 +21,17 @@ export interface TimeRange {
 
 export default class SqlQuery {
     target: any;
-    templateSrv: TemplateSrv;
+    templateSrv: any;
     options: any;
 
-    constructor(target: any, templateSrv: TemplateSrv, options: any) {
+    /** @ngInject */
+    constructor(target, templateSrv?, options?) {
         this.target = target;
         this.templateSrv = templateSrv;
         this.options = options;
     }
 
-    replace(options: any, adhocFilters: any) {
+    replace(options, adhocFilters) {
         let query = this.templateSrv.replace(
             SqlQuery.conditionalTest(this.target.query.trim(), this.templateSrv), options.scopedVars, SqlQuery.interpolateQueryExpr
             ),
@@ -42,7 +42,7 @@ export default class SqlQuery {
             i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval,
             interval = SqlQuery.convertInterval(i, this.target.intervalFactor || 1),
             intervalMs = SqlQuery.convertInterval(i, this.target.intervalFactor || 1, true),
-            adhocCondition: any[] = [];
+            adhocCondition = [];
 
         try {
             let ast = scanner.toAST();
@@ -57,7 +57,7 @@ export default class SqlQuery {
                 }
                 let target = SqlQuery.target(ast.from[0], this.target);
 
-                adhocFilters.forEach(function (af: any) {
+                adhocFilters.forEach(function (af) {
                     let parts;
                     let partsKey = af.key;
                     if (!partsKey.includes('.')) {
@@ -135,12 +135,12 @@ export default class SqlQuery {
             .replace(/\$timeFilter\b/g, timeFilter)
             .replace(/\$timeFilterMs\b/g, timeFilterMs)
             .replace(/\$table\b/g, table)
-            .replace(/\$from\b/g, from.toString())
-            .replace(/\$to\b/g, to.toString())
+            .replace(/\$from\b/g, from)
+            .replace(/\$to\b/g, to)
             .replace(/\$dateCol\b/g, SqlQuery.escapeIdentifier(this.target.dateColDataType))
             .replace(/\$dateTimeCol\b/g, SqlQuery.escapeIdentifier(this.target.dateTimeColDataType))
-            .replace(/\$interval\b/g, interval.toString())
-            .replace(/\$__interval_ms\b/g, intervalMs.toString())
+            .replace(/\$interval\b/g, interval)
+            .replace(/\$__interval_ms\b/g, intervalMs)
             .replace(/\$adhoc\b/g, renderedAdHocCondition);
 
         const round = this.target.round === "$step"
@@ -173,7 +173,7 @@ export default class SqlQuery {
 
         // Extend date range to be sure that first and last points
         // data is not affected by round
-        if (round && round > 0) {
+        if (round > 0) {
             to += (round * 2) - 1;
             from -= (round * 2) - 1;
         }
@@ -302,7 +302,7 @@ export default class SqlQuery {
         return SqlQuery._columns(args[0], args[1], beforeMacrosQuery, fromQuery);
     }
 
-    static _columns(key: string, value: string, beforeMacrosQuery: string, fromQuery: string): string {
+    static _columns(key: string, value: string, beforeMacrosQuery, fromQuery: string): string {
         if (key.slice(-1) === ')' || value.slice(-1) === ')') {
             throw {message: 'Some of passed arguments are without aliases: ' + key + ', ' + value};
         }
@@ -352,7 +352,7 @@ export default class SqlQuery {
             ')';
     }
 
-    static _fromIndex(query: string, macro: string): number {
+    static _fromIndex(query, macro: string): number {
         let fromRe = new RegExp("\\" + macro + "\\([\\w\\s\\S]+?\\)(\\s+FROM\\s+)", 'gim');
         let matches = fromRe.exec(query);
         if (matches === null || matches.length === 0) {
@@ -375,8 +375,8 @@ export default class SqlQuery {
         return SqlQuery._rate(args, beforeMacrosQuery, fromQuery);
     }
 
-    static _rate(args: any[], beforeMacrosQuery: string, fromQuery: string): string {
-        let aliases: any[] = [];
+    static _rate(args, beforeMacrosQuery, fromQuery: string): string {
+        let aliases = [];
         each(args, function (arg) {
             if (arg.slice(-1) === ')') {
                 throw {message: 'Argument "' + arg + '" cant be used without alias'};
@@ -384,7 +384,7 @@ export default class SqlQuery {
             aliases.push(arg.trim().split(' ').pop());
         });
 
-        let cols: any[] = [];
+        let cols = [];
         each(aliases, function (a) {
             cols.push(a + '/runningDifference(t/1000) ' + a + 'Rate');
         });
@@ -520,7 +520,7 @@ export default class SqlQuery {
             ' ORDER BY t';
     }
 
-    static _detectAliasAndApplyTimeFilter(aliasIndex: number, key: string, alias: string, havingIndex: number, having: string, fromQuery: string) {
+    static _detectAliasAndApplyTimeFilter(aliasIndex: number, key, alias: string, havingIndex: number, having: string, fromQuery: string) {
         if (aliasIndex === -1) {
             key = key + " AS " + alias;
         } else {
@@ -553,8 +553,8 @@ export default class SqlQuery {
         return SqlQuery._perSecond(args, beforeMacrosQuery, fromQuery);
     }
 
-    static _perSecond(args: any[], beforeMacrosQuery: string, fromQuery: string): string {
-        let cols: any[] = [];
+    static _perSecond(args, beforeMacrosQuery, fromQuery: string): string {
+        let cols = [];
         each(args, function (a, i) {
             cols.push('if(runningDifference(max_' + i + ') < 0, nan, ' +
                 'runningDifference(max_' + i + ') / runningDifference(t/1000)) AS max_' + i + '_PerSecond');
@@ -591,8 +591,8 @@ export default class SqlQuery {
         return SqlQuery._increase(args, beforeMacrosQuery, fromQuery);
     }
 
-    static _increase(args: any[], beforeMacrosQuery: string, fromQuery: string): string {
-        let cols: any[] = [];
+    static _increase(args, beforeMacrosQuery, fromQuery: string): string {
+        let cols = [];
         each(args, function (a, i) {
             cols.push('if(runningDifference(max_' + i + ') < 0, 0, runningDifference(max_' + i + ')) AS max_' + i + '_Increase');
         });
@@ -628,8 +628,8 @@ export default class SqlQuery {
         return SqlQuery._delta(args, beforeMacrosQuery, fromQuery);
     }
 
-    static _delta(args: any[], beforeMacrosQuery: string, fromQuery: string): string {
-        let cols: any[] = [];
+    static _delta(args, beforeMacrosQuery, fromQuery: string): string {
+        let cols = [];
         each(args, function (a, i) {
             cols.push('runningDifference(max_' + i + ') AS max_' + i + '_Delta');
         });
@@ -741,7 +741,7 @@ export default class SqlQuery {
         return '$dateTimeCol >= ' + convertFn('$__from/1000') + ' AND $dateTimeCol <= ' + convertFn('$__to/1000');
     }
 
-    // date is a dayjs object
+    // date is a moment object
     static convertTimestamp(date: any) {
         //return date.format("'Y-MM-DD HH:mm:ss'")
         if (isString(date)) {
@@ -762,60 +762,26 @@ export default class SqlQuery {
 
         let coefficient = 1000 * round;
         let rounded = Math.floor(date.valueOf() / coefficient) * coefficient;
-        return dayjs(rounded);
+        return moment(rounded);
     }
 
     static convertInterval(interval: any, intervalFactor: number, ms?: boolean): number {
         if (interval === undefined || typeof interval !== 'string' || interval === "") {
             return 0;
         }
-        const match = interval.match(durationSplitRegexp);
-
-        if (match === null) {
-            throw new Error('Received interval is invalid: ' + interval);
+        let m = interval.match(durationSplitRegexp);
+        if (m === null) {
+            throw {message: 'Received interval is invalid: ' + interval};
         }
-
-        const value = parseInt(match[1], 10);
-        const unit = match[2];
-
-        let result: number;
-
-        switch (unit) {
-            case 's':
-                result = value;
-                break;
-            case 'm':
-                result = value * 60;
-                break;
-            case 'h':
-                result = value * 3600;
-                break;
-            case 'd':
-                result = value * 86400;
-                break;
-            case 'w':
-                result = value * 604800;
-                break;
-            case 'M':
-                result = value * 2592000;
-                break;
-            case 'y':
-                result = value * 31536000;
-                break;
-            case 'ms':
-                result = value / 1000;
-                break;
-            default:
-                throw new Error('Invalid unit in interval: ' + unit);
-        }
-
+        let duration = moment.duration(parseInt(m[1]), m[2]);
+        let result = duration.asSeconds();
         if (ms) {
-            result *= 1000;
+            result = duration.asMilliseconds();
         }
-
         return Math.ceil(result * intervalFactor);
     }
-    static interpolateQueryExpr(value: any, variable: any, defaultFormatFn: any) {
+
+    static interpolateQueryExpr(value, variable, defaultFormatFn) {
         // if no (`multiselect` or `include all`) and variable is not Array - do not escape
         if (!variable.multi && !variable.includeAll && !Array.isArray(value)) {
             return value;
@@ -823,13 +789,13 @@ export default class SqlQuery {
         if (!Array.isArray(value)) {
             return SqlQuery.clickhouseEscape(value, variable);
         }
-        let escapedValues = value.map(function (v) {
+        let escapedValues = map(value, function (v) {
             return SqlQuery.clickhouseEscape(v, variable);
         });
         return escapedValues.join(',');
     }
 
-    static clickhouseOperator(value: string): string {
+    static clickhouseOperator(value) {
         switch (value) {
             case "=":
             case "!=":
@@ -846,7 +812,7 @@ export default class SqlQuery {
         }
     }
 
-    static clickhouseEscape(value: any, variable: any): any {
+    static clickhouseEscape(value, variable) {
         let returnAsIs = true;
         let returnAsArray = false;
         // if at least one of options is not digit or is array
@@ -888,7 +854,7 @@ export default class SqlQuery {
         }
     }
 
-    static conditionalTest(query: string, templateSrv: TemplateSrv) {
+    static conditionalTest(query, templateSrv) {
         let macros = '$conditionalTest(';
         let openMacros = query.indexOf(macros);
         while (openMacros !== -1) {
@@ -905,14 +871,13 @@ export default class SqlQuery {
             let varInParam = param2.substring(1);
             let done = 0;
             //now find in the list of variable what is the value
-            let variables = templateSrv.getVariables()
-            for (let i = 0; i < variables.length; i++) {
-                let varG: TypedVariableModel = variables[i];
+            for (let i = 0; i < templateSrv.variables.length; i++) {
+                let varG = templateSrv.variables[i];
                 if (varG.name === varInParam) {
                     let closeMacros = openMacros + macros.length + r.result.length + 1;
                     done = 1;
 
-                    const value: any = 'current' in varG ? varG.current.value : '';
+                    const value = varG.current.value;
 
                     if (
                         // for query variable when all is selected
@@ -922,7 +887,7 @@ export default class SqlQuery {
                             (typeof value === 'string' && value === '$__all')
                         )) ||
                         // for multi-value drop-down when no one value is select, fix https://github.com/Altinity/clickhouse-grafana/issues/485
-                        (typeof value === 'object' && value.length === 0) ||
+                        (typeof value === 'object' && value.length == 0) ||
                         // for textbox variable when nothing is entered
                         (['textbox', 'custom'].includes(varG.type) && ['', undefined, null].includes(value))) {
                         query = query.substring(0, openMacros) + ' ' + query.substring(closeMacros, query.length);
@@ -942,7 +907,7 @@ export default class SqlQuery {
     }
 
 
-    static unescape(query: string) {
+    static unescape(query) {
         const macros = '$unescape(';
         let openMacros = query.indexOf(macros);
         while (openMacros !== -1) {
@@ -959,7 +924,7 @@ export default class SqlQuery {
         return query;
     }
 
-    static betweenBraces(query: string): boolean | any {
+    static betweenBraces(query): any {
         let r = {
             result: "",
             error: "",

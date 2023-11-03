@@ -1,184 +1,20 @@
-const wsRe = "\\s+",
-  commentRe = "--(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|" +
-    "/\\*(?:[^*]|\\*[^/])*\\*/",
-  idRe = "[a-zA-Z_][a-zA-Z_0-9]*",
-  intRe = "\\d+",
-  powerIntRe = "\\d+e\\d+",
-  floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+",
-  stringRe = "('(?:[^'\\\\]|\\\\.)*')|(`(?:[^`\\\\]|\\\\.)*`)|(\"(?:[^\"\\\\]|\\\\.)*\")",
-  binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|->|[-+/%*=<>\\.!]",
-  statementRe = "\\b(with|select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b",
-  // look https://clickhouse.tech/docs/en/sql-reference/statements/select/join/
-  // [GLOBAL] [ANY|ALL] [INNER|LEFT|RIGHT|FULL|CROSS] [OUTER] JOIN
-  joinsRe = "\\b(" +
-    "left\\s+array\\s+join|" +
-    "array\\s+join|" +
-    "global\\s+any\\s+inner\\s+outer\\s+join|" +
-    "global\\s+any\\s+inner\\s+join|" +
-    "global\\s+any\\s+left\\s+outer\\s+join|" +
-    "global\\s+any\\s+left\\s+join|" +
-    "global\\s+any\\s+right\\s+outer\\s+join|" +
-    "global\\s+any\\s+right\\s+join|" +
-    "global\\s+any\\s+full\\s+outer\\s+join|" +
-    "global\\s+any\\s+full\\s+join|" +
-    "global\\s+any\\s+cross\\s+outer\\s+join|" +
-    "global\\s+any\\s+cross\\s+join|" +
-    "global\\s+any\\s+outer\\s+join|" +
-    "global\\s+any\\s+join|" +
-    "global\\s+all\\s+inner\\s+outer\\s+join|" +
-    "global\\s+all\\s+inner\\s+join|" +
-    "global\\s+all\\s+left\\s+outer\\s+join|" +
-    "global\\s+all\\s+left\\s+join|" +
-    "global\\s+all\\s+right\\s+outer\\s+join|" +
-    "global\\s+all\\s+right\\s+join|" +
-    "global\\s+all\\s+full\\s+outer\\s+join|" +
-    "global\\s+all\\s+full\\s+join|" +
-    "global\\s+all\\s+cross\\s+outer\\s+join|" +
-    "global\\s+all\\s+cross\\s+join|" +
-    "global\\s+all\\s+outer\\s+join|" +
-    "global\\s+all\\s+join|" +
-    "global\\s+inner\\s+outer\\s+join|" +
-    "global\\s+inner\\s+join|" +
-    "global\\s+left\\s+outer\\s+join|" +
-    "global\\s+left\\s+join|" +
-    "global\\s+right\\s+outer\\s+join|" +
-    "global\\s+right\\s+join|" +
-    "global\\s+full\\s+outer\\s+join|" +
-    "global\\s+full\\s+join|" +
-    "global\\s+cross\\s+outer\\s+join|" +
-    "global\\s+cross\\s+join|" +
-    "global\\s+outer\\s+join|" +
-    "global\\s+join|" +
-    "any\\s+inner\\s+outer\\s+join|" +
-    "any\\s+inner\\s+join|" +
-    "any\\s+left\\s+outer\\s+join|" +
-    "any\\s+left\\s+join|" +
-    "any\\s+right\\s+outer\\s+join|" +
-    "any\\s+right\\s+join|" +
-    "any\\s+full\\s+outer\\s+join|" +
-    "any\\s+full\\s+join|" +
-    "any\\s+cross\\s+outer\\s+join|" +
-    "any\\s+cross\\s+join|" +
-    "any\\s+outer\\s+join|" +
-    "any\\s+join|" +
-    "all\\s+inner\\s+outer\\s+join|" +
-    "all\\s+inner\\s+join|" +
-    "all\\s+left\\s+outer\\s+join|" +
-    "all\\s+left\\s+join|" +
-    "all\\s+right\\s+outer\\s+join|" +
-    "all\\s+right\\s+join|" +
-    "all\\s+full\\s+outer\\s+join|" +
-    "all\\s+full\\s+join|" +
-    "all\\s+cross\\s+outer\\s+join|" +
-    "all\\s+cross\\s+join|" +
-    "all\\s+outer\\s+join|" +
-    "all\\s+join|" +
-    "inner\\s+outer\\s+join|" +
-    "inner\\s+join|" +
-    "left\\s+outer\\s+join|" +
-    "left\\s+join|" +
-    "right\\s+outer\\s+join|" +
-    "right\\s+join|" +
-    "full\\s+outer\\s+join|" +
-    "full\\s+join|" +
-    "cross\\s+outer\\s+join|" +
-    "cross\\s+join|" +
-    "outer\\s+join|" +
-    "join" +
-    ")\\b",
-  onJoinTokenRe = '\\b(using|on)\\b',
-  tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)',
-  macroFuncRe = "(\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)",
-  condRe = "\\b(or|and)\\b",
-  inRe = "\\b(global in|global not in|not in|in)\\b",
-  closureRe = "[\\(\\)\\[\\]]",
-  specCharsRe = "[,?:]",
-  macroRe = "\\$[A-Za-z0-9_$]+",
-  skipSpaceRe = "[\\(\\.! \\[]",
-
-  tableFuncRe = "\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b",
-  /*builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
-      "coalesce|ifnull|isnull|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
-      "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +
-      "toRelativeYearNum|toTime|toStartOfHour|toStartOfFiveMinute|toStartOfMinute|toStartOfYear|" +
-      "toStartOfQuarter|toStartOfMonth|toMonday|toSecond|toMinute|toHour|toDayOfWeek|toDayOfMonth|" +
-      "toMonth|toYear|toFixedString|toStringCutToZero|reinterpretAsString|reinterpretAsDate|" +
-      "reinterpretAsDateTime|reinterpretAsFloat32|reinterpretAsFloat64|reinterpretAsInt8|" +
-      "reinterpretAsInt16|reinterpretAsInt32|reinterpretAsInt64|reinterpretAsUInt8|" +
-      "reinterpretAsUInt16|reinterpretAsUInt32|reinterpretAsUInt64|toUInt8|toUInt16|toUInt32|" +
-      "toUInt64|toInt8|toInt16|toInt32|toInt64|toFloat32|toFloat64|toDate|toDateTime|toString|" +
-      "bitAnd|bitOr|bitXor|bitNot|bitShiftLeft|bitShiftRight|abs|negate|modulo|intDivOrZero|" +
-      "intDiv|divide|multiply|minus|plus|empty|notEmpty|length|lengthUTF8|lower|upper|lowerUTF8|" +
-      "upperUTF8|reverse|reverseUTF8|concat|substring|substringUTF8|appendTrailingCharIfAbsent|" +
-      "position|positionUTF8|match|extract|extractAll|like|notLike|replaceOne|replaceAll|" +
-      "replaceRegexpOne|range|arrayElement|has|indexOf|countEqual|arrayEnumerate|arrayEnumerateUniq|" +
-      "arrayJoin|arrayMap|arrayFilter|arrayExists|arrayCount|arrayAll|arrayFirst|arraySum|splitByChar|" +
-      "splitByString|alphaTokens|domainWithoutWWW|topLevelDomain|firstSignificantSubdomain|" +
-      "cutToFirstSignificantSubdomain|queryString|URLPathHierarchy|URLHierarchy|extractURLParameterNames|" +
-      "extractURLParameters|extractURLParameter|queryStringAndFragment|cutWWW|cutQueryString|" +
-      "cutFragment|cutQueryStringAndFragment|cutURLParameter|IPv4NumToString|IPv4StringToNum|" +
-      "IPv4NumToStringClassC|IPv6NumToString|IPv6StringToNum|rand|rand64|halfMD5|MD5|sipHash64|" +
-      "sipHash128|cityHash64|intHash32|intHash64|SHA1|SHA224|SHA256|URLHash|hex|unhex|bitmaskToList|" +
-      "bitmaskToArray|floor|ceil|round|roundToExp2|roundDuration|roundAge|regionToCountry|" +
-      "regionToContinent|regionToPopulation|regionIn|regionHierarchy|regionToName|OSToRoot|OSIn|" +
-      "OSHierarchy|SEToRoot|SEIn|SEHierarchy|dictGetUInt8|dictGetUInt16|dictGetUInt32|" +
-      "dictGetUInt64|dictGetInt8|dictGetInt16|dictGetInt32|dictGetInt64|dictGetFloat32|" +
-      "dictGetFloat64|dictGetDate|dictGetDateTime|dictGetString|dictGetHierarchy|dictHas|dictIsIn|" +
-      "argMin|argMax|uniqCombined|uniqHLL12|uniqExact|uniqExactIf|groupArray|groupUniqArray|quantile|" +
-      "quantileDeterministic|quantileTiming|quantileTimingWeighted|quantileExact|" +
-      "quantileExactWeighted|quantileTDigest|median|quantiles|varSamp|varPop|stddevSamp|stddevPop|" +
-      "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|avgIf|" +
-      "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
-      "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
-      "uniqArrayIf|sumArrayIf|uniq)\\b",
-  operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
-      "when|else|end|type|left|right|on|outer|desc|asc|primary|key|between|" +
-      "foreign|not|null|inner|cross|natural|database|prewhere|using|global|in)\\b",
-  dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
-      "money|real|number|integer|" +
-      "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +
-      "array|tuple|string)\\b",
-   */
-
-  wsOnlyRe = new RegExp("^(?:" + wsRe + ")$"),
-  commentOnlyRe = new RegExp("^(?:" + commentRe + ")$"),
-  idOnlyRe = new RegExp("^(?:" + idRe + ")$"),
-  closureOnlyRe = new RegExp("^(?:" + closureRe + ")$"),
-  macroFuncOnlyRe = new RegExp("^(?:" + macroFuncRe + ")$"),
-  statementOnlyRe = new RegExp("^(?:" + statementRe + ")$", 'i'),
-  joinsOnlyRe = new RegExp("^(?:" + joinsRe + ")$", 'i'),
-  onJoinTokenOnlyRe = new RegExp("^(?:" + onJoinTokenRe + ")$", 'i'),
-  tableNameOnlyRe = new RegExp("^(?:" + tableNameRe + ")$", 'i'),
-/*
-    operatorOnlyRe = new RegExp("^(?:" + operatorRe + ")$", 'i'),
-    dataTypeOnlyRe = new RegExp("^(?:" + dataTypeRe + ")$"),
-    builtInFuncOnlyRe = new RegExp("^(?:" + builtInFuncRe + ")$"),
-*/
-  tableFuncOnlyRe = new RegExp("^(?:" + tableFuncRe + ")$", 'i'),
-  macroOnlyRe = new RegExp("^(?:" + macroRe + ")$", 'i'),
-  inOnlyRe = new RegExp("^(?:" + inRe + ")$", 'i'),
-  condOnlyRe = new RegExp("^(?:" + condRe + ")$", 'i'),
-/*
-  numOnlyRe = new RegExp("^(?:" + [powerIntRe, intRe, floatRe].join("|") + ")$"),
-  stringOnlyRe = new RegExp("^(?:" + stringRe + ")$"),
-  binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$"),
-*/
-  skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$");
-
-import {isArray, isEmpty, toLower} from 'lodash';
+import {isArray, isEmpty, toLower} from 'lodash-es';
 
 export default class Scanner {
     tree: any;
     rootToken: any;
-    token = '';
-    skipSpace = false;
-    re = /./;
-    expectedNext = false;
+    token: any;
+    skipSpace: boolean;
+    re: RegExp;
+    expectedNext: boolean;
+
     _sOriginal: any;
     _s: any;
 
-    constructor(s: any) {
+    /** @ngInject */
+    constructor(s) {
         this._sOriginal = s;
+        this.token = null;
     }
 
     raw() {
@@ -222,11 +58,11 @@ export default class Scanner {
         return print(this.toAST());
     }
 
-    Print(ast: any) {
+    Print(ast) {
         return print(ast);
     }
 
-    push(argument: any) {
+    push(argument) {
         if (Array.isArray(this.tree[this.rootToken])) {
             this.tree[this.rootToken].push(argument);
         } else if (this.tree[this.rootToken] instanceof Object) {
@@ -238,7 +74,7 @@ export default class Scanner {
         this.expectedNext = false;
     }
 
-    setRoot(token: string) {
+    setRoot(token) {
         this.rootToken = token.toLowerCase();
         this.tree[this.rootToken] = [];
         this.expectedNext = true;
@@ -250,7 +86,7 @@ export default class Scanner {
         return v;
     }
 
-    appendToken(argument: string): string {
+    appendToken(argument): string {
         return (argument === '' || isSkipSpace(argument[argument.length - 1]))
             ? this.token
             : ' ' + this.token;
@@ -306,7 +142,7 @@ export default class Scanner {
                 subQuery = betweenBraces(this._s);
                 let subAST = toAST(subQuery);
                 if (isSet(subAST, 'root')) {
-                    this.tree[func] = subAST['root'].map(function (item: any) {
+                    this.tree[func] = subAST['root'].map(function (item) {
                         return item;
                     });
                 } else {
@@ -326,7 +162,7 @@ export default class Scanner {
                     subQuery = betweenBraces(this._s);
                     let subAST = toAST(subQuery);
                     if (isSet(subAST, 'root')) {
-                        argument += ' (' + subAST['root'].map(function (item: any) {
+                        argument += ' (' + subAST['root'].map(function (item) {
                             return item;
                         });
                         argument = argument + ')';
@@ -382,7 +218,7 @@ export default class Scanner {
         return this.tree;
     }
 
-    parseJOIN(argument: string) {
+    parseJOIN(argument) {
         if (!this.tree.hasOwnProperty('join')) {
             this.tree['join'] = [];
         }
@@ -414,8 +250,7 @@ export default class Scanner {
             }
             source = [source];
         }
-        let joinAST = {type: joinType, source: source, aliases: [] as string[], using: [] as string[], on: [] as string[]};
-        let joinASTIsNull = false;
+        let joinAST = {type: joinType, source: source, aliases: [], using: [], on: []};
         do {
             if (this.token !== "" && !onJoinTokenOnlyRe.test(this.token)) {
                 joinAST.aliases.push(this.token);
@@ -440,7 +275,7 @@ export default class Scanner {
                     joinConditions = "";
                 }
                 this.tree['join'].push(joinAST);
-                joinASTIsNull = true;
+                joinAST = null;
                 argument = this.parseJOIN(argument);
                 break;
             }
@@ -458,7 +293,7 @@ export default class Scanner {
                 }
             }
         }
-        if (!joinASTIsNull) {
+        if (joinAST != null) {
             if (joinConditions !== "") {
                 joinAST.on.push(joinConditions);
             }
@@ -467,95 +302,256 @@ export default class Scanner {
         return argument;
     }
 
-    removeComments(query: string) {
+    removeComments(query) {
         return query.replace(new RegExp(commentRe,'g'), '');
     }
 }
 
+const wsRe = "\\s+",
+    commentRe = "--(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|" +
+        "/\\*(?:[^*]|\\*[^/])*\\*/",
+    idRe = "[a-zA-Z_][a-zA-Z_0-9]*",
+    intRe = "\\d+",
+    powerIntRe = "\\d+e\\d+",
+    floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+",
+    stringRe = "('(?:[^'\\\\]|\\\\.)*')|(`(?:[^`\\\\]|\\\\.)*`)|(\"(?:[^\"\\\\]|\\\\.)*\")",
+    binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|->|[-+/%*=<>\\.!]",
+    statementRe = "\\b(with|select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b",
+    // look https://clickhouse.tech/docs/en/sql-reference/statements/select/join/
+    // [GLOBAL] [ANY|ALL] [INNER|LEFT|RIGHT|FULL|CROSS] [OUTER] JOIN
+    joinsRe = "\\b(" +
+        "left\\s+array\\s+join|" +
+        "array\\s+join|" +
+        "global\\s+any\\s+inner\\s+outer\\s+join|" +
+        "global\\s+any\\s+inner\\s+join|" +
+        "global\\s+any\\s+left\\s+outer\\s+join|" +
+        "global\\s+any\\s+left\\s+join|" +
+        "global\\s+any\\s+right\\s+outer\\s+join|" +
+        "global\\s+any\\s+right\\s+join|" +
+        "global\\s+any\\s+full\\s+outer\\s+join|" +
+        "global\\s+any\\s+full\\s+join|" +
+        "global\\s+any\\s+cross\\s+outer\\s+join|" +
+        "global\\s+any\\s+cross\\s+join|" +
+        "global\\s+any\\s+outer\\s+join|" +
+        "global\\s+any\\s+join|" +
+        "global\\s+all\\s+inner\\s+outer\\s+join|" +
+        "global\\s+all\\s+inner\\s+join|" +
+        "global\\s+all\\s+left\\s+outer\\s+join|" +
+        "global\\s+all\\s+left\\s+join|" +
+        "global\\s+all\\s+right\\s+outer\\s+join|" +
+        "global\\s+all\\s+right\\s+join|" +
+        "global\\s+all\\s+full\\s+outer\\s+join|" +
+        "global\\s+all\\s+full\\s+join|" +
+        "global\\s+all\\s+cross\\s+outer\\s+join|" +
+        "global\\s+all\\s+cross\\s+join|" +
+        "global\\s+all\\s+outer\\s+join|" +
+        "global\\s+all\\s+join|" +
+        "global\\s+inner\\s+outer\\s+join|" +
+        "global\\s+inner\\s+join|" +
+        "global\\s+left\\s+outer\\s+join|" +
+        "global\\s+left\\s+join|" +
+        "global\\s+right\\s+outer\\s+join|" +
+        "global\\s+right\\s+join|" +
+        "global\\s+full\\s+outer\\s+join|" +
+        "global\\s+full\\s+join|" +
+        "global\\s+cross\\s+outer\\s+join|" +
+        "global\\s+cross\\s+join|" +
+        "global\\s+outer\\s+join|" +
+        "global\\s+join|" +
+        "any\\s+inner\\s+outer\\s+join|" +
+        "any\\s+inner\\s+join|" +
+        "any\\s+left\\s+outer\\s+join|" +
+        "any\\s+left\\s+join|" +
+        "any\\s+right\\s+outer\\s+join|" +
+        "any\\s+right\\s+join|" +
+        "any\\s+full\\s+outer\\s+join|" +
+        "any\\s+full\\s+join|" +
+        "any\\s+cross\\s+outer\\s+join|" +
+        "any\\s+cross\\s+join|" +
+        "any\\s+outer\\s+join|" +
+        "any\\s+join|" +
+        "all\\s+inner\\s+outer\\s+join|" +
+        "all\\s+inner\\s+join|" +
+        "all\\s+left\\s+outer\\s+join|" +
+        "all\\s+left\\s+join|" +
+        "all\\s+right\\s+outer\\s+join|" +
+        "all\\s+right\\s+join|" +
+        "all\\s+full\\s+outer\\s+join|" +
+        "all\\s+full\\s+join|" +
+        "all\\s+cross\\s+outer\\s+join|" +
+        "all\\s+cross\\s+join|" +
+        "all\\s+outer\\s+join|" +
+        "all\\s+join|" +
+        "inner\\s+outer\\s+join|" +
+        "inner\\s+join|" +
+        "left\\s+outer\\s+join|" +
+        "left\\s+join|" +
+        "right\\s+outer\\s+join|" +
+        "right\\s+join|" +
+        "full\\s+outer\\s+join|" +
+        "full\\s+join|" +
+        "cross\\s+outer\\s+join|" +
+        "cross\\s+join|" +
+        "outer\\s+join|" +
+        "join" +
+        ")\\b",
+    onJoinTokenRe = '\\b(using|on)\\b',
+    tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)',
+    macroFuncRe = "(\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)",
+    condRe = "\\b(or|and)\\b",
+    inRe = "\\b(global in|global not in|not in|in)\\b",
+    closureRe = "[\\(\\)\\[\\]]",
+    specCharsRe = "[,?:]",
+    macroRe = "\\$[A-Za-z0-9_$]+",
+    skipSpaceRe = "[\\(\\.! \\[]",
+
+    tableFuncRe = "\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b",
+    builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
+        "coalesce|ifnull|isnull|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
+        "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +
+        "toRelativeYearNum|toTime|toStartOfHour|toStartOfFiveMinute|toStartOfMinute|toStartOfYear|" +
+        "toStartOfQuarter|toStartOfMonth|toMonday|toSecond|toMinute|toHour|toDayOfWeek|toDayOfMonth|" +
+        "toMonth|toYear|toFixedString|toStringCutToZero|reinterpretAsString|reinterpretAsDate|" +
+        "reinterpretAsDateTime|reinterpretAsFloat32|reinterpretAsFloat64|reinterpretAsInt8|" +
+        "reinterpretAsInt16|reinterpretAsInt32|reinterpretAsInt64|reinterpretAsUInt8|" +
+        "reinterpretAsUInt16|reinterpretAsUInt32|reinterpretAsUInt64|toUInt8|toUInt16|toUInt32|" +
+        "toUInt64|toInt8|toInt16|toInt32|toInt64|toFloat32|toFloat64|toDate|toDateTime|toString|" +
+        "bitAnd|bitOr|bitXor|bitNot|bitShiftLeft|bitShiftRight|abs|negate|modulo|intDivOrZero|" +
+        "intDiv|divide|multiply|minus|plus|empty|notEmpty|length|lengthUTF8|lower|upper|lowerUTF8|" +
+        "upperUTF8|reverse|reverseUTF8|concat|substring|substringUTF8|appendTrailingCharIfAbsent|" +
+        "position|positionUTF8|match|extract|extractAll|like|notLike|replaceOne|replaceAll|" +
+        "replaceRegexpOne|range|arrayElement|has|indexOf|countEqual|arrayEnumerate|arrayEnumerateUniq|" +
+        "arrayJoin|arrayMap|arrayFilter|arrayExists|arrayCount|arrayAll|arrayFirst|arraySum|splitByChar|" +
+        "splitByString|alphaTokens|domainWithoutWWW|topLevelDomain|firstSignificantSubdomain|" +
+        "cutToFirstSignificantSubdomain|queryString|URLPathHierarchy|URLHierarchy|extractURLParameterNames|" +
+        "extractURLParameters|extractURLParameter|queryStringAndFragment|cutWWW|cutQueryString|" +
+        "cutFragment|cutQueryStringAndFragment|cutURLParameter|IPv4NumToString|IPv4StringToNum|" +
+        "IPv4NumToStringClassC|IPv6NumToString|IPv6StringToNum|rand|rand64|halfMD5|MD5|sipHash64|" +
+        "sipHash128|cityHash64|intHash32|intHash64|SHA1|SHA224|SHA256|URLHash|hex|unhex|bitmaskToList|" +
+        "bitmaskToArray|floor|ceil|round|roundToExp2|roundDuration|roundAge|regionToCountry|" +
+        "regionToContinent|regionToPopulation|regionIn|regionHierarchy|regionToName|OSToRoot|OSIn|" +
+        "OSHierarchy|SEToRoot|SEIn|SEHierarchy|dictGetUInt8|dictGetUInt16|dictGetUInt32|" +
+        "dictGetUInt64|dictGetInt8|dictGetInt16|dictGetInt32|dictGetInt64|dictGetFloat32|" +
+        "dictGetFloat64|dictGetDate|dictGetDateTime|dictGetString|dictGetHierarchy|dictHas|dictIsIn|" +
+        "argMin|argMax|uniqCombined|uniqHLL12|uniqExact|uniqExactIf|groupArray|groupUniqArray|quantile|" +
+        "quantileDeterministic|quantileTiming|quantileTimingWeighted|quantileExact|" +
+        "quantileExactWeighted|quantileTDigest|median|quantiles|varSamp|varPop|stddevSamp|stddevPop|" +
+        "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|avgIf|" +
+        "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
+        "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
+        "uniqArrayIf|sumArrayIf|uniq)\\b",
+    operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
+        "when|else|end|type|left|right|on|outer|desc|asc|primary|key|between|" +
+        "foreign|not|null|inner|cross|natural|database|prewhere|using|global|in)\\b",
+    dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
+        "money|real|number|integer|" +
+        "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +
+        "array|tuple|string)\\b",
+
+    wsOnlyRe = new RegExp("^(?:" + wsRe + ")$"),
+    commentOnlyRe = new RegExp("^(?:" + commentRe + ")$"),
+    idOnlyRe = new RegExp("^(?:" + idRe + ")$"),
+    closureOnlyRe = new RegExp("^(?:" + closureRe + ")$"),
+    macroFuncOnlyRe = new RegExp("^(?:" + macroFuncRe + ")$"),
+    statementOnlyRe = new RegExp("^(?:" + statementRe + ")$", 'i'),
+    joinsOnlyRe = new RegExp("^(?:" + joinsRe + ")$", 'i'),
+    onJoinTokenOnlyRe = new RegExp("^(?:" + onJoinTokenRe + ")$", 'i'),
+    tableNameOnlyRe = new RegExp("^(?:" + tableNameRe + ")$", 'i'),
+    operatorOnlyRe = new RegExp("^(?:" + operatorRe + ")$", 'i'),
+    dataTypeOnlyRe = new RegExp("^(?:" + dataTypeRe + ")$"),
+    builtInFuncOnlyRe = new RegExp("^(?:" + builtInFuncRe + ")$"),
+    tableFuncOnlyRe = new RegExp("^(?:" + tableFuncRe + ")$", 'i'),
+    macroOnlyRe = new RegExp("^(?:" + macroRe + ")$", 'i'),
+    inOnlyRe = new RegExp("^(?:" + inRe + ")$", 'i'),
+    condOnlyRe = new RegExp("^(?:" + condRe + ")$", 'i'),
+    numOnlyRe = new RegExp("^(?:" + [powerIntRe, intRe, floatRe].join("|") + ")$"),
+    stringOnlyRe = new RegExp("^(?:" + stringRe + ")$"),
+    skipSpaceOnlyRe = new RegExp("^(?:" + skipSpaceRe + ")$"),
+    binaryOnlyRe = new RegExp("^(?:" + binaryOpRe + ")$");
+
 const tokenRe = [statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, floatRe, intRe,
     binaryOpRe, closureRe, specCharsRe, macroRe].join("|");
 
-function isSkipSpace(token: string) {
+function isSkipSpace(token) {
     return skipSpaceOnlyRe.test(token);
 }
 
-function isCond(token: string) {
+function isCond(token) {
     return condOnlyRe.test(token);
 }
 
-function isIn(token: string) {
+function isIn(token) {
     return inOnlyRe.test(token);
 }
 
-function isJoin(token: string) {
+function isJoin(token) {
     return joinsOnlyRe.test(token);
 }
 
-function isTable(token: string) {
+function isTable(token) {
     return tableNameOnlyRe.test(token);
 }
 
-function isWS(token: string) {
+function isWS(token) {
     return wsOnlyRe.test(token);
 }
 
-function isMacroFunc(token: string) {
+function isMacroFunc(token) {
     return macroFuncOnlyRe.test(token);
 }
 
-function isMacro(token: string) {
+function isMacro(token) {
     return macroOnlyRe.test(token);
 }
 
-function isComment(token: string) {
+function isComment(token) {
     return commentOnlyRe.test(token);
 }
 
-function isID(token: string) {
+function isID(token) {
     return idOnlyRe.test(token);
 }
 
-function isStatement(token: string) {
+function isStatement(token) {
     return statementOnlyRe.test(token);
 }
-/*
-function isOperator(token: string) {
+
+function isOperator(token) {
     return operatorOnlyRe.test(token);
 }
 
-function isDataType(token: string) {
+function isDataType(token) {
     return dataTypeOnlyRe.test(token);
 }
 
-function isBuiltInFunc(token: string) {
+function isBuiltInFunc(token) {
     return builtInFuncOnlyRe.test(token);
 }
-*/
-function isTableFunc(token: string) {
+
+function isTableFunc(token) {
     return tableFuncOnlyRe.test(token);
 }
 
-function isClosureChars(token: string) {
+function isClosureChars(token) {
     return closureOnlyRe.test(token);
 }
-/*
-function isNum(token: string) {
+
+function isNum(token) {
     return numOnlyRe.test(token);
 }
 
-function isString(token: string) {
+function isString(token) {
     return stringOnlyRe.test(token);
 }
 
-function isBinary(token: string) {
+function isBinary(token) {
     return binaryOnlyRe.test(token);
 }
-*/
 
 const tabSize = '    ', // 4 spaces
     newLine = '\n';
 
-function printItems(items: any, tab = '', separator = '') {
+function printItems(items, tab = '', separator = '') {
     let result = '';
     if (isArray(items)) {
         if (items.length === 1) {
@@ -577,20 +573,20 @@ function printItems(items: any, tab = '', separator = '') {
     return result;
 }
 
-function toAST(s: string) {
+function toAST(s) {
     let scanner = new Scanner(s);
     return scanner.toAST();
 }
 
-function isSet(obj: any, prop: any) {
+function isSet(obj, prop) {
     return obj.hasOwnProperty(prop) && !isEmpty(obj[prop]);
 }
 
-function isClosured(argument: string) {
+function isClosured(argument) {
     return (argument.match(/\(/g) || []).length === (argument.match(/\)/g) || []).length;
 }
 
-function betweenBraces(query: string) {
+function betweenBraces(query) {
     let openBraces = 1, subQuery = '';
     for (let i = 0; i < query.length; i++) {
         if (query.charAt(i) === '(') {
@@ -608,7 +604,7 @@ function betweenBraces(query: string) {
 }
 
 // see https://clickhouse.tech/docs/en/sql-reference/statements/select/
-function print(AST: any, tab = '') {
+function print(AST, tab = '') {
     let result = '';
     if (isSet(AST, 'root')) {
         result += printItems(AST.root, "\n", "\n");
@@ -679,7 +675,7 @@ function print(AST: any, tab = '') {
     }
 
     if (isSet(AST, 'join')) {
-        AST.join.forEach(function (item: any) {
+        AST.join.forEach(function (item) {
             result += newLine + tab + item.type.toUpperCase() + printItems(item.source, tab) + ' ' + printItems(item.aliases, '', ' ');
             if (item.using.length > 0) {
                 result += ' USING ' + printItems(item.using, '', ' ');
@@ -720,7 +716,7 @@ function print(AST: any, tab = '') {
     }
 
     if (isSet(AST, 'union all')) {
-        AST['union all'].forEach(function (v: any) {
+        AST['union all'].forEach(function (v) {
             result += newLine + newLine + tab + 'UNION ALL' + newLine + newLine;
             result += print(v, tab);
         });

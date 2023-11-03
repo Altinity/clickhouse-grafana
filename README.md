@@ -6,7 +6,18 @@ Initially plugin developed by Vertamedia, maintaned by Altinity since 2020.
 
 ## Quick start
 
-### Grafana 7.x setup notes for plugin version before 2.2.0
+### Grafana 10+ setup notes for plugin version before 3.0.0
+
+Old versions of Altinity ClickHouse datasource plugin for Grafana written in Angular. So you can watch warning like 
+```
+Angular plugin
+This data source plugin uses a deprecated, legacy platform based on AngularJS and will stop working in future releases of Grafana.
+```
+
+Don't worry about warning message, plugin will still working until Grafana 11 will release, after it upgrade to Altinity ClickHouse datasource plugin for Grafana to 3.x version is required.
+
+
+### Grafana 7+ setup notes for plugin version before 2.2.0
 
 When 2.0.x and 2.1.x vertamedia-clickhouse-grafana plugin versions released Grafana team didn't provide worked signing method for community plugins.
 Current sign process describe on [grafana.com](https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/)

@@ -1,32 +1,8 @@
-# Development process
+# Altinity Grafana datasource plugin for ClickHouse
 
-There are following scripts defined in package.json:
+This document is a starting point for building a Altinity Grafana datasource plugin for ClickHouse.
 
-- `build:prod` – production-ready build of frontend part
-- `build:dev` - development build (no uglify etc.) of frontend part
-- `build:watch` - automatically rebuild frontend TypeScript+HTML part of codebase on change (handy while developing)
-- `test` - runs frontend test suite using Jest
-- `test:watch` - runs frontend test suite using Jest in watch mode. Automatically reruns tests on source change.
-- `sign` - runs grafana plugin sign in `dist` directory
-
-Each script can be run using NPM or Yarn package managers:
-
-```sh
-npm run <script>
-```
-
-or 
-
-```sh
-yarn run <script>
-```
-
-(for example `npm run build`)
-
-For test examples please see `spec` folder. We strongly encourage contributors to add tests to check new changes or functionality.
-
-### Docker-compose environment for development
-
+## Build from scratch with docker-compose
 This is a simple environment which mounts the current `dist` directory inside the `grafana` container. The `grafana` container connects to the docker `clickhouse` database container.
 Also `grafana` container contains some datasource and dashboards installed via `/etc/grafana/provisioning/` folder.
 
@@ -42,14 +18,14 @@ The frontend builder is the docker container used to transpile the typescript so
 
 To develop using docker, the process looks like:
 1. change source files
-2. `docker-compose up frontend_builder`
+2. `docker-compose run --rm frontend_builder`
 3. `docker-compose restart grafana`
 4. open http://localhost:3000/
 
 To develop without build inside a docker, the development process for frontend part of code looks like:
 1. change source files
 2. `npm run test`
-3. `npm run build:dev`
+3. `npm run build`
 4. `docker-compose restart grafana`
 5. open http://localhost:3000/
 
@@ -59,7 +35,7 @@ The backend builder is the docker container used to compile the golang source co
 
 To develop using docker, the development process for backend part of code looks like:
 1. change source files
-2. `docker-compose up backend_builder`
+2. `docker-compose run --rm backend_builder`
 3. `docker-compose restart grafana`
 4. open http://localhost:3000/
 
@@ -68,36 +44,129 @@ To format your go code, use the command:
 docker-compose run --rm backend_builder go fmt .
 ```
 
-The resulting alerts should look like this
-![image](https://user-images.githubusercontent.com/5578150/81031711-fd2fad00-8e41-11ea-9b54-5eb4ca1628f1.png)
+## Build from source on Host Machine  Docker
+
+### Backend
+
+1. Update [Grafana plugin SDK for Go](https://grafana.com/docs/grafana/latest/developers/plugins/backend/grafana-plugin-sdk-for-go/) dependency to the latest minor version:
+
+   ```bash
+   go get -u github.com/grafana/grafana-plugin-sdk-go
+   go mod tidy
+   ```
+
+2. Build backend plugin binaries for Linux, Windows and Darwin:
+
+   ```bash
+   mage -v
+   ```
+
+3. List all available Mage targets for additional commands:
+
+   ```bash
+   mage -l
+   ```
+### Frontend
+
+1. Install dependencies
+
+   ```bash
+   npm install
+   ```
+
+2. Build plugin in development mode and run in watch mode
+
+   ```bash
+   npm run dev
+   ```
+
+3. Build plugin in production mode
+
+   ```bash
+   npm run build
+   ```
+
+4. Run the tests (using Jest)
+
+   ```bash
+   # Runs the tests and watches for changes, requires git init first
+   npm run test
+
+   # Exits after running all the tests
+   npm run test:ci
+   ```
+
+5. Spin up a Grafana instance and run the plugin inside it (using Docker)
+
+   ```bash
+   npm run server
+   ```
+
+6. Run the E2E tests (using Cypress)
+
+   ```bash
+   # Spins up a Grafana instance first that we tests against
+   npm run server
+
+   # Starts the tests
+   npm run e2e
+   ```
+
+7. Run the linter
+
+   ```bash
+   npm run lint
+
+   # or
+
+   npm run lint:fix
+   ```
 
 
-### How to make a new release
+# Distributing your plugin
 
-- fork https://github.com/Altinity/clickhouse-grafana and make git clone, if necessary
-- look at https://github.com/Altinity/clickhouse-grafana/commits/master and add necessary items to [CHANGELOG.md](CHANGELOG.md)
-- install Python3 and run `pip3 install -U bump2version`
-- read https://docs.github.com/en/github/authenticating-to-github/creating-a-personal-access-token to getting value for `GITHUB_TOKEN`
-- create .release_env file in root of your git working copy with following content:
-```bash
-#!/usr/bin/env bash
-set +x
-export GITHUB_LOGIN="<your_github_login>"
-export GITHUB_EMAIL="<your_github_email>"
-export GITHUB_TOKEN="<your_github_token>"
-set -xeuo pipefail
-```
-- run `./release.sh` with following parameters:
-    - `./release.sh patch` - for minor hotfix releases
-    - `./release.sh minor` - for minor and backward compatible improvements releases
-    - `./release.sh major` - for major or backward incompatible improvements releases
-- this script will run `frontend_builder`, `backend_builder`, `plugin_signer` via `docker-compose` and run tests and make git commit + git push if test pass
+When distributing a Grafana plugin either within the community or privately the plugin must be signed so the Grafana application can verify its authenticity. This can be done with the `@grafana/sign-plugin` package.
 
-#### Final manual steps
-- after git push to your github fork, please open new pull request between your fork and `master` branch in https://github.com/Altinity/clickhouse-grafana
-  copy/paste CHANGELOG.md items for new release to Pull Request message.           
-- after merge pull request in https://github.com/Altinity/clickhouse-grafana/, 
-  please open https://github.com/Altinity/clickhouse-grafana/releases create new release or request to somebody of [contributors](https://github.com/Altinity/clickhouse-grafana/graphs/contributors).
-- after create new release on https://github.com/Altinity/clickhouse-grafana/releases,
-  please create new pull request in https://github.com/grafana/grafana-plugin-repository, please follow `grafana-plugin-repository` pull request message styleguide, 
-  copy/paste CHANGELOG.md items for new release to Pull Request message.           
+_Note: It's not necessary to sign a plugin during development. The docker development environment that is scaffolded with `@grafana/create-plugin` caters for running the plugin without a signature._
+
+## Initial steps
+
+Before signing a plugin please read the Grafana [plugin publishing and signing criteria](https://grafana.com/docs/grafana/latest/developers/plugins/publishing-and-signing-criteria/) documentation carefully.
+
+`@grafana/create-plugin` has added the necessary commands and workflows to make signing and distributing a plugin via the grafana plugins catalog as straightforward as possible.
+
+Before signing a plugin for the first time please consult the Grafana [plugin signature levels](https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/#plugin-signature-levels) documentation to understand the differences between the types of signature level.
+
+1. Create a [Grafana Cloud account](https://grafana.com/signup).
+2. Make sure your account present in Vertamedia organization.
+   - _You can find the plugin ID in the `plugin.json` file inside your plugin directory. For example, if your account slug is `vertamedia`, you need to prefix the plugin ID with `vertamedia-`._
+3. Create a Grafana Cloud API key with the `PluginPublisher` role or create Grafana Access Policy Token with plugin scopes, look for details https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/#generate-a-token
+4. Keep a record of this API keys as it will be required for signing a plugin
+
+## Signing a plugin
+
+### Using Github actions release workflow inside your github fork
+
+If the plugin is using the github actions supplied with `@grafana/create-plugin` signing a plugin is included out of the box. The [release workflow](./.github/workflows/release.yml) can prepare everything to make submitting your plugin to Grafana as easy as possible. Before being able to sign the plugin however a secret needs adding to the Github repository.
+
+1. Please navigate to "settings > secrets > actions" within your repo to create secrets.
+2. Click "New repository secret"
+3. Name the secret "GRAFANA_API_KEY" and "GRAFANA_API"
+4. Paste your Grafana Cloud API key or Grafana Access Policy Token in the Secret Value field
+5. Click "Add secret"
+
+#### Push a version tag
+
+To trigger the workflow we need to push a version tag to github with vX.X.X format. This can be achieved with the following steps:
+
+1. Run `npm version <major|minor|patch>`
+2. Run `git push origin main --follow-tags`
+
+
+## Learn more
+
+Below you can find source code for existing app plugins and other related documentation.
+
+- [Basic data source plugin example](https://github.com/grafana/grafana-plugin-examples/tree/master/examples/datasource-basic#readme)
+- [`plugin.json` documentation](https://grafana.com/developers/plugin-tools/reference-plugin-json)
+- [How to sign a plugin?](https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/)

@@ -1,7 +1,7 @@
-import {size} from 'lodash-es';
-import SqlSeries from '../src/sql_series';
-import AdhocCtrl from "../src/adhoc";
-import ResponseParser from "../src/response_parser";
+import {size} from 'lodash';
+import SqlSeries from '../sql_series';
+import AdhocCtrl from "../adhoc";
+import ResponseParser from "../response_parser";
 import { FieldType, MutableDataFrame } from '@grafana/data';
 
 describe("clickhouse sql series:", () => {
@@ -156,7 +156,7 @@ describe("clickhouse sql series:", () => {
         };
 
         // @ts-ignore
-        let rp = new ResponseParser(this.$q);
+        let rp = new ResponseParser();
         let adhocCtrl = new AdhocCtrl({defaultDatabase: "default"});
         it('should be inited', function () {
             expect(adhocCtrl.query).toBe('SELECT database, table, name, type FROM system.columns WHERE database = \'default\' AND database NOT IN (\'system\',\'INFORMATION_SCHEMA\') ORDER BY database, table');
@@ -265,7 +265,7 @@ describe("clickhouse sql series:", () => {
         });
 
         it("should have preferred visualization option logs", () => {
-            expect(logs[0].meta.preferredVisualisationType).toBe('logs');
+            expect(logs[0].meta?.preferredVisualisationType).toBe('logs');
         });
 
         it("should get four fields in DataFrame", () => {
@@ -318,7 +318,7 @@ describe("When meta and data keys do not have the same index", () => {
     };
 
     // @ts-ignore
-    const responseParser = new ResponseParser(this.$q);
+    const responseParser = new ResponseParser();
     const data = responseParser.parse("SELECT 'a_value' AS a, 'b_value' AS b, 'c_value' AS c", response);
 
     it('should return key-value pairs', function () {

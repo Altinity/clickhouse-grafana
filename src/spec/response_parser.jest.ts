@@ -1,4 +1,4 @@
-import ResponseParser from "../src/response_parser";
+import ResponseParser from "../response_parser";
 import {AnnotationEvent} from '@grafana/data';
 
 describe("Parse response:", () => {
@@ -24,7 +24,7 @@ describe("Parse response:", () => {
         };
 
         // @ts-ignore
-        const responseParser = new ResponseParser(this.$q);
+        const responseParser = new ResponseParser();
         const data = responseParser.parse("SELECT hostname AS __text, id AS __value FROM host", response);
 
         it('should return key-value pairs', function () {
@@ -37,7 +37,7 @@ describe("Parse response:", () => {
 // check annotation response https://github.com/Altinity/clickhouse-grafana/issues/303
 describe("Check transformAnnotationResponse", () => {
     // @ts-ignore
-    const responseParser = new ResponseParser(this.$q);
+    const responseParser = new ResponseParser();
     let options = {
         annotation: {
             dateTimeColDataType: 'time'

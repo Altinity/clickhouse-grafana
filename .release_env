@@ -1,0 +1,9 @@
+﻿#!/usr/bin/env bash
+set +x
+export GITHUB_LOGIN="Eugene Klimov"
+export GITHUB_EMAIL="eklimov@altinity.com"
+export GITHUB_TOKEN="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"
+export GRAFANA_API_KEY="eyJrIjoiYjJlODY1NTA1NzY2MjdlMjAyY2Q2NmE0Y2U3YTRhOTNmODBkMGE5MyIsIm4iOiJ2ZXJ0YW1lZGlhLWNsaWNraG91c2UtZGF0YXNvdXJjZSIsImlkIjo0NTUwOH0="
+export GRAFANA_ACCESS_POLICY_TOKEN="glc_eyJvIjoiNDU1MDgiLCJuIjoicGx1Z2luLXNpZ25pbmctcGx1Z2luLXNpZ25pbmciLCJrIjoiQ1liR1c3YUkxMDhLOThPYTEyRjl6dzBJIiwibSI6eyJyIjoidXMifX0="
+set -xeuo pipefail
+

@@ -51,7 +51,7 @@ export class DataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     this.backendSrv = getBackendSrv()
     this.templateSrv = getTemplateSrv()
     this.adHocFilter = new AdHocFilter(this)
-    this.responseParser = new ResponseParser(this);
+    this.responseParser = new ResponseParser();
 
   }
 

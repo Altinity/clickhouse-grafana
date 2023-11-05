@@ -1,13 +1,19 @@
-import {isArray} from "lodash-es";
-import SqlQuery from "../../src/sql_query";
+import {isArray} from "lodash";
+import SqlQuery from "../../sql_query";
+import {TemplateSrv} from '@grafana/runtime';
+import {TimeRange} from "@grafana/data";
 
 const variableRegex = /\$(\w+)|\[\[([\s\S]+?)(?::(\w+))?\]\]|\${(\w+)(?:\.([^:^\}]+))?(?::([^\}]+))?}/g;
-export default class TemplateSrvStub {
-    variables = [];
+export default class TemplateSrvStub implements TemplateSrv {
+    variables: any[] = [];
     templateSettings = {interpolate: /\[\[([\s\S]+?)\]\]/g};
-    data = {};
+    data: { [key: string]: any } = {};
 
-    replace(target: string, scopedVars?, format?: string | Function): string {
+    getVariables() {
+        return this.variables;
+    }
+
+    replace(target: string, scopedVars?: { [key: string]: any }, format?: string | Function): string {
         let query = target.replace(variableRegex, (match, var1, var2, fmt2, var3, fieldPath, fmt3) => {
             const variableName = var1 || var2 || var3;
             let variable = this.data[variableName];
@@ -28,7 +34,7 @@ export default class TemplateSrvStub {
         return query;
     }
 
-    formatValue(value, fmt, variable) {
+    formatValue(value: any, fmt: any, variable: any) {
         if (typeof fmt === "string" && fmt === 'csv') {
             return isArray(value) ? value.join(',') : value;
         }
@@ -46,11 +52,11 @@ export default class TemplateSrvStub {
         return false;
     }
 
-    highlightVariablesAsHtml(str) {
+    highlightVariablesAsHtml(str: string) {
         return str;
     }
 
-    setGrafanaVariable(name, value) {
+    setGrafanaVariable(name: string, value: string) {
         this.data[name] = value;
     }
 
@@ -61,5 +67,12 @@ export default class TemplateSrvStub {
     }
 
     updateTemplateData() {
+    }
+
+    updateTimeRange(timeRange: TimeRange) {
+    }
+
+    containsTemplate(target?: string): boolean {
+        return true;
     }
 }

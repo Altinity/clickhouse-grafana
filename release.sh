@@ -4,7 +4,7 @@ if [[ $# -lt 1 ]]; then
     echo "release.sh [major|minor|patch]"
     exit 1
 fi
-source .env
+source .release_env
 git config core.eol lf
 git config core.autocrlf input
 git config user.name "$GITHUB_LOGIN"

@@ -35,6 +35,7 @@ e2e-results/
 
 # secrets
 .env
+.release_env
 
 # golang cache
 .go-cache

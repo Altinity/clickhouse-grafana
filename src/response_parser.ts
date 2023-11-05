@@ -2,7 +2,7 @@ import {isObject} from 'lodash';
 import {AnnotationEvent} from '@grafana/data';
 
 export default class ResponseParser {
-    constructor(private $q: any) {
+    constructor() {
     }
 
     parse(query: string, results: any): any[] {
@@ -10,17 +10,16 @@ export default class ResponseParser {
             return [];
         }
 
-        const sqlResults = results.data;
         let res: any[] = [];
 
-        const keys = sqlResults.meta.map((item: any) => {
+        const keys = results.meta.map((item: any) => {
             return item.name
         });
         const textColIndex = ResponseParser.findColIndex(keys, '__text');
         const valueColIndex = ResponseParser.findColIndex(keys, '__value');
         const keyValuePairs = keys.length === 2 && textColIndex !== -1 && valueColIndex !== -1;
 
-        sqlResults.data.forEach( (result: {[key: string]: any}) => {
+        results.data.forEach( (result: {[key: string]: any}) => {
             if (!isObject(result)) {
                 res.push({text: result});
                 return;
@@ -73,9 +72,7 @@ export default class ResponseParser {
         }
 
         if (!hasTime) {
-            return this.$q.reject({
-                message: 'Missing mandatory time column in annotation query.',
-            });
+            throw new Error('Missing mandatory time column in annotation query.');
         }
 
         for (let i = 0, len = rows.length; i < len; i++) {

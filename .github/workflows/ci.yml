@@ -71,7 +71,7 @@ jobs:
 
       - name: Start grafana docker
         if: steps.check-for-e2e.outputs.has-e2e == 'true'
-        run: docker-compose up -d
+        run: npm run server
 
       - name: Run e2e tests
         if: steps.check-for-e2e.outputs.has-e2e == 'true'

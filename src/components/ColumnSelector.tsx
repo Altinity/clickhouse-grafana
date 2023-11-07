@@ -80,7 +80,7 @@ export const ColumnSelector = ({datasource, query, selectorType, onChange, onRun
     onRunQuery()
   };
 
-  const currentValue = selectorType == DateTimeColumnSelectorType.Date ? query.dateColDataType : query.dateTimeColDataType
+  const currentValue = selectorType === DateTimeColumnSelectorType.Date ? query.dateColDataType : query.dateTimeColDataType
 
   return (
     <div className="gf-form">

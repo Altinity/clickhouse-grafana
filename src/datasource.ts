@@ -21,7 +21,7 @@ import { CHQuery, CHDataSourceOptions, DEFAULT_QUERY } from './types';
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
-export class DataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
+export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   backendSrv: BackendSrv;
   templateSrv: TemplateSrv;
   adHocFilter: AdHocFilter;

@@ -11,15 +11,24 @@ export default class ResponseParser {
         }
 
         let res: any[] = [];
+        let meta: any[];
+        let data: Array<{ [key: string]: any }>;
+        if (typeof results.meta !== 'undefined') {
+            meta = results.meta
+            data = results.data
+        } else {
+            meta = results.data.meta
+            data = results.data.data
+        }
 
-        const keys = results.meta.map((item: any) => {
+        const keys = meta.map((item: any) => {
             return item.name
         });
         const textColIndex = ResponseParser.findColIndex(keys, '__text');
         const valueColIndex = ResponseParser.findColIndex(keys, '__value');
         const keyValuePairs = keys.length === 2 && textColIndex !== -1 && valueColIndex !== -1;
 
-        results.data.forEach( (result: {[key: string]: any}) => {
+        data.forEach( (result: {[key: string]: any}) => {
             if (!isObject(result)) {
                 res.push({text: result});
                 return;

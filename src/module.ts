@@ -1,9 +1,9 @@
 import { DataSourcePlugin } from '@grafana/data';
-import { DataSource } from './datasource';
-import { ConfigEditor } from './components/ConfigEditor';
-import { QueryEditor } from './components/QueryEditor';
+import { CHDataSource } from './datasource';
+import { ConfigEditor } from './views/ConfigEditor';
+import { QueryEditor } from './views/QueryEditor';
 import { CHQuery, CHDataSourceOptions } from './types';
 
-export const plugin = new DataSourcePlugin<DataSource, CHQuery, CHDataSourceOptions>(DataSource)
+export const plugin = new DataSourcePlugin<CHDataSource, CHQuery, CHDataSourceOptions>(CHDataSource)
   .setConfigEditor(ConfigEditor)
   .setQueryEditor(QueryEditor);

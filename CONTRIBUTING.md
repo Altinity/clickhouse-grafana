@@ -151,7 +151,7 @@ If the plugin is using the github actions supplied with `@grafana/create-plugin`
 
 1. Please navigate to "settings > secrets > actions" within your repo to create secrets.
 2. Click "New repository secret"
-3. Name the secret "GRAFANA_API_KEY" and "GRAFANA_API"
+3. Name the secret "GRAFANA_ACCESS_POLICY_TOKEN" and value could be generated in https://grafana.com/docs/grafana/latest/developers/plugins/sign-a-plugin/#generate-a-token
 4. Paste your Grafana Cloud API key or Grafana Access Policy Token in the Secret Value field
 5. Click "Add secret"
 

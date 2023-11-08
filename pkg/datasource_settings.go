@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -21,7 +22,7 @@ type DatasourceSettings struct {
 	TLSSkipVerify               bool   `json:"tlsSkipVerify"`
 }
 
-func NewDatasourceSettings(settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+func NewDatasourceSettings(ctx context.Context, settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
 	var dsSettings = DatasourceSettings{}
 
 	err := json.Unmarshal(settings.JSONData, &dsSettings)

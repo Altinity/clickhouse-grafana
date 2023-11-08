@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - 'v*' # Run workflow on version tags, e.g. v1.0.0.
+      - '\d+.\d+.\d+' # Run workflow on version tags, e.g. v1.0.0.
 
 jobs:
   release:
@@ -60,7 +60,7 @@ jobs:
         if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN == '' }}
 
       - name: Sign plugin
-        run: npm run sign
+        run: npx --yes @grafana/sign-plugin@latest
         if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN != '' }}
 
       - name: Get plugin metadata

@@ -3,8 +3,8 @@ export const Components = {
   QueryEditor: {
     EditorMode: {
       options: {
-        QuerySettings: 'Query Settings',
-        SQLEditor: 'SQL Editor',
+        QuerySettings: 'Query Settings2',
+        SQLEditor: 'SQL Editor2',
       },
     },
   },

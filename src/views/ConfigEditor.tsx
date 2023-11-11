@@ -11,6 +11,7 @@ interface Props extends DataSourcePluginOptionsEditorProps<CHDataSourceOptions> 
 export function ConfigEditor(props: Props) {
   const {onOptionsChange, options} = props;
 
+  console.log(options);
   const onSwitchToggle = (
     key: keyof Pick<CHDataSourceOptions, 'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST'>,
     value: boolean

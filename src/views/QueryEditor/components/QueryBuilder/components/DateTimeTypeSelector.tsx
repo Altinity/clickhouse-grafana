@@ -1,6 +1,6 @@
 import React from 'react';
 import { Select, Popover, Icon } from '@grafana/ui';
-import {CHQuery} from "../types";
+import {CHQuery} from "../../../../../types/types";
 import {SelectableValue} from "@grafana/data";
 
 interface DateTimeTypeSelectorProps {
@@ -39,6 +39,7 @@ export const DateTimeTypeSelector = ({ query, onChange, onRunQuery }: DateTimeTy
         onChange={(e) => onDateTimeTypeChanged(e!) }
         className="query-keyword width-14"
       />
+      123
       <Icon
         name="info-circle"
         ref={iconRef}
@@ -53,7 +54,7 @@ export const DateTimeTypeSelector = ({ query, onChange, onRunQuery }: DateTimeTy
           show={showPopover} referenceElement={iconRef.current}
           content={
            <div style={{width: "200px", backgroundColor:"black"}}>
-             Select Type&nbsp;
+             Select Type &nbsp;
              <a href="https://clickhouse.com/docs/en/sql-reference/data-types/datetime/" rel="noreferrer" target="_blank">DateTime</a>,&nbsp;
              <a href="https://clickhouse.com/docs/en/sql-reference/data-types/datetime64/" rel="noreferrer" target="_blank">DateTime64</a>&nbsp;
              or <a href="https://clickhouse.com/docs/en/sql-reference/data-types/int-uint/" rel="noreferrer" target="_blank">UInt32</a> column for binding with Grafana range selector

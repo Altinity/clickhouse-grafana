@@ -1,8 +1,8 @@
 import React from 'react';
 import {Button, RadioButtonGroup} from '@grafana/ui';
-import {CHQuery, EditorMode} from '../../types';
+import {CHQuery, EditorMode} from '../../../types/types';
 import {SelectableValue} from '@grafana/data';
-import {selectors} from '../../selectors'
+import {selectors} from './selectors'
 
 interface QueryHeaderProps {
   query: CHQuery;

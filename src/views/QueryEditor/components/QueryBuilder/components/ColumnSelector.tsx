@@ -1,8 +1,8 @@
 import React from 'react';
 import {Segment} from '@grafana/ui';
-import {CHQuery, DateTimeColumnSelectorType} from "../types";
+import {CHQuery, DateTimeColumnSelectorType} from "../../../../../types/types";
 import {SelectableValue} from "@grafana/data";
-import {CHDataSource} from "../datasource";
+import {CHDataSource} from "../../../../../datasource/datasource";
 
 interface DateTimeColumnSelectorProps {
   datasource: CHDataSource;

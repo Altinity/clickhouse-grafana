@@ -17,7 +17,7 @@ import {
   TemplateSrv
 } from '@grafana/runtime';
 
-import { CHQuery, CHDataSourceOptions, DEFAULT_QUERY } from './types';
+import { CHQuery, CHDataSourceOptions, DEFAULT_QUERY } from '../types/types';
 
 const adhocFilterVariable = 'adhoc_query_filter';
 

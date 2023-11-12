@@ -3,7 +3,12 @@ import {InlineField, Input, Switch, SecretInput, DataSourceHttpSettings} from '@
 import {
   DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, onUpdateDatasourceSecureJsonDataOption,
 } from '@grafana/data';
-import {CHDataSourceOptions, CHSecureJsonData} from '../types';
+import { CHDataSourceOptions } from '../../types/types';
+
+export interface CHSecureJsonData {
+  password?: string;
+  xHeaderKey?: string;
+}
 
 interface Props extends DataSourcePluginOptionsEditorProps<CHDataSourceOptions> {
 }

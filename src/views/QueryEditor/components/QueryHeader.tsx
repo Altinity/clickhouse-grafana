@@ -25,9 +25,9 @@ export const QueryHeader = ({ query, onChange, onRunQuery }: QueryHeaderProps) =
   return (
     <>
       <RadioButtonGroup size="sm" options={options} value={currentEditorModeState} onChange={(e) => onEditorModeChange(e!)} />
-      <Button variant="primary" icon="play" size="sm" onClick={onRunQuery}>
-        Run query
-      </Button>
+      {/*<Button variant="primary" icon="play" size="sm" onClick={onRunQuery}>*/}
+      {/*  Run query*/}
+      {/*</Button>*/}
     </>
   )
 }

@@ -59,13 +59,25 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
     onChange(query);
   };
 
+  const onDatabaseChange = (database) => {
+    setSelectedDatabase(database)
+    query.database = database
+    onChange(query)
+  }
+
+  const onTableChange = (table) => {
+    setSelectedTable(table)
+    query.table = table
+    onChange(query)
+  }
+
   return (
     <div className="gf-form" style={{ display: 'flex', flexDirection: "column", marginTop: '10px' }}>
       <InlineFieldRow>
         <InlineField label={<InlineLabel width={7} children={<span style={{ color: "#6e9fff" }}>FROM</span>} transparent />}>
           <Select
             width={16}
-            onChange={(item) => setSelectedDatabase(item.value)}
+            onChange={(item) => onDatabaseChange(item.value)}
             placeholder={'--Database--'}
             options={databases}
           />
@@ -73,7 +85,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
         <InlineField transparent>
           <Select
             width={24}
-            onChange={(item) => setSelectedTable(item.value)}
+            onChange={(item) => onTableChange(item.value)}
             placeholder={'--Table--'}
             options={tables}
           />

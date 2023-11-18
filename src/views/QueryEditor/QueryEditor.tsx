@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import { QueryEditorProps } from '@grafana/data';
 import { CHDataSource } from '../../datasource/datasource';
 import { CHDataSourceOptions, CHQuery, EditorMode } from '../../types/types';
@@ -11,11 +11,19 @@ const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFi
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const { datasource, query, onChange, onRunQuery } = props;
-
-  console.log('-----',props, SqlQuery);
+  const [formattedData, setFormattedData] = useState(null)
+  console.log('-----',props);
 
   const initializedQuery = initializeQueryDefaults(query);
 
+  useEffect(() => {
+    if (datasource.options && datasource.templateSrv) {
+      const queryModel = new SqlQuery(query, datasource.templateSrv, datasource.options)
+      const replaced = queryModel.replace(datasource.options, {})
+      setFormattedData(replaced)
+      // console.log('Replaced data', replaced);
+    }
+  },[query, datasource])
   const onSqlChange = (sql: string) => {
     onChange({ ...initializedQuery, query: sql });
     onRunQuery();
@@ -29,16 +37,19 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   const onFieldChange =(value) => {
     onChange({ ...query, ...value });
-    console.log(value);
   }
+
   return (
     <>
       <QueryHeader query={initializedQuery} onChange={onChange} onRunQuery={onRunQuery} />
       {initializedQuery.editorMode === EditorMode.Builder && !initializedQuery.rawQuery && (
         <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
+
       )}
       {(initializedQuery.rawQuery || initializedQuery.editorMode === EditorMode.SQL) && (
-        <QueryTextEditor query={initializedQuery} height={200} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} onFieldChange={onFieldChange} />
+        <><QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
+          <QueryTextEditor query={initializedQuery} height={200} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} onFieldChange={onFieldChange} formattedData={formattedData}/>
+        </>
       )}
     </>
   );

@@ -12,7 +12,7 @@ import {
 import ReformattedQuery from "./ReformattedQuery";
 import QueryMacrosInfo from "./QueryMacrosInfo";
 
-export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange }: any) => {
+export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData }: any) => {
   const [fieldValues, setFieldValues] = useState({
     step: "",
     resolution: 1,
@@ -143,7 +143,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
             <ToolbarButton>Generate query</ToolbarButton>
           </InlineField>
         </InlineFieldRow>
-        {fieldValues.showFormattedSQL && <ReformattedQuery />}
+        {fieldValues.showFormattedSQL && <ReformattedQuery data={formattedData} />}
         {fieldValues.showHelp && <QueryMacrosInfo />}
       </div>
     </>

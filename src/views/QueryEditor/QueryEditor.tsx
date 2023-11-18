@@ -5,13 +5,14 @@ import { CHDataSourceOptions, CHQuery, EditorMode } from '../../types/types';
 import { QueryHeader } from "./components/QueryHeader";
 import { QueryTextEditor } from "./components/QueryTextEditor";
 import { QueryBuilder } from "./components/QueryBuilder/QueryBuilder";
+import SqlQuery from "../../datasource/sql-query/sql_query";
 
 const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const { datasource, query, onChange, onRunQuery } = props;
 
-  console.log(query);
+  console.log('-----',props, SqlQuery);
 
   const initializedQuery = initializeQueryDefaults(query);
 

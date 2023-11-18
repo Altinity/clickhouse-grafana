@@ -128,7 +128,6 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
             options={timestampColumns}
           />
         </InlineField>
-        <ColumnSelector query={query} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} selectorType='DATETIME'/>
       </InlineFieldRow>
       <Button variant="primary" icon="arrow-right" size="sm" onClick={switchToSQLMode}>
         Go to Query

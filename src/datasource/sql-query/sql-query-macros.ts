@@ -1,6 +1,16 @@
 import { each } from 'lodash';
 import { SqlQueryHelper } from './sql-query-helper';
 
+export interface RawTimeRange {
+  from: any | string;
+  to: any | string;
+}
+
+export interface TimeRange {
+  from: any;
+  to: any;
+  raw: RawTimeRange;
+}
 export default class SqlQueryMacros {
   static applyMacros(query: string, ast: any): string {
     if (SqlQueryHelper.contain(ast, '$columns')) {
@@ -593,5 +603,31 @@ export default class SqlQueryMacros {
       ' GROUP BY t' +
       ' ORDER BY t'
     );
+  }
+
+  static replaceTimeFilters(query: string, range: TimeRange, dateTimeType = 'DATETIME', round?: number): string {
+    let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.from, round || 0));
+    let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.to, round || 0));
+
+    // Extend date range to be sure that first and last points
+    // data is not affected by round
+    if (round && round > 0) {
+      to += round * 2 - 1;
+      from -= round * 2 - 1;
+    }
+
+    return query
+      .replace(
+        /\$timeFilterByColumn\(([\w_]+)\)/g,
+        (match: string, columnName: string) => `${SqlQueryHelper.getFilterSqlForDateTime(columnName, dateTimeType)}`
+      )
+      .replace(
+        /\$timeFilter64ByColumn\(([\w_]+)\)/g,
+        (match: string, columnName: string) => `${SqlQueryHelper.getFilterSqlForDateTime(columnName, 'DATETIME64')}`
+      )
+      .replace(/\$from/g, from.toString())
+      .replace(/\$to/g, to.toString())
+      .replace(/\$__from/g, range.from.valueOf())
+      .replace(/\$__to/g, range.to.valueOf());
   }
 }

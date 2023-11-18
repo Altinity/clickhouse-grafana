@@ -18,6 +18,8 @@ import {
 } from '@grafana/runtime';
 
 import { CHQuery, CHDataSourceOptions, DEFAULT_QUERY } from '../types/types';
+import {SqlQueryHelper} from "./sql-query/sql-query-helper";
+import SqlQueryMacros from "./sql-query/sql-query-macros";
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
@@ -38,7 +40,6 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   useYandexCloudAuthorization: boolean;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
-    console.log(instanceSettings, '--------');
     super(instanceSettings);
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;
@@ -112,6 +113,8 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   }
 
   query(options: DataQueryRequest<CHQuery>) {
+    this.options = options
+    console.log('QUERY');
     const targets = options.targets.filter( target => !target.hide && target.query)
     const queries = targets.map(target => this.createQuery(options, target));
     // No valid targets, return the empty result to save a round trip.
@@ -161,6 +164,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   }
 
   modifyQuery(query: any, action: any): any {
+    console.log('MODIFY', query);
     let scanner = new Scanner(query.query ?? '');
     let queryAST = scanner.toAST();
     let where = queryAST['where'] || [];
@@ -204,6 +208,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   }
 
   createQuery(options: any, target: any) {
+    console.log('CREATE QUERY', target, options);
     const queryModel = new SqlQuery(target, this.templateSrv, options);
     const stmt = queryModel.replace(options, this.adHocFilter);
 
@@ -262,17 +267,17 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           text: '',
         }
       };
-      query = this.templateSrv.replace(query, scopedVars, SqlQuery.interpolateQueryExpr);
+      query = this.templateSrv.replace(query, scopedVars, SqlQueryHelper.interpolateQueryExpr);
     }
-    interpolatedQuery = this.templateSrv.replace(SqlQuery.conditionalTest(
+    interpolatedQuery = this.templateSrv.replace(SqlQueryHelper.conditionalTest(
       query, this.templateSrv
-    ), scopedVars, SqlQuery.interpolateQueryExpr);
+    ), scopedVars, SqlQueryHelper.interpolateQueryExpr);
 
     if (options && options.range) {
-      let from = SqlQuery.convertTimestamp(options.range.from);
-      let to = SqlQuery.convertTimestamp(options.range.to);
+      let from = SqlQueryHelper.convertTimestamp(options.range.from);
+      let to = SqlQueryHelper.convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = SqlQuery.replaceTimeFilters( interpolatedQuery, options.range);
+      interpolatedQuery = SqlQueryMacros.replaceTimeFilters( interpolatedQuery, options.range);
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 

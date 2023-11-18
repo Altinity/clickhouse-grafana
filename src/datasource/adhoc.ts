@@ -1,24 +1,21 @@
-const queryFilter = "database NOT IN ('system','INFORMATION_SCHEMA')";
-const columnsQuery = "SELECT database, table, name, type FROM system.columns WHERE {filter} ORDER BY database, table";
-const valuesQuery = "SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300";
-const regexEnum = /'(?:[^']+|'')+'/gmi;
-
 export default class AdHocFilter {
     tagKeys: any[];
     tagValues: {[key: string]: any} = {};
     datasource: any;
     query: string;
 
-    /** @ngInject */
     constructor(datasource: any) {
-        this.tagKeys = [];
+      const queryFilter = "database NOT IN ('system','INFORMATION_SCHEMA')";
+      const columnsQuery = "SELECT database, table, name, type FROM system.columns WHERE {filter} ORDER BY database, table";
+
+      this.tagKeys = [];
         this.tagValues = [];
         this.datasource = datasource;
         let filter = queryFilter;
         if (datasource.defaultDatabase.length > 0) {
             filter = "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
         }
-        this.query = columnsQuery.replace('{filter}', filter);
+      this.query = columnsQuery.replace('{filter}', filter);
     }
 
     // GetTagKeys fetches columns from CH tables according to provided filters
@@ -40,40 +37,44 @@ export default class AdHocFilter {
             });
     }
 
-    processTagKeysResponse(response: any) {
-        let self = this;
-        let columnNames: {[key: string]: any} = {}
-        response.forEach(function (item: any) {
-            let text: string = item.table + '.' + item.name;
-            if (self.datasource.defaultDatabase.length === 0) {
-                text = item.database + '.' + text;
-            }
-            let value = item.name;
-            self.tagKeys.push({text: text, value: value});
-            if (item.type.slice(0, 4) === 'Enum') {
-                let options = item.type.match(regexEnum);
-                if (options.length > 0) {
-                    self.tagValues[text] = [];
-                    options.forEach(function (o: any) {
-                        self.tagValues[text].push({text: o, value: o});
-                    });
-                    self.tagValues[item.name] = self.tagValues[text];
-                }
-            }
-            columnNames[item.name] = true;
-        });
-        /* Store unique column names with wildcard table */
-        Object.keys(columnNames).forEach(columnName => {
-            self.tagKeys.push({text: columnName, value: columnName});
-        });
-        return Promise.resolve(self.tagKeys);
-    }
+  processTagKeysResponse(response: any): Promise<any[]> {
+    const columnNames: { [key: string]: boolean } = {};
 
-    // GetTagValues returns column values according to passed options
+    response.forEach((item: any) => {
+      const databasePrefix = this.datasource.defaultDatabase.length === 0 ? item.database + '.' : '';
+      const text: string = databasePrefix + item.table + '.' + item.name;
+      const value = item.name;
+
+      this.tagKeys.push({ text, value });
+
+      if (item.type.slice(0, 4) === 'Enum') {
+        const regexEnum = /'(?:[^']+|'')+'/gmi;
+        const options = item.type.match(regexEnum) || [];
+
+        if (options.length > 0) {
+          this.tagValues[text] = options.map((o: any) => ({ text: o, value: o }));
+          this.tagValues[item.name] = this.tagValues[text];
+        }
+      }
+
+      columnNames[item.name] = true;
+    });
+
+    // Store unique column names with wildcard table
+    Object.keys(columnNames).forEach((columnName) => {
+      this.tagKeys.push({ text: columnName, value: columnName });
+    });
+
+    return Promise.resolve(this.tagKeys);
+  }
+
+  // GetTagValues returns column values according to passed options
     // Values for fields with Enum type were already fetched in GetTagKeys func and stored in `tagValues`
     // Values for fields which not represented on `tagValues` get from ClickHouse and cached on `tagValues`
     GetTagValues(options: any) {
-        let self = this;
+      const valuesQuery = "SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300";
+
+      let self = this;
         if (this.tagValues.hasOwnProperty(options.key)) {
             return Promise.resolve(this.tagValues[options.key]);
         }
@@ -102,10 +103,7 @@ export default class AdHocFilter {
     }
 
     processTagValuesResponse(response: any) {
-        let tagValues: any[] = [];
-        response.forEach(function (item: any) {
-            tagValues.push({text: item.text, value: item.text});
-        });
+        const tagValues = response.map((item: any) => ({text: item.text, value: item.text}));
         return Promise.resolve(tagValues);
     }
 }

@@ -13,7 +13,6 @@ import ReformattedQuery from "./ReformattedQuery";
 import QueryMacrosInfo from "./QueryMacrosInfo";
 
 export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange }: any) => {
-  console.log(query.extrapolate, query.skip_comments);
   const [fieldValues, setFieldValues] = useState({
     step: "",
     resolution: 1,
@@ -137,7 +136,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           </InlineField>
           <InlineField transparent>
             <ToolbarButton onClick={handleShowFormattedSQLChange} isOpen={fieldValues.showFormattedSQL}>
-              Show reformatted SQL
+              Show generated SQL
             </ToolbarButton>
           </InlineField>
           <InlineField transparent>

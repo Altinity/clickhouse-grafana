@@ -11,6 +11,8 @@ const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFi
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const { datasource, query, onChange, onRunQuery } = props;
 
+  console.log(query);
+
   const initializedQuery = initializeQueryDefaults(query);
 
   const onSqlChange = (sql: string) => {
@@ -22,8 +24,12 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
     // @todo: add auto-complete suggestions and syntax colors here
   };
 
-  const calculateEditorHeight = (): number => 100;
+  // const calculateEditorHeight = (): number => 100;
 
+  const onFieldChange =(value) => {
+    onChange({ ...query, ...value });
+    console.log(value);
+  }
   return (
     <>
       <QueryHeader query={initializedQuery} onChange={onChange} onRunQuery={onRunQuery} />
@@ -31,7 +37,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
         <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
       )}
       {(initializedQuery.rawQuery || initializedQuery.editorMode === EditorMode.SQL) && (
-        <QueryTextEditor query={initializedQuery} height={calculateEditorHeight()} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} />
+        <QueryTextEditor query={initializedQuery} height={200} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} onFieldChange={onFieldChange} />
       )}
     </>
   );

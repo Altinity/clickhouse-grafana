@@ -19,10 +19,13 @@ const fetchData = async (url, setter) => {
 };
 
 export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
-  const [tableLoading, setTableLoading] = useState(false);
   const [databases, setDatabases] = useState([]);
   const [tables, setTables] = useState([]);
+  const [dateTimeColumns, setDateTimeColumns] = useState([]);
+  const [timestampColumns, setTimestampColumns] = useState([]);
   const [selectedDatabase, setSelectedDatabase] = useState([]);
+  const [selectedTable, setSelectedTable] = useState([]);
+  const [selectedColumnTimestampType, setSelectedColumnTimestampType] = useState([]);
 
   useEffect(() => {
     fetchData('http://localhost:8123/?query=SHOW%20DATABASES%20FORMAT%20JSON', setDatabases);
@@ -34,7 +37,20 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
     }
   }, [selectedDatabase]);
 
+  useEffect(() => {
+    if (!!selectedDatabase || !!selectedTable || !!selectedColumnTimestampType) {
+      fetchData(`http://localhost:8123/?query=SELECT%20name%20FROM%20system.columns%20WHERE%20database%20%3D%20%27${selectedDatabase}%27%20AND%20table%20%3D%20%27${selectedTable}%27%20AND%20type%20LIKE%20%27${selectedColumnTimestampType}%25%27%20ORDER%20BY%20name%20FORMAT%20JSON`, setDateTimeColumns);
+    }
+  }, [selectedTable, selectedDatabase, selectedColumnTimestampType]);
+
+  useEffect(() => {
+    if (!!selectedDatabase || !!selectedTable) {
+      fetchData(`http://localhost:8123/?query=SELECT%20name%20FROM%20system.columns%20WHERE%20database%20%3D%20%27${selectedDatabase}%27%20AND%20table%20%3D%20%27${selectedTable}%27%20AND%20match%28type%2C%27%5EDate%24%7C%5EDate%5C%28%5B%5E%29%5D%2B%5C%29%24%27%29%20ORDER%20BY%20name%20UNION%20ALL%20SELECT%20%27%20%27%20AS%20name%20FORMAT%20JSON`, setTimestampColumns());
+    }
+  }, [selectedTable, selectedDatabase]);
+
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
+    setSelectedColumnTimestampType(dateTimeType.value)
     query.dateTimeType = dateTimeType.value
     onChange(query)
   };
@@ -57,7 +73,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
         <InlineField transparent>
           <Select
             width={24}
-            onChange={() => {}}
+            onChange={(item) => setSelectedTable(item.value)}
             placeholder={'--Table--'}
             options={tables}
           />
@@ -78,9 +94,9 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
             onChange={onDateTimeTypeChanged}
             placeholder={'--Database--'}
             options={[
-              {label: 'DateTime', value: 'DATETIME'},
-              {label: 'DateTime64', value: 'DATETIME64'},
-              {label: 'TimeStamp', value: 'TIMESTAMP'},
+              {label: 'DateTime', value: 'DateTime'},
+              {label: 'DateTime64', value: 'DateTime64'},
+              {label: 'TimeStamp', value: 'TimeStamp'},
             ]}
           />
         </InlineField>
@@ -93,7 +109,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
             width={24}
             onChange={() => {}}
             placeholder={'--DateTime:col--'}
-            options={[]}
+            options={dateTimeColumns}
           />
         </InlineField>
       </InlineFieldRow>
@@ -109,7 +125,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
             width={24}
             onChange={() => {}}
             placeholder={'--Database--'}
-            options={[]}
+            options={timestampColumns}
           />
         </InlineField>
         <ColumnSelector query={query} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} selectorType='DATETIME'/>

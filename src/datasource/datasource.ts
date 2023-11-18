@@ -38,6 +38,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   useYandexCloudAuthorization: boolean;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
+    console.log(instanceSettings, '--------');
     super(instanceSettings);
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;

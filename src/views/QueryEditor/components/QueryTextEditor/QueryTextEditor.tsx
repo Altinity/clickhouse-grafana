@@ -15,7 +15,7 @@ import QueryMacrosInfo from "./QueryMacrosInfo";
 export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData }: any) => {
   const [fieldValues, setFieldValues] = useState({
     step: "",
-    resolution: 1,
+    intervalFactor: 1,
     round: "",
     formatAs: "time_series",
     extrapolate: query.extrapolate,
@@ -30,8 +30,8 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
   };
 
   const handleResolutionChange = (value: number) => {
-    setFieldValues({ ...fieldValues, resolution: value });
-    onFieldChange({ ...fieldValues, resolution: value });
+    setFieldValues({ ...fieldValues, intervalFactor: value });
+    onFieldChange({ ...fieldValues, intervalFactor: value });
   };
 
   const handleRoundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -77,16 +77,20 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           onSave={onSqlChange}
           onBlur={(sql) => onSqlChange(sql)}
           onEditorDidMount={onEditorMount}
+          getSuggestions={() => {
+          return []
+          }
+          }
         />
       </div>
       <div className="gf-form" style={{ display: "flex", flexDirection: "column", marginTop: "10px" }}>
         <InlineFieldRow>
-          <InlineField label={"Step"} transparent>
-            <Input placeholder="Label" onChange={handleStepChange} value={fieldValues.step} />
+          <InlineField label={<InlineLabel width={12} transparent>Step</InlineLabel>} transparent>
+            <Input width={12} placeholder="Label" onChange={handleStepChange} value={fieldValues.step} />
           </InlineField>
-          <InlineField label={"Resolution"} transparent>
+          <InlineField label={<InlineLabel width={12} transparent>Resolution</InlineLabel>} transparent>
             <Select
-              width={16}
+              width={12}
               onChange={(e) => handleResolutionChange(Number(e.value))}
               options={[
                 { value: 1, label: "1/1" },
@@ -96,17 +100,17 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
                 { value: 5, label: "1/5" },
                 { value: 10, label: "1/10" },
               ]}
-              value={fieldValues.resolution.toString()}
+              value={fieldValues.intervalFactor.toString()}
             />
           </InlineField>
-          <InlineField label="Round" transparent>
+          <InlineField label={<InlineLabel width={12} transparent>Round</InlineLabel>} transparent>
             <Input placeholder="Label" onChange={handleRoundChange} value={fieldValues.round} />
           </InlineField>
         </InlineFieldRow>
         <InlineFieldRow>
-          <InlineField label="Format as" transparent>
+          <InlineField label={<InlineLabel width={12} transparent>Format As</InlineLabel>} transparent>
             <Select
-              width={16}
+              width={12}
               onChange={(e) => handleFormatAsChange(e.value)}
               options={[
                 { label: "Time series", value: "time_series" },
@@ -127,20 +131,20 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
             style={{ height: "100%" }}
             transparent
           >
-            <InlineSwitch value={fieldValues.skip_comments} onChange={handleSkipCommentsChange} transparent />
+            <InlineSwitch width="auto" value={fieldValues.skip_comments} onChange={handleSkipCommentsChange} transparent />
           </InlineField>
           <InlineField transparent>
-            <ToolbarButton onClick={handleShowHelpChange} isOpen={fieldValues.showHelp}>
+            <ToolbarButton variant={'primary'} onClick={handleShowHelpChange} isOpen={fieldValues.showHelp}>
               Show help
             </ToolbarButton>
           </InlineField>
           <InlineField transparent>
-            <ToolbarButton onClick={handleShowFormattedSQLChange} isOpen={fieldValues.showFormattedSQL}>
+            <ToolbarButton variant={'primary'} onClick={handleShowFormattedSQLChange} isOpen={fieldValues.showFormattedSQL}>
               Show generated SQL
             </ToolbarButton>
           </InlineField>
           <InlineField transparent>
-            <ToolbarButton>Generate query</ToolbarButton>
+            <ToolbarButton variant={'primary'}>Generate query</ToolbarButton>
           </InlineField>
         </InlineFieldRow>
         {fieldValues.showFormattedSQL && <ReformattedQuery data={formattedData} />}

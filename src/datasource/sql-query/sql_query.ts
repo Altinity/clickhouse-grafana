@@ -93,6 +93,7 @@ export default class SqlQuery {
       table = SqlQueryHelper.escapeTableIdentifier(this.target.database) + '.' + table;
     }
 
+    console.log('---- Round', interval, this.target.round);
     let myround = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1)
     let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.from, myround))
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.to, myround));

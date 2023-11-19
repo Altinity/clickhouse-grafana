@@ -2,7 +2,6 @@ import React, { useEffect, useState } from "react";
 import { EditorMode } from "../../../../types/types";
 import { Button, InlineField, InlineFieldRow, InlineLabel, Select } from "@grafana/ui";
 import {SelectableValue} from "@grafana/data";
-import {ColumnSelector} from "./components/ColumnSelector";
 
 const fetchData = async (url, setter) => {
   try {
@@ -51,7 +50,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
 
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
     setSelectedColumnTimestampType(dateTimeType.value)
-    query.dateTimeType = dateTimeType.value
+    query.dateTimeColDataType = dateTimeType.value
     onChange(query)
   };
   const switchToSQLMode = () => {
@@ -74,11 +73,11 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
   return (
     <div className="gf-form" style={{ display: 'flex', flexDirection: "column", marginTop: '10px' }}>
       <InlineFieldRow>
-        <InlineField label={<InlineLabel width={7} children={<span style={{ color: "#6e9fff" }}>FROM</span>} transparent />}>
+        <InlineField label={<InlineLabel width={24} children={<span style={{ color: "#6e9fff" }}>FROM</span>} transparent />}>
           <Select
-            width={16}
+            width={24}
             onChange={(item) => onDatabaseChange(item.value)}
-            placeholder={'--Database--'}
+            placeholder={'Database'}
             options={databases}
           />
         </InlineField>
@@ -86,7 +85,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
           <Select
             width={24}
             onChange={(item) => onTableChange(item.value)}
-            placeholder={'--Table--'}
+            placeholder={'Table'}
             options={tables}
           />
         </InlineField>
@@ -104,11 +103,11 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
           <Select
             width={24}
             onChange={onDateTimeTypeChanged}
-            placeholder={'--Database--'}
+            placeholder={'Timestamp type'}
             options={[
-              {label: 'DateTime', value: 'DateTime'},
-              {label: 'DateTime64', value: 'DateTime64'},
-              {label: 'TimeStamp', value: 'TimeStamp'},
+              {label: 'DateTime', value: 'DATETIME'},
+              {label: 'DateTime64', value: 'DATETIME64'},
+              {label: 'TimeStamp', value: 'TIMESTAMP'},
             ]}
           />
         </InlineField>
@@ -120,7 +119,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
           <Select
             width={24}
             onChange={() => {}}
-            placeholder={'--DateTime:col--'}
+            placeholder={'Datetime column'}
             options={dateTimeColumns}
           />
         </InlineField>
@@ -136,7 +135,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }) => {
           <Select
             width={24}
             onChange={() => {}}
-            placeholder={'--Database--'}
+            placeholder={'Timestamp Column'}
             options={timestampColumns}
           />
         </InlineField>

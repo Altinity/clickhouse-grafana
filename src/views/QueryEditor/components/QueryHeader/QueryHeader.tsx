@@ -1,9 +1,22 @@
 import React from 'react';
 import {Button, RadioButtonGroup} from '@grafana/ui';
-import {CHQuery, EditorMode} from '../../../types/types';
+import {CHQuery, EditorMode} from '../../../../types/types';
 import {SelectableValue} from '@grafana/data';
-import {selectors} from './selectors'
+import { E2ESelectors } from '@grafana/e2e-selectors';
+export const Components = {
+  QueryEditor: {
+    EditorMode: {
+      options: {
+        QuerySettings: 'Query Settings',
+        SQLEditor: 'SQL Editor',
+      },
+    },
+  },
+};
 
+export const selectors: { components: E2ESelectors<typeof Components> } = {
+  components: Components,
+};
 interface QueryHeaderProps {
   query: CHQuery;
   onChange: (query: CHQuery) => void;

@@ -2,8 +2,8 @@ import React, {useEffect, useState} from 'react';
 import { QueryEditorProps } from '@grafana/data';
 import { CHDataSource } from '../../datasource/datasource';
 import { CHDataSourceOptions, CHQuery, EditorMode } from '../../types/types';
-import { QueryHeader } from "./components/QueryHeader";
-import { QueryTextEditor } from "./components/QueryTextEditor";
+import { QueryHeader } from "./components/QueryHeader/QueryHeader";
+import { QueryTextEditor } from "./components/QueryTextEditor/QueryTextEditor";
 import { QueryBuilder } from "./components/QueryBuilder/QueryBuilder";
 import SqlQuery from "../../datasource/sql-query/sql_query";
 
@@ -41,16 +41,21 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   return (
     <>
-      <QueryHeader query={initializedQuery} onChange={onChange} onRunQuery={onRunQuery} />
-      {initializedQuery.editorMode === EditorMode.Builder && !initializedQuery.rawQuery && (
+      <>
         <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
+        <QueryTextEditor query={initializedQuery} height={200} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} onFieldChange={onFieldChange} formattedData={formattedData}/>
+      </>
+      {/*/!*<QueryHeader query={initializedQuery} onChange={onChange} onRunQuery={onRunQuery} />*!/*/}
+      {/*{initializedQuery.editorMode === EditorMode.Builder && !initializedQuery.rawQuery && (*/}
+      {/*  <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />*/}
 
-      )}
-      {(initializedQuery.rawQuery || initializedQuery.editorMode === EditorMode.SQL) && (
-        <><QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
-          <QueryTextEditor query={initializedQuery} height={200} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} onFieldChange={onFieldChange} formattedData={formattedData}/>
-        </>
-      )}
+      {/*)}*/}
+      {/*{(initializedQuery.rawQuery || initializedQuery.editorMode === EditorMode.SQL) && (*/}
+      {/*  <>*/}
+      {/*    <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />*/}
+      {/*    <QueryTextEditor query={initializedQuery} height={200} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} onFieldChange={onFieldChange} formattedData={formattedData}/>*/}
+      {/*  </>*/}
+      {/*)}*/}
     </>
   );
 }

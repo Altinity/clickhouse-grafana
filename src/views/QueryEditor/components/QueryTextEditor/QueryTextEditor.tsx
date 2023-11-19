@@ -11,6 +11,7 @@ import {
 } from "@grafana/ui";
 import ReformattedQuery from "./ReformattedQuery";
 import QueryMacrosInfo from "./QueryMacrosInfo";
+import {SQLCodeEditor} from "./SQLCodeEditor";
 
 export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData }: any) => {
   const [fieldValues, setFieldValues] = useState({
@@ -66,23 +67,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
 
   return (
     <>
-      <div style={{ position: "relative", width: "100%", marginTop: "10px" }}>
-        <CodeEditor
-          aria-label="SQL"
-          height={height}
-          language="sql"
-          value={query.query || ""}
-          showMiniMap={false}
-          showLineNumbers={true}
-          onSave={onSqlChange}
-          onBlur={(sql) => onSqlChange(sql)}
-          onEditorDidMount={onEditorMount}
-          getSuggestions={() => {
-          return []
-          }
-          }
-        />
-      </div>
+      <SQLCodeEditor height={height} onSqlChange={onSqlChange} query={query} onEditorMount={onEditorMount}/>
       <div className="gf-form" style={{ display: "flex", flexDirection: "column", marginTop: "10px" }}>
         <InlineFieldRow>
           <InlineField label={<InlineLabel width={12} transparent>Step</InlineLabel>} transparent>

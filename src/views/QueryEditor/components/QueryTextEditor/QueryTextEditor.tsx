@@ -1,6 +1,5 @@
 import React, { useState } from "react";
 import {
-  CodeEditor,
   InlineField,
   InlineFieldRow,
   InlineLabel,
@@ -40,17 +39,18 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
     onFieldChange({ ...fieldValues, round: event.target.value });
   };
 
-  const handleFormatAsChange = (value: string) => {
+  const handleFormatAsChange = (value: string | undefined) => {
+    // @ts-ignore
     setFieldValues({ ...fieldValues, formatAs: value });
     onFieldChange({ ...fieldValues, formatAs: value });
   };
 
-  const handleExtrapolationChange = (event: boolean) => {
+  const handleExtrapolationChange = () => {
     setFieldValues({ ...fieldValues, extrapolate: !fieldValues.extrapolate});
     onFieldChange({ ...fieldValues, extrapolate: !fieldValues.extrapolate });
   };
 
-  const handleSkipCommentsChange = (value: boolean) => {
+  const handleSkipCommentsChange = () => {
     setFieldValues({ ...fieldValues, skip_comments: !fieldValues.skip_comments });
     onFieldChange({ ...fieldValues, skip_comments: !fieldValues.skip_comments });
   };
@@ -71,7 +71,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
       <div className="gf-form" style={{ display: "flex", flexDirection: "column", marginTop: "10px" }}>
         <InlineFieldRow>
           <InlineField label={<InlineLabel width={12} transparent>Step</InlineLabel>} transparent>
-            <Input width={12} placeholder="Label" onChange={handleStepChange} value={fieldValues.step} />
+            <Input width={12} placeholder="" onChange={handleStepChange} value={fieldValues.step} />
           </InlineField>
           <InlineField label={<InlineLabel width={12} transparent>Resolution</InlineLabel>} transparent>
             <Select
@@ -85,11 +85,11 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
                 { value: 5, label: "1/5" },
                 { value: 10, label: "1/10" },
               ]}
-              value={fieldValues.intervalFactor.toString()}
+              value={fieldValues.intervalFactor}
             />
           </InlineField>
           <InlineField label={<InlineLabel width={12} transparent>Round</InlineLabel>} transparent>
-            <Input placeholder="Label" onChange={handleRoundChange} value={fieldValues.round} />
+            <Input placeholder="" onChange={handleRoundChange} value={fieldValues.round} />
           </InlineField>
         </InlineFieldRow>
         <InlineFieldRow>
@@ -118,6 +118,8 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           >
             <InlineSwitch width="auto" value={fieldValues.skip_comments} onChange={handleSkipCommentsChange} transparent />
           </InlineField>
+        </InlineFieldRow>
+        <InlineFieldRow>
           <InlineField transparent>
             <ToolbarButton variant={'primary'} onClick={handleShowHelpChange} isOpen={fieldValues.showHelp}>
               Show help

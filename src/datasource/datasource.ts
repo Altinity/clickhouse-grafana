@@ -28,6 +28,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   templateSrv: TemplateSrv;
   adHocFilter: AdHocFilter;
   responseParser: ResponseParser;
+  options: any;
 
 
   url: string;
@@ -144,8 +145,8 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           meta: response.meta,
           keys: keys,
           tillNow: options.rangeRaw?.to === 'now',
-          from: SqlQuery.convertTimestamp(options.range.from),
-          to: SqlQuery.convertTimestamp(options.range.to)
+          from: SqlQueryHelper.convertTimestamp(options.range.from),
+          to: SqlQueryHelper.convertTimestamp(options.range.to)
         });
         if (target.format === 'table') {
           _.each(sqlSeries.toTable(), (data) => {
@@ -325,9 +326,9 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
         const expandedQuery = {
           ...query,
           datasource: this.getRef(),
-          query: this.templateSrv.replace(SqlQuery.conditionalTest(
+          query: this.templateSrv.replace(SqlQueryHelper.conditionalTest(
             query.query, this.templateSrv
-          ), scopedVars, SqlQuery.interpolateQueryExpr),
+          ), scopedVars, SqlQueryHelper.interpolateQueryExpr),
         };
         return expandedQuery;
       });

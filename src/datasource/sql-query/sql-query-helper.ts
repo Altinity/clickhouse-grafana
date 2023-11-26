@@ -121,7 +121,7 @@ export class SqlQueryHelper {
     const macros = '$unescape(';
     let openMacros = query.indexOf(macros);
     while (openMacros !== -1) {
-      let r = HelpersMisc.betweenBraces(query.substring(openMacros + macros.length, query.length));
+      let r = SqlQueryHelper.betweenBraces(query.substring(openMacros + macros.length, query.length));
       if (r.error.length > 0) {
         throw { message: '$unescape macros error: ' + r.error };
       }
@@ -164,10 +164,10 @@ export class SqlQueryHelper {
       return value;
     }
     if (!Array.isArray(value)) {
-      return SqlQuery.clickhouseEscape(value, variable);
+      return SqlQueryHelper.clickhouseEscape(value, variable);
     }
     let escapedValues = value.map(function (v) {
-      return SqlQuery.clickhouseEscape(v, variable);
+      return SqlQueryHelper.clickhouseEscape(v, variable);
     });
     return escapedValues.join(',');
   }
@@ -223,7 +223,7 @@ export class SqlQueryHelper {
 
     if (value instanceof Array && returnAsArray) {
       let arrayValues = map(value, function (v) {
-        return HelpersMisc.clickhouseEscape(v, variable);
+        return SqlQueryHelper.clickhouseEscape(v, variable);
       });
       return '[' + arrayValues.join(', ') + ']';
     } else if (typeof value === 'number' || (returnAsIs && typeof value === 'string' && NumberOnlyRegexp.test(value))) {

@@ -1,6 +1,6 @@
 import React from 'react';
 
-const ReformattedQuery = ({data}) => {
+const ReformattedQuery = ({ data }: { data: string }) => {
   return (
     <div>
       <h5>Reformatted Query</h5>

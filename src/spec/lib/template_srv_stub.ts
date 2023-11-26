@@ -1,7 +1,7 @@
 import {isArray} from "lodash";
-import SqlQuery from "../../sql_query";
 import {TemplateSrv} from '@grafana/runtime';
 import {TimeRange} from "@grafana/data";
+import {SqlQueryHelper} from "../../datasource/sql-query/sql-query-helper";
 
 const variableRegex = /\$(\w+)|\[\[([\s\S]+?)(?::(\w+))?\]\]|\${(\w+)(?:\.([^:^\}]+))?(?::([^\}]+))?}/g;
 export default class TemplateSrvStub implements TemplateSrv {
@@ -41,7 +41,7 @@ export default class TemplateSrvStub implements TemplateSrv {
         if (typeof fmt === "function") {
             return fmt(value, variable);
         }
-        return SqlQuery.clickhouseEscape(value, variable);
+        return SqlQueryHelper.clickhouseEscape(value, variable);
     }
 
     getAdhocFilters() {

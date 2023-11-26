@@ -128,7 +128,7 @@ export default class SqlQueryMacros {
   }
 
   static delta(query: string, ast: any): string {
-    let [beforeMacrosQuery, fromQuery] = SqlQueryHelper._parseMacro('$delta', query);
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$delta', query);
 
     if (fromQuery.length < 1) {
       return query;
@@ -143,10 +143,10 @@ export default class SqlQueryMacros {
       };
     }
 
-    const formattedArguments = deltaArguments.map((arg, i) => `max(${arg.trim()}) AS max_${i}`);
-    const deltaColumns = formattedArguments.map((arg, i) => `runningDifference(${arg}) AS max_${i}_Delta`);
+    const formattedArguments = deltaArguments.map((arg: string, i: number) => `max(${arg.trim()}) AS max_${i}`);
+    const deltaColumns = formattedArguments.map((arg: string, i: number) => `runningDifference(${arg}) AS max_${i}_Delta`);
 
-    fromQuery = SqlQueryHelper._applyTimeFilter(fromQuery);
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
 
     return (
       beforeMacrosQuery +
@@ -191,7 +191,7 @@ export default class SqlQueryMacros {
     macro: string,
     transformation: (args: string[], cols: string[]) => void
   ): string {
-    let [beforeMacrosQuery, fromQuery] = SqlQueryHelper._parseMacro(macro, query);
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro(macro, query);
     if (fromQuery.length < 1) {
       return query;
     }
@@ -203,7 +203,7 @@ export default class SqlQueryMacros {
     let cols: any[] = [];
     transformation(args, cols);
 
-    fromQuery = SqlQueryHelper._applyTimeFilter(fromQuery);
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
     return (
       beforeMacrosQuery +
       'SELECT ' +
@@ -279,7 +279,7 @@ export default class SqlQueryMacros {
       having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
       fromQuery = fromQuery.slice(0, havingIndex - 1);
     }
-    fromQuery = SqlQueryHelper._applyTimeFilter(fromQuery);
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
 
     return (
       beforeMacrosQuery +
@@ -310,7 +310,7 @@ export default class SqlQueryMacros {
   }
 
   static columns(query: string, ast: any): string {
-    let [beforeMacrosQuery, fromQuery] = SqlQueryHelper._parseMacro('$columns', query);
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$columns', query);
     if (fromQuery.length < 1) {
       return query;
     }
@@ -320,11 +320,11 @@ export default class SqlQueryMacros {
         message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + ast.$columns.join(', '),
       };
     }
-    return SqlQueryHelper._columns(args[0], args[1], beforeMacrosQuery, fromQuery);
+    return SqlQueryMacros._columns(args[0], args[1], beforeMacrosQuery, fromQuery);
   }
 
   static rateColumns(query: string, ast: any): string {
-    let [beforeMacrosQuery, fromQuery] = SqlQueryHelper._parseMacro('$rateColumns', query);
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$rateColumns', query);
     if (fromQuery.length < 1) {
       return query;
     }
@@ -335,7 +335,7 @@ export default class SqlQueryMacros {
       };
     }
 
-    query = SqlQueryHelper._columns(args[0], args[1], '', fromQuery);
+    query = SqlQueryMacros._columns(args[0], args[1], '', fromQuery);
     return (
       beforeMacrosQuery +
       'SELECT t' +
@@ -344,44 +344,6 @@ export default class SqlQueryMacros {
       query +
       ')'
     );
-  }
-
-  static convertInterval(interval: any, intervalFactor: number, ms?: boolean): number {
-    if (!interval || typeof interval !== 'string' || interval === '') {
-      return 0;
-    }
-
-    const match = interval.match(durationSplitRegexp);
-
-    if (!match) {
-      throw new Error('Received interval is invalid: ' + interval);
-    }
-
-    const value = parseInt(match[1], 10);
-    const unit = match[2];
-
-    const unitsInSeconds: Record<string, number> = {
-      s: 1,
-      m: 60,
-      h: 3600,
-      d: 86400,
-      w: 604800,
-      M: 2592000,
-      y: 31536000,
-      ms: 0.001,
-    };
-
-    if (!(unit in unitsInSeconds)) {
-      throw new Error('Invalid unit in interval: ' + unit);
-    }
-
-    let result = value * unitsInSeconds[unit];
-
-    if (ms) {
-      result *= 1000;
-    }
-
-    return Math.ceil(result * intervalFactor);
   }
 
   static _detectAliasAndApplyTimeFilter(
@@ -402,11 +364,11 @@ export default class SqlQueryMacros {
       having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
       fromQuery = fromQuery.slice(0, havingIndex - 1);
     }
-    fromQuery = SqlQueryHelper._applyTimeFilter(fromQuery);
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
     return [key, alias, having, fromQuery];
   }
   static perSecondColumns(query: string, ast: any): string {
-    let [beforeMacrosQuery, fromQuery] = SqlQueryHelper._parseMacro('$perSecondColumns', query);
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$perSecondColumns', query);
     if (fromQuery.length < 1) {
       return query;
     }
@@ -424,7 +386,7 @@ export default class SqlQueryMacros {
       having = '',
       aliasIndex = key.toLowerCase().indexOf(' as '),
       alias = 'perSecondColumns';
-    [key, alias, having, fromQuery] = SqlQueryHelper._detectAliasAndApplyTimeFilter(
+    [key, alias, having, fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       aliasIndex,
       key,
       alias,
@@ -473,7 +435,7 @@ export default class SqlQueryMacros {
   }
 
   static increaseColumns(query: string, ast: any): string {
-    let [beforeMacrosQuery, fromQuery] = SqlQueryHelper._parseMacro('$increaseColumns', query);
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$increaseColumns', query);
     if (fromQuery.length < 1) {
       return query;
     }
@@ -491,7 +453,7 @@ export default class SqlQueryMacros {
       aliasIndex = key.toLowerCase().indexOf(' as '),
       alias = 'increaseColumns';
 
-    [key, alias, having, fromQuery] = SqlQueryHelper._detectAliasAndApplyTimeFilter(
+    [key, alias, having, fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       aliasIndex,
       key,
       alias,
@@ -540,7 +502,7 @@ export default class SqlQueryMacros {
   }
 
   static deltaColumns(query: string, ast: any): string {
-    let [beforeMacrosQuery, fromQuery] = SqlQueryHelper._parseMacro('$deltaColumns', query);
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$deltaColumns', query);
     if (fromQuery.length < 1) {
       return query;
     }
@@ -557,7 +519,7 @@ export default class SqlQueryMacros {
       having = '',
       aliasIndex = key.toLowerCase().indexOf(' as '),
       alias = 'deltaColumns';
-    [key, alias, having, fromQuery] = SqlQueryHelper._detectAliasAndApplyTimeFilter(
+    [key, alias, having, fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       aliasIndex,
       key,
       alias,

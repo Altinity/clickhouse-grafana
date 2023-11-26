@@ -12,7 +12,7 @@ const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFi
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const { datasource, query, onChange, onRunQuery } = props;
   const [formattedData, setFormattedData] = useState(null)
-  console.log('-----',props);
+  const [editorMode, setEditorMode] = useState(EditorMode.Builder)
 
   const initializedQuery = initializeQueryDefaults(query);
 
@@ -35,27 +35,21 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   // const calculateEditorHeight = (): number => 100;
 
-  const onFieldChange =(value) => {
+  const onFieldChange =(value: any) => {
     onChange({ ...query, ...value });
   }
 
   return (
     <>
-      <>
+      <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} />
+      {editorMode === EditorMode.Builder && (
         <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
-        <QueryTextEditor query={initializedQuery} height={200} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} onFieldChange={onFieldChange} formattedData={formattedData}/>
-      </>
-      {/*/!*<QueryHeader query={initializedQuery} onChange={onChange} onRunQuery={onRunQuery} />*!/*/}
-      {/*{initializedQuery.editorMode === EditorMode.Builder && !initializedQuery.rawQuery && (*/}
-      {/*  <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />*/}
-
-      {/*)}*/}
-      {/*{(initializedQuery.rawQuery || initializedQuery.editorMode === EditorMode.SQL) && (*/}
-      {/*  <>*/}
-      {/*    <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />*/}
-      {/*    <QueryTextEditor query={initializedQuery} height={200} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} onFieldChange={onFieldChange} formattedData={formattedData}/>*/}
-      {/*  </>*/}
-      {/*)}*/}
+      )}
+      {editorMode === EditorMode.SQL && (
+        <>
+          <QueryTextEditor query={initializedQuery} height={200} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} onFieldChange={onFieldChange} formattedData={formattedData}/>
+        </>
+      )}
     </>
   );
 }
@@ -71,5 +65,6 @@ function initializeQueryDefaults(query: CHQuery): CHQuery {
     intervalFactor: query.intervalFactor || 1,
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
+    editorMode: EditorMode.Builder
   };
 }

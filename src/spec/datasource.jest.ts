@@ -1,7 +1,7 @@
 import {size} from 'lodash';
-import SqlSeries from '../sql_series';
-import AdhocCtrl from "../adhoc";
-import ResponseParser from "../response_parser";
+import SqlSeries from '../datasource/sql_series';
+import AdhocCtrl from "../datasource/adhoc";
+import ResponseParser from "../datasource/response_parser";
 import { FieldType, MutableDataFrame } from '@grafana/data';
 
 describe("clickhouse sql series:", () => {

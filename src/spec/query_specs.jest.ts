@@ -1,6 +1,6 @@
-import Scanner from '../scanner';
-import SqlQuery from '../sql_query';
+import Scanner from '../datasource/scanner';
 import {each} from 'lodash';
+import SqlQueryMacros from "../datasource/sql-query/sql-query-macros";
 
 class Case {
     name: string;
@@ -36,13 +36,13 @@ describe("macros builder:", () => {
             ' WHERE $timeFilter' +
             ' GROUP BY t' +
             ' ORDER BY t)',
-            SqlQuery.rate
+            SqlQueryMacros.rate
         ),
         new Case(
             "$rate negative",
             "$rated(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests",
             '$rated(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests',
-            SqlQuery.rate
+          SqlQueryMacros.rate
         ),
         new Case(
             "$rateColumns",
@@ -65,7 +65,7 @@ describe("macros builder:", () => {
             ' ORDER BY t, from_type)' +
             ' GROUP BY t' +
             ' ORDER BY t)',
-            SqlQuery.rateColumns
+          SqlQueryMacros.rateColumns
         ),
         new Case(
             "$columns",
@@ -85,7 +85,7 @@ describe("macros builder:", () => {
             ' from_OSName)' +
             ' GROUP BY t' +
             ' ORDER BY t',
-            SqlQuery.columns
+          SqlQueryMacros.columns
         ),
         new Case(
             "$perSecond",
@@ -101,7 +101,7 @@ describe("macros builder:", () => {
             ' WHERE $timeFilter' +
             ' GROUP BY t' +
             ' ORDER BY t)',
-            SqlQuery.perSecond
+          SqlQueryMacros.perSecond
         ),
         new Case(
             "$delta",
@@ -117,7 +117,7 @@ describe("macros builder:", () => {
             ' WHERE $timeFilter' +
             ' GROUP BY t' +
             ' ORDER BY t)',
-            SqlQuery.delta
+          SqlQueryMacros.delta
         ),
         new Case(
             "$increase",
@@ -133,7 +133,7 @@ describe("macros builder:", () => {
             ' WHERE $timeFilter' +
             ' GROUP BY t' +
             ' ORDER BY t)',
-            SqlQuery.increase
+          SqlQueryMacros.increase
         ),
         new Case(
             "$perSecondColumns",
@@ -157,7 +157,7 @@ describe("macros builder:", () => {
             ')' +
             ' GROUP BY t' +
             ' ORDER BY t',
-            SqlQuery.perSecondColumns
+          SqlQueryMacros.perSecondColumns
         ),
         new Case(
             "$deltaColumns",
@@ -181,7 +181,7 @@ describe("macros builder:", () => {
             ')' +
             ' GROUP BY t' +
             ' ORDER BY t',
-            SqlQuery.deltaColumns
+          SqlQueryMacros.deltaColumns
         ),
         new Case(
             "$increaseColumns",
@@ -205,7 +205,7 @@ describe("macros builder:", () => {
             ')' +
             ' GROUP BY t' +
             ' ORDER BY t',
-            SqlQuery.increaseColumns
+          SqlQueryMacros.increaseColumns
         ),
     ];
 
@@ -238,7 +238,7 @@ describe("comments and $rate and from in field name", () => {
     const expQuery = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\nSELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob' GROUP BY t ORDER BY t)";
     const scanner = new Scanner(query);
     it("gets replaced with right FROM query", () => {
-        expect(SqlQuery.applyMacros(query, scanner.toAST() )).toBe(expQuery);
+        expect(SqlQueryMacros.applyMacros(query, scanner.toAST() )).toBe(expQuery);
     });
 });
 
@@ -292,7 +292,7 @@ describe("columns + union all + with", () => {
         ") GROUP BY t, category ORDER BY t, category) GROUP BY t ORDER BY t";
     const scanner = new Scanner(query);
     let ast = scanner.toAST();
-    let actual = SqlQuery.applyMacros(query, ast);
+    let actual = SqlQueryMacros.applyMacros(query, ast);
     it("gets replaced with right FROM query", () => {
         expect(actual).toBe(expQuery);
     });

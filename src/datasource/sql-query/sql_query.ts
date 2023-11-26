@@ -1,8 +1,8 @@
 import { isArray } from 'lodash';
 import Scanner from '../scanner';
 import { TemplateSrv } from '@grafana/runtime';
-import {SqlQueryHelper} from "./sql-query-helper";
-import SqlQueryMacros from "./sql-query-macros";
+import { SqlQueryHelper } from './sql-query-helper';
+import SqlQueryMacros from './sql-query-macros';
 
 export default class SqlQuery {
   target: any;
@@ -46,23 +46,40 @@ export default class SqlQuery {
         adhocFilters.forEach((af: any) => {
           let parts = af.key.includes('.') ? af.key.split('.') : [target[0], target[1], af.key];
 
-          if (parts.length === 1) parts = [target[1], ...parts];
-          if (parts.length === 2) parts = [target[0], ...parts];
+          if (parts.length === 1) {
+            parts = [target[1], ...parts];
+          }
+          if (parts.length === 2) {
+            parts = [target[0], ...parts];
+          }
 
           if (parts.length < 3) {
             console.warn(`adhoc filters: filter '${af.key}' has the wrong format`);
             return;
           }
 
-          if (target[0] !== parts[0] || target[1] !== parts[1]) return;
+          if (target[0] !== parts[0] || target[1] !== parts[1]) {
+            return;
+          }
 
           const operator = SqlQueryHelper.clickhouseOperator(af.operator);
-          let cond = `${parts[2]} ${operator} ${typeof af.value === 'number' || af.value.includes("'") || af.value.includes(', ') || af.value.match(/^\s*\d+\s*$/) ? af.value : "'" + af.value + "'"}`;
+          let cond = `${parts[2]} ${operator} ${
+            typeof af.value === 'number' ||
+            af.value.includes("'") ||
+            af.value.includes(', ') ||
+            af.value.match(/^\s*\d+\s*$/)
+              ? af.value
+              : "'" + af.value + "'"
+          }`;
           adhocCondition.push(cond);
 
-          if (ast.where.length > 0) cond = 'AND ' + cond;
+          if (ast.where.length > 0) {
+            cond = 'AND ' + cond;
+          }
 
-          if (!query.includes('$adhoc')) ast.where.push(cond);
+          if (!query.includes('$adhoc')) {
+            ast.where.push(cond);
+          }
         });
 
         query = scanner.Print(topQueryAST);
@@ -94,8 +111,8 @@ export default class SqlQuery {
     }
 
     console.log('---- Round', interval, this.target.round);
-    let myround = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1)
-    let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.from, myround))
+    let myround = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1);
+    let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.from, myround));
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.to, myround));
 
     // TODO: replace
@@ -115,10 +132,13 @@ export default class SqlQuery {
       .replace(/\$adhoc\b/g, renderedAdHocCondition);
 
     const round = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1);
-    this.target.rawQuery = SqlQueryMacros.replaceTimeFilters(this.target.rawQuery, this.options.range, dateTimeType, round);
+    this.target.rawQuery = SqlQueryMacros.replaceTimeFilters(
+      this.target.rawQuery,
+      this.options.range,
+      dateTimeType,
+      round
+    );
 
     return this.target.rawQuery;
   }
-
-
 }

@@ -1,25 +1,16 @@
-import _, {curry, each} from 'lodash'
+import _, { curry, each } from 'lodash';
 import SqlSeries from './sql_series';
 import SqlQuery from './sql-query/sql_query';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
 import Scanner from './scanner';
 
-import {
-  DataSourceInstanceSettings,
-  DataQueryRequest, DataSourceApi,
-  TypedVariableModel,
-} from '@grafana/data';
-import {
-  getBackendSrv,
-  BackendSrv,
-  getTemplateSrv,
-  TemplateSrv
-} from '@grafana/runtime';
+import { DataQueryRequest, DataSourceApi, DataSourceInstanceSettings, TypedVariableModel } from '@grafana/data';
+import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
-import { CHQuery, CHDataSourceOptions, DEFAULT_QUERY } from '../types/types';
-import {SqlQueryHelper} from "./sql-query/sql-query-helper";
-import SqlQueryMacros from "./sql-query/sql-query-macros";
+import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
+import { SqlQueryHelper } from './sql-query/sql-query-helper';
+import SqlQueryMacros from './sql-query/sql-query-macros';
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
@@ -29,7 +20,6 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   adHocFilter: AdHocFilter;
   responseParser: ResponseParser;
   options: any;
-
 
   url: string;
   basicAuth: any;
@@ -51,11 +41,10 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
 
-    this.backendSrv = getBackendSrv()
-    this.templateSrv = getTemplateSrv()
-    this.adHocFilter = new AdHocFilter(this)
+    this.backendSrv = getBackendSrv();
+    this.templateSrv = getTemplateSrv();
+    this.adHocFilter = new AdHocFilter(this);
     this.responseParser = new ResponseParser();
-
   }
 
   _getRequestOptions(query: string, usePOST?: boolean, requestId?: string) {
@@ -90,9 +79,9 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
       options.headers['X-ClickHouse-User'] = this.xHeaderUser;
       // look to routes in plugin.json
       if (options.url.indexOf('/?') === -1) {
-        options.url += "/xHeaderKey"
+        options.url += '/xHeaderKey';
       } else {
-        options.url.replace("/?","/xHeaderKey/?")
+        options.url.replace('/?', '/xHeaderKey/?');
       }
     }
 
@@ -114,22 +103,23 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   }
 
   query(options: DataQueryRequest<CHQuery>) {
-    this.options = options
+    this.options = options;
     console.log('QUERY');
-    const targets = options.targets.filter( target => !target.hide && target.query)
-    const queries = targets.map(target => this.createQuery(options, target));
+    const targets = options.targets.filter((target) => !target.hide && target.query);
+    const queries = targets.map((target) => this.createQuery(options, target));
     // No valid targets, return the empty result to save a round trip.
     // No valid targets, return the empty result to save a round trip.
     if (!queries.length) {
       return Promise.resolve({ data: [] });
     }
 
-    const allQueryPromise = queries.map(query => {
+    const allQueryPromise = queries.map((query) => {
       return this._seriesQuery(query.stmt, query.requestId);
     });
 
     return Promise.all(allQueryPromise).then((responses: any): any => {
-      let result: any[] = [], i = 0;
+      let result: any[] = [],
+        i = 0;
       _.each(responses, (response) => {
         const target = options.targets[i];
         const keys = queries[i].keys;
@@ -146,7 +136,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           keys: keys,
           tillNow: options.rangeRaw?.to === 'now',
           from: SqlQueryHelper.convertTimestamp(options.range.from),
-          to: SqlQueryHelper.convertTimestamp(options.range.to)
+          to: SqlQueryHelper.convertTimestamp(options.range.to),
         });
         if (target.format === 'table') {
           _.each(sqlSeries.toTable(), (data) => {
@@ -160,7 +150,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           });
         }
       });
-      return {data: result};
+      return { data: result };
     });
   }
 
@@ -205,7 +195,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     }
 
     const modifiedQuery = scanner.Print(queryAST);
-    return {...query, query: modifiedQuery};
+    return { ...query, query: modifiedQuery };
   }
 
   createQuery(options: any, target: any) {
@@ -234,12 +224,15 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
       throw new Error('Query missing in annotation definition');
     }
 
-    const params = Object.assign({
-      annotation: {
-        dateTimeColDataType: 'time'
+    const params = Object.assign(
+      {
+        annotation: {
+          dateTimeColDataType: 'time',
+        },
+        interval: '30s',
       },
-      interval: '30s'
-    }, options);
+      options
+    );
     let queryModel;
     let query;
 
@@ -252,7 +245,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
 
     return this.backendSrv
       .datasourceRequest(queryParams)
-      .then(result => this.responseParser.transformAnnotationResponse(params, result.data));
+      .then((result) => this.responseParser.transformAnnotationResponse(params, result.data));
   }
 
   metricFindQuery(query: string, options?: any) {
@@ -261,24 +254,27 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     const searchFilterVariableName = '__searchFilter';
     let scopedVars = {};
     if (query.indexOf(searchFilterVariableName) !== -1) {
-      const searchFilterValue = options && options.searchFilter ? `${options.searchFilter}${wildcardChar}` : `${wildcardChar}`;
+      const searchFilterValue =
+        options && options.searchFilter ? `${options.searchFilter}${wildcardChar}` : `${wildcardChar}`;
       scopedVars = {
         __searchFilter: {
           value: searchFilterValue,
           text: '',
-        }
+        },
       };
       query = this.templateSrv.replace(query, scopedVars, SqlQueryHelper.interpolateQueryExpr);
     }
-    interpolatedQuery = this.templateSrv.replace(SqlQueryHelper.conditionalTest(
-      query, this.templateSrv
-    ), scopedVars, SqlQueryHelper.interpolateQueryExpr);
+    interpolatedQuery = this.templateSrv.replace(
+      SqlQueryHelper.conditionalTest(query, this.templateSrv),
+      scopedVars,
+      SqlQueryHelper.interpolateQueryExpr
+    );
 
     if (options && options.range) {
       let from = SqlQueryHelper.convertTimestamp(options.range.from);
       let to = SqlQueryHelper.convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = SqlQueryMacros.replaceTimeFilters( interpolatedQuery, options.range);
+      interpolatedQuery = SqlQueryMacros.replaceTimeFilters(interpolatedQuery, options.range);
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 
@@ -287,10 +283,9 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   }
 
   testDatasource() {
-    return this.metricFindQuery(DEFAULT_QUERY.query).then(
-      () => {
-        return {status: "success", message: "Data source is working", title: "Success"};
-      });
+    return this.metricFindQuery(DEFAULT_QUERY.query).then(() => {
+      return { status: 'success', message: 'Data source is working', title: 'Success' };
+    });
   }
 
   _seriesQuery(query: string, requestId?: string) {
@@ -326,9 +321,11 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
         const expandedQuery = {
           ...query,
           datasource: this.getRef(),
-          query: this.templateSrv.replace(SqlQueryHelper.conditionalTest(
-            query.query, this.templateSrv
-          ), scopedVars, SqlQueryHelper.interpolateQueryExpr),
+          query: this.templateSrv.replace(
+            SqlQueryHelper.conditionalTest(query.query, this.templateSrv),
+            scopedVars,
+            SqlQueryHelper.interpolateQueryExpr
+          ),
         };
         return expandedQuery;
       });

@@ -291,9 +291,6 @@ export class SqlQueryHelper {
   }
 
   static escapeIdentifier(identifier: string): string {
-    console.log(identifier, /^[a-zA-Z][0-9a-zA-Z_]+$/.test(identifier) || /\(.*\)/.test(identifier) || /[\/*+\-]/.test(identifier)
-      ? identifier
-      : `"${identifier.replace(/"/g, '\\"')}"`);
     return /^[a-zA-Z][0-9a-zA-Z_]+$/.test(identifier) || /\(.*\)/.test(identifier) || /[\/*+\-]/.test(identifier)
       ? identifier
       : `"${identifier.replace(/"/g, '\\"')}"`;

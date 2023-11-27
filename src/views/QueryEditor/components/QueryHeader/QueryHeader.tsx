@@ -3,6 +3,7 @@ import { RadioButtonGroup } from '@grafana/ui';
 import { CHQuery, EditorMode } from '../../../../types/types';
 import { SelectableValue } from '@grafana/data';
 import { E2ESelectors } from '@grafana/e2e-selectors';
+
 export const Components = {
   QueryEditor: {
     EditorMode: {
@@ -20,7 +21,7 @@ export const selectors: { components: E2ESelectors<typeof Components> } = {
 interface QueryHeaderProps {
   query: CHQuery;
   editorMode: EditorMode;
-  setEditorMode: (mode: any) => void
+  setEditorMode: (mode: any) => void;
 }
 
 export const QueryHeader = ({ editorMode, setEditorMode }: QueryHeaderProps) => {
@@ -34,7 +35,12 @@ export const QueryHeader = ({ editorMode, setEditorMode }: QueryHeaderProps) => 
   };
   return (
     <>
-      <RadioButtonGroup size="sm" options={options} value={editorMode} onChange={(e: EditorMode) => onEditorModeChange(e!)} />
+      <RadioButtonGroup
+        size="sm"
+        options={options}
+        value={editorMode}
+        onChange={(e: EditorMode) => onEditorModeChange(e!)}
+      />
     </>
   );
 };

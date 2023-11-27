@@ -1,29 +1,29 @@
-import React, {useEffect, useState} from 'react';
+import React, { useEffect, useState } from 'react';
 import { QueryEditorProps } from '@grafana/data';
 import { CHDataSource } from '../../datasource/datasource';
 import { CHDataSourceOptions, CHQuery, EditorMode } from '../../types/types';
-import { QueryHeader } from "./components/QueryHeader/QueryHeader";
-import { QueryTextEditor } from "./components/QueryTextEditor/QueryTextEditor";
-import { QueryBuilder } from "./components/QueryBuilder/QueryBuilder";
-import SqlQuery from "../../datasource/sql-query/sql_query";
+import { QueryHeader } from './components/QueryHeader/QueryHeader';
+import { QueryTextEditor } from './components/QueryTextEditor/QueryTextEditor';
+import { QueryBuilder } from './components/QueryBuilder/QueryBuilder';
+import SqlQuery from '../../datasource/sql-query/sql_query';
 
-const defaultQuery = "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t";
+const defaultQuery = 'SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t';
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const { datasource, query, onChange, onRunQuery } = props;
-  const [formattedData, setFormattedData] = useState(null)
-  const [editorMode, setEditorMode] = useState(EditorMode.Builder)
+  const [formattedData, setFormattedData] = useState(null);
+  const [editorMode, setEditorMode] = useState(EditorMode.Builder);
 
   const initializedQuery = initializeQueryDefaults(query);
 
   useEffect(() => {
     if (datasource.options && datasource.templateSrv) {
-      const queryModel = new SqlQuery(query, datasource.templateSrv, datasource.options)
-      const replaced = queryModel.replace(datasource.options, {})
-      setFormattedData(replaced)
+      const queryModel = new SqlQuery(query, datasource.templateSrv, datasource.options);
+      const replaced = queryModel.replace(datasource.options, {});
+      setFormattedData(replaced);
       // console.log('Replaced data', replaced);
     }
-  },[query, datasource])
+  }, [query, datasource]);
   const onSqlChange = (sql: string) => {
     onChange({ ...initializedQuery, query: sql });
     onRunQuery();
@@ -35,9 +35,9 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   // const calculateEditorHeight = (): number => 100;
 
-  const onFieldChange =(value: any) => {
+  const onFieldChange = (value: any) => {
     onChange({ ...query, ...value });
-  }
+  };
 
   return (
     <>
@@ -47,7 +47,14 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       )}
       {editorMode === EditorMode.SQL && (
         <>
-          <QueryTextEditor query={initializedQuery} height={200} onEditorMount={onSQLEditorMount} onSqlChange={onSqlChange} onFieldChange={onFieldChange} formattedData={formattedData}/>
+          <QueryTextEditor
+            query={initializedQuery}
+            height={200}
+            onEditorMount={onSQLEditorMount}
+            onSqlChange={onSqlChange}
+            onFieldChange={onFieldChange}
+            formattedData={formattedData}
+          />
         </>
       )}
     </>
@@ -61,10 +68,10 @@ function initializeQueryDefaults(query: CHQuery): CHQuery {
     extrapolate: query.extrapolate ?? true,
     skip_comments: query.skip_comments ?? true,
     dateTimeType: query.dateTimeType || 'DATETIME',
-    round: query.round || "0s",
+    round: query.round || '0s',
     intervalFactor: query.intervalFactor || 1,
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
-    editorMode: EditorMode.Builder
+    editorMode: EditorMode.Builder,
   };
 }

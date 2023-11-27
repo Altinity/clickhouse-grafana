@@ -144,7 +144,9 @@ export default class SqlQueryMacros {
     }
 
     const formattedArguments = deltaArguments.map((arg: string, i: number) => `max(${arg.trim()}) AS max_${i}`);
-    const deltaColumns = formattedArguments.map((arg: string, i: number) => `runningDifference(${arg}) AS max_${i}_Delta`);
+    const deltaColumns = formattedArguments.map(
+      (arg: string, i: number) => `runningDifference(${arg}) AS max_${i}_Delta`
+    );
 
     fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
 
@@ -223,7 +225,7 @@ export default class SqlQueryMacros {
   }
 
   static increase(query: string, ast: any): string {
-    return this.transformQuery(query, ast, '$increase', function (args, cols) {
+    return SqlQueryMacros.transformQuery(query, ast, '$increase', function (args, cols) {
       each(args, function (a, i) {
         cols.push(
           'if(runningDifference(max_' + i + ') < 0, 0, runningDifference(max_' + i + ')) AS max_' + i + '_Increase'
@@ -233,7 +235,7 @@ export default class SqlQueryMacros {
   }
 
   static perSecond(query: string, ast: any): string {
-    return this.transformQuery(query, ast, '$perSecond', function (args, cols) {
+    return SqlQueryMacros.transformQuery(query, ast, '$perSecond', function (args, cols) {
       each(args, function (a, i) {
         cols.push(
           'if(runningDifference(max_' +
@@ -250,7 +252,7 @@ export default class SqlQueryMacros {
   }
 
   static rate(query: string, ast: any): string {
-    return this.transformQuery(query, ast, '$rate', function (args, cols) {
+    return SqlQueryMacros.transformQuery(query, ast, '$rate', function (args, cols) {
       let aliases: any[] = [];
       each(args, function (arg) {
         if (arg.slice(-1) === ')') {

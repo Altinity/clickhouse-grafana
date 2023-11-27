@@ -1,7 +1,11 @@
 import React from 'react';
-import {DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput,} from '@grafana/ui';
-import {DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, onUpdateDatasourceSecureJsonDataOption,} from '@grafana/data';
-import {CHDataSourceOptions} from '../../types/types';
+import { DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput } from '@grafana/ui';
+import {
+  DataSourcePluginOptionsEditorProps,
+  onUpdateDatasourceJsonDataOption,
+  onUpdateDatasourceSecureJsonDataOption,
+} from '@grafana/data';
+import { CHDataSourceOptions } from '../../types/types';
 
 export interface CHSecureJsonData {
   password?: string;
@@ -44,7 +48,11 @@ export function ConfigEditor(props: Props) {
         onChange={onOptionsChange}
       />
       <div className="gf-form-group">
-        <InlineField label="Use Yandex.Cloud authorization headers" tooltip="Use authorization headers for managed Yandex.Cloud ClickHouse database" labelWidth={36}>
+        <InlineField
+          label="Use Yandex.Cloud authorization headers"
+          tooltip="Use authorization headers for managed Yandex.Cloud ClickHouse database"
+          labelWidth={36}
+        >
           <InlineSwitch
             id="useYandexCloudAuthorization"
             className="gf-form"

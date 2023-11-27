@@ -41,7 +41,7 @@ export default class SqlQuery {
           ast.where = [];
         }
 
-        let target = this.target(ast.from[0], this.target);
+        let target = SqlQueryHelper.target(ast.from[0], this.target);
 
         adhocFilters.forEach((af: any) => {
           let parts = af.key.includes('.') ? af.key.split('.') : [target[0], target[1], af.key];
@@ -110,7 +110,6 @@ export default class SqlQuery {
       table = SqlQueryHelper.escapeTableIdentifier(this.target.database) + '.' + table;
     }
 
-    console.log('---- Round', interval, this.target.round);
     let myround = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1);
     let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.from, myround));
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.to, myround));
@@ -138,7 +137,6 @@ export default class SqlQuery {
       dateTimeType,
       round
     );
-
     return this.target.rawQuery;
   }
 }

@@ -1,5 +1,6 @@
 import React, { useEffect } from 'react';
 import Editor, { useMonaco } from '@monaco-editor/react';
+
 export const SQLCodeEditor = ({ height, query, onEditorMount, onSqlChange }: any) => {
   const monaco = useMonaco();
 

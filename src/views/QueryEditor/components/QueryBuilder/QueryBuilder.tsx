@@ -165,7 +165,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
           }
           transparent
         >
-          <Select width={24} onChange={() => {}} placeholder={'Datetime column'} options={dateTimeColumns} />
+          <Select width={24} onChange={() => {}} placeholder={'Timestamp column'} options={dateTimeColumns} />
         </InlineField>
       </InlineFieldRow>
       <InlineFieldRow>
@@ -193,7 +193,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
           }
           transparent
         >
-          <Select width={24} onChange={() => {}} placeholder={'Timestamp Column'} options={timestampColumns} />
+          <Select width={24} onChange={() => {}} placeholder={'Date Column'} options={timestampColumns} />
         </InlineField>
       </InlineFieldRow>
       <Button variant="primary" icon="arrow-right" onClick={switchToSQLMode}>

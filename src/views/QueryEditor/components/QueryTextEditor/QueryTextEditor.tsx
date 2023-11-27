@@ -108,7 +108,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
         <InlineFieldRow>
           <InlineField
             label={
-              <InlineLabel width={12} transparent>
+              <InlineLabel width={24} transparent>
                 Format As
               </InlineLabel>
             }

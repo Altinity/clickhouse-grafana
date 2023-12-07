@@ -1,6 +1,6 @@
-import Scanner from '../src/scanner';
-import SqlQuery from '../src/sql_query';
-import {each} from 'lodash-es';
+import Scanner from '../scanner';
+import SqlQuery from '../sql_query';
+import {each} from 'lodash';
 
 class Case {
     name: string;
@@ -16,6 +16,7 @@ class Case {
         this.query = query;
         this.fn = fn;
         this.scanner = new Scanner(query);
+        this.got = '';
     }
 }
 

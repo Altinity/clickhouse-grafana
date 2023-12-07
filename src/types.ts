@@ -1,18 +1,39 @@
 import { DataSourceJsonData } from '@grafana/data';
 import { DataQuery } from '@grafana/schema';
 
+/*
+* Value that is used in QueryEditor to switch between builder and SQL modes
+*/
+export enum EditorMode {
+  SQL = 'sql',
+  Builder = 'builder',
+}
+
+export enum DateTimeColumnSelectorType {
+  DateTime = 'datetime',
+  Date = 'date',
+}
+
 export interface CHQuery extends DataQuery {
   query: string;
   format: string;
   extrapolate: boolean;
-}
+  rawQuery: boolean | string;
+  editorMode?: EditorMode;
+  database?: string;
+  table?: string;
 
-export const DEFAULT_QUERY: CHQuery = {
-  refId: "",
-  query: "SELECT 1",
-  format: "time_series",
-  extrapolate: false
-};
+  dateTimeType?: string;
+  dateColDataType?: string;
+  dateTimeColDataType?: string;
+
+  skip_comments?: boolean;
+
+  round?: string;
+  intervalFactor?: number;
+  formattedQuery?: string;
+
+}
 
 /**
  * These are options configured for each DataSource instance
@@ -32,3 +53,12 @@ export interface CHSecureJsonData {
   password?: string;
   xHeaderKey?: string;
 }
+
+export const DEFAULT_QUERY: CHQuery = {
+  refId: "",
+  query: "SELECT 1",
+  format: "time_series",
+  extrapolate: false,
+  rawQuery: false,
+  editorMode: EditorMode.SQL
+};

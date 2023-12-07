@@ -97,8 +97,8 @@ services:
     working_dir: /grafana-clickhouse
     volumes:
       - ./:/grafana-clickhouse
-      # for speedup npm install
-      - "node_modules:/grafana-clickhouse/node_modules"
+      # for speedup npm install under WSL
+      # - "node_modules:/grafana-clickhouse/node_modules"
     command: |
       bash -xec '
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
@@ -119,7 +119,8 @@ services:
       - ./.go-cache:/go-cache
     command: |
       bash -xec "
-        (command -v mage || go install -v github.com/magefile/mage@latest) && 
+        git config --global --add safe.directory /go/src/grafana-clickhouse &&
+        (command -v mage || go install -v github.com/magefile/mage@latest) &&
         go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ &&
         mage -v && 
         chmod +x ./dist/altinity-clickhouse-plugin*

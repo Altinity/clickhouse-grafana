@@ -1,5 +1,5 @@
-import SqlQuery, {TimeRange} from '../src/sql_query';
-import moment from "moment";
+import SqlQuery, {TimeRange} from '../sql_query';
+import dayjs from "dayjs";
 // @ts-ignore
 import {RawTimeRangeStub} from './lib/raw_time_range_stub';
 // @ts-ignore
@@ -8,8 +8,8 @@ import TemplateSrvStub from './lib/template_srv_stub';
 describe("Query SELECT with $timeFilterByColumn and range with from and to:", () => {
     const query = "SELECT * FROM table WHERE $timeFilterByColumn(column_name)";
     const range: TimeRange = {
-        from: moment('2018-12-24 01:02:03Z'),
-        to: moment('2018-12-31 23:59:59Z'),
+        from: dayjs('2018-12-24 01:02:03Z'),
+        to: dayjs('2018-12-31 23:59:59Z'),
         raw: RawTimeRangeStub,
     };
 
@@ -25,10 +25,10 @@ describe("Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range
     const query = "SELECT * FROM table WHERE $timeFilterByColumn(column_name)";
     const query64 = "SELECT * FROM table WHERE $timeFilter64ByColumn(column_name)";
     const range: TimeRange = {
-        from: moment('2018-12-24 01:02:03.200Z'),
-        to: moment(),
+        from: dayjs('2018-12-24 01:02:03.200Z'),
+        to: dayjs(),
         raw: {
-            from: moment('2018-12-24 01:02:03.200Z'),
+            from: dayjs('2018-12-24 01:02:03.200Z'),
             to: 'now',
         },
     };
@@ -74,7 +74,7 @@ describe("Query SELECT with $timeSeries $timeFilter and DATETIME64", () => {
         "GROUP BY t\n" +
         "ORDER BY t";
     let templateSrv = new TemplateSrvStub();
-    const adhocFilters = [];
+    const adhocFilters: any[] = [];
     let target = {
         query: query,
         interval: "15s",
@@ -90,12 +90,12 @@ describe("Query SELECT with $timeSeries $timeFilter and DATETIME64", () => {
     };
     const options = {
         rangeRaw: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2018-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2018-12-31 23:59:59Z'),
         },
         range: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2018-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2018-12-31 23:59:59Z'),
         },
         scopedVars: {
             __interval: {
@@ -273,12 +273,12 @@ describe("$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adho
     };
     const options = {
         rangeRaw: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2018-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2018-12-31 23:59:59Z'),
         },
         range: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2018-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2018-12-31 23:59:59Z'),
         },
         scopedVars: {
             __interval: {
@@ -349,12 +349,12 @@ describe("check replace with $adhoc macros", () => {
     };
     const options = {
         rangeRaw: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2018-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2018-12-31 23:59:59Z'),
         },
         range: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2018-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2018-12-31 23:59:59Z'),
         },
         scopedVars: {
             __interval: {
@@ -410,12 +410,12 @@ describe("check replace with $columns and concat and ARRAY JOIN", () => {
     };
     const options = {
         rangeRaw: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2018-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2018-12-31 23:59:59Z'),
         },
         range: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2018-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2018-12-31 23:59:59Z'),
         },
         scopedVars: {
             __interval: {
@@ -446,7 +446,7 @@ describe("combine $timeFilterByColumn and $dateTimeCol", () => {
         "GROUP BY t";
 
     let templateSrv = new TemplateSrvStub();
-    const adhocFilters = [];
+    const adhocFilters: any[] = [];
     let target = {
         query: query,
         interval: "15s",
@@ -463,12 +463,12 @@ describe("combine $timeFilterByColumn and $dateTimeCol", () => {
 
     const options = {
         rangeRaw: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2018-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2018-12-31 23:59:59Z'),
         },
         range: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2018-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2018-12-31 23:59:59Z'),
             raw: RawTimeRangeStub,
         },
         scopedVars: {
@@ -497,7 +497,7 @@ describe("check $naturalTimeSeries", () => {
         "AND tm >= toDateTime(1545613320) AND tm <= toDateTime(1640995140) GROUP BY t";
 
     let templateSrv = new TemplateSrvStub();
-    const adhocFilters = [];
+    const adhocFilters: any[] = [];
     let target = {
         query: query,
         interval: "15s",
@@ -514,12 +514,12 @@ describe("check $naturalTimeSeries", () => {
 
     const options = {
         rangeRaw: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2021-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2021-12-31 23:59:59Z'),
         },
         range: {
-            from: moment('2018-12-24 01:02:03Z'),
-            to: moment('2021-12-31 23:59:59Z'),
+            from: dayjs('2018-12-24 01:02:03Z'),
+            to: dayjs('2021-12-31 23:59:59Z'),
             raw: RawTimeRangeStub,
         },
         scopedVars: {
@@ -553,7 +553,7 @@ describe("Query SELECT with $timeSeriesMs $timeFilterMs and DATETIME64", () => {
         "GROUP BY t\n" +
         "ORDER BY t";
     let templateSrv = new TemplateSrvStub();
-    const adhocFilters = [];
+    const adhocFilters: any[] = [];
     let target = {
         query: query,
         interval: "100ms",
@@ -569,12 +569,12 @@ describe("Query SELECT with $timeSeriesMs $timeFilterMs and DATETIME64", () => {
     };
     const options = {
         rangeRaw: {
-            from: moment('2018-12-24 01:02:03.200Z'),
-            to: moment('2018-12-31 23:59:59.200Z'),
+            from: dayjs('2018-12-24 01:02:03.200Z'),
+            to: dayjs('2018-12-31 23:59:59.200Z'),
         },
         range: {
-            from: moment('2018-12-24 01:02:03.200Z'),
-            to: moment('2018-12-31 23:59:59.200Z'),
+            from: dayjs('2018-12-24 01:02:03.200Z'),
+            to: dayjs('2018-12-31 23:59:59.200Z'),
         },
         scopedVars: {
             __interval: {
@@ -605,7 +605,7 @@ describe("Query SELECT with special character in table", () => {
         "GROUP BY t\n" +
         "ORDER BY t";
     let templateSrv = new TemplateSrvStub();
-    const adhocFilters = [];
+    const adhocFilters: any[] = [];
     let target = {
         query: query,
         interval: "1s",
@@ -621,12 +621,12 @@ describe("Query SELECT with special character in table", () => {
     };
     const options = {
         rangeRaw: {
-            from: moment('2018-12-24 01:02:03.200Z'),
-            to: moment('2018-12-31 23:59:59.200Z'),
+            from: dayjs('2018-12-24 01:02:03.200Z'),
+            to: dayjs('2018-12-31 23:59:59.200Z'),
         },
         range: {
-            from: moment('2018-12-24 01:02:03.200Z'),
-            to: moment('2018-12-31 23:59:59.200Z'),
+            from: dayjs('2018-12-24 01:02:03.200Z'),
+            to: dayjs('2018-12-31 23:59:59.200Z'),
         },
         scopedVars: {
             __interval: {

@@ -1,3 +1,3 @@
-import { RawTimeRange } from '../../src/sql_query';
+import { RawTimeRange } from '../../sql_query';
 
 export const RawTimeRangeStub: RawTimeRange = {} as RawTimeRange;

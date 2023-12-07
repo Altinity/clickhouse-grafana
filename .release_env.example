@@ -5,5 +5,8 @@ export GITHUB_EMAIL="your@email"
 # create token in https://github.com/settings/tokens
 export GITHUB_TOKEN="XXX"
 # you should ask github @hagen1778 or @Slach how to invite you to Vertamedia grafana organization https://grafana.com/orgs/vertamedia
-export GRAFANA_API_KEY=XXXX
+export GRAFANA_API_KEY="XXXX"
+# create grafana policy token https://grafana.com/docs/grafana-cloud/account-management/authentication-and-permissions/access-policies/authorize-services/
+# for example if you in Vertamedia https://grafana.com/orgs/vertamedia/access-policies
+export GRAFANA_ACCESS_POLICY_TOKEN="XXX"
 set -xeuo pipefail

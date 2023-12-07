@@ -52,14 +52,14 @@ services:
       - ./dist/:/var/lib/grafana/plugins/vertamedia-clickhouse-datasource/
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
+      - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
       GF_DATABASE_WAL: "true"
-      # @todo wait grafana 9.0 implementation alerts provisioning https://github.com/grafana/grafana/issues/40983#issuecomment-1137770772
-      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
-      GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
+      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
+      GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
     ports:
       - 3000:3000/tcp
@@ -76,8 +76,8 @@ services:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,vertamedia-clickhouse-datasource
       GF_LOG_LEVEL: debug
       GF_DATABASE_WAL: "true"
-      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
-      GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
+      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
+      GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
     ports:
       - "3001:3000"
     depends_on:

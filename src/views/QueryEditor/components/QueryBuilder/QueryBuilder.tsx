@@ -140,7 +140,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
       <InlineFieldRow>
         <InlineField
           label={
-            <InlineLabel width={24} transparent>
+            <InlineLabel width={24} >
               <span style={{ color: '#6e9fff' }}>FROM</span>
             </InlineLabel>
           }
@@ -152,7 +152,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
             options={databases}
           />
         </InlineField>
-        <InlineField transparent>
+        <InlineField >
           <Select
             width={24}
             // @ts-ignore
@@ -197,12 +197,12 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
                   column for binding with Grafana range selector
                 </div>
               }
-              transparent
+              
             >
               Column timestamp type
             </InlineLabel>
           }
-          transparent
+          
         >
           <Select
             width={24}
@@ -219,11 +219,11 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
       <InlineFieldRow>
         <InlineField
           label={
-            <InlineLabel width={24} transparent>
+            <InlineLabel width={24} >
               Timestamp Column
             </InlineLabel>
           }
-          transparent
+          
         >
           <Select width={24} onChange={() => {}} placeholder={'Timestamp column'} options={timestampColumns} disabled={!timestampColumns.length}/>
         </InlineField>
@@ -246,12 +246,12 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
                   column for binding with Grafana range selector
                 </div>
               }
-              transparent
+              
             >
               Date column
             </InlineLabel>
           }
-          transparent
+          
         >
           <Select width={24} onChange={() => {}} placeholder={'Date Column'} options={dateColumns} disabled={true} />
         </InlineField>

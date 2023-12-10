@@ -28,15 +28,15 @@ export class SqlQueryHelper {
 
   static convertInterval(interval: any, intervalFactor: number, ms?: boolean): number {
     const durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
-    if (!interval || typeof interval !== 'string' || interval === '') {
+    const match = interval.match(durationSplitRegexp);
+
+    if (!interval || typeof interval !== 'string' || interval === '' || !match) {
       return 0;
     }
 
-    const match = interval.match(durationSplitRegexp);
-
-    if (!match) {
-      throw new Error('Received interval is invalid: ' + interval);
-    }
+    // if (!match) {
+    //   throw new Error('Received interval is invalid: ' + interval);
+    // }
 
     const value = parseInt(match[1], 10);
     const unit = match[2];

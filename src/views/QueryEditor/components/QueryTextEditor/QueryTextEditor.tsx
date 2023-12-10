@@ -64,21 +64,21 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
         <InlineFieldRow>
           <InlineField
             label={
-              <InlineLabel width={'auto'} transparent>
+              <InlineLabel width={'auto'}  tooltip={'Leave blank for auto handling based on time range and panel width'} >
                 Step
               </InlineLabel>
             }
-            transparent
+            
           >
             <Input width={'auto'} placeholder="" onChange={handleStepChange} value={fieldValues.step} />
           </InlineField>
           <InlineField
             label={
-              <InlineLabel width={'auto'} transparent>
+              <InlineLabel width={'auto'} >
                 Resolution
               </InlineLabel>
             }
-            transparent
+            
           >
             <Select
               width={'auto'}
@@ -96,11 +96,16 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           </InlineField>
           <InlineField
             label={
-              <InlineLabel width={'auto'} transparent>
+              <InlineLabel width={'auto'} tooltip={<div>
+                Set rounding for `$from` and `$to` timestamps.<br/>
+                For example, if set `1m` - both `$from` and `$to` will be rounded to beginning of minute.<br/><br/>
+                Or set to `$step` to automatically adjust according to `Step * Resolution` value. <br/><br/>
+                It will make all requests similar during one minute which is good for caching.
+              </div>} >
                 Round
               </InlineLabel>
             }
-            transparent
+            
           >
             <Input placeholder="" onChange={handleRoundChange} value={fieldValues.round} />
           </InlineField>
@@ -108,11 +113,11 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
         <InlineFieldRow>
           <InlineField
             label={
-              <InlineLabel width={'auto'} transparent>
+              <InlineLabel width={'auto'} >
                 Format As
               </InlineLabel>
             }
-            transparent
+            
           >
             <Select
               width={'auto'}
@@ -127,24 +132,24 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           </InlineField>
           <InlineField
             label={
-              <InlineLabel width="auto" tooltip="Tooltip content" transparent>
+              <InlineLabel width="auto" tooltip="Turn on if you don't like when last data point in time series much lower then previous" >
                 {' '}
                 Extrapolation{' '}
               </InlineLabel>
             }
-            transparent
+            
           >
-            <InlineSwitch value={fieldValues.extrapolate} onChange={handleExtrapolationChange} transparent />
+            <InlineSwitch transparent value={fieldValues.extrapolate} onChange={handleExtrapolationChange}  />
           </InlineField>
           <InlineField
             label={
-              <InlineLabel width="auto" tooltip="Tooltip content" transparent>
+              <InlineLabel width="auto" tooltip="Turn off if you would like pass comments in SQL query to server" >
                 {' '}
                 Skip Comments{' '}
               </InlineLabel>
             }
             style={{ height: '100%' }}
-            transparent
+            
           >
             <InlineSwitch
               width="auto"
@@ -153,14 +158,12 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
               transparent
             />
           </InlineField>
-        </InlineFieldRow>
-        <InlineFieldRow>
-          <InlineField transparent>
+          <InlineField >
             <ToolbarButton variant={'primary'} onClick={handleShowHelpChange} isOpen={fieldValues.showHelp}>
               Show help
             </ToolbarButton>
           </InlineField>
-          <InlineField transparent>
+          <InlineField >
             <ToolbarButton
               variant={'primary'}
               onClick={handleShowFormattedSQLChange}
@@ -169,9 +172,25 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
               Show generated SQL
             </ToolbarButton>
           </InlineField>
-          <InlineField transparent>
-            <ToolbarButton variant={'primary'}>Generate query</ToolbarButton>
+          <InlineField  tooltip={'Reformat SQL query as ClickHouse do.'}>
+            <ToolbarButton variant={'primary'}>Reformat Query</ToolbarButton>
           </InlineField>
+        </InlineFieldRow>
+        <InlineFieldRow>
+          {/*<InlineField >*/}
+          {/*  <ToolbarButton variant={'primary'} onClick={handleShowHelpChange} isOpen={fieldValues.showHelp}>*/}
+          {/*    Show help*/}
+          {/*  </ToolbarButton>*/}
+          {/*</InlineField>*/}
+          {/*<InlineField >*/}
+          {/*  <ToolbarButton*/}
+          {/*    variant={'primary'}*/}
+          {/*    onClick={handleShowFormattedSQLChange}*/}
+          {/*    isOpen={fieldValues.showFormattedSQL}*/}
+          {/*  >*/}
+          {/*    Show generated SQL*/}
+          {/*  </ToolbarButton>*/}
+          {/*</InlineField>*/}
         </InlineFieldRow>
         {fieldValues.showFormattedSQL && <ReformattedQuery data={formattedData} />}
         {fieldValues.showHelp && <QueryMacrosInfo />}

@@ -219,7 +219,6 @@ describe('macros builder:', () => {
     }
     describe(tc.name, () => {
       it('expects equality', () => {
-        console.log('<<<<<<<<<', tc.fn.name);
         expect(tc.got).toEqual(tc.expected);
       });
     });

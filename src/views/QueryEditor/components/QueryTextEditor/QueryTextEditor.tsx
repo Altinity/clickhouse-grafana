@@ -64,24 +64,24 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
         <InlineFieldRow>
           <InlineField
             label={
-              <InlineLabel width={12} transparent>
+              <InlineLabel width={'auto'} transparent>
                 Step
               </InlineLabel>
             }
             transparent
           >
-            <Input width={12} placeholder="" onChange={handleStepChange} value={fieldValues.step} />
+            <Input width={'auto'} placeholder="" onChange={handleStepChange} value={fieldValues.step} />
           </InlineField>
           <InlineField
             label={
-              <InlineLabel width={12} transparent>
+              <InlineLabel width={'auto'} transparent>
                 Resolution
               </InlineLabel>
             }
             transparent
           >
             <Select
-              width={12}
+              width={'auto'}
               onChange={(e) => handleResolutionChange(Number(e.value))}
               options={[
                 { value: 1, label: '1/1' },
@@ -96,7 +96,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           </InlineField>
           <InlineField
             label={
-              <InlineLabel width={12} transparent>
+              <InlineLabel width={'auto'} transparent>
                 Round
               </InlineLabel>
             }
@@ -108,14 +108,14 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
         <InlineFieldRow>
           <InlineField
             label={
-              <InlineLabel width={24} transparent>
+              <InlineLabel width={'auto'} transparent>
                 Format As
               </InlineLabel>
             }
             transparent
           >
             <Select
-              width={12}
+              width={'auto'}
               onChange={(e) => handleFormatAsChange(e.value)}
               options={[
                 { label: 'Time series', value: 'time_series' },

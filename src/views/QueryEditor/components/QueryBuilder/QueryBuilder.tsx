@@ -3,54 +3,114 @@ import { EditorMode } from '../../../../types/types';
 import { Button, InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 
-const fetchData = async (url: string, setter: (value: any) => void) => {
-  try {
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error('Network response was not ok');
-    }
-
-    const data = await response.json();
-    setter(data.data.map((item: any) => ({ label: item.name, value: item.name })));
-  } catch (error) {
-    console.error(`Error fetching data from ${url}:`, error);
-  }
-};
-
-export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) => {
+export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEditorMode }: any) => {
   const [databases, setDatabases] = useState([]);
   const [tables, setTables] = useState([]);
-  const [dateTimeColumns, setDateTimeColumns] = useState([]);
+  const [dateColumns, setdateColumns] = useState([]);
   const [timestampColumns, setTimestampColumns] = useState([]);
-  const [selectedDatabase, setSelectedDatabase] = useState<SelectableValue<string>>();
-  const [selectedTable, setSelectedTable] = useState<string>();
+  const [selectedDatabase, setSelectedDatabase] = useState<SelectableValue<string>>(query.database);
+  const [selectedTable, setSelectedTable] = useState<string>(query.table);
   const [selectedColumnTimestampType, setSelectedColumnTimestampType] = useState([]);
 
+  const buildExploreQuery = (type) => {
+    let query;
+    switch (type) {
+      case 'TABLES':
+        query = 'SELECT name ' +
+          'FROM system.tables ' +
+          'WHERE database = \'' + selectedDatabase + '\' ' +
+          'ORDER BY name';
+        break;
+      case 'DATE':
+        query = 'SELECT name ' +
+          'FROM system.columns ' +
+          'WHERE database = \'' + selectedDatabase + '\' AND ' +
+          'table = \'' + selectedTable + '\' AND ' +
+          'match(type,\'^Date$|^Date\\([^)]+\\)$\') ' +
+          'ORDER BY name ' +
+          'UNION ALL SELECT \' \' AS name';
+        break;
+      case 'DATETIME':
+        query = 'SELECT name ' +
+          'FROM system.columns ' +
+          'WHERE database = \'' + selectedDatabase + '\' AND ' +
+          'table = \'' + selectedTable + '\' AND ' +
+          'match(type,\'^DateTime$|^DateTime\\([^)]+\\)$\') ' +
+          'ORDER BY name';
+        break;
+      case 'DATETIME64':
+        query = 'SELECT name ' +
+          'FROM system.columns ' +
+          'WHERE database = \'' + selectedDatabase + '\' AND ' +
+          'table = \'' + selectedTable + '\' AND ' +
+          'type LIKE \'DateTime64%\' ' +
+          'ORDER BY name';
+        break;
+      case 'TIMESTAMP':
+        query = 'SELECT name ' +
+          'FROM system.columns ' +
+          'WHERE database = \'' + selectedDatabase + '\' AND ' +
+          'table = \'' + selectedTable + '\' AND ' +
+          'type = \'UInt32\' ' +
+          'ORDER BY name';
+        break;
+      case 'DATABASES':
+        query = 'SELECT name ' +
+          'FROM system.databases ' +
+          'ORDER BY name';
+        break;
+      case 'COLUMNS':
+        query = 'SELECT name text, type value ' +
+          'FROM system.columns ' +
+          'WHERE database = \'' + selectedDatabase + '\' AND ' +
+          'table = \'' + selectedTable + '\'';
+        break;
+    }
+    return query;
+  }
+  const querySegment = (type: string) => {
+    let query = buildExploreQuery(type);
+    console.log(query);
+    return datasource.metricFindQuery(query)
+    // .then(this.uiSegmentSrv.transformToSegments(false))
+    // .catch(this.handleQueryError.bind(this));
+  }
+
+  console.log(querySegment);
+  
   useEffect(() => {
-    fetchData('http://localhost:8123/?query=SHOW%20DATABASES%20FORMAT%20JSON', setDatabases);
+    (async () => {
+      const databases = await querySegment('DATABASES')
+      setDatabases(databases.map((item: any) => ({ label: item.text, value: item.text })))
+    })()
   }, []);
 
   useEffect(() => {
     if (selectedDatabase) {
-      fetchData(`http://localhost:8123/?query=SHOW%20TABLES%20FROM%20${selectedDatabase}%20FORMAT%20JSON`, setTables);
+      (async () => {
+        const tables = await querySegment('TABLES')
+        setTables(tables.map((item: any) => ({ label: item.text, value: item.text })))
+      })()
     }
   }, [selectedDatabase]);
 
   useEffect(() => {
     if (!!selectedDatabase || !!selectedTable || !!selectedColumnTimestampType) {
-      fetchData(
-        `http://localhost:8123/?query=SELECT%20name%20FROM%20system.columns%20WHERE%20database%20%3D%20%27${selectedDatabase}%27%20AND%20table%20%3D%20%27${selectedTable}%27%20AND%20type%20LIKE%20%27${selectedColumnTimestampType}%25%27%20ORDER%20BY%20name%20FORMAT%20JSON`,
-        setDateTimeColumns
-      );
+      (async () => {
+        const timestampColumns = await querySegment(selectedColumnTimestampType)
+        setTimestampColumns(timestampColumns.map((item: any) => ({ label: item.text, value: item.text })))
+      })()
     }
   }, [selectedTable, selectedDatabase, selectedColumnTimestampType]);
 
   useEffect(() => {
     if (!!selectedDatabase || !!selectedTable) {
-      fetchData(
-        `http://localhost:8123/?query=SELECT%20name%20FROM%20system.columns%20WHERE%20database%20%3D%20%27${selectedDatabase}%27%20AND%20table%20%3D%20%27${selectedTable}%27%20AND%20match%28type%2C%27%5EDate%24%7C%5EDate%5C%28%5B%5E%29%5D%2B%5C%29%24%27%29%20ORDER%20BY%20name%20UNION%20ALL%20SELECT%20%27%20%27%20AS%20name%20FORMAT%20JSON`,
-        setTimestampColumns
-      );
+
+      (async () => {
+        const dateColumns = await querySegment('DATE')
+        console.log(dateColumns,'<<<<');
+        setdateColumns(dateColumns.map((item: any) => ({ label: item.text, value: item.text })))
+      })()
     }
   }, [selectedTable, selectedDatabase]);
 
@@ -60,8 +120,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
     onChange(query);
   };
   const switchToSQLMode = () => {
-    query.editorMode = EditorMode.SQL;
-    onChange(query);
+    setEditorMode(EditorMode.SQL)
   };
 
   const onDatabaseChange = (database: SelectableValue<string>) => {
@@ -100,6 +159,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
             onChange={({ value }: { value: SelectableValue<string> }) => onTableChange(value)}
             placeholder={'Table'}
             options={tables}
+            disabled={true}
           />
         </InlineField>
       </InlineFieldRow>
@@ -160,12 +220,12 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
         <InlineField
           label={
             <InlineLabel width={24} transparent>
-              Datetime Column
+              Timestamp Column
             </InlineLabel>
           }
           transparent
         >
-          <Select width={24} onChange={() => {}} placeholder={'Timestamp column'} options={dateTimeColumns} />
+          <Select width={24} onChange={() => {}} placeholder={'Timestamp column'} options={timestampColumns} disabled={!timestampColumns.length}/>
         </InlineField>
       </InlineFieldRow>
       <InlineFieldRow>
@@ -188,15 +248,15 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
               }
               transparent
             >
-              Timestamp column
+              Date column
             </InlineLabel>
           }
           transparent
         >
-          <Select width={24} onChange={() => {}} placeholder={'Date Column'} options={timestampColumns} />
+          <Select width={24} onChange={() => {}} placeholder={'Date Column'} options={dateColumns} disabled={true} />
         </InlineField>
       </InlineFieldRow>
-      <Button variant="primary" icon="arrow-right" onClick={switchToSQLMode}>
+      <Button variant="primary" icon="arrow-right" onClick={switchToSQLMode} >
         Go to Query
       </Button>
     </div>

@@ -21,7 +21,6 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       const queryModel = new SqlQuery(query, datasource.templateSrv, datasource.options);
       const replaced = queryModel.replace(datasource.options, {});
       setFormattedData(replaced);
-      // console.log('Replaced data', replaced);
     }
   }, [query, datasource]);
   const onSqlChange = (sql: string) => {
@@ -43,7 +42,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
     <>
       <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} />
       {editorMode === EditorMode.Builder && (
-        <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
+        <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} setEditorMode={setEditorMode} onRunQuery={onRunQuery} />
       )}
       {editorMode === EditorMode.SQL && (
         <>
@@ -62,6 +61,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 }
 
 function initializeQueryDefaults(query: CHQuery): CHQuery {
+  console.log(',,,,', query);
   return {
     ...query,
     format: query.format || 'time_series',

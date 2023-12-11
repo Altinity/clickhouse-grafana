@@ -81,7 +81,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
             }
             
           >
-            <Input width={'auto'} placeholder="" onChange={handleStepChange} value={fieldValues.step} />
+            <Input placeholder="" onChange={handleStepChange} value={fieldValues.step} />
           </InlineField>
           <InlineField
             label={

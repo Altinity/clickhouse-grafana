@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from 'react';
+import React, {useCallback, useEffect, useState} from 'react';
 import { EditorMode } from '../../../../types/types';
 import { Button, InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
@@ -12,7 +12,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
   const [selectedTable, setSelectedTable] = useState<string>(query.table);
   const [selectedColumnTimestampType, setSelectedColumnTimestampType] = useState([]);
 
-  const buildExploreQuery = (type) => {
+  const buildExploreQuery = useCallback((type) => {
     let query;
     switch (type) {
       case 'TABLES':
@@ -67,23 +67,21 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
         break;
     }
     return query;
-  }
-  const querySegment = (type: string) => {
+  },[selectedTable, selectedDatabase])
+
+  const querySegment = useCallback((type: any) => {
     let query = buildExploreQuery(type);
-    console.log(query);
     return datasource.metricFindQuery(query)
     // .then(this.uiSegmentSrv.transformToSegments(false))
     // .catch(this.handleQueryError.bind(this));
-  }
+  },[buildExploreQuery, datasource])
 
-  console.log(querySegment);
-  
   useEffect(() => {
     (async () => {
       const databases = await querySegment('DATABASES')
       setDatabases(databases.map((item: any) => ({ label: item.text, value: item.text })))
     })()
-  }, []);
+  }, [querySegment]);
 
   useEffect(() => {
     if (selectedDatabase) {
@@ -92,7 +90,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
         setTables(tables.map((item: any) => ({ label: item.text, value: item.text })))
       })()
     }
-  }, [selectedDatabase]);
+  }, [selectedDatabase, querySegment]);
 
   useEffect(() => {
     if (!!selectedDatabase || !!selectedTable || !!selectedColumnTimestampType) {
@@ -101,18 +99,17 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
         setTimestampColumns(timestampColumns.map((item: any) => ({ label: item.text, value: item.text })))
       })()
     }
-  }, [selectedTable, selectedDatabase, selectedColumnTimestampType]);
+  }, [selectedTable, selectedDatabase, selectedColumnTimestampType, querySegment]);
 
   useEffect(() => {
     if (!!selectedDatabase || !!selectedTable) {
 
       (async () => {
         const dateColumns = await querySegment('DATE')
-        console.log(dateColumns,'<<<<');
         setdateColumns(dateColumns.map((item: any) => ({ label: item.text, value: item.text })))
       })()
     }
-  }, [selectedTable, selectedDatabase]);
+  }, [selectedTable, selectedDatabase, querySegment]);
 
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
     setSelectedColumnTimestampType(dateTimeType.value);

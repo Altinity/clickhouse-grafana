@@ -64,7 +64,18 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
         <InlineFieldRow>
           <InlineField
             label={
-              <InlineLabel width={'auto'}  tooltip={'Leave blank for auto handling based on time range and panel width'} >
+              <InlineLabel width={18} tooltip="Turn on if you don't like when last data point in time series much lower then previous" >
+                {' '}
+                Extrapolation{' '}
+              </InlineLabel>
+            }
+
+          >
+            <InlineSwitch transparent value={fieldValues.extrapolate} onChange={handleExtrapolationChange}  />
+          </InlineField>
+          <InlineField
+            label={
+              <InlineLabel width={10}  tooltip={'Leave blank for auto handling based on time range and panel width'} >
                 Step
               </InlineLabel>
             }
@@ -96,28 +107,11 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           </InlineField>
           <InlineField
             label={
-              <InlineLabel width={'auto'} tooltip={<div>
-                Set rounding for `$from` and `$to` timestamps.<br/>
-                For example, if set `1m` - both `$from` and `$to` will be rounded to beginning of minute.<br/><br/>
-                Or set to `$step` to automatically adjust according to `Step * Resolution` value. <br/><br/>
-                It will make all requests similar during one minute which is good for caching.
-              </div>} >
-                Round
-              </InlineLabel>
-            }
-            
-          >
-            <Input placeholder="" onChange={handleRoundChange} value={fieldValues.round} />
-          </InlineField>
-        </InlineFieldRow>
-        <InlineFieldRow>
-          <InlineField
-            label={
               <InlineLabel width={'auto'} >
                 Format As
               </InlineLabel>
             }
-            
+
           >
             <Select
               width={'auto'}
@@ -130,26 +124,17 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
               value={fieldValues.formatAs}
             />
           </InlineField>
+        </InlineFieldRow>
+        <InlineFieldRow>
           <InlineField
             label={
-              <InlineLabel width="auto" tooltip="Turn on if you don't like when last data point in time series much lower then previous" >
-                {' '}
-                Extrapolation{' '}
-              </InlineLabel>
-            }
-            
-          >
-            <InlineSwitch transparent value={fieldValues.extrapolate} onChange={handleExtrapolationChange}  />
-          </InlineField>
-          <InlineField
-            label={
-              <InlineLabel width="auto" tooltip="Turn off if you would like pass comments in SQL query to server" >
+              <InlineLabel width={18} tooltip="Turn off if you would like pass comments in SQL query to server" >
                 {' '}
                 Skip Comments{' '}
               </InlineLabel>
             }
             style={{ height: '100%' }}
-            
+
           >
             <InlineSwitch
               width="auto"
@@ -157,6 +142,21 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
               onChange={handleSkipCommentsChange}
               transparent
             />
+          </InlineField>
+          <InlineField
+            label={
+              <InlineLabel width={10} tooltip={<div>
+                Set rounding for `$from` and `$to` timestamps.<br/>
+                For example, if set `1m` - both `$from` and `$to` will be rounded to beginning of minute.<br/><br/>
+                Or set to `$step` to automatically adjust according to `Step * Resolution` value. <br/><br/>
+                It will make all requests similar during one minute which is good for caching.
+              </div>} >
+                Round
+              </InlineLabel>
+            }
+
+          >
+            <Input placeholder="" onChange={handleRoundChange} value={fieldValues.round} />
           </InlineField>
           <InlineField >
             <ToolbarButton variant={'primary'} onClick={handleShowHelpChange} isOpen={fieldValues.showHelp}>

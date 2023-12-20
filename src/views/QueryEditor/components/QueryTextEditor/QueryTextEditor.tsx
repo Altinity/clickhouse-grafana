@@ -3,8 +3,23 @@ import { InlineField, InlineFieldRow, InlineLabel, InlineSwitch, Input, Select, 
 import ReformattedQuery from './ReformattedQuery';
 import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
+import Scanner from "../../../../datasource/scanner";
 
 export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData }: any) => {
+  const [sqlFormattedData, setSqlFormattedData] = useState(formattedData)
+
+  const formatData = (sqlQuery) => {
+    const scanner = new Scanner(formattedData);
+    let data = formattedData
+    try {
+      data =  scanner.Format();
+    } catch (err) {
+      data = scanner.raw();
+    }
+
+    setSqlFormattedData(data)
+  }
+
   const [fieldValues, setFieldValues] = useState({
     step: '',
     intervalFactor: 1,
@@ -173,7 +188,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
             </ToolbarButton>
           </InlineField>
           <InlineField  tooltip={'Reformat SQL query as ClickHouse do.'}>
-            <ToolbarButton variant={'primary'}>Reformat Query</ToolbarButton>
+            <ToolbarButton variant={'primary'} onClick={() => formatData(formattedData)}>Reformat Query</ToolbarButton>
           </InlineField>
         </InlineFieldRow>
         <InlineFieldRow>
@@ -192,7 +207,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           {/*  </ToolbarButton>*/}
           {/*</InlineField>*/}
         </InlineFieldRow>
-        {fieldValues.showFormattedSQL && <ReformattedQuery data={formattedData} />}
+        {fieldValues.showFormattedSQL && <ReformattedQuery data={sqlFormattedData} />}
         {fieldValues.showHelp && <QueryMacrosInfo />}
       </div>
     </>

@@ -1,14 +1,7 @@
-import React, { useEffect } from 'react';
-import Editor, { useMonaco } from '@monaco-editor/react';
+import React from 'react';
+import Editor from '@monaco-editor/react';
 
 export const SQLCodeEditor = ({ height, query, onEditorMount, onSqlChange }: any) => {
-  const monaco = useMonaco();
-
-  useEffect(() => {
-    if (monaco) {
-      console.log('here is the monaco instance:', monaco);
-    }
-  }, [monaco]);
 
   return (
     <div style={{ position: 'relative', width: '100%', marginTop: '10px' }}>
@@ -24,9 +17,6 @@ export const SQLCodeEditor = ({ height, query, onEditorMount, onSqlChange }: any
           },
         }}
         onChange={onSqlChange}
-        // showLineNumbers={true}
-        // editorDidMount={editorDidMount}
-        // editorWillMount={(monaco => console.log('>>>>', monaco)}
       />
     </div>
   );

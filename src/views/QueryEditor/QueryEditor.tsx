@@ -1,10 +1,10 @@
-import React, { useEffect, useState } from 'react';
-import { QueryEditorProps } from '@grafana/data';
-import { CHDataSource } from '../../datasource/datasource';
-import { CHDataSourceOptions, CHQuery, EditorMode } from '../../types/types';
-import { QueryHeader } from './components/QueryHeader/QueryHeader';
-import { QueryTextEditor } from './components/QueryTextEditor/QueryTextEditor';
-import { QueryBuilder } from './components/QueryBuilder/QueryBuilder';
+import React, {useEffect, useState} from 'react';
+import {QueryEditorProps} from '@grafana/data';
+import {CHDataSource} from '../../datasource/datasource';
+import {CHDataSourceOptions, CHQuery, EditorMode} from '../../types/types';
+import {QueryHeader} from './components/QueryHeader/QueryHeader';
+import {QueryTextEditor} from './components/QueryTextEditor/QueryTextEditor';
+import {QueryBuilder} from './components/QueryBuilder/QueryBuilder';
 import SqlQuery from '../../datasource/sql-query/sql_query';
 
 const defaultQuery = 'SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t';
@@ -22,7 +22,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       const replaced = queryModel.replace(datasource.options, {});
       setFormattedData(replaced);
     }
-  }, [query, datasource]);
+  }, [query, datasource.options, datasource.templateSrv]);
   const onSqlChange = (sql: string) => {
     onChange({ ...initializedQuery, query: sql });
     onRunQuery();
@@ -61,7 +61,6 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 }
 
 function initializeQueryDefaults(query: CHQuery): CHQuery {
-  console.log(',,,,', query);
   return {
     ...query,
     format: query.format || 'time_series',

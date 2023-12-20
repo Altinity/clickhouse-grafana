@@ -99,12 +99,13 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   _request(query: string, requestId?: string) {
     const queryParams = this._getRequestOptions(query, this.usePOST, requestId);
 
-    return this.backendSrv.fetch(queryParams);
+    return this.backendSrv.datasourceRequest(queryParams).then(result => {
+      return result.data;
+    });
   }
 
   query(options: DataQueryRequest<CHQuery>) {
     this.options = options;
-    console.log('QUERY');
     const targets = options.targets.filter((target) => !target.hide && target.query);
     const queries = targets.map((target) => this.createQuery(options, target));
     // No valid targets, return the empty result to save a round trip.
@@ -155,7 +156,6 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   }
 
   modifyQuery(query: any, action: any): any {
-    console.log('MODIFY', query);
     let scanner = new Scanner(query.query ?? '');
     let queryAST = scanner.toAST();
     let where = queryAST['where'] || [];
@@ -199,7 +199,6 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   }
 
   createQuery(options: any, target: any) {
-    console.log('CREATE QUERY', target, options);
     const queryModel = new SqlQuery(target, this.templateSrv, options);
     const stmt = queryModel.replace(options, this.adHocFilter);
 
@@ -253,7 +252,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     const wildcardChar = '%';
     const searchFilterVariableName = '__searchFilter';
     let scopedVars = {};
-    if (query.indexOf(searchFilterVariableName) !== -1) {
+    if (query?.indexOf(searchFilterVariableName) !== -1) {
       const searchFilterValue =
         options && options.searchFilter ? `${options.searchFilter}${wildcardChar}` : `${wildcardChar}`;
       scopedVars = {
@@ -279,13 +278,19 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     }
 
     // todo(nv): fix request id
-    return this._seriesQuery(interpolatedQuery).toPromise().then(curry(this.responseParser.parse)(query));
+    return this._seriesQuery(interpolatedQuery).then(curry(this.responseParser.parse)(query));
   }
 
   testDatasource() {
     return this.metricFindQuery(DEFAULT_QUERY.query).then(() => {
       return { status: 'success', message: 'Data source is working', title: 'Success' };
     });
+  }
+
+  formatQuery(query) {
+    let scanner = new Scanner(query ?? '');
+    scanner.Format()
+    return scanner.Format()
   }
 
   _seriesQuery(query: string, requestId?: string) {

@@ -15,7 +15,6 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
   const initializedQuery = initializeQueryDefaults(query);
 
-
   useEffect(() => {
     onChange({...initializedQuery})
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -74,7 +73,7 @@ function initializeQueryDefaults(query: CHQuery): CHQuery {
     dateTimeType: query.dateTimeType || 'DATETIME',
     round: query.round || '0s',
     intervalFactor: query.intervalFactor || 1,
-    query: query.query || defaultQuery,
+    query: query.rawQuery || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
     editorMode: EditorMode.Builder,
   };

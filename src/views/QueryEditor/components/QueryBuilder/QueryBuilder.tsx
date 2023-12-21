@@ -8,7 +8,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
   const [tables, setTables] = useState([]);
   const [dateColumns, setdateColumns] = useState([]);
   const [timestampColumns, setTimestampColumns] = useState([]);
-  const [selectedDatabase, setSelectedDatabase] = useState<SelectableValue<string>>(query.database);
+  const [selectedDatabase, setSelectedDatabase] = useState<string>(query.database);
   const [selectedTable, setSelectedTable] = useState<string>(query.table);
   const [selectedColumnTimestampType, setSelectedColumnTimestampType] = useState(query.dateTimeColDataType);
   const [selectedColumnDateType, setSelectedColumnDateType] = useState(query.dateColDataType);
@@ -122,7 +122,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
     setEditorMode(EditorMode.SQL)
   };
 
-  const onDatabaseChange = (database: SelectableValue<string>) => {
+  const onDatabaseChange = (database: string) => {
     setSelectedDatabase(database);
     query.database = database;
     onChange(query);
@@ -160,7 +160,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
         >
           <Select
             width={24}
-            onChange={(item) => onDatabaseChange(item.value as SelectableValue<string>)}
+            onChange={(item: SelectableValue<string>) => onDatabaseChange(item.value as unknown as string)}
             placeholder={'Database'}
             options={databases}
             value={selectedDatabase}
@@ -174,7 +174,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
             placeholder={'Table'}
             options={tables}
             disabled={true}
-            value={selectedTable}
+            value={selectedTable as unknown as SelectableValue<string>}
           />
         </InlineField>
       </InlineFieldRow>

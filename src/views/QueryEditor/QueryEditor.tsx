@@ -13,9 +13,13 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const { datasource, query, onChange, onRunQuery } = props;
   const [formattedData, setFormattedData] = useState(null);
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
-
-  console.log(query);
   const initializedQuery = initializeQueryDefaults(query);
+
+
+  useEffect(() => {
+    onChange({...initializedQuery})
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [])
 
   useEffect(() => {
     if (datasource.options && datasource.templateSrv) {

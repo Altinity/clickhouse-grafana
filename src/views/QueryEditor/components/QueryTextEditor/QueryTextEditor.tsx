@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, {useEffect, useState} from 'react';
 import { InlineField, InlineFieldRow, InlineLabel, InlineSwitch, Input, Select, ToolbarButton } from '@grafana/ui';
 import ReformattedQuery from './ReformattedQuery';
 import QueryMacrosInfo from './QueryMacrosInfo';
@@ -8,7 +8,7 @@ import Scanner from "../../../../datasource/scanner";
 export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData }: any) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData)
 
-  const formatData = (sqlQuery) => {
+  useEffect(() => {
     const scanner = new Scanner(formattedData);
     let data = formattedData
     try {
@@ -18,7 +18,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
     }
 
     setSqlFormattedData(data)
-  }
+  }, [formattedData])
 
   const [fieldValues, setFieldValues] = useState({
     step: '',
@@ -189,7 +189,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
             </ToolbarButton>
           </InlineField>
           <InlineField  tooltip={'Reformat SQL query as ClickHouse do.'}>
-            <ToolbarButton variant={'primary'} onClick={() => formatData(formattedData)}>Reformat Query</ToolbarButton>
+            <ToolbarButton variant={'primary'} >Reformat Query</ToolbarButton>
           </InlineField>
         </InlineFieldRow>
         <InlineFieldRow>

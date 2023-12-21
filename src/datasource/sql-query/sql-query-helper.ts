@@ -28,7 +28,7 @@ export class SqlQueryHelper {
 
   static convertInterval(interval: any, intervalFactor: number, ms?: boolean): number {
     const durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
-    const match = interval.match(durationSplitRegexp);
+    const match = interval?.match(durationSplitRegexp);
 
     if (!interval || typeof interval !== 'string' || interval === '' || !match) {
       return 0;

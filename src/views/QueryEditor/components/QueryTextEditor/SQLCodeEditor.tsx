@@ -3,10 +3,8 @@ import Editor from '@monaco-editor/react';
 
 export const SQLCodeEditor = ({ height, query, onEditorMount, onSqlChange }: any) => {
 
-  console.log(query.query);
   return (
     <div style={{ position: 'relative', width: '100%', marginTop: '10px' }}>
-      <textarea value={query.query}/>
       <Editor
         height="200px"
         defaultLanguage="sql"

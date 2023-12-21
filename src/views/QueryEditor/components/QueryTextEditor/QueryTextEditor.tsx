@@ -72,6 +72,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
     onFieldChange({ ...fieldValues, showHelp: !fieldValues.showHelp });
   };
 
+
   return (
     <>
       <SQLCodeEditor height={height} onSqlChange={onSqlChange} query={query} onEditorMount={onEditorMount} />

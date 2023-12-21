@@ -14,6 +14,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const [formattedData, setFormattedData] = useState(null);
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
 
+  console.log(query);
   const initializedQuery = initializeQueryDefaults(query);
 
   useEffect(() => {

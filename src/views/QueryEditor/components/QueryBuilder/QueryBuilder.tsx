@@ -10,7 +10,9 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
   const [timestampColumns, setTimestampColumns] = useState([]);
   const [selectedDatabase, setSelectedDatabase] = useState<SelectableValue<string>>(query.database);
   const [selectedTable, setSelectedTable] = useState<string>(query.table);
-  const [selectedColumnTimestampType, setSelectedColumnTimestampType] = useState([]);
+  const [selectedColumnTimestampType, setSelectedColumnTimestampType] = useState(query.dateTimeColDataType);
+  const [selectedColumnDateType, setSelectedColumnDateType] = useState(query.dateColDataType);
+  const [selectedDateTimeType, setSelectedDateTimeType] = useState(query.dateTimeType);
 
   const buildExploreQuery = useCallback((type) => {
     let query;
@@ -93,13 +95,13 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
   }, [selectedDatabase, querySegment]);
 
   useEffect(() => {
-    if (!!selectedDatabase || !!selectedTable || !!selectedColumnTimestampType) {
+    if (!!selectedDatabase || !!selectedTable || !!selectedDateTimeType) {
       (async () => {
-        const timestampColumns = await querySegment(selectedColumnTimestampType)
+        const timestampColumns = await querySegment(selectedDateTimeType)
         setTimestampColumns(timestampColumns.map((item: any) => ({ label: item.text, value: item.text })))
       })()
     }
-  }, [selectedTable, selectedDatabase, selectedColumnTimestampType, querySegment]);
+  }, [selectedTable, selectedDatabase, selectedDateTimeType, querySegment]);
 
   useEffect(() => {
     if (!!selectedDatabase || !!selectedTable) {
@@ -112,8 +114,8 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
   }, [selectedTable, selectedDatabase, querySegment]);
 
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
-    setSelectedColumnTimestampType(dateTimeType.value);
-    query.dateTimeColDataType = dateTimeType.value;
+    setSelectedDateTimeType(dateTimeType.value);
+    query.dateTimeType = dateTimeType.value;
     onChange(query);
   };
   const switchToSQLMode = () => {
@@ -132,6 +134,20 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
     onChange(query);
   };
 
+  const onDateColDataTypeChange = (dateColDataType: string) => {
+    // @ts-ignore
+    setSelectedColumnDateType(dateColDataType.trim());
+    query.dateColDataType = dateColDataType;
+    onChange(query);
+  };
+
+  const onDateTimeColDataTypeChange = (dateTimeColDataType: string) => {
+    // @ts-ignore
+    setSelectedColumnTimestampType(dateTimeColDataType.trim());
+    query.dateTimeColDataType = dateTimeColDataType;
+    onChange(query);
+  };
+
   return (
     <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
       <InlineFieldRow>
@@ -147,6 +163,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
             onChange={(item) => onDatabaseChange(item.value as SelectableValue<string>)}
             placeholder={'Database'}
             options={databases}
+            value={selectedDatabase}
           />
         </InlineField>
         <InlineField >
@@ -157,6 +174,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
             placeholder={'Table'}
             options={tables}
             disabled={true}
+            value={selectedTable}
           />
         </InlineField>
       </InlineFieldRow>
@@ -210,6 +228,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
               { label: 'DateTime64', value: 'DATETIME64' },
               { label: 'TimeStamp', value: 'TIMESTAMP' },
             ]}
+            value={selectedDateTimeType}
           />
         </InlineField>
       </InlineFieldRow>
@@ -222,7 +241,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
           }
           
         >
-          <Select width={24} onChange={() => {}} placeholder={'Timestamp column'} options={timestampColumns} disabled={!timestampColumns.length}/>
+          <Select width={24} value={selectedColumnTimestampType} onChange={({value}) => onDateTimeColDataTypeChange(value as string)} placeholder={'Timestamp column'} options={timestampColumns} disabled={!timestampColumns.length}/>
         </InlineField>
       </InlineFieldRow>
       <InlineFieldRow>
@@ -250,7 +269,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
           }
           
         >
-          <Select width={24} onChange={() => {}} placeholder={'Date Column'} options={dateColumns} disabled={true} />
+          <Select width={24} value={selectedColumnDateType} onChange={({value}) => onDateColDataTypeChange(value as string)} placeholder={'Date Column'} options={dateColumns} disabled={true} />
         </InlineField>
       </InlineFieldRow>
       <Button variant="primary" icon="arrow-right" onClick={switchToSQLMode} >

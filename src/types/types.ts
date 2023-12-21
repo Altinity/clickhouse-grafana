@@ -18,7 +18,7 @@ export interface CHQuery extends DataQuery {
   query: string;
   format: string;
   extrapolate: boolean;
-  rawQuery: boolean | string;
+  rawQuery: string;
   editorMode?: EditorMode;
   database?: string;
   table?: string;
@@ -54,6 +54,6 @@ export const DEFAULT_QUERY: CHQuery = {
   query: 'SELECT 1',
   format: 'time_series',
   extrapolate: false,
-  rawQuery: false,
+  rawQuery: '',
   editorMode: EditorMode.SQL,
 };

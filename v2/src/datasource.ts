@@ -100,7 +100,6 @@ export class ClickHouseDatasource {
     }
 
     _request(query: string, requestId?: string) {
-      console.log('REQUEST');
         const queryParams = this._getRequestOptions(query, this.usePOST, requestId);
 
         return this.backendSrv.datasourceRequest(queryParams).then(result => {
@@ -120,7 +119,6 @@ export class ClickHouseDatasource {
             return d.promise;
         }
 
-      console.log();
         const allQueryPromise = map(queries, query => {
             return this._seriesQuery(query.stmt, query.requestId);
         });

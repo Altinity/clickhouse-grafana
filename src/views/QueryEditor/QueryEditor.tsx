@@ -11,14 +11,15 @@ const defaultQuery = 'SELECT $timeSeries as t, count() FROM $table WHERE $timeFi
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const { datasource, query, onChange, onRunQuery } = props;
-  const [formattedData, setFormattedData] = useState(null);
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
   const initializedQuery = initializeQueryDefaults(query);
+  const [formattedData, setFormattedData] = useState(initializedQuery.query);
 
   useEffect(() => {
-    onChange({...initializedQuery})
+    onChange({ ...initializedQuery })
+    onRunQuery();
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [])
+  }, [initializedQuery.query])
 
   useEffect(() => {
     if (datasource.options && datasource.templateSrv) {
@@ -73,7 +74,7 @@ function initializeQueryDefaults(query: CHQuery): CHQuery {
     dateTimeType: query.dateTimeType || 'DATETIME',
     round: query.round || '0s',
     intervalFactor: query.intervalFactor || 1,
-    query: query.rawQuery || defaultQuery,
+    query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
     editorMode: EditorMode.Builder,
   };

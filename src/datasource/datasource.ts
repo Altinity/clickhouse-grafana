@@ -5,7 +5,7 @@ import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
 import Scanner from './scanner';
 
-import { DataQueryRequest, DataSourceApi, DataSourceInstanceSettings, TypedVariableModel } from '@grafana/data';
+import {AnnotationEvent, DataQueryRequest, DataSourceApi, DataSourceInstanceSettings, TypedVariableModel} from '@grafana/data';
 import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
 import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
@@ -99,9 +99,13 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   _request(query: string, requestId?: string) {
     const queryParams = this._getRequestOptions(query, this.usePOST, requestId);
 
-    return this.backendSrv.datasourceRequest(queryParams).then(result => {
-      return result.data;
-    });
+    const dataRequest = new Promise((resolve, reject) => {
+      this.backendSrv.fetch(queryParams).subscribe((response) => {
+        resolve(response.data)
+      })
+    })
+
+    return dataRequest
   }
 
   query(options: DataQueryRequest<CHQuery>) {
@@ -218,7 +222,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     };
   }
 
-  annotationQuery(options: any) {
+  annotationQuery(options: any): Promise<AnnotationEvent[]> {
     if (!options.annotation.query) {
       throw new Error('Query missing in annotation definition');
     }
@@ -242,9 +246,13 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
 
     const queryParams = this._getRequestOptions(query, true);
 
-    return this.backendSrv
-      .datasourceRequest(queryParams)
-      .then((result) => this.responseParser.transformAnnotationResponse(params, result.data));
+    const dataRequest = new Promise((resolve, reject) => {
+      this.backendSrv.fetch(queryParams).subscribe((response) => {
+        resolve(this.responseParser.transformAnnotationResponse(params, response.data) as AnnotationEvent[])
+      })
+    })
+
+    return dataRequest as Promise<AnnotationEvent[]>
   }
 
   metricFindQuery(query: string, options?: any) {

@@ -102,6 +102,8 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     const dataRequest = new Promise((resolve, reject) => {
       this.backendSrv.fetch(queryParams).subscribe((response) => {
         resolve(response.data)
+      },(e) => {
+        reject(e)
       })
     })
 
@@ -249,6 +251,8 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     const dataRequest = new Promise((resolve, reject) => {
       this.backendSrv.fetch(queryParams).subscribe((response) => {
         resolve(this.responseParser.transformAnnotationResponse(params, response.data) as AnnotationEvent[])
+      },(e) => {
+        reject(e)
       })
     })
 

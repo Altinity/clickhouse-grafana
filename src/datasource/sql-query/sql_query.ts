@@ -30,7 +30,7 @@ export default class SqlQuery {
     let adhocCondition: any[] = [];
 
     // @ts-ignore
-    adhocFilters = this.templateSrv.getAdhocFilters('clickhouse')
+    // adhocFilters = this.templateSrv.getAdhocFilters('clickhouse')
     try {
       let ast = scanner.toAST();
       let topQueryAST = ast;

@@ -15,19 +15,21 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const initializedQuery = initializeQueryDefaults(query);
   const [formattedData, setFormattedData] = useState(initializedQuery.query);
 
-  useEffect(() => {
-    onChange({ ...initializedQuery })
-    onRunQuery();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [initializedQuery.query])
+  // useEffect(() => {
+  //   onChange({ ...initializedQuery })
+  //   onRunQuery();
+  //   // eslint-disable-next-line react-hooks/exhaustive-deps
+  // }, [initializedQuery.query])
 
   useEffect(() => {
     if (datasource.options && datasource.templateSrv) {
       const queryModel = new SqlQuery(query, datasource.templateSrv, datasource.options);
-      const replaced = queryModel.replace(datasource.options, {});
+      // @ts-ignore
+      const adhocFilters = datasource.templateSrv.getAdhocFilters(datasource.name);
+      const replaced = queryModel.replace(datasource.options, adhocFilters);
       setFormattedData(replaced);
     }
-  }, [query, datasource.options, datasource.templateSrv]);
+  }, [query, datasource.name, datasource.options, datasource.templateSrv]);
   const onSqlChange = (sql: string) => {
     onChange({ ...initializedQuery, query: sql });
     onRunQuery();

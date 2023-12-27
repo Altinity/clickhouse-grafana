@@ -6,6 +6,7 @@
  */
  {
   "compilerOptions": {
+    "noImplicitAny": false,
     "alwaysStrict": true,
     "declaration": false,
     "rootDir": "../src",

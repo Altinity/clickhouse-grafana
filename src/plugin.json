@@ -15,12 +15,7 @@
       "name": "Altinity",
       "url": "https://altinity.com/"
     },
-    "keywords": [
-      "clickhouse",
-      "datasource",
-      "analytics",
-      "timeseries"
-    ],
+    "keywords": ["clickhouse", "datasource", "analytics", "timeseries"],
     "logos": {
       "small": "img/altinity_logo.svg",
       "large": "img/altinity_logo.svg"

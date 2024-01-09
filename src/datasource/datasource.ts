@@ -40,7 +40,6 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
-
     this.backendSrv = getBackendSrv();
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);

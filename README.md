@@ -797,19 +797,19 @@ datasources:
      tlsAuthWithCACert: false
      # <bool> enable/disable authorization with X-ClickHouse-* headers
      useYandexCloudAuthorization: true
-     # <string> X-ClickHouse-User header value for authorization
-     xHeaderKey: ""
      # <string> X-ClickHouse-Key header value for authorization
      xHeaderUser: ""
    secureJsonData:
-       # <string> basic auth password
-       basicAuthPassword: ""
-       # <string> custom certificate authority for TLS https connection, base64 encoded 
-       tlsCACert: ""
-       # <string> custom client certificate for TLS https connection, base64 encoded 
-       tlsClientCert: ""
-       # <string> custom client secret key for TLS https connection, base64 encoded 
-       tlsClientKey: ""
+     # <string> X-ClickHouse-User header value for authorization
+     xHeaderKey: ""
+     # <string> basic auth password
+     basicAuthPassword: ""
+     # <string> custom certificate authority for TLS https connection, base64 encoded 
+     tlsCACert: ""
+     # <string> custom client certificate for TLS https connection, base64 encoded 
+     tlsClientCert: ""
+     # <string> custom client secret key for TLS https connection, base64 encoded 
+     tlsClientKey: ""
 ```
 
 Some settings and security params are the same for all datasources. You can find them [here](http://docs.grafana.org/administration/provisioning/#example-datasource-config-file).

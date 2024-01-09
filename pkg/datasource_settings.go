@@ -17,7 +17,7 @@ type DatasourceSettings struct {
 	DefaultDatabase             string `json:"defaultDatabase"`
 	UsePost                     bool   `json:"usePOST"`
 	UseYandexCloudAuthorization bool   `json:"useYandexCloudAuthorization"`
-	XHeaderKey                  string `json:"xHeaderKey"`
+	XHeaderKey                  string `json:"xHeaderKey,omitempty"`
 	XHeaderUser                 string `json:"xHeaderUser"`
 	TLSSkipVerify               bool   `json:"tlsSkipVerify"`
 }

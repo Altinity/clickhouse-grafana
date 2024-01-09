@@ -1,9 +1,8 @@
-import React from 'react';
+import React, {FormEvent} from 'react';
 import { DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput } from '@grafana/ui';
 import {
   DataSourcePluginOptionsEditorProps,
   onUpdateDatasourceJsonDataOption,
-  onUpdateDatasourceSecureJsonDataOption,
 } from '@grafana/data';
 import { CHDataSourceOptions } from '../../types/types';
 
@@ -39,18 +38,27 @@ export function ConfigEditor(props: Props) {
     });
   };
 
+  const onChangeSecureJsonField = (field: keyof CHSecureJsonData, event: FormEvent<HTMLInputElement>) => {
+    const newSecureJsonData = { ...secureJsonData, [field]: event.currentTarget.value };
+    onOptionsChange({
+      ...options,
+      secureJsonData: newSecureJsonData,
+    });
+  };
+
   return (
     <>
       <DataSourceHttpSettings
         defaultUrl="http://localhost:8123"
         dataSourceConfig={options}
         showAccessOptions={true}
+        showForwardOAuthIdentityOption={true}
         onChange={onOptionsChange}
       />
       <div className="gf-form-group">
         <InlineField
           label="Use Yandex.Cloud authorization headers"
-          tooltip="Use authorization headers for managed Yandex.Cloud ClickHouse database"
+          tooltip="Use authorization headers for managed Yandex.Cloud ClickHouse database, will work only for proxy access method"
           labelWidth={36}
         >
           <InlineSwitch
@@ -76,7 +84,7 @@ export function ConfigEditor(props: Props) {
                 value={secureJsonData['xHeaderKey'] || ''}
                 placeholder={`DB user password`}
                 onReset={() => onResetSecureJsonField('xHeaderKey')}
-                onChange={onUpdateDatasourceSecureJsonDataOption(props, 'xHeaderKey')}
+                onChange={(event) => onChangeSecureJsonField('xHeaderKey', event)}
               />
             </InlineField>
           </>

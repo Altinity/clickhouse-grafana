@@ -1,21 +1,25 @@
 import React from 'react';
-import Editor from '@monaco-editor/react';
+import MonacoEditor from 'react-monaco-editor';
+import {LANGUAGE_ID, THEME_NAME} from "./editor/initiateEditor";
+export const SQLCodeEditor = ({ height, query, onSqlChange }: any) => {
+  const options = {
+    minimap: {
+      enabled: false
+    },
+    editor: {
+      scrollbar : { alwaysConsumeMouseWheel: false, handleMouseWheel: false }
+    }
+  };
 
-export const SQLCodeEditor = ({ height, query, onEditorMount, onSqlChange }: any) => {
 
   return (
     <div style={{ position: 'relative', width: '100%', marginTop: '10px' }}>
-      <Editor
-        height="200px"
-        defaultLanguage="sql"
-        language={'sql'}
-        theme="vs-dark"
+      <MonacoEditor
+        height={height || 300}
+        language={LANGUAGE_ID}
+        theme={THEME_NAME}
         value={query.query}
-        options={{
-          minimap: {
-            autohide: true,
-          },
-        }}
+        options={options}
         onChange={onSqlChange}
       />
     </div>

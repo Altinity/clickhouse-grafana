@@ -16,6 +16,10 @@ export default class SqlQuery {
   }
 
   replace(options: any, adhocFilters: any) {
+    if (!this.target.query) {
+      return ''
+    }
+
     // TODO: declare variables
     let query = this.templateSrv.replace(
       SqlQueryHelper.conditionalTest(this.target.query.trim(), this.templateSrv),

@@ -1,21 +1,27 @@
 import React from 'react';
 import MonacoEditor from 'react-monaco-editor';
 import {LANGUAGE_ID, THEME_NAME} from "./editor/initiateEditor";
+import {editor} from "monaco-editor";
+import IStandaloneEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
 export const SQLCodeEditor = ({ height, query, onSqlChange }: any) => {
-  const options = {
+  const options: IStandaloneEditorConstructionOptions = {
+    scrollBeyondLastLine: false,
+    wordWrap: 'on',
+    wrappingStrategy: 'advanced',
+    scrollbar: {
+      alwaysConsumeMouseWheel: false
+    },
     minimap: {
       enabled: false
     },
-    editor: {
-      scrollbar : { alwaysConsumeMouseWheel: false, handleMouseWheel: false }
-    }
-  };
+    overviewRulerLanes: 0
+  }
 
 
   return (
-    <div style={{ position: 'relative', width: '100%', marginTop: '10px' }}>
+    <div style={{ position: 'relative', width: '100%', marginTop: '10px'}} >
       <MonacoEditor
-        height={height || 300}
+        height={Math.max(query.query.split('\n').length * 18, 150)}
         language={LANGUAGE_ID}
         theme={THEME_NAME}
         value={query.query}

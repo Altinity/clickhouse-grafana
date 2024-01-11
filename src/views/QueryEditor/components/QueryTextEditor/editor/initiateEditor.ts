@@ -62,6 +62,7 @@ const tokenize = () => {
                 [new RegExp(`--.*$`), TokenType.COMMENT],
                 [new RegExp(`\`\`\`.*\`\`\``), TokenType.COMMENT_BLOCK],
                 [new RegExp(`\\$\\w+`), TokenType.VARIABLE],
+                [new RegExp(`\\$\{\\w+\}`), TokenType.VARIABLE],
                 [new RegExp(`'.*?'`), TokenType.STRING],
                 [new RegExp(`\\b(${dataTypesImported.join('|')})\\b`), TokenType.DATATYPES],
                 [new RegExp(`\\b(${constantsImported.join('|')})\\b`), TokenType.CONSTANTS],
@@ -109,7 +110,7 @@ const createCompletionItem = (label: string, kind: monaco.languages.CompletionIt
     }
 };
 
-const registerAutocompletion = () => {
+const registerAutocompletion = (templateVariables) => {
     monaco.languages.registerCompletionItemProvider(LANGUAGE_ID, {
         provideCompletionItems: (model, position) => {
             const word = model.getWordUntilPosition(position);
@@ -137,25 +138,24 @@ const registerAutocompletion = () => {
                 array.map(item => createCompletionItem(item.name, kind, item.def, range, item.docText));
 
 
-
             const suggestConstants = mapToCompletionItems(constants, monaco.languages.CompletionItemKind.Constant);
             const suggestTypes = mapToCompletionItems(dataTypes, monaco.languages.CompletionItemKind.TypeParameter);
             const suggestKeywords = mapToCompletionItems(keywords, monaco.languages.CompletionItemKind.Keyword);
             const suggestionsFunctions = mapFunctionToCompletionItems(getAutocompletions(), monaco.languages.CompletionItemKind.Method);
             const suggestionsMacros = mapMacroToCompletionItems(getMacrosAutocompletion(), monaco.languages.CompletionItemKind.Variable);
+            const suggestTemplateVariables = mapToCompletionItems(templateVariables.map((item: string) => `${item}`), monaco.languages.CompletionItemKind.Variable);
 
-
-            return { suggestions: [ ...suggestionsFunctions, ...suggestionsMacros, ...suggestConstants, ...suggestKeywords, ...suggestTypes] };
+            return { incomplete: false, suggestions: [ ...suggestTemplateVariables, ...suggestionsFunctions, ...suggestionsMacros, ...suggestConstants, ...suggestKeywords, ...suggestTypes] };
         },
     });
 };
 
-export const initiateEditor = () => {
+export const initiateEditor = (templateVariables) => {
   // TODO: add use effect to databases autocompletion
   monaco.languages.register({ id: LANGUAGE_ID });
   tokenize();
   defineTheme();
-  registerAutocompletion();
+  registerAutocompletion(templateVariables);
 
 
     return {theme: THEME_NAME, language: LANGUAGE_ID}

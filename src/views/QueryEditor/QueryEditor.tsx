@@ -34,14 +34,11 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   }, [query, datasource.name, datasource.options, datasource.templateSrv]);
   const onSqlChange = (sql: string) => {
     onChange({ ...initializedQuery, query: sql });
-    onRunQuery();
   };
 
   const onSQLEditorMount = (editor: any) => {
     // @todo: add auto-complete suggestions and syntax colors here
   };
-
-  // const calculateEditorHeight = (): number => 100;
 
   const onFieldChange = (value: any) => {
     onChange({ ...query, ...value });
@@ -60,6 +57,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
             height={200}
             onEditorMount={onSQLEditorMount}
             onSqlChange={onSqlChange}
+            onRunQuery={onRunQuery}
             onFieldChange={onFieldChange}
             formattedData={formattedData}
           />

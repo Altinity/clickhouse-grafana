@@ -5,7 +5,7 @@ import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
 import Scanner from "../../../../datasource/scanner";
 
-export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData }: any) => {
+export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery }: any) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData)
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
 
   return (
     <>
-      <SQLCodeEditor height={height} onSqlChange={onSqlChange} query={query} onEditorMount={onEditorMount} />
+      <SQLCodeEditor height={height} onSqlChange={onSqlChange} query={query} onEditorMount={onEditorMount} onRunQuery={onRunQuery} />
       <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
         <InlineFieldRow>
           <InlineField

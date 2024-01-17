@@ -205,7 +205,9 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
 
   createQuery(options: any, target: any) {
     const queryModel = new SqlQuery(target, this.templateSrv, options);
-    const stmt = queryModel.replace(options, this.adHocFilter);
+    // @ts-ignore
+    const adhocFilters = this.templateSrv?.getAdhocFilters(this.adHocFilter?.datasource?.name || 'clickhouse') || []
+    const stmt = queryModel.replace(options, adhocFilters);
 
     let keys = [];
 

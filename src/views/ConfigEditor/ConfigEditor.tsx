@@ -1,9 +1,6 @@
-import React, {FormEvent} from 'react';
+import React, { FormEvent } from 'react';
 import { DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput } from '@grafana/ui';
-import {
-  DataSourcePluginOptionsEditorProps,
-  onUpdateDatasourceJsonDataOption,
-} from '@grafana/data';
+import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption } from '@grafana/data';
 import { CHDataSourceOptions } from '../../types/types';
 
 export interface CHSecureJsonData {
@@ -28,23 +25,19 @@ export function ConfigEditor(props: Props) {
     });
   };
 
-  const onResetSecureJsonField = (field: keyof CHSecureJsonData) => {
-    const newSecureJsonFields = { ...secureJsonFields, [field]: false };
-    const newSecureJsonData = { ...secureJsonData, [field]: '' };
+  const onResetXHeaderKey = () => {
     onOptionsChange({
       ...options,
-      secureJsonFields: newSecureJsonFields,
-      secureJsonData: newSecureJsonData,
+      secureJsonFields: { ...secureJsonFields, xHeaderKey: false },
+      secureJsonData: { ...secureJsonData, xHeaderKey: '' },
     });
   };
 
-  const onChangeSecureJsonField = (field: keyof CHSecureJsonData, event: FormEvent<HTMLInputElement>) => {
-    const newSecureJsonFields = { ...secureJsonFields, [field]: true };
-    const newSecureJsonData = { ...secureJsonData, [field]: event.currentTarget.value };
+  const onChangeXHeaderKey = (event: FormEvent<HTMLInputElement>) => {
     onOptionsChange({
       ...options,
-      secureJsonFields: newSecureJsonFields,
-      secureJsonData: newSecureJsonData,
+      secureJsonFields: { ...secureJsonFields },
+      secureJsonData: { ...secureJsonData, xHeaderKey: event.currentTarget.value },
     });
   };
 
@@ -85,8 +78,8 @@ export function ConfigEditor(props: Props) {
                 isConfigured={!!secureJsonFields?.['xHeaderKey']}
                 value={secureJsonData['xHeaderKey'] || ''}
                 placeholder={`DB user password`}
-                onReset={() => onResetSecureJsonField('xHeaderKey')}
-                onChange={(event) => onChangeSecureJsonField('xHeaderKey', event)}
+                onReset={onResetXHeaderKey}
+                onChange={onChangeXHeaderKey}
               />
             </InlineField>
           </>

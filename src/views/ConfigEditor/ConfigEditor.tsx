@@ -39,9 +39,11 @@ export function ConfigEditor(props: Props) {
   };
 
   const onChangeSecureJsonField = (field: keyof CHSecureJsonData, event: FormEvent<HTMLInputElement>) => {
+    const newSecureJsonFields = { ...secureJsonFields, [field]: true };
     const newSecureJsonData = { ...secureJsonData, [field]: event.currentTarget.value };
     onOptionsChange({
       ...options,
+      secureJsonFields: newSecureJsonFields,
       secureJsonData: newSecureJsonData,
     });
   };

@@ -1,6 +1,7 @@
 # 3.0.0 (2024-01-19)
 ## Enhancements:
 * rewrite plugin from scratch for Grafana 10+ compatibility using react instead of angular
+* if you provision datasource from YAML, now `xHeaderKey` move from `jsonData` to `secureJsonData`, and you need to add `dataSourceUrl` to `jsonData`, look https://github.com/Altinity/clickhouse-grafana/issues/348 and `docker/grafana/provisioning/datasources/clickhouse-x-auth.yaml` for details
 
 # 2.5.4 (2023-09-13)
 ## Enhancements:

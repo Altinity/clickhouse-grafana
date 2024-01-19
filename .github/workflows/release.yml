@@ -95,11 +95,14 @@ jobs:
 
       - name: Validate plugin
         run: |
-          git clone https://github.com/grafana/plugin-validator
-          pushd ./plugin-validator/pkg/cmd/plugincheck2
-          go install
+          VALIDATOR_VERSION=$(curl -sL https://github.com/grafana/plugin-validator/releases/latest -H "Accept: application/json" | jq -r .tag_name)
+          VALIDATOR_ARCH=$(dpkg --print-architecture)
+          mkdir -p ./plugin-validator/
+          pushd ./plugin-validator/
+          curl -L https://github.com/grafana/plugin-validator/releases/download/${VALIDATOR_VERSION}/plugin-validator_${VALIDATOR_VERSION//v/}_linux_${VALIDATOR_ARCH}.tar.gz | tar -xz -C .
+          curl -L https://github.com/grafana/plugin-validator/raw/main/config/strict.yaml -o strict.yaml
           popd
-          plugincheck2 -config ./plugin-validator/config/default.yaml -strict ${{ steps.metadata.outputs.archive }}
+          ./plugin-validator/plugincheck2 -config ./strict.yaml -strict ${{ steps.metadata.outputs.archive }}
 
       - name: Create changelog
         id: changelog

@@ -15,7 +15,7 @@ export function ConfigEditor(props: Props) {
   const { jsonData, secureJsonFields } = options;
   const secureJsonData = (options.secureJsonData || {}) as CHSecureJsonData;
   // @todo remove when merged https://github.com/grafana/grafana/pull/80858
-  if (options.url != "") {
+  if (options.url !== "") {
     jsonData.dataSourceUrl = options.url
   }
   const onSwitchToggle = (

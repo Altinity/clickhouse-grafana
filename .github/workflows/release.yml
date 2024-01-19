@@ -3,7 +3,7 @@ name: Release
 on:
   push:
     tags:
-      - '.*\d+.\d+.\d+$' # Run workflow on version tags, e.g. v1.0.0.
+      - v*.*.*
 
 jobs:
   release:

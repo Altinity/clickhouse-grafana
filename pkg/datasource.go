@@ -27,7 +27,7 @@ type ClickHouseDatasource struct {
 }
 
 func (ds *ClickHouseDatasource) getClient(ctx backend.PluginContext) (*ClickHouseClient, error) {
-	im, err := ds.im.Get(ctx)
+	im, err := ds.im.Get(context.Background(), ctx)
 	if err != nil {
 		return nil, err
 	}

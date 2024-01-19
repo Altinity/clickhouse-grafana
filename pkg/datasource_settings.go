@@ -1,6 +1,7 @@
 package main
 
 import (
+	"context"
 	"encoding/json"
 	"fmt"
 
@@ -16,12 +17,12 @@ type DatasourceSettings struct {
 	DefaultDatabase             string `json:"defaultDatabase"`
 	UsePost                     bool   `json:"usePOST"`
 	UseYandexCloudAuthorization bool   `json:"useYandexCloudAuthorization"`
-	XHeaderKey                  string `json:"xHeaderKey"`
+	XHeaderKey                  string `json:"xHeaderKey,omitempty"`
 	XHeaderUser                 string `json:"xHeaderUser"`
 	TLSSkipVerify               bool   `json:"tlsSkipVerify"`
 }
 
-func NewDatasourceSettings(settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
+func NewDatasourceSettings(ctx context.Context, settings backend.DataSourceInstanceSettings) (instancemgmt.Instance, error) {
 	var dsSettings = DatasourceSettings{}
 
 	err := json.Unmarshal(settings.JSONData, &dsSettings)

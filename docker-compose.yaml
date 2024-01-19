@@ -27,6 +27,7 @@ services:
       - ./docker/clickhouse/client-key.pem:/etc/clickhouse-server/client-key.pem
       - ./docker/clickhouse/dhparam.pem:/etc/clickhouse-server/dhparam.pem
       - ./docker/clickhouse/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./docker/clickhouse/options_method.xml:/etc/clickhouse-server/config.d/options_method.xml
 
   mysql:
     image: mysql:latest
@@ -42,46 +43,39 @@ services:
 
   grafana:
     image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-latest}
+    build:
+      context: ./.config
+      args:
+        grafana_image: ${GRAFANA_IMAGE:-grafana}
+        grafana_version: ${GRAFANA_VERSION:-latest}
     volumes:
-      - ./:/var/lib/grafana/plugins/altinity-clickhouse/
-      - ./docker/grafana/grafanalabs-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafanalabs-clickhouse-datasource.yaml
-      - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
-      - ./docker/grafana/grafana-clickhouse-datasource-get.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-get.yaml
-      - ./docker/grafana/grafana-clickhouse-datasource-x-auth.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-x-auth.yaml
-      - ./docker/grafana/grafana-clickhouse-ontime-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-ontime-datasource.yaml
-      - ./docker/grafana/grafana-postgres-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-postgres-datasource.yaml
-      - ./docker/grafana/grafana-trickster-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-trickster-datasource.yaml
-      - ./docker/grafana/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/grafana-dashboards.yaml
-      - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
+      - ./dist/:/var/lib/grafana/plugins/vertamedia-clickhouse-datasource/
+      - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
+      - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
+      GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
     ports:
-      - "3000:3000"
+      - 3000:3000/tcp
     depends_on:
       - clickhouse
 
   grafana_external_install:
     image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-latest}
     volumes:
-      - ./docker/grafana/grafanalabs-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafanalabs-clickhouse-datasource.yaml
-      - ./docker/grafana/grafana-clickhouse-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource.yaml
-      - ./docker/grafana/grafana-clickhouse-datasource-get.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-get.yaml
-      - ./docker/grafana/grafana-clickhouse-datasource-x-auth.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-datasource-x-auth.yaml
-      - ./docker/grafana/grafana-clickhouse-ontime-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-clickhouse-ontime-datasource.yaml
-      - ./docker/grafana/grafana-postgres-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-postgres-datasource.yaml
-      - ./docker/grafana/grafana-trickster-datasource.yaml:/etc/grafana/provisioning/datasources/grafana-trickster-datasource.yaml
-      - ./docker/grafana/grafana-dashboards.yaml:/etc/grafana/provisioning/dashboards/grafana-dashboards.yaml
+      - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,vertamedia-clickhouse-datasource
       GF_LOG_LEVEL: debug
+      GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
     ports:
@@ -102,14 +96,14 @@ services:
     image: node:lts
     working_dir: /grafana-clickhouse
     volumes:
-    - ./:/grafana-clickhouse
-    # for speedup npm install
-    - "node_modules:/grafana-clickhouse/node_modules"
+      - ./:/grafana-clickhouse
+      # for speedup npm install under WSL
+      # - "node_modules:/grafana-clickhouse/node_modules"
     command: |
       bash -xec '
-        if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install --production=false; fi && \
-        npm run build:prod && \
-        npm run test:docker
+        if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
+        npm run build && \
+        npm run test:ci
       '
 
   backend_builder:
@@ -121,16 +115,14 @@ services:
       CGO_ENABLED: "0"
     volumes:
       - ./:/go/src/grafana-clickhouse
-      - ./.cache:/go/pkg/mod
-      - ./.cache:/go-cache
+      - ./.go-cache:/go/pkg/mod
+      - ./.go-cache:/go-cache
     command: |
       bash -xec "
+        git config --global --add safe.directory /go/src/grafana-clickhouse &&
+        (command -v mage || go install -v github.com/magefile/mage@latest) &&
         go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ &&
-        GOOS=linux GOARCH=amd64 go build -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ && \
-        GOOS=linux GOARCH=arm64 go build -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_arm64 ./pkg/ && \
-        GOOS=windows GOARCH=amd64 go build -buildvcs=false -o ./dist/altinity-clickhouse-plugin_windows_amd64.exe ./pkg/ && \
-        GOOS=darwin GOARCH=amd64 go build -buildvcs=false -o ./dist/altinity-clickhouse-plugin_darwin_amd64 ./pkg/ && \
-        GOOS=darwin GOARCH=arm64 go build -buildvcs=false -o ./dist/altinity-clickhouse-plugin_darwin_arm64 ./pkg/ && \
+        mage -v && 
         chmod +x ./dist/altinity-clickhouse-plugin*
       "
 
@@ -143,7 +135,7 @@ services:
       - "node_modules:/grafana-clickhouse/node_modules"
     command: |
       bash -xec "
-        if [[ ! -f ./node_modules/@grafana/sign-plugin/dist/bin/run.js ]]; then npm install --production=false; fi && \
+        if [[ ! -f ./node_modules/@grafana/sign-plugin/dist/bin/run.js ]]; then npm install; fi && \
         npm run sign
       "
 

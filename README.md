@@ -796,9 +796,12 @@ datasources:
      # <bool> enable/disable tls authorization with custom ca
      tlsAuthWithCACert: false
      # <bool> enable/disable authorization with X-ClickHouse-* headers
-     useYandexCloudAuthorization: true
+     useYandexCloudAuthorization: false
      # <string> X-ClickHouse-Key header value for authorization
      xHeaderUser: ""
+     # <string> the same value as url when `useYandexCloudAuthorization: true` 
+     # @todo remove this workarund when merge https://github.com/grafana/grafana/pull/80858
+     dataSourceUrl: "http://localhost:8123"
    secureJsonData:
      # <string> X-ClickHouse-User header value for authorization
      xHeaderKey: ""

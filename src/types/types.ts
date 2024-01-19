@@ -43,6 +43,8 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   addCorsHeader?: boolean;
   usePOST?: boolean;
   defaultDatabase?: string;
+  // @todo remove workaround after merge https://github.com/grafana/grafana/pull/80858, also remove from src/plugin.json
+  dataSourceUrl?: string;
 }
 
 /**

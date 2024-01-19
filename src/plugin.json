@@ -50,6 +50,7 @@
   "routes": [
     {
       "path": "xHeaderKey",
+      "url": "{{ .JsonData.dataSourceUrl }}",
       "headers": [
         {
           "name": "X-ClickHouse-User",

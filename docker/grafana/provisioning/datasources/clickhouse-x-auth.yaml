@@ -15,10 +15,12 @@ datasources:
       usePOST: true
       useYandexCloudAuthorization: true
       xHeaderUser: "demo"
-    # look to docker/clickhouse/listen_ports.xml to details about how to generate self-signed cert + custom CA
-    # validation with `curl -vvv --cacert /etc/clickhouse-server/ca-cert.pem --cert /etc/clickhouse-server/client-cert.pem --key /etc/clickhouse-server/client-key.pem "https://clickhouse:8443/"` inside clickhouse container
+      # @todo remove workaround after merge https://github.com/grafana/grafana/pull/80858
+      dataSourceUrl: "https://clickhouse:8443"
     secureJsonData:
       xHeaderKey: "demo"
+      # look to docker/clickhouse/listen_ports.xml to details about how to generate self-signed cert + custom CA
+      # validation with `curl -vvv --cacert /etc/clickhouse-server/ca-cert.pem --cert /etc/clickhouse-server/client-cert.pem --key /etc/clickhouse-server/client-key.pem "https://clickhouse:8443/"` inside clickhouse container
       tlsCACert: |
         -----BEGIN CERTIFICATE-----
         MIIDCTCCAfGgAwIBAgIUOKBEcvQ9P7ljP5fH3yX1TxeFwMwwDQYJKoZIhvcNAQEL

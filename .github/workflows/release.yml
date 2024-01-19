@@ -102,7 +102,7 @@ jobs:
           curl -L https://github.com/grafana/plugin-validator/releases/download/${VALIDATOR_VERSION}/plugin-validator_${VALIDATOR_VERSION//v/}_linux_${VALIDATOR_ARCH}.tar.gz | tar -xz -C .
           curl -L https://github.com/grafana/plugin-validator/raw/main/config/strict.yaml -o strict.yaml
           popd
-          ./plugin-validator/plugincheck2 -config ./strict.yaml -strict ${{ steps.metadata.outputs.archive }}
+          ./plugin-validator/plugincheck2 -config ./plugin-validator/strict.yaml -strict ${{ steps.metadata.outputs.archive }}
 
       - name: Create changelog
         id: changelog

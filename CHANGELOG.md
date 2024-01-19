@@ -1,4 +1,4 @@
-# 3.0.0 (2024-01-17)
+# 3.0.0 (2024-01-19)
 ## Enhancements:
 * rewrite plugin from scratch for Grafana 10+ compatibility using react instead of angular
 

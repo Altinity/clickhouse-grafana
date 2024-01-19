@@ -21,11 +21,11 @@ jobs:
           cache: 'npm'
 
       - name: Setup Go environment
-        uses: actions/setup-go@latest
+        uses: actions/setup-go@v5
         with:
           go-version: '1.21'
 
-      - name: Install dependencies
+      - name: Install nodejs dependencies
         run: npm ci
 
       - name: Build and test frontend
@@ -66,7 +66,7 @@ jobs:
       - name: Get plugin metadata
         id: metadata
         run: |
-          sudo apt-get install jq
+          sudo apt-get install -y jq
 
           export GRAFANA_PLUGIN_ID=$(cat dist/plugin.json | jq -r .id)
           export GRAFANA_PLUGIN_VERSION=$(cat dist/plugin.json | jq -r .info.version)

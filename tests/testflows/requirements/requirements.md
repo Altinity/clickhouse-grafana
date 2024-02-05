@@ -143,7 +143,7 @@ The [Plugin] SHALL support specifying data source name by using `Name` text fiel
 
 ### Using Default Data Source
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DataSourceName
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DefaultDataSource
 version 1.0
 
 The [Plugin] SHALL support specifying data source as default by using `Default` toggle in data source setup view.

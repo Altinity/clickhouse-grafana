@@ -1,4 +1,4 @@
-# QA-SRS Altinity ClickHouse Grafana Plugin
+# QA-SRS Altinity Grafana Datasource Plugin For ClickHouse
 # Software Requirements Specification
 
 ## Table of Contents
@@ -61,7 +61,7 @@ hosted in a [GitHub Repository]. All the updates are tracked using the [Revision
 
 ## Introduction
 
-This software requirements specification covers requirements related to [Altinity Grafana datasource plugin for ClickHouse]
+This software requirements specification covers requirements related to [Altinity Grafana Datasource Plugin For ClickHouse]
 that connects grafana to [ClickHouse] server.
 
 ## Requirements
@@ -410,6 +410,6 @@ The [Plugin] 2.2 - 3.0 SHALL support grafana versions 10+. ???
 [ClickHouse]: https://clickhouse.tech
 The [Plugin]: https://github.com/Altinity/clickhouse-grafana
 [GitHub Repository]: https://github.com/Altinity/clickhouse-grafana
-[Altinity Grafana datasource plugin for ClickHouse]: https://github.com/Altinity/clickhouse-grafana
+[Altinity Grafana Datasource Plugin For ClickHouse]: https://github.com/Altinity/clickhouse-grafana
 [Grafana]: https://grafana.com/
 [CORS]: https://en.wikipedia.org/wiki/Cross-origin_resource_sharing

@@ -70,8 +70,6 @@
     * 3.28 [Versions Compatibility](#versions-compatibility)
         * 3.28.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrsclickhousegrafanapluginversioncompatibility)
 
-
-
 ## Revision History
 
 This document is stored in an electronic form using [Git] source control management software
@@ -82,13 +80,12 @@ hosted in a [GitHub Repository]. All the updates are tracked using the [Revision
 This software requirements specification covers requirements related to [Altinity Grafana Datasource Plugin For ClickHouse]
 that connects grafana to [ClickHouse] server.
 
-## Requirements
 
-### Plugin Installation
+## Plugin Installation
 
-#### Manual Plugin Installation
+### Manual Plugin Installation
 
-##### RQ.SRS.Plugin.ManualPluginInstallation
+#### RQ.SRS.Plugin.ManualPluginInstallation
 version 1.0
 
 The [Plugin] SHALL be available to be installed using grafana-cli with following command:
@@ -97,9 +94,9 @@ The [Plugin] SHALL be available to be installed using grafana-cli with following
 
 For installation user need to install [Grafana] first.
 
-#### Grafana Cloud Plugin Installation
+### Grafana Cloud Plugin Installation
 
-##### RQ.SRS.Plugin.GrafanaCloudPluginInstallation
+#### RQ.SRS.Plugin.GrafanaCloudPluginInstallation
 version 1.0
 
 The [Plugin] SHALL be available to be installed in grafana cloud with the following steps:
@@ -108,9 +105,9 @@ The [Plugin] SHALL be available to be installed in grafana cloud with the follow
 * Find `Altinity plugin for ClickHouse`
 * Click Install
 
-#### Docker Compose Environment Setup
+### Docker Compose Environment Setup
 
-##### RQ.SRS.Plugin.DockerComposeEnvironment
+#### RQ.SRS.Plugin.DockerComposeEnvironment
 version 1.0
 
 The [Plugin] SHALL be available to be run using docker compose with the following comands:

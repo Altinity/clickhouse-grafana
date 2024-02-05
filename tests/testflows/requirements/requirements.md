@@ -402,7 +402,7 @@ The [Plugin] 2.2 - 3.0 SHALL support grafana versions 10+. ???
 
 [SRS]: #srs
 [ClickHouse]: https://clickhouse.tech
-The [Plugin]: https://github.com/Altinity/clickhouse-grafana
+[Plugin]: https://github.com/Altinity/clickhouse-grafana
 [GitHub Repository]: https://github.com/Altinity/clickhouse-grafana
 [Altinity Grafana Datasource Plugin For ClickHouse]: https://github.com/Altinity/clickhouse-grafana
 [Grafana]: https://grafana.com/

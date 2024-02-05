@@ -120,12 +120,6 @@ version 1.0
 
 The [Plugin] SHALL support creating new [ClickHouse] data source by clicking `Add new data source` button on the The [Plugin] page.
 The [Plugin] SHALL open data source setup view by clicking the `Add new data source` button
-
-
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView
-version 1.0
-
-The [Plugin] SHALL open data source setup view on clicking `Add new data source` button.
 This view SHALL have the following sections:
 * `Name`
 * `HTTP`

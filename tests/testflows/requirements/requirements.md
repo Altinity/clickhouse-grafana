@@ -2,6 +2,7 @@
 # Software Requirements Specification
 
 ## Table of Contents
+
 * 1 [Revision History](#revision-history)
 * 2 [Introduction](#introduction)
 * 3 [Requirements](#requirements)

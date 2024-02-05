@@ -95,7 +95,7 @@ version 1.0
 
 `grafana-cli plugins install vertamedia-clickhouse-datasource`. 
 
-For installation user need to install grafana first.
+For installation user need to install [Grafana] first.
 
 #### Grafana Cloud Plugin Installation
 

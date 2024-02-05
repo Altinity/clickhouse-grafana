@@ -103,8 +103,8 @@ For installation user need to install [Grafana] first.
 version 1.0
 
 [Plugin] SHALL be available to be installed in grafana cloud with the following steps:
-* Go to grafana cloud
-* Go to Administration>Plugins And Data>Plugins
+* Go to Grafana.Cloud
+* Go to Administration `>` Plugins And Data `>` Plugins
 * Find `Altinity plugin for ClickHouse`
 * Click Install
 

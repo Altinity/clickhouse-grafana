@@ -91,7 +91,7 @@ that connects grafana to [ClickHouse] server.
 ##### RQ.SRS.ClickHouseGrafanaPlugin.ManualPluginInstallation
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL be available to be installed using grafana-cli with following command:
+[Plugin] SHALL be available to be installed using grafana-cli with following command:
 
 `grafana-cli plugins install vertamedia-clickhouse-datasource`. 
 
@@ -102,7 +102,7 @@ For installation user need to install grafana first.
 ##### RQ.SRS.ClickHouseGrafanaPlugin.GrafanaCloudPluginInstallation
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL be available to be installed in grafana cloud with the following steps:
+[Plugin] SHALL be available to be installed in grafana cloud with the following steps:
 * Go to grafana cloud
 * Go to Administration>Plugins And Data>Plugins
 * Find `Altinity plugin for ClickHouse`
@@ -113,7 +113,7 @@ version 1.0
 ##### RQ.SRS.ClickHouseGrafanaPlugin.DockerComposeEnvironment
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL be available to be run using docker compose with the following comands:
+[Plugin] SHALL be available to be run using docker compose with the following comands:
 ```
 docker-compose run --rm frontend_builder
 docker-compose run --rm backend_builder
@@ -129,21 +129,21 @@ docker-compose logs -f grafana # check logs
 #### RQ.SRS.ClickHouseGrafanaPlugin
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL support connecting [ClickHouse] server to [Grafana].
+[Plugin] SHALL support connecting [ClickHouse] server to [Grafana].
 
 ### Adding New Data Source
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSource 
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView 
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL support creating new [ClickHouse] data source by clicking `Add new data source` button.
-[ClickHouse Grafana Plugin] SHALL open data source setup view by clicking the `Add new data source` button
+[Plugin] SHALL support creating new [ClickHouse] data source by clicking `Add new data source` button on the [Plugin] page.
+[Plugin] SHALL open data source setup view by clicking the `Add new data source` button
 
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView
 version 1.0
 
-[Clickhouse Grafana Plugin] SHALL open adding data source view on clicking `Add new data source` button.
+[Plugin] SHALL open data source setup view on clicking `Add new data source` button.
 This view SHALL have the following sections:
 * `Name`
 * `HTTP`
@@ -151,17 +151,18 @@ This view SHALL have the following sections:
 * `Custom HTTP Headers`
 * `Additional`
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.SaveAndTestButton
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.SaveAndTestButton
 version 1.0
 
-[ClickHouse Grafana Plugin] adding data source view SHALL contain `Save & test` button that shall save and check if datasource is connected correctly.
+[Plugin]'s data source setup view SHALL contain `Save & test` button that SHALL save datasource and check if [ClickHouse] 
+datasource is connected to [Grafana] correctly.
 
 ### Specifying Data Source Name
 
 #### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DataSourceName
 version 1.0
 
-[Clickhouse Grafana Plugin] SHALL support specifying data source name by using `Name` text field in data source setup view.
+[Plugin] SHALL support specifying data source name by using `Name` text field in data source setup view.
 
 
 ### Using Default Data Source
@@ -169,125 +170,149 @@ version 1.0
 #### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DataSourceName
 version 1.0
 
-[Clickhouse Grafana Plugin] SHALL support specifying data source as default by using `Default` toggle.
+[Plugin] SHALL support specifying data source as default by using `Default` toggle in data source setup view.
 Default data source SHALL be preselected in new pannels.
-
 
 ### Specifying HTTP Connection
 
 #### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection
 version 1.0
 
-[Clickhouse Grafana Plugin] SHALL support specifying HTTP connection using the following fields:
+[Plugin] SHALL support specifying HTTP connection using the following fields:
 
 * `URL` text field to specify [ClickHouse] URL 
 * `Access` dropdown menu to specify `Server` or `Browser` access will be used
 * `Allowed cookies` text field to specify cookies that SHALL not be deleted
 * `Timeout` text field to specify HTTP request timeout in seconds.
 
+### Connecting to the Local Clickhouse Server
 
 #### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection.ServerAccess
 version 1.0
 
-[Clickhouse Grafana Plugin]'s adding Data Source view's `HTTP` section SHALL contain `Allowed cookies` and `Timeout` text fields 
+[Plugin] SHALL support connecting to the local [ClickHouse] server by selecting `Server` option` in `Access` dropdown menu
+in data source setup view. [Plugin]'s data source setup view SHALL contain `Allowed cookies` and `Timeout` text fields 
 if only `Server` is selected in `Access` dropdown menu.
 
-### Adding Data Source Auth Section
+### Connecting to the Remote Clickhouse Server
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Auth
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection.BrowserAccess
 version 1.0
 
-[Clickhouse Grafana Plugin]'s adding Data Source view's `Auth` section SHALL contain the following fields:
+[Plugin] SHALL support connecting to the remote [ClickHouse] server by selecting `Browser` option` in `Access` dropdown menu
+in data source setup view. 
 
-* `Basic auth` toggle
-* `TLS Client Auth` toggle
-* `Skip TLS Verify` toggle
-* `Forward OAuth Identity` toggle
-* `With Credentials` toggle
-* `With CA Cert` toggle
+### ClickHouse Authentification Setup
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Auth.BasicAuth
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.Auth
 version 1.0
 
-[Clickhouse Grafana Plugin] SHALL add `Basic Auth Details` section to adding data source view only if `Basic auth` toggle is on.
+[Plugin] SHALL support specifying authentification details by specifying the following toggles:
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Auth.TLSClientAuth
+* `Basic auth`
+* `TLS Client Auth`
+* `Skip TLS Verify`
+* `Forward OAuth Identity`
+* `With Credentials`
+* `With CA Cert`
+
+### ClickHouse Authentification Setup Using Username And Password
+
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.BasicAuth
 version 1.0
 
-[Clickhouse Grafana Plugin] SHALL add `TLS/SSL Auth Details` section to adding data source view if `TLS Client Auth` toggle is on.
+[Plugin] SHALL support specifying username and password for [ClickHouse] server by turning on `Basic auth` toggle
+and specifying username and password in `User` and `Password` textfields respectively. `Password` textfield SHALL 
+be able to be empty. [Plugin] SHALL add `Basic Auth Details` section to data source setup view only if `Basic auth`
+toggle is on.
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Auth.WithCACert
+### ClickHouse Authentification Setup Using TLS/SSL Auth Details
+
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.TLS/SSLAuthDetails
 version 1.0
 
-[Clickhouse Grafana Plugin] SHALL add `TLS/SSL Auth Details` section to adding data source view if `With CA Cert` toggle is on.
+[Plugin] SHALL support specifying server name, client certificate, client key for [ClickHouse] server by turning on 
+`TLS Client Auth` toggle and specifying this options in `ServerName`, `Client Cert` and `Client Key` textfields 
+respectively. [Plugin] SHALL add `ServerName`, `Client Cert` and `Client Key` textfields to data source setup view
+only if `TLS Client Auth` toggle is on.
 
-### Adding Data Source Basic Auth Details Section
+### ClickHouse Authentification Using Forward OAuth Identity
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Auth.BasicAuthDetails
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.ForwardOAuthIdentity
 version 1.0
 
-[Clickhouse Grafana Plugin]'s adding Data Source view's `Basic Auth Details` section SHALL contain the following fields:
+[Plugin] SHALL support Forward OAuth Identity by turning on `Forward OAuth Identity` toggle.
+[Plugin] SHALL forward the user's upstream OAuth identity to the data source if this toggle is on.
 
-* `User` text field to specify [ClickHouse] user
-* `Password` text field to specify password for [ClickHouse] user.
+### Sending Credentials Setup
 
-### Adding Data Source TLS/SSL Auth Details Section
-
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Auth.TLS/SSLAuthDetails
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.WithCredentials
 version 1.0
 
-[Clickhouse Grafana Plugin]'s adding Data Source view's `TLS/SSLAuthDetails` section SHALL contain the following fields:
+[Plugin] SHALL support sending credentials such as cookies or authentication headers with cross-site 
+request by turning on `With Credentials` toggle.
 
-* `CA Cert` text field. This field SHALL be displayed only if `With CA Cert` toggle is on. ???
-* `ServerName` text field. This field SHALL be displayed only if `TLS Client Auth` toggle is on.
-* `Client Cert` text field. This field SHALL be displayed only if `TLS Client Auth` toggle is on.
-* `Client Key` text field. This field SHALL be displayed only if `TLS Client Auth` toggle is on.
+### ClickHouse Authentification With CA Certificate
 
-### Adding Data Source Custom HTTP Headers Section
-
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Auth.CustomHTTPHeaders
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.Auth.WithCACert
 version 1.0
 
-[Clickhouse Grafana Plugin]'s adding Data Source view's `Custom HTTP Headers` section SHALL contain the following fields:
+[Plugin] SHALL support specifying ca certificate that will be used to access to [ClickHouse] server by turning on
+`With CA Cert` toggle and specifying `CA Cert` textfield. [Plugin] SHALL add `CA Cert` textfield to data source setup 
+view only if `TLS Client Auth` toggle is on.
 
-* `Add header` button
-* `Use Yandex.Cloud authorization headers` toggle.
+### Specifying Custom HTTP Headers
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Auth.CustomHTTPHeaders.AddHeader
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.CustomHTTPHeaders
 version 1.0
 
-[Clickhouse Grafana Plugin]'s adding Data Source view's `Add header` button SHALL add the following fields on click:
+[Plugin] SHALL support custom HTTP Headers that will be used for HTTP requests to [ClickHouse] server by
+pressing `Add Header` button and specifying `Header` and `Value` textfields.
 
-* `Header` text field
-* `Value` text field
-* `busket` button.
-
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Auth.CustomHTTPHeaders.UseYandexCloudAuthorizationHeaders
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DeletingCustomHTTPHeaders
 version 1.0
 
-[Clickhouse Grafana Plugin]'s adding Data Source view's `Use Yandex.Cloud authorization headers` button SHALL 
-add the following fields if toggle is on:
+[Plugin] SHALL support deleting custom HTTP Headers by clicking buсket button nearby this Header.
 
-* `X-ClickHouse-User` text field
-* `X-ClickHouse-Key` text field.
+### Connection To Managed Yandex.Cloud ClickHouse Database Setup
 
-### Adding Data Source Additional Section
-
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Auth.Additional
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders
 version 1.0
 
-[Clickhouse Grafana Plugin]'s adding Data Source view's `Additional` section SHALL contain the following fields:
+[Plugin] SHALL support connection to managed Yandex.Cloud [ClickHouse] database setup by
+turning on `Use Yandex.Cloud authorization headers` toggle and specifying `X-ClickHouse-User` 
+and `X-ClickHouse-Key` textfields.
 
-* `Add CORS flag to requests` toggle
-* `Use POST method to send queries` toggle
-* `Default database` text field.
+### Specifying Use CORS Flag In Requests
 
-### Panels
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.AddCORSFlagToRequests
+version 1.0
+
+[Plugin] SHALL support adding [CORS] flag to requests by turning on `Add CORS flag to requests` toggle.
+If this toggle is on [Plugin] SHALL attach `add_http_cors_header=1` to requests.
+
+### Specifying Use POST Requests
+
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.AddCORSFlagToRequests
+version 1.0
+
+[Plugin] SHALL support specifying the use of POST requests to [ClickHouse] server by turning on 
+`Use POST method to send queries` toggle.
+
+### Specifying Default Database
+
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DefaultDatabase
+version 1.0
+
+[Plugin] SHALL support specifying the default [ClickHouse] server database by using `Default database` textfield. 
+This database name SHALL be prefilled in the query builder.
+
+### Creating Panels
 
 #### RQ.SRS.ClickHouseGrafanaPlugin.Panels
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL support creating Panels for the [ClickHouse] data source if [ClickHouse] data source is connected to grafana. ???
+[ClickHouse Grafana Plugin] SHALL support creating Panels for the [ClickHouse] data source if [ClickHouse] data source is connected to grafana.
 
 ### Query Setup
 
@@ -388,20 +413,21 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions ???
 #### RQ.SRS.ClickHouseGrafanaPlugin.SupportedTypes
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL support data types that can be visualized. ??? (The following types:)
+[Plugin] SHALL support data types that can be visualized. ??? (The following types:)
 
 ### Versions Compatibility
 
 #### RQ.SRS.ClickHouseGrafanaPlugin.VersionCompatibility
 version 1.0
 
-[ClickHouse Grafana Plugin] 2.2 - 3.0 SHALL support grafana versions 10+. ???
+[Plugin] 2.2 - 3.0 SHALL support grafana versions 10+. ???
 
 
 
 [SRS]: #srs
 [ClickHouse]: https://clickhouse.tech
 [Plugin]: https://github.com/Altinity/clickhouse-grafana
-[GitHub Repository]:
+[GitHub Repository]: https://github.com/Altinity/clickhouse-grafana
 [Altinity Grafana datasource plugin for ClickHouse]: https://github.com/Altinity/clickhouse-grafana
-[Grafana]: 
+[Grafana]: https://grafana.com/
+[CORS]: https://en.wikipedia.org/wiki/Cross-origin_resource_sharing

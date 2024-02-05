@@ -8,67 +8,67 @@
 * 3 [Requirements](#requirements)
     * 3.1 [Plugin Installation](#plugin-installation)
         * 3.1.1 [Manual Plugin Installation](#manual-plugin-installation)
-            * 3.1.1.1 [RQ.SRS.ClickHouseGrafanaPlugin.ManualPluginInstallation](#rqsrsclickhousegrafanapluginmanualplugininstallation)
+            * 3.1.1.1 [RQ.SRS.Plugin.ManualPluginInstallation](#rqsrsclickhousegrafanapluginmanualplugininstallation)
         * 3.1.2 [Grafana Cloud Plugin Installation](#grafana-cloud-plugin-installation)
-            * 3.1.2.1 [RQ.SRS.ClickHouseGrafanaPlugin.GrafanaCloudPluginInstallation](#rqsrsclickhousegrafanaplugingrafanacloudplugininstallation)
+            * 3.1.2.1 [RQ.SRS.Plugin.GrafanaCloudPluginInstallation](#rqsrsclickhousegrafanaplugingrafanacloudplugininstallation)
         * 3.1.3 [Docker Compose Environment Setup](#docker-compose-environment-setup)
-            * 3.1.3.1 [RQ.SRS.ClickHouseGrafanaPlugin.DockerComposeEnvironment](#rqsrsclickhousegrafanaplugindockercomposeenvironment)
+            * 3.1.3.1 [RQ.SRS.Plugin.DockerComposeEnvironment](#rqsrsclickhousegrafanaplugindockercomposeenvironment)
     * 3.2 [Grafana Datasource Plugin For ClickHouse](#grafana-datasource-plugin-for-clickhouse)
         * 3.2.1 [RQ.SRS.ClickHouseGrafanaPlugin](#rqsrsclickhousegrafanaplugin)
     * 3.3 [Adding New Data Source](#adding-new-data-source)
-        * 3.3.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView ](#rqsrsclickhousegrafanaplugindatasourcesetupview-)
-        * 3.3.2 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.SaveAndTestButton](#rqsrsclickhousegrafanaplugindatasourcesetupviewsaveandtestbutton)
+        * 3.3.1 [RQ.SRS.Plugin.DataSourceSetupView ](#rqsrsclickhousegrafanaplugindatasourcesetupview-)
+        * 3.3.2 [RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton](#rqsrsclickhousegrafanaplugindatasourcesetupviewsaveandtestbutton)
     * 3.4 [Specifying Data Source Name](#specifying-data-source-name)
-        * 3.4.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DataSourceName](#rqsrsclickhousegrafanaplugindatasourcesetupviewdatasourcename)
+        * 3.4.1 [RQ.SRS.Plugin.DataSourceSetupView.DataSourceName](#rqsrsclickhousegrafanaplugindatasourcesetupviewdatasourcename)
     * 3.5 [Using Default Data Source](#using-default-data-source)
-        * 3.5.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DefaultDataSource](#rqsrsclickhousegrafanaplugindatasourcesetupviewdefaultdatasource)
+        * 3.5.1 [RQ.SRS.Plugin.DataSourceSetupView.DefaultDataSource](#rqsrsclickhousegrafanaplugindatasourcesetupviewdefaultdatasource)
     * 3.6 [Specifying HTTP Connection](#specifying-http-connection)
-        * 3.6.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection](#rqsrsclickhousegrafanaplugindatasourcesetupviewhttpconnection)
+        * 3.6.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection](#rqsrsclickhousegrafanaplugindatasourcesetupviewhttpconnection)
     * 3.7 [Connecting to the Local Clickhouse Server](#connecting-to-the-local-clickhouse-server)
-        * 3.7.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection.ServerAccess](#rqsrsclickhousegrafanaplugindatasourcesetupviewhttpconnectionserveraccess)
+        * 3.7.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.ServerAccess](#rqsrsclickhousegrafanaplugindatasourcesetupviewhttpconnectionserveraccess)
     * 3.8 [Connecting to the Remote Clickhouse Server](#connecting-to-the-remote-clickhouse-server)
-        * 3.8.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection.BrowserAccess](#rqsrsclickhousegrafanaplugindatasourcesetupviewhttpconnectionbrowseraccess)
+        * 3.8.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess](#rqsrsclickhousegrafanaplugindatasourcesetupviewhttpconnectionbrowseraccess)
     * 3.9 [ClickHouse Authentification Setup](#clickhouse-authentification-setup)
-        * 3.9.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.Auth](#rqsrsclickhousegrafanaplugindatasourcesetupviewauth)
+        * 3.9.1 [RQ.SRS.Plugin.DataSourceSetupView.Auth](#rqsrsclickhousegrafanaplugindatasourcesetupviewauth)
     * 3.10 [ClickHouse Authentification Setup Using Username And Password](#clickhouse-authentification-setup-using-username-and-password)
-        * 3.10.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.BasicAuth](#rqsrsclickhousegrafanaplugindatasourcesetupviewbasicauth)
+        * 3.10.1 [RQ.SRS.Plugin.DataSourceSetupView.BasicAuth](#rqsrsclickhousegrafanaplugindatasourcesetupviewbasicauth)
     * 3.11 [ClickHouse Authentification Setup Using TLS/SSL Auth Details](#clickhouse-authentification-setup-using-tlsssl-auth-details)
-        * 3.11.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.TLS/SSLAuthDetails](#rqsrsclickhousegrafanaplugindatasourcesetupviewtlssslauthdetails)
+        * 3.11.1 [RQ.SRS.Plugin.DataSourceSetupView.TLS/SSLAuthDetails](#rqsrsclickhousegrafanaplugindatasourcesetupviewtlssslauthdetails)
     * 3.12 [ClickHouse Authentification Using Forward OAuth Identity](#clickhouse-authentification-using-forward-oauth-identity)
-        * 3.12.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.ForwardOAuthIdentity](#rqsrsclickhousegrafanaplugindatasourcesetupviewforwardoauthidentity)
+        * 3.12.1 [RQ.SRS.Plugin.DataSourceSetupView.ForwardOAuthIdentity](#rqsrsclickhousegrafanaplugindatasourcesetupviewforwardoauthidentity)
     * 3.13 [Sending Credentials Setup](#sending-credentials-setup)
-        * 3.13.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.WithCredentials](#rqsrsclickhousegrafanaplugindatasourcesetupviewwithcredentials)
+        * 3.13.1 [RQ.SRS.Plugin.DataSourceSetupView.WithCredentials](#rqsrsclickhousegrafanaplugindatasourcesetupviewwithcredentials)
     * 3.14 [ClickHouse Authentification With CA Certificate](#clickhouse-authentification-with-ca-certificate)
-        * 3.14.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.Auth.WithCACert](#rqsrsclickhousegrafanaplugindatasourcesetupviewauthwithcacert)
+        * 3.14.1 [RQ.SRS.Plugin.DataSourceSetupView.Auth.WithCACert](#rqsrsclickhousegrafanaplugindatasourcesetupviewauthwithcacert)
     * 3.15 [Specifying Custom HTTP Headers](#specifying-custom-http-headers)
-        * 3.15.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.CustomHTTPHeaders](#rqsrsclickhousegrafanaplugindatasourcesetupviewcustomhttpheaders)
-        * 3.15.2 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DeletingCustomHTTPHeaders](#rqsrsclickhousegrafanaplugindatasourcesetupviewdeletingcustomhttpheaders)
+        * 3.15.1 [RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders](#rqsrsclickhousegrafanaplugindatasourcesetupviewcustomhttpheaders)
+        * 3.15.2 [RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders](#rqsrsclickhousegrafanaplugindatasourcesetupviewdeletingcustomhttpheaders)
     * 3.16 [Connection To Managed Yandex.Cloud ClickHouse Database Setup](#connection-to-managed-yandexcloud-clickhouse-database-setup)
-        * 3.16.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders](#rqsrsclickhousegrafanaplugindatasourcesetupviewuseyandexcloudauthorizationheaders)
+        * 3.16.1 [RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders](#rqsrsclickhousegrafanaplugindatasourcesetupviewuseyandexcloudauthorizationheaders)
     * 3.17 [Specifying Use CORS Flag In Requests](#specifying-use-cors-flag-in-requests)
-        * 3.17.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.AddCORSFlagToRequests](#rqsrsclickhousegrafanaplugindatasourcesetupviewaddcorsflagtorequests)
+        * 3.17.1 [RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests](#rqsrsclickhousegrafanaplugindatasourcesetupviewaddcorsflagtorequests)
     * 3.18 [Specifying Use POST Requests](#specifying-use-post-requests)
-        * 3.18.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.UsePostRequests](#rqsrsclickhousegrafanaplugindatasourcesetupviewusepostrequests)
+        * 3.18.1 [RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests](#rqsrsclickhousegrafanaplugindatasourcesetupviewusepostrequests)
     * 3.19 [Specifying Default Database](#specifying-default-database)
-        * 3.19.1 [RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DefaultDatabase](#rqsrsclickhousegrafanaplugindatasourcesetupviewdefaultdatabase)
+        * 3.19.1 [RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase](#rqsrsclickhousegrafanaplugindatasourcesetupviewdefaultdatabase)
     * 3.20 [Creating Panels](#creating-panels)
-        * 3.20.1 [RQ.SRS.ClickHouseGrafanaPlugin.Panels](#rqsrsclickhousegrafanapluginpanels)
+        * 3.20.1 [RQ.SRS.Plugin.Panels](#rqsrsclickhousegrafanapluginpanels)
     * 3.21 [Query Setup](#query-setup)
-        * 3.21.1 [RQ.SRS.ClickHouseGrafanaPlugin.QuerySetup](#rqsrsclickhousegrafanapluginquerysetup)
+        * 3.21.1 [RQ.SRS.Plugin.QuerySetup](#rqsrsclickhousegrafanapluginquerysetup)
     * 3.22 [Query Setup Interface](#query-setup-interface)
-        * 3.22.1 [RQ.SRS.ClickHouseGrafanaPlugin.QuerySetupInterface](#rqsrsclickhousegrafanapluginquerysetupinterface)
+        * 3.22.1 [RQ.SRS.Plugin.QuerySetupInterface](#rqsrsclickhousegrafanapluginquerysetupinterface)
     * 3.23 [Raw SQL Editor](#raw-sql-editor)
-        * 3.23.1 [RQ.SRS.ClickHouseGrafanaPlugin.RawSQLEditorInterface](#rqsrsclickhousegrafanapluginrawsqleditorinterface)
+        * 3.23.1 [RQ.SRS.Plugin.RawSQLEditorInterface](#rqsrsclickhousegrafanapluginrawsqleditorinterface)
     * 3.24 [Vizualization](#vizualization)
-        * 3.24.1 [RQ.SRS.ClickHouseGrafanaPlugin.Vizualization](#rqsrsclickhousegrafanapluginvizualization)
+        * 3.24.1 [RQ.SRS.Plugin.Vizualization](#rqsrsclickhousegrafanapluginvizualization)
     * 3.25 [Macroces](#macroces)
-        * 3.25.1 [RQ.SRS.ClickHouseGrafanaPlugin.QuerySettings.Macroses](#rqsrsclickhousegrafanapluginquerysettingsmacroses)
+        * 3.25.1 [RQ.SRS.Plugin.QuerySettings.Macroses](#rqsrsclickhousegrafanapluginquerysettingsmacroses)
     * 3.26 [Functions](#functions)
-        * 3.26.1 [RQ.SRS.ClickHouseGrafanaPlugin.Functions](#rqsrsclickhousegrafanapluginfunctions)
+        * 3.26.1 [RQ.SRS.Plugin.Functions](#rqsrsclickhousegrafanapluginfunctions)
     * 3.27 [Supported types](#supported-types)
-        * 3.27.1 [RQ.SRS.ClickHouseGrafanaPlugin.SupportedTypes](#rqsrsclickhousegrafanapluginsupportedtypes)
+        * 3.27.1 [RQ.SRS.Plugin.SupportedTypes](#rqsrsclickhousegrafanapluginsupportedtypes)
     * 3.28 [Versions Compatibility](#versions-compatibility)
-        * 3.28.1 [RQ.SRS.ClickHouseGrafanaPlugin.VersionCompatibility](#rqsrsclickhousegrafanapluginversioncompatibility)
+        * 3.28.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrsclickhousegrafanapluginversioncompatibility)
 
 
 
@@ -88,7 +88,7 @@ that connects grafana to [ClickHouse] server.
 
 #### Manual Plugin Installation
 
-##### RQ.SRS.ClickHouseGrafanaPlugin.ManualPluginInstallation
+##### RQ.SRS.Plugin.ManualPluginInstallation
 version 1.0
 
 The [Plugin] SHALL be available to be installed using grafana-cli with following command:
@@ -99,7 +99,7 @@ For installation user need to install [Grafana] first.
 
 #### Grafana Cloud Plugin Installation
 
-##### RQ.SRS.ClickHouseGrafanaPlugin.GrafanaCloudPluginInstallation
+##### RQ.SRS.Plugin.GrafanaCloudPluginInstallation
 version 1.0
 
 The [Plugin] SHALL be available to be installed in grafana cloud with the following steps:
@@ -110,7 +110,7 @@ The [Plugin] SHALL be available to be installed in grafana cloud with the follow
 
 #### Docker Compose Environment Setup
 
-##### RQ.SRS.ClickHouseGrafanaPlugin.DockerComposeEnvironment
+##### RQ.SRS.Plugin.DockerComposeEnvironment
 version 1.0
 
 The [Plugin] SHALL be available to be run using docker compose with the following comands:
@@ -132,7 +132,7 @@ The [Plugin] SHALL support connecting [ClickHouse] server to [Grafana].
 
 ### Adding New Data Source
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView 
+#### RQ.SRS.Plugin.DataSourceSetupView 
 version 1.0
 
 The [Plugin] SHALL support creating new [ClickHouse] data source by clicking `Add new data source` button on the The [Plugin] page.
@@ -144,7 +144,7 @@ This view SHALL have the following sections:
 * `Custom HTTP Headers`
 * `Additional`
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.SaveAndTestButton
+#### RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton
 version 1.0
 
 The [Plugin]'s data source setup view SHALL contain `Save & test` button that SHALL save datasource and check if [ClickHouse] 
@@ -152,7 +152,7 @@ datasource is connected to [Grafana] correctly.
 
 ### Specifying Data Source Name
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DataSourceName
+#### RQ.SRS.Plugin.DataSourceSetupView.DataSourceName
 version 1.0
 
 The [Plugin] SHALL support specifying data source name by using `Name` text field in data source setup view.
@@ -160,7 +160,7 @@ The [Plugin] SHALL support specifying data source name by using `Name` text fiel
 
 ### Using Default Data Source
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DefaultDataSource
+#### RQ.SRS.Plugin.DataSourceSetupView.DefaultDataSource
 version 1.0
 
 The [Plugin] SHALL support specifying data source as default by using `Default` toggle in data source setup view.
@@ -168,7 +168,7 @@ Default data source SHALL be preselected in new pannels.
 
 ### Specifying HTTP Connection
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection
+#### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection
 version 1.0
 
 The [Plugin] SHALL support specifying HTTP connection using the following fields:
@@ -180,7 +180,7 @@ The [Plugin] SHALL support specifying HTTP connection using the following fields
 
 ### Connecting to the Local Clickhouse Server
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection.ServerAccess
+#### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.ServerAccess
 version 1.0
 
 The [Plugin] SHALL support connecting to the local [ClickHouse] server by selecting `Server` option` in `Access` dropdown menu
@@ -189,7 +189,7 @@ if only `Server` is selected in `Access` dropdown menu.
 
 ### Connecting to the Remote Clickhouse Server
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection.BrowserAccess
+#### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess
 version 1.0
 
 The [Plugin] SHALL support connecting to the remote [ClickHouse] server by selecting `Browser` option` in `Access` dropdown menu
@@ -197,7 +197,7 @@ in data source setup view.
 
 ### ClickHouse Authentification Setup
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.Auth
+#### RQ.SRS.Plugin.DataSourceSetupView.Auth
 version 1.0
 
 The [Plugin] SHALL support specifying authentification details by specifying the following toggles:
@@ -211,7 +211,7 @@ The [Plugin] SHALL support specifying authentification details by specifying the
 
 ### ClickHouse Authentification Setup Using Username And Password
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.BasicAuth
+#### RQ.SRS.Plugin.DataSourceSetupView.BasicAuth
 version 1.0
 
 The [Plugin] SHALL support specifying username and password for [ClickHouse] server by turning on `Basic auth` toggle
@@ -221,7 +221,7 @@ toggle is on.
 
 ### ClickHouse Authentification Setup Using TLS/SSL Auth Details
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.TLS/SSLAuthDetails
+#### RQ.SRS.Plugin.DataSourceSetupView.TLS/SSLAuthDetails
 version 1.0
 
 The [Plugin] SHALL support specifying server name, client certificate, client key for [ClickHouse] server by turning on 
@@ -231,7 +231,7 @@ only if `TLS Client Auth` toggle is on.
 
 ### ClickHouse Authentification Using Forward OAuth Identity
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.ForwardOAuthIdentity
+#### RQ.SRS.Plugin.DataSourceSetupView.ForwardOAuthIdentity
 version 1.0
 
 The [Plugin] SHALL support Forward OAuth Identity by turning on `Forward OAuth Identity` toggle.
@@ -239,7 +239,7 @@ The [Plugin] SHALL forward the user's upstream OAuth identity to the data source
 
 ### Sending Credentials Setup
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.WithCredentials
+#### RQ.SRS.Plugin.DataSourceSetupView.WithCredentials
 version 1.0
 
 The [Plugin] SHALL support sending credentials such as cookies or authentication headers with cross-site 
@@ -247,7 +247,7 @@ request by turning on `With Credentials` toggle.
 
 ### ClickHouse Authentification With CA Certificate
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.Auth.WithCACert
+#### RQ.SRS.Plugin.DataSourceSetupView.Auth.WithCACert
 version 1.0
 
 The [Plugin] SHALL support specifying ca certificate that will be used to access to [ClickHouse] server by turning on
@@ -256,20 +256,20 @@ view only if `TLS Client Auth` toggle is on.
 
 ### Specifying Custom HTTP Headers
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.CustomHTTPHeaders
+#### RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders
 version 1.0
 
 The [Plugin] SHALL support custom HTTP Headers that will be used for HTTP requests to [ClickHouse] server by
 pressing `Add Header` button and specifying `Header` and `Value` textfields.
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DeletingCustomHTTPHeaders
+#### RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders
 version 1.0
 
 The [Plugin] SHALL support deleting custom HTTP Headers by clicking buсket button nearby this Header.
 
 ### Connection To Managed Yandex.Cloud ClickHouse Database Setup
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders
+#### RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders
 version 1.0
 
 The [Plugin] SHALL support connection to managed Yandex.Cloud [ClickHouse] database setup by
@@ -278,7 +278,7 @@ and `X-ClickHouse-Key` textfields.
 
 ### Specifying Use CORS Flag In Requests
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.AddCORSFlagToRequests
+#### RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests
 version 1.0
 
 The [Plugin] SHALL support adding [CORS] flag to requests by turning on `Add CORS flag to requests` toggle.
@@ -286,7 +286,7 @@ If this toggle is on The [Plugin] SHALL attach `add_http_cors_header=1` to reque
 
 ### Specifying Use POST Requests
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.UsePostRequests
+#### RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests
 version 1.0
 
 The [Plugin] SHALL support specifying the use of POST requests to [ClickHouse] server by turning on 
@@ -294,7 +294,7 @@ The [Plugin] SHALL support specifying the use of POST requests to [ClickHouse] s
 
 ### Specifying Default Database
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DefaultDatabase
+#### RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase
 version 1.0
 
 The [Plugin] SHALL support specifying the default [ClickHouse] server database by using `Default database` textfield. 
@@ -302,21 +302,21 @@ This database name SHALL be prefilled in the query builder.
 
 ### Creating Panels
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.Panels
+#### RQ.SRS.Plugin.Panels
 version 1.0
 
 [ClickHouse Grafana Plugin] SHALL support creating Panels for the [ClickHouse] data source if [ClickHouse] data source is connected to grafana.
 
 ### Query Setup
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.QuerySetup
+#### RQ.SRS.Plugin.QuerySetup
 version 1.0
 
 [ClickHouse Grafana Plugin] SHALL support creating grafana vizualizations using query setup interface and raw SQL editor.
 
 ### Query Setup Interface
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.QuerySetupInterface
+#### RQ.SRS.Plugin.QuerySetupInterface
 version 1.0
 
 [ClickHouse Grafana Plugin]'s query setup interface SHALL contain the following fields:
@@ -331,7 +331,7 @@ version 1.0
 
 ### Raw SQL Editor
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.RawSQLEditorInterface
+#### RQ.SRS.Plugin.RawSQLEditorInterface
 version 1.0
 
 [ClickHouse Grafana Plugin]'s raw SQL editor interface SHALL contain the following fields:
@@ -349,14 +349,14 @@ version 1.0
 
 ### Vizualization
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.Vizualization
+#### RQ.SRS.Plugin.Vizualization
 version 1.0
 
 [ClickHouse Grafana Plugin] SHALL display visualization on changing attention.????
 
 ### Macroces
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.QuerySettings.Macroses
+#### RQ.SRS.Plugin.QuerySettings.Macroses
 version 1.0
 
 [ClickHouse Grafana Plugin] SHALL support the following macroces:
@@ -381,7 +381,7 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
 
 ### Functions
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.Functions
+#### RQ.SRS.Plugin.Functions
 version 1.0
 
 [ClickHouse Grafana Plugin] SHALL support the following functions in SQL query:???
@@ -403,14 +403,14 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions ???
 
 ### Supported types
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.SupportedTypes
+#### RQ.SRS.Plugin.SupportedTypes
 version 1.0
 
 The [Plugin] SHALL support data types that can be visualized. ??? (The following types:)
 
 ### Versions Compatibility
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.VersionCompatibility
+#### RQ.SRS.Plugin.VersionCompatibility
 version 1.0
 
 The [Plugin] 2.2 - 3.0 SHALL support grafana versions 10+. ???

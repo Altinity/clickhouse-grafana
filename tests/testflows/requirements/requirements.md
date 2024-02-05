@@ -84,6 +84,46 @@ that connects grafana to [ClickHouse] server.
 
 ## Requirements
 
+### Plugin Installation
+
+#### Manual Plugin Installation
+
+##### RQ.SRS.ClickHouseGrafanaPlugin.ManualPluginInstallation
+version 1.0
+
+[ClickHouse Grafana Plugin] SHALL be available to be installed using grafana-cli with following command:
+
+`grafana-cli plugins install vertamedia-clickhouse-datasource`. 
+
+For installation user need to install grafana first.
+
+#### Grafana Cloud Plugin Installation
+
+##### RQ.SRS.ClickHouseGrafanaPlugin.GrafanaCloudPluginInstallation
+version 1.0
+
+[ClickHouse Grafana Plugin] SHALL be available to be installed in grafana cloud with the following steps:
+* Go to grafana cloud
+* Go to Administration>Plugins And Data>Plugins
+* Find `Altinity plugin for ClickHouse`
+* Click Install
+
+#### Docker Compose Environment Setup
+
+##### RQ.SRS.ClickHouseGrafanaPlugin.DockerComposeEnvironment
+version 1.0
+
+[ClickHouse Grafana Plugin] SHALL be available to be run using docker compose with the following comands:
+```
+docker-compose run --rm frontend_builder
+docker-compose run --rm backend_builder
+echo 'export GRAFANA_ACCESS_POLICY_TOKEN="glc_eyJvIjoiNDU1MDgiLCJuIjoicGx1Z2luLXNpZ25pbmctdG9rZW4tZm9yLXNpZ24tcGx1Z2luIiwiayI6IjU3UTI1VDMyT21FUmNhNDJYMnpPdmg1TSIsIm0iOnsiciI6InVzIn19"' > .release_env
+docker-compose run --rm plugin_signer
+## Need to stap aplications that uses 3000 and 9000 ports.
+docker-compose up -d grafana
+docker-compose logs -f grafana # check logs
+```
+
 ### General
 
 #### RQ.SRS.ClickHouseGrafanaPlugin
@@ -91,42 +131,14 @@ version 1.0
 
 [ClickHouse Grafana Plugin] SHALL support connecting [ClickHouse] server to [Grafana].
 
-### Plugin Installation
-
-#### RQ.SRS.ClickHouseGrafanaPlugin.PluginInstallation
-version 1.0
-
-[ClickHouse Grafana Plugin] SHALL be available at {grafana_url}/plugins as `Altinity plugin for ClickHouse`.
-
-### Manual Plugin Installation
-
-#### RQ.SRS.ClickHouseGrafanaPlugin.ManualPluginInstallation
-version 1.0
-
-[ClickHouse Grafana Plugin] SHALL be available to be installed using grafana-cli with following command:
-`grafana-cli plugins install vertamedia-clickhouse-datasource`. 
-For installation user need to install grafana first.
-
-### Grafana Cloud Plugin Installation
-
-#### RQ.SRS.ClickHouseGrafanaPlugin.ManualPluginInstallation
-version 1.0
-
-[ClickHouse Grafana Plugin] SHALL be available to be installed using grafana-cli with following command:
-
-### Docker Compose Environment
-
-#### RQ.SRS.ClickHouseGrafanaPlugin.DockerComposeEnvironment
-version 1.0
-
-[ClickHouse Grafana Plugin] SHALL be available to 
-
 ### Adding New Data Source
 
 #### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSource 
 version 1.0
 
 [ClickHouse Grafana Plugin] SHALL support creating new [ClickHouse] data source by clicking `Add new data source` button.
+[ClickHouse Grafana Plugin] SHALL open data source setup view by clicking the `Add new data source` button
+
 
 #### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView
 version 1.0
@@ -142,31 +154,39 @@ This view SHALL have the following sections:
 #### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.SaveAndTestButton
 version 1.0
 
-[ClickHouse Grafana Plugin] adding data source view SHALL contain `Save & test` button that shall save and check if datasource is connected correctly. ???
+[ClickHouse Grafana Plugin] adding data source view SHALL contain `Save & test` button that shall save and check if datasource is connected correctly.
 
-### Adding Data Source Name Section
+### Specifying Data Source Name
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.Name
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DataSourceName
 version 1.0
 
-[Clickhouse Grafana Plugin]'s adding Data Source view's `Name` section SHALL contain the following fields:
+[Clickhouse Grafana Plugin] SHALL support specifying data source name by using `Name` text field in data source setup view.
 
-* `Name` text field to specify [ClickHouse] data source name
-* `Default` toggle. Default data source SHALL be preselected in new pannels.
 
-### Adding Data Source HTTP Section
+### Using Default Data Source
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.HTTP
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.DataSourceName
 version 1.0
 
-[Clickhouse Grafana Plugin]'s adding Data Source view's `HTTP` section SHALL contain the following fields:
+[Clickhouse Grafana Plugin] SHALL support specifying data source as default by using `Default` toggle.
+Default data source SHALL be preselected in new pannels.
+
+
+### Specifying HTTP Connection
+
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection
+version 1.0
+
+[Clickhouse Grafana Plugin] SHALL support specifying HTTP connection using the following fields:
 
 * `URL` text field to specify [ClickHouse] URL 
 * `Access` dropdown menu to specify `Server` or `Browser` access will be used
 * `Allowed cookies` text field to specify cookies that SHALL not be deleted
 * `Timeout` text field to specify HTTP request timeout in seconds.
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.AddingDataSourceView.HTTP.Access
+
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.HTTPConnection.ServerAccess
 version 1.0
 
 [Clickhouse Grafana Plugin]'s adding Data Source view's `HTTP` section SHALL contain `Allowed cookies` and `Timeout` text fields 

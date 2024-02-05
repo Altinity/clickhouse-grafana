@@ -106,7 +106,7 @@ docker-compose up -d grafana
 docker-compose logs -f grafana # check logs
 ```
 
-### General
+### Grafana Datasource Plugin For ClickHouse
 
 #### RQ.SRS.ClickHouseGrafanaPlugin
 version 1.0
@@ -269,7 +269,7 @@ If this toggle is on The [Plugin] SHALL attach `add_http_cors_header=1` to reque
 
 ### Specifying Use POST Requests
 
-#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.AddCORSFlagToRequests
+#### RQ.SRS.ClickHouseGrafanaPlugin.DataSourceSetupView.UsePostRequests
 version 1.0
 
 The [Plugin] SHALL support specifying the use of POST requests to [ClickHouse] server by turning on 

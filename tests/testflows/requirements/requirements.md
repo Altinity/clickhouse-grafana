@@ -1,23 +1,5 @@
-# QA-SRS Altinity clickhouse grafana plugin
+# QA-SRS Altinity ClickHouse Grafana Plugin
 # Software Requirements Specification
-
-(c) 2021 Altinity Inc. All Rights Reserved.
-
-**Document status:** Confidential
-
-**Author:** -
-
-**Date:** -
-
-## Approval
-
-**Status:** -
-
-**Version:** -
-
-**Approved by:** -
-
-**Date:** -
 
 ## Table of Contents
 

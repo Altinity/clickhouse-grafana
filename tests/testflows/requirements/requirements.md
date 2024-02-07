@@ -296,6 +296,13 @@ version 1.0
 The [Plugin] SHALL support specifying the default [ClickHouse] server database by using the `Default database` text field.
 This database name SHALL be prefilled in the query builder.
 
+### Creating Dashboards
+
+#### RQ.SRS.Plugin.Dashboards
+version 1.0
+
+The [Plugin] SHALL support creating dashboards with panels that use [ClickHouse] data source.
+
 ### Creating Panels
 
 #### RQ.SRS.Plugin.Panels

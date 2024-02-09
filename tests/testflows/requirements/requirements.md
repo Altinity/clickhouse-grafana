@@ -530,6 +530,58 @@ version 1.0
 
 The [Plugin] SHALL support data types that can be visualized. The following data types SHALL be supported:
 
+&#10060;
+| Data Type               | Supported in Grafana |
+| ----------------------- |:--------------------:|
+| UInt8                   | &#10004;             |
+| UInt16                  | &#10004;             |
+| UInt32                  | &#10004;             |
+| UInt64                  | &#10004;             |
+| UInt128                 | &#10004;             |
+| UInt256                 | &#10004;             |
+| Int8                    | &#10004;             |
+| Int16                   | &#10004;             |
+| Int32                   | &#10004;             |
+| Int64                   | &#10004;             |
+| Int128                  | &#10004;             |
+| Int256                  | &#10004;             |
+| Float32                 | &#10004;             |
+| Float64                 | &#10004;             |
+| Decimal(P)              | &#10004;             |
+| Decimal(P, S)           | &#10004;             |
+| Decimal32(S)            | &#10004;             |
+| Decimal64(S)            | &#10004;             |
+| Decimal128(S)           | &#10004;             |
+| Decimal256(S)           | &#10004;             |
+| Bool                    | &#10004;             |
+| String                  | &#10004;             |
+| FixedString(N)          | &#10004;             |
+| Date                    | &#10004;             |
+| Date32                  | &#10004;             |
+| DateTime                | &#10004;             |
+| DateTime64              | &#10004;             |
+| JSON                    | &#10004;             |
+| UUID                    | &#10004;             |
+| Enum                    | &#10004;             |
+| LowCardinality          | &#10004;             |
+| Array                   | &#10004;             |
+| Map                     | &#10004;             |
+| SimpleAggregateFunction | &#10004;             |
+| AggregateFunction       | &#10004;             |
+| Nested                  | &#10004;             |
+| Tuple                   | &#10004;             |
+| Nullable                | &#10004;             |
+| IPv4                    | &#10004;             |
+| IPv6                    | &#10004;             |
+| Point                   | &#10004;             |
+| Ring                    | &#10004;             |
+| Polygon                 | &#10004;             |
+| MultiPolygon            | &#10004;             |
+| Expression              | &#10004;             |
+| Set                     | &#10004;             |
+| Nothing                 | &#10004;             |
+| Interval                | &#10004;             |
+
 * Integer types
 * Floating-point numbers
 * Boolean
@@ -543,7 +595,11 @@ The [Plugin] SHALL support data types that can be visualized. The following data
 ### RQ.SRS.Plugin.VersionCompatibility
 version 1.0
 
-The [Plugin] 3.0 version SHALL support grafana versions 10+.
+The [Plugin] 3.0 version SHALL support the following [Grafana] versions:
+
+| Grafana version         | Supported with plugin |
+| ----------------------- |:---------------------:|
+| v10.3                   | &#10004;              |
 
 [SRS]: #srs
 [ClickHouse]: https://clickhouse.tech

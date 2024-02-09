@@ -109,7 +109,6 @@ The [Plugin] SHALL be available to be installed in Grafana Cloud with the follow
 ![filter](https://github.com/antip00/clickhouse-grafana/assets/44409195/41159aff-4802-4fe4-9b23-f262d42de143)
 ![add data source](https://github.com/antip00/clickhouse-grafana/assets/44409195/27462c9c-c3e9-4982-9a32-15fd74e4e7ee)
 
-
 ### Docker Compose Environment Setup
 
 #### RQ.SRS.Plugin.DockerComposeEnvironment
@@ -145,6 +144,8 @@ This view SHALL contain the following sections:
 * `Auth toggles`
 * `Custom HTTP Headers`
 * `Additional`
+
+![data source setup](https://github.com/antip00/clickhouse-grafana/assets/44409195/83798d29-35a3-480c-8e03-a25848649cc5)
 
 #### RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton
 version 1.0
@@ -338,6 +339,8 @@ The [Plugin]'s query setup interface SHALL contain the following fields:
 * `Add query` - button to add more that one query
 * `Expression` - button to add expressions to the query.
 
+![query settings](https://github.com/antip00/clickhouse-grafana/assets/44409195/dc28da9d-d170-4cc6-af6f-d80aaf87c92f)
+
 ### Query Options
 
 #### RQ.SRS.Plugin.QueryOptions
@@ -350,6 +353,8 @@ The [Plugin] SHALL support the following options for the query:
 * `Interval` - invariable text field. It is the evaluated interval that is sent to data source and is used in $__interval and $__interval_ms
 * `Relative time` - text field that overrides the relative time range for individual panel
 * `Time shift` - text field that overrides the time range for individual panel by shifting its start and end relative to the time picker.
+
+![query options](https://github.com/antip00/clickhouse-grafana/assets/44409195/8008c638-28bd-4ad6-ba02-1bf44a31b6de)
 
 ### Raw SQL Editor
 
@@ -367,7 +372,9 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 * `Format As` - dropdown menu that allows users to choose vizualization type
 * `Show help` - button that allows users to get information about macroces and functions
 * `Show generated SQL` - button that allows users to get SQL query raw form without macroces and functions
-* `Reformat Query` - button.???
+* `Reformat Query` - button that allows user to reformat query.
+
+![sql editor](https://github.com/antip00/clickhouse-grafana/assets/44409195/3225bfaa-4235-40ce-a02a-c7c53d3b87ea)
 
 ### Vizualization
 

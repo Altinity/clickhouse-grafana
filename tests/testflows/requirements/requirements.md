@@ -186,7 +186,7 @@ The default data source SHALL be preselected in new pannels.
 
 ## Specifying HTTP Connection
 
-#### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection
+### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection
 version 1.0
 
 The [Plugin] SHALL support specifying an HTTP connection using the following fields:

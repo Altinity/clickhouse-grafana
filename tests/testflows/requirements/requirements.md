@@ -333,6 +333,13 @@ version 1.0
 The [Plugin] SHALL support creating panels for the [ClickHouse] data source if the [ClickHouse] data source 
 was created using the [Plugin].
 
+## Addhoc Filter
+
+### RQ.SRS.Plugin.AddhocFilter
+version 1.0
+
+The [Plugin] ...
+
 ## Multi-user Usage
 
 ### RQ.SRS.Plugin.MultiUserUsage
@@ -398,6 +405,13 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 * `Reformat Query` - button that allows the user to reformat a query.
 
 ![sql editor](https://github.com/antip00/clickhouse-grafana/assets/44409195/3225bfaa-4235-40ce-a02a-c7c53d3b87ea)
+
+## Auto-complite In Queries
+
+### RQ.SRS.Plugin.AutoCompliteInQueries
+version 1.0
+
+The [Plugin] SHALL support auto-complite in queries. ???
 
 ## Time range selector
 
@@ -527,7 +541,7 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions
 ### RQ.SRS.Plugin.SupportedTypes
 version 1.0
 
-The [Plugin] SHALL support data types that can be visualized. The following data types SHALL be supported:
+The [Plugin] SHALL support scalar data types. The following data types SHALL be supported:
 
 &#10060;
 | Data Type               | Supported in Grafana |

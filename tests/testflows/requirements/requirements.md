@@ -22,7 +22,7 @@
 * 7 [Using Default Data Source](#using-default-data-source)
     * 7.1 [RQ.SRS.Plugin.DataSourceSetupView.DefaultDataSource](#rqsrsplugindatasourcesetupviewdefaultdatasource)
 * 8 [Specifying HTTP Connection](#specifying-http-connection)
-        * 8.1.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection](#rqsrsplugindatasourcesetupviewhttpconnection)
+    * 8.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection](#rqsrsplugindatasourcesetupviewhttpconnection)
 * 9 [Connecting to the Local Clickhouse Server](#connecting-to-the-local-clickhouse-server)
     * 9.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.ServerAccess](#rqsrsplugindatasourcesetupviewhttpconnectionserveraccess)
 * 10 [Connecting to the Remote Clickhouse Server](#connecting-to-the-remote-clickhouse-server)
@@ -85,6 +85,7 @@
     * 35.1 [RQ.SRS.Plugin.SupportedTypes](#rqsrspluginsupportedtypes)
 * 36 [Versions Compatibility](#versions-compatibility)
     * 36.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrspluginversioncompatibility)
+
 
 ## Revision History
 

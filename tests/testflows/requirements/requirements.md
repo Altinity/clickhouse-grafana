@@ -506,7 +506,7 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
 ### RQ.SRS.Plugin.Functions
 version 1.0
 
-The [Plugin] SHALL support the following functions in SQL queries:???
+The [Plugin] SHALL support the following functions in SQL queries:
 
 * `$rate` 
 * `$columns`

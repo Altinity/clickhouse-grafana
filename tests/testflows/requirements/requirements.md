@@ -105,6 +105,8 @@ The [Plugin] SHALL be available to be installed in Grafana Cloud with the follow
 * Find `Altinity plugin for ClickHouse`
 * Click Install
 
+
+
 ### Docker Compose Environment Setup
 
 #### RQ.SRS.Plugin.DockerComposeEnvironment
@@ -301,46 +303,57 @@ This database name SHALL be prefilled in the query builder.
 #### RQ.SRS.Plugin.Dashboards
 version 1.0
 
-The [Plugin] SHALL support creating dashboards with panels that use [ClickHouse] data source.
+The [Plugin] SHALL support creating dashboards with panels that use the [ClickHouse] data source that was created using the [Plugin].
 
 ### Creating Panels
 
 #### RQ.SRS.Plugin.Panels
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL support creating panels for the [ClickHouse] data source if the [ClickHouse] data source 
-is connected to Grafana.
+The [Plugin] SHALL support creating panels for the [ClickHouse] data source if the [ClickHouse] data source 
+was created using the [Plugin].
 
 ### Query Setup
 
 #### RQ.SRS.Plugin.QuerySetup
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL support creating grafana vizualizations using query setup interface and raw SQL editor.
+The [Plugin] SHALL support creating grafana vizualizations using query setup interface and raw SQL editor.
 
-#### Query Setup Interface
+### Query Setup Interface
 
 #### RQ.SRS.Plugin.QuerySetupInterface
 version 1.0
 
-[ClickHouse Grafana Plugin]'s query setup interface SHALL contain the following fields:
+The [Plugin]'s query setup interface SHALL contain the following fields:
 
 * `FROM` - `Database` and `Table` dropdown's that allow user to specify database and table for the query
 * `Column timestamp type` - dropdown of types `DateTime`, `DateTime64` or `UInt32`
 * `Timestamp Column` - dropdown of table's timestamp columns with type defined in `Column timestamp type`
-* `Date column` - dropdown of table's data columns `Date` and `Date32`
+* `Date column` - dropdown of table's data columns `Date` and `Date32` type
 * `Go to Query` - button to switch to raw SQL editor
-* `Add query` button ???
-* `Expression` button ???
+* `Add query` - button to add more that one query
+* `Expression` - button to add expressions to the query.
 
-### 
+### Query Options
+
+#### RQ.SRS.Plugin.QueryOptions
+version 1.0
+
+The [Plugin] SHALL support the following options for the query:
+
+* `Max data points` - text field that defines the maximum data points per series
+* `Min interval` - text field that defines a lower limit for the interval
+* `Interval` - invariable text field. It is the evaluated interval that is sent to data source and is used in $__interval and $__interval_ms
+* `Relative time` - text field that overrides the relative time range for individual panel
+* `Time shift` - text field that overrides the time range for individual panel by shifting its start and end relative to the time picker.
 
 ### Raw SQL Editor
 
 #### RQ.SRS.Plugin.RawSQLEditorInterface
 version 1.0
 
-[ClickHouse Grafana Plugin]'s raw SQL editor interface SHALL contain the following fields:
+The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 
 * Raw SQL editor - text field for SQL query
 * `Extrapolation` - toggle that allows users to turn on and off extrapolation on graph
@@ -358,14 +371,14 @@ version 1.0
 #### RQ.SRS.Plugin.Vizualization
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL display visualization on changing attention.????
+The [Plugin] SHALL display visualization on changing attention.
 
 ### Macroces
 
 #### RQ.SRS.Plugin.QuerySettings.Macroses
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL support the following macroces:
+The [Plugin] SHALL support the following macroces:
 
 * `$table` - replaced with selected table name from query setup interface
 * `$dateCol` - replaced with Column:Date value from query setup interface
@@ -390,7 +403,7 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
 #### RQ.SRS.Plugin.Functions
 version 1.0
 
-[ClickHouse Grafana Plugin] SHALL support the following functions in SQL query:???
+The [Plugin] SHALL support the following functions in SQL query:???
 
 * `$rate` 
 * `$columns`
@@ -405,23 +418,27 @@ version 1.0
 This functions are templates of SQL queries. User SHALL be allowed to check query in the expanded format in raw SQL editor interface.
 Only one function per query allowed.
 
-https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions ???
+https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions
 
 ### Supported types
 
 #### RQ.SRS.Plugin.SupportedTypes
 version 1.0
 
-The [Plugin] SHALL support data types that can be visualized. ??? (The following types:)
+The [Plugin] SHALL support data types that can be visualized. The following data types SHALL be supported:
+* Integer types
+* Floating-point numbers
+* Boolean
+* Dates
+* Arrays
+* Tuples
 
 ### Versions Compatibility
 
 #### RQ.SRS.Plugin.VersionCompatibility
 version 1.0
 
-The [Plugin] 2.2 - 3.0 SHALL support grafana versions 10+. ???
-
-
+The [Plugin] 3.0 version SHALL support grafana versions 10+.
 
 [SRS]: #srs
 [ClickHouse]: https://clickhouse.tech

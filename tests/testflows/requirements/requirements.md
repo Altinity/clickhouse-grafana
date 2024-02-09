@@ -392,7 +392,7 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 * `Step` - text field that allows users to change the grid step on the graphs
 * `Round` - text field that allows users to set rounding for timestamps
 * `Resolution` - dropdown menu that allows users to choose a resolation for graphs
-* `Format As` - dropdown menu that allows users to choose the vizualization type
+* `Format As` - dropdown menu that allows users to choose the visualization type
 * `Show help` - button that allows users to get information about macroces and functions
 * `Show generated SQL` - button that allows users to get SQL query raw form without macros and functions
 * `Reformat Query` - button that allows the user to reformat a query.
@@ -447,7 +447,7 @@ The [Plugin] SHALL support table view for data.
 
 ### Visualization Types
 
-#### RQ.SRS.Plugin.Vizualization.VisualizationTypes
+#### RQ.SRS.Plugin.Visualization.VisualizationTypes
 version 1.0
 
 The [Plugin] SHALL support the following visualization types for data:

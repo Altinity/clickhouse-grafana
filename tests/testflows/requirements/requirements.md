@@ -141,16 +141,16 @@ docker-compose up -d grafana
 docker-compose logs -f grafana
 ```
 
-### Grafana Datasource Plugin For ClickHouse
+## Grafana Datasource Plugin For ClickHouse
 
-#### RQ.SRS.Plugin
+### RQ.SRS.Plugin
 version 1.0
 
 The [Plugin] SHALL support connecting the [ClickHouse] server to [Grafana].
 
-### Adding New Data Source
+## Adding New Data Source
 
-#### RQ.SRS.Plugin.DataSourceSetupView 
+### RQ.SRS.Plugin.DataSourceSetupView 
 version 1.0
 
 The [Plugin] SHALL support creating a new [ClickHouse] data source by clicking the `Add new data source` button on the [Plugin] page.
@@ -164,28 +164,28 @@ This view SHALL contain the following sections:
 
 ![data source setup](https://github.com/antip00/clickhouse-grafana/assets/44409195/83798d29-35a3-480c-8e03-a25848649cc5)
 
-#### RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton
+### RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton
 version 1.0
 
 The [Plugin]'s data source setup view SHALL contain a `Save & test` button that SHALL save datasource and check if [ClickHouse]
 datasource is connected to [Grafana] correctly.
 
-### Specifying Data Source Name
+## Specifying Data Source Name
 
-#### RQ.SRS.Plugin.DataSourceSetupView.DataSourceName
+### RQ.SRS.Plugin.DataSourceSetupView.DataSourceName
 version 1.0
 
 The [Plugin] SHALL support specifying a data source name by using the `Name` text field in the data source setup view.
 
-### Using Default Data Source
+## Using Default Data Source
 
-#### RQ.SRS.Plugin.DataSourceSetupView.DefaultDataSource
+### RQ.SRS.Plugin.DataSourceSetupView.DefaultDataSource
 version 1.0
 
 The [Plugin] SHALL support specifying the data source as default by using the `Default` toggle in the data source setup view.
 The default data source SHALL be preselected in new pannels.
 
-### Specifying HTTP Connection
+## Specifying HTTP Connection
 
 #### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection
 version 1.0
@@ -197,26 +197,26 @@ The [Plugin] SHALL support specifying an HTTP connection using the following fie
 * The `Allowed cookies` text field to specify cookies that SHALL not be deleted
 * The `Timeout` text field to specify the HTTP request timeout in seconds.
 
-### Connecting to the Local Clickhouse Server
+## Connecting to the Local Clickhouse Server
 
-#### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.ServerAccess
+### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.ServerAccess
 version 1.0
 
 The [Plugin] SHALL support connecting to the local [ClickHouse] server by selecting the `Server` option in the `Access` dropdown menu
 in the data source setup view. The [Plugin]'s data source setup view SHALL contain `Allowed cookies` and `Timeout` text fields 
 if only the `Server` option is selected in the `Access` dropdown menu.
 
-### Connecting to the Remote Clickhouse Server
+## Connecting to the Remote Clickhouse Server
 
-#### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess
+### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess
 version 1.0
 
 The [Plugin] SHALL support connecting to the remote [ClickHouse] server by selecting the `Browser` option` in the `Access` dropdown menu
 in the data source setup view.
 
-### ClickHouse Authentification Setup
+## ClickHouse Authentification Setup
 
-#### RQ.SRS.Plugin.DataSourceSetupView.Auth
+### RQ.SRS.Plugin.DataSourceSetupView.Auth
 version 1.0
 
 The [Plugin] SHALL support specifying authentication details by specifying the following toggles:
@@ -228,9 +228,9 @@ The [Plugin] SHALL support specifying authentication details by specifying the f
 * `With Credentials`
 * `With CA Cert`
 
-### ClickHouse Authentification Setup Using Username And Password
+## ClickHouse Authentification Setup Using Username And Password
 
-#### RQ.SRS.Plugin.DataSourceSetupView.BasicAuth
+### RQ.SRS.Plugin.DataSourceSetupView.BasicAuth
 version 1.0
 
 The [Plugin] SHALL support specifying username and password for the [ClickHouse] server by turning on the `Basic auth` toggle
@@ -238,9 +238,9 @@ and specifying username and password in the `User` and `Password` text fields, r
 be able to be empty. The [Plugin] SHALL add the `Basic Auth Details` section to the data source setup view only if the `Basic auth`
 toggle is on.
 
-### ClickHouse Authentification Setup Using TLS/SSL Auth Details
+## ClickHouse Authentification Setup Using TLS/SSL Auth Details
 
-#### RQ.SRS.Plugin.DataSourceSetupView.TLS/SSLAuthDetails
+### RQ.SRS.Plugin.DataSourceSetupView.TLS/SSLAuthDetails
 version 1.0
 
 The [Plugin] SHALL support specifying server name, client certificate, and client key for the [ClickHouse] server by turning on 
@@ -248,109 +248,109 @@ the `TLS Client Auth` toggle and specifying these options in the `ServerName`, `
 The [Plugin] SHALL add `ServerName`, `Client Cert`, and `Client Key` text fields to the data source setup view only if the 
 `TLS Client Auth` toggle is on.
 
-### ClickHouse Authentification Using Forward OAuth Identity
+## ClickHouse Authentification Using Forward OAuth Identity
 
-#### RQ.SRS.Plugin.DataSourceSetupView.ForwardOAuthIdentity
+### RQ.SRS.Plugin.DataSourceSetupView.ForwardOAuthIdentity
 version 1.0
 
 The [Plugin] SHALL support Forward OAuth Identity by turning on the `Forward OAuth Identity` toggle.
 The [Plugin] SHALL forward the user's upstream OAuth identity to the data source if this toggle is on.
 
-### Sending Credentials Setup
+## Sending Credentials Setup
 
-#### RQ.SRS.Plugin.DataSourceSetupView.WithCredentials
+### RQ.SRS.Plugin.DataSourceSetupView.WithCredentials
 version 1.0
 
 The [Plugin] SHALL support sending credentials such as cookies or authentication headers with cross-site 
 requests by turning on the `With Credentials` toggle.
 
-### ClickHouse Authentification With CA Certificate
+## ClickHouse Authentification With CA Certificate
 
-#### RQ.SRS.Plugin.DataSourceSetupView.Auth.WithCACert
+### RQ.SRS.Plugin.DataSourceSetupView.Auth.WithCACert
 version 1.0
 
 The [Plugin] SHALL support specifying the CA certificate that will be used to access the [ClickHouse] server 
 by turning on the `With CA Cert` toggle and specifying the `CA Cert` text field. The [Plugin] SHALL add the 
 `CA Cert` text field to the data source setup view only if the `TLS Client Auth` toggle is on.
 
-### Specifying Custom HTTP Headers
+## Specifying Custom HTTP Headers
 
-#### RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders
+### RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders
 version 1.0
 
 The [Plugin] SHALL support custom HTTP headers that will be used for HTTP requests to the [ClickHouse] server 
 by pressing the `Add Header` button and specifying the `Header` and `Value` text fields.
 
-#### RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders
+### RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders
 version 1.0
 
 The [Plugin] SHALL support deleting custom HTTP headers by clicking the bucket button nearby this header.
 
-### Connection To Managed Yandex.Cloud ClickHouse Database Setup
+## Connection To Managed Yandex.Cloud ClickHouse Database Setup
 
-#### RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders
+### RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders
 version 1.0
 
 The [Plugin] SHALL support connection to managed Yandex.Cloud [ClickHouse] database setup by turning on the 
 `Use Yandex.Cloud authorization headers` toggle and specifying the `X-ClickHouse-User` and `X-ClickHouse-Key` 
 text fields.
 
-### Specifying Use CORS Flag In Requests
+## Specifying Use CORS Flag In Requests
 
-#### RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests
+### RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests
 version 1.0
 
 The [Plugin] SHALL support adding the [CORS] flag to requests by turning on the `Add CORS flag to requests` toggle.
 If this toggle is on, the [Plugin] SHALL attach `add_http_cors_header=1` to requests.
 
-### Specifying Use POST Requests
+## Specifying Use POST Requests
 
-#### RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests
+### RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests
 version 1.0
 
 The [Plugin] SHALL support specifying the use of POST requests to the [ClickHouse] server by turning on the 
 `Use POST method to send queries` toggle.
 
-### Specifying Default Database
+## Specifying Default Database
 
-#### RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase
+### RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase
 version 1.0
 
 The [Plugin] SHALL support specifying the default [ClickHouse] server database by using the `Default database` text field.
 This database name SHALL be prefilled in the query builder.
 
-### Creating Dashboards
+## Creating Dashboards
 
-#### RQ.SRS.Plugin.Dashboards
+### RQ.SRS.Plugin.Dashboards
 version 1.0
 
 The [Plugin] SHALL support creating dashboards with panels that use the [ClickHouse] data source that was created using the [Plugin].
 
-### Creating Panels
+## Creating Panels
 
-#### RQ.SRS.Plugin.Panels
+### RQ.SRS.Plugin.Panels
 version 1.0
 
 The [Plugin] SHALL support creating panels for the [ClickHouse] data source if the [ClickHouse] data source 
 was created using the [Plugin].
 
-### Multi-user usage
+## Multi-user usage
 
-#### RQ.SRS.Plugin.MultiUserUsage
+### RQ.SRS.Plugin.MultiUserUsage
 version 1.0
 
 The [Plugin] SHALL support multi-user usage [Clickhouse] data source that was created using the [Plugin].
 
-### Query Setup
+## Query Setup
 
-#### RQ.SRS.Plugin.QuerySetup
+### RQ.SRS.Plugin.QuerySetup
 version 1.0
 
 The [Plugin] SHALL support creating grafana vizualizations using query setup interface and raw SQL editor.
 
-### Query Setup Interface
+## Query Setup Interface
 
-#### RQ.SRS.Plugin.QuerySetupInterface
+### RQ.SRS.Plugin.QuerySetupInterface
 version 1.0
 
 The [Plugin]'s query setup interface SHALL contain the following fields:
@@ -365,9 +365,9 @@ The [Plugin]'s query setup interface SHALL contain the following fields:
 
 ![query settings](https://github.com/antip00/clickhouse-grafana/assets/44409195/dc28da9d-d170-4cc6-af6f-d80aaf87c92f)
 
-### Query Options
+## Query Options
 
-#### RQ.SRS.Plugin.QueryOptions
+### RQ.SRS.Plugin.QueryOptions
 version 1.0
 
 The [Plugin] SHALL support the following options for the query:
@@ -380,9 +380,9 @@ The [Plugin] SHALL support the following options for the query:
 
 ![query options](https://github.com/antip00/clickhouse-grafana/assets/44409195/8008c638-28bd-4ad6-ba02-1bf44a31b6de)
 
-### Raw SQL Editor
+## Raw SQL Editor
 
-#### RQ.SRS.Plugin.RawSQLEditorInterface
+### RQ.SRS.Plugin.RawSQLEditorInterface
 version 1.0
 
 The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
@@ -400,24 +400,24 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 
 ![sql editor](https://github.com/antip00/clickhouse-grafana/assets/44409195/3225bfaa-4235-40ce-a02a-c7c53d3b87ea)
 
-### Time range selector
+## Time range selector
 
-#### RQ.SRS.Plugin.TimeRangeSelector
+### RQ.SRS.Plugin.TimeRangeSelector
 version 1.0
 
 The [Plugin] SHALL support time range selector for visualization using time range dropdown menu.
 
-### Refresh Databoard
+## Refresh Databoard
 
-#### RQ.SRS.Plugin.RefreshDataboard
+### RQ.SRS.Plugin.RefreshDataboard
 version 1.0
 
 
 The [Plugin] SHALL support refreshing vizualization by clicking `Refresh` button.
 
-### Inspecting Query
+## Inspecting Query
 
-#### RQ.SRS.Plugin.QueryInspector
+### RQ.SRS.Plugin.QueryInspector
 version 1.0
 
 The [Plugin] SHALL support inspecting query by clicking `Query inspector`.
@@ -426,30 +426,30 @@ panel in JSON fomat in `JSON` tab, request information in `Query` tab.
 
 ![query inspector](https://github.com/antip00/clickhouse-grafana/assets/44409195/8ff6aee2-46d6-4b98-91f9-0bf46f546a34)
 
-#### RQ.SRS.Plugin.QueryInspector.QueryTab
+### RQ.SRS.Plugin.QueryInspector.QueryTab
 version 1.0
 
 The [Plugin] SHALL support getting information about request in `Query` tab by clicking `Refresh` button.
 This tab SHALL have `Expand all` or `Collapse all` button to expand or collapse request information.
 This tab SHALL have `Copy to clipboard` button to copy request information to clipboard.
 
-### Vizualization
+## Vizualization
 
-#### RQ.SRS.Plugin.Vizualization
+### RQ.SRS.Plugin.Vizualization
 version 1.0
 
 The [Plugin] SHALL display visualization on changing attention.
 
-#### Table View
+### Table View
 
-##### RQ.SRS.Plugin.Vizualization.Table
+#### RQ.SRS.Plugin.Vizualization.Table
 version 1.0
 
 The [Plugin] SHALL support table view for data. 
 
-#### Visualization Types
+### Visualization Types
 
-##### RQ.SRS.Plugin.Vizualization.VisualizationTypes
+#### RQ.SRS.Plugin.Vizualization.VisualizationTypes
 version 1.0
 
 The [Plugin] SHALL support the following visualization types for data:
@@ -477,9 +477,9 @@ The [Plugin] SHALL support the following visualization types for data:
 * Node Graph
 * Traces
 
-### Macroces
+## Macroces
 
-#### RQ.SRS.Plugin.QuerySettings.Macroses
+### RQ.SRS.Plugin.QuerySettings.Macroses
 version 1.0
 
 The [Plugin] SHALL support the following macroces:
@@ -502,9 +502,9 @@ A description of macros SHALL be available by typing their names in raw SQL edit
 https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
 
 
-### Functions
+## Functions
 
-#### RQ.SRS.Plugin.Functions
+### RQ.SRS.Plugin.Functions
 version 1.0
 
 The [Plugin] SHALL support the following functions in SQL query:???
@@ -524,9 +524,9 @@ Only one function per query allowed.
 
 https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions
 
-### Supported types
+## Supported types
 
-#### RQ.SRS.Plugin.SupportedTypes
+### RQ.SRS.Plugin.SupportedTypes
 version 1.0
 
 The [Plugin] SHALL support data types that can be visualized. The following data types SHALL be supported:
@@ -537,9 +537,9 @@ The [Plugin] SHALL support data types that can be visualized. The following data
 * Arrays
 * Tuples
 
-### Versions Compatibility
+## Versions Compatibility
 
-#### RQ.SRS.Plugin.VersionCompatibility
+### RQ.SRS.Plugin.VersionCompatibility
 version 1.0
 
 The [Plugin] 3.0 version SHALL support grafana versions 10+.

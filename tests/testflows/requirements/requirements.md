@@ -334,7 +334,7 @@ version 1.0
 The [Plugin] SHALL support creating panels for the [ClickHouse] data source if the [ClickHouse] data source 
 was created using the [Plugin].
 
-## Multi-user usage
+## Multi-user Usage
 
 ### RQ.SRS.Plugin.MultiUserUsage
 version 1.0

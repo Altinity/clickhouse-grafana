@@ -529,12 +529,14 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions
 version 1.0
 
 The [Plugin] SHALL support data types that can be visualized. The following data types SHALL be supported:
+
 * Integer types
 * Floating-point numbers
 * Boolean
 * Dates
 * Arrays
 * Tuples
+* Nullable types
 
 ## Versions Compatibility
 

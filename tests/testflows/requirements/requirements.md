@@ -339,14 +339,14 @@ was created using the [Plugin].
 ### RQ.SRS.Plugin.MultiUserUsage
 version 1.0
 
-The [Plugin] SHALL support multi-user usage [Clickhouse] data source that was created using the [Plugin].
+The [Plugin] SHALL support multi-user usage of the [Clickhouse] data source that was created using the [Plugin].
 
 ## Query Setup
 
 ### RQ.SRS.Plugin.QuerySetup
 version 1.0
 
-The [Plugin] SHALL support creating grafana vizualizations using query setup interface and raw SQL editor.
+The [Plugin] SHALL support creating Grafana visualizations using the query setup interface and raw SQL editor.
 
 ## Query Setup Interface
 
@@ -355,12 +355,12 @@ version 1.0
 
 The [Plugin]'s query setup interface SHALL contain the following fields:
 
-* `FROM` - `Database` and `Table` dropdown's that allow user to specify database and table for the query
-* `Column timestamp type` - dropdown of types `DateTime`, `DateTime64` or `UInt32`
-* `Timestamp Column` - dropdown of table's timestamp columns with type defined in `Column timestamp type`
-* `Date column` - dropdown of table's data columns `Date` and `Date32` type
-* `Go to Query` - button to switch to raw SQL editor
-* `Add query` - button to add more that one query
+* `FROM` - `Database` and `Table` dropdown's that allow the user to specify the database and table for the query
+* `Column timestamp type` - dropdown of types `DateTime`, `DateTime64`, or `UInt32`
+* `Timestamp Column` - dropdown of the table's timestamp columns with a type defined in `Column timestamp type`
+* `Date column` - dropdown of the table's data columns `Date` and `Date32` type
+* `Go to Query` - button to switch to the raw SQL editor
+* `Add query` - button to add more than one query
 * `Expression` - button to add expressions to the query.
 
 ![query settings](https://github.com/antip00/clickhouse-grafana/assets/44409195/dc28da9d-d170-4cc6-af6f-d80aaf87c92f)
@@ -374,7 +374,7 @@ The [Plugin] SHALL support the following options for the query:
 
 * `Max data points` - text field that defines the maximum data points per series
 * `Min interval` - text field that defines a lower limit for the interval
-* `Interval` - invariable text field. It is the evaluated interval that is sent to data source and is used in $__interval and $__interval_ms
+* `Interval` - invariable text field. It is the evaluated interval that is sent to the data source and is used in $__interval and $__interval_ms
 * `Relative time` - text field that overrides the relative time range for individual panel
 * `Time shift` - text field that overrides the time range for individual panel by shifting its start and end relative to the time picker.
 
@@ -388,15 +388,15 @@ version 1.0
 The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 
 * Raw SQL editor - text field for SQL query
-* `Extrapolation` - toggle that allows users to turn on and off extrapolation on graph
+* `Extrapolation` - toggle that allows users to turn on and off extrapolation on graphs
 * `Skip Comments` - toggle that allows users to turn on and off sending comments to [ClickHouse] server
-* `Step` - text field that allows users to change grid step on the graph
+* `Step` - text field that allows users to change the grid step on the graphs
 * `Round` - text field that allows users to set rounding for timestamps
-* `Resolution` - dropdown menu that allows users to choose resolation for graph
-* `Format As` - dropdown menu that allows users to choose vizualization type
+* `Resolution` - dropdown menu that allows users to choose a resolation for graphs
+* `Format As` - dropdown menu that allows users to choose the vizualization type
 * `Show help` - button that allows users to get information about macroces and functions
-* `Show generated SQL` - button that allows users to get SQL query raw form without macroces and functions
-* `Reformat Query` - button that allows user to reformat query.
+* `Show generated SQL` - button that allows users to get SQL query raw form without macros and functions
+* `Reformat Query` - button that allows the user to reformat a query.
 
 ![sql editor](https://github.com/antip00/clickhouse-grafana/assets/44409195/3225bfaa-4235-40ce-a02a-c7c53d3b87ea)
 
@@ -405,47 +405,46 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 ### RQ.SRS.Plugin.TimeRangeSelector
 version 1.0
 
-The [Plugin] SHALL support time range selector for visualization using time range dropdown menu.
+The [Plugin] SHALL support a time range selector for visualization using the time range dropdown menu.
 
 ## Refresh Databoard
 
 ### RQ.SRS.Plugin.RefreshDataboard
 version 1.0
 
-
-The [Plugin] SHALL support refreshing vizualization by clicking `Refresh` button.
+The [Plugin] SHALL support refreshing visualization by clicking the `Refresh` button.
 
 ## Inspecting Query
 
 ### RQ.SRS.Plugin.QueryInspector
 version 1.0
 
-The [Plugin] SHALL support inspecting query by clicking `Query inspector`.
-The [Plugin] SHALL allow to check data return by query in `Data` tab, request stats in `Stats` tab, 
-panel in JSON fomat in `JSON` tab, request information in `Query` tab.
+The [Plugin] SHALL support inspecting queries by clicking `Query inspector`.
+The [Plugin] SHALL allow user to check data returned by query in the `Data` tab, request stats in the `Stats` tab, 
+panel in JSON format in the `JSON` tab, request information in the `Query` tab.
 
 ![query inspector](https://github.com/antip00/clickhouse-grafana/assets/44409195/8ff6aee2-46d6-4b98-91f9-0bf46f546a34)
 
 ### RQ.SRS.Plugin.QueryInspector.QueryTab
 version 1.0
 
-The [Plugin] SHALL support getting information about request in `Query` tab by clicking `Refresh` button.
-This tab SHALL have `Expand all` or `Collapse all` button to expand or collapse request information.
-This tab SHALL have `Copy to clipboard` button to copy request information to clipboard.
+The [Plugin] SHALL support getting information about requests in the `Query` tab by clicking the `Refresh` button.
+This tab SHALL have an `Expand all` or `Collapse all` button to expand or collapse request information.
+This tab SHALL have a `Copy to clipboard` button to copy request information to clipboard.
 
-## Vizualization
+## Visualization
 
-### RQ.SRS.Plugin.Vizualization
+### RQ.SRS.Plugin.Visualization
 version 1.0
 
 The [Plugin] SHALL display visualization on changing attention.
 
 ### Table View
 
-#### RQ.SRS.Plugin.Vizualization.Table
+#### RQ.SRS.Plugin.Visualization.Table
 version 1.0
 
-The [Plugin] SHALL support table view for data. 
+The [Plugin] SHALL support table view for data.
 
 ### Visualization Types
 
@@ -477,9 +476,9 @@ The [Plugin] SHALL support the following visualization types for data:
 * Node Graph
 * Traces
 
-## Macroces
+## Macros
 
-### RQ.SRS.Plugin.QuerySettings.Macroses
+### RQ.SRS.Plugin.QuerySettings.Macros
 version 1.0
 
 The [Plugin] SHALL support the following macroces:
@@ -507,7 +506,7 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
 ### RQ.SRS.Plugin.Functions
 version 1.0
 
-The [Plugin] SHALL support the following functions in SQL query:???
+The [Plugin] SHALL support the following functions in SQL queries:???
 
 * `$rate` 
 * `$columns`
@@ -519,8 +518,8 @@ The [Plugin] SHALL support the following functions in SQL query:???
 * `$increase`
 * `$increaseColumns`
 
-This functions are templates of SQL queries. User SHALL be allowed to check query in the expanded format in raw SQL editor interface.
-Only one function per query allowed.
+These functions are templates of SQL queries. The user SHALL be allowed to check queries in the expanded format in the raw SQL editor interface.
+Only one function per query is allowed.
 
 https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions
 

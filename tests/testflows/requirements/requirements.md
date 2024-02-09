@@ -105,7 +105,10 @@ The [Plugin] SHALL be available to be installed in Grafana Cloud with the follow
 * Find `Altinity plugin for ClickHouse`
 * Click Install
 
-![Image alt]([https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/add%20data%20source.png])
+![configuration](https://github.com/antip00/clickhouse-grafana/assets/44409195/c4b748a8-fec7-46f5-8712-427ddf587293)
+![filter](https://github.com/antip00/clickhouse-grafana/assets/44409195/41159aff-4802-4fe4-9b23-f262d42de143)
+![add data source](https://github.com/antip00/clickhouse-grafana/assets/44409195/27462c9c-c3e9-4982-9a32-15fd74e4e7ee)
+
 
 ### Docker Compose Environment Setup
 

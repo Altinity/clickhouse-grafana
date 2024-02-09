@@ -317,6 +317,13 @@ version 1.0
 The [Plugin] SHALL support creating panels for the [ClickHouse] data source if the [ClickHouse] data source 
 was created using the [Plugin].
 
+### Multi-user usage
+
+#### RQ.SRS.Plugin.MultiUserUsage
+version 1.0
+
+The [Plugin] SHALL support multi-user usage [Clickhouse] data source that was created using the [Plugin].
+
 ### Query Setup
 
 #### RQ.SRS.Plugin.QuerySetup
@@ -376,12 +383,82 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 
 ![sql editor](https://github.com/antip00/clickhouse-grafana/assets/44409195/3225bfaa-4235-40ce-a02a-c7c53d3b87ea)
 
+### Time range selector
+
+#### RQ.SRS.Plugin.TimeRangeSelector
+version 1.0
+
+The [Plugin] SHALL support time range selector for visualization using time range dropdown menu.
+
+### Refresh Databoard
+
+#### RQ.SRS.Plugin.RefreshDataboard
+version 1.0
+
+
+The [Plugin] SHALL support refreshing vizualization by clicking `Refresh` button.
+
+### Inspecting Query
+
+#### RQ.SRS.Plugin.QueryInspector
+version 1.0
+
+The [Plugin] SHALL support inspecting query by clicking `Query inspector`.
+The [Plugin] SHALL allow to check data return by query in `Data` tab, request stats in `Stats` tab, 
+panel in JSON fomat in `JSON` tab, request information in `Query` tab.
+
+![query inspector](https://github.com/antip00/clickhouse-grafana/assets/44409195/8ff6aee2-46d6-4b98-91f9-0bf46f546a34)
+
+#### RQ.SRS.Plugin.QueryInspector.QueryTab
+version 1.0
+
+The [Plugin] SHALL support getting information about request in `Query` tab by clicking `Refresh` button.
+This tab SHALL have `Expand all` or `Collapse all` button to expand or collapse request information.
+This tab SHALL have `Copy to clipboard` button to copy request information to clipboard.
+
 ### Vizualization
 
 #### RQ.SRS.Plugin.Vizualization
 version 1.0
 
 The [Plugin] SHALL display visualization on changing attention.
+
+#### Table View
+
+##### RQ.SRS.Plugin.Vizualization.Table
+version 1.0
+
+The [Plugin] SHALL support table view for data. 
+
+#### Visualization Types
+
+##### RQ.SRS.Plugin.Vizualization.VisualizationTypes
+version 1.0
+
+The [Plugin] SHALL support the following visualization types for data:
+
+* Time series
+* Bar chart
+* Stat
+* Gauge
+* Bar Gauge
+* Pie chart
+* State timeline
+* Heatmap
+* Status history
+* Histogram
+* Text
+* Alert List
+* Dashboard list
+* News
+* Annotation list
+* Candlestick
+* Canvas
+* Flame Graph
+* Geomap
+* Logs
+* Node Graph
+* Traces
 
 ### Macroces
 

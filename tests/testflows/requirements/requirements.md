@@ -411,12 +411,12 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 
 ![sql editor](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/sql%20editor.png)
 
-## Auto-complite In Queries
+## Auto-complete In Queries
 
-### RQ.SRS.Plugin.AutoCompliteInQueries
+### RQ.SRS.Plugin.AutoCompleteInQueries
 version 1.0
 
-The [Plugin] SHALL support auto-complite in queries for field names and table names.
+The [Plugin] SHALL support auto-complete in queries for field names and table names.
 
 ## Time range selector
 
@@ -599,65 +599,58 @@ version 1.0
 
 The [Plugin] SHALL support scalar data types. The following data types SHALL be supported:
 
-&#10060;
+
 | Data Type               | Supported in Grafana |
 | ----------------------- |:--------------------:|
-| UInt8                   | &#10004;             |
-| UInt16                  | &#10004;             |
-| UInt32                  | &#10004;             |
-| UInt64                  | &#10004;             |
-| UInt128                 | &#10004;             |
-| UInt256                 | &#10004;             |
-| Int8                    | &#10004;             |
-| Int16                   | &#10004;             |
-| Int32                   | &#10004;             |
-| Int64                   | &#10004;             |
-| Int128                  | &#10004;             |
-| Int256                  | &#10004;             |
-| Float32                 | &#10004;             |
-| Float64                 | &#10004;             |
-| Decimal(P)              | &#10004;             |
-| Decimal(P, S)           | &#10004;             |
-| Decimal32(S)            | &#10004;             |
-| Decimal64(S)            | &#10004;             |
-| Decimal128(S)           | &#10004;             |
-| Decimal256(S)           | &#10004;             |
-| Bool                    | &#10004;             |
-| String                  | &#10004;             |
-| FixedString(N)          | &#10004;             |
-| Date                    | &#10004;             |
-| Date32                  | &#10004;             |
-| DateTime                | &#10004;             |
-| DateTime64              | &#10004;             |
-| JSON                    | &#10004;             |
-| UUID                    | &#10004;             |
-| Enum                    | &#10004;             |
-| LowCardinality          | &#10004;             |
-| Array                   | &#10004;             |
-| Map                     | &#10004;             |
-| SimpleAggregateFunction | &#10004;             |
-| AggregateFunction       | &#10004;             |
-| Nested                  | &#10004;             |
-| Tuple                   | &#10004;             |
-| Nullable                | &#10004;             |
-| IPv4                    | &#10004;             |
-| IPv6                    | &#10004;             |
-| Point                   | &#10004;             |
-| Ring                    | &#10004;             |
-| Polygon                 | &#10004;             |
-| MultiPolygon            | &#10004;             |
-| Expression              | &#10004;             |
-| Set                     | &#10004;             |
-| Nothing                 | &#10004;             |
-| Interval                | &#10004;             |
+| UInt8                   |                      |
+| UInt16                  |                      |
+| UInt32                  |                      |
+| UInt64                  |                      |
+| UInt128                 |                      |
+| UInt256                 |                      |
+| Int8                    |                      |
+| Int16                   |                      |
+| Int32                   |                      |
+| Int64                   |                      |
+| Int128                  |                      |
+| Int256                  |                      |
+| Float32                 |                      |
+| Float64                 |                      |
+| Decimal(P)              |                      |
+| Decimal(P, S)           |                      |
+| Decimal32(S)            |                      |
+| Decimal64(S)            |                      |
+| Decimal128(S)           |                      |
+| Decimal256(S)           |                      |
+| Bool                    |                      |
+| String                  |                      |
+| FixedString(N)          |                      |
+| Date                    |                      |
+| Date32                  |                      |
+| DateTime                |                      |
+| DateTime64              |                      |
+| JSON                    |                      |
+| UUID                    |                      |
+| Enum                    |                      |
+| LowCardinality          |                      |
+| Array                   |                      |
+| Map                     |                      |
+| SimpleAggregateFunction |                      |
+| AggregateFunction       |                      |
+| Nested                  |                      |
+| Tuple                   |                      |
+| Nullable                |                      |
+| IPv4                    |                      |
+| IPv6                    |                      |
+| Point                   |                      |
+| Ring                    |                      |
+| Polygon                 |                      |
+| MultiPolygon            |                      |
+| Expression              |                      |
+| Set                     |                      |
+| Nothing                 |                      |
+| Interval                |                      |
 
-* Integer types
-* Floating-point numbers
-* Boolean
-* Dates
-* Arrays
-* Tuples
-* Nullable types
 
 ## Versions Compatibility
 
@@ -668,7 +661,7 @@ The [Plugin] 3.0 version SHALL support the following [Grafana] versions:
 
 | Grafana version         | Supported with plugin |
 | ----------------------- |:---------------------:|
-| v10.3                   | &#10004;              |
+| v10.3                   |                       |
 
 [SRS]: #srs
 [ClickHouse]: https://clickhouse.tech

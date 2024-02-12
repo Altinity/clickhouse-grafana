@@ -513,6 +513,41 @@ A description of macros SHALL be available by typing their names in raw SQL edit
 
 https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
 
+## Variables Setup
+
+### RQ.SRS.Plugin.Variables
+version 1.0
+
+The [Plugin] SHALL support [Grafana] variables setup for dashboards by clicking gear button and 
+setuping variables in the `Variables` tab. The [Plugin] SHALL support the following variable types:
+* `Query`
+* `Custom`
+* `Text box`
+* `Constant`
+* `Data source`
+* `Interval`
+* `Ad hoc filter`
+
+## Annotations Setup
+
+### RQ.SRS.Plugin.Annotations
+version 1.0
+
+The [Plugin] SHALL support [Grafana] annotations setup for dashboards by clicking gear button and 
+setuping variables in the `Annotations` tab.
+
+## Allerts Setup
+
+### RQ.SRS.Plugin.Allerts
+version 1.0
+
+The [Plugin] SHALL support [Grafana] allerts setup for panels by clicking `New alert rule` button in `Alert rule` tab
+in edit panel view.
+
+### RQ.SRS.Plugin.AllertsSetupPage
+version 1.0
+
+The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in allerts setup page.
 
 ## Functions
 

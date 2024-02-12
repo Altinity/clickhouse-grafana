@@ -333,13 +333,6 @@ version 1.0
 The [Plugin] SHALL support creating panels for the [ClickHouse] data source if the [ClickHouse] data source 
 was created using the [Plugin].
 
-## Addhoc Filter
-
-### RQ.SRS.Plugin.AddhocFilter
-version 1.0
-
-The [Plugin] ...
-
 ## Multi-user Usage
 
 ### RQ.SRS.Plugin.MultiUserUsage

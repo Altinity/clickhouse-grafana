@@ -392,7 +392,7 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 * `Step` - text field that allows users to change the grid step on the graphs
 * `Round` - text field that allows users to set rounding for timestamps
 * `Resolution` - dropdown menu that allows users to choose a resolation for graphs
-* `Format As` - dropdown menu that allows users to choose the visualization type
+* `Format As` - dropdown menu that allows users to choose the visualization type. The following types SHALL be supported: `Time series`, `Table`, `Logs`, `Trace`, `Flamegraph`.
 * `Show help` - button that allows users to get information about macroces and functions
 * `Show generated SQL` - button that allows users to get SQL query raw form without macros and functions
 * `Reformat Query` - button that allows the user to reformat a query.
@@ -404,7 +404,7 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 ### RQ.SRS.Plugin.AutoCompliteInQueries
 version 1.0
 
-The [Plugin] SHALL support auto-complite in queries. ???
+The [Plugin] SHALL support auto-complite in queries for field names and table names.
 
 ## Time range selector
 
@@ -412,6 +412,18 @@ The [Plugin] SHALL support auto-complite in queries. ???
 version 1.0
 
 The [Plugin] SHALL support a time range selector for visualization using the time range dropdown menu.
+
+### RQ.SRS.Plugin.TimeRangeSelector.Zoom
+version 1.0
+
+The [Plugin] SHALL support zooming in by selecting an area on the graph and zooming out by double-clicking on the graph.
+
+## Сhanging The Size Of The Graph
+
+### RQ.SRS.Plugin.FillActual
+version 1.0
+
+The [Plugin] SHALL support changing the size of the graph by clicking `Fill`/`Actual` toggle.
 
 ## Refresh Databoard
 
@@ -444,6 +456,10 @@ This tab SHALL have a `Copy to clipboard` button to copy request information to 
 version 1.0
 
 The [Plugin] SHALL display visualization on changing attention.
+
+### RQ.SRS.Plugin.Visualization.Legends
+
+The [Plugin] SHALL define names of graphs as collumn names in query response.
 
 ### Table View
 

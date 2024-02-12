@@ -122,9 +122,9 @@ The [Plugin] SHALL be available to be installed in Grafana Cloud with the follow
 * Find `Altinity plugin for ClickHouse`
 * Click Install
 
-![configuration](https://github.com/antip00/clickhouse-grafana/assets/44409195/c4b748a8-fec7-46f5-8712-427ddf587293)
-![filter](https://github.com/antip00/clickhouse-grafana/assets/44409195/41159aff-4802-4fe4-9b23-f262d42de143)
-![add data source](https://github.com/antip00/clickhouse-grafana/assets/44409195/27462c9c-c3e9-4982-9a32-15fd74e4e7ee)
+![configuration](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/configuration.png)
+![filter](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/filter.png)
+![add data source](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/add%20data%20source.png)
 
 ### Docker Compose Environment Setup
 
@@ -161,7 +161,7 @@ This view SHALL contain the following sections:
 * `Custom HTTP Headers`
 * `Additional`
 
-![data source setup](https://github.com/antip00/clickhouse-grafana/assets/44409195/83798d29-35a3-480c-8e03-a25848649cc5)
+![data source setup](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/data%20source%20setup.png)
 
 ### RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton
 version 1.0
@@ -362,7 +362,7 @@ The [Plugin]'s query setup interface SHALL contain the following fields:
 * `Add query` - button to add more than one query
 * `Expression` - button to add expressions to the query.
 
-![query settings](https://github.com/antip00/clickhouse-grafana/assets/44409195/dc28da9d-d170-4cc6-af6f-d80aaf87c92f)
+![query settings](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/query%20settings.png)
 
 ## Query Options
 
@@ -377,7 +377,7 @@ The [Plugin] SHALL support the following options for the query:
 * `Relative time` - text field that overrides the relative time range for individual panel
 * `Time shift` - text field that overrides the time range for individual panel by shifting its start and end relative to the time picker.
 
-![query options](https://github.com/antip00/clickhouse-grafana/assets/44409195/8008c638-28bd-4ad6-ba02-1bf44a31b6de)
+![query options](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/query%20options.png)
 
 ## Raw SQL Editor
 
@@ -397,7 +397,7 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 * `Show generated SQL` - button that allows users to get SQL query raw form without macros and functions
 * `Reformat Query` - button that allows the user to reformat a query.
 
-![sql editor](https://github.com/antip00/clickhouse-grafana/assets/44409195/3225bfaa-4235-40ce-a02a-c7c53d3b87ea)
+![sql editor](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/sql%20editor.png)
 
 ## Auto-complite In Queries
 
@@ -429,7 +429,7 @@ The [Plugin] SHALL support inspecting queries by clicking `Query inspector`.
 The [Plugin] SHALL allow user to check data returned by query in the `Data` tab, request stats in the `Stats` tab, 
 panel in JSON format in the `JSON` tab, request information in the `Query` tab.
 
-![query inspector](https://github.com/antip00/clickhouse-grafana/assets/44409195/8ff6aee2-46d6-4b98-91f9-0bf46f546a34)
+![query inspector](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/query%20inspector.png)
 
 ### RQ.SRS.Plugin.QueryInspector.QueryTab
 version 1.0

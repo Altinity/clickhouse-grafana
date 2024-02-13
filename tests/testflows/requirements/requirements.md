@@ -641,12 +641,6 @@ version 1.0
 The [Plugin] SHALL support `$naturalTimeSeries` macro in SQL edior. `$naturalTimeSeries` macro SHALL be replaced with special [ClickHouse] 
 construction to convert results as time-series with in a logical/natural breakdown.
 
-### RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries
-version 1.0
-
-The [Plugin] SHALL support `$naturalTimeSeries` macro in SQL edior. `$naturalTimeSeries` macro SHALL be replaced with special [ClickHouse] 
-construction to convert results as time-series with in a logical/natural breakdown.
-
 ### RQ.SRS.Plugin.QuerySettings.Macros.Unescape
 version 1.0
 

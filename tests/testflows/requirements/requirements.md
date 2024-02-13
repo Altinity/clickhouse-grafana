@@ -381,7 +381,7 @@ was created using the [Plugin].
 ### RQ.SRS.Plugin.Panels.Repeated
 version 1.0
 
-The [Plugin] SHALL support creating more than 1 panel by defining 1 panel.
+The [Plugin] SHALL support creating more than 1 panel by defining 1 panel and using variables.
 
 ## Multi-user Usage
 

@@ -208,22 +208,23 @@ The [Plugin] SHALL support specifying an HTTP connection using the following fie
 * The `Allowed cookies` text field to specify cookies that SHALL not be deleted
 * The `Timeout` text field to specify the HTTP request timeout in seconds.
 
-## Connecting to the Local Clickhouse Server
+## Connecting to the Clickhouse Server Using Grafana Backend Server 
 
 ### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.ServerAccess
 version 1.0
 
-The [Plugin] SHALL support connecting to the local [ClickHouse] server by selecting the `Server` option in the `Access` dropdown menu
-in the data source setup view. The [Plugin]'s data source setup view SHALL contain `Allowed cookies` and `Timeout` text fields 
+The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Server` option in the `Access` dropdown menu
+in the data source setup view. In this case all requests SHALL be made from the browser to Grafana backend/server which in turn will forward the 
+requests to the data source. The [Plugin]'s data source setup view SHALL contain `Allowed cookies` and `Timeout` text fields 
 if only the `Server` option is selected in the `Access` dropdown menu.
 
-## Connecting to the Remote Clickhouse Server
+## Connecting to the Clickhouse Server Without Using Grafana Backend Server 
 
 ### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess
 version 1.0
 
-The [Plugin] SHALL support connecting to the remote [ClickHouse] server by selecting the `Browser` option` in the `Access` dropdown menu
-in the data source setup view.
+The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Browser` option` in the `Access` dropdown menu
+in the data source setup view. In this case all requests SHALL be made from the browser directly to the data source.
 
 ## ClickHouse Authentification Setup
 
@@ -398,18 +399,71 @@ version 1.0
 
 The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 
-* Raw SQL editor - text field for SQL query
-* `Extrapolation` - toggle that allows users to turn on and off extrapolation on graphs
-* `Skip Comments` - toggle that allows users to turn on and off sending comments to [ClickHouse] server
-* `Step` - text field that allows users to change the grid step on the graphs
-* `Round` - text field that allows users to set rounding for timestamps
-* `Resolution` - dropdown menu that allows users to choose a resolation for graphs
-* `Format As` - dropdown menu that allows users to choose the visualization type. The following types SHALL be supported: `Time series`, `Table`, `Logs`, `Trace`, `Flamegraph`.
-* `Show help` - button that allows users to get information about macroces and functions
-* `Show generated SQL` - button that allows users to get SQL query raw form without macros and functions
-* `Reformat Query` - button that allows the user to reformat a query.
+* SQL editor
+* `Extrapolation`
+* `Skip Comments`
+* `Step`
+* `Round`
+* `Resolution`
+* `Format As`
+* `Show help`
+* `Show generated SQL`
+* `Reformat Query`
 
 ![sql editor](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/sql%20editor.png)
+
+
+### RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor
+version 1.0
+
+The [Plugin] SHALL support specifying SQL query by using SQL Editor text field for SQL query.
+
+### RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation
+version 1.0
+
+The [Plugin] SHALL support turning on and off extrapolation for vizualizations using the `Extrapolation` toggle.
+
+### RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments
+version 1.0
+
+The [Plugin] SHALL support turning on and off sending comments to [ClickHouse] server by using the `Skip Comments` toggle.
+
+### RQ.SRS.Plugin.RawSQLEditorInterface.Step
+version 1.0
+
+The [Plugin] SHALL support specifying the grid step on the graphs by using the `Step` text field.
+
+### RQ.SRS.Plugin.RawSQLEditorInterface.Round
+version 1.0
+
+The [Plugin] SHALL support specifying rounding for the timestamps by using the `Round` text field.
+
+### RQ.SRS.Plugin.RawSQLEditorInterface.Resolution
+version 1.0
+
+The [Plugin] SHALL support specifying resolation for graphs by using the `Resolution` dropdown menu.
+
+### RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs
+version 1.0
+
+The [Plugin] SHALL support choosing the visualization type by using the `Format As` dropdown menu.
+The following types SHALL be supported: `Time series`, `Table`, `Logs`, `Trace`, `Flamegraph`.
+
+### RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp
+version 1.0
+
+The [Plugin] SHALL allow user to get information about macroc and functions by clicking `Show help` button.
+
+### RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL
+version 1.0
+
+The [Plugin] SHALL allow user to get generated SQL query in raw form without macros and functions by clicking `Show generated SQL` button.
+
+
+### RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery
+version 1.0
+
+The [Plugin] SHALL allow user to reformat query in SQL editor by clicking `Reformat Query` button.
 
 ## Auto-complete In Queries
 
@@ -517,22 +571,89 @@ version 1.0
 
 The [Plugin] SHALL support the following macroces:
 
-* `$table` - replaced with selected table name from query setup interface
-* `$dateCol` - replaced with Column:Date value from query setup interface
-* `$dateTimeCol` - replaced with Column:DateTime or Column:TimeStamp value from query setup interface
-* `$from` - replaced with (timestamp with ms)/1000 value of UI selected "Time Range:From"
-* `$to` - replaced with (timestamp with ms)/1000 value of UI selected "Time Range:To"
-* `$interval` - replaced with selected "Group by a time interval" value in seconds
-* `$timeFilter` - replaced with currently selected "Time Range". Requires Column:Date and Column:DateTime or Column:TimeStamp to be selected.
-* `$timeFilterByColumn($column)` - replaced with currently selected "Time Range" for a column passed as $column argument.
-* `$timeSeries` - replaced with special [ClickHouse] construction to convert results as time-series data.
-* `$naturalTimeSeries` - replaced with special [ClickHouse] construction to convert results as time-series with in a logical/natural breakdown.
-* `$unescape` - unescapes variable value by removing single quotes.
-* `$adhoc` - replaced with a rendered ad-hoc filter expression, or "1" if no ad-hoc filters exist.
+* `$table`
+* `$dateCol`
+* `$dateTimeCol`
+* `$from`
+* `$to`
+* `$interval`
+* `$timeFilter`
+* `$timeFilterByColumn($column)`
+* `$timeSeries`
+* `$naturalTimeSeries`
+* `$unescape($variable)`
+* `$adhoc`
 
 A description of macros SHALL be available by typing their names in raw SQL editor interface.
 
 https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
+
+### RQ.SRS.Plugin.QuerySettings.Macros.Table
+version 1.0
+
+The [Plugin] SHALL support `$table` macro in SQL edior. `$table` macro SHALL be replaced with selected table name from query setup interface.
+
+### RQ.SRS.Plugin.QuerySettings.Macros.DateCol
+version 1.0
+
+The [Plugin] SHALL support `$dateCol` macro in SQL edior. `$dateCol` macro SHALL be replaced with selected table name from query setup interface.
+
+### RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol
+version 1.0
+
+The [Plugin] SHALL support `$dateTimeCol` macro in SQL edior. `$dateTimeCol` macro SHALL be replaced with Column:DateTime or Column:TimeStamp value from query setup interface.
+
+### RQ.SRS.Plugin.QuerySettings.Macros.From
+version 1.0
+
+The [Plugin] SHALL support `$from` macro in SQL edior. `$from` macro SHALL be replaced with (timestamp with ms)/1000 value of UI selected `Time Range:From`.
+
+### RQ.SRS.Plugin.QuerySettings.Macros.To
+version 1.0
+
+The [Plugin] SHALL support `$to` macro in SQL edior. `$to` macro SHALL be replaced with (timestamp with ms)/1000 value of UI selected `Time Range:To`.
+
+### RQ.SRS.Plugin.QuerySettings.Macros.Interval
+version 1.0
+
+The [Plugin] SHALL support `$interval` macro in SQL edior. `$interval` macro SHALL be replaced with selected "Group by a time interval" value in seconds.
+
+### RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn
+version 1.0
+
+The [Plugin] SHALL support `$timeFilterByColumn($column)` macro in SQL edior. `$timeFilterByColumn($column)` macro SHALL be replaced with currently 
+selected `Time Range` for a column passed as $column argument.
+
+### RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries
+version 1.0
+
+The [Plugin] SHALL support `$timeSeries` macro in SQL edior. `$timeSeries` macro SHALL be replaced with special [ClickHouse] construction 
+to convert results as time-series data.
+
+### RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries
+version 1.0
+
+The [Plugin] SHALL support `$naturalTimeSeries` macro in SQL edior. `$naturalTimeSeries` macro SHALL be replaced with special [ClickHouse] 
+construction to convert results as time-series with in a logical/natural breakdown.
+
+### RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries
+version 1.0
+
+The [Plugin] SHALL support `$naturalTimeSeries` macro in SQL edior. `$naturalTimeSeries` macro SHALL be replaced with special [ClickHouse] 
+construction to convert results as time-series with in a logical/natural breakdown.
+
+### RQ.SRS.Plugin.QuerySettings.Macros.Unescape
+version 1.0
+
+The [Plugin] SHALL support `$unescape($variable)` macro in SQL edior. `$unescape($variable)` macro SHALL be replaced with variable 
+value without single quotes.
+
+
+### RQ.SRS.Plugin.QuerySettings.Macros.Adhoc
+version 1.0
+
+The [Plugin] SHALL support `$adhoc` macro in SQL edior. `$adhoc` macro SHALL be replaced with a rendered ad-hoc filter expression, 
+or "1" if no ad-hoc filters exist.
 
 ## Variables Setup
 
@@ -557,7 +678,7 @@ version 1.0
 The [Plugin] SHALL support [Grafana] annotations setup for dashboards by clicking gear button and 
 setuping variables in the `Annotations` tab.
 
-## Allerts Setup
+## Setuping Allerts
 
 ### RQ.SRS.Plugin.Allerts
 version 1.0
@@ -565,10 +686,15 @@ version 1.0
 The [Plugin] SHALL support [Grafana] allerts setup for panels by clicking `New alert rule` button in `Alert rule` tab
 in edit panel view.
 
-### RQ.SRS.Plugin.AllertsSetupPage
+### RQ.SRS.Plugin.Allerts.AllertSetupPage
 version 1.0
 
-The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in allerts setup page.
+The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in allert setup page.
+
+### RQ.SRS.Plugin.Allerts.RuleType
+version 1.0
+
+The [Plugin] SHALL support `Grafana-managed` and `Data source-managed` rule types by choosing rule type in allert setup page.
 
 ## Functions
 
@@ -592,6 +718,58 @@ Only one function per query is allowed.
 
 https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions
 
+### RQ.SRS.Plugin.Functions.Rate
+version 1.0
+
+The [Plugin] SHALL support the `$rate` function in SQL editor. This function SHALL convert query results as "change rate per interval".
+
+### RQ.SRS.Plugin.Functions.Columns
+version 1.0
+
+The [Plugin] SHALL support the `$columns(key, value)` function in SQL editor. This function SHALL query values as array of [key, value], 
+where key will be used as label.
+
+### RQ.SRS.Plugin.Functions.RateColumns
+version 1.0
+
+The [Plugin] SHALL support the `$rateColumns` function in SQL editor. This function SHALL be a combination of $columns and $rate functions.
+
+### RQ.SRS.Plugin.Functions.PerSecond
+version 1.0
+
+The [Plugin] SHALL support the `$perSecond` function in SQL editor. This function SHALL convert query results as "change rate per interval" 
+for Counter-like(growing only) metrics.
+
+### RQ.SRS.Plugin.Functions.PerSecondColumns
+version 1.0
+
+The [Plugin] SHALL support the `$perSecondColumns` function in SQL editor. This function SHALL be a combination of $columns and $perSecond 
+functions for Counter-like metrics.
+
+### RQ.SRS.Plugin.Functions.Delta
+version 1.0
+
+The [Plugin] SHALL support the `$delta` function in SQL editor. This function SHALL convert query results as "delta value inside interval" 
+for Counter-like(growing only) metrics, will negative if counter reset.
+
+### RQ.SRS.Plugin.Functions.DeltaColumns
+version 1.0
+
+The [Plugin] SHALL support the `$deltaColumns` function in SQL editor. This function SHALL be a combination of $columns and $delta 
+functions for Counter-like metrics.
+
+### RQ.SRS.Plugin.Functions.Increase
+version 1.0
+
+The [Plugin] SHALL support the `$increase` function in SQL editor. This function SHALL convert query results as "non-negative delta value inside interval" 
+for Counter-like(growing only) metrics, will zero if counter reset and delta less zero.
+
+### RQ.SRS.Plugin.Functions.IncreaseColumns
+version 1.0
+
+The [Plugin] SHALL support the `$increaseColumns` function in SQL editor. This function SHALL be a combination of $columns and $increase 
+functions for Counter-like metrics.
+
 ## Supported types
 
 ### RQ.SRS.Plugin.SupportedTypes
@@ -600,56 +778,37 @@ version 1.0
 The [Plugin] SHALL support scalar data types. The following data types SHALL be supported:
 
 
-| Data Type               | Supported in Grafana |
-| ----------------------- |:--------------------:|
-| UInt8                   |                      |
-| UInt16                  |                      |
-| UInt32                  |                      |
-| UInt64                  |                      |
-| UInt128                 |                      |
-| UInt256                 |                      |
-| Int8                    |                      |
-| Int16                   |                      |
-| Int32                   |                      |
-| Int64                   |                      |
-| Int128                  |                      |
-| Int256                  |                      |
-| Float32                 |                      |
-| Float64                 |                      |
-| Decimal(P)              |                      |
-| Decimal(P, S)           |                      |
-| Decimal32(S)            |                      |
-| Decimal64(S)            |                      |
-| Decimal128(S)           |                      |
-| Decimal256(S)           |                      |
-| Bool                    |                      |
-| String                  |                      |
-| FixedString(N)          |                      |
-| Date                    |                      |
-| Date32                  |                      |
-| DateTime                |                      |
-| DateTime64              |                      |
-| JSON                    |                      |
-| UUID                    |                      |
-| Enum                    |                      |
-| LowCardinality          |                      |
-| Array                   |                      |
-| Map                     |                      |
-| SimpleAggregateFunction |                      |
-| AggregateFunction       |                      |
-| Nested                  |                      |
-| Tuple                   |                      |
-| Nullable                |                      |
-| IPv4                    |                      |
-| IPv6                    |                      |
-| Point                   |                      |
-| Ring                    |                      |
-| Polygon                 |                      |
-| MultiPolygon            |                      |
-| Expression              |                      |
-| Set                     |                      |
-| Nothing                 |                      |
-| Interval                |                      |
+| Data Type                                                                           | Supported in Grafana |
+| ----------------------------------------------------------------------------------- |:--------------------:|
+| UInt8, UInt16, UInt32, UInt64, UInt128, UInt256                                     |                      |
+| Int8, Int16, Int32, Int64, Int128, Int256                                           |                      |
+| Float32, Float64                                                                    |                      |
+| Decimal(P), Decimal(P, S), Decimal32(S), Decimal64(S), Decimal128(S), Decimal256(S) |                      |
+| Bool                                                                                |                      |
+| String                                                                              |                      |
+| FixedString(N)                                                                      |                      |
+| Date, Date32, DateTime, DateTime64                                                  |                      |
+| JSON                                                                                |                      |
+| UUID                                                                                |                      |
+| Enum                                                                                |                      |
+| LowCardinality                                                                      |                      |
+| Array                                                                               |                      |
+| Map                                                                                 |                      |
+| SimpleAggregateFunction                                                             |                      |
+| AggregateFunction                                                                   |                      |
+| Nested                                                                              |                      |
+| Tuple                                                                               |                      |
+| Nullable                                                                            |                      |
+| IPv4                                                                                |                      |
+| IPv6                                                                                |                      |
+| Point                                                                               |                      |
+| Ring                                                                                |                      |
+| Polygon                                                                             |                      |
+| MultiPolygon                                                                        |                      |
+| Expression                                                                          |                      |
+| Set                                                                                 |                      |
+| Nothing                                                                             |                      |
+| Interval                                                                            |                      |
 
 
 ## Versions Compatibility

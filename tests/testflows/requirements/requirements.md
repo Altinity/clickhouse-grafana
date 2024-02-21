@@ -147,7 +147,7 @@ that connects grafana to [ClickHouse] server.
 ### Manual Plugin Installation
 
 #### RQ.SRS.Plugin.ManualPluginInstallation
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL be available to be installed using grafana-cli with the following command:
 
@@ -158,7 +158,7 @@ For installation, user need to install [Grafana] first.
 ### Grafana Cloud Plugin Installation
 
 #### RQ.SRS.Plugin.GrafanaCloudPluginInstallation
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL be available to be installed in Grafana Cloud with the following steps:
 * Go to Grafana Cloud
@@ -173,13 +173,13 @@ The [Plugin] SHALL be available to be installed in Grafana Cloud with the follow
 ### Docker Compose Environment Setup
 
 #### RQ.SRS.Plugin.DockerComposeEnvironment
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL be available to be run using docker compose with the following commands:
 ```
 docker-compose run --rm frontend_builder
 docker-compose run --rm backend_builder
-echo 'export GRAFANA_ACCESS_POLICY_TOKEN="glc_eyJvIjoiNDU1MDgiLCJuIjoicGx1Z2luLXNpZ25pbmctdG9rZW4tZm9yLXNpZ24tcGx1Z2luIiwiayI6IjU3UTI1VDMyT21FUmNhNDJYMnpPdmg1TSIsIm0iOnsiciI6InVzIn19"' > .release_env
+echo 'export GRAFANA_ACCESS_POLICY_TOKEN="{grafana_token}"' > .release_env
 docker-compose run --rm plugin_signer
 docker-compose up -d grafana
 ```
@@ -187,14 +187,14 @@ docker-compose up -d grafana
 ## Grafana Datasource Plugin For ClickHouse
 
 ### RQ.SRS.Plugin
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support connecting the [ClickHouse] server to [Grafana].
 
 ## Adding New Data Source
 
 ### RQ.SRS.Plugin.DataSourceSetupView 
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support creating a new [ClickHouse] data source by clicking the `Add new data source` button on the [Plugin] page.
 The [Plugin] SHALL open the data source setup view by clicking the `Add new data source` button.
@@ -208,7 +208,7 @@ This view SHALL contain the following sections:
 ![data source setup](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/data%20source%20setup.png)
 
 ### RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton
-version 1.0
+version: 1.0
 
 The [Plugin]'s data source setup view SHALL contain a `Save & test` button that SHALL save datasource and check if [ClickHouse]
 datasource is connected to [Grafana] correctly.
@@ -216,14 +216,14 @@ datasource is connected to [Grafana] correctly.
 ## Specifying Data Source Name
 
 ### RQ.SRS.Plugin.DataSourceSetupView.DataSourceName
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying a data source name by using the `Name` text field in the data source setup view.
 
 ## Using Default Data Source
 
 ### RQ.SRS.Plugin.DataSourceSetupView.DefaultDataSource
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying the data source as default by using the `Default` toggle in the data source setup view.
 The default data source SHALL be preselected in new pannels.
@@ -231,7 +231,7 @@ The default data source SHALL be preselected in new pannels.
 ## Specifying HTTP Connection
 
 ### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying an HTTP connection using the following fields:
 
@@ -243,7 +243,7 @@ The [Plugin] SHALL support specifying an HTTP connection using the following fie
 ## Connecting to the Clickhouse Server Using Grafana Backend Server 
 
 ### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.ServerAccess
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Server` option in the `Access` dropdown menu
 in the data source setup view. In this case all requests SHALL be made from the browser to Grafana backend/server which in turn will forward the 
@@ -253,7 +253,7 @@ if only the `Server` option is selected in the `Access` dropdown menu.
 ## Connecting to the Clickhouse Server Without Using Grafana Backend Server 
 
 ### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Browser` option` in the `Access` dropdown menu
 in the data source setup view. In this case all requests SHALL be made from the browser directly to the data source.
@@ -261,7 +261,7 @@ in the data source setup view. In this case all requests SHALL be made from the 
 ## ClickHouse Authentification Setup
 
 ### RQ.SRS.Plugin.DataSourceSetupView.Auth
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying authentication details by specifying the following toggles:
 
@@ -275,7 +275,7 @@ The [Plugin] SHALL support specifying authentication details by specifying the f
 ## ClickHouse Authentification Setup Using Username And Password
 
 ### RQ.SRS.Plugin.DataSourceSetupView.BasicAuth
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying username and password for the [ClickHouse] server by turning on the `Basic auth` toggle
 and specifying username and password in the `User` and `Password` text fields, respectively. The `Password` text field SHALL 
@@ -285,7 +285,7 @@ toggle is on.
 ## ClickHouse Authentification Setup Using TLS/SSL Auth Details
 
 ### RQ.SRS.Plugin.DataSourceSetupView.TLS/SSLAuthDetails
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying server name, client certificate, and client key for the [ClickHouse] server by turning on 
 the `TLS Client Auth` toggle and specifying these options in the `ServerName`, `Client Cert`, and `Client Key` text fields, respectively. 
@@ -295,7 +295,7 @@ The [Plugin] SHALL add `ServerName`, `Client Cert`, and `Client Key` text fields
 ## ClickHouse Authentification Using Forward OAuth Identity
 
 ### RQ.SRS.Plugin.DataSourceSetupView.ForwardOAuthIdentity
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support Forward OAuth Identity by turning on the `Forward OAuth Identity` toggle.
 The [Plugin] SHALL forward the user's upstream OAuth identity to the data source if this toggle is on.
@@ -303,7 +303,7 @@ The [Plugin] SHALL forward the user's upstream OAuth identity to the data source
 ## Sending Credentials Setup
 
 ### RQ.SRS.Plugin.DataSourceSetupView.WithCredentials
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support sending credentials such as cookies or authentication headers with cross-site 
 requests by turning on the `With Credentials` toggle.
@@ -311,7 +311,7 @@ requests by turning on the `With Credentials` toggle.
 ## ClickHouse Authentification With CA Certificate
 
 ### RQ.SRS.Plugin.DataSourceSetupView.Auth.WithCACert
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying the CA certificate that will be used to access the [ClickHouse] server 
 by turning on the `With CA Cert` toggle and specifying the `CA Cert` text field. The [Plugin] SHALL add the 
@@ -320,20 +320,20 @@ by turning on the `With CA Cert` toggle and specifying the `CA Cert` text field.
 ## Specifying Custom HTTP Headers
 
 ### RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support custom HTTP headers that will be used for HTTP requests to the [ClickHouse] server 
 by pressing the `Add Header` button and specifying the `Header` and `Value` text fields.
 
 ### RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support deleting custom HTTP headers by clicking the bucket button nearby this header.
 
 ## Connection To Managed Yandex.Cloud ClickHouse Database Setup
 
 ### RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support connection to managed Yandex.Cloud [ClickHouse] database setup by turning on the 
 `Use Yandex.Cloud authorization headers` toggle and specifying the `X-ClickHouse-User` and `X-ClickHouse-Key` 
@@ -342,7 +342,7 @@ text fields.
 ## Specifying Use CORS Flag In Requests
 
 ### RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support adding the [CORS] flag to requests by turning on the `Add CORS flag to requests` toggle.
 If this toggle is on, the [Plugin] SHALL attach `add_http_cors_header=1` to requests.
@@ -350,7 +350,7 @@ If this toggle is on, the [Plugin] SHALL attach `add_http_cors_header=1` to requ
 ## Specifying Use POST Requests
 
 ### RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying the use of POST requests to the [ClickHouse] server by turning on the 
 `Use POST method to send queries` toggle.
@@ -358,7 +358,7 @@ The [Plugin] SHALL support specifying the use of POST requests to the [ClickHous
 ## Specifying Default Database
 
 ### RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying the default [ClickHouse] server database by using the `Default database` text field.
 This database name SHALL be prefilled in the query builder.
@@ -366,41 +366,41 @@ This database name SHALL be prefilled in the query builder.
 ## Creating Dashboards
 
 ### RQ.SRS.Plugin.Dashboards
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support creating dashboards with panels that use the [ClickHouse] data source that was created using the [Plugin].
 
 ## Creating Panels
 
 ### RQ.SRS.Plugin.Panels
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support creating panels for the [ClickHouse] data source if the [ClickHouse] data source 
 was created using the [Plugin].
 
 ### RQ.SRS.Plugin.Panels.Repeated
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support creating more than 1 panel by defining 1 panel and using variables.
 
 ## Multi-user Usage
 
 ### RQ.SRS.Plugin.MultiUserUsage
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support multi-user usage of the [Clickhouse] data source that was created using the [Plugin].
 
 ## Query Setup
 
 ### RQ.SRS.Plugin.QuerySetup
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support creating Grafana visualizations using the query setup interface and raw SQL editor.
 
 ## Query Setup Interface
 
 ### RQ.SRS.Plugin.QuerySetupInterface
-version 1.0
+version: 1.0
 
 The [Plugin]'s query setup interface SHALL contain the following fields:
 
@@ -417,7 +417,7 @@ The [Plugin]'s query setup interface SHALL contain the following fields:
 ## Query Options
 
 ### RQ.SRS.Plugin.QueryOptions
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the following options for the query:
 
@@ -432,7 +432,7 @@ The [Plugin] SHALL support the following options for the query:
 ## Raw SQL Editor
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface
-version 1.0
+version: 1.0
 
 The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 
@@ -451,94 +451,94 @@ The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying SQL query by using SQL Editor text field for SQL query.
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support turning on and off extrapolation for vizualizations using the `Extrapolation` toggle.
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support turning on and off sending comments to [ClickHouse] server by using the `Skip Comments` toggle.
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.Step
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying the grid step on the graphs by using the `Step` text field.
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.Round
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying rounding for the timestamps by using the `Round` text field.
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.Resolution
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support specifying resolation for graphs by using the `Resolution` dropdown menu.
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support choosing the visualization type by using the `Format As` dropdown menu.
 The following types SHALL be supported: `Time series`, `Table`, `Logs`, `Trace`, `Flamegraph`.
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL allow user to get information about macroc and functions by clicking `Show help` button.
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL allow user to get generated SQL query in raw form without macros and functions by clicking `Show generated SQL` button.
 
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL allow user to reformat query in SQL editor by clicking `Reformat Query` button.
 
 ## Auto-complete In Queries
 
 ### RQ.SRS.Plugin.AutoCompleteInQueries
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support auto-complete in queries for field names and table names.
 
 ## Time range selector
 
 ### RQ.SRS.Plugin.TimeRangeSelector
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support a time range selector for visualization using the time range dropdown menu.
 
 ### RQ.SRS.Plugin.TimeRangeSelector.Zoom
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support zooming in by selecting an area on the graph and zooming out by double-clicking on the graph.
 
 ## Сhanging The Size Of The Graph
 
 ### RQ.SRS.Plugin.FillActual
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support changing the size of the graph by clicking `Fill`/`Actual` toggle.
 
 ## Refresh Databoard
 
 ### RQ.SRS.Plugin.RefreshDataboard
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support refreshing visualization by clicking the `Refresh` button.
 
 ## Inspecting Query
 
 ### RQ.SRS.Plugin.QueryInspector
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support inspecting queries by clicking `Query inspector`.
 The [Plugin] SHALL allow user to check data returned by query in the `Data` tab, request stats in the `Stats` tab, 
@@ -547,7 +547,7 @@ panel in JSON format in the `JSON` tab, request information in the `Query` tab.
 ![query inspector](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/query%20inspector.png)
 
 ### RQ.SRS.Plugin.QueryInspector.QueryTab
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support getting information about requests in the `Query` tab by clicking the `Refresh` button.
 This tab SHALL have an `Expand all` or `Collapse all` button to expand or collapse request information.
@@ -556,7 +556,7 @@ This tab SHALL have a `Copy to clipboard` button to copy request information to 
 ## Visualization
 
 ### RQ.SRS.Plugin.Visualization
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL display visualization on changing attention.
 
@@ -567,14 +567,14 @@ The [Plugin] SHALL define names of graphs as collumn names in query response.
 ### Table View
 
 #### RQ.SRS.Plugin.Visualization.Table
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support table view for data.
 
 ### Visualization Types
 
 #### RQ.SRS.Plugin.Visualization.VisualizationTypes
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the following visualization types for data:
 
@@ -604,7 +604,7 @@ The [Plugin] SHALL support the following visualization types for data:
 ## Macros
 
 ### RQ.SRS.Plugin.QuerySettings.Macros
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the following macroces:
 
@@ -626,62 +626,62 @@ A description of macros SHALL be available by typing their names in raw SQL edit
 https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.Table
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$table` macro in SQL edior. `$table` macro SHALL be replaced with selected table name from query setup interface.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.DateCol
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$dateCol` macro in SQL edior. `$dateCol` macro SHALL be replaced with selected table name from query setup interface.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$dateTimeCol` macro in SQL edior. `$dateTimeCol` macro SHALL be replaced with Column:DateTime or Column:TimeStamp value from query setup interface.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.From
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$from` macro in SQL edior. `$from` macro SHALL be replaced with (timestamp with ms)/1000 value of UI selected `Time Range:From`.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.To
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$to` macro in SQL edior. `$to` macro SHALL be replaced with (timestamp with ms)/1000 value of UI selected `Time Range:To`.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.Interval
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$interval` macro in SQL edior. `$interval` macro SHALL be replaced with selected "Group by a time interval" value in seconds.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$timeFilterByColumn($column)` macro in SQL edior. `$timeFilterByColumn($column)` macro SHALL be replaced with currently 
 selected `Time Range` for a column passed as $column argument.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$timeSeries` macro in SQL edior. `$timeSeries` macro SHALL be replaced with special [ClickHouse] construction 
 to convert results as time-series data.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$naturalTimeSeries` macro in SQL edior. `$naturalTimeSeries` macro SHALL be replaced with special [ClickHouse] 
 construction to convert results as time-series with in a logical/natural breakdown.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.Unescape
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$unescape($variable)` macro in SQL edior. `$unescape($variable)` macro SHALL be replaced with variable 
 value without single quotes.
 
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.Adhoc
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `$adhoc` macro in SQL edior. `$adhoc` macro SHALL be replaced with a rendered ad-hoc filter expression, 
 or "1" if no ad-hoc filters exist.
@@ -689,7 +689,7 @@ or "1" if no ad-hoc filters exist.
 ## Variables Setup
 
 ### RQ.SRS.Plugin.Variables
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support [Grafana] variables setup for dashboards by clicking gear button and 
 setuping variables in the `Variables` tab. The [Plugin] SHALL support the following variable types:
@@ -704,7 +704,7 @@ setuping variables in the `Variables` tab. The [Plugin] SHALL support the follow
 ## Annotations Setup
 
 ### RQ.SRS.Plugin.Annotations
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support [Grafana] annotations setup for dashboards by clicking gear button and 
 setuping variables in the `Annotations` tab.
@@ -712,25 +712,25 @@ setuping variables in the `Annotations` tab.
 ## Setuping Allerts
 
 ### RQ.SRS.Plugin.Allerts
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support [Grafana] allerts setup for panels by clicking `New alert rule` button in `Alert rule` tab
 in edit panel view.
 
 ### RQ.SRS.Plugin.Allerts.AllertSetupPage
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in allert setup page.
 
 ### RQ.SRS.Plugin.Allerts.RuleType
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support `Grafana-managed` and `Data source-managed` rule types by choosing rule type in allert setup page.
 
 ## Functions
 
 ### RQ.SRS.Plugin.Functions
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the following functions in SQL queries:
 
@@ -750,53 +750,53 @@ Only one function per query is allowed.
 https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions
 
 ### RQ.SRS.Plugin.Functions.Rate
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the `$rate` function in SQL editor. This function SHALL convert query results as "change rate per interval".
 
 ### RQ.SRS.Plugin.Functions.Columns
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the `$columns(key, value)` function in SQL editor. This function SHALL query values as array of [key, value], 
 where key will be used as label.
 
 ### RQ.SRS.Plugin.Functions.RateColumns
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the `$rateColumns` function in SQL editor. This function SHALL be a combination of $columns and $rate functions.
 
 ### RQ.SRS.Plugin.Functions.PerSecond
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the `$perSecond` function in SQL editor. This function SHALL convert query results as "change rate per interval" 
 for Counter-like(growing only) metrics.
 
 ### RQ.SRS.Plugin.Functions.PerSecondColumns
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the `$perSecondColumns` function in SQL editor. This function SHALL be a combination of $columns and $perSecond 
 functions for Counter-like metrics.
 
 ### RQ.SRS.Plugin.Functions.Delta
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the `$delta` function in SQL editor. This function SHALL convert query results as "delta value inside interval" 
 for Counter-like(growing only) metrics, will negative if counter reset.
 
 ### RQ.SRS.Plugin.Functions.DeltaColumns
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the `$deltaColumns` function in SQL editor. This function SHALL be a combination of $columns and $delta 
 functions for Counter-like metrics.
 
 ### RQ.SRS.Plugin.Functions.Increase
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the `$increase` function in SQL editor. This function SHALL convert query results as "non-negative delta value inside interval" 
 for Counter-like(growing only) metrics, will zero if counter reset and delta less zero.
 
 ### RQ.SRS.Plugin.Functions.IncreaseColumns
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support the `$increaseColumns` function in SQL editor. This function SHALL be a combination of $columns and $increase 
 functions for Counter-like metrics.
@@ -804,7 +804,7 @@ functions for Counter-like metrics.
 ## Supported types
 
 ### RQ.SRS.Plugin.SupportedTypes
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support scalar data types. The following data types SHALL be supported:
 
@@ -845,7 +845,7 @@ The [Plugin] SHALL support scalar data types. The following data types SHALL be 
 ## Versions Compatibility
 
 ### RQ.SRS.Plugin.VersionCompatibility
-version 1.0
+version: 1.0
 
 The [Plugin] 3.0 version SHALL support the following [Grafana] versions:
 

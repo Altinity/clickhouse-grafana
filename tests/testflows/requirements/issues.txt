@@ -1,0 +1,9 @@
+ format "as table" not working
+ Trace and Flamegraph formats
+ legends
+ new lttb function
+ https://github.com/Altinity/clickhouse-grafana/issues/498
+ https://github.com/Altinity/clickhouse-grafana/issues/495
+ https://github.com/Altinity/clickhouse-grafana/issues/494
+ https://github.com/Altinity/clickhouse-grafana/issues/435
+ $columns with fill 

@@ -885,6 +885,11 @@ The [Plugin] SHALL support scalar data types. The following data types SHALL be 
 | Interval                                                                            |                      |
 
 
+### RQ.SRS.Plugin.SupportedDataTypes
+version: 1.0
+
+The [Plugin] SHALL support max and min values of grafana datatypes.
+
 ## Versions Compatibility
 
 ### RQ.SRS.Plugin.VersionCompatibility

@@ -741,20 +741,20 @@ version: 1.0
 The [Plugin] SHALL support [Grafana] annotations setup for dashboards by clicking gear button and 
 setuping variables in the `Annotations` tab.
 
-## Setuping Allerts
+## Setaping Alerts
 
-### RQ.SRS.Plugin.Allerts
+### RQ.SRS.Plugin.Alerts
 version: 1.0
 
-The [Plugin] SHALL support [Grafana] allerts setup for panels by clicking `New alert rule` button in `Alert rule` tab
+The [Plugin] SHALL support [Grafana] alerts setup for panels by clicking `New alert rule` button in `Alert rule` tab
 in edit panel view.
 
-### RQ.SRS.Plugin.Allerts.AllertSetupPage
+### RQ.SRS.Plugin.Alerts.AlertSetupPage
 version: 1.0
 
 The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in allert setup page.
 
-### RQ.SRS.Plugin.Allerts.RuleType
+### RQ.SRS.Plugin.Alerts.RuleType
 version: 1.0
 
 The [Plugin] SHALL support `Grafana-managed` and `Data source-managed` rule types by choosing rule type in allert setup page.
@@ -844,9 +844,9 @@ version: 1.0
 
 The [Plugin] SHALL support sub queries in SQL editor.
 
-## Supported types
+## Supported ClickHouse Datatypes
 
-### RQ.SRS.Plugin.SupportedTypes
+### RQ.SRS.Plugin.SupportedDataTypes
 version: 1.0
 
 The [Plugin] SHALL support scalar data types. The following data types SHALL be supported:

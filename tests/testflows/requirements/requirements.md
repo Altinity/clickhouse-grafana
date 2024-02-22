@@ -657,7 +657,7 @@ The [Plugin] SHALL support `$table` macro in SQL edior. `$table` macro SHALL be 
 ### RQ.SRS.Plugin.QuerySettings.Macros.DateCol
 version: 1.0
 
-The [Plugin] SHALL support `$dateCol` macro in SQL edior. `$dateCol` macro SHALL be replaced with selected table name from query setup interface.
+The [Plugin] SHALL support `$dateCol` macro in SQL edior. `$dateCol` macro SHALL be replaced with selected Column:Date from query setup interface.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol
 version: 1.0

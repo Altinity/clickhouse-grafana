@@ -42,7 +42,8 @@ def columns(self):
                            "UInt8"):
         create_table()
 
-    with When("I create visualizations for this table using columns function for different plugin versions"):
+    with When("I create visualizations for this table using columns function for different plugin versions",
+              description="query for visualization contain fill option"):
         pass
 
     with Then("I check that visualizations from different plugin versions are simular"):

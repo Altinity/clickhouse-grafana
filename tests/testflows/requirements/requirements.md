@@ -392,25 +392,25 @@ The [Plugin] SHALL support multi-user usage of the [Clickhouse] data source that
 
 
 ### RQ.SRS.Plugin.MultiUserUsage.SamePanel
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support access for the same panel from different users at the same time.
 
 
 ### RQ.SRS.Plugin.MultiUserUsage.DifferentPanels
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support access for different panels from different users at the same time.
 
 
 ### RQ.SRS.Plugin.MultiUserUsage.SameDashboard
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support access for the same dashboard from different users at the same time.
 
 
 ### RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards
-version 1.0
+version: 1.0
 
 The [Plugin] SHALL support access for different dashboards from different users at the same time.
 

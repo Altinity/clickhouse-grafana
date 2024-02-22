@@ -2,10 +2,15 @@ from testflows.core import *
 
 
 @TestStep(Given)
-def create_table(self):
+def create_table(self, insert_data=True):
     try:
         with When("I create table"):
             pass
+
+        if insert_data:
+            with When("I insert data into the table"):
+                pass
+
         yield 1
     finally:
         with Finally("I delete table"):
@@ -42,4 +47,15 @@ def create_panel(self):
         yield 1
     finally:
         with Finally("I delete panel"):
+            pass
+
+
+@TestStep(Given)
+def add_variable(self, variable_type):
+    try:
+        with When(f"I add variable with {variable_type} type"):
+            pass
+        yield 1
+    finally:
+        with Finally("I delete variable"):
             pass

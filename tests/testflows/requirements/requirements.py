@@ -497,10 +497,78 @@ RQ_SRS_Plugin_MultiUserUsage = Requirement(
     description=(
         'The [Plugin] SHALL support multi-user usage of the [Clickhouse] data source that was created using the [Plugin].\n'
         '\n'
+        '\n'
     ),
     link=None,
     level=2,
     num='24.1'
+)
+
+RQ_SRS_Plugin_MultiUserUsage_SamePanel = Requirement(
+    name='RQ.SRS.Plugin.MultiUserUsage.SamePanel',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support access for the same panel from different users at the same time.\n'
+        '\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='24.2'
+)
+
+RQ_SRS_Plugin_MultiUserUsage_DifferentPanels = Requirement(
+    name='RQ.SRS.Plugin.MultiUserUsage.DifferentPanels',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support access for different panels from different users at the same time.\n'
+        '\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='24.3'
+)
+
+RQ_SRS_Plugin_MultiUserUsage_SameDashboard = Requirement(
+    name='RQ.SRS.Plugin.MultiUserUsage.SameDashboard',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support access for the same dashboard from different users at the same time.\n'
+        '\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='24.4'
+)
+
+RQ_SRS_Plugin_MultiUserUsage_DifferentDashboards = Requirement(
+    name='RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support access for different dashboards from different users at the same time.\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='24.5'
 )
 
 RQ_SRS_Plugin_QuerySetup = Requirement(
@@ -1585,6 +1653,10 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         Heading(name='RQ.SRS.Plugin.Panels.Repeated', level=2, num='23.2'),
         Heading(name='Multi-user Usage', level=1, num='24'),
         Heading(name='RQ.SRS.Plugin.MultiUserUsage', level=2, num='24.1'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.SamePanel', level=2, num='24.2'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.DifferentPanels', level=2, num='24.3'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.SameDashboard', level=2, num='24.4'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards', level=2, num='24.5'),
         Heading(name='Query Setup', level=1, num='25'),
         Heading(name='RQ.SRS.Plugin.QuerySetup', level=2, num='25.1'),
         Heading(name='Query Setup Interface', level=1, num='26'),
@@ -1687,6 +1759,10 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         RQ_SRS_Plugin_Panels,
         RQ_SRS_Plugin_Panels_Repeated,
         RQ_SRS_Plugin_MultiUserUsage,
+        RQ_SRS_Plugin_MultiUserUsage_SamePanel,
+        RQ_SRS_Plugin_MultiUserUsage_DifferentPanels,
+        RQ_SRS_Plugin_MultiUserUsage_SameDashboard,
+        RQ_SRS_Plugin_MultiUserUsage_DifferentDashboards,
         RQ_SRS_Plugin_QuerySetup,
         RQ_SRS_Plugin_QuerySetupInterface,
         RQ_SRS_Plugin_QueryOptions,
@@ -2133,6 +2209,30 @@ The [Plugin] SHALL support creating more than 1 panel by defining 1 panel and us
 version: 1.0
 
 The [Plugin] SHALL support multi-user usage of the [Clickhouse] data source that was created using the [Plugin].
+
+
+### RQ.SRS.Plugin.MultiUserUsage.SamePanel
+version: 1.0
+
+The [Plugin] SHALL support access for the same panel from different users at the same time.
+
+
+### RQ.SRS.Plugin.MultiUserUsage.DifferentPanels
+version: 1.0
+
+The [Plugin] SHALL support access for different panels from different users at the same time.
+
+
+### RQ.SRS.Plugin.MultiUserUsage.SameDashboard
+version: 1.0
+
+The [Plugin] SHALL support access for the same dashboard from different users at the same time.
+
+
+### RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards
+version: 1.0
+
+The [Plugin] SHALL support access for different dashboards from different users at the same time.
 
 ## Query Setup
 

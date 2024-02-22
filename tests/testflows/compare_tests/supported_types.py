@@ -5,7 +5,7 @@ from compare_tests.steps import *
 
 @TestScenario
 def Uint(self):
-    """Check that the Plugin support UInt types."""
+    """Check that the Plugin support UInt datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -27,7 +27,7 @@ def Uint(self):
 
 @TestScenario
 def Int(self):
-    """Check that the Plugin support Int types."""
+    """Check that the Plugin support Int datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -49,7 +49,7 @@ def Int(self):
 
 @TestScenario
 def Float(self):
-    """Check that the Plugin support Float types."""
+    """Check that the Plugin support Float datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -71,7 +71,7 @@ def Float(self):
 
 @TestScenario
 def Decimal(self):
-    """Check that the Plugin support Decimal types."""
+    """Check that the Plugin support Decimal datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -93,7 +93,7 @@ def Decimal(self):
 
 @TestScenario
 def Bool(self):
-    """Check that the Plugin support Bool type."""
+    """Check that the Plugin support Bool datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -115,7 +115,7 @@ def Bool(self):
 
 @TestScenario
 def String(self):
-    """Check that the Plugin support String type."""
+    """Check that the Plugin support String datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -137,7 +137,7 @@ def String(self):
 
 @TestScenario
 def FixedString(self):
-    """Check that the Plugin support FixedString(N) types."""
+    """Check that the Plugin support FixedString(N) datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -159,7 +159,7 @@ def FixedString(self):
 
 @TestScenario
 def Date(self):
-    """Check that the Plugin support Date types."""
+    """Check that the Plugin support Date datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -181,7 +181,7 @@ def Date(self):
 
 @TestScenario
 def JSON(self):
-    """Check that the Plugin support JSON type."""
+    """Check that the Plugin support JSON datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -203,7 +203,7 @@ def JSON(self):
 
 @TestScenario
 def UUID(self):
-    """Check that the Plugin support UUID type."""
+    """Check that the Plugin support UUID datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -225,7 +225,7 @@ def UUID(self):
 
 @TestScenario
 def Enum(self):
-    """Check that the Plugin support Enum type."""
+    """Check that the Plugin support Enum datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -247,7 +247,7 @@ def Enum(self):
 
 @TestScenario
 def LowCardinality(self):
-    """Check that the Plugin support LowCardinality type."""
+    """Check that the Plugin support LowCardinality datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -269,7 +269,7 @@ def LowCardinality(self):
 
 @TestScenario
 def Array(self):
-    """Check that the Plugin support Array type."""
+    """Check that the Plugin support Array datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -291,7 +291,7 @@ def Array(self):
 
 @TestScenario
 def Map(self):
-    """Check that the Plugin support Map type."""
+    """Check that the Plugin support Map datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -313,7 +313,7 @@ def Map(self):
 
 @TestScenario
 def SimpleAggregateFunction(self):
-    """Check that the Plugin support SimpleAggregateFunction type."""
+    """Check that the Plugin support SimpleAggregateFunction datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -335,7 +335,7 @@ def SimpleAggregateFunction(self):
 
 @TestScenario
 def AggregateFunction(self):
-    """Check that the Plugin support AggregateFunction type."""
+    """Check that the Plugin support AggregateFunction datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -357,7 +357,7 @@ def AggregateFunction(self):
 
 @TestScenario
 def Nested(self):
-    """Check that the Plugin support Nested type."""
+    """Check that the Plugin support Nested datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -379,7 +379,7 @@ def Nested(self):
 
 @TestScenario
 def Tuple(self):
-    """Check that the Plugin support Tuple type."""
+    """Check that the Plugin support Tuple datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -401,7 +401,7 @@ def Tuple(self):
 
 @TestScenario
 def Nullable(self):
-    """Check that the Plugin support Nullable type."""
+    """Check that the Plugin support Nullable datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -423,7 +423,7 @@ def Nullable(self):
 
 @TestScenario
 def IPv4(self):
-    """Check that the Plugin support IPv4 type."""
+    """Check that the Plugin support IPv4 datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -445,7 +445,7 @@ def IPv4(self):
 
 @TestScenario
 def IPv6(self):
-    """Check that the Plugin support IPv6 type."""
+    """Check that the Plugin support IPv6 datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -467,7 +467,7 @@ def IPv6(self):
 
 @TestScenario
 def Point(self):
-    """Check that the Plugin support Point type."""
+    """Check that the Plugin support Point datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -489,7 +489,7 @@ def Point(self):
 
 @TestScenario
 def Ring(self):
-    """Check that the Plugin support Ring type."""
+    """Check that the Plugin support Ring datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -511,7 +511,7 @@ def Ring(self):
 
 @TestScenario
 def Polygon(self):
-    """Check that the Plugin support Polygon type."""
+    """Check that the Plugin support Polygon datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -533,7 +533,7 @@ def Polygon(self):
 
 @TestScenario
 def MultiPolygon(self):
-    """Check that the Plugin support MultiPolygon type."""
+    """Check that the Plugin support MultiPolygon datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -555,7 +555,7 @@ def MultiPolygon(self):
 
 @TestScenario
 def Expression(self):
-    """Check that the Plugin support Expression type."""
+    """Check that the Plugin support Expression datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -577,7 +577,7 @@ def Expression(self):
 
 @TestScenario
 def Set(self):
-    """Check that the Plugin support Set type."""
+    """Check that the Plugin support Set datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -599,7 +599,7 @@ def Set(self):
 
 @TestScenario
 def Nothing(self):
-    """Check that the Plugin support Nothing type."""
+    """Check that the Plugin support Nothing datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -621,7 +621,7 @@ def Nothing(self):
 
 @TestScenario
 def Interval(self):
-    """Check that the Plugin support Interval type."""
+    """Check that the Plugin support Interval datatype."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -645,7 +645,7 @@ def Interval(self):
 @Requirements(RQ_SRS_Plugin_SupportedTypes("1.0"))
 @Name("supported types")
 def feature(self):
-    """Check that Plugin support all clickhouse datatypes."""
+    """Check that Plugin support all ClickHouse datatypes."""
 
     for scenario in loads(current_module(), Scenario):
         scenario()

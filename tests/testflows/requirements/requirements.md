@@ -767,6 +767,7 @@ The [Plugin] SHALL support the following functions in SQL queries:
 * `$deltaColumns`
 * `$increase`
 * `$increaseColumns`
+* `$lttb`
 
 These functions are templates of SQL queries. The user SHALL be allowed to check queries in the expanded format in the raw SQL editor interface.
 Only one function per query is allowed.
@@ -824,6 +825,11 @@ version: 1.0
 
 The [Plugin] SHALL support the `$increaseColumns` function in SQL editor. This function SHALL be a combination of $columns and $increase 
 functions for Counter-like metrics.
+
+### RQ.SRS.Plugin.Functions.Lttb
+version: 1.0
+
+The [Plugin] SHALL support the `$lttb` function in SQL editor.
 
 ## Supported types
 

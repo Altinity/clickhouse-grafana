@@ -363,6 +363,13 @@ version: 1.0
 The [Plugin] SHALL support specifying the default [ClickHouse] server database by using the `Default database` text field.
 This database name SHALL be prefilled in the query builder.
 
+## Specifying HTTP compression
+
+### RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression
+version: 1.0
+
+The [Plugin] SHALL support specifying HTTP compression option by using the `HTTP Compression` toggle.
+
 ## Creating Dashboards
 
 ### RQ.SRS.Plugin.Dashboards
@@ -652,7 +659,8 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
 ### RQ.SRS.Plugin.QuerySettings.Macros.Table
 version: 1.0
 
-The [Plugin] SHALL support `$table` macro in SQL edior. `$table` macro SHALL be replaced with selected table name from query setup interface.
+The [Plugin] SHALL support `$table` macro in SQL edior. `$table` macro SHALL be replaced with selected table name from query setup interface. 
+$table macro SHALL correctly escape any symbols that can be in [ClickHouse] table name.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.DateCol
 version: 1.0
@@ -683,7 +691,7 @@ The [Plugin] SHALL support `$interval` macro in SQL edior. `$interval` macro SHA
 version: 1.0
 
 The [Plugin] SHALL support `$timeFilterByColumn($column)` macro in SQL edior. `$timeFilterByColumn($column)` macro SHALL be replaced with currently 
-selected `Time Range` for a column passed as $column argument.
+selected `Time Range` for a column passed as $column argument. `$timeFilterByColumn($column)` macro SHALL work with any clickhouse date or time type. 
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries
 version: 1.0
@@ -708,7 +716,7 @@ value without single quotes.
 version: 1.0
 
 The [Plugin] SHALL support `$adhoc` macro in SQL edior. `$adhoc` macro SHALL be replaced with a rendered ad-hoc filter expression, 
-or "1" if no ad-hoc filters exist.
+or "1" if no ad-hoc filters exist. Adhoc filter SHALL support evaluating varchar field with numeric value.
 
 ## Variables Setup
 
@@ -783,7 +791,7 @@ The [Plugin] SHALL support the `$rate` function in SQL editor. This function SHA
 version: 1.0
 
 The [Plugin] SHALL support the `$columns(key, value)` function in SQL editor. This function SHALL query values as array of [key, value], 
-where key will be used as label.
+where key will be used as label. The [Plugin] SHALL support $columns function with fill option in query.
 
 ### RQ.SRS.Plugin.Functions.RateColumns
 version: 1.0
@@ -830,6 +838,11 @@ functions for Counter-like metrics.
 version: 1.0
 
 The [Plugin] SHALL support the `$lttb` function in SQL editor.
+
+### RQ.SRS.Plugin.Functions.SubQuery
+version: 1.0
+
+The [Plugin] SHALL support sub queries in SQL editor.
 
 ## Supported types
 

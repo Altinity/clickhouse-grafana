@@ -784,12 +784,20 @@ in edit panel view.
 ### RQ.SRS.Plugin.Alerts.AlertSetupPage
 version: 1.0
 
-The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in allert setup page.
+The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in alert setup page.
 
-### RQ.SRS.Plugin.Alerts.RuleType
+### RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged
 version: 1.0
 
-The [Plugin] SHALL support `Grafana-managed` and `Data source-managed` rule types by choosing rule type in allert setup page.
+The [Plugin] SHALL support `Grafana-managed` rule type by choosing rule type in alert setup page. 
+This alert SHALL be captured by grafana.
+
+
+### RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged
+version: 1.0
+
+The [Plugin] SHALL support `Data source-managed` rule type by choosing rule type in alert setup page. 
+This alert SHALL be captured by data source.
 
 ## Functions
 

@@ -632,6 +632,38 @@ The [Plugin] SHALL support the following visualization types for data:
 * Node Graph
 * Traces
 
+#### RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes
+version: 1.0
+
+The [Plugin] SHALL support the following visualization types for the following ClickHouse datatypes:
+
+
+| Vizualization Type | Supported ClickHouse datatypes                                                      |
+|--------------------|-------------------------------------------------------------------------------------|
+| Time series        |                                                                                     |
+| Bar chart          |                                                                                     |
+| Stat               |                                                                                     |
+| Gauge              |                                                                                     |
+| Bar Gauge          |                                                                                     |
+| Pie chart          |                                                                                     |
+| State timeline     |                                                                                     |
+| Heatmap            |                                                                                     |
+| Status history     |                                                                                     |
+| Histogram          |                                                                                     |
+| Text               |                                                                                     |
+| Alert List         |                                                                                     |
+| Dashboard list     |                                                                                     |
+| News               |                                                                                     |
+| Annotation list    |                                                                                     |
+| Candlestick        |                                                                                     |
+| Canvas             |                                                                                     |
+| Flame Graph        |                                                                                     |
+| Geomap             |                                                                                     |
+| Logs               |                                                                                     |
+| Node Graph         |                                                                                     |
+| Traces             |                                                                                     |
+
+
 ## Macros
 
 ### RQ.SRS.Plugin.QuerySettings.Macros
@@ -885,10 +917,10 @@ The [Plugin] SHALL support scalar data types. The following data types SHALL be 
 | Interval                                                                            |                      |
 
 
-### RQ.SRS.Plugin.SupportedDataTypes
+### RQ.SRS.Plugin.SupportedDataTypes.LimitValues
 version: 1.0
 
-The [Plugin] SHALL support max and min values of grafana datatypes.
+The [Plugin] SHALL support max and min values of [ClickHouse] datatypes.
 
 ## Versions Compatibility
 

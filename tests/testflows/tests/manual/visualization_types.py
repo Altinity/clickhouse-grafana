@@ -1,6 +1,6 @@
 from requirements.requirements import *
 from testflows.core import *
-from compare_tests.steps import *
+from tests.manual.steps import *
 
 
 @TestScenario

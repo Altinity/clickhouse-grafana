@@ -1,5 +1,5 @@
 from testflows.core import *
-
+from testflows.connect import Shell
 
 @TestStep(Given)
 def create_table(self, insert_data=True):
@@ -59,3 +59,27 @@ def add_variable(self, variable_type):
     finally:
         with Finally("I delete variable"):
             pass
+
+
+@TestStep
+def display(self, picture, shell):
+    with Step("I open picture"):
+        try:
+            shell(f"display '{picture}'")
+        except OSError:
+            pass
+
+
+@TestStep
+def close(self, shell):
+    pause()
+    shell.close()
+
+
+@TestStep(When)
+def open_picture(self, picture):
+    shell = Shell()
+    shell.timeout = 300
+    with When("I open picture"):
+        Step(test=display, parallel=True)(picture=picture, shell=shell)
+        Step(test=close, parallel=True)(shell=shell)

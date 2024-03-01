@@ -1,9 +1,10 @@
 from requirements.requirements import *
 from testflows.core import *
-from compare_tests.steps import *
+from tests.manual.steps import *
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_Dashboards("1.0"))
 def dashboard_check(self):
     """Check that Plugin supports creating dashboard."""
@@ -16,6 +17,7 @@ def dashboard_check(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_Panels("1.0"))
 def panel_check(self):
     """Check that Plugin supports creating panels."""
@@ -31,26 +33,33 @@ def panel_check(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_Panels_Repeated("1.0"))
 def create_repeated_panel(self):
     """Check that Plugin supports creating repeated panels"""
     with Given("I create new dashboard"):
         create_dashboard()
 
-    with When("I add variable with multiple values"):
+    with When("I add variable with two values",
+              description="Click edit dashboard > click 'Add variable' button"
+                          "SELECT number from numbers(2)"):
         add_variable(variable_type="query")
+        open_picture(picture="tests/manual/screenshots/options_for_variable_for_repeated_panels.png")
 
     with When("I create new panel"):
         create_panel()
 
     with When("I setup repeated panels"):
+        open_picture(picture="tests/manual/screenshots/panel_setup_for_repeated_panel.png")
         pass
 
     with Then("I check two panels are created"):
+        open_picture(picture="tests/manual/screenshots/repeated_panels.png")
         pass
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_TimeRangeSelector("1.0"))
 def time_range_selector_for_dashboard(self):
     """Check that Plugin supports time range selector for dashboard"""
@@ -66,6 +75,7 @@ def time_range_selector_for_dashboard(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_TimeRangeSelector_Zoom("1.0"))
 def time_range_selector_zoom_for_dashboard(self):
     """Check that Plugin supports zoom for dashboards"""
@@ -95,6 +105,7 @@ def time_range_selector_zoom_for_dashboard(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_TimeRangeSelector("1.0"))
 def time_range_selector_for_panel(self):
     """Check that Plugin supports time range selector for panel"""
@@ -102,7 +113,7 @@ def time_range_selector_for_panel(self):
     with Given("I go to clickhouse dashboard"):
         pass
 
-    with Given("I go to repeated postgres panel"):
+    with Given("I go to repeated postgres panel", description="I click edit"):
         pass
 
     with When("I change time range in the time range dropdown menu"):
@@ -113,6 +124,7 @@ def time_range_selector_for_panel(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_TimeRangeSelector_Zoom("1.0"))
 def time_range_selector_zoom_for_panel(self):
     """Check that Plugin supports zoom for panels"""
@@ -120,7 +132,7 @@ def time_range_selector_zoom_for_panel(self):
     with Given("I go to clickhouse dashboard"):
         pass
 
-    with Given("I go to repeated postgres panel"):
+    with Given("I go to repeated postgres panel", description="I click edit"):
         pass
 
     with When("I change time range", description="zoom in"):
@@ -145,6 +157,7 @@ def time_range_selector_zoom_for_panel(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_FillActual)
 def changing_size_of_visualization(self):
     """Check that Plugin supports changing size of visualization."""
@@ -152,7 +165,7 @@ def changing_size_of_visualization(self):
     with Given("I go to clickhouse dashboard"):
         pass
 
-    with Given("I go to repeated postgres panel"):
+    with Given("I go to repeated postgres panel", description="I click edit"):
         pass
 
     with When("I click on Fill/Actual toggle"):

@@ -1,14 +1,16 @@
 from requirements.requirements import *
 from testflows.core import *
-from compare_tests.steps import *
+from tests.manual.steps import *
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_MultiUserUsage_SamePanel("1.0"))
-def multi_user_usage_parallel(self):
+def multi_user_usage_parallel_panel(self):
     """Check that Plugin supports access to the same panel from different users at the same time."""
 
     with Given("I create new user"):
+        open_picture(picture="tests/manual/screenshots/create_user.png")
         create_user()
 
     with When("I go to the clickhouse dashboard from both users to the same panel"):
@@ -19,11 +21,13 @@ def multi_user_usage_parallel(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_MultiUserUsage_DifferentPanels("1.0"))
 def multi_user_usage_different_panels(self):
     """Check that Plugin supports access to different panels from different users at the same time."""
 
     with Given("I create new user"):
+        open_picture(picture="tests/manual/screenshots/create_user.png")
         create_user()
 
     with When("I go to the clickhouse dashboard from both users to the different panels"):
@@ -34,11 +38,13 @@ def multi_user_usage_different_panels(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_MultiUserUsage_SameDashboard("1.0"))
-def multi_user_usage_parallel(self):
+def multi_user_usage_parallel_dashboard(self):
     """Check that Plugin supports access to the same dashboard from different users at the same time."""
 
     with Given("I create new user"):
+        open_picture(picture="tests/manual/screenshots/create_user.png")
         create_user()
 
     with When("I go to the clickhouse dashboard from both users"):
@@ -49,11 +55,13 @@ def multi_user_usage_parallel(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_MultiUserUsage_DifferentDashboards("1.0"))
 def multi_user_usage_different_panels(self):
     """Check that Plugin supports access to different dashboards from different users at the same time."""
 
     with Given("I create new user"):
+        open_picture(picture="tests/manual/screenshots/create_user.png")
         create_user()
 
     with When("I go to the different dashboards from both users"):

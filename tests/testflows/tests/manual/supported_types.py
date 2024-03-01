@@ -1,9 +1,10 @@
 from requirements.requirements import *
 from testflows.core import *
-from compare_tests.steps import *
+from tests.manual.steps import *
 
 
 @TestScenario
+@Okayed("Ok")
 def Uint(self):
     """Check that the Plugin support UInt datatype."""
 
@@ -26,6 +27,7 @@ def Uint(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Int(self):
     """Check that the Plugin support Int datatype."""
 
@@ -48,6 +50,7 @@ def Int(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Float(self):
     """Check that the Plugin support Float datatype."""
 
@@ -70,6 +73,7 @@ def Float(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Decimal(self):
     """Check that the Plugin support Decimal datatype."""
 
@@ -92,6 +96,7 @@ def Decimal(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Bool(self):
     """Check that the Plugin support Bool datatype."""
 
@@ -114,6 +119,7 @@ def Bool(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def String(self):
     """Check that the Plugin support String datatype."""
 
@@ -136,6 +142,7 @@ def String(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def FixedString(self):
     """Check that the Plugin support FixedString(N) datatype."""
 
@@ -158,6 +165,7 @@ def FixedString(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Date(self):
     """Check that the Plugin support Date datatype."""
 
@@ -180,6 +188,7 @@ def Date(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def JSON(self):
     """Check that the Plugin support JSON datatype."""
 
@@ -202,6 +211,7 @@ def JSON(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def UUID(self):
     """Check that the Plugin support UUID datatype."""
 
@@ -224,6 +234,7 @@ def UUID(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Enum(self):
     """Check that the Plugin support Enum datatype."""
 
@@ -246,6 +257,7 @@ def Enum(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def LowCardinality(self):
     """Check that the Plugin support LowCardinality datatype."""
 
@@ -268,6 +280,7 @@ def LowCardinality(self):
 
 
 @TestScenario
+@XFailed("not supported")
 def Array(self):
     """Check that the Plugin support Array datatype."""
 
@@ -290,6 +303,7 @@ def Array(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Map(self):
     """Check that the Plugin support Map datatype."""
 
@@ -312,6 +326,7 @@ def Map(self):
 
 
 @TestScenario
+@XFailed("not supported")
 def SimpleAggregateFunction(self):
     """Check that the Plugin support SimpleAggregateFunction datatype."""
 
@@ -334,6 +349,7 @@ def SimpleAggregateFunction(self):
 
 
 @TestScenario
+@XFailed("not supported")
 def AggregateFunction(self):
     """Check that the Plugin support AggregateFunction datatype."""
 
@@ -356,6 +372,7 @@ def AggregateFunction(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Nested(self):
     """Check that the Plugin support Nested datatype."""
 
@@ -378,6 +395,7 @@ def Nested(self):
 
 
 @TestScenario
+@XFailed("not supported")
 def Tuple(self):
     """Check that the Plugin support Tuple datatype."""
 
@@ -400,6 +418,7 @@ def Tuple(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Nullable(self):
     """Check that the Plugin support Nullable datatype."""
 
@@ -422,6 +441,7 @@ def Nullable(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def IPv4(self):
     """Check that the Plugin support IPv4 datatype."""
 
@@ -444,6 +464,7 @@ def IPv4(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def IPv6(self):
     """Check that the Plugin support IPv6 datatype."""
 
@@ -466,6 +487,7 @@ def IPv6(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Point(self):
     """Check that the Plugin support Point datatype."""
 
@@ -488,6 +510,7 @@ def Point(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Ring(self):
     """Check that the Plugin support Ring datatype."""
 
@@ -510,6 +533,7 @@ def Ring(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Polygon(self):
     """Check that the Plugin support Polygon datatype."""
 
@@ -532,6 +556,7 @@ def Polygon(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def MultiPolygon(self):
     """Check that the Plugin support MultiPolygon datatype."""
 
@@ -554,6 +579,7 @@ def MultiPolygon(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Expression(self):
     """Check that the Plugin support Expression datatype."""
 
@@ -576,6 +602,7 @@ def Expression(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Set(self):
     """Check that the Plugin support Set datatype."""
 
@@ -598,6 +625,7 @@ def Set(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Nothing(self):
     """Check that the Plugin support Nothing datatype."""
 
@@ -620,6 +648,7 @@ def Nothing(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def Interval(self):
     """Check that the Plugin support Interval datatype."""
 
@@ -642,7 +671,7 @@ def Interval(self):
 
 
 @TestFeature
-@Requirements(RQ_SRS_Plugin_SupportedTypes("1.0"))
+@Requirements(RQ_SRS_Plugin_SupportedDataTypes("1.0"))
 @Name("supported types")
 def feature(self):
     """Check that Plugin support all ClickHouse datatypes."""

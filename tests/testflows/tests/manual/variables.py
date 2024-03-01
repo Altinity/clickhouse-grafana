@@ -1,6 +1,6 @@
 from requirements.requirements import *
 from testflows.core import *
-from compare_tests.steps import *
+from tests.manual.steps import *
 
 
 @TestOutline(Scenario)
@@ -16,19 +16,16 @@ def test_variable_type(self, variable_type):
     with Given("I add variable"):
         add_variable(variable_type=variable_type)
 
-    with Given("I create new table",
-               description="table contain the following datatypes: timestamp, "
-                           "UInt8"):
-        create_table()
-
-    with When(f"I create visualizations for this table using variable with {variable_type} type"):
+    with When(f"I create panel with variable in name for this table using variable with {variable_type} type"):
         pass
 
     with Then("I check that visualizations from different plugin versions are simular"):
+        open_picture(picture="tests/manual/screenshots/variable.png")
         pass
 
 
 @TestScenario
+@Okayed("Ok")
 def query_variable(self):
     """Check that the Plugin support query variable."""
 
@@ -36,6 +33,7 @@ def query_variable(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def custom_variable(self):
     """Check that the Plugin support custom variable."""
 
@@ -43,6 +41,7 @@ def custom_variable(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def text_box_variable(self):
     """Check that the Plugin support text box variable."""
 
@@ -50,6 +49,7 @@ def text_box_variable(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def constant_variable(self):
     """Check that the Plugin support constant variable."""
 
@@ -57,6 +57,7 @@ def constant_variable(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def data_source_variable(self):
     """Check that the Plugin support sata source variable."""
 
@@ -64,6 +65,7 @@ def data_source_variable(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def interval_variable(self):
     """Check that the Plugin support interval variable."""
 
@@ -71,6 +73,7 @@ def interval_variable(self):
 
 
 @TestScenario
+@Okayed("Ok")
 def ad_hoc_filter_variable(self):
     """Check that the Plugin support ad hoc filter variable."""
 

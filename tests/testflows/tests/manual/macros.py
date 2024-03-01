@@ -1,9 +1,10 @@
 from requirements.requirements import *
 from testflows.core import *
-from compare_tests.steps import *
+from tests.manual.steps import *
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_Table("1.0"))
 def table(self):
     """Check that the Plugin support $table macro."""
@@ -30,6 +31,7 @@ def table(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_DateCol("1.0"))
 def dateCol(self):
     """Check that the Plugin support $dateCol macro."""
@@ -56,6 +58,7 @@ def dateCol(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_DateTimeCol("1.0"))
 def dateTimeCol(self):
     """Check that the Plugin support $dateTimeCol macro."""
@@ -82,6 +85,7 @@ def dateTimeCol(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_From("1.0"))
 def from_macro(self):
     """Check that the Plugin support $from macro."""
@@ -105,6 +109,7 @@ def from_macro(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_To("1.0"))
 def to(self):
     """Check that the Plugin support $to macro."""
@@ -128,6 +133,7 @@ def to(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_Interval("1.0"))
 def interval(self):
     """Check that the Plugin support $to macro."""
@@ -151,6 +157,7 @@ def interval(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_TimeFilterByColumn("1.0"))
 def timeFilterByColumn(self):
     """Check that the Plugin support $timeFilterByColumn($column) macro."""
@@ -174,6 +181,7 @@ def timeFilterByColumn(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_TimeSeries("1.0"))
 def timeSeries(self):
     """Check that the Plugin support $timeSeries macro."""
@@ -197,6 +205,7 @@ def timeSeries(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_NaturalTimeSeries("1.0"))
 def naturalTimeSeries(self):
     """Check that the Plugin support $naturalTimeSeries macro."""
@@ -220,6 +229,7 @@ def naturalTimeSeries(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_Unescape("1.0"))
 def unescape(self):
     """Check that the Plugin support $unescape($variable) macro."""
@@ -243,6 +253,7 @@ def unescape(self):
 
 
 @TestScenario
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_Adhoc("1.0"))
 def adhoc(self):
     """Check that the Plugin support $adhoc macro."""

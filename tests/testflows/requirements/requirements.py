@@ -438,6 +438,22 @@ RQ_SRS_Plugin_DataSourceSetupView_DefaultDatabase = Requirement(
     num='21.1'
 )
 
+RQ_SRS_Plugin_DataSourceSetupView_HTTPCompression = Requirement(
+    name='RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support specifying HTTP compression option by using the `HTTP Compression` toggle.\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='22.1'
+)
+
 RQ_SRS_Plugin_Dashboards = Requirement(
     name='RQ.SRS.Plugin.Dashboards',
     version='1.0',
@@ -451,7 +467,7 @@ RQ_SRS_Plugin_Dashboards = Requirement(
     ),
     link=None,
     level=2,
-    num='22.1'
+    num='23.1'
 )
 
 RQ_SRS_Plugin_Panels = Requirement(
@@ -468,7 +484,7 @@ RQ_SRS_Plugin_Panels = Requirement(
     ),
     link=None,
     level=2,
-    num='23.1'
+    num='24.1'
 )
 
 RQ_SRS_Plugin_Panels_Repeated = Requirement(
@@ -484,7 +500,7 @@ RQ_SRS_Plugin_Panels_Repeated = Requirement(
     ),
     link=None,
     level=2,
-    num='23.2'
+    num='24.2'
 )
 
 RQ_SRS_Plugin_MultiUserUsage = Requirement(
@@ -501,7 +517,7 @@ RQ_SRS_Plugin_MultiUserUsage = Requirement(
     ),
     link=None,
     level=2,
-    num='24.1'
+    num='25.1'
 )
 
 RQ_SRS_Plugin_MultiUserUsage_SamePanel = Requirement(
@@ -518,7 +534,7 @@ RQ_SRS_Plugin_MultiUserUsage_SamePanel = Requirement(
     ),
     link=None,
     level=2,
-    num='24.2'
+    num='25.2'
 )
 
 RQ_SRS_Plugin_MultiUserUsage_DifferentPanels = Requirement(
@@ -535,7 +551,7 @@ RQ_SRS_Plugin_MultiUserUsage_DifferentPanels = Requirement(
     ),
     link=None,
     level=2,
-    num='24.3'
+    num='25.3'
 )
 
 RQ_SRS_Plugin_MultiUserUsage_SameDashboard = Requirement(
@@ -552,7 +568,7 @@ RQ_SRS_Plugin_MultiUserUsage_SameDashboard = Requirement(
     ),
     link=None,
     level=2,
-    num='24.4'
+    num='25.4'
 )
 
 RQ_SRS_Plugin_MultiUserUsage_DifferentDashboards = Requirement(
@@ -568,7 +584,7 @@ RQ_SRS_Plugin_MultiUserUsage_DifferentDashboards = Requirement(
     ),
     link=None,
     level=2,
-    num='24.5'
+    num='25.5'
 )
 
 RQ_SRS_Plugin_QuerySetup = Requirement(
@@ -584,7 +600,7 @@ RQ_SRS_Plugin_QuerySetup = Requirement(
     ),
     link=None,
     level=2,
-    num='25.1'
+    num='26.1'
 )
 
 RQ_SRS_Plugin_QuerySetupInterface = Requirement(
@@ -610,7 +626,7 @@ RQ_SRS_Plugin_QuerySetupInterface = Requirement(
     ),
     link=None,
     level=2,
-    num='26.1'
+    num='27.1'
 )
 
 RQ_SRS_Plugin_QueryOptions = Requirement(
@@ -634,7 +650,7 @@ RQ_SRS_Plugin_QueryOptions = Requirement(
     ),
     link=None,
     level=2,
-    num='27.1'
+    num='28.1'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface = Requirement(
@@ -664,7 +680,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface = Requirement(
     ),
     link=None,
     level=2,
-    num='28.1'
+    num='29.1'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_SQLEditor = Requirement(
@@ -680,7 +696,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_SQLEditor = Requirement(
     ),
     link=None,
     level=2,
-    num='28.2'
+    num='29.2'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_Extrapolation = Requirement(
@@ -696,7 +712,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_Extrapolation = Requirement(
     ),
     link=None,
     level=2,
-    num='28.3'
+    num='29.3'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_SkipComments = Requirement(
@@ -712,7 +728,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_SkipComments = Requirement(
     ),
     link=None,
     level=2,
-    num='28.4'
+    num='29.4'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_Step = Requirement(
@@ -728,7 +744,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_Step = Requirement(
     ),
     link=None,
     level=2,
-    num='28.5'
+    num='29.5'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_Round = Requirement(
@@ -744,7 +760,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_Round = Requirement(
     ),
     link=None,
     level=2,
-    num='28.6'
+    num='29.6'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_Resolution = Requirement(
@@ -760,7 +776,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_Resolution = Requirement(
     ),
     link=None,
     level=2,
-    num='28.7'
+    num='29.7'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_FormatAs = Requirement(
@@ -777,7 +793,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_FormatAs = Requirement(
     ),
     link=None,
     level=2,
-    num='28.8'
+    num='29.8'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_ShowHelp = Requirement(
@@ -793,7 +809,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_ShowHelp = Requirement(
     ),
     link=None,
     level=2,
-    num='28.9'
+    num='29.9'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_ShowGeneratedSQL = Requirement(
@@ -810,7 +826,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_ShowGeneratedSQL = Requirement(
     ),
     link=None,
     level=2,
-    num='28.10'
+    num='29.10'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_ReformatQuery = Requirement(
@@ -826,7 +842,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_ReformatQuery = Requirement(
     ),
     link=None,
     level=2,
-    num='28.11'
+    num='29.11'
 )
 
 RQ_SRS_Plugin_AutoCompleteInQueries = Requirement(
@@ -842,7 +858,7 @@ RQ_SRS_Plugin_AutoCompleteInQueries = Requirement(
     ),
     link=None,
     level=2,
-    num='29.1'
+    num='30.1'
 )
 
 RQ_SRS_Plugin_TimeRangeSelector = Requirement(
@@ -858,7 +874,7 @@ RQ_SRS_Plugin_TimeRangeSelector = Requirement(
     ),
     link=None,
     level=2,
-    num='30.1'
+    num='31.1'
 )
 
 RQ_SRS_Plugin_TimeRangeSelector_Zoom = Requirement(
@@ -874,7 +890,7 @@ RQ_SRS_Plugin_TimeRangeSelector_Zoom = Requirement(
     ),
     link=None,
     level=2,
-    num='30.2'
+    num='31.2'
 )
 
 RQ_SRS_Plugin_FillActual = Requirement(
@@ -890,7 +906,7 @@ RQ_SRS_Plugin_FillActual = Requirement(
     ),
     link=None,
     level=2,
-    num='31.1'
+    num='32.1'
 )
 
 RQ_SRS_Plugin_RefreshDataboard = Requirement(
@@ -906,7 +922,7 @@ RQ_SRS_Plugin_RefreshDataboard = Requirement(
     ),
     link=None,
     level=2,
-    num='32.1'
+    num='33.1'
 )
 
 RQ_SRS_Plugin_QueryInspector = Requirement(
@@ -926,7 +942,7 @@ RQ_SRS_Plugin_QueryInspector = Requirement(
     ),
     link=None,
     level=2,
-    num='33.1'
+    num='34.1'
 )
 
 RQ_SRS_Plugin_QueryInspector_QueryTab = Requirement(
@@ -944,7 +960,7 @@ RQ_SRS_Plugin_QueryInspector_QueryTab = Requirement(
     ),
     link=None,
     level=2,
-    num='33.2'
+    num='34.2'
 )
 
 RQ_SRS_Plugin_Visualization = Requirement(
@@ -960,7 +976,7 @@ RQ_SRS_Plugin_Visualization = Requirement(
     ),
     link=None,
     level=2,
-    num='34.1'
+    num='35.1'
 )
 
 RQ_SRS_Plugin_Visualization_Table = Requirement(
@@ -976,7 +992,7 @@ RQ_SRS_Plugin_Visualization_Table = Requirement(
     ),
     link=None,
     level=3,
-    num='34.3.1'
+    num='35.3.1'
 )
 
 RQ_SRS_Plugin_Visualization_VisualizationTypes = Requirement(
@@ -1015,7 +1031,50 @@ RQ_SRS_Plugin_Visualization_VisualizationTypes = Requirement(
     ),
     link=None,
     level=3,
-    num='34.4.1'
+    num='35.4.1'
+)
+
+RQ_SRS_Plugin_Visualization_VisualizationTypes_DataTypes = Requirement(
+    name='RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support the following visualization types for the following ClickHouse datatypes:\n'
+        '\n'
+        '\n'
+        '| Vizualization Type | Supported ClickHouse datatypes                                                      |\n'
+        '|--------------------|-------------------------------------------------------------------------------------|\n'
+        '| Time series        |                                                                                     |\n'
+        '| Bar chart          |                                                                                     |\n'
+        '| Stat               |                                                                                     |\n'
+        '| Gauge              |                                                                                     |\n'
+        '| Bar Gauge          |                                                                                     |\n'
+        '| Pie chart          |                                                                                     |\n'
+        '| State timeline     |                                                                                     |\n'
+        '| Heatmap            |                                                                                     |\n'
+        '| Status history     |                                                                                     |\n'
+        '| Histogram          |                                                                                     |\n'
+        '| Text               |                                                                                     |\n'
+        '| Alert List         |                                                                                     |\n'
+        '| Dashboard list     |                                                                                     |\n'
+        '| News               |                                                                                     |\n'
+        '| Annotation list    |                                                                                     |\n'
+        '| Candlestick        |                                                                                     |\n'
+        '| Canvas             |                                                                                     |\n'
+        '| Flame Graph        |                                                                                     |\n'
+        '| Geomap             |                                                                                     |\n'
+        '| Logs               |                                                                                     |\n'
+        '| Node Graph         |                                                                                     |\n'
+        '| Traces             |                                                                                     |\n'
+        '\n'
+        '\n'
+    ),
+    link=None,
+    level=3,
+    num='35.4.2'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros = Requirement(
@@ -1048,7 +1107,7 @@ RQ_SRS_Plugin_QuerySettings_Macros = Requirement(
     ),
     link=None,
     level=2,
-    num='35.1'
+    num='36.1'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_Table = Requirement(
@@ -1059,12 +1118,13 @@ RQ_SRS_Plugin_QuerySettings_Macros_Table = Requirement(
     type=None,
     uid=None,
     description=(
-        'The [Plugin] SHALL support `$table` macro in SQL edior. `$table` macro SHALL be replaced with selected table name from query setup interface.\n'
+        'The [Plugin] SHALL support `$table` macro in SQL edior. `$table` macro SHALL be replaced with selected table name from query setup interface. \n'
+        '$table macro SHALL correctly escape any symbols that can be in [ClickHouse] table name.\n'
         '\n'
     ),
     link=None,
     level=2,
-    num='35.2'
+    num='36.2'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_DateCol = Requirement(
@@ -1075,12 +1135,12 @@ RQ_SRS_Plugin_QuerySettings_Macros_DateCol = Requirement(
     type=None,
     uid=None,
     description=(
-        'The [Plugin] SHALL support `$dateCol` macro in SQL edior. `$dateCol` macro SHALL be replaced with selected table name from query setup interface.\n'
+        'The [Plugin] SHALL support `$dateCol` macro in SQL edior. `$dateCol` macro SHALL be replaced with selected Column:Date from query setup interface.\n'
         '\n'
     ),
     link=None,
     level=2,
-    num='35.3'
+    num='36.3'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_DateTimeCol = Requirement(
@@ -1096,7 +1156,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_DateTimeCol = Requirement(
     ),
     link=None,
     level=2,
-    num='35.4'
+    num='36.4'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_From = Requirement(
@@ -1112,7 +1172,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_From = Requirement(
     ),
     link=None,
     level=2,
-    num='35.5'
+    num='36.5'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_To = Requirement(
@@ -1128,7 +1188,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_To = Requirement(
     ),
     link=None,
     level=2,
-    num='35.6'
+    num='36.6'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_Interval = Requirement(
@@ -1144,7 +1204,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_Interval = Requirement(
     ),
     link=None,
     level=2,
-    num='35.7'
+    num='36.7'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_TimeFilterByColumn = Requirement(
@@ -1156,12 +1216,12 @@ RQ_SRS_Plugin_QuerySettings_Macros_TimeFilterByColumn = Requirement(
     uid=None,
     description=(
         'The [Plugin] SHALL support `$timeFilterByColumn($column)` macro in SQL edior. `$timeFilterByColumn($column)` macro SHALL be replaced with currently \n'
-        'selected `Time Range` for a column passed as $column argument.\n'
+        'selected `Time Range` for a column passed as $column argument. `$timeFilterByColumn($column)` macro SHALL work with any clickhouse date or time type. \n'
         '\n'
     ),
     link=None,
     level=2,
-    num='35.8'
+    num='36.8'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_TimeSeries = Requirement(
@@ -1178,7 +1238,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_TimeSeries = Requirement(
     ),
     link=None,
     level=2,
-    num='35.9'
+    num='36.9'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_NaturalTimeSeries = Requirement(
@@ -1195,7 +1255,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_NaturalTimeSeries = Requirement(
     ),
     link=None,
     level=2,
-    num='35.10'
+    num='36.10'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_Unescape = Requirement(
@@ -1213,7 +1273,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_Unescape = Requirement(
     ),
     link=None,
     level=2,
-    num='35.11'
+    num='36.11'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_Adhoc = Requirement(
@@ -1225,12 +1285,12 @@ RQ_SRS_Plugin_QuerySettings_Macros_Adhoc = Requirement(
     uid=None,
     description=(
         'The [Plugin] SHALL support `$adhoc` macro in SQL edior. `$adhoc` macro SHALL be replaced with a rendered ad-hoc filter expression, \n'
-        'or "1" if no ad-hoc filters exist.\n'
+        'or "1" if no ad-hoc filters exist. Adhoc filter SHALL support evaluating varchar field with numeric value.\n'
         '\n'
     ),
     link=None,
     level=2,
-    num='35.12'
+    num='36.12'
 )
 
 RQ_SRS_Plugin_Variables = Requirement(
@@ -1254,7 +1314,7 @@ RQ_SRS_Plugin_Variables = Requirement(
     ),
     link=None,
     level=2,
-    num='36.1'
+    num='37.1'
 )
 
 RQ_SRS_Plugin_Annotations = Requirement(
@@ -1271,56 +1331,75 @@ RQ_SRS_Plugin_Annotations = Requirement(
     ),
     link=None,
     level=2,
-    num='37.1'
+    num='38.1'
 )
 
-RQ_SRS_Plugin_Allerts = Requirement(
-    name='RQ.SRS.Plugin.Allerts',
+RQ_SRS_Plugin_Alerts = Requirement(
+    name='RQ.SRS.Plugin.Alerts',
     version='1.0',
     priority=None,
     group=None,
     type=None,
     uid=None,
     description=(
-        'The [Plugin] SHALL support [Grafana] allerts setup for panels by clicking `New alert rule` button in `Alert rule` tab\n'
+        'The [Plugin] SHALL support [Grafana] alerts setup for panels by clicking `New alert rule` button in `Alert rule` tab\n'
         'in edit panel view.\n'
         '\n'
     ),
     link=None,
     level=2,
-    num='38.1'
+    num='39.1'
 )
 
-RQ_SRS_Plugin_Allerts_AllertSetupPage = Requirement(
-    name='RQ.SRS.Plugin.Allerts.AllertSetupPage',
+RQ_SRS_Plugin_Alerts_AlertSetupPage = Requirement(
+    name='RQ.SRS.Plugin.Alerts.AlertSetupPage',
     version='1.0',
     priority=None,
     group=None,
     type=None,
     uid=None,
     description=(
-        'The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in allert setup page.\n'
+        'The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in alert setup page.\n'
         '\n'
     ),
     link=None,
     level=2,
-    num='38.2'
+    num='39.2'
 )
 
-RQ_SRS_Plugin_Allerts_RuleType = Requirement(
-    name='RQ.SRS.Plugin.Allerts.RuleType',
+RQ_SRS_Plugin_Alerts_RuleType_GrafanaManaged = Requirement(
+    name='RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged',
     version='1.0',
     priority=None,
     group=None,
     type=None,
     uid=None,
     description=(
-        'The [Plugin] SHALL support `Grafana-managed` and `Data source-managed` rule types by choosing rule type in allert setup page.\n'
+        'The [Plugin] SHALL support `Grafana-managed` rule type by choosing rule type in alert setup page. \n'
+        'This alert SHALL be captured by grafana.\n'
+        '\n'
         '\n'
     ),
     link=None,
     level=2,
-    num='38.3'
+    num='39.3'
+)
+
+RQ_SRS_Plugin_Alerts_RuleType_DataSourceManaged = Requirement(
+    name='RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support `Data source-managed` rule type by choosing rule type in alert setup page. \n'
+        'This alert SHALL be captured by data source.\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='39.4'
 )
 
 RQ_SRS_Plugin_Functions = Requirement(
@@ -1342,6 +1421,7 @@ RQ_SRS_Plugin_Functions = Requirement(
         '* `$deltaColumns`\n'
         '* `$increase`\n'
         '* `$increaseColumns`\n'
+        '* `$lttb`\n'
         '\n'
         'These functions are templates of SQL queries. The user SHALL be allowed to check queries in the expanded format in the raw SQL editor interface.\n'
         'Only one function per query is allowed.\n'
@@ -1351,7 +1431,7 @@ RQ_SRS_Plugin_Functions = Requirement(
     ),
     link=None,
     level=2,
-    num='39.1'
+    num='40.1'
 )
 
 RQ_SRS_Plugin_Functions_Rate = Requirement(
@@ -1367,7 +1447,7 @@ RQ_SRS_Plugin_Functions_Rate = Requirement(
     ),
     link=None,
     level=2,
-    num='39.2'
+    num='40.2'
 )
 
 RQ_SRS_Plugin_Functions_Columns = Requirement(
@@ -1379,12 +1459,12 @@ RQ_SRS_Plugin_Functions_Columns = Requirement(
     uid=None,
     description=(
         'The [Plugin] SHALL support the `$columns(key, value)` function in SQL editor. This function SHALL query values as array of [key, value], \n'
-        'where key will be used as label.\n'
+        'where key will be used as label. The [Plugin] SHALL support $columns function with fill option in query.\n'
         '\n'
     ),
     link=None,
     level=2,
-    num='39.3'
+    num='40.3'
 )
 
 RQ_SRS_Plugin_Functions_RateColumns = Requirement(
@@ -1400,7 +1480,7 @@ RQ_SRS_Plugin_Functions_RateColumns = Requirement(
     ),
     link=None,
     level=2,
-    num='39.4'
+    num='40.4'
 )
 
 RQ_SRS_Plugin_Functions_PerSecond = Requirement(
@@ -1417,7 +1497,7 @@ RQ_SRS_Plugin_Functions_PerSecond = Requirement(
     ),
     link=None,
     level=2,
-    num='39.5'
+    num='40.5'
 )
 
 RQ_SRS_Plugin_Functions_PerSecondColumns = Requirement(
@@ -1434,7 +1514,7 @@ RQ_SRS_Plugin_Functions_PerSecondColumns = Requirement(
     ),
     link=None,
     level=2,
-    num='39.6'
+    num='40.6'
 )
 
 RQ_SRS_Plugin_Functions_Delta = Requirement(
@@ -1451,7 +1531,7 @@ RQ_SRS_Plugin_Functions_Delta = Requirement(
     ),
     link=None,
     level=2,
-    num='39.7'
+    num='40.7'
 )
 
 RQ_SRS_Plugin_Functions_DeltaColumns = Requirement(
@@ -1468,7 +1548,7 @@ RQ_SRS_Plugin_Functions_DeltaColumns = Requirement(
     ),
     link=None,
     level=2,
-    num='39.8'
+    num='40.8'
 )
 
 RQ_SRS_Plugin_Functions_Increase = Requirement(
@@ -1485,7 +1565,7 @@ RQ_SRS_Plugin_Functions_Increase = Requirement(
     ),
     link=None,
     level=2,
-    num='39.9'
+    num='40.9'
 )
 
 RQ_SRS_Plugin_Functions_IncreaseColumns = Requirement(
@@ -1502,11 +1582,43 @@ RQ_SRS_Plugin_Functions_IncreaseColumns = Requirement(
     ),
     link=None,
     level=2,
-    num='39.10'
+    num='40.10'
 )
 
-RQ_SRS_Plugin_SupportedTypes = Requirement(
-    name='RQ.SRS.Plugin.SupportedTypes',
+RQ_SRS_Plugin_Functions_Lttb = Requirement(
+    name='RQ.SRS.Plugin.Functions.Lttb',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support the `$lttb` function in SQL editor.\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='40.11'
+)
+
+RQ_SRS_Plugin_Functions_SubQuery = Requirement(
+    name='RQ.SRS.Plugin.Functions.SubQuery',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support sub queries in SQL editor.\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='40.12'
+)
+
+RQ_SRS_Plugin_SupportedDataTypes = Requirement(
+    name='RQ.SRS.Plugin.SupportedDataTypes',
     version='1.0',
     priority=None,
     group=None,
@@ -1552,7 +1664,23 @@ RQ_SRS_Plugin_SupportedTypes = Requirement(
     ),
     link=None,
     level=2,
-    num='40.1'
+    num='41.1'
+)
+
+RQ_SRS_Plugin_SupportedDataTypes_LimitValues = Requirement(
+    name='RQ.SRS.Plugin.SupportedDataTypes.LimitValues',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support max and min values of [ClickHouse] datatypes.\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='41.2'
 )
 
 RQ_SRS_Plugin_VersionCompatibility = Requirement(
@@ -1579,7 +1707,7 @@ RQ_SRS_Plugin_VersionCompatibility = Requirement(
     ),
     link=None,
     level=2,
-    num='41.1'
+    num='42.1'
 )
 
 QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
@@ -1646,90 +1774,97 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests', level=2, num='20.1'),
         Heading(name='Specifying Default Database', level=1, num='21'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase', level=2, num='21.1'),
-        Heading(name='Creating Dashboards', level=1, num='22'),
-        Heading(name='RQ.SRS.Plugin.Dashboards', level=2, num='22.1'),
-        Heading(name='Creating Panels', level=1, num='23'),
-        Heading(name='RQ.SRS.Plugin.Panels', level=2, num='23.1'),
-        Heading(name='RQ.SRS.Plugin.Panels.Repeated', level=2, num='23.2'),
-        Heading(name='Multi-user Usage', level=1, num='24'),
-        Heading(name='RQ.SRS.Plugin.MultiUserUsage', level=2, num='24.1'),
-        Heading(name='RQ.SRS.Plugin.MultiUserUsage.SamePanel', level=2, num='24.2'),
-        Heading(name='RQ.SRS.Plugin.MultiUserUsage.DifferentPanels', level=2, num='24.3'),
-        Heading(name='RQ.SRS.Plugin.MultiUserUsage.SameDashboard', level=2, num='24.4'),
-        Heading(name='RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards', level=2, num='24.5'),
-        Heading(name='Query Setup', level=1, num='25'),
-        Heading(name='RQ.SRS.Plugin.QuerySetup', level=2, num='25.1'),
-        Heading(name='Query Setup Interface', level=1, num='26'),
-        Heading(name='RQ.SRS.Plugin.QuerySetupInterface', level=2, num='26.1'),
-        Heading(name='Query Options', level=1, num='27'),
-        Heading(name='RQ.SRS.Plugin.QueryOptions', level=2, num='27.1'),
-        Heading(name='Raw SQL Editor', level=1, num='28'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface', level=2, num='28.1'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor', level=2, num='28.2'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation', level=2, num='28.3'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments', level=2, num='28.4'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Step', level=2, num='28.5'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Round', level=2, num='28.6'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Resolution', level=2, num='28.7'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs', level=2, num='28.8'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp', level=2, num='28.9'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL', level=2, num='28.10'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery', level=2, num='28.11'),
-        Heading(name='Auto-complete In Queries', level=1, num='29'),
-        Heading(name='RQ.SRS.Plugin.AutoCompleteInQueries', level=2, num='29.1'),
-        Heading(name='Time range selector', level=1, num='30'),
-        Heading(name='RQ.SRS.Plugin.TimeRangeSelector', level=2, num='30.1'),
-        Heading(name='RQ.SRS.Plugin.TimeRangeSelector.Zoom', level=2, num='30.2'),
-        Heading(name='Сhanging The Size Of The Graph', level=1, num='31'),
-        Heading(name='RQ.SRS.Plugin.FillActual', level=2, num='31.1'),
-        Heading(name='Refresh Databoard', level=1, num='32'),
-        Heading(name='RQ.SRS.Plugin.RefreshDataboard', level=2, num='32.1'),
-        Heading(name='Inspecting Query', level=1, num='33'),
-        Heading(name='RQ.SRS.Plugin.QueryInspector', level=2, num='33.1'),
-        Heading(name='RQ.SRS.Plugin.QueryInspector.QueryTab', level=2, num='33.2'),
-        Heading(name='Visualization', level=1, num='34'),
-        Heading(name='RQ.SRS.Plugin.Visualization', level=2, num='34.1'),
-        Heading(name='RQ.SRS.Plugin.Visualization.Legends', level=2, num='34.2'),
-        Heading(name='Table View', level=2, num='34.3'),
-        Heading(name='RQ.SRS.Plugin.Visualization.Table', level=3, num='34.3.1'),
-        Heading(name='Visualization Types', level=2, num='34.4'),
-        Heading(name='RQ.SRS.Plugin.Visualization.VisualizationTypes', level=3, num='34.4.1'),
-        Heading(name='Macros', level=1, num='35'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros', level=2, num='35.1'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Table', level=2, num='35.2'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.DateCol', level=2, num='35.3'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol', level=2, num='35.4'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.From', level=2, num='35.5'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.To', level=2, num='35.6'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Interval', level=2, num='35.7'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn', level=2, num='35.8'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries', level=2, num='35.9'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries', level=2, num='35.10'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Unescape', level=2, num='35.11'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Adhoc', level=2, num='35.12'),
-        Heading(name='Variables Setup', level=1, num='36'),
-        Heading(name='RQ.SRS.Plugin.Variables', level=2, num='36.1'),
-        Heading(name='Annotations Setup', level=1, num='37'),
-        Heading(name='RQ.SRS.Plugin.Annotations', level=2, num='37.1'),
-        Heading(name='Setuping Allerts', level=1, num='38'),
-        Heading(name='RQ.SRS.Plugin.Allerts', level=2, num='38.1'),
-        Heading(name='RQ.SRS.Plugin.Allerts.AllertSetupPage', level=2, num='38.2'),
-        Heading(name='RQ.SRS.Plugin.Allerts.RuleType', level=2, num='38.3'),
-        Heading(name='Functions', level=1, num='39'),
-        Heading(name='RQ.SRS.Plugin.Functions', level=2, num='39.1'),
-        Heading(name='RQ.SRS.Plugin.Functions.Rate', level=2, num='39.2'),
-        Heading(name='RQ.SRS.Plugin.Functions.Columns', level=2, num='39.3'),
-        Heading(name='RQ.SRS.Plugin.Functions.RateColumns', level=2, num='39.4'),
-        Heading(name='RQ.SRS.Plugin.Functions.PerSecond', level=2, num='39.5'),
-        Heading(name='RQ.SRS.Plugin.Functions.PerSecondColumns', level=2, num='39.6'),
-        Heading(name='RQ.SRS.Plugin.Functions.Delta', level=2, num='39.7'),
-        Heading(name='RQ.SRS.Plugin.Functions.DeltaColumns', level=2, num='39.8'),
-        Heading(name='RQ.SRS.Plugin.Functions.Increase', level=2, num='39.9'),
-        Heading(name='RQ.SRS.Plugin.Functions.IncreaseColumns', level=2, num='39.10'),
-        Heading(name='Supported types', level=1, num='40'),
-        Heading(name='RQ.SRS.Plugin.SupportedTypes', level=2, num='40.1'),
-        Heading(name='Versions Compatibility', level=1, num='41'),
-        Heading(name='RQ.SRS.Plugin.VersionCompatibility', level=2, num='41.1'),
+        Heading(name='Specifying HTTP compression', level=1, num='22'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression', level=2, num='22.1'),
+        Heading(name='Creating Dashboards', level=1, num='23'),
+        Heading(name='RQ.SRS.Plugin.Dashboards', level=2, num='23.1'),
+        Heading(name='Creating Panels', level=1, num='24'),
+        Heading(name='RQ.SRS.Plugin.Panels', level=2, num='24.1'),
+        Heading(name='RQ.SRS.Plugin.Panels.Repeated', level=2, num='24.2'),
+        Heading(name='Multi-user Usage', level=1, num='25'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage', level=2, num='25.1'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.SamePanel', level=2, num='25.2'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.DifferentPanels', level=2, num='25.3'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.SameDashboard', level=2, num='25.4'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards', level=2, num='25.5'),
+        Heading(name='Query Setup', level=1, num='26'),
+        Heading(name='RQ.SRS.Plugin.QuerySetup', level=2, num='26.1'),
+        Heading(name='Query Setup Interface', level=1, num='27'),
+        Heading(name='RQ.SRS.Plugin.QuerySetupInterface', level=2, num='27.1'),
+        Heading(name='Query Options', level=1, num='28'),
+        Heading(name='RQ.SRS.Plugin.QueryOptions', level=2, num='28.1'),
+        Heading(name='Raw SQL Editor', level=1, num='29'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface', level=2, num='29.1'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor', level=2, num='29.2'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation', level=2, num='29.3'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments', level=2, num='29.4'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Step', level=2, num='29.5'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Round', level=2, num='29.6'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Resolution', level=2, num='29.7'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs', level=2, num='29.8'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp', level=2, num='29.9'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL', level=2, num='29.10'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery', level=2, num='29.11'),
+        Heading(name='Auto-complete In Queries', level=1, num='30'),
+        Heading(name='RQ.SRS.Plugin.AutoCompleteInQueries', level=2, num='30.1'),
+        Heading(name='Time range selector', level=1, num='31'),
+        Heading(name='RQ.SRS.Plugin.TimeRangeSelector', level=2, num='31.1'),
+        Heading(name='RQ.SRS.Plugin.TimeRangeSelector.Zoom', level=2, num='31.2'),
+        Heading(name='Сhanging The Size Of The Graph', level=1, num='32'),
+        Heading(name='RQ.SRS.Plugin.FillActual', level=2, num='32.1'),
+        Heading(name='Refresh Databoard', level=1, num='33'),
+        Heading(name='RQ.SRS.Plugin.RefreshDataboard', level=2, num='33.1'),
+        Heading(name='Inspecting Query', level=1, num='34'),
+        Heading(name='RQ.SRS.Plugin.QueryInspector', level=2, num='34.1'),
+        Heading(name='RQ.SRS.Plugin.QueryInspector.QueryTab', level=2, num='34.2'),
+        Heading(name='Visualization', level=1, num='35'),
+        Heading(name='RQ.SRS.Plugin.Visualization', level=2, num='35.1'),
+        Heading(name='RQ.SRS.Plugin.Visualization.Legends', level=2, num='35.2'),
+        Heading(name='Table View', level=2, num='35.3'),
+        Heading(name='RQ.SRS.Plugin.Visualization.Table', level=3, num='35.3.1'),
+        Heading(name='Visualization Types', level=2, num='35.4'),
+        Heading(name='RQ.SRS.Plugin.Visualization.VisualizationTypes', level=3, num='35.4.1'),
+        Heading(name='RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes', level=3, num='35.4.2'),
+        Heading(name='Macros', level=1, num='36'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros', level=2, num='36.1'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Table', level=2, num='36.2'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.DateCol', level=2, num='36.3'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol', level=2, num='36.4'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.From', level=2, num='36.5'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.To', level=2, num='36.6'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Interval', level=2, num='36.7'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn', level=2, num='36.8'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries', level=2, num='36.9'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries', level=2, num='36.10'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Unescape', level=2, num='36.11'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Adhoc', level=2, num='36.12'),
+        Heading(name='Variables Setup', level=1, num='37'),
+        Heading(name='RQ.SRS.Plugin.Variables', level=2, num='37.1'),
+        Heading(name='Annotations Setup', level=1, num='38'),
+        Heading(name='RQ.SRS.Plugin.Annotations', level=2, num='38.1'),
+        Heading(name='Setaping Alerts', level=1, num='39'),
+        Heading(name='RQ.SRS.Plugin.Alerts', level=2, num='39.1'),
+        Heading(name='RQ.SRS.Plugin.Alerts.AlertSetupPage', level=2, num='39.2'),
+        Heading(name='RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged', level=2, num='39.3'),
+        Heading(name='RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged', level=2, num='39.4'),
+        Heading(name='Functions', level=1, num='40'),
+        Heading(name='RQ.SRS.Plugin.Functions', level=2, num='40.1'),
+        Heading(name='RQ.SRS.Plugin.Functions.Rate', level=2, num='40.2'),
+        Heading(name='RQ.SRS.Plugin.Functions.Columns', level=2, num='40.3'),
+        Heading(name='RQ.SRS.Plugin.Functions.RateColumns', level=2, num='40.4'),
+        Heading(name='RQ.SRS.Plugin.Functions.PerSecond', level=2, num='40.5'),
+        Heading(name='RQ.SRS.Plugin.Functions.PerSecondColumns', level=2, num='40.6'),
+        Heading(name='RQ.SRS.Plugin.Functions.Delta', level=2, num='40.7'),
+        Heading(name='RQ.SRS.Plugin.Functions.DeltaColumns', level=2, num='40.8'),
+        Heading(name='RQ.SRS.Plugin.Functions.Increase', level=2, num='40.9'),
+        Heading(name='RQ.SRS.Plugin.Functions.IncreaseColumns', level=2, num='40.10'),
+        Heading(name='RQ.SRS.Plugin.Functions.Lttb', level=2, num='40.11'),
+        Heading(name='RQ.SRS.Plugin.Functions.SubQuery', level=2, num='40.12'),
+        Heading(name='Supported ClickHouse Datatypes', level=1, num='41'),
+        Heading(name='RQ.SRS.Plugin.SupportedDataTypes', level=2, num='41.1'),
+        Heading(name='RQ.SRS.Plugin.SupportedDataTypes.LimitValues', level=2, num='41.2'),
+        Heading(name='Versions Compatibility', level=1, num='42'),
+        Heading(name='RQ.SRS.Plugin.VersionCompatibility', level=2, num='42.1'),
         ),
     requirements=(
         RQ_SRS_Plugin_ManualPluginInstallation,
@@ -1755,6 +1890,7 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         RQ_SRS_Plugin_DataSourceSetupView_AddCORSFlagToRequests,
         RQ_SRS_Plugin_DataSourceSetupView_UsePostRequests,
         RQ_SRS_Plugin_DataSourceSetupView_DefaultDatabase,
+        RQ_SRS_Plugin_DataSourceSetupView_HTTPCompression,
         RQ_SRS_Plugin_Dashboards,
         RQ_SRS_Plugin_Panels,
         RQ_SRS_Plugin_Panels_Repeated,
@@ -1787,6 +1923,7 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         RQ_SRS_Plugin_Visualization,
         RQ_SRS_Plugin_Visualization_Table,
         RQ_SRS_Plugin_Visualization_VisualizationTypes,
+        RQ_SRS_Plugin_Visualization_VisualizationTypes_DataTypes,
         RQ_SRS_Plugin_QuerySettings_Macros,
         RQ_SRS_Plugin_QuerySettings_Macros_Table,
         RQ_SRS_Plugin_QuerySettings_Macros_DateCol,
@@ -1801,9 +1938,10 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         RQ_SRS_Plugin_QuerySettings_Macros_Adhoc,
         RQ_SRS_Plugin_Variables,
         RQ_SRS_Plugin_Annotations,
-        RQ_SRS_Plugin_Allerts,
-        RQ_SRS_Plugin_Allerts_AllertSetupPage,
-        RQ_SRS_Plugin_Allerts_RuleType,
+        RQ_SRS_Plugin_Alerts,
+        RQ_SRS_Plugin_Alerts_AlertSetupPage,
+        RQ_SRS_Plugin_Alerts_RuleType_GrafanaManaged,
+        RQ_SRS_Plugin_Alerts_RuleType_DataSourceManaged,
         RQ_SRS_Plugin_Functions,
         RQ_SRS_Plugin_Functions_Rate,
         RQ_SRS_Plugin_Functions_Columns,
@@ -1814,7 +1952,10 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         RQ_SRS_Plugin_Functions_DeltaColumns,
         RQ_SRS_Plugin_Functions_Increase,
         RQ_SRS_Plugin_Functions_IncreaseColumns,
-        RQ_SRS_Plugin_SupportedTypes,
+        RQ_SRS_Plugin_Functions_Lttb,
+        RQ_SRS_Plugin_Functions_SubQuery,
+        RQ_SRS_Plugin_SupportedDataTypes,
+        RQ_SRS_Plugin_SupportedDataTypes_LimitValues,
         RQ_SRS_Plugin_VersionCompatibility,
         ),
     content='''
@@ -2183,6 +2324,13 @@ version: 1.0
 The [Plugin] SHALL support specifying the default [ClickHouse] server database by using the `Default database` text field.
 This database name SHALL be prefilled in the query builder.
 
+## Specifying HTTP compression
+
+### RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression
+version: 1.0
+
+The [Plugin] SHALL support specifying HTTP compression option by using the `HTTP Compression` toggle.
+
 ## Creating Dashboards
 
 ### RQ.SRS.Plugin.Dashboards
@@ -2445,6 +2593,38 @@ The [Plugin] SHALL support the following visualization types for data:
 * Node Graph
 * Traces
 
+#### RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes
+version: 1.0
+
+The [Plugin] SHALL support the following visualization types for the following ClickHouse datatypes:
+
+
+| Vizualization Type | Supported ClickHouse datatypes                                                      |
+|--------------------|-------------------------------------------------------------------------------------|
+| Time series        |                                                                                     |
+| Bar chart          |                                                                                     |
+| Stat               |                                                                                     |
+| Gauge              |                                                                                     |
+| Bar Gauge          |                                                                                     |
+| Pie chart          |                                                                                     |
+| State timeline     |                                                                                     |
+| Heatmap            |                                                                                     |
+| Status history     |                                                                                     |
+| Histogram          |                                                                                     |
+| Text               |                                                                                     |
+| Alert List         |                                                                                     |
+| Dashboard list     |                                                                                     |
+| News               |                                                                                     |
+| Annotation list    |                                                                                     |
+| Candlestick        |                                                                                     |
+| Canvas             |                                                                                     |
+| Flame Graph        |                                                                                     |
+| Geomap             |                                                                                     |
+| Logs               |                                                                                     |
+| Node Graph         |                                                                                     |
+| Traces             |                                                                                     |
+
+
 ## Macros
 
 ### RQ.SRS.Plugin.QuerySettings.Macros
@@ -2472,12 +2652,13 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
 ### RQ.SRS.Plugin.QuerySettings.Macros.Table
 version: 1.0
 
-The [Plugin] SHALL support `$table` macro in SQL edior. `$table` macro SHALL be replaced with selected table name from query setup interface.
+The [Plugin] SHALL support `$table` macro in SQL edior. `$table` macro SHALL be replaced with selected table name from query setup interface. 
+$table macro SHALL correctly escape any symbols that can be in [ClickHouse] table name.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.DateCol
 version: 1.0
 
-The [Plugin] SHALL support `$dateCol` macro in SQL edior. `$dateCol` macro SHALL be replaced with selected table name from query setup interface.
+The [Plugin] SHALL support `$dateCol` macro in SQL edior. `$dateCol` macro SHALL be replaced with selected Column:Date from query setup interface.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol
 version: 1.0
@@ -2503,7 +2684,7 @@ The [Plugin] SHALL support `$interval` macro in SQL edior. `$interval` macro SHA
 version: 1.0
 
 The [Plugin] SHALL support `$timeFilterByColumn($column)` macro in SQL edior. `$timeFilterByColumn($column)` macro SHALL be replaced with currently 
-selected `Time Range` for a column passed as $column argument.
+selected `Time Range` for a column passed as $column argument. `$timeFilterByColumn($column)` macro SHALL work with any clickhouse date or time type. 
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries
 version: 1.0
@@ -2528,7 +2709,7 @@ value without single quotes.
 version: 1.0
 
 The [Plugin] SHALL support `$adhoc` macro in SQL edior. `$adhoc` macro SHALL be replaced with a rendered ad-hoc filter expression, 
-or "1" if no ad-hoc filters exist.
+or "1" if no ad-hoc filters exist. Adhoc filter SHALL support evaluating varchar field with numeric value.
 
 ## Variables Setup
 
@@ -2553,23 +2734,31 @@ version: 1.0
 The [Plugin] SHALL support [Grafana] annotations setup for dashboards by clicking gear button and 
 setuping variables in the `Annotations` tab.
 
-## Setuping Allerts
+## Setaping Alerts
 
-### RQ.SRS.Plugin.Allerts
+### RQ.SRS.Plugin.Alerts
 version: 1.0
 
-The [Plugin] SHALL support [Grafana] allerts setup for panels by clicking `New alert rule` button in `Alert rule` tab
+The [Plugin] SHALL support [Grafana] alerts setup for panels by clicking `New alert rule` button in `Alert rule` tab
 in edit panel view.
 
-### RQ.SRS.Plugin.Allerts.AllertSetupPage
+### RQ.SRS.Plugin.Alerts.AlertSetupPage
 version: 1.0
 
-The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in allert setup page.
+The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in alert setup page.
 
-### RQ.SRS.Plugin.Allerts.RuleType
+### RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged
 version: 1.0
 
-The [Plugin] SHALL support `Grafana-managed` and `Data source-managed` rule types by choosing rule type in allert setup page.
+The [Plugin] SHALL support `Grafana-managed` rule type by choosing rule type in alert setup page. 
+This alert SHALL be captured by grafana.
+
+
+### RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged
+version: 1.0
+
+The [Plugin] SHALL support `Data source-managed` rule type by choosing rule type in alert setup page. 
+This alert SHALL be captured by data source.
 
 ## Functions
 
@@ -2587,6 +2776,7 @@ The [Plugin] SHALL support the following functions in SQL queries:
 * `$deltaColumns`
 * `$increase`
 * `$increaseColumns`
+* `$lttb`
 
 These functions are templates of SQL queries. The user SHALL be allowed to check queries in the expanded format in the raw SQL editor interface.
 Only one function per query is allowed.
@@ -2602,7 +2792,7 @@ The [Plugin] SHALL support the `$rate` function in SQL editor. This function SHA
 version: 1.0
 
 The [Plugin] SHALL support the `$columns(key, value)` function in SQL editor. This function SHALL query values as array of [key, value], 
-where key will be used as label.
+where key will be used as label. The [Plugin] SHALL support $columns function with fill option in query.
 
 ### RQ.SRS.Plugin.Functions.RateColumns
 version: 1.0
@@ -2645,9 +2835,19 @@ version: 1.0
 The [Plugin] SHALL support the `$increaseColumns` function in SQL editor. This function SHALL be a combination of $columns and $increase 
 functions for Counter-like metrics.
 
-## Supported types
+### RQ.SRS.Plugin.Functions.Lttb
+version: 1.0
 
-### RQ.SRS.Plugin.SupportedTypes
+The [Plugin] SHALL support the `$lttb` function in SQL editor.
+
+### RQ.SRS.Plugin.Functions.SubQuery
+version: 1.0
+
+The [Plugin] SHALL support sub queries in SQL editor.
+
+## Supported ClickHouse Datatypes
+
+### RQ.SRS.Plugin.SupportedDataTypes
 version: 1.0
 
 The [Plugin] SHALL support scalar data types. The following data types SHALL be supported:
@@ -2685,6 +2885,11 @@ The [Plugin] SHALL support scalar data types. The following data types SHALL be 
 | Nothing                                                                             |                      |
 | Interval                                                                            |                      |
 
+
+### RQ.SRS.Plugin.SupportedDataTypes.LimitValues
+version: 1.0
+
+The [Plugin] SHALL support max and min values of [ClickHouse] datatypes.
 
 ## Versions Compatibility
 

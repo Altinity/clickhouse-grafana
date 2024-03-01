@@ -1,22 +1,26 @@
 from requirements.requirements import *
 from testflows.core import *
-from compare_tests.steps import *
+from tests.manual.steps import *
 
-
-def auto_complete_in_queries(self):
-    pass
-
-def query_options(self):
-    pass
 
 @TestScenario
-def reformat_query(self):
-    pass
+@Okayed("Ok")
+@Requirements(RQ_SRS_Plugin_QuerySetupInterface("1.0"))
+def ui_check(self):
+    """Check that query setup interface displayed correctly."""
+
+    with Given("I go to clickhouse dashboard"):
+        pass
+
+    with And("I go to repeated postgres panel"):
+        pass
+
+    with Then("I check query setup interface"):
+        pass
 
 
 @TestFeature
-@Requirements(RQ_SRS_Plugin_QuerySetup("1.0"),
-              RQ_SRS_Plugin_QuerySetupInterface("1.0"))
+@Requirements(RQ_SRS_Plugin_QuerySetup("1.0"))
 @Name("query setup")
 def feature(self):
     """Check that Plugin supports query setup."""

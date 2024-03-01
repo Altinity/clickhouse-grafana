@@ -1,9 +1,10 @@
 from requirements.requirements import *
 from testflows.core import *
-from compare_tests.steps import *
+from tests.manual.steps import *
 
 
 @TestScenario
+@Okayed("Ok")
 def max_data_points_option(self):
     """Check that Plugin support max data points option"""
 
@@ -20,10 +21,12 @@ def max_data_points_option(self):
         pass
 
     with When("I check visualization is changed and visualizations from different versions are simular"):
+        open_picture(picture="tests/manual/screenshots/max_data_points.png")
         pass
 
 
 @TestScenario
+@Okayed("Ok")
 def min_interval(self):
     """Check that Plugin support min interval option"""
 
@@ -40,10 +43,12 @@ def min_interval(self):
         pass
 
     with When("I check visualization is changed and visualizations from different versions are simular"):
+        open_picture(picture="tests/manual/screenshots/min_interval.png")
         pass
 
 
 @TestScenario
+@XFailed("Don't see any changes")
 def relative_time(self):
     """Check that Plugin support relative time option"""
 
@@ -60,10 +65,12 @@ def relative_time(self):
         pass
 
     with When("I check visualization is changed and visualizations from different versions are simular"):
+        open_picture(picture="tests/manual/screenshots/relative_time.png")
         pass
 
 
 @TestScenario
+@Okayed("Ok")
 def time_shift(self):
     """Check that Plugin support time shift option"""
 
@@ -80,6 +87,7 @@ def time_shift(self):
         pass
 
     with When("I check visualization is changed and visualizations from different versions are simular"):
+        open_picture(picture="tests/manual/screenshots/time_shift.png")
         pass
 
 

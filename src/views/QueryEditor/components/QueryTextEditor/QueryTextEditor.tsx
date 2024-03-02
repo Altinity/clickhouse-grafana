@@ -24,7 +24,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
     step: '',
     intervalFactor: 1,
     round: '',
-    formatAs: 'time_series',
+    format: 'time_series',
     extrapolate: query.extrapolate,
     skip_comments: query.skip_comments,
     showFormattedSQL: false,
@@ -46,10 +46,10 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
     onFieldChange({ ...fieldValues, round: event.target.value });
   };
 
-  const handleFormatAsChange = (value: string | undefined) => {
+  const handleFormatChange = (value: string | undefined) => {
     // @ts-ignore
-    setFieldValues({ ...fieldValues, formatAs: value });
-    onFieldChange({ ...fieldValues, formatAs: value });
+    setFieldValues({ ...fieldValues, format: value });
+    onFieldChange({ ...fieldValues, format: value });
   };
 
   const handleExtrapolationChange = () => {
@@ -131,13 +131,13 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           >
             <Select
               width={'auto'}
-              onChange={(e) => handleFormatAsChange(e.value)}
+              onChange={(e) => handleFormatChange(e.value)}
               options={[
                 { label: 'Time series', value: 'time_series' },
                 { label: 'Table', value: 'table' },
                 { label: 'Logs', value: 'logs' },
               ]}
-              value={fieldValues.formatAs}
+              value={fieldValues.format}
             />
           </InlineField>
         </InlineFieldRow>

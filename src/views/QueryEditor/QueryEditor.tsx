@@ -42,6 +42,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   const onFieldChange = (value: any) => {
     onChange({ ...query, ...value });
+    onRunQuery()
   };
 
   return (

@@ -11,6 +11,7 @@ import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana
 import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
 import { SqlQueryHelper } from './sql-query/sql-query-helper';
 import SqlQueryMacros from './sql-query/sql-query-macros';
+import { QueryEditor } from "../views/QueryEditor/QueryEditor";
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
@@ -44,6 +45,9 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);
     this.responseParser = new ResponseParser();
+    this.annotations = {
+      QueryEditor: QueryEditor
+    };
   }
 
   _getRequestOptions(query: string, usePOST?: boolean, requestId?: string) {

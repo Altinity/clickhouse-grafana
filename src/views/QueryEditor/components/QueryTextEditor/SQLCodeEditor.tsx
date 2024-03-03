@@ -1,10 +1,9 @@
 import React from 'react';
-import MonacoEditor from 'react-monaco-editor';
-import {LANGUAGE_ID, THEME_NAME} from "./editor/initiateEditor";
-import {editor} from "monaco-editor";
-import IStandaloneEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
-export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery }: any) => {
-  const options: IStandaloneEditorConstructionOptions = {
+import {initiateEditor, LANGUAGE_ID, THEME_NAME} from "./editor/initiateEditor";
+import {CodeEditor} from "@grafana/ui";
+
+export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: any) => {
+  const options: any = {
     scrollBeyondLastLine: false,
     wordWrap: 'on',
     wrappingStrategy: 'advanced',
@@ -17,15 +16,21 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery }: any) => {
     overviewRulerLanes: 0
   }
 
-
   return (
     <div style={{ position: 'relative', width: '100%', marginTop: '10px'}}  onBlur={onRunQuery}>
-      <MonacoEditor
+      <CodeEditor
         height={Math.max(query.query.split('\n').length * 18, 150)}
-        language={LANGUAGE_ID}
-        theme={THEME_NAME}
         value={query.query}
-        options={options}
+        language={LANGUAGE_ID}
+        monacoOptions={options}
+        onBeforeEditorMount={() => {
+          // @ts-ignore
+          initiateEditor(datasource.templateSrv.getVariables().map(item => `${item.name}`), window.monaco)
+          setTimeout(() => {
+            // @ts-ignore
+            window.monaco.editor.setTheme(THEME_NAME)
+          }, 10)
+        }}
         onChange={onSqlChange}
       />
     </div>

@@ -5,7 +5,7 @@ import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
 import Scanner from "../../../../datasource/scanner";
 
-export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery }: any) => {
+export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource }: any) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData)
 
   useEffect(() => {
@@ -75,7 +75,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
 
   return (
     <>
-      <SQLCodeEditor height={height} onSqlChange={onSqlChange} query={query} onEditorMount={onEditorMount} onRunQuery={onRunQuery} />
+      <SQLCodeEditor datasource={datasource} height={height} onSqlChange={onSqlChange} query={query} onEditorMount={onEditorMount} onRunQuery={onRunQuery} />
       <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
         <InlineFieldRow>
           <InlineField
@@ -191,22 +191,6 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           <InlineField  tooltip={'Reformat SQL query as ClickHouse do.'}>
             <ToolbarButton variant={'primary'} >Reformat Query</ToolbarButton>
           </InlineField>
-        </InlineFieldRow>
-        <InlineFieldRow>
-          {/*<InlineField >*/}
-          {/*  <ToolbarButton variant={'primary'} onClick={handleShowHelpChange} isOpen={fieldValues.showHelp}>*/}
-          {/*    Show help*/}
-          {/*  </ToolbarButton>*/}
-          {/*</InlineField>*/}
-          {/*<InlineField >*/}
-          {/*  <ToolbarButton*/}
-          {/*    variant={'primary'}*/}
-          {/*    onClick={handleShowFormattedSQLChange}*/}
-          {/*    isOpen={fieldValues.showFormattedSQL}*/}
-          {/*  >*/}
-          {/*    Show generated SQL*/}
-          {/*  </ToolbarButton>*/}
-          {/*</InlineField>*/}
         </InlineFieldRow>
         {fieldValues.showFormattedSQL && <ReformattedQuery data={sqlFormattedData} />}
         {fieldValues.showHelp && <QueryMacrosInfo />}

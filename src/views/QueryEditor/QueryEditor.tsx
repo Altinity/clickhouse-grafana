@@ -6,8 +6,6 @@ import {QueryHeader} from './components/QueryHeader/QueryHeader';
 import {QueryTextEditor} from './components/QueryTextEditor/QueryTextEditor';
 import {QueryBuilder} from './components/QueryBuilder/QueryBuilder';
 import SqlQuery from '../../datasource/sql-query/sql_query';
-import {initiateEditor} from "./components/QueryTextEditor/editor/initiateEditor";
-// import { TemplateSrv } from 'grafana/app/features/templating/template_srv';
 
 const defaultQuery = 'SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t';
 
@@ -16,12 +14,6 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
   const initializedQuery = initializeQueryDefaults(query);
   const [formattedData, setFormattedData] = useState(initializedQuery.query);
-
-
-  useEffect(() => {
-    initiateEditor(props.datasource.templateSrv.getVariables().map(item => `${item.name}`))
-    // eslint-disable-next-line
-  }, []);
 
   useEffect(() => {
     if (datasource.options && datasource.templateSrv) {
@@ -34,10 +26,6 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   }, [query, datasource.name, datasource.options, datasource.templateSrv]);
   const onSqlChange = (sql: string) => {
     onChange({ ...initializedQuery, query: sql });
-  };
-
-  const onSQLEditorMount = (editor: any) => {
-    // @todo: add auto-complete suggestions and syntax colors here
   };
 
   const onFieldChange = (value: any) => {
@@ -56,11 +44,11 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
           <QueryTextEditor
             query={initializedQuery}
             height={200}
-            onEditorMount={onSQLEditorMount}
             onSqlChange={onSqlChange}
             onRunQuery={onRunQuery}
             onFieldChange={onFieldChange}
             formattedData={formattedData}
+            datasource={datasource}
           />
         </>
       )}

@@ -97,27 +97,6 @@ export const initiateEditor = (templateVariables: any, monacoInstance: any) => {
         "editor.background": "#000000",
       },
     });
-
-    console.log({
-      base: "vs-dark",
-      inherit: false,
-      rules: [
-        { token: TokenType.FUNCTIONS, foreground: Colors.FUNCTIONS },
-        { token: TokenType.PARENTHESIS, foreground: Colors.PARENTHESIS },
-        { token: TokenType.KEYWORDS, foreground: Colors.KEYWORDS },
-        { token: TokenType.CONSTANTS, foreground: Colors.CONSTANTS },
-        { token: TokenType.DATATYPES, foreground: Colors.DATATYPES },
-        { token: TokenType.MACROS, foreground: Colors.MACROS },
-        { token: TokenType.COMMENT, foreground: Colors.COMMENTS },
-        { token: TokenType.COMMENT_BLOCK, foreground: Colors.COMMENT_BLOCK },
-        { token: TokenType.VARIABLE, foreground: Colors.MACROS },
-        { token: TokenType.STRING, foreground: Colors.STRING },
-      ],
-      colors: {
-        "editor.foreground": "#e0e0e0",
-        "editor.background": "#000000",
-      },
-    })
   };
 
   // @ts-ignore

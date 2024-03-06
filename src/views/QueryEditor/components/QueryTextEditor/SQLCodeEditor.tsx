@@ -1,8 +1,30 @@
-import React from 'react';
+import React, {useEffect, useState} from 'react';
 import {initiateEditor, LANGUAGE_ID, THEME_NAME} from "./editor/initiateEditor";
 import {CodeEditor} from "@grafana/ui";
+import {useSystemDatabases} from "../../../hooks/useSystemDatabases";
+import {useAutocompleteData} from "../../../hooks/useAutocompletionData";
 
 export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: any) => {
+  const [initialized, setInitialized] = useState(false)
+  const autocompletionData = useAutocompleteData(datasource);
+  const databasesData = useSystemDatabases(datasource);
+
+  useEffect(() => {
+    if (!autocompletionData || !databasesData || !initialized) {
+      return;
+    }
+
+    setInitialized(false)
+
+    // @ts-ignore
+    initiateEditor(datasource.templateSrv.getVariables().map(item => `${item.name}`), window.monaco, autocompletionData, databasesData)
+    setTimeout(() => {
+      // @ts-ignore
+      window.monaco.editor.setTheme(THEME_NAME)
+    }, 20)
+
+  }, [autocompletionData, databasesData, initialized, datasource.templateSrv]);
+
   const options: any = {
     scrollBeyondLastLine: false,
     wordWrap: 'on',
@@ -23,14 +45,7 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: an
         value={query.query}
         language={LANGUAGE_ID}
         monacoOptions={options}
-        onBeforeEditorMount={() => {
-          // @ts-ignore
-          initiateEditor(datasource.templateSrv.getVariables().map(item => `${item.name}`), window.monaco)
-          setTimeout(() => {
-            // @ts-ignore
-            window.monaco.editor.setTheme(THEME_NAME)
-          }, 10)
-        }}
+        onBeforeEditorMount={() => setInitialized(true)}
         onChange={onSqlChange}
       />
     </div>

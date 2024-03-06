@@ -6,10 +6,14 @@ import {QueryHeader} from './components/QueryHeader/QueryHeader';
 import {QueryTextEditor} from './components/QueryTextEditor/QueryTextEditor';
 import {QueryBuilder} from './components/QueryBuilder/QueryBuilder';
 import SqlQuery from '../../datasource/sql-query/sql_query';
+import {useSystemDatabases} from "../hooks/useSystemDatabases";
+import {useAutocompleteData} from "../hooks/useAutocompletionData";
 
 const defaultQuery = 'SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t';
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
+  useSystemDatabases(props.datasource)
+  useAutocompleteData(props.datasource)
   const { datasource, query, onChange, onRunQuery } = props;
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
   const initializedQuery = initializeQueryDefaults(query);

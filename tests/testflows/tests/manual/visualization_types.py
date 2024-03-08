@@ -4,9 +4,8 @@ from tests.manual.steps import *
 
 
 @TestScenario
-@Okayed("Ok")
 def test_visualization_types(self, visualization_type):
-    f"""Check that the Plugin support Grafana {visualization_type} visualization."""
+    """Check that the Plugin support Grafana visualizations."""
 
     with Given("I create new dashboard"):
         create_dashboard()
@@ -29,7 +28,7 @@ def test_visualization_types(self, visualization_type):
 @TestFeature
 @Requirements(RQ_SRS_Plugin_Visualization_VisualizationTypes("1.0"))
 @Name("visualization types")
-def visualization_types(self):
+def feature(self):
     """Check that Plugin support any Grafana visualization types."""
 
     list_of_visualization_types = [

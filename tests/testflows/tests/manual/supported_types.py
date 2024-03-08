@@ -579,7 +579,7 @@ def MultiPolygon(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("not supported")
 def Expression(self):
     """Check that the Plugin support Expression datatype."""
 
@@ -602,7 +602,7 @@ def Expression(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("Not supported")
 def Set(self):
     """Check that the Plugin support Set datatype."""
 
@@ -625,7 +625,7 @@ def Set(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("not supported")
 def Nothing(self):
     """Check that the Plugin support Nothing datatype."""
 
@@ -648,7 +648,7 @@ def Nothing(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("Not supported")
 def Interval(self):
     """Check that the Plugin support Interval datatype."""
 

@@ -4,7 +4,7 @@ from tests.manual.steps import *
 
 
 @TestScenario
-@XFailed("Can't specify query")
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_Annotations("1.0"))
 def annotations(self):
     """Check that annotations works correctly."""

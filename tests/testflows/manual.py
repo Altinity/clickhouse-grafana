@@ -39,6 +39,7 @@ def regression(self):
 
         Feature(run=load("testflows.tests.manual.alerts", "feature"))
         Feature(run=load("testflows.tests.manual.annotations", "feature"))
+        Feature(run=load("testflows.tests.manual.data_source_setup_view", "feature"))
         Feature(run=load("testflows.tests.manual.dashboard", "feature"))
         Feature(run=load("testflows.tests.manual.functions", "feature"))
         Feature(run=load("testflows.tests.manual.macros", "feature"))
@@ -49,7 +50,7 @@ def regression(self):
         Feature(run=load("testflows.tests.manual.raw_sql_editor", "feature"))
         Feature(run=load("testflows.tests.manual.supported_types", "feature"))
         Feature(run=load("testflows.tests.manual.variables", "feature"))
-        # Feature(run=load("testflows.tests.manual.visualization_types", "feature"))
+        Feature(run=load("testflows.tests.manual.visualization_types", "feature"))
 
     finally:
         with Finally("I delete docker-compose test environment"):

@@ -57,7 +57,7 @@ def multi_user_usage_parallel_dashboard(self):
 @TestScenario
 @Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_MultiUserUsage_DifferentDashboards("1.0"))
-def multi_user_usage_different_panels(self):
+def multi_user_usage_different_dashboards(self):
     """Check that Plugin supports access to different dashboards from different users at the same time."""
 
     with Given("I create new user"):

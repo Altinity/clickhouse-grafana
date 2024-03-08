@@ -40,7 +40,7 @@ def alerts_grafana_managed(self):
 
 
 @TestScenario
-@XFailed("Can't use data source managed alerts")
+@Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_Alerts_RuleType_DataSourceManaged("1.0"))
 def alerts_data_source_managed(self):
     """Check that Data source-managed alerts works correctly."""

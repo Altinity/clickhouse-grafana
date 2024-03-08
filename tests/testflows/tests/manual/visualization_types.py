@@ -4,6 +4,7 @@ from tests.manual.steps import *
 
 
 @TestScenario
+@Okayed("Ok")
 def test_visualization_types(self, visualization_type):
     f"""Check that the Plugin support Grafana {visualization_type} visualization."""
 

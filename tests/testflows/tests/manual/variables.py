@@ -3,7 +3,7 @@ from testflows.core import *
 from tests.manual.steps import *
 
 
-@TestOutline(Scenario)
+@TestOutline
 def test_variable_type(self, variable_type):
     f"""Check that the Plugin support {variable_type} variable."""
 

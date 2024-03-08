@@ -91,8 +91,8 @@ RQ_SRS_Plugin = Requirement(
     num='4.1'
 )
 
-RQ_SRS_Plugin_DataSourceSetupView_ = Requirement(
-    name='RQ.SRS.Plugin.DataSourceSetupView ',
+RQ_SRS_Plugin_DataSourceSetupView = Requirement(
+    name='RQ.SRS.Plugin.DataSourceSetupView',
     version='1.0',
     priority=None,
     group=None,
@@ -1739,7 +1739,7 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         Heading(name='Grafana Datasource Plugin For ClickHouse', level=1, num='4'),
         Heading(name='RQ.SRS.Plugin', level=2, num='4.1'),
         Heading(name='Adding New Data Source', level=1, num='5'),
-        Heading(name='RQ.SRS.Plugin.DataSourceSetupView ', level=2, num='5.1'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView', level=2, num='5.1'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton', level=2, num='5.2'),
         Heading(name='Specifying Data Source Name', level=1, num='6'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.DataSourceName', level=2, num='6.1'),
@@ -1871,7 +1871,7 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         RQ_SRS_Plugin_GrafanaCloudPluginInstallation,
         RQ_SRS_Plugin_DockerComposeEnvironment,
         RQ_SRS_Plugin,
-        RQ_SRS_Plugin_DataSourceSetupView_,
+        RQ_SRS_Plugin_DataSourceSetupView,
         RQ_SRS_Plugin_DataSourceSetupView_SaveAndTestButton,
         RQ_SRS_Plugin_DataSourceSetupView_DataSourceName,
         RQ_SRS_Plugin_DataSourceSetupView_DefaultDataSource,
@@ -1963,6 +1963,7 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
 # Software Requirements Specification
 
 ## Table of Contents
+
 * 1 [Revision History](#revision-history)
 * 2 [Introduction](#introduction)
 * 3 [Plugin Installation](#plugin-installation)
@@ -1975,7 +1976,7 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
 * 4 [Grafana Datasource Plugin For ClickHouse](#grafana-datasource-plugin-for-clickhouse)
     * 4.1 [RQ.SRS.Plugin](#rqsrsplugin)
 * 5 [Adding New Data Source](#adding-new-data-source)
-    * 5.1 [RQ.SRS.Plugin.DataSourceSetupView ](#rqsrsplugindatasourcesetupview-)
+    * 5.1 [RQ.SRS.Plugin.DataSourceSetupView](#rqsrsplugindatasourcesetupview)
     * 5.2 [RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton](#rqsrsplugindatasourcesetupviewsaveandtestbutton)
 * 6 [Specifying Data Source Name](#specifying-data-source-name)
     * 6.1 [RQ.SRS.Plugin.DataSourceSetupView.DataSourceName](#rqsrsplugindatasourcesetupviewdatasourcename)
@@ -2010,86 +2011,97 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
     * 20.1 [RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests](#rqsrsplugindatasourcesetupviewusepostrequests)
 * 21 [Specifying Default Database](#specifying-default-database)
     * 21.1 [RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase](#rqsrsplugindatasourcesetupviewdefaultdatabase)
-* 22 [Creating Dashboards](#creating-dashboards)
-    * 22.1 [RQ.SRS.Plugin.Dashboards](#rqsrsplugindashboards)
-* 23 [Creating Panels](#creating-panels)
-    * 23.1 [RQ.SRS.Plugin.Panels](#rqsrspluginpanels)
-    * 23.2 [RQ.SRS.Plugin.Panels.Repeated](#rqsrspluginpanelsrepeated)
-* 24 [Multi-user Usage](#multi-user-usage)
-    * 24.1 [RQ.SRS.Plugin.MultiUserUsage](#rqsrspluginmultiuserusage)
-* 25 [Query Setup](#query-setup)
-    * 25.1 [RQ.SRS.Plugin.QuerySetup](#rqsrspluginquerysetup)
-* 26 [Query Setup Interface](#query-setup-interface)
-    * 26.1 [RQ.SRS.Plugin.QuerySetupInterface](#rqsrspluginquerysetupinterface)
-* 27 [Query Options](#query-options)
-    * 27.1 [RQ.SRS.Plugin.QueryOptions](#rqsrspluginqueryoptions)
-* 28 [Raw SQL Editor](#raw-sql-editor)
-    * 28.1 [RQ.SRS.Plugin.RawSQLEditorInterface](#rqsrspluginrawsqleditorinterface)
-    * 28.2 [RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor](#rqsrspluginrawsqleditorinterfacesqleditor)
-    * 28.3 [RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation](#rqsrspluginrawsqleditorinterfaceextrapolation)
-    * 28.4 [RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments](#rqsrspluginrawsqleditorinterfaceskipcomments)
-    * 28.5 [RQ.SRS.Plugin.RawSQLEditorInterface.Step](#rqsrspluginrawsqleditorinterfacestep)
-    * 28.6 [RQ.SRS.Plugin.RawSQLEditorInterface.Round](#rqsrspluginrawsqleditorinterfaceround)
-    * 28.7 [RQ.SRS.Plugin.RawSQLEditorInterface.Resolution](#rqsrspluginrawsqleditorinterfaceresolution)
-    * 28.8 [RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs](#rqsrspluginrawsqleditorinterfaceformatas)
-    * 28.9 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp](#rqsrspluginrawsqleditorinterfaceshowhelp)
-    * 28.10 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL](#rqsrspluginrawsqleditorinterfaceshowgeneratedsql)
-    * 28.11 [RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery](#rqsrspluginrawsqleditorinterfacereformatquery)
-* 29 [Auto-complete In Queries](#auto-complete-in-queries)
-    * 29.1 [RQ.SRS.Plugin.AutoCompleteInQueries](#rqsrspluginautocompleteinqueries)
-* 30 [Time range selector](#time-range-selector)
-    * 30.1 [RQ.SRS.Plugin.TimeRangeSelector](#rqsrsplugintimerangeselector)
-    * 30.2 [RQ.SRS.Plugin.TimeRangeSelector.Zoom](#rqsrsplugintimerangeselectorzoom)
-* 31 [Сhanging The Size Of The Graph](#hanging-the-size-of-the-graph)
-    * 31.1 [RQ.SRS.Plugin.FillActual](#rqsrspluginfillactual)
-* 32 [Refresh Databoard](#refresh-databoard)
-    * 32.1 [RQ.SRS.Plugin.RefreshDataboard](#rqsrspluginrefreshdataboard)
-* 33 [Inspecting Query](#inspecting-query)
-    * 33.1 [RQ.SRS.Plugin.QueryInspector](#rqsrspluginqueryinspector)
-    * 33.2 [RQ.SRS.Plugin.QueryInspector.QueryTab](#rqsrspluginqueryinspectorquerytab)
-* 34 [Visualization](#visualization)
-    * 34.1 [RQ.SRS.Plugin.Visualization](#rqsrspluginvisualization)
-    * 34.2 [RQ.SRS.Plugin.Visualization.Legends](#rqsrspluginvisualizationlegends)
-    * 34.3 [Table View](#table-view)
-        * 34.3.1 [RQ.SRS.Plugin.Visualization.Table](#rqsrspluginvisualizationtable)
-    * 34.4 [Visualization Types](#visualization-types)
-        * 34.4.1 [RQ.SRS.Plugin.Visualization.VisualizationTypes](#rqsrspluginvisualizationvisualizationtypes)
-* 35 [Macros](#macros)
-    * 35.1 [RQ.SRS.Plugin.QuerySettings.Macros](#rqsrspluginquerysettingsmacros)
-    * 35.2 [RQ.SRS.Plugin.QuerySettings.Macros.Table](#rqsrspluginquerysettingsmacrostable)
-    * 35.3 [RQ.SRS.Plugin.QuerySettings.Macros.DateCol](#rqsrspluginquerysettingsmacrosdatecol)
-    * 35.4 [RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol](#rqsrspluginquerysettingsmacrosdatetimecol)
-    * 35.5 [RQ.SRS.Plugin.QuerySettings.Macros.From](#rqsrspluginquerysettingsmacrosfrom)
-    * 35.6 [RQ.SRS.Plugin.QuerySettings.Macros.To](#rqsrspluginquerysettingsmacrosto)
-    * 35.7 [RQ.SRS.Plugin.QuerySettings.Macros.Interval](#rqsrspluginquerysettingsmacrosinterval)
-    * 35.8 [RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn](#rqsrspluginquerysettingsmacrostimefilterbycolumn)
-    * 35.9 [RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries](#rqsrspluginquerysettingsmacrostimeseries)
-    * 35.10 [RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries](#rqsrspluginquerysettingsmacrosnaturaltimeseries)
-    * 35.11 [RQ.SRS.Plugin.QuerySettings.Macros.Unescape](#rqsrspluginquerysettingsmacrosunescape)
-    * 35.12 [RQ.SRS.Plugin.QuerySettings.Macros.Adhoc](#rqsrspluginquerysettingsmacrosadhoc)
-* 36 [Variables Setup](#variables-setup)
-    * 36.1 [RQ.SRS.Plugin.Variables](#rqsrspluginvariables)
-* 37 [Annotations Setup](#annotations-setup)
-    * 37.1 [RQ.SRS.Plugin.Annotations](#rqsrspluginannotations)
-* 38 [Setuping Allerts](#setuping-allerts)
-    * 38.1 [RQ.SRS.Plugin.Allerts](#rqsrspluginallerts)
-    * 38.2 [RQ.SRS.Plugin.Allerts.AllertSetupPage](#rqsrspluginallertsallertsetuppage)
-    * 38.3 [RQ.SRS.Plugin.Allerts.RuleType](#rqsrspluginallertsruletype)
-* 39 [Functions](#functions)
-    * 39.1 [RQ.SRS.Plugin.Functions](#rqsrspluginfunctions)
-    * 39.2 [RQ.SRS.Plugin.Functions.Rate](#rqsrspluginfunctionsrate)
-    * 39.3 [RQ.SRS.Plugin.Functions.Columns](#rqsrspluginfunctionscolumns)
-    * 39.4 [RQ.SRS.Plugin.Functions.RateColumns](#rqsrspluginfunctionsratecolumns)
-    * 39.5 [RQ.SRS.Plugin.Functions.PerSecond](#rqsrspluginfunctionspersecond)
-    * 39.6 [RQ.SRS.Plugin.Functions.PerSecondColumns](#rqsrspluginfunctionspersecondcolumns)
-    * 39.7 [RQ.SRS.Plugin.Functions.Delta](#rqsrspluginfunctionsdelta)
-    * 39.8 [RQ.SRS.Plugin.Functions.DeltaColumns](#rqsrspluginfunctionsdeltacolumns)
-    * 39.9 [RQ.SRS.Plugin.Functions.Increase](#rqsrspluginfunctionsincrease)
-    * 39.10 [RQ.SRS.Plugin.Functions.IncreaseColumns](#rqsrspluginfunctionsincreasecolumns)
-* 40 [Supported types](#supported-types)
-    * 40.1 [RQ.SRS.Plugin.SupportedTypes](#rqsrspluginsupportedtypes)
-* 41 [Versions Compatibility](#versions-compatibility)
-    * 41.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrspluginversioncompatibility)
+* 22 [Specifying HTTP compression](#specifying-http-compression)
+    * 22.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression](#rqsrsplugindatasourcesetupviewhttpcompression)
+* 23 [Creating Dashboards](#creating-dashboards)
+    * 23.1 [RQ.SRS.Plugin.Dashboards](#rqsrsplugindashboards)
+* 24 [Creating Panels](#creating-panels)
+    * 24.1 [RQ.SRS.Plugin.Panels](#rqsrspluginpanels)
+    * 24.2 [RQ.SRS.Plugin.Panels.Repeated](#rqsrspluginpanelsrepeated)
+* 25 [Multi-user Usage](#multi-user-usage)
+    * 25.1 [RQ.SRS.Plugin.MultiUserUsage](#rqsrspluginmultiuserusage)
+    * 25.2 [RQ.SRS.Plugin.MultiUserUsage.SamePanel](#rqsrspluginmultiuserusagesamepanel)
+    * 25.3 [RQ.SRS.Plugin.MultiUserUsage.DifferentPanels](#rqsrspluginmultiuserusagedifferentpanels)
+    * 25.4 [RQ.SRS.Plugin.MultiUserUsage.SameDashboard](#rqsrspluginmultiuserusagesamedashboard)
+    * 25.5 [RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards](#rqsrspluginmultiuserusagedifferentdashboards)
+* 26 [Query Setup](#query-setup)
+    * 26.1 [RQ.SRS.Plugin.QuerySetup](#rqsrspluginquerysetup)
+* 27 [Query Setup Interface](#query-setup-interface)
+    * 27.1 [RQ.SRS.Plugin.QuerySetupInterface](#rqsrspluginquerysetupinterface)
+* 28 [Query Options](#query-options)
+    * 28.1 [RQ.SRS.Plugin.QueryOptions](#rqsrspluginqueryoptions)
+* 29 [Raw SQL Editor](#raw-sql-editor)
+    * 29.1 [RQ.SRS.Plugin.RawSQLEditorInterface](#rqsrspluginrawsqleditorinterface)
+    * 29.2 [RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor](#rqsrspluginrawsqleditorinterfacesqleditor)
+    * 29.3 [RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation](#rqsrspluginrawsqleditorinterfaceextrapolation)
+    * 29.4 [RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments](#rqsrspluginrawsqleditorinterfaceskipcomments)
+    * 29.5 [RQ.SRS.Plugin.RawSQLEditorInterface.Step](#rqsrspluginrawsqleditorinterfacestep)
+    * 29.6 [RQ.SRS.Plugin.RawSQLEditorInterface.Round](#rqsrspluginrawsqleditorinterfaceround)
+    * 29.7 [RQ.SRS.Plugin.RawSQLEditorInterface.Resolution](#rqsrspluginrawsqleditorinterfaceresolution)
+    * 29.8 [RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs](#rqsrspluginrawsqleditorinterfaceformatas)
+    * 29.9 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp](#rqsrspluginrawsqleditorinterfaceshowhelp)
+    * 29.10 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL](#rqsrspluginrawsqleditorinterfaceshowgeneratedsql)
+    * 29.11 [RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery](#rqsrspluginrawsqleditorinterfacereformatquery)
+* 30 [Auto-complete In Queries](#auto-complete-in-queries)
+    * 30.1 [RQ.SRS.Plugin.AutoCompleteInQueries](#rqsrspluginautocompleteinqueries)
+* 31 [Time range selector](#time-range-selector)
+    * 31.1 [RQ.SRS.Plugin.TimeRangeSelector](#rqsrsplugintimerangeselector)
+    * 31.2 [RQ.SRS.Plugin.TimeRangeSelector.Zoom](#rqsrsplugintimerangeselectorzoom)
+* 32 [Сhanging The Size Of The Graph](#hanging-the-size-of-the-graph)
+    * 32.1 [RQ.SRS.Plugin.FillActual](#rqsrspluginfillactual)
+* 33 [Refresh Databoard](#refresh-databoard)
+    * 33.1 [RQ.SRS.Plugin.RefreshDataboard](#rqsrspluginrefreshdataboard)
+* 34 [Inspecting Query](#inspecting-query)
+    * 34.1 [RQ.SRS.Plugin.QueryInspector](#rqsrspluginqueryinspector)
+    * 34.2 [RQ.SRS.Plugin.QueryInspector.QueryTab](#rqsrspluginqueryinspectorquerytab)
+* 35 [Visualization](#visualization)
+    * 35.1 [RQ.SRS.Plugin.Visualization](#rqsrspluginvisualization)
+    * 35.2 [RQ.SRS.Plugin.Visualization.Legends](#rqsrspluginvisualizationlegends)
+    * 35.3 [Table View](#table-view)
+        * 35.3.1 [RQ.SRS.Plugin.Visualization.Table](#rqsrspluginvisualizationtable)
+    * 35.4 [Visualization Types](#visualization-types)
+        * 35.4.1 [RQ.SRS.Plugin.Visualization.VisualizationTypes](#rqsrspluginvisualizationvisualizationtypes)
+        * 35.4.2 [RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes](#rqsrspluginvisualizationvisualizationtypesdatatypes)
+* 36 [Macros](#macros)
+    * 36.1 [RQ.SRS.Plugin.QuerySettings.Macros](#rqsrspluginquerysettingsmacros)
+    * 36.2 [RQ.SRS.Plugin.QuerySettings.Macros.Table](#rqsrspluginquerysettingsmacrostable)
+    * 36.3 [RQ.SRS.Plugin.QuerySettings.Macros.DateCol](#rqsrspluginquerysettingsmacrosdatecol)
+    * 36.4 [RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol](#rqsrspluginquerysettingsmacrosdatetimecol)
+    * 36.5 [RQ.SRS.Plugin.QuerySettings.Macros.From](#rqsrspluginquerysettingsmacrosfrom)
+    * 36.6 [RQ.SRS.Plugin.QuerySettings.Macros.To](#rqsrspluginquerysettingsmacrosto)
+    * 36.7 [RQ.SRS.Plugin.QuerySettings.Macros.Interval](#rqsrspluginquerysettingsmacrosinterval)
+    * 36.8 [RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn](#rqsrspluginquerysettingsmacrostimefilterbycolumn)
+    * 36.9 [RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries](#rqsrspluginquerysettingsmacrostimeseries)
+    * 36.10 [RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries](#rqsrspluginquerysettingsmacrosnaturaltimeseries)
+    * 36.11 [RQ.SRS.Plugin.QuerySettings.Macros.Unescape](#rqsrspluginquerysettingsmacrosunescape)
+    * 36.12 [RQ.SRS.Plugin.QuerySettings.Macros.Adhoc](#rqsrspluginquerysettingsmacrosadhoc)
+* 37 [Variables Setup](#variables-setup)
+    * 37.1 [RQ.SRS.Plugin.Variables](#rqsrspluginvariables)
+* 38 [Annotations Setup](#annotations-setup)
+    * 38.1 [RQ.SRS.Plugin.Annotations](#rqsrspluginannotations)
+* 39 [Setaping Alerts](#setaping-alerts)
+    * 39.1 [RQ.SRS.Plugin.Alerts](#rqsrspluginalerts)
+    * 39.2 [RQ.SRS.Plugin.Alerts.AlertSetupPage](#rqsrspluginalertsalertsetuppage)
+    * 39.3 [RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged](#rqsrspluginalertsruletypegrafanamanaged)
+    * 39.4 [RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged](#rqsrspluginalertsruletypedatasourcemanaged)
+* 40 [Functions](#functions)
+    * 40.1 [RQ.SRS.Plugin.Functions](#rqsrspluginfunctions)
+    * 40.2 [RQ.SRS.Plugin.Functions.Rate](#rqsrspluginfunctionsrate)
+    * 40.3 [RQ.SRS.Plugin.Functions.Columns](#rqsrspluginfunctionscolumns)
+    * 40.4 [RQ.SRS.Plugin.Functions.RateColumns](#rqsrspluginfunctionsratecolumns)
+    * 40.5 [RQ.SRS.Plugin.Functions.PerSecond](#rqsrspluginfunctionspersecond)
+    * 40.6 [RQ.SRS.Plugin.Functions.PerSecondColumns](#rqsrspluginfunctionspersecondcolumns)
+    * 40.7 [RQ.SRS.Plugin.Functions.Delta](#rqsrspluginfunctionsdelta)
+    * 40.8 [RQ.SRS.Plugin.Functions.DeltaColumns](#rqsrspluginfunctionsdeltacolumns)
+    * 40.9 [RQ.SRS.Plugin.Functions.Increase](#rqsrspluginfunctionsincrease)
+    * 40.10 [RQ.SRS.Plugin.Functions.IncreaseColumns](#rqsrspluginfunctionsincreasecolumns)
+    * 40.11 [RQ.SRS.Plugin.Functions.Lttb](#rqsrspluginfunctionslttb)
+    * 40.12 [RQ.SRS.Plugin.Functions.SubQuery](#rqsrspluginfunctionssubquery)
+* 41 [Supported ClickHouse Datatypes](#supported-clickhouse-datatypes)
+    * 41.1 [RQ.SRS.Plugin.SupportedDataTypes](#rqsrspluginsupporteddatatypes)
+    * 41.2 [RQ.SRS.Plugin.SupportedDataTypes.LimitValues](#rqsrspluginsupporteddatatypeslimitvalues)
+* 42 [Versions Compatibility](#versions-compatibility)
+    * 42.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrspluginversioncompatibility)
 
 
 ## Revision History
@@ -2154,7 +2166,7 @@ The [Plugin] SHALL support connecting the [ClickHouse] server to [Grafana].
 
 ## Adding New Data Source
 
-### RQ.SRS.Plugin.DataSourceSetupView 
+### RQ.SRS.Plugin.DataSourceSetupView
 version: 1.0
 
 The [Plugin] SHALL support creating a new [ClickHouse] data source by clicking the `Add new data source` button on the [Plugin] page.

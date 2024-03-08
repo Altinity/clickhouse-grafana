@@ -234,7 +234,7 @@ def show_help(self):
 @TestScenario
 @Okayed("Ok")
 @Requirements(RQ_SRS_Plugin_RawSQLEditorInterface_ShowGeneratedSQL("1.0"))
-def show_help(self):
+def show_generated_sql(self):
     """Check that resolution Show generated SQL button works correctly."""
 
     with Given("I go to clickhouse dashboard"):
@@ -257,9 +257,9 @@ def show_help(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("Don't see any changes")
 @Requirements(RQ_SRS_Plugin_RawSQLEditorInterface_ReformatQuery("1.0"))
-def show_help(self):
+def reformat_query(self):
     """Check that resolution Reformat Query button works correctly."""
 
     with Given("I go to clickhouse dashboard"):

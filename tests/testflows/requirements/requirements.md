@@ -903,8 +903,7 @@ version: 1.0
 
 The [Plugin] SHALL support scalar data types. The following data types SHALL be supported:
 
-&#10004;
-&#10060;
+
 
 | Data Type                                                                           | Supported in Grafana |
 | ----------------------------------------------------------------------------------- |:--------------------:|

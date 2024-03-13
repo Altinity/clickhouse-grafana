@@ -619,7 +619,7 @@ The [Plugin] SHALL support table view for data.
 #### RQ.SRS.Plugin.Visualization.VisualizationTypes
 version: 1.0
 
-The [Plugin] SHALL support the following visualization types for data:
+The [Plugin] SHALL support the following visualization types for any supported clickhouse data types:
 
 * Time series
 * Bar chart
@@ -643,37 +643,6 @@ The [Plugin] SHALL support the following visualization types for data:
 * Logs
 * Node Graph
 * Traces
-
-#### RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes
-version: 1.0
-
-The [Plugin] SHALL support the following visualization types for the following ClickHouse datatypes:
-
-
-| Vizualization Type | Supported ClickHouse datatypes                                                      |
-|--------------------|-------------------------------------------------------------------------------------|
-| Time series        |                                                                                     |
-| Bar chart          |                                                                                     |
-| Stat               |                                                                                     |
-| Gauge              |                                                                                     |
-| Bar Gauge          |                                                                                     |
-| Pie chart          |                                                                                     |
-| State timeline     |                                                                                     |
-| Heatmap            |                                                                                     |
-| Status history     |                                                                                     |
-| Histogram          |                                                                                     |
-| Text               |                                                                                     |
-| Alert List         |                                                                                     |
-| Dashboard list     |                                                                                     |
-| News               |                                                                                     |
-| Annotation list    |                                                                                     |
-| Candlestick        |                                                                                     |
-| Canvas             |                                                                                     |
-| Flame Graph        |                                                                                     |
-| Geomap             |                                                                                     |
-| Logs               |                                                                                     |
-| Node Graph         |                                                                                     |
-| Traces             |                                                                                     |
 
 
 ## Macros

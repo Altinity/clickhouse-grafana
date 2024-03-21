@@ -1,4 +1,4 @@
-import Scanner from '../datasource/scanner';
+import Scanner from '../datasource/scanner/scanner';
 import { each } from 'lodash';
 import SqlQueryMacros from '../datasource/sql-query/sql-query-macros';
 

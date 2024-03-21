@@ -5,7 +5,7 @@ import funcs from "./constants/funcs";
 import dataTypes from "./constants/data-types";
 import constants from "./constants/constants";
 import macros from "./constants/macros";
-
+let currentEditor: any = null;
 enum TokenType {
     FUNCTIONS = "custom-functions",
     KEYWORDS = "custom-keywords",
@@ -26,6 +26,12 @@ export const initiateEditor = (templateVariables: any, monacoInstance: any) => {
 
   if (!monacoInstance) {
     return;
+  }
+
+  // Dispose the previous editor if it exists
+  if (currentEditor) {
+    currentEditor.dispose();
+    currentEditor = null;
   }
 
   const Colors = {
@@ -116,7 +122,7 @@ export const initiateEditor = (templateVariables: any, monacoInstance: any) => {
   };
 
   const registerAutocompletion = (templateVariables) => {
-    monacoInstance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+    return monacoInstance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
       provideCompletionItems: (model, position) => {
         const word = model.getWordUntilPosition(position);
         // @ts-ignore
@@ -166,7 +172,7 @@ export const initiateEditor = (templateVariables: any, monacoInstance: any) => {
   monacoInstance.languages.register({ id: LANGUAGE_ID });
   tokenize();
   defineTheme();
-  registerAutocompletion(templateVariables);
+  currentEditor = registerAutocompletion(templateVariables);
 
-  return {theme: THEME_NAME, language: LANGUAGE_ID}
+  return {theme: THEME_NAME, language: LANGUAGE_ID, editor: currentEditor}
 };

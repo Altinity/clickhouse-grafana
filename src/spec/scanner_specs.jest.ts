@@ -1,4 +1,4 @@
-import Scanner from '../datasource/scanner';
+import Scanner from '../datasource/scanner/scanner';
 
 describe('scanner:', () => {
   describe('AST case 1', () => {

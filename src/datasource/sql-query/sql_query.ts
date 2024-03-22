@@ -1,5 +1,5 @@
 import { isArray } from 'lodash';
-import Scanner from '../scanner';
+import Scanner from '../scanner/scanner';
 import { TemplateSrv } from '@grafana/runtime';
 import { SqlQueryHelper } from './sql-query-helper';
 import SqlQueryMacros from './sql-query-macros';

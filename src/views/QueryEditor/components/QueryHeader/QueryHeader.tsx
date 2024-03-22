@@ -1,5 +1,5 @@
 import React from 'react';
-import { RadioButtonGroup } from '@grafana/ui';
+import {Button, RadioButtonGroup} from '@grafana/ui';
 import { CHQuery, EditorMode } from '../../../../types/types';
 import { SelectableValue } from '@grafana/data';
 import { E2ESelectors } from '@grafana/e2e-selectors';
@@ -22,9 +22,10 @@ interface QueryHeaderProps {
   query: CHQuery;
   editorMode: EditorMode;
   setEditorMode: (mode: any) => void;
+  onTriggerQuery: () => void;
 }
 
-export const QueryHeader = ({ editorMode, setEditorMode }: QueryHeaderProps) => {
+export const QueryHeader = ({ editorMode, setEditorMode, onTriggerQuery }: QueryHeaderProps) => {
   const options: Array<SelectableValue<EditorMode>> = [
     { label: selectors.components.QueryEditor.EditorMode.options.QuerySettings, value: EditorMode.Builder },
     { label: selectors.components.QueryEditor.EditorMode.options.SQLEditor, value: EditorMode.SQL },
@@ -34,13 +35,19 @@ export const QueryHeader = ({ editorMode, setEditorMode }: QueryHeaderProps) => 
     setEditorMode(editorMode);
   };
   return (
-    <>
+    <div style={{display: "flex"}}>
       <RadioButtonGroup
         size="sm"
         options={options}
         value={editorMode}
         onChange={(e: EditorMode) => onEditorModeChange(e!)}
       />
-    </>
+      { editorMode === EditorMode.SQL ? <Button variant="primary" icon="play" size={'sm'} style={{marginLeft: '10px'}} onClick={onTriggerQuery}>
+        Run Query
+      </Button> : null }
+      { editorMode === EditorMode.Builder ? <Button variant="primary" size={'sm'} icon="arrow-right"  style={{marginLeft: '10px'}} onClick={() => setEditorMode(EditorMode.SQL)} >
+        Go to Query
+      </Button>: null }
+    </div>
   );
 };

@@ -1,9 +1,8 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import { EditorMode } from '../../../../types/types';
-import { Button, InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
+import { InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 
-export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEditorMode }: any) => {
+export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) => {
   const [databases, setDatabases] = useState([]);
   const [tables, setTables] = useState([]);
   const [dateColumns, setdateColumns] = useState([]);
@@ -74,8 +73,6 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
   const querySegment = useCallback((type: any) => {
     let query = buildExploreQuery(type);
     return datasource.metricFindQuery(query)
-    // .then(this.uiSegmentSrv.transformToSegments(false))
-    // .catch(this.handleQueryError.bind(this));
   },[buildExploreQuery, datasource])
 
   useEffect(() => {
@@ -117,9 +114,6 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
     setSelectedDateTimeType(dateTimeType.value);
     query.dateTimeType = dateTimeType.value;
     onChange(query);
-  };
-  const switchToSQLMode = () => {
-    setEditorMode(EditorMode.SQL)
   };
 
   const onDatabaseChange = (database: string) => {
@@ -272,9 +266,6 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
           <Select width={24} value={selectedColumnDateType} onChange={({value}) => onDateColDataTypeChange(value as string)} placeholder={'Date Column'} options={dateColumns} disabled={true} />
         </InlineField>
       </InlineFieldRow>
-      <Button variant="primary" icon="arrow-right" onClick={switchToSQLMode} >
-        Go to Query
-      </Button>
     </div>
   );
 };

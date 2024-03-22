@@ -1,10 +1,11 @@
-import {getAutocompletions} from "./autocompletions/functions";
-import {getMacrosAutocompletion} from "./autocompletions/macros";
+import { getAutocompletions } from "./autocompletions/functions";
+import { getMacrosAutocompletion } from "./autocompletions/macros";
 import keywords from "./constants/keywords";
 import funcs from "./constants/funcs";
 import dataTypes from "./constants/data-types";
 import constants from "./constants/constants";
 import macros from "./constants/macros";
+let currentEditor: any = null;
 
 declare global {
   interface Window {
@@ -50,18 +51,25 @@ export const initiateEditor = (templateVariables: any, monacoInstance: any, auto
 		return;
 	}
 
-	const Colors = {
-		FUNCTIONS: "#66d9ef",      // Gold for functions
-		KEYWORDS: "#66d9ef",     // Spring green for keywords
-		CONSTANTS: "#fe85fc",      // Sky blue for constants
-		DATATYPES: "#66d9ef",      // Tomato for data types
-		MACROS: "#a6e22e",         // Gold for macros (similar to functions for consistency)
-		PARENTHESIS: "#f0a842",    // Slate blue for parentheses
-		COMMENTS: "#75715e",        // Dark gray for comments,
-		COMMENT_BLOCK: "#75715e",        // Dark gray for comments,
-		VARIABLE: "#75715e",        // Dark gray for comments,
-		STRING: "#74e680"
-	};
+
+  // Dispose the previous editor if it exists
+  if (currentEditor) {
+    currentEditor.dispose();
+    currentEditor = null;
+  }
+
+  const Colors = {
+    FUNCTIONS: "#66d9ef",      // Gold for functions
+    KEYWORDS: "#66d9ef",     // Spring green for keywords
+    CONSTANTS: "#fe85fc",      // Sky blue for constants
+    DATATYPES: "#66d9ef",      // Tomato for data types
+    MACROS: "#a6e22e",         // Gold for macros (similar to functions for consistency)
+    PARENTHESIS: "#f0a842",    // Slate blue for parentheses
+    COMMENTS: "#75715e",        // Dark gray for comments,
+    COMMENT_BLOCK: "#75715e",        // Dark gray for comments,
+    VARIABLE: "#75715e",        // Dark gray for comments,
+    STRING: "#74e680"
+  };
 
 	const Types = {
 		[Constant]: 'Constant',
@@ -177,10 +185,10 @@ export const initiateEditor = (templateVariables: any, monacoInstance: any, auto
 					array.map(item => createCompletionItem(item.name, kind, item.def, rangeMacros, item.docText));
 				const mapFunctionToCompletionItems = (array: Array<{ name: string; def: string; docText: string }>, kind: CompletionItemKind) =>
 					array.map(item => createCompletionItem(item.name, kind, item.def, range, item.docText));
-        
-        
+
+
 				return {
-					incomplete: false, 
+					incomplete: false,
 					suggestions: [
 						...mapFunctionToCompletionItems(getAutocompletions(), Method),
 						...mapMacroToCompletionItems(getMacrosAutocompletion(), Variable),
@@ -192,17 +200,17 @@ export const initiateEditor = (templateVariables: any, monacoInstance: any, auto
 						...mapToCompletionItems(dynamicKeyword, Keyword),
 						...mapToCompletionItems(dynamicString, Text),
 						...mapToCompletionItems(templateVariables.map((item: string) => `${item}`), Variable),
-					] 
+					]
 				} as any
 			},
 		});
 	};
 
-	// TODO: add use effect to databases autocompletion
-	monacoInstance.languages.register({ id: LANGUAGE_ID });
-	tokenize();
-	defineTheme();
-	registerAutocompletion(templateVariables, monacoInstance);
+  // TODO: add use effect to databases autocompletion
+  monacoInstance.languages.register({ id: LANGUAGE_ID });
+  tokenize();
+  defineTheme();
+  currentEditor = registerAutocompletion(templateVariables, monacoInstance);
 
-	return {theme: THEME_NAME, language: LANGUAGE_ID}
+	return {theme: THEME_NAME, language: LANGUAGE_ID, editor: currentEditor}
 };

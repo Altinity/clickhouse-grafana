@@ -1,4 +1,137 @@
 import { isArray, isEmpty, toLower } from 'lodash';
+const wsRe = '\\s+';
+const commentRe = "--(([^'\n]*[']){2})*[^'\n]*(?=\n|$)|" + '/\\*(?:[^*]|\\*[^/])*\\*/';
+const idRe = '[a-zA-Z_][a-zA-Z_0-9]*';
+const intRe = '\\d+';
+const powerIntRe = '\\d+e\\d+';
+const floatRe = '\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+';
+const stringRe = '(\'(?:[^\'\\\\]|\\\\.)*\')|(`(?:[^`\\\\]|\\\\.)*`)|("(?:[^"\\\\]|\\\\.)*")';
+const binaryOpRe = '=>|\\|\\||>=|<=|==|!=|<>|->|[-+/%*=<>\\.!]';
+const statementRe = '\\b(with|select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b';
+const joinsRe =
+  '\\b(' +
+  'left\\s+array\\s+join|' +
+  'array\\s+join|' +
+  'global\\s+any\\s+inner\\s+outer\\s+join|' +
+  'global\\s+any\\s+inner\\s+join|' +
+  'global\\s+any\\s+left\\s+outer\\s+join|' +
+  'global\\s+any\\s+left\\s+join|' +
+  'global\\s+any\\s+right\\s+outer\\s+join|' +
+  'global\\s+any\\s+right\\s+join|' +
+  'global\\s+any\\s+full\\s+outer\\s+join|' +
+  'global\\s+any\\s+full\\s+join|' +
+  'global\\s+any\\s+cross\\s+outer\\s+join|' +
+  'global\\s+any\\s+cross\\s+join|' +
+  'global\\s+any\\s+outer\\s+join|' +
+  'global\\s+any\\s+join|' +
+  'global\\s+all\\s+inner\\s+outer\\s+join|' +
+  'global\\s+all\\s+inner\\s+join|' +
+  'global\\s+all\\s+left\\s+outer\\s+join|' +
+  'global\\s+all\\s+left\\s+join|' +
+  'global\\s+all\\s+right\\s+outer\\s+join|' +
+  'global\\s+all\\s+right\\s+join|' +
+  'global\\s+all\\s+full\\s+outer\\s+join|' +
+  'global\\s+all\\s+full\\s+join|' +
+  'global\\s+all\\s+cross\\s+outer\\s+join|' +
+  'global\\s+all\\s+cross\\s+join|' +
+  'global\\s+all\\s+outer\\s+join|' +
+  'global\\s+all\\s+join|' +
+  'global\\s+inner\\s+outer\\s+join|' +
+  'global\\s+inner\\s+join|' +
+  'global\\s+left\\s+outer\\s+join|' +
+  'global\\s+left\\s+join|' +
+  'global\\s+right\\s+outer\\s+join|' +
+  'global\\s+right\\s+join|' +
+  'global\\s+full\\s+outer\\s+join|' +
+  'global\\s+full\\s+join|' +
+  'global\\s+cross\\s+outer\\s+join|' +
+  'global\\s+cross\\s+join|' +
+  'global\\s+outer\\s+join|' +
+  'global\\s+join|' +
+  'any\\s+inner\\s+outer\\s+join|' +
+  'any\\s+inner\\s+join|' +
+  'any\\s+left\\s+outer\\s+join|' +
+  'any\\s+left\\s+join|' +
+  'any\\s+right\\s+outer\\s+join|' +
+  'any\\s+right\\s+join|' +
+  'any\\s+full\\s+outer\\s+join|' +
+  'any\\s+full\\s+join|' +
+  'any\\s+cross\\s+outer\\s+join|' +
+  'any\\s+cross\\s+join|' +
+  'any\\s+outer\\s+join|' +
+  'any\\s+join|' +
+  'all\\s+inner\\s+outer\\s+join|' +
+  'all\\s+inner\\s+join|' +
+  'all\\s+left\\s+outer\\s+join|' +
+  'all\\s+left\\s+join|' +
+  'all\\s+right\\s+outer\\s+join|' +
+  'all\\s+right\\s+join|' +
+  'all\\s+full\\s+outer\\s+join|' +
+  'all\\s+full\\s+join|' +
+  'all\\s+cross\\s+outer\\s+join|' +
+  'all\\s+cross\\s+join|' +
+  'all\\s+outer\\s+join|' +
+  'all\\s+join|' +
+  'inner\\s+outer\\s+join|' +
+  'inner\\s+join|' +
+  'left\\s+outer\\s+join|' +
+  'left\\s+join|' +
+  'right\\s+outer\\s+join|' +
+  'right\\s+join|' +
+  'full\\s+outer\\s+join|' +
+  'full\\s+join|' +
+  'cross\\s+outer\\s+join|' +
+  'cross\\s+join|' +
+  'outer\\s+join|' +
+  'join' +
+  ')\\b';
+const onJoinTokenRe = '\\b(using|on)\\b';
+const tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)';
+const macroFuncRe =
+  '(\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
+const condRe = '\\b(or|and)\\b';
+const inRe = '\\b(global in|global not in|not in|in)\\b';
+const closureRe = '[\\(\\)\\[\\]]';
+const specCharsRe = '[,?:]';
+const macroRe = '\\$[A-Za-z0-9_$]+';
+const skipSpaceRe = '[\\(\\.! \\[]';
+const tableFuncRe =
+  '\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b';
+const wsOnlyRe = new RegExp('^(?:' + wsRe + ')$');
+const commentOnlyRe = new RegExp('^(?:' + commentRe + ')$');
+const idOnlyRe = new RegExp('^(?:' + idRe + ')$');
+const closureOnlyRe = new RegExp('^(?:' + closureRe + ')$');
+const macroFuncOnlyRe = new RegExp('^(?:' + macroFuncRe + ')$');
+const statementOnlyRe = new RegExp('^(?:' + statementRe + ')$', 'i');
+const joinsOnlyRe = new RegExp('^(?:' + joinsRe + ')$', 'i');
+const onJoinTokenOnlyRe = new RegExp('^(?:' + onJoinTokenRe + ')$', 'i');
+const tableNameOnlyRe = new RegExp('^(?:' + tableNameRe + ')$', 'i');
+const tableFuncOnlyRe = new RegExp('^(?:' + tableFuncRe + ')$', 'i');
+const macroOnlyRe = new RegExp('^(?:' + macroRe + ')$', 'i');
+const inOnlyRe = new RegExp('^(?:' + inRe + ')$', 'i');
+const condOnlyRe = new RegExp('^(?:' + condRe + ')$', 'i');
+const skipSpaceOnlyRe = new RegExp('^(?:' + skipSpaceRe + ')$');
+
+const tokenRe = [
+  statementRe,
+  macroFuncRe,
+  joinsRe,
+  inRe,
+  wsRe,
+  commentRe,
+  idRe,
+  stringRe,
+  powerIntRe,
+  floatRe,
+  intRe,
+  binaryOpRe,
+  closureRe,
+  specCharsRe,
+  macroRe,
+].join('|');
+
+const tabSize = '    '; // 4 spaces
+const newLine = '\n';
 
 export default class Scanner {
   tree: any;
@@ -319,194 +452,19 @@ export default class Scanner {
     return query.replace(new RegExp(commentRe, 'g'), '');
   }
 }
-
-const wsRe = '\\s+',
-  commentRe = "--(([^'\n]*[']){2})*[^'\n]*(?=\n|$)|" + '/\\*(?:[^*]|\\*[^/])*\\*/',
-  idRe = '[a-zA-Z_][a-zA-Z_0-9]*',
-  intRe = '\\d+',
-  powerIntRe = '\\d+e\\d+',
-  floatRe = '\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+',
-  stringRe = '(\'(?:[^\'\\\\]|\\\\.)*\')|(`(?:[^`\\\\]|\\\\.)*`)|("(?:[^"\\\\]|\\\\.)*")',
-  binaryOpRe = '=>|\\|\\||>=|<=|==|!=|<>|->|[-+/%*=<>\\.!]',
-  statementRe = '\\b(with|select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b',
-  // look https://clickhouse.tech/docs/en/sql-reference/statements/select/join/
-  // [GLOBAL] [ANY|ALL] [INNER|LEFT|RIGHT|FULL|CROSS] [OUTER] JOIN
-  joinsRe =
-    '\\b(' +
-    'left\\s+array\\s+join|' +
-    'array\\s+join|' +
-    'global\\s+any\\s+inner\\s+outer\\s+join|' +
-    'global\\s+any\\s+inner\\s+join|' +
-    'global\\s+any\\s+left\\s+outer\\s+join|' +
-    'global\\s+any\\s+left\\s+join|' +
-    'global\\s+any\\s+right\\s+outer\\s+join|' +
-    'global\\s+any\\s+right\\s+join|' +
-    'global\\s+any\\s+full\\s+outer\\s+join|' +
-    'global\\s+any\\s+full\\s+join|' +
-    'global\\s+any\\s+cross\\s+outer\\s+join|' +
-    'global\\s+any\\s+cross\\s+join|' +
-    'global\\s+any\\s+outer\\s+join|' +
-    'global\\s+any\\s+join|' +
-    'global\\s+all\\s+inner\\s+outer\\s+join|' +
-    'global\\s+all\\s+inner\\s+join|' +
-    'global\\s+all\\s+left\\s+outer\\s+join|' +
-    'global\\s+all\\s+left\\s+join|' +
-    'global\\s+all\\s+right\\s+outer\\s+join|' +
-    'global\\s+all\\s+right\\s+join|' +
-    'global\\s+all\\s+full\\s+outer\\s+join|' +
-    'global\\s+all\\s+full\\s+join|' +
-    'global\\s+all\\s+cross\\s+outer\\s+join|' +
-    'global\\s+all\\s+cross\\s+join|' +
-    'global\\s+all\\s+outer\\s+join|' +
-    'global\\s+all\\s+join|' +
-    'global\\s+inner\\s+outer\\s+join|' +
-    'global\\s+inner\\s+join|' +
-    'global\\s+left\\s+outer\\s+join|' +
-    'global\\s+left\\s+join|' +
-    'global\\s+right\\s+outer\\s+join|' +
-    'global\\s+right\\s+join|' +
-    'global\\s+full\\s+outer\\s+join|' +
-    'global\\s+full\\s+join|' +
-    'global\\s+cross\\s+outer\\s+join|' +
-    'global\\s+cross\\s+join|' +
-    'global\\s+outer\\s+join|' +
-    'global\\s+join|' +
-    'any\\s+inner\\s+outer\\s+join|' +
-    'any\\s+inner\\s+join|' +
-    'any\\s+left\\s+outer\\s+join|' +
-    'any\\s+left\\s+join|' +
-    'any\\s+right\\s+outer\\s+join|' +
-    'any\\s+right\\s+join|' +
-    'any\\s+full\\s+outer\\s+join|' +
-    'any\\s+full\\s+join|' +
-    'any\\s+cross\\s+outer\\s+join|' +
-    'any\\s+cross\\s+join|' +
-    'any\\s+outer\\s+join|' +
-    'any\\s+join|' +
-    'all\\s+inner\\s+outer\\s+join|' +
-    'all\\s+inner\\s+join|' +
-    'all\\s+left\\s+outer\\s+join|' +
-    'all\\s+left\\s+join|' +
-    'all\\s+right\\s+outer\\s+join|' +
-    'all\\s+right\\s+join|' +
-    'all\\s+full\\s+outer\\s+join|' +
-    'all\\s+full\\s+join|' +
-    'all\\s+cross\\s+outer\\s+join|' +
-    'all\\s+cross\\s+join|' +
-    'all\\s+outer\\s+join|' +
-    'all\\s+join|' +
-    'inner\\s+outer\\s+join|' +
-    'inner\\s+join|' +
-    'left\\s+outer\\s+join|' +
-    'left\\s+join|' +
-    'right\\s+outer\\s+join|' +
-    'right\\s+join|' +
-    'full\\s+outer\\s+join|' +
-    'full\\s+join|' +
-    'cross\\s+outer\\s+join|' +
-    'cross\\s+join|' +
-    'outer\\s+join|' +
-    'join' +
-    ')\\b',
-  onJoinTokenRe = '\\b(using|on)\\b',
-  tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)',
-  macroFuncRe =
-    '(\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)',
-  condRe = '\\b(or|and)\\b',
-  inRe = '\\b(global in|global not in|not in|in)\\b',
-  closureRe = '[\\(\\)\\[\\]]',
-  specCharsRe = '[,?:]',
-  macroRe = '\\$[A-Za-z0-9_$]+',
-  skipSpaceRe = '[\\(\\.! \\[]',
-  tableFuncRe =
-    '\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b',
-  wsOnlyRe = new RegExp('^(?:' + wsRe + ')$'),
-  commentOnlyRe = new RegExp('^(?:' + commentRe + ')$'),
-  idOnlyRe = new RegExp('^(?:' + idRe + ')$'),
-  closureOnlyRe = new RegExp('^(?:' + closureRe + ')$'),
-  macroFuncOnlyRe = new RegExp('^(?:' + macroFuncRe + ')$'),
-  statementOnlyRe = new RegExp('^(?:' + statementRe + ')$', 'i'),
-  joinsOnlyRe = new RegExp('^(?:' + joinsRe + ')$', 'i'),
-  onJoinTokenOnlyRe = new RegExp('^(?:' + onJoinTokenRe + ')$', 'i'),
-  tableNameOnlyRe = new RegExp('^(?:' + tableNameRe + ')$', 'i'),
-  tableFuncOnlyRe = new RegExp('^(?:' + tableFuncRe + ')$', 'i'),
-  macroOnlyRe = new RegExp('^(?:' + macroRe + ')$', 'i'),
-  inOnlyRe = new RegExp('^(?:' + inRe + ')$', 'i'),
-  condOnlyRe = new RegExp('^(?:' + condRe + ')$', 'i'),
-  skipSpaceOnlyRe = new RegExp('^(?:' + skipSpaceRe + ')$');
-
-const tokenRe = [
-  statementRe,
-  macroFuncRe,
-  joinsRe,
-  inRe,
-  wsRe,
-  commentRe,
-  idRe,
-  stringRe,
-  powerIntRe,
-  floatRe,
-  intRe,
-  binaryOpRe,
-  closureRe,
-  specCharsRe,
-  macroRe,
-].join('|');
-
-function isSkipSpace(token) {
-  return skipSpaceOnlyRe.test(token);
-}
-
-function isCond(token) {
-  return condOnlyRe.test(token);
-}
-
-function isIn(token) {
-  return inOnlyRe.test(token);
-}
-
-function isJoin(token) {
-  return joinsOnlyRe.test(token);
-}
-
-function isTable(token) {
-  return tableNameOnlyRe.test(token);
-}
-
-function isWS(token) {
-  return wsOnlyRe.test(token);
-}
-
-function isMacroFunc(token) {
-  return macroFuncOnlyRe.test(token);
-}
-
-function isMacro(token) {
-  return macroOnlyRe.test(token);
-}
-
-function isComment(token) {
-  return commentOnlyRe.test(token);
-}
-
-function isID(token) {
-  return idOnlyRe.test(token);
-}
-
-function isStatement(token) {
-  return statementOnlyRe.test(token);
-}
-
-function isTableFunc(token) {
-  return tableFuncOnlyRe.test(token);
-}
-
-function isClosureChars(token) {
-  return closureOnlyRe.test(token);
-}
-
-const tabSize = '    ', // 4 spaces
-  newLine = '\n';
+const isSkipSpace = (token: string) => skipSpaceOnlyRe.test(token);
+const isCond = (token: string) => condOnlyRe.test(token);
+const isIn = (token: string) => inOnlyRe.test(token);
+const isJoin = (token: string) => joinsOnlyRe.test(token);
+const isTable = (token: string) => tableNameOnlyRe.test(token);
+const isWS = (token: string) => wsOnlyRe.test(token);
+const isMacroFunc = (token: string) => macroFuncOnlyRe.test(token);
+const isMacro = (token: string) => macroOnlyRe.test(token);
+const isComment = (token: string) => commentOnlyRe.test(token);
+const isID = (token: string) => idOnlyRe.test(token);
+const isStatement = (token: string) => statementOnlyRe.test(token);
+const isTableFunc = (token: string) => tableFuncOnlyRe.test(token);
+const isClosureChars = (token: string) => closureOnlyRe.test(token);
 
 function printItems(items, tab = '', separator = '') {
   let result = '';
@@ -693,3 +651,6 @@ function print(AST, tab = '') {
 
   return result;
 }
+
+
+

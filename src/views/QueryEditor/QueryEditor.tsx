@@ -69,7 +69,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
             query={initializedQuery}
             height={200}
             onSqlChange={onSqlChange}
-            onRunQuery={onRunQuery}
+            onRunQuery={onTriggerQuery}
             onFieldChange={onFieldChange}
             formattedData={formattedData}
             datasource={datasource}

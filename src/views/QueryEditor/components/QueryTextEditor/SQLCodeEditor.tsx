@@ -17,7 +17,7 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: an
   }
 
   return (
-    <div style={{ position: 'relative', width: '100%', marginTop: '10px'}}  onBlur={onRunQuery}>
+    <div style={{ position: 'relative', width: '100%', marginTop: '10px'}} >
       <CodeEditor
         height={Math.max(query.query.split('\n').length * 18, 150)}
         value={query.query}
@@ -32,6 +32,7 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: an
           }, 10)
         }}
         onChange={onSqlChange}
+        onBlur={onRunQuery}
       />
     </div>
   );

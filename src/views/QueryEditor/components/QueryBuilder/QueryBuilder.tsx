@@ -1,6 +1,7 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import { InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
+import {TimestampColumnField} from "./components/TimestampColumnField";
 
 export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) => {
   const [databases, setDatabases] = useState([]);
@@ -227,16 +228,14 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
         </InlineField>
       </InlineFieldRow>
       <InlineFieldRow>
-        <InlineField
-          label={
-            <InlineLabel width={24} >
-              Timestamp Column
-            </InlineLabel>
-          }
-          
-        >
-          <Select width={24} value={selectedColumnTimestampType} onChange={({value}) => onDateTimeColDataTypeChange(value as string)} placeholder={'Timestamp column'} options={timestampColumns} disabled={!timestampColumns.length}/>
-        </InlineField>
+        <TimestampColumnField
+          value={selectedColumnTimestampType}
+          onChange={({value}) => {
+            onDateTimeColDataTypeChange(value as string)
+          }}
+          options={timestampColumns}
+          disabled={!timestampColumns.length}
+        />
       </InlineFieldRow>
       <InlineFieldRow>
         <InlineField

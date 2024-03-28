@@ -1,0 +1,59 @@
+<yandex>
+    <mysql_port>3306</mysql_port>
+    <postgresql_port>5432</postgresql_port>
+
+    <http_port>8123</http_port>
+    <https_port>8443</https_port>
+
+    <tcp_port>9000</tcp_port>
+    <tcp_port_secure>9440</tcp_port_secure>
+
+    <openSSL>
+        <server>
+            <!--
+                openssl genrsa -out ca-key.pem 2048
+                openssl req -subj "/O=altinity" -x509 -new -nodes -key ca-key.pem -sha256 -days 365000 -out ca-cert.pem
+             -->
+            <caConfig>/etc/clickhouse-server/ca-cert.pem</caConfig>
+            <!--
+               openssl genrsa -out server-key.pem 2048
+               openssl req -subj "/CN=clickhouse" -addext "subjectAltName = DNS:clickhouse" -new -key server-key.pem -out server-req.csr
+            -->
+            <privateKeyFile>/etc/clickhouse-server/server-key.pem</privateKeyFile>
+            <!-- openssl x509 -req -days 365000 -extensions SAN -extfile <(printf "\n[SAN]\nsubjectAltName=DNS:clickhouse") -in server-req.csr -out server-cert.pem -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial -->
+            <certificateFile>/etc/clickhouse-server/server-cert.pem</certificateFile>
+            <!-- openssl dhparam -out /etc/clickhouse-server/dhparam.pem 4096 -->
+            <dhParamsFile>/etc/clickhouse-server/dhparam.pem</dhParamsFile>
+            <verificationMode>strict</verificationMode>
+            <!-- <verificationMode>none</verificationMode> -->
+            <loadDefaultCAFile>true</loadDefaultCAFile>
+            <cacheSessions>true</cacheSessions>
+            <disableProtocols>sslv2,sslv3</disableProtocols>
+            <preferServerCiphers>true</preferServerCiphers>
+        </server>
+        <client>
+            <caConfig>/etc/clickhouse-server/ca-cert.pem</caConfig>
+            <!--
+               openssl genrsa -out client-key.pem 2048
+               openssl req -subj "/CN=clickhouse" -addext "subjectAltName = DNS:clickhouse" -new -key client-key.pem -out client-req.csr
+            -->
+            <privateKeyFile>/etc/clickhouse-server/client-key.pem</privateKeyFile>
+            <!--
+                openssl x509 -req -days 365000 -extensions SAN -extfile <(printf "\n[SAN]\nsubjectAltName=DNS:clickhouse") -in client-req.csr -out client-cert.pem -CA ca-cert.pem -CAkey ca-key.pem -CAcreateserial
+            -->
+            <certificateFile>/etc/clickhouse-server/client-cert.pem</certificateFile>
+            <verificationMode>strict</verificationMode>
+            <!-- <verificationMode>none</verificationMode> -->
+
+            <loadDefaultCAFile>true</loadDefaultCAFile>
+            <cacheSessions>true</cacheSessions>
+            <disableProtocols>sslv2,sslv3</disableProtocols>
+            <preferServerCiphers>true</preferServerCiphers>
+            <verificationMode>strict</verificationMode>
+            <invalidCertificateHandler>
+                <!-- <name>AcceptCertificateHandler</name> -->
+                <name>RejectCertificateHandler</name>
+            </invalidCertificateHandler>
+        </client>
+    </openSSL>
+</yandex>

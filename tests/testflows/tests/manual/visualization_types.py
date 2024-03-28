@@ -21,12 +21,16 @@ def test_visualization_types(self, visualization_type):
     with When(f"I create visualizations for this table using {visualization_type} visualization"):
         pass
 
+    with Then("I check visualization appears on changing attention"):
+        pass
+
     with Then("I check that visualizations from different plugin versions are simular"):
         pass
 
 
 @TestFeature
-@Requirements(RQ_SRS_Plugin_Visualization_VisualizationTypes("1.0"))
+@Requirements(RQ_SRS_Plugin_Visualization_VisualizationTypes("1.0"),
+              RQ_SRS_Plugin_Visualization("1.0"))
 @Name("visualization types")
 def feature(self):
     """Check that Plugin support any Grafana visualization types."""

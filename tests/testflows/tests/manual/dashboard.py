@@ -158,7 +158,7 @@ def time_range_selector_zoom_for_panel(self):
 
 @TestScenario
 @Okayed("Ok")
-@Requirements(RQ_SRS_Plugin_FillActual)
+@Requirements(RQ_SRS_Plugin_FillActual("1.0"))
 def changing_size_of_visualization(self):
     """Check that Plugin supports changing size of visualization."""
 

@@ -1,0 +1,154 @@
+version: "3"
+services:
+  clickhouse-ontime:
+    image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-latest}
+    environment:
+      - CLICKHOUSE_ALWAYS_RUN_INITDB_SCRIPTS=true
+    volumes:
+      - ./docker/clickhouse/load_ontime.sh:/docker-entrypoint-initdb.d/load_ontime.sh
+      - /var/lib/clickhouse/
+      - /var/log/clickhouse-server/
+  clickhouse:
+    image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-latest}
+    environment:
+      - CLICKHOUSE_ALWAYS_RUN_INITDB_SCRIPTS=true
+    ports:
+      - "8123:8123"
+      - "9000:9000"
+      - "5432:5432"
+      - "3306:3306"
+    volumes:
+      - /var/log/clickhouse-server
+      - ./docker/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
+      - ./docker/clickhouse/postgres_dictionary.xml:/etc/clickhouse-server/postgres_dictionary.xml
+      - ./docker/clickhouse/listen_ports.xml:/etc/clickhouse-server/config.d/listen_ports.xml
+      - ./docker/clickhouse/ca-key.pem:/etc/clickhouse-server/ca-key.pem
+      - ./docker/clickhouse/ca-cert.pem:/etc/clickhouse-server/ca-cert.pem
+      - ./docker/clickhouse/server-cert.pem:/etc/clickhouse-server/server-cert.pem
+      - ./docker/clickhouse/server-key.pem:/etc/clickhouse-server/server-key.pem
+      - ./docker/clickhouse/client-cert.pem:/etc/clickhouse-server/client-cert.pem
+      - ./docker/clickhouse/client-key.pem:/etc/clickhouse-server/client-key.pem
+      - ./docker/clickhouse/dhparam.pem:/etc/clickhouse-server/dhparam.pem
+      - ./docker/clickhouse/users.xml:/etc/clickhouse-server/users.d/users.xml
+      - ./docker/clickhouse/options_method.xml:/etc/clickhouse-server/config.d/options_method.xml
+
+  grafana:
+    image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-latest}
+    build:
+      context: ./.config
+      args:
+        grafana_image: ${GRAFANA_IMAGE:-grafana}
+        grafana_version: ${GRAFANA_VERSION:-latest}
+    volumes:
+      - ./dist/:/var/lib/grafana/plugins/vertamedia-clickhouse-datasource/
+      - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
+      - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
+      - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
+      - ./grafana.ini:/etc/grafana/grafana.ini
+    environment:
+      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
+      GF_LOG_LEVEL: debug
+      GF_DATABASE_WAL: "true"
+#      GF_PATHS_CONFIG: /grafana.ini
+      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
+      GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
+      GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
+    depends_on:
+      - clickhouse
+    ports:
+      - "3000:3000"
+    expose:
+      - 3000
+
+  trickster:
+    image: tricksterio/trickster:${TRICKSTER_VERSION:-latest}
+    volumes:
+      - ./docker/trickster/trickster.conf:/etc/trickster/trickster.conf
+    ports:
+      - "8480:8480"
+    depends_on:
+      - clickhouse
+
+  frontend_builder:
+    image: node:lts
+    working_dir: /grafana-clickhouse
+    volumes:
+      - ./:/grafana-clickhouse
+      # for speedup npm install under WSL
+      - "node_modules:/grafana-clickhouse/node_modules"
+    command: |
+      bash -xec '
+        if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
+        npm run build && \
+        npm run test:ci
+      '
+
+  backend_builder:
+    image: golang:1.21
+    working_dir: /go/src/grafana-clickhouse
+    environment:
+      GOCACHE: "/go-cache"
+      RUN_TESTS: "${RUN_TESTS:-.+}"
+      CGO_ENABLED: "0"
+    volumes:
+      - ./:/go/src/grafana-clickhouse
+      - ./.go-cache:/go/pkg/mod
+      - ./.go-cache:/go-cache
+    command: |
+      bash -xec "
+        git config --global --add safe.directory /go/src/grafana-clickhouse &&
+        (command -v mage || go install -v github.com/magefile/mage@latest) &&
+        go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ &&
+        mage -v && 
+        chmod +x ./dist/altinity-clickhouse-plugin*
+      "
+
+  plugin_signer:
+    image: node:lts
+    working_dir: /grafana-clickhouse
+    volumes:
+      - ./:/grafana-clickhouse
+      # for speedup npm install
+      - "node_modules:/grafana-clickhouse/node_modules"
+    command: |
+      npm run sign
+
+
+  chrome:
+    image: selenium/node-chrome:latest
+    #image: selenium/node-chrome:98.0.4758.80
+    volumes:
+      - /dev/shm:/dev/shm
+      # - /target:/home/seluser/Downloads
+      - /tmp/target:/home/seluser/Downloads
+    depends_on:
+      - selenium-hub
+      - grafana
+    environment:
+      - SE_EVENT_BUS_HOST=selenium-hub
+      - SE_EVENT_BUS_PUBLISH_PORT=4442
+      - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
+    ports:
+      - "6900:5900"
+
+  chrome_video:
+    image: selenium/video:ffmpeg-4.3.1-20200921
+    volumes:
+      # - /tmp/videos:/videos
+      - ~/Videos:/videos
+    depends_on:
+      - chrome
+    environment:
+      - DISPLAY_CONTAINER_NAME=chrome
+      - FILE_NAME=chrome_video.mp4
+
+  selenium-hub:
+    image: selenium/hub:latest
+    container_name: selenium-hub
+    ports:
+      - "4442:4442"
+      - "4443:4443"
+      - "4444:4444"
+
+volumes:
+  node_modules:

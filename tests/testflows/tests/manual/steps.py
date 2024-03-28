@@ -83,3 +83,12 @@ def open_picture(self, picture):
     with When("I open picture"):
         Step(test=display, parallel=True)(picture=picture, shell=shell)
         Step(test=close, parallel=True)(shell=shell)
+
+
+@TestStep(When)
+def open_endpoint(self, endpoint):
+    """Open the given endpoint."""
+
+    driver = self.context.driver
+
+    driver.get(endpoint)

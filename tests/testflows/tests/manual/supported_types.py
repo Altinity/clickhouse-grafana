@@ -19,7 +19,10 @@ def Uint(self):
                            "UInt8, UInt16, UInt32, UInt64, UInt128, UInt256"):
         create_table()
 
-    with When("I create visualizations for this table"):
+    with When("I insert limit values for UInt datatypes"):
+        pass
+
+    with And("I create visualizations for this table"):
         pass
 
     with Then("I check that visualizations from different versions are simular"):
@@ -42,7 +45,10 @@ def Int(self):
                            "Int8, Int16, Int32, Int64, Int128, Int256"):
         create_table()
 
-    with When("I create visualizations for this table"):
+    with When("I insert limit values for Int datatypes"):
+        pass
+
+    with And("I create visualizations for this table"):
         pass
 
     with Then("I check that visualizations from different versions are simular"):
@@ -64,6 +70,9 @@ def Float(self):
                description="table contain the following datatypes: timestamp, "
                            "Float32, Float64"):
         create_table()
+
+    with And("I insert -inf and inf values for float datatypes"):
+        pass
 
     with When("I create visualizations for this table"):
         pass
@@ -88,6 +97,9 @@ def Decimal(self):
                            "Decimal(P), Decimal(P, S), Decimal32(S), Decimal64(S), Decimal128(S), Decimal256(S)"):
         create_table()
 
+    with When("I insert limit values for Decimal datatypes"):
+        pass
+
     with When("I create visualizations for this table"):
         pass
 
@@ -110,6 +122,9 @@ def Bool(self):
                description="table contain the following datatypes: timestamp, "
                            "Bool"):
         create_table()
+
+    with When("I insert 0 and 1 values for Bool datatypes"):
+        pass
 
     with When("I create visualizations for this table"):
         pass
@@ -156,6 +171,8 @@ def FixedString(self):
                description="table contain the following datatypes: timestamp, "
                            "FixedString(N)"):
         create_table()
+    with When("I insert limit value for FixedString(N) datatype"):
+        pass
 
     with When("I create visualizations for this table"):
         pass
@@ -188,7 +205,7 @@ def Date(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("not supported")
 def JSON(self):
     """Check that the Plugin support JSON datatype."""
 
@@ -225,6 +242,7 @@ def UUID(self):
                description="table contain the following datatypes: timestamp, "
                            "UUID"):
         create_table()
+        note("insert into table values(now(), generateUUIDv4())")
 
     with When("I create visualizations for this table"):
         pass
@@ -303,7 +321,7 @@ def Array(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("not supported")
 def Map(self):
     """Check that the Plugin support Map datatype."""
 
@@ -326,7 +344,7 @@ def Map(self):
 
 
 @TestScenario
-@XFailed("not supported")
+@Okayed("Ok")
 def SimpleAggregateFunction(self):
     """Check that the Plugin support SimpleAggregateFunction datatype."""
 
@@ -349,7 +367,7 @@ def SimpleAggregateFunction(self):
 
 
 @TestScenario
-@XFailed("not supported")
+@Okayed("Ok")
 def AggregateFunction(self):
     """Check that the Plugin support AggregateFunction datatype."""
 
@@ -372,7 +390,7 @@ def AggregateFunction(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("not supported")
 def Nested(self):
     """Check that the Plugin support Nested datatype."""
 
@@ -433,7 +451,10 @@ def Nullable(self):
                            "Nullable"):
         create_table()
 
-    with When("I create visualizations for this table"):
+    with When("I insert Null value for nullable datatype"):
+        pass
+
+    with And("I create visualizations for this table"):
         pass
 
     with Then("I check that visualizations from different versions are simular"):
@@ -487,7 +508,7 @@ def IPv6(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("not supported")
 def Point(self):
     """Check that the Plugin support Point datatype."""
 
@@ -510,7 +531,7 @@ def Point(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("not supported")
 def Ring(self):
     """Check that the Plugin support Ring datatype."""
 
@@ -533,7 +554,7 @@ def Ring(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("not supported")
 def Polygon(self):
     """Check that the Plugin support Polygon datatype."""
 
@@ -556,7 +577,7 @@ def Polygon(self):
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("not supported")
 def MultiPolygon(self):
     """Check that the Plugin support MultiPolygon datatype."""
 
@@ -671,7 +692,8 @@ def Interval(self):
 
 
 @TestFeature
-@Requirements(RQ_SRS_Plugin_SupportedDataTypes("1.0"))
+@Requirements(RQ_SRS_Plugin_SupportedDataTypes("1.0"),
+              RQ_SRS_Plugin_SupportedDataTypes_LimitValues("1.0"))
 @Name("supported types")
 def feature(self):
     """Check that Plugin support all ClickHouse datatypes."""

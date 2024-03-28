@@ -14,8 +14,9 @@ append_path(sys.path, "..")
 @Specifications(QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse)
 @Flags(MANUAL)
 @Requirements(
-  RQ_SRS_Plugin("1.0"),
-  RQ_SRS_Plugin_DockerComposeEnvironment("1.0")
+    RQ_SRS_Plugin("1.0"),
+    RQ_SRS_Plugin_DockerComposeEnvironment("1.0"),
+    RQ_SRS_Plugin_VersionCompatibility("1.0")
 )
 def regression(self):
 

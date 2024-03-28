@@ -4,7 +4,7 @@ from tests.manual.steps import *
 
 
 @TestScenario
-@Okayed("Ok")
+@XFailed("do not work")
 @Requirements(RQ_SRS_Plugin_Annotations("1.0"))
 def annotations(self):
     """Check that annotations works correctly."""

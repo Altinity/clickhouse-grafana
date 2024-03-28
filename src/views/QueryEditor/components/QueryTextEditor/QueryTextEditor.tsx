@@ -119,9 +119,6 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           <InlineField>
             <ToolbarButton variant={'primary'} onClick={() => handleToggleField('showFormattedSQL')} isOpen={fieldValues.showFormattedSQL}>Show generated SQL</ToolbarButton>
           </InlineField>
-          <InlineField tooltip={'Reformat SQL query as ClickHouse do.'}>
-            <ToolbarButton variant={'primary'}>Reformat Query</ToolbarButton>
-          </InlineField>
         </InlineFieldRow>
         {fieldValues.showFormattedSQL && <ReformattedQuery data={sqlFormattedData} />}
         {fieldValues.showHelp && <QueryMacrosInfo />}

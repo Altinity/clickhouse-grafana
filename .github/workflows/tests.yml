@@ -3,26 +3,27 @@ run-name: ${{ github.actor }} is running Altinity Grafana Plugin tests
 
 on:
   workflow_dispatch:
-    extra_args:
-      description: "Extra test program arguments. Example: '--before=1 --after=1'"
-      type: string
-      default: ""
-    output_format:
-      description: "Testflows output style."
-      type: choice
-      options:
-        - fails
-        - new-fails
-        - classic
-        - nice
-        - slick
-        - brisk
-        - quiet
-        - short
-        - manual
-        - dots
-        - progress
-        - raw
+    inputs:
+      extra_args:
+        description: "Extra test program arguments. Example: '--before=1 --after=1'"
+        type: string
+        default: ""
+      output_format:
+        description: "Testflows output style."
+        type: choice
+        options:
+          - fails
+          - new-fails
+          - classic
+          - nice
+          - slick
+          - brisk
+          - quiet
+          - short
+          - manual
+          - dots
+          - progress
+          - raw
 env:
   artifact_paths: |
     ./Reports/*

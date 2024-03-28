@@ -6,6 +6,12 @@ import dataTypes from "./constants/data-types";
 import constants from "./constants/constants";
 import macros from "./constants/macros";
 let currentEditor: any = null;
+
+declare global {
+  interface Window {
+    monacoInstance: any; // Replace 'any' with the desired type of your 'test' property
+  }
+}
 enum TokenType {
     FUNCTIONS = "custom-functions",
     KEYWORDS = "custom-keywords",
@@ -22,11 +28,29 @@ enum TokenType {
 export const THEME_NAME = "clickhouse-dark-theme";
 export const LANGUAGE_ID = "clickhouseLanguage";
 
-export const initiateEditor = (templateVariables: any, monacoInstance: any) => {
+export const initiateEditor = (templateVariables: any, monacoInstance: any, autocompletionData: any, systemDatabasesData: any) => {
+	const {Method, Variable, Constant, Keyword, TypeParameter, Text} = monacoInstance.languages.CompletionItemKind
 
-  if (!monacoInstance) {
-    return;
-  }
+
+	let dynamicIdentifier: string[]
+	let dynamicKeyword: string[]
+	let dynamicString: string[]
+	let dynamicSystemDatabases: string[];
+
+	if (autocompletionData) {
+		dynamicIdentifier = autocompletionData?.identifier || [];
+		dynamicKeyword = autocompletionData?.keyword || [];
+		dynamicString = autocompletionData?.string || [];
+	}
+
+	if (systemDatabasesData) {
+		dynamicSystemDatabases = systemDatabasesData || []
+	}
+
+	if (!monacoInstance) {
+		return;
+	}
+
 
   // Dispose the previous editor if it exists
   if (currentEditor) {
@@ -47,132 +71,146 @@ export const initiateEditor = (templateVariables: any, monacoInstance: any) => {
     STRING: "#74e680"
   };
 
-  const Types = {
-    [monacoInstance.languages.CompletionItemKind.Constant]: 'Constant',
-    [monacoInstance.languages.CompletionItemKind.TypeParameter]: 'Type',
-    [monacoInstance.languages.CompletionItemKind.Keyword]: 'Keyword',
-    [monacoInstance.languages.CompletionItemKind.Method]: 'Function',
-    [monacoInstance.languages.CompletionItemKind.Variable]: 'Macros',
-  }
+	const Types = {
+		[Constant]: 'Constant',
+		[TypeParameter]: 'Type',
+		[Keyword]: 'Keyword',
+		[Method]: 'Function',
+		[Variable]: 'Macros',
+		[Text]: 'Macros',
+	}
 
 
-  const tokenize = () => {
-    const keywordsImported = keywords;
-    const functionsImported = funcs;
-    const dataTypesImported = dataTypes;
-    const constantsImported = constants;
-    const macrosImported = macros;
+	const tokenize = () => {
+		const keywordsImported = keywords;
+		const functionsImported = funcs;
+		const dataTypesImported = dataTypes;
+		const constantsImported = constants;
+		const macrosImported = macros;
 
-    monacoInstance.languages.setMonarchTokensProvider(LANGUAGE_ID, {
-      tokenizer: {
-        root: [
-          [new RegExp(`\\b(${keywordsImported.join('|')})\\b`), TokenType.KEYWORDS],
-          [new RegExp(`\\s(${functionsImported.join('|')})`), TokenType.FUNCTIONS],
-          [new RegExp(`[()]`), TokenType.PARENTHESIS],
-          [new RegExp(`--.*$`), TokenType.COMMENT],
-          [new RegExp(`\`\`\`.*\`\`\``), TokenType.COMMENT_BLOCK],
-          [new RegExp(`\\$\\w+`), TokenType.VARIABLE],
-          [new RegExp(`\\$\{\\w+\}`), TokenType.VARIABLE],
-          [new RegExp(`'.*?'`), TokenType.STRING],
-          [new RegExp(`\\b(${dataTypesImported.join('|')})\\b`), TokenType.DATATYPES],
-          [new RegExp(`\\b(${constantsImported.join('|')})\\b`), TokenType.CONSTANTS],
-          [new RegExp(`(${macrosImported.map(macros => macros.replace('$','\\$')).join('|')})`), TokenType.MACROS],
-        ],
-      },
-    });
-  };
+		monacoInstance.languages.setMonarchTokensProvider(LANGUAGE_ID, {
+			tokenizer: {
+				root: [
+					[new RegExp(`\\b(${[...keywordsImported,
+						...dynamicKeyword,
+						...dynamicSystemDatabases].join('|')})\\b`),
+					TokenType.KEYWORDS],
+					[new RegExp(`\\s(${functionsImported.join('|')})`),
+						TokenType.FUNCTIONS],
+					[new RegExp(`[()]`),
+						TokenType.PARENTHESIS],
+					[new RegExp(`--.*$`),
+						TokenType.COMMENT],
+					[new RegExp(`\`\`\`.*\`\`\``),
+						TokenType.COMMENT_BLOCK],
+					[new RegExp(`\\$\\w+`),
+						TokenType.VARIABLE],
+					[new RegExp(`\\$\{\\w+\}`),
+						TokenType.VARIABLE],
+					[new RegExp(`'.*?'`),
+						TokenType.STRING],
+					[new RegExp(`\\b(${dataTypesImported.join('|')})\\b`),
+						TokenType.DATATYPES],
+					[new RegExp(`\\b(${constantsImported.join('|')})\\b`),
+						TokenType.CONSTANTS],
+					[new RegExp(`(${macrosImported.map(macros => macros.replace('$','\\$')).join('|')})`),
+						TokenType.MACROS],
+				],
+			},
+		});
+	};
 
-  const defineTheme = () => {
-    monacoInstance.editor.defineTheme(THEME_NAME, {
-      base: "vs-dark",
-      inherit: false,
-      rules: [
-        { token: TokenType.FUNCTIONS, foreground: Colors.FUNCTIONS },
-        { token: TokenType.PARENTHESIS, foreground: Colors.PARENTHESIS },
-        { token: TokenType.KEYWORDS, foreground: Colors.KEYWORDS },
-        { token: TokenType.CONSTANTS, foreground: Colors.CONSTANTS },
-        { token: TokenType.DATATYPES, foreground: Colors.DATATYPES },
-        { token: TokenType.MACROS, foreground: Colors.MACROS },
-        { token: TokenType.COMMENT, foreground: Colors.COMMENTS },
-        { token: TokenType.COMMENT_BLOCK, foreground: Colors.COMMENT_BLOCK },
-        { token: TokenType.VARIABLE, foreground: Colors.MACROS },
-        { token: TokenType.STRING, foreground: Colors.STRING },
-      ],
-      colors: {
-        "editor.foreground": "#e0e0e0",
-        "editor.background": "#000000",
-      },
-    });
-  };
+	const defineTheme = () => {
+		monacoInstance.editor.defineTheme(THEME_NAME, {
+			base: "vs-dark",
+			inherit: false,
+			rules: [
+				{ token: TokenType.FUNCTIONS, foreground: Colors.FUNCTIONS },
+				{ token: TokenType.PARENTHESIS, foreground: Colors.PARENTHESIS },
+				{ token: TokenType.KEYWORDS, foreground: Colors.KEYWORDS },
+				{ token: TokenType.CONSTANTS, foreground: Colors.CONSTANTS },
+				{ token: TokenType.DATATYPES, foreground: Colors.DATATYPES },
+				{ token: TokenType.MACROS, foreground: Colors.MACROS },
+				{ token: TokenType.COMMENT, foreground: Colors.COMMENTS },
+				{ token: TokenType.COMMENT_BLOCK, foreground: Colors.COMMENT_BLOCK },
+				{ token: TokenType.VARIABLE, foreground: Colors.MACROS },
+				{ token: TokenType.STRING, foreground: Colors.STRING },
+			],
+			colors: {
+				"editor.foreground": "#e0e0e0",
+				"editor.background": "#000000",
+			},
+		});
+	};
 
-  // @ts-ignore
-  const createCompletionItem = (label: string, kind: monacoInstance.languages.CompletionItemKind, insertText: string, range: monacoInstance.IRange, documentation?: string) => {
-    return {
-      label: {
-        label,
-        description: Types[kind]
-      },
-      kind,
-      insertText,
-      range,
-      documentation: {
-        value: documentation,
-      } as any,
-    }
-  };
+	// @ts-ignore
+	const createCompletionItem = (label: string, kind: monacoInstance.languages.CompletionItemKind, insertText: string, range: any, documentation?: string) => {
+		return {
+			label: {
+				label,
+				description: Types[kind]
+			},
+			kind,
+			insertText,
+			range,
+			documentation: {
+				value: documentation,
+			} as any,
+		}
+	};
 
-  const registerAutocompletion = (templateVariables) => {
-    return monacoInstance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
-      provideCompletionItems: (model, position) => {
-        const word = model.getWordUntilPosition(position);
-        // @ts-ignore
-        const range: monacoInstance.IRange = {
-          startLineNumber: position.lineNumber,
-          endLineNumber: position.lineNumber,
-          startColumn: word.startColumn,
-          endColumn: word.endColumn,
-        };
-        // @ts-ignore
-        const rangeMacros: monacoInstance.IRange = {
-          startLineNumber: position.lineNumber,
-          endLineNumber: position.lineNumber,
-          startColumn: word.startColumn - 1,
-          endColumn: word.endColumn,
-        };
-        // @ts-ignore
-        const mapToCompletionItems = (array: string[], kind: monacoInstance.languages.CompletionItemKind) =>
-          array.map(item => createCompletionItem(item, kind, item, range));
-        // @ts-ignore
-        const mapMacroToCompletionItems = (array: Array<{ name: string; def: string; docText: string }>, kind: monacoInstance.languages.CompletionItemKind) =>
-          array.map(item => createCompletionItem(item.name, kind, item.def, rangeMacros, item.docText));
-        // @ts-ignore
-        const mapFunctionToCompletionItems = (array: Array<{ name: string; def: string; docText: string }>, kind: monacoInstance.languages.CompletionItemKind) =>
-          array.map(item => createCompletionItem(item.name, kind, item.def, range, item.docText));
+	const registerAutocompletion = (templateVariables, monacoInstance) => {
+		monacoInstance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+			provideCompletionItems: (model, position) => {
+				const word = model.getWordUntilPosition(position);
 
-        // @ts-ignore
-        const suggestConstants = mapToCompletionItems(constants, monacoInstance.languages.CompletionItemKind.Constant);
-        // @ts-ignore
-        const suggestTypes = mapToCompletionItems(dataTypes, monacoInstance.languages.CompletionItemKind.TypeParameter);
-        // @ts-ignore
-        const suggestKeywords = mapToCompletionItems(keywords, monacoInstance.languages.CompletionItemKind.Keyword);
-        // @ts-ignore
-        const suggestionsFunctions = mapFunctionToCompletionItems(getAutocompletions(), monacoInstance.languages.CompletionItemKind.Method);
+				const range: any = {
+					startLineNumber: position.lineNumber,
+					endLineNumber: position.lineNumber,
+					startColumn: word.startColumn,
+					endColumn: word.endColumn,
+				};
+
+				const rangeMacros: any = {
+					...range,
+					startColumn: word.startColumn - 1,
+				};
 
         // @ts-ignore
-        const suggestionsMacros = mapMacroToCompletionItems(getMacrosAutocompletion(), monacoInstance.languages.CompletionItemKind.Variable);
-        // @ts-ignore
-        const suggestTemplateVariables = mapToCompletionItems(templateVariables.map((item: string) => `${item}`), monacoInstance.languages.CompletionItemKind.Variable);
+        type CompletionItemKind = monacoInstance.languages.CompletionItemKind
 
-        return { incomplete: false, suggestions: [ ...suggestTemplateVariables, ...suggestionsFunctions, ...suggestionsMacros, ...suggestConstants, ...suggestKeywords, ...suggestTypes] };
-      },
-    });
-  };
+				const mapToCompletionItems = (array: string[], kind: CompletionItemKind) =>
+					array.map(item => createCompletionItem(item, kind, item, range));
+				const mapMacroToCompletionItems = (array: Array<{ name: string; def: string; docText: string }>, kind: CompletionItemKind) =>
+					array.map(item => createCompletionItem(item.name, kind, item.def, rangeMacros, item.docText));
+				const mapFunctionToCompletionItems = (array: Array<{ name: string; def: string; docText: string }>, kind: CompletionItemKind) =>
+					array.map(item => createCompletionItem(item.name, kind, item.def, range, item.docText));
+
+
+				return {
+					incomplete: false,
+					suggestions: [
+						...mapFunctionToCompletionItems(getAutocompletions(), Method),
+						...mapMacroToCompletionItems(getMacrosAutocompletion(), Variable),
+						...mapToCompletionItems(constants, Constant),
+						...mapToCompletionItems(keywords, Keyword),
+						...mapToCompletionItems(dataTypes, TypeParameter),
+						...mapToCompletionItems(dynamicIdentifier, Keyword),
+						...mapToCompletionItems(dynamicSystemDatabases, Keyword),
+						...mapToCompletionItems(dynamicKeyword, Keyword),
+						...mapToCompletionItems(dynamicString, Text),
+						...mapToCompletionItems(templateVariables.map((item: string) => `${item}`), Variable),
+					]
+				} as any
+			},
+		});
+	};
 
   // TODO: add use effect to databases autocompletion
   monacoInstance.languages.register({ id: LANGUAGE_ID });
   tokenize();
   defineTheme();
-  currentEditor = registerAutocompletion(templateVariables);
+  currentEditor = registerAutocompletion(templateVariables, monacoInstance);
 
-  return {theme: THEME_NAME, language: LANGUAGE_ID, editor: currentEditor}
+	return {theme: THEME_NAME, language: LANGUAGE_ID, editor: currentEditor}
 };

@@ -7,6 +7,8 @@ import { QueryTextEditor } from './components/QueryTextEditor/QueryTextEditor';
 import { QueryBuilder } from './components/QueryBuilder/QueryBuilder';
 import SqlQuery from '../../datasource/sql-query/sql_query';
 import { Alert } from "@grafana/ui";
+import {useSystemDatabases} from "../hooks/useSystemDatabases";
+import {useAutocompleteData} from "../hooks/useAutocompletionData";
 
 const defaultQuery = 'SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t';
 const DEFAULT_FORMAT = 'time_series';
@@ -15,6 +17,8 @@ const DEFAULT_ROUND = '0s';
 const DEFAULT_INTERVAL_FACTOR = 1;
 
 function useFormattedData(query: CHQuery, datasource: CHDataSource): [string, string | null] {
+  useSystemDatabases(datasource)
+  useAutocompleteData(datasource)
   const [formattedData, setFormattedData] = useState(query.query);
   const [error, setError] = useState<string | null>(null);
 

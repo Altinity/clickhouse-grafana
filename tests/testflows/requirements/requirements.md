@@ -619,7 +619,7 @@ The [Plugin] SHALL support table view for data.
 #### RQ.SRS.Plugin.Visualization.VisualizationTypes
 version: 1.0
 
-The [Plugin] SHALL support the following visualization types for data:
+The [Plugin] SHALL support the following visualization types for any supported clickhouse data types:
 
 * Time series
 * Bar chart
@@ -643,37 +643,6 @@ The [Plugin] SHALL support the following visualization types for data:
 * Logs
 * Node Graph
 * Traces
-
-#### RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes
-version: 1.0
-
-The [Plugin] SHALL support the following visualization types for the following ClickHouse datatypes:
-
-
-| Vizualization Type | Supported ClickHouse datatypes                                                      |
-|--------------------|-------------------------------------------------------------------------------------|
-| Time series        |                                                                                     |
-| Bar chart          |                                                                                     |
-| Stat               |                                                                                     |
-| Gauge              |                                                                                     |
-| Bar Gauge          |                                                                                     |
-| Pie chart          |                                                                                     |
-| State timeline     |                                                                                     |
-| Heatmap            |                                                                                     |
-| Status history     |                                                                                     |
-| Histogram          |                                                                                     |
-| Text               |                                                                                     |
-| Alert List         |                                                                                     |
-| Dashboard list     |                                                                                     |
-| News               |                                                                                     |
-| Annotation list    |                                                                                     |
-| Candlestick        |                                                                                     |
-| Canvas             |                                                                                     |
-| Flame Graph        |                                                                                     |
-| Geomap             |                                                                                     |
-| Logs               |                                                                                     |
-| Node Graph         |                                                                                     |
-| Traces             |                                                                                     |
 
 
 ## Macros
@@ -904,43 +873,60 @@ version: 1.0
 The [Plugin] SHALL support scalar data types. The following data types SHALL be supported:
 
 
+
 | Data Type                                                                           | Supported in Grafana |
 | ----------------------------------------------------------------------------------- |:--------------------:|
-| UInt8, UInt16, UInt32, UInt64, UInt128, UInt256                                     |                      |
-| Int8, Int16, Int32, Int64, Int128, Int256                                           |                      |
-| Float32, Float64                                                                    |                      |
-| Decimal(P), Decimal(P, S), Decimal32(S), Decimal64(S), Decimal128(S), Decimal256(S) |                      |
-| Bool                                                                                |                      |
-| String                                                                              |                      |
-| FixedString(N)                                                                      |                      |
-| Date, Date32, DateTime, DateTime64                                                  |                      |
-| JSON                                                                                |                      |
-| UUID                                                                                |                      |
-| Enum                                                                                |                      |
-| LowCardinality                                                                      |                      |
-| Array                                                                               |                      |
-| Map                                                                                 |                      |
-| SimpleAggregateFunction                                                             |                      |
-| AggregateFunction                                                                   |                      |
-| Nested                                                                              |                      |
-| Tuple                                                                               |                      |
-| Nullable                                                                            |                      |
-| IPv4                                                                                |                      |
-| IPv6                                                                                |                      |
-| Point                                                                               |                      |
-| Ring                                                                                |                      |
-| Polygon                                                                             |                      |
-| MultiPolygon                                                                        |                      |
-| Expression                                                                          |                      |
-| Set                                                                                 |                      |
-| Nothing                                                                             |                      |
-| Interval                                                                            |                      |
+| UInt8, UInt16, UInt32, UInt64, UInt128, UInt256                                     |       &#10004;       |
+| Int8, Int16, Int32, Int64, Int128, Int256                                           |       &#10004;       |
+| Float32, Float64                                                                    |       &#10004;       |
+| Decimal(P), Decimal(P, S), Decimal32(S), Decimal64(S), Decimal128(S), Decimal256(S) |       &#10004;       |
+| Bool                                                                                |       &#10004;       |
+| String                                                                              |       &#10004;       |
+| FixedString(N)                                                                      |       &#10004;       |
+| Date, Date32, DateTime, DateTime64                                                  |       &#10004;       |
+| JSON                                                                                |       &#10060;       |
+| UUID                                                                                |       &#10004;       |
+| Enum                                                                                |       &#10004;       |
+| LowCardinality                                                                      |       &#10004;       |
+| Array                                                                               |       &#10060;       |
+| Map                                                                                 |       &#10060;       |
+| SimpleAggregateFunction                                                             |       &#10004;       |
+| AggregateFunction                                                                   |       &#10004;       |
+| Nested                                                                              |       &#10060;       |
+| Tuple                                                                               |       &#10060;       |
+| Nullable                                                                            |       &#10004;       |
+| IPv4                                                                                |       &#10004;       |
+| IPv6                                                                                |       &#10004;       |
+| Point                                                                               |       &#10060;       |
+| Ring                                                                                |       &#10060;       |
+| Polygon                                                                             |       &#10060;       |
+| MultiPolygon                                                                        |       &#10060;       |
+| Expression                                                                          |       &#10060;       |
+| Set                                                                                 |       &#10060;       |
+| Nothing                                                                             |       &#10060;       |
+| Interval                                                                            |       &#10060;       |
 
 
 ### RQ.SRS.Plugin.SupportedDataTypes.LimitValues
 version: 1.0
 
-The [Plugin] SHALL support max and min values of [ClickHouse] datatypes.
+The [Plugin] SHALL support max and min values of [ClickHouse] numeric datatypes.
+
+* Int8 — [-128 : 127]
+* Int16 — [-32768 : 32767]
+* Int32 — [-2147483648 : 2147483647]
+* Int64 — [-9223372036854775808 : 9223372036854775807]
+* Int128 — [-170141183460469231731687303715884105728 : 170141183460469231731687303715884105727]
+* Int256 — [-57896044618658097711785492504343953926634992332820282019728792003956564819968 : 57896044618658097711785492504343953926634992332820282019728792003956564819967]
+* UInt8 — [0 : 255]
+* UInt16 — [0 : 65535]
+* UInt32 — [0 : 4294967295]
+* UInt64 — [0 : 18446744073709551615]
+* UInt128 — [0 : 340282366920938463463374607431768211455]
+* UInt256 — [0 : 115792089237316195423570985008687907853269984665640564039457584007913129639935]
+
+ For float datatypes inf and - inf values not supported.
+ 
 
 ## Versions Compatibility
 

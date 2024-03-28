@@ -1,0 +1,58 @@
+name: Run CI/CD Altinity Grafana Plugin tests
+run-name: ${{ github.actor }} is running Altinity Grafana Plugin tests
+
+on:
+  workflow_dispatch:
+    extra_args:
+      description: "Extra test program arguments. Example: '--before=1 --after=1'"
+      type: string
+      default: ""
+    output_format:
+      description: "Testflows output style."
+      type: choice
+      options:
+        - fails
+        - new-fails
+        - classic
+        - nice
+        - slick
+        - brisk
+        - quiet
+        - short
+        - manual
+        - dots
+        - progress
+        - raw
+env:
+  artifact_paths: |
+    ./Reports/*
+    ./Videos/*
+
+jobs:
+  tests:
+    runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-app-docker-ce ]
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup
+        run: .github/setup.sh
+
+      - name: Run Altinity Grafana Plugin tests
+        run: python3
+          -u ./tests/testflows/regression.py
+          --log raw.log
+          -o ${{ inputs.output_format }} ${{ inputs.extra_args }}
+
+      - name: Create reports
+        if: always()
+        run: .github/create-report.sh
+
+      - uses: actions/upload-artifact@v3
+        if: always()
+        with:
+          name: tests-logs
+          path: ${{ env.artifact_paths}}

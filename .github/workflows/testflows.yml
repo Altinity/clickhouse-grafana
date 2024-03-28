@@ -1,5 +1,5 @@
-name: Run CI/CD Altinity Grafana Plugin tests
-run-name: ${{ github.actor }} is running Altinity Grafana Plugin tests
+name: Run testflows tests
+run-name: ${{ github.actor }} is running Altinity Grafana Plugin testflows tests
 
 on:
   workflow_dispatch:

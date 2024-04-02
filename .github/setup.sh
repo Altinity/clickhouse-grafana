@@ -20,3 +20,5 @@ sudo chmod +x /usr/local/bin/docker-compose
 echo "Install required packages..."
 ./retry.sh 60 2 "sudo pip install -r pip_requirements.txt"
 sudo apt-get update
+
+cd tests/testflows

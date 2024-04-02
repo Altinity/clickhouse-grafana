@@ -141,6 +141,7 @@ services:
       npm run sign
 
   chrome:
+    profiles: [ test ]
     image: selenium/node-chrome:latest
     #image: selenium/node-chrome:98.0.4758.80
     volumes:
@@ -158,6 +159,7 @@ services:
       - "6900:5900"
 
   chrome_video:
+    profiles: [ test ]
     image: selenium/video:ffmpeg-4.3.1-20200921
     volumes:
       # - /tmp/videos:/videos
@@ -169,6 +171,7 @@ services:
       - FILE_NAME=chrome_video.mp4
 
   selenium-hub:
+    profiles: [ test ]
     image: selenium/hub:latest
     container_name: selenium-hub
     ports:

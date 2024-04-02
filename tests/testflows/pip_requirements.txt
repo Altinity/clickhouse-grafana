@@ -1,0 +1,3 @@
+selenium==4.19.0
+testflows==2.3.0
+testflows.texts==2.0.211217.1011222

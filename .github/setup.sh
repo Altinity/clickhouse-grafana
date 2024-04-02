@@ -18,5 +18,5 @@ sudo curl -SL https://github.com/docker/compose/releases/download/v2.23.1/docker
 sudo chmod +x /usr/local/bin/docker-compose
 
 echo "Install required packages..."
-./tests/testflows/retry.sh 60 2 "sudo pip install -r tests/testflows/pip_requirements.txt"
+./retry.sh 60 2 "sudo pip install -r pip_requirements.txt"
 sudo apt-get update

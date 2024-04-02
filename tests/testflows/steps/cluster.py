@@ -50,9 +50,9 @@ class Cluster(object):
         clickhouse_binary_path=None,
         configs_dir=None,
         nodes=None,
-        docker_compose="docker-compose",
-        docker_compose_project_dir=None,
-        docker_compose_file="docker-compose.yml",
+        docker_compose="docker-compose --profile test",
+        docker_compose_project_dir="../../",
+        docker_compose_file="docker-compose.yaml",
         frame=None,
     ):
         self._bash = {}

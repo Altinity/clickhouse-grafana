@@ -32,10 +32,6 @@ jobs:
       - name: Setup
         run: .github/setup.sh
 
-      - name: Sign plugin
-        run: npx --yes @grafana/sign-plugin@latest
-        if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN != '' }}
-
       - name: Run Altinity Grafana Plugin tests
         run: python3
           -u ./tests/testflows/regression.py

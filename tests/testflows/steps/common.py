@@ -191,8 +191,8 @@ def create_driver(self, incognito=True, cleanup=True):
 @TestStep(Then)
 def compare_screenshots(self, screenshot_name_1, screenshot_name_2):
 
-    image_1 = Image.open(f"screenshots/{screenshot_name_1}.png")
-    image_2 = Image.open(f"screenshots/{screenshot_name_2}.png")
+    image_1 = Image.open(f"./tests/testflows/screenshots/{screenshot_name_1}.png")
+    image_2 = Image.open(f"./tests/testflows/screenshots/{screenshot_name_2}.png")
     return image_1 == image_2
 
 

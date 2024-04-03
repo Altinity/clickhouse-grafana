@@ -97,7 +97,7 @@ def wait_panel(self, panel_name):
 @TestStep(When)
 def take_panel_screenshot(self, panel_name, screenshot_name):
     """Take screenshot for panel."""
-    locators.panel(panel_name=f'{panel_name}').screenshot(f'./screenshots/{screenshot_name}.png')
+    locators.panel(panel_name=f'{panel_name}').screenshot(f'./tests/testflows/screenshots/{screenshot_name}.png')
 
 
 @TestStep(When)

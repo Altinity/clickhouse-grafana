@@ -2,6 +2,7 @@
 
 export PYTHONIOENCODING=utf-8
 cp -r  ~/Videos .
+mkdir Reports
 cp raw.log  ./Reports/raw.log
 tfs --debug --no-colors transform compact raw.log > ./Reports/compact.log
 tfs --debug --no-colors transform nice raw.log   > ./Reports/nice.log.txt

@@ -57,8 +57,6 @@ def regression(self, before, after):
             with attempt:
                 open_endpoint(endpoint=self.context.endpoint)
 
-    time.sleep(30)
-    # pause()
 
     with delay():
         with Given("I login in grafana"):

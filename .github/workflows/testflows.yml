@@ -35,12 +35,11 @@ jobs:
       - name: Run Altinity Grafana Plugin tests
         run: python3
           -u ./tests/testflows/regression.py
-          --log raw.log
-          -o nice --before=1 --after=1 --only "qkrq" &&
+          --only "qkrq" &&
           python3
           -u ./tests/testflows/regression.py
           --log raw.log
-          -o nice --before=1 --after=1
+          -o nice --before=2 --after=2
 
       - name: Create reports
         if: always()

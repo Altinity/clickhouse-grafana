@@ -35,7 +35,8 @@ jobs:
       - name: Run Altinity Grafana Plugin tests
         run: python3
           -u ./tests/testflows/regression.py
-          --only "qkrq" &&
+          --log raw.log
+          -o nice --before=1 --after=1 --only "qkrq" &&
           python3
           -u ./tests/testflows/regression.py
           --log raw.log

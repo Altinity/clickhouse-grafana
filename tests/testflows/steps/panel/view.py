@@ -87,7 +87,7 @@ def go_to_sql_editor(self):
 def wait_sql_editor_input(self):
     """Wait SQL editor input field."""
     wait_for_element_to_be_present(
-        select_type=SelectBy.CSS_SELECTOR, element=f"[class*='current-line']"
+        select_type=SelectBy.CSS_SELECTOR, element=f"[class='line-numbers lh-odd active-line-number']"
     )
 
 

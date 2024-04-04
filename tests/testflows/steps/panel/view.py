@@ -95,7 +95,7 @@ def wait_sql_editor_input(self):
 def enter_sql_editor_input(self, request):
     """Enter SQL request into sql editor input field."""
 
-    note(self.context.driver.find_element_by_tag_name('body').text)
+    note(self.context.driver.find_element(SelectBy.XPATH, '/body').text)
     with By("waiting SQL editor"):
         wait_sql_editor_input()
 

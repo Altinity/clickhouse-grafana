@@ -204,6 +204,16 @@ class Cluster(object):
                             continue
                     with And("executing docker-compose up"):
                         cmd = self.command(
+                            None, 
+                            "docker-compose run --rm frontend_builder 2>&1 | tee", 
+                            timeout=timeout
+                        )
+                        cmd = self.command(
+                            None, 
+                            "docker-compose run --rm backend_builder 2>&1 | tee",
+                            timeout=timeout
+                        )
+                        cmd = self.command(
                             None,
                             f"{self.docker_compose} up -d 2>&1 | tee",
                             timeout=timeout,

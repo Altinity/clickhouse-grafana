@@ -36,11 +36,7 @@ jobs:
         run: python3
           -u ./tests/testflows/regression.py
           --log raw.log
-          -o nice --before=1 --after=1 --only "qkrq" &&
-          python3
-          -u ./tests/testflows/regression.py
-          --log raw.log
-          -o nice --before=2 --after=2
+          -o nice --before=1 --after=1
 
       - name: Create reports
         if: always()

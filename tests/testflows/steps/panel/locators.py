@@ -42,7 +42,7 @@ class Locators:
     @property
     def row_in_sql_editor(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[class='line-numbers lh-odd active-line-number']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[class='inputarea monaco-mouse-cursor-text']")
 
 
 locators = Locators()

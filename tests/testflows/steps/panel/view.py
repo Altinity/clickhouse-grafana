@@ -7,7 +7,7 @@ from testflows.asserts import error
 from steps.ui import *
 from steps.panel.locators import locators
 # from steps.common import *
-
+from selenium.webdriver import ActionChains
 
 @TestStep(When)
 def wait_fill_actual_toggle(self):
@@ -90,6 +90,12 @@ def wait_sql_editor_input(self):
         select_type=SelectBy.CSS_SELECTOR, element=f"[class='view-lines monaco-mouse-cursor-text']"
     )
 
+@TestStep(When)
+def select_input_query(self):
+    """Select input query using triple click on textarea."""
+
+    ActionChains(self.context.driver).double_click(locators.sql_editor_input).click(locators.sql_editor_input).perform()
+
 
 @TestStep(When)
 def enter_sql_editor_input(self, request):
@@ -99,11 +105,11 @@ def enter_sql_editor_input(self, request):
     with By("waiting SQL editor"):
         wait_sql_editor_input()
 
-    with By("selecting first row in SQL editor"):
-        locators.row_in_sql_editor.click()
+    with By("selecting input string"):
+        select_input_query()
 
     with By("entering request"):
-        locators.sql_editor_input.send_keys(request)
+        locators.input_in_sql_editor.send_keys(request)
 
 
 @TestStep(When)

@@ -63,7 +63,7 @@ def panel_check(self):
             take_screenshot_for_visualization(screenshot_name="panel_check")
         with By("checking screenshot"):
             pass
-#
+
 # @TestScenario
 # @Okayed("Ok")
 # @Requirements(RQ_SRS_Plugin_Panels_Repeated("1.0"))

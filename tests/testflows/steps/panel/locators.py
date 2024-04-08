@@ -37,10 +37,10 @@ class Locators:
     @property
     def sql_editor_input(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[class='inputarea monaco-mouse-cursor-text']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[class='view-lines monaco-mouse-cursor-text']")
 
     @property
-    def row_in_sql_editor(self):
+    def input_in_sql_editor(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[class='inputarea monaco-mouse-cursor-text']")
 

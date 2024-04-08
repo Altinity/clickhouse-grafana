@@ -1,15 +1,15 @@
 import React, {useCallback, useEffect, useState} from 'react';
-import { EditorMode } from '../../../../types/types';
-import { Button, InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
+import { InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
+import { UniversalSelectField } from './components/UniversalSelectComponent';
 
-export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEditorMode }: any) => {
+export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) => {
   const [databases, setDatabases] = useState([]);
   const [tables, setTables] = useState([]);
   const [dateColumns, setdateColumns] = useState([]);
   const [timestampColumns, setTimestampColumns] = useState([]);
-  const [selectedDatabase, setSelectedDatabase] = useState<string>(query.database);
-  const [selectedTable, setSelectedTable] = useState<string>(query.table);
+  const [selectedDatabase, setSelectedDatabase] = useState<string | undefined>(query.database);
+  const [selectedTable, setSelectedTable] = useState<string | undefined>(query.table);
   const [selectedColumnTimestampType, setSelectedColumnTimestampType] = useState(query.dateTimeColDataType);
   const [selectedColumnDateType, setSelectedColumnDateType] = useState(query.dateColDataType);
   const [selectedDateTimeType, setSelectedDateTimeType] = useState(query.dateTimeType);
@@ -74,8 +74,6 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
   const querySegment = useCallback((type: any) => {
     let query = buildExploreQuery(type);
     return datasource.metricFindQuery(query)
-    // .then(this.uiSegmentSrv.transformToSegments(false))
-    // .catch(this.handleQueryError.bind(this));
   },[buildExploreQuery, datasource])
 
   useEffect(() => {
@@ -118,25 +116,22 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
     query.dateTimeType = dateTimeType.value;
     onChange(query);
   };
-  const switchToSQLMode = () => {
-    setEditorMode(EditorMode.SQL)
-  };
 
-  const onDatabaseChange = (database: string) => {
+  const onDatabaseChange = (database?: string) => {
     setSelectedDatabase(database);
     query.database = database;
     onChange(query);
   };
 
-  const onTableChange = (table: string) => {
+  const onTableChange = (table?: string) => {
     setSelectedTable(table);
     query.table = table;
     onChange(query);
   };
 
-  const onDateColDataTypeChange = (dateColDataType: string) => {
+  const onDateColDataTypeChange = (dateColDataType?: string) => {
     // @ts-ignore
-    setSelectedColumnDateType(dateColDataType.trim());
+    setSelectedColumnDateType((dateColDataType || '').trim());
     query.dateColDataType = dateColDataType;
     onChange(query);
   };
@@ -151,32 +146,24 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
   return (
     <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
       <InlineFieldRow>
-        <InlineField
-          label={
-            <InlineLabel width={24} >
-              <span style={{ color: '#6e9fff' }}>FROM</span>
-            </InlineLabel>
-          }
-        >
-          <Select
-            width={24}
-            onChange={(item: SelectableValue<string>) => onDatabaseChange(item.value as unknown as string)}
-            placeholder={'Database'}
-            options={databases}
-            value={selectedDatabase}
-          />
-        </InlineField>
-        <InlineField >
-          <Select
-            width={24}
-            // @ts-ignore
-            onChange={({ value }: { value: SelectableValue<string> }) => onTableChange(value)}
-            placeholder={'Table'}
-            options={tables}
-            disabled={true}
-            value={selectedTable as unknown as SelectableValue<string>}
-          />
-        </InlineField>
+        <UniversalSelectField
+          width={24}
+          label={<InlineLabel width={24} >
+            <span style={{ color: '#6e9fff' }}>FROM</span>
+          </InlineLabel>}
+          placeholder="Database"
+          value={selectedDatabase}
+          onChange={(item: SelectableValue<string>) => onDatabaseChange(item.value)}
+          options={databases}
+        />
+        <UniversalSelectField
+          width={24}
+          placeholder="Table"
+          value={selectedTable}
+          onChange={(selectedItem: SelectableValue<string>) => onTableChange(selectedItem.value)}
+          options={tables}
+          disabled={true}
+        />
       </InlineFieldRow>
       <InlineFieldRow>
         <InlineField
@@ -233,19 +220,18 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
         </InlineField>
       </InlineFieldRow>
       <InlineFieldRow>
-        <InlineField
-          label={
-            <InlineLabel width={24} >
-              Timestamp Column
-            </InlineLabel>
-          }
-          
-        >
-          <Select width={24} value={selectedColumnTimestampType} onChange={({value}) => onDateTimeColDataTypeChange(value as string)} placeholder={'Timestamp column'} options={timestampColumns} disabled={!timestampColumns.length}/>
-        </InlineField>
+        <UniversalSelectField
+          width={24}
+          label={<InlineLabel width={24}>Timestamp Column</InlineLabel>}
+          placeholder="Select Timestamp column"
+          value={selectedColumnTimestampType}
+          onChange={({ value }) => onDateTimeColDataTypeChange(value as string)}
+          options={timestampColumns}
+          disabled={!timestampColumns.length}
+        />
       </InlineFieldRow>
       <InlineFieldRow>
-        <InlineField
+        <UniversalSelectField
           label={
             <InlineLabel
               width={24}
@@ -262,19 +248,17 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource, setEdito
                   column for binding with Grafana range selector
                 </div>
               }
-              
             >
               Date column
             </InlineLabel>
           }
-          
-        >
-          <Select width={24} value={selectedColumnDateType} onChange={({value}) => onDateColDataTypeChange(value as string)} placeholder={'Date Column'} options={dateColumns} disabled={true} />
-        </InlineField>
+          width={24}
+          placeholder="Date Column"
+          value={selectedColumnDateType}
+          onChange={(selectedItem) => onDateColDataTypeChange(selectedItem.value)}
+          options={dateColumns}
+        />
       </InlineFieldRow>
-      <Button variant="primary" icon="arrow-right" onClick={switchToSQLMode} >
-        Go to Query
-      </Button>
     </div>
   );
 };

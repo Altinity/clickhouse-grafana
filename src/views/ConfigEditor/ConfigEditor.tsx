@@ -30,34 +30,10 @@ export function ConfigEditor(props: Props) {
 
   // @todo remove it when https://github.com/grafana/grafana/pull/80858 merged
   const onDataHttpSettingsChange = (event: any) => {
-    if (event.accessControl) {
-        options.accessControl = event.accessControl
-    }
-    options.id = event.id;
-    options.uid = event.uid;
-    options.orgId = event.orgId;
-    options.name = event.name;
-    options.typeLogoUrl = event.typeLogoUrl;
-    options.type = event.type;
-    options.typeName = event.typeName;
-    options.access = event.access;
-    options.url = event.url;
-    options.user = event.user;
-    options.database = event.database;
-    options.basicAuth = event.basicAuth;
-    options.basicAuthUser = event.basicAuthUser;
-    options.isDefault = event.isDefault;
-    options.readOnly = event.readOnly;
-    options.withCredentials = event.withCredentials;
-    options.version = event.version;
-    options.secureJsonFields = event.secureJsonFields;
-    options.secureJsonData = event.secureJsonData;
-    options.jsonData = event.jsonData;
-    // all bullshit code above need only for this line
-    options.jsonData.dataSourceUrl = options.url
-
+    const newOptions = {...event}
+    newOptions.jsonData.dataSourceUrl = newOptions.url
     onOptionsChange({
-      ...options,
+      ...newOptions,
     });
   };
 

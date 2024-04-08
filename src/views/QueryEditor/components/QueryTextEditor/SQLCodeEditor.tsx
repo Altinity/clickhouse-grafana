@@ -1,10 +1,31 @@
-import React from 'react';
-import MonacoEditor from 'react-monaco-editor';
-import {LANGUAGE_ID, THEME_NAME} from "./editor/initiateEditor";
-import {editor} from "monaco-editor";
-import IStandaloneEditorConstructionOptions = editor.IStandaloneEditorConstructionOptions;
-export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery }: any) => {
-  const options: IStandaloneEditorConstructionOptions = {
+import React, {useEffect, useState} from 'react';
+import {initiateEditor, LANGUAGE_ID, THEME_NAME} from "./editor/initiateEditor";
+import {CodeEditor} from "@grafana/ui";
+import {useSystemDatabases} from "../../../hooks/useSystemDatabases";
+import {useAutocompleteData} from "../../../hooks/useAutocompletionData";
+
+export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: any) => {
+  const [initialized, setInitialized] = useState(false)
+  const autocompletionData = useAutocompleteData(datasource);
+  const databasesData = useSystemDatabases(datasource);
+
+  useEffect(() => {
+    if (!autocompletionData || !databasesData || !initialized) {
+      return;
+    }
+
+    setInitialized(false)
+
+    // @ts-ignore
+    initiateEditor(datasource.templateSrv.getVariables().map(item => `${item.name}`), window.monaco, autocompletionData, databasesData)
+    setTimeout(() => {
+      // @ts-ignore
+      window.monaco.editor.setTheme(THEME_NAME)
+    }, 20)
+
+  }, [autocompletionData, databasesData, initialized, datasource.templateSrv]);
+
+  const options: any = {
     scrollBeyondLastLine: false,
     wordWrap: 'on',
     wrappingStrategy: 'advanced',
@@ -17,16 +38,16 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery }: any) => {
     overviewRulerLanes: 0
   }
 
-
   return (
-    <div style={{ position: 'relative', width: '100%', marginTop: '10px'}}  onBlur={onRunQuery}>
-      <MonacoEditor
+    <div style={{ position: 'relative', width: '100%', marginTop: '10px'}} >
+      <CodeEditor
         height={Math.max(query.query.split('\n').length * 18, 150)}
-        language={LANGUAGE_ID}
-        theme={THEME_NAME}
         value={query.query}
-        options={options}
+        language={LANGUAGE_ID}
+        monacoOptions={options}
+        onBeforeEditorMount={() => setInitialized(true)}
         onChange={onSqlChange}
+        onBlur={onRunQuery}
       />
     </div>
   );

@@ -3,7 +3,7 @@ import SqlSeries from './sql_series';
 import SqlQuery from './sql-query/sql_query';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
-import Scanner from './scanner';
+import Scanner from './scanner/scanner';
 
 import {AnnotationEvent, DataQueryRequest, DataSourceApi, DataSourceInstanceSettings, TypedVariableModel} from '@grafana/data';
 import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
@@ -11,6 +11,7 @@ import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana
 import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
 import { SqlQueryHelper } from './sql-query/sql-query-helper';
 import SqlQueryMacros from './sql-query/sql-query-macros';
+import { QueryEditor } from "../views/QueryEditor/QueryEditor";
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
@@ -44,6 +45,9 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);
     this.responseParser = new ResponseParser();
+    this.annotations = {
+      QueryEditor: QueryEditor
+    };
   }
 
   _getRequestOptions(query: string, usePOST?: boolean, requestId?: string) {
@@ -113,7 +117,6 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     this.options = options;
     const targets = options.targets.filter((target) => !target.hide && target.query);
     const queries = targets.map((target) => this.createQuery(options, target));
-    // No valid targets, return the empty result to save a round trip.
     // No valid targets, return the empty result to save a round trip.
     if (!queries.length) {
       return Promise.resolve({ data: [] });

@@ -74,8 +74,6 @@ services:
 
     ports:
       - "3000:3000"
-    expose:
-      - 3000
 
   grafana_external_install:
     image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-latest}
@@ -166,7 +164,7 @@ services:
       - SE_EVENT_BUS_PUBLISH_PORT=4442
       - SE_EVENT_BUS_SUBSCRIBE_PORT=4443
     ports:
-      - "6900:5900"
+      - "5900:5900"
 
   chrome_video:
     profiles: [ test ]

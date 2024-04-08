@@ -13,19 +13,19 @@ from requirements.requirements import *
 from steps.panel.view import *
 
 
-# @TestScenario
-# @Requirements(RQ_SRS_Plugin_Dashboards("1.0"))
-# def dashboard_check(self):
-#     """Check that Plugin supports creating dashboard."""
+@TestScenario
+@Requirements(RQ_SRS_Plugin_Dashboards("1.0"))
+def dashboard_check(self):
+    """Check that Plugin supports creating dashboard."""
 
-#     with When("I create new dashboard"):
-#         create_dashboard(dashboard_name="abc")
+    with When("I create new dashboard"):
+        create_dashboard(dashboard_name="abc")
 
-#     with When("I go to dashboards view"):
-#         open_dashboards_view()
+    with When("I go to dashboards view"):
+        open_dashboards_view()
 
-#     with Then("I check dashboard is created"):
-#         assert check_dashboard_exists(dashboard_name="abc") is True
+    with Then("I check dashboard is created"):
+        assert check_dashboard_exists(dashboard_name="abc") is True
 
 
 @TestScenario
@@ -188,34 +188,37 @@ def panel_check(self):
 #         pass
 
 
-# @TestScenario
-# @Requirements(RQ_SRS_Plugin_FillActual)
-# def changing_size_of_visualization(self):
-#     """Check that Plugin supports changing size of visualization."""
+@TestScenario
+@Requirements(RQ_SRS_Plugin_FillActual)
+def changing_size_of_visualization(self):
+    """Check that Plugin supports changing size of visualization."""
 
-#     with Given("I go to clickhouse dashboard"):
-#         open_dashboard(dashboard_name="clickhouse dashboard")
+    with Given("I go to clickhouse dashboard"):
+        open_dashboard(dashboard_name="clickhouse dashboard")
 
-#     with Given("I go to subquery example panel", description="I click edit"):
-#         open_panel(panel_name="subquery example")
+    with Given("I go to subquery example panel", description="I click edit"):
+        open_panel(panel_name="subquery example")
 
-#     with delay():
-#         with When("I click on Actual toggle"):
-#             actual()
+    with delay():
+        with When("I click on Actual toggle"):
+            actual()
 
-#     with Then("I take screenshot for Actual visualization"):
-#         take_screenshot_for_visualization(screenshot_name="actual")
+    with Then("I take screenshot for Actual visualization"):
+        take_screenshot_for_visualization(screenshot_name="actual")
 
-#     with delay():
-#         with When("I click on Fill toggle"):
-#             fill()
+    with delay():
+        with When("I click on Fill toggle"):
+            fill()
 
-#     with Then("I take screenshot for Fill visualization"):
-#         take_screenshot_for_visualization(screenshot_name="fill")
+    with Then("I take screenshot for Fill visualization"):
+        take_screenshot_for_visualization(screenshot_name="fill")
 
-#     with Then("I compare two screenshots"):
-#         assert compare_screenshots(screenshot_name_1="fill", screenshot_name_2="actual") is False, error()
+    with Then("I compare two screenshots"):
+        assert compare_screenshots(screenshot_name_1="fill", screenshot_name_2="actual") is False, error()
 
+    with delay():
+        with When("I open SQL editor"):
+            go_to_sql_editor()
 
 @TestFeature
 @Name("dashboards")

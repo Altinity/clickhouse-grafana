@@ -1,3 +1,7 @@
+# 3.0.1 (2024-04-10)
+## Fixes:
+* try to fix grafana cloud [517](https://github.com/Altinity/clickhouse-grafana/issues/517)
+
 # 3.0.0 (2024-01-19)
 ## Enhancements:
 * rewrite plugin from scratch for Grafana 10+ compatibility using react instead of angular

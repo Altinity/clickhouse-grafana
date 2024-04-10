@@ -2,6 +2,7 @@ import React, { FormEvent } from 'react';
 import { DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption } from '@grafana/data';
 import { CHDataSourceOptions } from '../../types/types';
+import _ from 'lodash';
 
 export interface CHSecureJsonData {
   password?: string;
@@ -28,9 +29,10 @@ export function ConfigEditor(props: Props) {
     });
   };
 
+  console.log('psina')
   // @todo remove it when https://github.com/grafana/grafana/pull/80858 merged
   const onDataHttpSettingsChange = (event: any) => {
-    const newOptions = {...event}
+    const newOptions = _.cloneDeep(event)
     newOptions.jsonData.dataSourceUrl = newOptions.url
     onOptionsChange({
       ...newOptions,

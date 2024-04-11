@@ -29,7 +29,6 @@ export function ConfigEditor(props: Props) {
     });
   };
 
-  console.log('psina')
   // @todo remove it when https://github.com/grafana/grafana/pull/80858 merged
   const onDataHttpSettingsChange = (event: any) => {
     const newOptions = _.cloneDeep(event)

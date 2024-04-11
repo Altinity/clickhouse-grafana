@@ -13,18 +13,19 @@ interface Props extends DataSourcePluginOptionsEditorProps<CHDataSourceOptions> 
 
 export function ConfigEditor(props: Props) {
   const { onOptionsChange, options } = props;
-  const { jsonData, secureJsonFields } = options;
+  const newOptions = _.cloneDeep(options)
+  const { jsonData, secureJsonFields } = newOptions
   const secureJsonData = (options.secureJsonData || {}) as CHSecureJsonData;
   // @todo remove when merged https://github.com/grafana/grafana/pull/80858
-  if (options.url !== "") {
-    jsonData.dataSourceUrl = options.url
+  if (newOptions.url !== "") {
+    jsonData.dataSourceUrl = newOptions.url
   }
   const onSwitchToggle = (
     key: keyof Pick<CHDataSourceOptions, 'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST'>,
     value: boolean
   ) => {
     onOptionsChange({
-      ...options,
+      ...newOptions,
       jsonData: { ...jsonData, [key]: value },
     });
   };

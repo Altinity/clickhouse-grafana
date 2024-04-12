@@ -13,3 +13,4 @@ datasources:
     jsonData:
       addCorsHeader: true
       usePOST: true
+      tlsSkipVerify: true

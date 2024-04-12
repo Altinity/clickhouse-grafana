@@ -13,7 +13,8 @@ module.exports = {
   },
   testPathIgnorePatterns: [
     "/node_modules/",
-    "<rootDir>/.cache/"
+    "<rootDir>/.cache/",
+    "<rootDir>/.go-cache/"
   ],
   transformIgnorePatterns: [
     "node_modules/(?!(lodash-es|d3-|grafana-sdk-mocks))",

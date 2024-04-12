@@ -86,7 +86,7 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 	if client.settings.TLSSkipVerify {
 		tlsConfig.InsecureSkipVerify = true
 	}
-	if tlsCACertExists || (tlsClientCertExists && tlsClientKeyExists) {
+	if client.settings.TLSSkipVerify || tlsCACertExists || (tlsClientCertExists && tlsClientKeyExists) {
 		httpClient.Transport = &http.Transport{TLSClientConfig: tlsConfig}
 	}
 	req = req.WithContext(ctx)

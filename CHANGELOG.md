@@ -1,3 +1,7 @@
+# 2.5.5
+## Fixes:
+* fix ignoring `tlsSkipVerify` behavior in alert query evolution, when not exists tlsCACert, tlsClientCert, tlsClientKey fix https://github.com/Altinity/clickhouse-grafana/issues/532 
+
 # 2.5.4 (2023-09-13)
 ## Enhancements:
 * switch to go 1.21

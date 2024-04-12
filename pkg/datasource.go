@@ -15,7 +15,6 @@ func GetDatasourceServeOpts() datasource.ServeOpts {
 	ds := &ClickHouseDatasource{
 		im: datasource.NewInstanceManager(NewDatasourceSettings),
 	}
-
 	return datasource.ServeOpts{
 		QueryDataHandler:   ds,
 		CheckHealthHandler: ds,

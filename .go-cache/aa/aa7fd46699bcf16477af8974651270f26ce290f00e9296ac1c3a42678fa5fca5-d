@@ -1,0 +1,8 @@
+./builder.go
+./doc.go
+./encode.go
+./grpc.go
+./lib.go
+./sizes.go
+./struct.go
+./table.go

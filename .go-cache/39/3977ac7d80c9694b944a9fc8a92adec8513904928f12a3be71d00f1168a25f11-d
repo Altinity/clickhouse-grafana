@@ -1,0 +1,4 @@
+./xxhash.go
+./xxhash_asm.go
+./xxhash_unsafe.go
+./xxhash_amd64.s

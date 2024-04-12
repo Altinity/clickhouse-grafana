@@ -1,0 +1,1 @@
+{"Version":"v1.19.0","Time":"2023-09-28T19:28:51Z","Origin":{"VCS":"git","URL":"https://github.com/open-telemetry/opentelemetry-go","Subdir":"exporters/otlp/otlptrace","Ref":"refs/tags/exporters/otlp/otlptrace/v1.19.0","Hash":"60666c554065ac4da502fe28943eea4b938ab479"}}

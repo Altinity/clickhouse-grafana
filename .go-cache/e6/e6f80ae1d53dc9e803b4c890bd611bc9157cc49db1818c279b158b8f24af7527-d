@@ -1,0 +1,12 @@
+./accum_generic.go
+./accum_stubs_amd64.go
+./consts.go
+./hash128.go
+./hash128_seed.go
+./hash64.go
+./hash64_seed.go
+./hasher.go
+./utils.go
+./accum_vector_avx512_amd64.s
+./accum_vector_avx_amd64.s
+./accum_vector_sse_amd64.s

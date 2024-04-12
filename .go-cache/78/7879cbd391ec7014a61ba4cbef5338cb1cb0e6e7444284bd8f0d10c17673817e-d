@@ -1,0 +1,13 @@
+./cmd.go
+./convert.go
+./dir.go
+./file.go
+./html.go
+./http.go
+./math.go
+./path.go
+./regex.go
+./slice.go
+./string.go
+./time.go
+./url.go

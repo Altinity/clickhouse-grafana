@@ -1,0 +1,15 @@
+./at.go
+./at_fstatat.go
+./at_sysnum_linux.go
+./at_sysnum_newfstatat_linux.go
+./constants.go
+./copy_file_range_linux.go
+./eaccess_linux.go
+./fcntl_unix.go
+./getrandom.go
+./getrandom_linux.go
+./kernel_version_linux.go
+./net.go
+./nonblocking_unix.go
+./pidfd_linux.go
+./sysnum_linux_amd64.go

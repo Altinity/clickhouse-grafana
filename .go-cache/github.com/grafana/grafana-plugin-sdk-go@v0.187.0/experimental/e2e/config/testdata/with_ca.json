@@ -1,0 +1,12 @@
+{
+	"storage": [{
+		"type": "har",
+		"path": "fixtures/test.har"
+	}],
+	"address": "127.0.0.1:8888",
+	"hosts": ["example.com", "example.org"],
+	"ca_keypair": {
+		"cert": "./cert.pem",
+		"private_key": "./key.pem"
+	}
+}

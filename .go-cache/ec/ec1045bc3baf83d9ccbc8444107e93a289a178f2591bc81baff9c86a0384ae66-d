@@ -1,0 +1,12 @@
+./buffer.go
+./defaults.go
+./deprecated.go
+./discard.go
+./extensions.go
+./properties.go
+./proto.go
+./registry.go
+./text_decode.go
+./text_encode.go
+./wire.go
+./wrappers.go

@@ -1,0 +1,12 @@
+./bytealg.go
+./compare_native.go
+./count_native.go
+./equal_generic.go
+./equal_native.go
+./index_generic.go
+./indexbyte_native.go
+./lastindexbyte_generic.go
+./compare_arm.s
+./count_arm.s
+./equal_arm.s
+./indexbyte_arm.s

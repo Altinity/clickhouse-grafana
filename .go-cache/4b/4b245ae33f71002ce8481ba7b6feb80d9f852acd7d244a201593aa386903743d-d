@@ -1,0 +1,7 @@
+./buf_reader.go
+./endians_default.go
+./math.go
+./min_max.go
+./transpose_ints.go
+./transpose_ints_def.go
+./transpose_ints_noasm.go

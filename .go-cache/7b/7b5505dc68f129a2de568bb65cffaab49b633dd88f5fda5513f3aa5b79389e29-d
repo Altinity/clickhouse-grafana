@@ -1,0 +1,7 @@
+./attribute_group.go
+./doc.go
+./event.go
+./exception.go
+./resource.go
+./schema.go
+./trace.go

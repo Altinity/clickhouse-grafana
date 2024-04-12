@@ -1,0 +1,6 @@
+./grpc_broker.pb.go
+./grpc_broker_grpc.pb.go
+./grpc_controller.pb.go
+./grpc_controller_grpc.pb.go
+./grpc_stdio.pb.go
+./grpc_stdio_grpc.pb.go

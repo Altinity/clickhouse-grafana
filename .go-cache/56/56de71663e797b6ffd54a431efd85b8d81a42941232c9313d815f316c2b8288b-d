@@ -1,0 +1,32 @@
+=== RUN   TestMacrosBuilder
+--- PASS: TestMacrosBuilder (0.00s)
+=== RUN   TestCommentsAndRateMacrosWithFromKeywordInFieldName
+--- PASS: TestCommentsAndRateMacrosWithFromKeywordInFieldName (0.00s)
+=== RUN   TestColumnsMacrosWithUnionAllAndWithKeyword
+--- PASS: TestColumnsMacrosWithUnionAllAndWithKeyword (0.00s)
+=== RUN   TestScannerAST
+--- PASS: TestScannerAST (0.01s)
+=== RUN   TestEvalQueryTimeFilterByColumnAndRange
+--- PASS: TestEvalQueryTimeFilterByColumnAndRange (0.00s)
+=== RUN   TestEvalQueryTimeFilter64ByColumnAndRangeMs
+--- PASS: TestEvalQueryTimeFilter64ByColumnAndRangeMs (0.00s)
+=== RUN   TestEvalQueryTimeSeriesTimeFilterAndDateTime64
+--- PASS: TestEvalQueryTimeSeriesTimeFilterAndDateTime64 (0.00s)
+=== RUN   TestUnescapeMacros
+--- PASS: TestUnescapeMacros (0.00s)
+=== RUN   TestEscapeIdentifier
+--- PASS: TestEscapeIdentifier (0.00s)
+=== RUN   TestEscapeTableIdentifier
+--- PASS: TestEscapeTableIdentifier (0.00s)
+=== RUN   TestEvalQueryColumnsMacrosAndArrayJoin
+--- PASS: TestEvalQueryColumnsMacrosAndArrayJoin (0.00s)
+=== RUN   TestEvalQueryTimeFilterByColumnAndDateTimeCol
+--- PASS: TestEvalQueryTimeFilterByColumnAndDateTimeCol (0.00s)
+=== RUN   TestEvalQueryNaturalTimeSeries
+--- PASS: TestEvalQueryNaturalTimeSeries (0.00s)
+=== RUN   TestEvalQueryTimeSeriesMsTimeFilterMsAndDateTime64
+--- PASS: TestEvalQueryTimeSeriesMsTimeFilterMsAndDateTime64 (0.00s)
+=== RUN   TestTableMacroProperlyEscaping
+--- PASS: TestTableMacroProperlyEscaping (0.00s)
+PASS
+ok  	github.com/altinity/clickhouse-grafana/pkg	0.045s

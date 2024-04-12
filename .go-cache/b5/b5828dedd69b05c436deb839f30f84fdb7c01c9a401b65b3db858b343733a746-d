@@ -1,0 +1,6 @@
+./addr_translator.go
+./cmd_reattach.go
+./cmd_runner.go
+./notes_windows.go
+./process.go
+./process_windows.go

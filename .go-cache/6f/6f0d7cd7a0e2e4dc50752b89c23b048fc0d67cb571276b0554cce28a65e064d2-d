@@ -1,0 +1,6 @@
+./consts.go
+./consts_norace.go
+./intrinsics.go
+./nih.go
+./sys.go
+./zversion.go

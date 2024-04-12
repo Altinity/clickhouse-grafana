@@ -1,0 +1,9 @@
+./bitmap_ops.go
+./bitmap_ops_amd64.go
+./bitmap_ops_avx2_amd64.go
+./bitmap_ops_sse4_amd64.go
+./bitmaps.go
+./bitutil.go
+./endian_default.go
+./bitmap_ops_avx2_amd64.s
+./bitmap_ops_sse4_amd64.s

@@ -1,0 +1,8 @@
+./client.go
+./datasource.go
+./datasource_settings.go
+./eval_query.go
+./main.go
+./parser.go
+./query.go
+./response.go

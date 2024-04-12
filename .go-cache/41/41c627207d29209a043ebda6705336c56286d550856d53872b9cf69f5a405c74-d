@@ -1,0 +1,11 @@
+./colorize_unix.go
+./context.go
+./exclude.go
+./global.go
+./interceptlogger.go
+./intlogger.go
+./logger.go
+./nulllogger.go
+./stacktrace.go
+./stdlog.go
+./writer.go

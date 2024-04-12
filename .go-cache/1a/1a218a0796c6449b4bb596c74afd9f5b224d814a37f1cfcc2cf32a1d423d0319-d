@@ -1,0 +1,11 @@
+./abi.go
+./abi_amd64.go
+./compiletype.go
+./funcpc.go
+./map.go
+./stack.go
+./switch.go
+./symtab.go
+./type.go
+./abi_test.s
+./stub.s

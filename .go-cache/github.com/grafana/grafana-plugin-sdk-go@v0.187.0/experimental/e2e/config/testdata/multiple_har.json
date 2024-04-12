@@ -1,0 +1,10 @@
+{
+	"storage": [{
+		"type": "har",
+		"path": "fixtures/1.har"
+	},
+	{
+		"type": "har",
+		"path": "fixtures/2.har"
+	}]
+}

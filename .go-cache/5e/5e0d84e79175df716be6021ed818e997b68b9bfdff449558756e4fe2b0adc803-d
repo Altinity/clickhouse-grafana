@@ -1,0 +1,7 @@
+./cpu.go
+./cpu_arm64.go
+./cpu_arm64_hwcap.go
+./cpu_arm64_linux.go
+./cpu_no_name.go
+./cpu.s
+./cpu_arm64.s

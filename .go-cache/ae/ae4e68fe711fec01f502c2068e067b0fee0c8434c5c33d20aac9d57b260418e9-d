@@ -1,0 +1,5 @@
+./doc.go
+./pattern.go
+./readerfactory.go
+./string_array_flag.go
+./trie.go

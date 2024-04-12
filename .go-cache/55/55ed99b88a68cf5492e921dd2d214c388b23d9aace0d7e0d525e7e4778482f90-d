@@ -1,0 +1,6 @@
+./search.go
+./slice.go
+./sort.go
+./sort_impl_go121.go
+./zsortfunc.go
+./zsortinterface.go

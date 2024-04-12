@@ -1,0 +1,58 @@
+//  🌟 This was machine generated.  Do not edit. 🌟
+//  
+//  Frame[0] 
+//  Name: JSON frame
+//  Dimensions: 2 Fields by 1 Rows
+//  +-------------------------+--------------------------+
+//  | Name: json.RawMessage   | Name: *json.RawMessage   |
+//  | Labels:                 | Labels:                  |
+//  | Type: []json.RawMessage | Type: []*json.RawMessage |
+//  +-------------------------+--------------------------+
+//  | {"a":1,"b":2}           | {"a":1,"b":2}            |
+//  +-------------------------+--------------------------+
+//  
+//  
+//  🌟 This was machine generated.  Do not edit. 🌟
+{
+  "status": 200,
+  "frames": [
+    {
+      "schema": {
+        "name": "JSON frame",
+        "fields": [
+          {
+            "name": "json.RawMessage",
+            "type": "other",
+            "typeInfo": {
+              "frame": "json.RawMessage"
+            }
+          },
+          {
+            "name": "*json.RawMessage",
+            "type": "other",
+            "typeInfo": {
+              "frame": "json.RawMessage",
+              "nullable": true
+            }
+          }
+        ]
+      },
+      "data": {
+        "values": [
+          [
+            {
+              "a": 1,
+              "b": 2
+            }
+          ],
+          [
+            {
+              "a": 1,
+              "b": 2
+            }
+          ]
+        ]
+      }
+    }
+  ]
+}

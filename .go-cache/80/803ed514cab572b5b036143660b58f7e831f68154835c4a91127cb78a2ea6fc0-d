@@ -1,0 +1,3 @@
+./sha512.go
+./sha512block.go
+./sha512block_generic.go

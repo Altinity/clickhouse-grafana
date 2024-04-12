@@ -1,0 +1,16 @@
+./asan0.go
+./dll_windows.go
+./endian_little.go
+./env_windows.go
+./exec_windows.go
+./msan0.go
+./net.go
+./security_windows.go
+./syscall.go
+./syscall_windows.go
+./time_nofake.go
+./types_windows.go
+./types_windows_amd64.go
+./wtf8_windows.go
+./zerrors_windows.go
+./zsyscall_windows.go

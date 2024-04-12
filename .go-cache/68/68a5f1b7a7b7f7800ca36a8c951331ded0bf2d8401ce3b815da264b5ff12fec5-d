@@ -1,0 +1,5 @@
+./doc.go
+./instance_provider.go
+./manage.go
+./query_type_mux.go
+./serve.go

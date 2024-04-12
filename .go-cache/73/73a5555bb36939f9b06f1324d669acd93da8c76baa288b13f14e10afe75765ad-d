@@ -1,0 +1,4 @@
+./command_string.go
+./magefile_tmpl.go
+./main.go
+./template.go

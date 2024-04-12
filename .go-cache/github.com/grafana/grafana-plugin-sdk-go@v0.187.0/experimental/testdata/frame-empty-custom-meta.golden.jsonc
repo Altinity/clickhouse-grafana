@@ -1,0 +1,109 @@
+//  🌟 This was machine generated.  Do not edit. 🌟
+//  
+//  Frame[0] {
+//      "typeVersion": [
+//          0,
+//          0
+//      ],
+//      "custom": {}
+//  }
+//  Name: Frame One
+//  Dimensions: 1 Fields by 5 Rows
+//  +----------------------+
+//  | Name: Single float64 |
+//  | Labels:              |
+//  | Type: []float64      |
+//  +----------------------+
+//  | 8.26                 |
+//  | 8.7                  |
+//  | 14.82                |
+//  | 10.07                |
+//  | 8.52                 |
+//  +----------------------+
+//  
+//  
+//  
+//  Frame[1] 
+//  Name: Frame Two
+//  Dimensions: 1 Fields by 3 Rows
+//  +---------------------+
+//  | Name: single string |
+//  | Labels: a=b         |
+//  | Type: []string      |
+//  +---------------------+
+//  | a                   |
+//  | b                   |
+//  | c                   |
+//  +---------------------+
+//  
+//  
+//  🌟 This was machine generated.  Do not edit. 🌟
+{
+  "status": 200,
+  "frames": [
+    {
+      "schema": {
+        "name": "Frame One",
+        "meta": {
+          "typeVersion": [
+            0,
+            0
+          ],
+          "custom": {}
+        },
+        "fields": [
+          {
+            "name": "Single float64",
+            "type": "number",
+            "typeInfo": {
+              "frame": "float64"
+            },
+            "config": {
+              "unit": "Percent"
+            }
+          }
+        ]
+      },
+      "data": {
+        "values": [
+          [
+            8.26,
+            8.7,
+            14.82,
+            10.07,
+            8.52
+          ]
+        ]
+      }
+    },
+    {
+      "schema": {
+        "name": "Frame Two",
+        "fields": [
+          {
+            "name": "single string",
+            "type": "string",
+            "typeInfo": {
+              "frame": "string"
+            },
+            "labels": {
+              "a": "b"
+            },
+            "config": {
+              "displayName": "123"
+            }
+          }
+        ]
+      },
+      "data": {
+        "values": [
+          [
+            "a",
+            "b",
+            "c"
+          ]
+        ]
+      }
+    }
+  ]
+}

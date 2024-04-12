@@ -1,0 +1,14 @@
+./auto.go
+./builtin.go
+./config.go
+./container.go
+./doc.go
+./env.go
+./host_id.go
+./host_id_darwin.go
+./host_id_exec.go
+./os.go
+./os_release_darwin.go
+./os_unix.go
+./process.go
+./resource.go

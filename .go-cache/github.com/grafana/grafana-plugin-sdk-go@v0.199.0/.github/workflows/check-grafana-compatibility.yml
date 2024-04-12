@@ -1,0 +1,53 @@
+# Checks if the current update to go.mod is compatible with Grafana.
+
+name: Detect breaking change with Grafana
+
+on:
+  pull_request:
+    paths:
+      - 'go.mod'
+      - 'go.sum'
+    branches:
+      - 'main'
+
+jobs:
+  buildPR:
+    name: Build PR
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v4
+      with:
+        path: './grafana-plugin-sdk-go'
+    - uses: actions/checkout@v4
+      with:
+        repository: 'grafana/grafana'
+        path: './grafana'
+    - uses: actions/setup-go@v5
+      with:
+        cache: false
+        check-latest: true
+        go-version-file: 'grafana-plugin-sdk-go/go.mod'
+
+    - name: Check if branch exists in Grafana
+      working-directory: './grafana'
+      run: |
+        if git ls-remote --heads --quiet --exit-code origin ${{ github.head_ref }}
+        then
+          echo "Found branch ${{ github.head_ref }} in Grafana"
+          git fetch origin ${{ github.head_ref }}
+          git checkout ${{ github.head_ref }}
+        else
+          echo "Branch ${{ github.head_ref }} not found in Grafana"
+        fi
+
+    - name: Link sdk
+      working-directory: './grafana'
+      run: echo 'replace github.com/grafana/grafana-plugin-sdk-go => ../grafana-plugin-sdk-go' >> go.mod
+
+    - name: Automatic updates
+      working-directory: './grafana'
+      run: go mod tidy
+
+    - name: Build Grafana
+      working-directory: './grafana'
+      run: make build-go

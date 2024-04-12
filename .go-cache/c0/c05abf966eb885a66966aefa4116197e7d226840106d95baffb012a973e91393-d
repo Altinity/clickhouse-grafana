@@ -1,0 +1,3 @@
+./xxh32zero.go
+./xxh32zero_arm.go
+./xxh32zero_arm.s

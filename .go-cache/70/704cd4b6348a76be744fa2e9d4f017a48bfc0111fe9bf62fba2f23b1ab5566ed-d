@@ -1,0 +1,7 @@
+./atomic_amd64.go
+./doc.go
+./stubs.go
+./types.go
+./types_64bit.go
+./unaligned.go
+./atomic_amd64.s

@@ -1,0 +1,4 @@
+./bit_block_counter.go
+./bit_run_reader.go
+./bit_set_run_reader.go
+./bitmap_generate.go

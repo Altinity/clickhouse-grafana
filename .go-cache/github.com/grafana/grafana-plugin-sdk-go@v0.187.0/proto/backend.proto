@@ -1,0 +1,292 @@
+syntax = "proto3";
+package pluginv2;
+
+option go_package = "./;pluginv2";
+
+//-----------------------------------------------
+// Common
+//-----------------------------------------------
+
+message AppInstanceSettings {
+  bytes jsonData = 3;
+  map<string,string> decryptedSecureJsonData = 4;
+  int64 lastUpdatedMS = 5;
+}
+
+message DataSourceInstanceSettings {
+  int64 id = 1;
+  string name = 2;
+  string url = 3;
+  string user = 4;
+  string database = 5;
+  bool basicAuthEnabled = 6;
+  string basicAuthUser = 7;
+  bytes jsonData = 8;
+  map<string,string> decryptedSecureJsonData = 9;
+  int64 lastUpdatedMS = 10;
+  string uid = 11;
+}
+
+message User {
+  string login = 1;
+  string name = 2;
+  string email = 3;
+  string role = 4;
+}
+
+message PluginContext {
+  // The Grafana organization id the request originates from.
+  int64 orgId = 1;
+
+  // The unique identifier of the plugin the request is targeted for.
+  string pluginId = 2;
+
+  // The Grafana user the request originates from.
+  //
+  // Will not be provided if Grafana backend initiated the request.
+  User user = 3;
+
+  // App plugin instance settings is the configured app instance settings.
+  // In Grafana an app instance is an enabled app plugin in a
+  // Grafana organization.
+  //
+  // Will only be set if request targeting an app instance.
+  AppInstanceSettings appInstanceSettings = 4;
+
+  // Data source instance settings is the configured data source instance
+  // settings. In Grafana a data source instance is a created data source
+  // in a Grafana organization.
+  //
+  // Will only be set if request targeting a data source instance.
+  DataSourceInstanceSettings dataSourceInstanceSettings = 5;
+
+  // The grafana configuration as a map of key/value pairs.
+  map<string,string> grafanaConfig = 6;
+
+  // The version of the plugin the request is targeted for.
+  string pluginVersion = 7;
+
+  // The user agent of the Grafana server that initiated the gRPC request.
+  string userAgent = 8;
+}
+
+//---------------------------------------------------------
+// Resource service enables HTTP-style requests over gRPC.
+//---------------------------------------------------------
+
+service Resource {
+  rpc CallResource(CallResourceRequest) returns (stream CallResourceResponse);
+}
+
+message StringList {
+  repeated string values = 1;
+}
+
+message CallResourceRequest {
+  PluginContext pluginContext = 1;
+  string path = 2;
+  string method = 3;
+  string url = 4;
+  map<string,StringList> headers = 5;
+  bytes body = 6;
+}
+
+message CallResourceResponse {
+  // Maps to raw HTTP status codes when passed over HTTP
+  int32 code = 1;
+
+  // Raw HTTP headers sent to the client
+  map<string,StringList> headers = 2;
+
+  // Raw HTTP body bytes sent to the client
+  bytes body = 3;
+}
+
+//-----------------------------------------------
+// Data
+//-----------------------------------------------
+
+service Data {
+  rpc QueryData(QueryDataRequest) returns (QueryDataResponse);
+}
+
+message TimeRange {
+  int64 fromEpochMS = 1;
+  int64 toEpochMS = 2;
+}
+
+message DataQuery {
+  string refId = 1;
+  int64 maxDataPoints = 2;
+  int64 intervalMS = 3;
+  TimeRange timeRange = 4;
+  bytes json = 5;
+  string queryType = 6;
+}
+
+// QueryDataRequest
+message QueryDataRequest {
+  PluginContext pluginContext = 1;
+
+  // Environment info
+  map<string,string> headers = 2;
+
+  // List of data queries
+  repeated DataQuery queries = 3;
+}
+
+message QueryDataResponse {
+  // Map of refId to response
+  map<string,DataResponse> responses = 1;
+}
+
+message DataResponse {
+  // Arrow encoded DataFrames
+  // Frame has its own meta, warnings, and repeats refId
+  repeated bytes frames = 1;
+
+  // Error message
+  string error = 2;
+
+  // Currently not used and not exposed in the frontend
+  bytes jsonMeta = 3;
+
+  // When errors exist or a non 2XX status, clients will be passed a 207 HTTP error code in /ds/query
+  // The status codes should match values from standard HTTP status codes
+  // If not set explicitly, it will be marshaled to 200 if no error exists, or 500 if one does
+  int32 status = 4;
+
+  // Error source
+  string errorSource = 5;
+}
+
+//-----------------------------------------------
+// Diagnostics
+//-----------------------------------------------
+
+service Diagnostics {
+  rpc CheckHealth(CheckHealthRequest) returns (CheckHealthResponse);
+  rpc CollectMetrics(CollectMetricsRequest) returns (CollectMetricsResponse);
+}
+
+message CollectMetricsRequest {
+  PluginContext pluginContext = 1;
+}
+
+message CollectMetricsResponse {
+  message Payload {
+    bytes prometheus = 1;
+  }
+
+  Payload metrics = 1;
+}
+
+message CheckHealthRequest {
+  PluginContext pluginContext = 1;
+
+  // Environment info
+  map<string,string> headers = 2;
+}
+
+message CheckHealthResponse {
+  enum HealthStatus {
+    UNKNOWN = 0;
+    OK = 1;
+    ERROR = 2;
+  }
+
+  HealthStatus status = 1;
+  string message = 2;
+  bytes jsonDetails = 3;
+}
+
+//-----------------------------------------------------------------
+// Stream -- EXPERIMENTAL and is subject to change until 8.0
+//-----------------------------------------------------------------
+
+service Stream {
+  // SubscribeStream called when a user tries to subscribe to a plugin/datasource
+  // managed channel path – thus plugin can check subscribe permissions and communicate
+  // options with Grafana Core. When the first subscriber joins a channel, RunStream
+  // will be called.
+  rpc SubscribeStream(SubscribeStreamRequest) returns (SubscribeStreamResponse);
+
+  // RunStream will be initiated by Grafana to consume a stream. RunStream will be
+  // called once for the first client successfully subscribed to a channel path.
+  // When Grafana detects that there are no longer any subscribers inside a channel,
+  // the call will be terminated until next active subscriber appears. Call termination
+  // can happen with a delay.
+  rpc RunStream(RunStreamRequest) returns (stream StreamPacket);
+
+  // PublishStream called when a user tries to publish to a plugin/datasource
+  // managed channel path. Here plugin can check publish permissions and
+  // modify publication data if required.
+  rpc PublishStream(PublishStreamRequest) returns (PublishStreamResponse);
+}
+
+message SubscribeStreamRequest {
+  PluginContext pluginContext = 1;
+
+  // path part of channel.
+  string path = 2;
+  // optional raw data. May be used as an extra payload supplied upon subscription.
+  // For example, can contain JSON query object.
+  bytes data = 3;
+}
+
+message SubscribeStreamResponse {
+  enum Status {
+    OK = 0;
+    NOT_FOUND = 1;
+    PERMISSION_DENIED = 2;
+  }
+  // status of subscribe response.
+  Status status = 1;
+
+  // JSON-encoded data to return to a client in a successful
+  // subscription result.
+  // For data frame streams this can be a JSON-encoded frame schema.
+  bytes data = 2;
+}
+
+message PublishStreamRequest {
+  PluginContext pluginContext = 1;
+
+  // path part of a channel.
+  string path = 2;
+  // data that user wants to publish into a stream
+  // (only JSON-encoded at the moment).
+  bytes data = 3;
+}
+
+message PublishStreamResponse {
+  enum Status {
+    OK = 0;
+    NOT_FOUND = 1;
+    PERMISSION_DENIED = 2;
+  }
+  // status of publish response.
+  Status status = 1;
+
+  // JSON-encoded data to publish into a channel. This can be
+  // unmodified data from a PublishRequest or any modified data.
+  // If empty data returned here then Grafana won't publish data
+  // to a channel itself but will return a successful result to a
+  // client (supposing plugin published data to a channel itself).
+  bytes data = 2;
+}
+
+message RunStreamRequest {
+  PluginContext pluginContext = 1;
+
+  // path part of a channel.
+  string path = 2;
+  // optional raw data. May be used as an extra payload supplied upon subscription.
+  // For example, can contain JSON query object.
+  bytes data = 3;
+}
+
+message StreamPacket {
+  // JSON-encoded data to publish into a channel.
+  bytes data = 1;
+}

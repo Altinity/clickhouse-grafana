@@ -1,0 +1,3 @@
+Execute following command in ROOT directory when anything is changed:
+
+$ go-bindata -o=internal/bindata/bindata.go -ignore="\\.DS_Store|README" -pkg=bindata templates/...

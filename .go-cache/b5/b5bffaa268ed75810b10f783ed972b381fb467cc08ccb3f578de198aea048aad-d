@@ -1,0 +1,8 @@
+./allocator.go
+./buffer.go
+./checked_allocator.go
+./default_allocator.go
+./doc.go
+./go_allocator.go
+./memory.go
+./util.go

@@ -1,0 +1,7 @@
+./nistec.go
+./p224.go
+./p224_sqrt.go
+./p256.go
+./p256_ordinv_noasm.go
+./p384.go
+./p521.go

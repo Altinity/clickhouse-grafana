@@ -1,0 +1,10 @@
+./buf_reader.go
+./endians_default.go
+./math.go
+./min_max.go
+./min_max_arm64.go
+./min_max_neon_arm64.go
+./transpose_ints.go
+./transpose_ints_arm64.go
+./transpose_ints_def.go
+./min_max_neon_arm64.s

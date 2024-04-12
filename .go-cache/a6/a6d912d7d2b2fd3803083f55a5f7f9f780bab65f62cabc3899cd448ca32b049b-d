@@ -1,0 +1,8 @@
+./aes_gcm.go
+./block.go
+./cipher.go
+./cipher_asm.go
+./const.go
+./modes.go
+./asm_arm64.s
+./gcm_arm64.s

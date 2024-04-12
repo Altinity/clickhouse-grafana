@@ -1,0 +1,4 @@
+./hash_funcs.go
+./hash_string.go
+./xxh3_memo_table.gen.go
+./xxh3_memo_table.go

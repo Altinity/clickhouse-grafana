@@ -1,0 +1,55 @@
+[run]
+skip-files = ["data/.*\\.gen\\.go", "data/generic_nullable_vector\\.go", "data/generic_vector\\.go"]
+
+[linters-settings.golint]
+min-confidence = 1
+
+[linters-settings.goconst]
+min-len = 2
+min-occurrences = 2
+
+[linters-settings.revive]
+ignore-generated-header = false
+
+[linters-settings.misspell]
+ignore-words = ["unknwon"]
+
+[linters]
+disable-all = true
+enable = [
+  "bodyclose",
+  "depguard",
+  "dogsled",
+  "errcheck",
+  "gochecknoinits",
+  "goconst",
+  "gocritic",
+  "goimports",
+  "goprintffuncname",
+  "gosec",
+  "gosimple",
+  "govet",
+  "ineffassign",
+  "misspell",
+  "nakedret",
+  "rowserrcheck",
+  "exportloopref",
+  "staticcheck",
+  "stylecheck",
+  "typecheck",
+  "unconvert",
+  "unused",
+  "whitespace",
+  "gocyclo",
+  "unparam",
+  "dogsled",
+  "asciicheck",
+  "errorlint",
+  "sqlclosecheck",
+  "thelper",
+  "revive"
+]
+# Don't require that errors are included through wrapping, since might not always want to wrap an error
+[[issues.exclude-rules]]
+linters = ["errorlint"]
+text = "non-wrapping format verb for fmt.Errorf"

@@ -1,0 +1,48 @@
+name: Verify
+
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+    - uses: golangci/golangci-lint-action@v2
+      with:
+        args: --timeout=5m
+
+  build:
+    runs-on: ${{ matrix.os }}
+
+    needs: [lint]
+
+    strategy:
+      matrix:
+        # No Windows this time. Some tests expect Unix-style paths.
+        os: [ ubuntu-latest, macos-latest ]
+      fail-fast: false
+
+    steps:
+    - uses: actions/checkout@v2
+
+    - name: Set up Go
+      uses: actions/setup-go@v2
+      with:
+        go-version: 1.19
+        cache: true
+
+    - name: Install Tools
+      run: go install gotest.tools/gotestsum@latest
+
+    - name: Test
+      run: gotestsum -- -race -timeout=20m -coverprofile=coverage_txt -covermode=atomic ./...
+
+    - uses: codecov/codecov-action@v3
+      with:
+        files: coverage_txt
+

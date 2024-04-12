@@ -1,0 +1,5 @@
+./equate.go
+./ignore.go
+./sort.go
+./struct_filter.go
+./xform.go

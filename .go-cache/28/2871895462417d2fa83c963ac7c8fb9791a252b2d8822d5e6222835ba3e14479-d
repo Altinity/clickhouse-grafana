@@ -1,0 +1,4 @@
+./client.go
+./doc.go
+./exporter.go
+./options.go

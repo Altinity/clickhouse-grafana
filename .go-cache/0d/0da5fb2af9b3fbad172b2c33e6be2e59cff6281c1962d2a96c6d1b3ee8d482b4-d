@@ -1,0 +1,4 @@
+./cmd.go
+./init.go
+./run.go
+./sync.go

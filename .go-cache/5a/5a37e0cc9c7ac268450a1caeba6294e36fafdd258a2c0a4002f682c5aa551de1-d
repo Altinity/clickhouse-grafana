@@ -1,0 +1,8 @@
+./color.go
+./decode.go
+./encode.go
+./error.go
+./json.go
+./option.go
+./path.go
+./query.go

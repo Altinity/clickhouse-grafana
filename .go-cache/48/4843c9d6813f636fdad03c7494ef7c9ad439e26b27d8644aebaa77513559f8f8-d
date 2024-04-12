@@ -1,0 +1,3 @@
+./bytestostr.go
+./error.go
+./lexer.go

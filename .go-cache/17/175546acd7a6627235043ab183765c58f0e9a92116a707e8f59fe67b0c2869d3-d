@@ -1,0 +1,6 @@
+./decode.go
+./encode.go
+./expfmt.go
+./openmetrics_create.go
+./text_create.go
+./text_parse.go

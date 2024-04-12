@@ -1,0 +1,5 @@
+./common.go
+./common_unix.go
+./doc.go
+./info.go
+./types.go

@@ -1,0 +1,4 @@
+./sha512.go
+./sha512block.go
+./sha512block_amd64.go
+./sha512block_amd64.s

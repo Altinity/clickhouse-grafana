@@ -1,0 +1,46 @@
+---
+name: Go
+on:
+  pull_request:
+  push:
+    branches:
+      - main
+      - "release-*"
+
+# Minimal permissions to be inherited by any job that don't declare it's own permissions
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Tests
+    runs-on: ubuntu-latest
+
+    strategy:
+      matrix:
+        go_version: ["1.19", "1.20", "1.21"]
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v3
+
+      - name: Set up Go ${{ matrix.go_version }}
+        uses: actions/setup-go@v4
+        with:
+          go-version: ${{ matrix.go_version }}
+
+      - name: Cache Go modules
+        id: cache
+        uses: actions/cache@v3
+        with:
+          path: ~/go/pkg/mod
+          key: v1-go${{ matrix.go_version }}
+
+      - name: Run tests and check license
+        run: make check_license test
+        env:
+          CI: true
+
+      - name: Run style and unused
+        if: ${{ matrix.go_version == '1.20' }}
+        run: make style unused

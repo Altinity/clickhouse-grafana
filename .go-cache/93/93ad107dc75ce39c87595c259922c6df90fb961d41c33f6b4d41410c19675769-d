@@ -1,0 +1,4 @@
+./bitmap_ops.go
+./bitmaps.go
+./bitutil.go
+./endian_default.go

@@ -1,0 +1,65 @@
+---
+# This file must be signed. You can do so with the `mage drone` command
+
+kind: pipeline
+type: docker
+name: main
+
+platform:
+  os: linux
+  arch: amd64
+
+trigger:
+  branch: main
+  event:
+  - push
+
+steps:
+- name: build
+  image: grafana/grafana-plugin-ci:1.8.1-alpine
+  commands:
+  - mage -v build
+
+- name: lint
+  image: grafana/grafana-plugin-ci:1.8.1-alpine
+  commands:
+  - mage -v lint
+
+- name: test
+  image: grafana/grafana-plugin-ci:1.8.1-alpine
+  commands:
+  - mage -v testRace
+---
+kind: pipeline
+type: docker
+name: pr
+
+platform:
+  os: linux
+  arch: amd64
+
+trigger:
+  event:
+  - pull_request
+
+steps:
+- name: build
+  image: grafana/grafana-plugin-ci:1.8.1-alpine
+  commands:
+  - mage -v build
+
+- name: lint
+  image: grafana/grafana-plugin-ci:1.8.1-alpine
+  commands:
+  - mage -v lint
+
+- name: test
+  image: grafana/grafana-plugin-ci:1.8.1-alpine
+  commands:
+  - mage -v testRace
+
+---
+kind: signature
+hmac: 6f03e7026ce25ca829f7969c38628da6ee4ccdf0f5898b592f95c71f9090a093
+
+...

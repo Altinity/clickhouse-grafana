@@ -1,10 +1,7 @@
-# 3.0.2 (2024-04-11)
+# 3.1.0 (not released yet)
 ## Fixes:
-* continue to debug grafana cloud [517](https://github.com/Altinity/clickhouse-grafana/issues/517)
+* fix support grafana cloud fix [517](https://github.com/Altinity/clickhouse-grafana/issues/517), fix [516](https://github.com/Altinity/clickhouse-grafana/issues/516)
 
-# 3.0.1 (2024-04-10)
-## Fixes:
-* try to fix grafana cloud [517](https://github.com/Altinity/clickhouse-grafana/issues/517)
 
 # 3.0.0 (2024-01-19)
 ## Enhancements:

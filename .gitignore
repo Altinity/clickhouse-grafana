@@ -42,3 +42,4 @@ e2e-results/
 
 # golang cache
 .go-cache
+.cache

@@ -1,7 +1,7 @@
 # 3.1.0 (not released yet)
 ## Fixes:
-* fix support grafana cloud fix [517](https://github.com/Altinity/clickhouse-grafana/issues/517), fix [516](https://github.com/Altinity/clickhouse-grafana/issues/516)
-
+* fix support grafana cloud fix https://github.com/Altinity/clickhouse-grafana/issues/51), fix https://github.com/Altinity/clickhouse-grafana/issues/516
+* fix tlsSkipVerify was ignored when empty tlsCARoot or tlsClientCert and tlsClientKey, fix https://github.com/Altinity/clickhouse-grafana/issues/532
 
 # 3.0.0 (2024-01-19)
 ## Enhancements:

@@ -44,8 +44,8 @@
         "url": "https://github.com/Altinity/clickhouse-grafana"
       }
     ],
-    "version": "2.5.5",
-    "updated": "2020-07-31"
+    "version": "2.5.4",
+    "updated": "2024-04-12"
   },
   "dependencies": {
     "grafanaDependency": ">=4.6.0",

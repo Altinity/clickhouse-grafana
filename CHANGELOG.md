@@ -1,7 +1,14 @@
 # 3.1.0 (not released yet)
+## Enhancements:
+* add additional auto-complete functions the same as `clickhouse-client`, fix https://github.com/Altinity/clickhouse-grafana/issues/509
+
 ## Fixes:
 * fix support grafana cloud fix https://github.com/Altinity/clickhouse-grafana/issues/51), fix https://github.com/Altinity/clickhouse-grafana/issues/516
 * fix tlsSkipVerify was ignored when empty tlsCARoot or tlsClientCert and tlsClientKey, fix https://github.com/Altinity/clickhouse-grafana/issues/532
+* fix multiple issues for format `As table`, fix https://github.com/Altinity/clickhouse-grafana/issues/515, https://github.com/Altinity/clickhouse-grafana/issues/529
+* fix Annotations setup page don't contain Query textfield, fix https://github.com/Altinity/clickhouse-grafana/issues/518
+* refactored processing macros and whole query on client side, fix https://github.com/Altinity/clickhouse-grafana/issues/524
+
 
 # 3.0.0 (2024-01-19)
 ## Enhancements:

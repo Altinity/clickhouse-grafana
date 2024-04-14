@@ -32,6 +32,8 @@ services:
       - ./docker/clickhouse/dhparam.pem:/etc/clickhouse-server/dhparam.pem
       - ./docker/clickhouse/users.xml:/etc/clickhouse-server/users.d/users.xml
       - ./docker/clickhouse/options_method.xml:/etc/clickhouse-server/config.d/options_method.xml
+      - ./docker/clickhouse/profiling_config.xml:/etc/clickhouse-server/config.d/profiling_config.xml
+      - ./docker/clickhouse/profiling_users.xml:/etc/clickhouse-server/users.d/profiling_users.xml
 
   mysql:
     image: mysql:latest

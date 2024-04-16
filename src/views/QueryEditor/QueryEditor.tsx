@@ -70,7 +70,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       {editorMode === EditorMode.SQL && (
         <>
           <QueryTextEditor
-            query={initializedQuery}
+            query={externalQuery}
             height={200}
             onSqlChange={onSqlChange}
             onRunQuery={onTriggerQuery}

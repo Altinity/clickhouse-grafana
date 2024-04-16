@@ -5,19 +5,6 @@ import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
 import Scanner from '../../../../datasource/scanner/scanner';
 
-// Constants
-const DEFAULT_FIELD_VALUES = {
-  step: '',
-  intervalFactor: 1,
-  round: '',
-  format: 'time_series',
-  extrapolate: false,
-  skip_comments: false,
-  add_metadata: true,
-  showFormattedSQL: false,
-  showHelp: false,
-};
-
 const RESOLUTION_OPTIONS = [
   { value: 1, label: '1/1' },
   { value: 2, label: '1/2' },
@@ -35,7 +22,7 @@ const FORMAT_OPTIONS = [
 
 export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource }: any) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
-  const [fieldValues, setFieldValues] = useState(DEFAULT_FIELD_VALUES);
+  const [fieldValues, setFieldValues] = useState(query);
 
   useEffect(() => {
     const scanner = new Scanner(formattedData);

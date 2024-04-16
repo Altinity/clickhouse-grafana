@@ -103,6 +103,10 @@ export default class SqlQuery {
       query = scanner.removeComments(query);
     }
 
+    if (this.target.add_metadata) {
+      query = scanner.addMetadata(query);
+    }
+
     query = SqlQueryHelper.unescape(query);
     let timeFilter = SqlQueryMacros.getDateTimeFilter(dateTimeType);
     let timeFilterMs = SqlQueryMacros.getDateTimeFilterMs(dateTimeType);

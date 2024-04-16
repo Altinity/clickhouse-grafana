@@ -13,6 +13,7 @@ const DEFAULT_FIELD_VALUES = {
   format: 'time_series',
   extrapolate: false,
   skip_comments: false,
+  add_metadata: true,
   showFormattedSQL: false,
   showHelp: false,
 };
@@ -102,6 +103,12 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           </InlineField>
         </InlineFieldRow>
         <InlineFieldRow>
+          <InlineField
+            label={<InlineLabel width={18} tooltip="Add /* $__dashboard $__user */ to query">Add metadata</InlineLabel>}
+            style={{ height: '100%' }}
+          >
+            <InlineSwitch width="auto" value={fieldValues.add_metadata} onChange={() => handleToggleField('add_metadata')} transparent />
+          </InlineField>
           <InlineField
             label={<InlineLabel width={18} tooltip="Turn off if you would like pass comments in SQL query to server">Skip Comments</InlineLabel>}
             style={{ height: '100%' }}

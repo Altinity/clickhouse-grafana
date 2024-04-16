@@ -451,6 +451,11 @@ export default class Scanner {
   removeComments(query) {
     return query.replace(new RegExp(commentRe, 'g'), '');
   }
+
+  addMetadata(query) {
+    return "/* grafana dashboard=$__dashboard, user=$__user */ "+query
+  }
+
 }
 const isSkipSpace = (token: string) => skipSpaceOnlyRe.test(token);
 const isCond = (token: string) => condOnlyRe.test(token);

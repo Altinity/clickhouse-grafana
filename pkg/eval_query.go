@@ -38,6 +38,7 @@ type EvalQuery struct {
 	DateTimeType   string `json:"dateTimeType"`
 	Extrapolate    bool   `json:"extrapolate"`
 	SkipComments   bool   `json:"skip_comments"`
+	AddMetadata    bool   `json:"add_metadata"`
 	Format         string `json:"format"`
 	Round          string `json:"round"`
 	IntervalFactor int    `json:"intervalFactor"`
@@ -120,6 +121,11 @@ func (q *EvalQuery) replace(query string) (string, error) {
 			return "", err
 		}
 	}
+
+	if q.AddMetadata {
+		query = scanner.AddMetadata(query)
+	}
+
 	query, err = q.unescape(query)
 	if err != nil {
 		return "", err
@@ -1319,6 +1325,10 @@ func (s *EvalQueryScanner) CheckArrayJOINAndExpectNextOrNext(joinType string) (b
 
 func (s *EvalQueryScanner) RemoveComments(query string) (string, error) {
 	return regexp2.MustCompile(commentRe, 0).Replace(query, "", 0, -1)
+}
+
+func (s *EvalQueryScanner) AddMetadata(query string) string {
+	return "/* grafana dashboard=$__dashboard, user=$__user */ " + query
 }
 
 const wsRe = "\\s+"

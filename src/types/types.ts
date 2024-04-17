@@ -28,6 +28,7 @@ export interface CHQuery extends DataQuery {
   dateTimeColDataType?: string;
 
   skip_comments?: boolean;
+  add_metadata?: boolean;
 
   round?: string;
   intervalFactor?: number;

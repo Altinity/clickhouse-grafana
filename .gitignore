@@ -3,6 +3,7 @@ node_modules/
 npm-debug.log
 yarn.lock
 .cache
+.go-cache
 .release_env
 .env
 ubuntu*.log

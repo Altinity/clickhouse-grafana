@@ -104,7 +104,7 @@ services:
     volumes:
     - ./:/grafana-clickhouse
     # for speedup npm install
-    - "node_modules:/grafana-clickhouse/node_modules"
+    - "./node_modules:/grafana-clickhouse/node_modules"
     command: |
       bash -xec '
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install --production=false; fi && \

@@ -448,12 +448,12 @@ export default class Scanner {
     return argument;
   }
 
-  removeComments(query) {
+  static RemoveComments(query) {
     return query.replace(new RegExp(commentRe, 'g'), '');
   }
 
-  addMetadata(query) {
-    return "/* grafana dashboard=$__dashboard, user=$__user */ "+query
+  static AddMetadata(query) {
+    return "/* grafana dashboard=$__dashboard, user=$__user */ " + query
   }
 
 }

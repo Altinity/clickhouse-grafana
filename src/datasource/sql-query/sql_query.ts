@@ -20,9 +20,18 @@ export default class SqlQuery {
       return ''
     }
 
-    // TODO: declare variables
-    let query = this.templateSrv.replace(
-      SqlQueryHelper.conditionalTest(this.target.query.trim(), this.templateSrv),
+    let query = this.target.query.trim()
+
+    if (this.target.skip_comments) {
+      query = Scanner.RemoveComments(query);
+    }
+
+    if (this.target.add_metadata) {
+      query = Scanner.AddMetadata(query);
+    }
+
+    query = this.templateSrv.replace(
+      SqlQueryHelper.conditionalTest(query, this.templateSrv),
       options.scopedVars,
       SqlQueryHelper.interpolateQueryExpr
     );
@@ -99,13 +108,6 @@ export default class SqlQuery {
     /* Render the ad-hoc condition or evaluate to an always true condition */
     let renderedAdHocCondition = adhocCondition.length > 0 ? '(' + adhocCondition.join(' AND ') + ')' : '1';
 
-    if (this.target.skip_comments) {
-      query = scanner.removeComments(query);
-    }
-
-    if (this.target.add_metadata) {
-      query = scanner.addMetadata(query);
-    }
 
     query = SqlQueryHelper.unescape(query);
     let timeFilter = SqlQueryMacros.getDateTimeFilter(dateTimeType);

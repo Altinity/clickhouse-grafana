@@ -123,7 +123,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	}
 
 	if q.AddMetadata {
-		query = scanner.AddMetadata(query)
+		query = scanner.AddMetadata(query, q)
 	}
 
 	query, err = q.unescape(query)
@@ -1327,8 +1327,8 @@ func (s *EvalQueryScanner) RemoveComments(query string) (string, error) {
 	return regexp2.MustCompile(commentRe, 0).Replace(query, "", 0, -1)
 }
 
-func (s *EvalQueryScanner) AddMetadata(query string) string {
-	return "/* grafana dashboard=$__dashboard, user=$__user */ " + query
+func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
+	return "/* grafana alerts eval_query=" + q.RefId + " */ " + query
 }
 
 const wsRe = "\\s+"

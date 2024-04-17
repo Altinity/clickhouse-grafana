@@ -555,7 +555,7 @@ describe('scanner:', () => {
 
     it('expects equality', () => {
       expect(scanner.toAST()).toEqual(expectedAST);
-      expect(scanner.removeComments(query)).toEqual(
+      expect(Scanner.RemoveComments(query)).toEqual(
         '\n' +
           'SELECT *\n' +
           'FROM $table\n' +

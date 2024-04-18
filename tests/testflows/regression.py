@@ -50,7 +50,6 @@ def regression(self, before, after):
 
     with And("webdriver"):
         self.context.driver = create_driver()
-        self.context.driver.set_window_size(1350, 1000)
 
     with And("I wait for grafana to be started"):
         for attempt in retries(delay=10, timeout=50):
@@ -62,7 +61,7 @@ def regression(self, before, after):
         with Given("I login in grafana"):
             login()
 
-    # pause()
+    pause()
     # with delay():
     #     open_endpoint(endpoint=self.context.endpoint+'plugins')
     Feature(run=load("testflows.tests.automated.e2e", "feature"))

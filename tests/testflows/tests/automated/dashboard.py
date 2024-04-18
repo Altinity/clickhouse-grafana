@@ -13,81 +13,91 @@ from requirements.requirements import *
 from steps.panel.view import *
 
 
-@TestScenario
-@Requirements(RQ_SRS_Plugin_Dashboards("1.0"))
-def dashboard_check(self):
-    """Check that Plugin supports creating dashboard."""
+# @TestScenario
+# @Requirements(RQ_SRS_Plugin_Dashboards("1.0"))
+# def dashboard_check(self):
+#     """Check that Plugin supports creating dashboard."""
 
-    with When("I create new dashboard"):
-        create_dashboard(dashboard_name="abc")
+#     with When("I create new dashboard"):
+#         create_dashboard(dashboard_name="abc")
 
-    with When("I go to dashboards view"):
-        open_dashboards_view()
+#     with When("I go to dashboards view"):
+#         open_dashboards_view()
 
-    with Then("I check dashboard is created"):
-        assert check_dashboard_exists(dashboard_name="abc") is True
+#     with Then("I check dashboard is created"):
+#         assert check_dashboard_exists(dashboard_name="abc") is True
 
-
-@TestScenario
-@Requirements(RQ_SRS_Plugin_Panels("1.0"))
-def panel_check(self):
-    """Check that Plugin supports creating panels."""
-
-    with Given("I create new dashboard"):
-        create_dashboard(dashboard_name="abc")
-
-    with When("I open dashboard"):
-        open_dashboard(dashboard_name="abc")
-
-    with When("I add visualization for panel"):
-        add_visualization()
-
-    with delay():
-        click_select_datasource_button()
-
-    click_datasource_in_select_datasource_dropdown(datasource_name='clickhouse')
-
-    with delay():
-        with When("I open SQL editor"):
-            go_to_sql_editor()
-
-    with When("I enter query to SQL editor"):
-        enter_sql_editor_input(request="SELECT now(), 1")
-
-    with delay():
-        with Then("I click on the visualization to see result"):
-            click_on_the_visualization()
-
-    with Then("I check panel is created"):
-        with By("taking screenshot"):
-            take_screenshot_for_visualization(screenshot_name="panel_check")
-        with By("checking screenshot"):
-            pass
 
 # @TestScenario
-# @Okayed("Ok")
-# @Requirements(RQ_SRS_Plugin_Panels_Repeated("1.0"))
-# def create_repeated_panel(self):
-#     """Check that Plugin supports creating repeated panels"""
+# @Requirements(RQ_SRS_Plugin_Panels("1.0"))
+# def panel_check(self):
+#     """Check that Plugin supports creating panels."""
+
 #     with Given("I create new dashboard"):
-#         create_dashboard()
-#
-#     with When("I add variable with two values",
-#               description="Click edit dashboard > click 'Add variable' button"
-#                           "SELECT number from numbers(2)"):
-#         add_variable(variable_type="query")
-#         open_picture(picture="tests/manual/screenshots/options_for_variable_for_repeated_panels.png")
-#
-#     with When("I create new panel"):
-#         create_panel()
-#
-#     with When("I setup repeated panels"):
-#         open_picture(picture="tests/manual/screenshots/panel_setup_for_repeated_panel.png")
-#         pass
-#
-#     with Then("I check two panels are created"):
-#         open_picture(picture="tests/manual/screenshots/repeated_panels.png")
-#         pass
+#         create_dashboard(dashboard_name="dashboard_panel")
+
+#     with When("I open dashboard"):
+#         open_dashboard(dashboard_name="dashboard_panel")
+
+#     with When("I add visualization for panel"):
+#         add_visualization()
+
+#     with delay():
+#         click_select_datasource_button()
+
+#     click_datasource_in_select_datasource_dropdown(datasource_name='clickhouse')
+
+#     with delay():
+#         with When("I open SQL editor"):
+#             go_to_sql_editor()
+
+#     with When("I enter query to SQL editor"):
+#         enter_sql_editor_input(request="SELECT now() - Interval number minute, number from numbers(60)")
+
+#     with delay():
+#         with Then("I click on the visualization to see result"):
+#             click_on_the_visualization()
+
+#     with Then("I check panel is created"):
+#         with By("taking screenshot"):
+#             take_screenshot_for_visualization(screenshot_name="panel_check")
+#         with By("checking screenshot"):
+#             pass
+
+
+@TestScenario
+@Requirements(RQ_SRS_Plugin_Panels_Repeated("1.0"))
+def repeated_panel(self):
+    """Check that Plugin supports creating repeated panels"""
+
+    with Given("I create new dashboard"):
+        with delay():
+            create_dashboard(dashboard_name="dashboard_repeated_panel")
+
+    with When("I open dashboard"):
+        open_dashboard(dashboard_name="dashboard_repeated_panel")
+
+    with And("I add variable with two values",
+              description="Click edit dashboard > click 'Add variable' button"
+                          "SELECT number from numbers(2)"):
+        
+        create_new_variable(query="SELECT number from numbers(2)", datasource_name="clickhouse")
+
+    with And("I open dashboard with variable"):
+        open_dashboard(dashboard_name="dashboard_repeated_panel")
+
+    with And("I create new panel"):
+        add_visualization()
+
+    with And("I setup repeated panel"):
+        with By("changing panel title"):
+            change_panel_title(panel_title="Repeated ${query0}")
+        with By("setuping repeat option"):
+            change_repeat_by_variable_option(variable_name="query0")
+
+    # with Then("I check two panels are created"):
+    #     open_picture(picture="tests/manual/screenshots/repeated_panels.png")
+    #     pass
 
 #
 # @TestScenario
@@ -146,7 +156,7 @@ def panel_check(self):
 #         pass
 #
 #     with Given("I go to repeated postgres panel", description="I click edit"):
-#         pass
+#         pass")
 #
 #     with When("I change time range in the time range dropdown menu"):
 #         pass

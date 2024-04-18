@@ -17,6 +17,9 @@ echo "Install docker-compose..."
 sudo curl -SL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64 -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
+sudo mkdir /tmp/target
+sudo chmod 777 /tmp/target
+
 echo "Install required packages..."
 ./retry.sh 60 2 "sudo pip install -r pip_requirements.txt"
 sudo apt-get update

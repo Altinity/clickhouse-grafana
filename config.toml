@@ -1,0 +1,8 @@
+[docker]
+configs = [
+    "selenium/standalone-chrome:4.18.1-20240224", '{"browserName": "chrome", "se:recordVideo": "true"}',
+    "selenium/standalone-firefox:4.18.1-20240224", '{"browserName": "firefox", "se:recordVideo": "true"}',
+    "selenium/standalone-edge:4.18.1-20240224", '{"browserName": "MicrosoftEdge", "se:recordVideo": "true"}'
+]
+url = "http://127.0.0.1:2375"
+video-image = "selenium/video:ffmpeg-6.1-20240402"

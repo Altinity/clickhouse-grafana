@@ -119,6 +119,7 @@ def click_save_dashboard_button(self):
     """Save dashboard."""
     locators.save_dashboard_button.click()
 
+    
 
 @TestStep(When)
 def saving_dashboard(self, dashboard_name):
@@ -143,6 +144,88 @@ def open_panel(self, panel_name):
     with delay():
         with When("I open panel view"):
             edit_panel(panel_name=panel_name)
+
+
+@TestStep(When)
+def click_dahsboard_settings_button(self):
+    """Click dashboard settings button."""
+    locators.dashboard_settings_button.click()
+
+
+
+@TestStep(When)
+def click_variables_tab(self):
+    """Click variables tab."""
+    locators.variables_tab.click()
+
+
+@TestStep(When)
+def click_add_variable_button(self):
+    """Click add variable button."""
+    locators.add_variable_button.click()
+
+
+@TestStep(When)
+def enter_variable_query(self, query):
+    """Enter variable query."""
+    locators.query_field_for_variable.send_keys(query)
+
+
+
+@TestStep(When)
+def select_datasource(self, datasource_name):
+    """Select datasource."""
+    locators.select_data_source_dropdown.send_keys(datasource_name)
+
+
+@TestStep(When)
+def click_include_all_options_checkbox(self):
+    """Click All option checkbox for variable setup."""
+    locators.include_all_options_checkbox.click()
+
+@TestStep(When)
+def click_run_query_button(self):
+    """Click run variable query button."""
+    locators.run_variable_query_button.click()
+
+@TestStep(When)
+def click_apply_variable(self):
+    """Click apply button in variable settings."""
+    locators.apply_variable_button.click()
+
+
+@TestStep(When)
+def create_new_variable(self, query, datasource_name):
+    """Create new variable."""
+
+    with By("clicking dashboard settings button"):
+        with delay():
+            click_dahsboard_settings_button()
+
+    with And("clicking variables tab"):
+        click_variables_tab()
+    
+    with And("clicking add variable button"):
+        with delay():
+            click_add_variable_button()
+
+    with And("entering variable query"):
+        enter_variable_query(query=query)
+
+    with And("clicking include all option checkbox"):
+        with delay():
+            click_include_all_options_checkbox()
+
+    with And("selecting datasource"):
+        select_datasource(datasource_name=datasource_name)
+
+    with And("clicking run query"):
+        with delay():
+            click_run_query_button()
+
+    with And("clicking apply variable"):
+        click_apply_variable()
+
 
 @TestStep(Then)
 def check_panel_exists(self):

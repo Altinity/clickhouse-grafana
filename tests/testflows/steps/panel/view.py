@@ -98,6 +98,31 @@ def select_input_query(self):
 
 
 @TestStep(When)
+def clear_panel_title(self):
+    """Clear panel title."""
+    locators.panel_title_textfield.clear()
+
+
+@TestStep(When)
+def enter_panel_title(self, panel_title):
+    """Enter panel title."""
+    locators.panel_title_textfield.send_keys(panel_title)
+
+@TestStep(When)
+def change_panel_title(self, panel_title):
+    """Change panel title"""
+    with By("clearing panel title"):
+        clear_panel_title()
+
+    with And("entering new panel title"):
+        enter_panel_title(panel_title=panel_title)
+
+@TestStep(When)
+def change_repeat_by_variable_option(self, variable_name):
+    """Change repeat by variable option."""
+    locators.repeat_by_variable_dropdown.send_keys(variable_name)
+
+@TestStep(When)
 def enter_sql_editor_input(self, request):
     """Enter SQL request into sql editor input field."""
 

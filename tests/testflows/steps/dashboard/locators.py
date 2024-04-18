@@ -47,5 +47,45 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Add new visualization menu item']")
 
+    @property
+    def dashboard_settings_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Dashboard settings']")
+    
+    @property
+    def variables_tab(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Tab Variables']")
+    
+    @property
+    def add_variable_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Call to action button Add variable']")
+    
+    @property
+    def query_field_for_variable(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Variable editor Form Default Variable Query Editor textarea']")
+    
+    @property
+    def run_variable_query_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Variable editor Run Query button']")
+    
+    @property
+    def apply_variable_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Variable editor Apply button']")
+    
+    @property
+    def include_all_options_checkbox(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Variable editor Form IncludeAll switch']")       
+
+    @property
+    def select_data_source_dropdown(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Select a data source']")    
+
 
 locators = Locators()

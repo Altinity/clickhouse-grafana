@@ -14,7 +14,7 @@ on:
 env:
   artifact_paths: |
     ./Reports/*
-    ./Videos/*
+    ./Assets/*
 
 jobs:
   tests:

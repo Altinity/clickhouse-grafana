@@ -44,5 +44,14 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[class='inputarea monaco-mouse-cursor-text']")
 
+    @property
+    def panel_title_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[id='PanelFrameTitle']")
+    
+    @property
+    def repeat_by_variable_dropdown(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[id='css-1nmqu8c-input-wrapper css-1age63q']")
 
 locators = Locators()

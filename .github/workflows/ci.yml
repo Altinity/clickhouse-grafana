@@ -18,7 +18,7 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
           cache: 'npm'
 
       - name: Install dependencies
@@ -43,9 +43,9 @@ jobs:
 
       - name: Setup Go environment
         if: steps.check-for-backend.outputs.has-backend == 'true'
-        uses: actions/setup-go@v4
+        uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.22'
 
       - name: Test backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
@@ -82,7 +82,7 @@ jobs:
         run: docker-compose down
 
       - name: Archive E2E output
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         if: steps.check-for-e2e.outputs.has-e2e == 'true' && steps.run-e2e-tests.outcome != 'success'
         with:
           name: cypress-videos

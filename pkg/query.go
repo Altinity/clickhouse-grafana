@@ -38,7 +38,7 @@ func (query *Query) ApplyTimeRangeToQuery() string {
 	fmtQuery = formatTimeValue(fmtQuery, query.From, FromMsValueRE, true)
 	fmtQuery = formatTimeValue(fmtQuery, query.To, ToMsValueRE, true)
 
-	return fmtQuery + " /* alerts query */;"
+	return fmtQuery + " /* grafana alerts query=" + query.RefId + " */;"
 }
 
 func formatTimeValue(fmtQuery string, fmtTime time.Time, fmtRE *regexp.Regexp, isMs bool) string {

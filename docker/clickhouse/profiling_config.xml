@@ -1,0 +1,5 @@
+<!-- https://github.com/Altinity/clickhouse-grafana/issues/508 -->
+<clickhouse>
+  <total_memory_profiler_step>4194304</total_memory_profiler_step>
+  <total_memory_tracker_sample_probability>0.0</total_memory_tracker_sample_probability>
+</clickhouse>

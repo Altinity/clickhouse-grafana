@@ -1,0 +1,147 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "https://github.com/Altinity/clickhouse-grafana/issues/508",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 19,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "Trace Visualizations",
+          "url": "https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/traces/"
+        }
+      ],
+      "targets": [
+        {
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "finish_date",
+          "dateTimeColDataType": "intDiv(finish_time_us,1000000)",
+          "dateTimeType": "TIMESTAMP",
+          "editorMode": "builder",
+          "extrapolate": false,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    hostname AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map() AS serviceTags\r\nFROM\r\n   $table\r\nWHERE $timeFilter\r\n",
+          "rawQuery": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    hostname AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map() AS serviceTags\r\nFROM\r\n   system.opentelemetry_span_log\r\nWHERE finish_date >= toDate(1713096697) AND finish_date <= toDate(1713118297) AND intDiv(finish_time_us,1000000) >= 1713096697 AND intDiv(finish_time_us,1000000) <= 1713118297",
+          "refId": "A",
+          "round": "",
+          "showFormattedSQL": false,
+          "showHelp": false,
+          "skip_comments": false,
+          "step": "",
+          "table": "opentelemetry_span_log"
+        }
+      ],
+      "title": "Traces Example",
+      "type": "traces"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "",
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 1,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "system.trace_log",
+          "url": "https://clickhouse.com/docs/en/operations/system-tables/trace_log"
+        },
+        {
+          "title": "Collect flamegraph",
+          "url": "https://kb.altinity.com/altinity-kb-queries-and-syntax/trace_log/"
+        },
+        {
+          "targetBlank": true,
+          "title": "Expected fields",
+          "url": "https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/flame-graph/#data-api"
+        }
+      ],
+      "targets": [
+        {
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "event_date",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "builder",
+          "extrapolate": false,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT level, label, count() AS value, 0 self \r\nFROM $table \r\nARRAY JOIN arrayEnumerate(trace) AS level, \r\narrayMap(x -> demangle(addressToSymbol(x) ), trace) AS label \r\nWHERE trace_type='Real' AND $timeFilter\r\nGROUP BY ALL;",
+          "rawQuery": "SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 as t, count() FROM system.trace_log WHERE event_date >= toDate(1713009520) AND event_date <= toDate(1713031120) AND event_time >= toDateTime(1713009520) AND event_time <= toDateTime(1713031120) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "",
+          "showFormattedSQL": true,
+          "showHelp": false,
+          "skip_comments": false,
+          "step": "",
+          "table": "trace_log"
+        }
+      ],
+      "title": "flamegraph example",
+      "type": "flamegraph"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "FlameGraph and Tracing support",
+  "uid": "edimrzy0cijnkf",
+  "version": 1,
+  "weekStart": ""
+}

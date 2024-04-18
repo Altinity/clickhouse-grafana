@@ -5,18 +5,6 @@ import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
 import Scanner from '../../../../datasource/scanner/scanner';
 
-// Constants
-const DEFAULT_FIELD_VALUES = {
-  step: '',
-  intervalFactor: 1,
-  round: '',
-  format: 'time_series',
-  extrapolate: false,
-  skip_comments: false,
-  showFormattedSQL: false,
-  showHelp: false,
-};
-
 const RESOLUTION_OPTIONS = [
   { value: 1, label: '1/1' },
   { value: 2, label: '1/2' },
@@ -34,7 +22,7 @@ const FORMAT_OPTIONS = [
 
 export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource }: any) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
-  const [fieldValues, setFieldValues] = useState(DEFAULT_FIELD_VALUES);
+  const [fieldValues, setFieldValues] = useState(query);
 
   useEffect(() => {
     const scanner = new Scanner(formattedData);
@@ -102,6 +90,12 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           </InlineField>
         </InlineFieldRow>
         <InlineFieldRow>
+          <InlineField
+            label={<InlineLabel width={18} tooltip="Add /* $__dashboard $__user */ to query">Add metadata</InlineLabel>}
+            style={{ height: '100%' }}
+          >
+            <InlineSwitch width="auto" value={fieldValues.add_metadata} onChange={() => handleToggleField('add_metadata')} transparent />
+          </InlineField>
           <InlineField
             label={<InlineLabel width={18} tooltip="Turn off if you would like pass comments in SQL query to server">Skip Comments</InlineLabel>}
             style={{ height: '100%' }}

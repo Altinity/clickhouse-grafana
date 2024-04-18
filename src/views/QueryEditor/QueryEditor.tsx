@@ -70,7 +70,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       {editorMode === EditorMode.SQL && (
         <>
           <QueryTextEditor
-            query={initializedQuery}
+            query={externalQuery}
             height={200}
             onSqlChange={onSqlChange}
             onRunQuery={onTriggerQuery}
@@ -90,6 +90,7 @@ function initializeQueryDefaults(query: CHQuery): CHQuery {
     format: query.format || DEFAULT_FORMAT,
     extrapolate: query.extrapolate ?? true,
     skip_comments: query.skip_comments ?? true,
+    add_metadata: query.add_metadata ?? true,
     dateTimeType: query.dateTimeType || DEFAULT_DATE_TIME_TYPE,
     round: query.round || DEFAULT_ROUND,
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,

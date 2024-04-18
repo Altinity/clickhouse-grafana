@@ -23,3 +23,9 @@ sudo chmod 777 /tmp/target
 echo "Install required packages..."
 ./retry.sh 60 2 "sudo pip install -r pip_requirements.txt"
 sudo apt-get update
+
+sudo mkdir assets
+sudo chmod 777 assets
+sudo touch assets/sessions.json
+sudo chmod 777 assets/sessions.json
+sudo echo '{}' > assets/sessions.json

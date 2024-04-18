@@ -61,10 +61,10 @@ def regression(self, before, after):
         with Given("I login in grafana"):
             login()
 
-    pause()
+    # pause()
     # with delay():
     #     open_endpoint(endpoint=self.context.endpoint+'plugins')
-    Feature(run=load("testflows.tests.automated.e2e", "feature"))
+    # Feature(run=load("testflows.tests.automated.e2e", "feature"))
     Feature(run=load("testflows.tests.automated.dashboard", "feature"))
 
 

@@ -182,7 +182,7 @@ def create_driver(self, incognito=True, clean_up=True, suite=None):
         local=self.context.local,
         incognito=incognito,
         clean_up=clean_up,
-        suite=suite
+        suite="grafana"
     )
 
     return driver

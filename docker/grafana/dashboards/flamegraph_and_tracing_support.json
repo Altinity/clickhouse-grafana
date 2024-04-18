@@ -19,7 +19,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 19,
   "links": [],
   "panels": [
     {
@@ -43,6 +42,7 @@
       ],
       "targets": [
         {
+          "add_metadata": true,
           "database": "system",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
@@ -56,8 +56,8 @@
           "format": "table",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
-          "query": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    hostname AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map() AS serviceTags\r\nFROM\r\n   $table\r\nWHERE $timeFilter\r\n",
-          "rawQuery": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    hostname AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map() AS serviceTags\r\nFROM\r\n   system.opentelemetry_span_log\r\nWHERE finish_date >= toDate(1713096697) AND finish_date <= toDate(1713118297) AND intDiv(finish_time_us,1000000) >= 1713096697 AND intDiv(finish_time_us,1000000) <= 1713118297",
+          "query": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    'clickhouse' AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map('hostName',hostname) AS serviceTags\r\nFROM\r\n   $table\r\nWHERE $timeFilter\r\nORDER BY traceID, startTime",
+          "rawQuery": "/* grafana dashboard=FlameGraph and Tracing support, user=1 */ SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    hostname AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map() AS serviceTags\r\nFROM\r\n   system.opentelemetry_span_log\r\nWHERE finish_date >= toDate(1713432368) AND finish_date <= toDate(1713453968) AND intDiv(finish_time_us,1000000) >= 1713432368 AND intDiv(finish_time_us,1000000) <= 1713453968",
           "refId": "A",
           "round": "",
           "showFormattedSQL": false,

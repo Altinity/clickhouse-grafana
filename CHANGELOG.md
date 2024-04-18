@@ -2,6 +2,7 @@
 ## Enhancements:
 * add additional auto-complete functions the same as `clickhouse-client`, fix https://github.com/Altinity/clickhouse-grafana/issues/509
 * add support for Flamegraph and Tracing, fix https://github.com/Altinity/clickhouse-grafana/issues/508
+* switched to go 1.22
 
 ## Fixes:
 * fix support grafana cloud fix https://github.com/Altinity/clickhouse-grafana/issues/51), fix https://github.com/Altinity/clickhouse-grafana/issues/516

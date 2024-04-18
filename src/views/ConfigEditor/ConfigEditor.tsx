@@ -2,6 +2,7 @@ import React, { FormEvent } from 'react';
 import { DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption } from '@grafana/data';
 import { CHDataSourceOptions } from '../../types/types';
+import _ from 'lodash';
 
 export interface CHSecureJsonData {
   password?: string;
@@ -12,25 +13,26 @@ interface Props extends DataSourcePluginOptionsEditorProps<CHDataSourceOptions> 
 
 export function ConfigEditor(props: Props) {
   const { onOptionsChange, options } = props;
-  const { jsonData, secureJsonFields } = options;
+  const newOptions = _.cloneDeep(options)
+  const { jsonData, secureJsonFields } = newOptions
   const secureJsonData = (options.secureJsonData || {}) as CHSecureJsonData;
   // @todo remove when merged https://github.com/grafana/grafana/pull/80858
-  if (options.url !== "") {
-    jsonData.dataSourceUrl = options.url
+  if (newOptions.url !== "") {
+    jsonData.dataSourceUrl = newOptions.url
   }
   const onSwitchToggle = (
     key: keyof Pick<CHDataSourceOptions, 'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST'>,
     value: boolean
   ) => {
     onOptionsChange({
-      ...options,
+      ...newOptions,
       jsonData: { ...jsonData, [key]: value },
     });
   };
 
   // @todo remove it when https://github.com/grafana/grafana/pull/80858 merged
   const onDataHttpSettingsChange = (event: any) => {
-    const newOptions = {...event}
+    const newOptions = _.cloneDeep(event)
     newOptions.jsonData.dataSourceUrl = newOptions.url
     onOptionsChange({
       ...newOptions,

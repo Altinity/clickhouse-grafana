@@ -62,6 +62,8 @@ Restart Grafana, check data sources list at Configuration -> Datasources -> New,
 * Annotations
 * Alerts support
 * Logs support
+* Flamegraph support
+* Traces support
 
 ## Access to CH via HTTP / HTTPS
 
@@ -760,6 +762,37 @@ There are few dedicated fields that are recognized by Grafana:
 
 All other fields returned from data source will be recognized by Grafana as [detected fields](https://grafana.com/docs/grafana/latest/explore/logs-integration/#labels-and-detected-fields)
 
+## Flamegraph support
+According to https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/flame-graph/#data-api
+If you setup `query_profiler_real_time_period_ns` in profile or query level settings when you can try to visualize it as FlameGraph with the following query  
+
+```sql
+SELECT level, label, count() AS value, 0 self 
+FROM system.trace_log
+ARRAY JOIN arrayEnumerate(trace) AS level, 
+arrayMap(x -> demangle(addressToSymbol(x) ), trace) AS label 
+WHERE trace_type='Real' AND $timeFilter
+GROUP BY ALL;
+```
+## Traces support
+To show Traces you need query in format "As Table" with following
+For example, if `<opentelemetry_start_trace_probability>1</opentelemetry_start_trace_probability>` in user profile and `system.opentelemetry_span_log` is not emtpy, then you can show traces about clickhouse query execution 
+
+```sql
+SELECT
+  trace_id AS traceID,
+  span_id AS spanID,
+  operation_name AS operationName,
+  parent_span_id AS parentSpanID,
+  hostname AS serviceName,
+  intDiv(finish_time_us - start_time_us, 1000) AS duration,
+  intDiv(start_time_us,1000) AS startTime,
+  attribute AS tags,
+  map() AS serviceTags
+FROM
+  system.opentelemety_span_log
+WHERE $timeFilter
+```
 ## Configure the Datasource with Provisioning
 
 It’s now possible to configure datasources using config files with Grafana’s provisioning system.

@@ -45,6 +45,7 @@ groups:
             refId: A
             round: 0s
             skip_comments: true
+            add_metadata: true
             table: test_alerts
             tableLoading: false
         - refId: B

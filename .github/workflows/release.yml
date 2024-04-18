@@ -13,17 +13,17 @@ jobs:
       GRAFANA_API_KEY: ${{ secrets.GRAFANA_API_KEY }}
       GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Setup Node.js environment
-        uses: actions/setup-node@v3
+        uses: actions/setup-node@v4
         with:
-          node-version: '16'
+          node-version: '20'
           cache: 'npm'
 
       - name: Setup Go environment
         uses: actions/setup-go@v5
         with:
-          go-version: '1.21'
+          go-version: '1.22'
 
       - name: Install nodejs dependencies
         run: npm ci

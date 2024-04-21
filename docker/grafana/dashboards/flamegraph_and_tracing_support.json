@@ -101,6 +101,7 @@
       ],
       "targets": [
         {
+          "add_metadata": true,
           "database": "system",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
@@ -114,10 +115,10 @@
           "format": "table",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
-          "query": "SELECT level, label, count() AS value, 0 self \r\nFROM $table \r\nARRAY JOIN arrayEnumerate(trace) AS level, \r\narrayMap(x -> demangle(addressToSymbol(x) ), trace) AS label \r\nWHERE trace_type='Real' AND $timeFilter\r\nGROUP BY ALL;",
-          "rawQuery": "SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 as t, count() FROM system.trace_log WHERE event_date >= toDate(1713009520) AND event_date <= toDate(1713031120) AND event_time >= toDateTime(1713009520) AND event_time <= toDateTime(1713031120) GROUP BY t ORDER BY t",
+          "query": "SELECT length(trace)  - level_num AS level, label, count() AS value, 0 self \r\nFROM $table \r\nARRAY JOIN arrayEnumerate(trace) AS level_num, \r\narrayMap(x -> if(addressToSymbol(x) != '', demangle(addressToSymbol(x)), 'unknown') , trace) AS label \r\nWHERE trace_type='Real' AND $timeFilter\r\nGROUP BY level, label, trace\r\nORDER BY trace, level\r\n",
+          "rawQuery": "/* grafana dashboard=FlameGraph and Tracing support, user=1 */ SELECT level, label, count() AS value, 0 self \r\nFROM system.trace_log \r\nARRAY JOIN arrayEnumerate(trace) AS level, \r\narrayMap(x -> demangle(addressToSymbol(x) ), trace) AS label \r\nWHERE trace_type='Real' AND event_date >= toDate(1713685956) AND event_date <= toDate(1713707556) AND event_time >= toDateTime(1713685956) AND event_time <= toDateTime(1713707556)\r\nGROUP BY ALL;",
           "refId": "A",
-          "round": "",
+          "round": "0s",
           "showFormattedSQL": true,
           "showHelp": false,
           "skip_comments": false,

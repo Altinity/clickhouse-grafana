@@ -139,11 +139,6 @@ export default class SqlSeries {
         fields.self.values.push(item.self);
       });
 
-
-      console.log([{
-        fields: Object.values(fields),
-        length: inputData.length
-      }])
       return [{
         fields: Object.values(fields),
         length: inputData.length

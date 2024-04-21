@@ -18,6 +18,8 @@ const FORMAT_OPTIONS = [
   { label: 'Time series', value: 'time_series' },
   { label: 'Table', value: 'table' },
   { label: 'Logs', value: 'logs' },
+  { label: 'Traces', value: 'traces' },
+  { label: 'Flame Graph', value: 'flamegraph' },
 ];
 
 export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource }: any) => {

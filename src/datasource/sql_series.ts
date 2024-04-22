@@ -1,6 +1,30 @@
 import { each, find, isArray, omitBy, pickBy } from 'lodash';
 import { DataFrame, FieldType, MutableDataFrame } from '@grafana/data';
 
+interface Trace {
+  traceID: string;
+  spanID: string;
+  parentSpanID?: string | null;
+  serviceName: string;
+  startTime: number;
+  duration: number;
+  operationName: string;
+  tags: object[];
+  serviceTags: object[];
+}
+
+interface Field {
+  name: string;
+  type: string;
+  values: Array<string | number | null | object>;
+  config: Record<string, unknown>;
+}
+
+interface TraceData {
+  fields: Field[];
+  length: number;
+}
+
 export default class SqlSeries {
   refId: string;
   series: any;
@@ -19,6 +43,107 @@ export default class SqlSeries {
     this.from = options.from;
     this.to = options.to;
     this.keys = options.keys || [];
+  }
+
+  toTraces(): TraceData[] {
+
+    let series: Trace[] = this.series; // Ensure 'this.series' is defined in the context where toTraces is called.
+
+    function transformTraceData(inputData: Trace[]): TraceData[] {
+      const fields: { [key: string]: Field } = {
+        traceID: { name: 'traceID', type: 'string', values: [], config: {} },
+        spanID: { name: 'spanID', type: 'string', values: [], config: {} },
+        operationName: { name: 'operationName', type: 'string', values: [], config: {} },
+        parentSpanID: { name: 'parentSpanID', type: 'string', values: [], config: {} },
+        serviceName: { name: 'serviceName', type: 'string', values: [], config: {} },
+        startTime: { name: 'startTime', type: 'number', values: [], config: {} },
+        duration: { name: 'duration', type: 'number', values: [], config: {} },
+        tags: { name: 'tags', type: 'number', values: [], config: {} },
+        serviceTags: { name: 'serviceTags', type: 'number', values: [], config: {} },
+      };
+
+      inputData.forEach(span => {
+        fields.traceID.values.push(span.traceID);
+        fields.spanID.values.push(span.spanID);
+        fields.operationName.values.push(span.operationName);
+        fields.parentSpanID.values.push(span.parentSpanID || null); // Assuming null if undefined
+        fields.serviceName.values.push(span.serviceName);
+        fields.startTime.values.push(parseInt(span.startTime.toString(), 10));
+        fields.duration.values.push(parseInt(span.duration.toString(), 10));
+        fields.tags.values.push(Object.entries(span.tags).map(([key, value]) => ({key: key, value: value})));
+        fields.serviceTags.values.push(Object.entries(span.serviceTags).map(([key, value]) => ({key: key, value: value})));
+        // Handle other fields if required
+      });
+
+      return [{
+        fields: Object.values(fields),
+        length: inputData.length
+      }];
+    }
+
+    return transformTraceData(series);
+  }
+
+  toFlamegraph(): any {
+    interface FlamegraphData {
+      label: string;
+      level: number;
+      value: string;
+      self: number;
+    }
+
+    interface Field {
+      name: string;
+      type: string;
+      values: Array<string | number>;
+      config: {};
+    }
+
+    try {
+      const series: FlamegraphData[] = this.series;
+      return transformTraceData(series);
+    } catch (error: any) {
+      return [{
+        fields: [{
+          name: 'error',
+          type: 'string',
+          values: [error?.message],
+          config: {}
+        }],
+        length: 1
+      }];
+    }
+
+    function transformTraceData(inputData: FlamegraphData[]): any {
+      const sortedData = inputData.filter(item => {
+        return !(Number(item.level) === 0)
+      })
+
+      const fields: { [key: string]: Field } = {
+        label: { name: 'label', type: 'string', values: ['all'], config: {} },
+        level: { name: 'level', type: 'number', values: [0], config: {} },
+        value: { name: 'value', type: 'number', values: [0], config: {} },
+        self: { name: 'self', type: 'number', values: [0], config: {} },
+      };
+
+      const totalValue = inputData.filter(item => Number(item.level) === 1).reduce((acc, item) => {
+        return acc + Number(item.value);
+      }, 0);
+
+      fields.value.values[0] = totalValue;
+
+      sortedData.forEach(item => {
+        fields.label.values.push(item.label);
+        fields.level.values.push(Number(item.level));
+        fields.value.values.push(Number(item.value));
+        fields.self.values.push(item.self);
+      });
+
+      return [{
+        fields: Object.values(fields),
+        length: inputData.length
+      }];
+    }
   }
 
   toTable(): any {

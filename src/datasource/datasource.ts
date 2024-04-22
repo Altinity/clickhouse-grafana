@@ -147,10 +147,15 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           from: SqlQueryHelper.convertTimestamp(options.range.from),
           to: SqlQueryHelper.convertTimestamp(options.range.to),
         });
+
         if (target.format === 'table') {
           _.each(sqlSeries.toTable(), (data) => {
             result.push(data);
           });
+        } else if (target.format === 'traces') {
+          result = sqlSeries.toTraces();
+        } else if (target.format === 'flamegraph') {
+          result = sqlSeries.toFlamegraph();
         } else if (target.format === 'logs') {
           result = sqlSeries.toLogs();
         } else {

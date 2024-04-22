@@ -763,35 +763,71 @@ There are few dedicated fields that are recognized by Grafana:
 All other fields returned from data source will be recognized by Grafana as [detected fields](https://grafana.com/docs/grafana/latest/explore/logs-integration/#labels-and-detected-fields)
 
 ## Flamegraph support
-According to https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/flame-graph/#data-api
+![Format as: Traces](https://github.com/Altinity/clickhouse-grafana/assets/105560/2a4813ad-af83-46f2-98e0-797744b766bd)
+
+![Tracing Example](https://github.com/Altinity/clickhouse-grafana/assets/105560/0a3c915d-84b3-41bb-b6a7-f3f5a10d655b)
+
+To show Traces you need query in format as "Flame Graph"
+According to https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/flame-graph/#data-api, you need to have recordset with 4 fields
+- `level` - Numeric - the level of the stack frame. The root frame is level 0.
+- `label` - String - the function name or other symbol which identify
+- `value` - Numeric - the number of samples or bytes that were recorded in this stack trace
+- `self` - Numeric - the number of samples or bytes that were recorded in only this stack frame excluding the children, for clickhouse this is usually zero cause we can't calculate)
+
+**Moreover, rows shall be ordered by stack trace and level**
+
 If you setup `query_profiler_real_time_period_ns` in profile or query level settings when you can try to visualize it as FlameGraph with the following query  
+Look to [system.trace_log](https://clickhouse.com/docs/en/operations/system-tables/trace_log) table description for how to get data for FlameGraph
+Look to [flamegraph dashboard example](https://github.com/Altinity/clickhouse-dashboards/blob/master/docker/grafana/dashboards/flamegraph_and_tracing_support.json) for example of dashboard with FlameGraph
 
+### Flamegraph query example: 
 ```sql
-SELECT level, label, count() AS value, 0 self 
+SELECT length(trace)  - level_num AS level, label, count() AS value, 0 self
 FROM system.trace_log
-ARRAY JOIN arrayEnumerate(trace) AS level, 
-arrayMap(x -> demangle(addressToSymbol(x) ), trace) AS label 
+  ARRAY JOIN arrayEnumerate(trace) AS level_num,
+  arrayMap(x -> if(addressToSymbol(x) != '', demangle(addressToSymbol(x)), 'unknown') , trace) AS label
 WHERE trace_type='Real' AND $timeFilter
-GROUP BY ALL;
+GROUP BY level, label, trace
+ORDER BY trace, level
 ```
-## Traces support
-To show Traces you need query in format "As Table" with following
-For example, if `<opentelemetry_start_trace_probability>1</opentelemetry_start_trace_probability>` in user profile and `system.opentelemetry_span_log` is not emtpy, then you can show traces about clickhouse query execution 
 
+## Traces support
+To show Traces you need query with format as "Traces" with following
+![Format as Traces](https://github.com/Altinity/clickhouse-grafana/assets/105560/2a4813ad-af83-46f2-98e0-797744b766bd)
+
+![Trace example](https://github.com/Altinity/clickhouse-grafana/assets/105560/0a3c915d-84b3-41bb-b6a7-f3f5a10d655b)
+
+For example, if `<opentelemetry_start_trace_probability>1</opentelemetry_start_trace_probability>` in user profile and `system.opentelemetry_span_log` is not emtpy, then you can show traces about clickhouse query execution
+Look to [system.opentelemetry_span_log](https://clickhouse.com/docs/en/operations/system-tables/opentelemetry_span_log) table description for how to get data for FlameGraph
+Look to [tracing dashboard example](https://github.com/Altinity/clickhouse-dashboards/blob/master/docker/grafana/dashboards/flamegraph_and_tracing_support.json) for example of dashboard with FlameGraph
+
+Tracing visualization requires following field names (case sensitive):
+- `traceID` - String
+- `spanID` - String
+- `operationName` - String
+- `parentSpanID` - String
+- `serviceName` - String
+- `duration` - UInt64 - duration in milliseconds
+- `startTime` - UInt64 - start time in milliseconds
+- `tags` - map(String, String) - tags for span
+- `serviceTags` - map(String, String) - tags for service (for example 'hostName')
+
+### Traces query example for system.opentelemetry_span_log
 ```sql
 SELECT
   trace_id AS traceID,
   span_id AS spanID,
   operation_name AS operationName,
   parent_span_id AS parentSpanID,
-  hostname AS serviceName,
+  'clickhouse' AS serviceName,
   intDiv(finish_time_us - start_time_us, 1000) AS duration,
   intDiv(start_time_us,1000) AS startTime,
   attribute AS tags,
-  map() AS serviceTags
+  map('hostName',hostname) AS serviceTags
 FROM
-  system.opentelemety_span_log
+  system.opentelemetry_span_log
 WHERE $timeFilter
+ORDER BY traceID, startTime
 ```
 ## Configure the Datasource with Provisioning
 

@@ -5,7 +5,7 @@
 * switched to go 1.22
 
 ## Fixes:
-* fix support grafana cloud fix https://github.com/Altinity/clickhouse-grafana/issues/51), fix https://github.com/Altinity/clickhouse-grafana/issues/516
+* fix support grafana cloud fix https://github.com/Altinity/clickhouse-grafana/issues/517, fix https://github.com/Altinity/clickhouse-grafana/issues/516
 * fix tlsSkipVerify was ignored when empty tlsCARoot or tlsClientCert and tlsClientKey, fix https://github.com/Altinity/clickhouse-grafana/issues/532
 * fix multiple issues for format `As table`, fix https://github.com/Altinity/clickhouse-grafana/issues/515, https://github.com/Altinity/clickhouse-grafana/issues/529
 * fix Annotations setup page don't contain Query textfield, fix https://github.com/Altinity/clickhouse-grafana/issues/518

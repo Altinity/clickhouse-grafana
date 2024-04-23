@@ -114,30 +114,94 @@ export default class SqlSeries {
       }];
     }
 
+    function prepareData(inputData) {
+      const processedData = inputData.reduce((acc, item, index) => {
+        const itemParentLabelItem = inputData[index-1]
+
+        if (itemParentLabelItem && (item.level - itemParentLabelItem.level) === 1) {
+          item.parentLabel = itemParentLabelItem
+        }
+
+
+        if (acc[item.level]) {
+          acc[item.level].push(item)
+        } else {
+          acc[item.level] = [item]
+        }
+
+        return acc
+      }, {})
+
+      const duplicatesRemoved = Object.keys(processedData).reduce((acc,item) => {
+        const value = processedData[item]
+        acc[item] = Object.values(value.reduce((acc,item) => {
+          if (!acc[item.label]) {
+            acc[item.label] = {...item}
+          } else {
+            acc[item.label].value = Number(acc[item.label].value) + Number(item.value)
+          }
+
+          return acc
+        }, {}))
+
+
+        return acc
+      },{})
+
+      function flattenData(data) {
+        const flattened = [];
+        const levels = Object.keys(data).sort(); // Ensure we process levels in order
+
+        // Helper function to find children of a given node
+        function findChildren(parent) {
+          const level = parseInt(parent.level, 10) + 1;
+          if (!data[level]) return; // No further levels
+
+          data[level].forEach(child => {
+            if (child.parentLabel && child.parentLabel.level === parent.level && child.parentLabel.label === parent.label) {
+              flattened.push(child);
+              findChildren(child); // Recurse to find further descendants
+            }
+          });
+        }
+
+        // Start with root elements (level 0 assumed to be root)
+        if (data[0]) {
+          data[0].forEach(root => {
+            flattened.push(root);
+            findChildren(root);
+          });
+        }
+
+        flattened.forEach(item => {
+          delete item.parentLabel
+        })
+        return flattened
+      }
+
+      return flattenData(duplicatesRemoved)
+    }
+
     function transformTraceData(inputData: FlamegraphData[]): any {
-      const sortedData = inputData.filter(item => {
+      const newData = prepareData(inputData)
+      const sortedData = newData.filter(item => {
         return !(Number(item.level) === 0)
       })
 
       const fields: { [key: string]: Field } = {
-        label: { name: 'label', type: 'string', values: ['all'], config: {} },
-        level: { name: 'level', type: 'number', values: [0], config: {} },
-        value: { name: 'value', type: 'number', values: [0], config: {} },
-        self: { name: 'self', type: 'number', values: [0], config: {} },
+        label: { name: 'label', type: 'string', values: [newData[0].label], config: {} },
+        level: { name: 'level', type: 'number', values: [newData[0].level], config: {} },
+        value: { name: 'value', type: 'number', values: [newData[0].value], config: {} },
+        self: { name: 'self', type: 'number', values: [newData[0].self], config: {} },
       };
 
-      const totalValue = inputData.filter(item => Number(item.level) === 1).reduce((acc, item) => {
-        return acc + Number(item.value);
-      }, 0);
-
-      fields.value.values[0] = totalValue;
-
-      sortedData.forEach(item => {
+      sortedData.forEach((item, index) => {
         fields.label.values.push(item.label);
         fields.level.values.push(Number(item.level));
         fields.value.values.push(Number(item.value));
         fields.self.values.push(item.self);
       });
+
 
       return [{
         fields: Object.values(fields),

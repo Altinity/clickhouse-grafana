@@ -41,11 +41,12 @@ function useFormattedData(query: CHQuery, datasource: CHDataSource): [string, st
 }
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
-  const { datasource, query, onChange, onRunQuery } = props;
+  const { datasource, query, onChange, onRunQuery, data} = props;
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
   const initializedQuery = initializeQueryDefaults(query);
   const [externalQuery, setQuery] = useState({ ...initializedQuery });
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
+
 
   const onSqlChange = (sql: string) => {
     setQuery({ ...initializedQuery, query: sql });
@@ -63,7 +64,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   return (
     <>
       <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} onTriggerQuery={onTriggerQuery} />
-      {error ? <Alert title={error} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
+      {data?.error || error ? <Alert title={data?.error?.message || error} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
       {editorMode === EditorMode.Builder && (
         <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
       )}

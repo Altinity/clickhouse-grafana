@@ -61,10 +61,12 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
     onRunQuery();
   };
 
+  const dataError: string | undefined = data?.error?.message;
+
   return (
     <>
       <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} onTriggerQuery={onTriggerQuery} />
-      {data?.error || error ? <Alert title={data?.error?.message || error} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
+      {(dataError || error) ? <Alert title={dataError ||  error || ''} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
       {editorMode === EditorMode.Builder && (
         <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
       )}

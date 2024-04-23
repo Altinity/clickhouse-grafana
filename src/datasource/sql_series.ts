@@ -148,14 +148,15 @@ export default class SqlSeries {
         return acc
       },{})
 
-      function flattenData(data) {
-        const flattened = [];
-        const levels = Object.keys(data).sort(); // Ensure we process levels in order
+      function flattenData(data: any) {
+        const flattened: any = [];
 
         // Helper function to find children of a given node
         function findChildren(parent) {
           const level = parseInt(parent.level, 10) + 1;
-          if (!data[level]) return; // No further levels
+          if (!data[level]) {
+            return; // No further levels
+          }
 
           data[level].forEach(child => {
             if (child.parentLabel && child.parentLabel.level === parent.level && child.parentLabel.label === parent.label) {
@@ -167,13 +168,13 @@ export default class SqlSeries {
 
         // Start with root elements (level 0 assumed to be root)
         if (data[0]) {
-          data[0].forEach(root => {
+          data[0].forEach((root: any) => {
             flattened.push(root);
             findChildren(root);
           });
         }
 
-        flattened.forEach(item => {
+        flattened.forEach((item: any) => {
           delete item.parentLabel
         })
         return flattened
@@ -183,7 +184,7 @@ export default class SqlSeries {
     }
 
     function transformTraceData(inputData: FlamegraphData[]): any {
-      const newData = prepareData(inputData)
+      const newData: any[] = prepareData(inputData)
       const sortedData = newData.filter(item => {
         return !(Number(item.level) === 0)
       })
@@ -195,7 +196,7 @@ export default class SqlSeries {
         self: { name: 'self', type: 'number', values: [newData[0].self], config: {} },
       };
 
-      sortedData.forEach((item, index) => {
+      sortedData.forEach((item: any, index) => {
         fields.label.values.push(item.label);
         fields.level.values.push(Number(item.level));
         fields.value.values.push(Number(item.value));

@@ -55,6 +55,7 @@ def append_session(self, suite_name, session_id):
     with open(sessions_file_path, 'w') as file:
         json.dump(sessions, file, indent=4)
 
+
 @TestStep(Given)
 def create_local_chrome_driver(self, browser, local_webdriver_path, common_options, is_no_sandbox, is_headless):
     """Create a local Chrome driver instance."""

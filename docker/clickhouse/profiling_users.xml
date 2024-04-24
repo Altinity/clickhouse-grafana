@@ -9,9 +9,10 @@
       <!-- fill system.trace_log 10 times per second sampling profiler -->
       <query_profiler_real_time_period_ns>100000000</query_profiler_real_time_period_ns>
       <query_profiler_cpu_time_period_ns>100000000</query_profiler_cpu_time_period_ns>
-      <memory_profiler_step>1048576</memory_profiler_step>
-      <max_untracked_memory>1048576</max_untracked_memory>
-      <memory_profiler_sample_probability>0</memory_profiler_sample_probability>
+      <!-- fill system.trace_log for 1% of memory operations more than 4Mb -->
+      <memory_profiler_step>4194304</memory_profiler_step>
+      <max_untracked_memory>4194304</max_untracked_memory>
+      <memory_profiler_sample_probability>0.01</memory_profiler_sample_probability>
     </default>
   </profiles>
 </clickhouse>

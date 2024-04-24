@@ -142,7 +142,7 @@ def webdriver(
     """Create a webdriver instance."""
 
     with Given("common options"):
-        common_options = ["--disable-infobars", "start-maximized"]
+        common_options = ["--disable-infobars", "start-maximized", "--disable-dev-shm-usage"]
 
         if incognito:
             common_options.append("--incognito")

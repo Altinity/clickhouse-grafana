@@ -50,7 +50,7 @@ class Cluster(object):
         clickhouse_binary_path=None,
         configs_dir=None,
         nodes=None,
-        docker_compose="docker-compose --profile test",
+        docker_compose="docker-compose --log-level ERROR --profile test",
         docker_compose_project_dir="./",
         docker_compose_file="docker-compose.yaml",
         frame=None,

@@ -122,6 +122,7 @@ def create_remote_chrome_driver(self, browser, hub_url, common_options, timeout,
                     raise
                 time.sleep(1)
 
+
 @TestStep(Given)
 def webdriver(
         self,
@@ -150,12 +151,21 @@ def webdriver(
     try:
         with When(f"I create a webdriver instance: local={local}"):
             if local:
-                driver = create_local_chrome_driver(browser=browser, local_webdriver_path=local_webdriver_path,
-                                                    common_options=common_options, is_headless=is_headless,
-                                                    is_no_sandbox=is_no_sandbox)
+                driver = create_local_chrome_driver(
+                    browser=browser,
+                    local_webdriver_path=local_webdriver_path,
+                    common_options=common_options,
+                    is_headless=is_headless,
+                    is_no_sandbox=is_no_sandbox
+                )
             else:
-                driver = create_remote_chrome_driver(browser=browser, hub_url=hub_url, common_options=common_options, timeout=timeout,
-                                                     suite=suite)
+                driver = create_remote_chrome_driver(
+                    browser=browser,
+                    hub_url=hub_url,
+                    common_options=common_options,
+                    timeout=timeout,
+                    suite=suite
+                )
 
         with And("set implicit wait time"):
             driver.implicit_wait = global_wait_time

@@ -261,3 +261,8 @@ def add_visualization(self):
 
     with By("Clicking add visualization button"):
         click_add_visualization_button()
+
+@TestStep
+def change_time_range_selector_for_dashboard(from_time, to_time):
+    """Change time range selector for dashboard"""
+    pass

@@ -88,7 +88,7 @@ const joinsRe =
 const onJoinTokenRe = '\\b(using|on)\\b';
 const tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)';
 const macroFuncRe =
-  '(\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
+  '(\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
 const condRe = '\\b(or|and)\\b';
 const inRe = '\\b(global in|global not in|not in|in)\\b';
 const closureRe = '[\\(\\)\\[\\]]';
@@ -574,6 +574,11 @@ function print(AST, tab = '') {
   if (isSet(AST, '$rateColumns')) {
     result += tab + '$rateColumns(';
     result += printItems(AST.$rateColumns, tab, ',') + ')';
+  }
+
+  if (isSet(AST, '$rateColumnsAggregated')) {
+    result += tab + '$rateColumnsAggregated(';
+    result += printItems(AST.$rateColumnsAggregated, tab, ',') + ')';
   }
 
   if (isSet(AST, 'with')) {

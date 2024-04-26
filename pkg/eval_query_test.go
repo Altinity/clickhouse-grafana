@@ -54,6 +54,30 @@ func TestMacrosBuilder(t *testing.T) {
 			"$rated(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests",
 			q.rate,
 		),
+		/* https://github.com/Altinity/clickhouse-grafana/issues/386 */
+		newMacrosTestCase(
+			"$rateColumnsAggregate",
+			"/* comment */ $rateColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) "+
+				" FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+			"/* comment */ SELECT t, datacenter, sum(tx_kbytesRate) AS tx_kbytesRateAgg, sum(rx_bytesRate) AS rx_bytesRateAgg"+
+				" FROM"+
+				" ("+
+				"  SELECT t, datacenter, dc_interface, tx_kbytes / runningDifference(t / 1000) AS tx_kbytesRate, rx_bytes / runningDifference(t / 1000) AS rx_bytesRate "+
+				" FROM ("+
+				"   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
+				" max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
+				"  FROM traffic"+
+				" WHERE $timeFilter"+
+				" AND datacenter = 'dc1'"+
+				"   GROUP BY t, datacenter, dc_interface"+
+				"  HAVING rx_bytes > $interval"+
+				"   ORDER BY t, datacenter, dc_interface"+
+				"  )"+
+				" )"+
+				" GROUP BY t, datacenter"+
+				" ORDER BY t",
+			q.rateColumnsAggregated,
+		),
 		newMacrosTestCase(
 			"$rateColumns",
 			"/* comment */ $rateColumns((AppType = '' ? 'undefined' : AppType) from_type, sum(Hits) from_hits) "+

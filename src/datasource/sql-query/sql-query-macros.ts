@@ -16,6 +16,9 @@ export default class SqlQueryMacros {
     if (SqlQueryHelper.contain(ast, '$columns')) {
       return SqlQueryMacros.columns(query, ast);
     }
+    if (SqlQueryHelper.contain(ast, '$rateColumnsAggregated')) {
+      return SqlQueryMacros.rateColumnsAggregated(query, ast);
+    }
     if (SqlQueryHelper.contain(ast, '$rateColumns')) {
       return SqlQueryMacros.rateColumns(query, ast);
     }
@@ -384,6 +387,79 @@ export default class SqlQueryMacros {
       ')'
     );
   }
+  /* https://github.com/Altinity/clickhouse-grafana/issues/386 */
+  static rateColumnsAggregated(query: string, ast: any): string {
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$rateColumnsAggregated', query);
+    if (fromQuery.length < 1) {
+      return query;
+    }
+    let args = ast['$rateColumnsAggregated'];
+    if (args.length < 4) {
+      throw {
+        message: 'Expect 2 or more amount of arguments for $rateColumnsAggregated func. Parsed arguments are: ' + args.join(', '),
+      };
+    }
+    let havingIndex = fromQuery.toLowerCase().indexOf('having'),
+      having = '';
+
+    if (havingIndex !== -1) {
+      having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
+      fromQuery = fromQuery.slice(0, havingIndex - 1);
+    }
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
+
+    let key = args[0];
+    let keyAlias = key.trim().split(' ').pop();
+    let subKey = args[1];
+    let subKeyAlias = subKey.trim().split(' ').pop();
+
+    if (args.length % 2 !== 0) {
+      throw {
+        message: 'Wrong arguments count, expect argument pairs aggregate function and value for $rateColumnsAggregated func. Parsed arguments are: ' + args.join(', '),
+      };
+    }
+    const values: string[] = [];
+    const aliases: string[] = [];
+    const aggFuncs: string[] = [];
+    for (let i = 2; i < args.length; i+=2) {
+      aggFuncs.push(args[i]);
+
+      let value = args[i+1]
+      let aliasSplit = value.trim().split(' ')
+      let alias = aliasSplit.pop()
+      aliases.push(alias);
+
+      if (aliasSplit.length > 1) {
+        value = aliasSplit.join(' ').replace(/ AS$/i,"")
+      }
+      if (value.indexOf("(") === -1) {
+        value = 'max('+value+')'
+        values.push();
+      }
+      values.push(value + " AS " + alias)
+    }
+    const finalAggregatedValues: string[] = [];
+    const rateValues: string[] = [];
+    aliases.forEach((a, i) => {
+      finalAggregatedValues.push(aggFuncs[i]+"("+a + 'Rate) AS ' + a + 'RateAgg');
+      rateValues.push(a+' / runningDifference(t / 1000) AS '+a+'Rate');
+    });
+
+    return (
+      beforeMacrosQuery +
+      'SELECT t, ' + keyAlias + ', ' + finalAggregatedValues.join(', ') +
+      ' FROM (' +
+      '  SELECT t, ' + keyAlias + ', ' + subKeyAlias + ', ' + rateValues.join(', ') +
+      '  FROM (' +
+      '   SELECT $timeSeries AS t, ' + key+', '+subKey+', '+values.join(', ')+
+      '   '+ fromQuery +
+      '   GROUP BY t, ' + keyAlias + ', ' + subKeyAlias + ' ' + having +
+      '   ORDER BY t, ' + keyAlias + ', ' + subKeyAlias +
+      '  )' +
+      ' ) ' +
+      'GROUP BY t, '+keyAlias+' ORDER BY t'
+    );
+  }
 
   static _detectAliasAndApplyTimeFilter(
     aliasIndex: number,
@@ -612,8 +688,7 @@ export default class SqlQueryMacros {
     let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.from, round || 0));
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.to, round || 0));
 
-    // Extend date range to be sure that first and last points
-    // data is not affected by round
+    // Extending date range to be sure that round does not affect first and last points data
     if (round && round > 0) {
       to += round * 2 - 1;
       from -= round * 2 - 1;

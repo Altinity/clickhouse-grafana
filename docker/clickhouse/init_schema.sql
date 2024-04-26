@@ -136,8 +136,7 @@ CREATE TABLE IF NOT EXISTS default.nested_array_join_example
         key String,
         value UInt64
     )
-)
-ENGINE = MergeTree
+) ENGINE = MergeTree
 PARTITION BY toYYYYMMDD(time)
 ORDER BY time;
 
@@ -148,6 +147,29 @@ CREATE TABLE IF NOT EXISTS nodes_graph_example (
     source LowCardinality(String),
     target LowCardinality(String),
     bytes UInt64
-    ) ENGINE=MergeTree() ORDER BY (source, target);
+) ENGINE=MergeTree() ORDER BY (source, target);
 
 INSERT INTO nodes_graph_example VALUES('src1','dst1', 10), ('src2','dst1', 10), ('src2','dst1', 10);
+
+
+/* https://github.com/Altinity/clickhouse-grafana/issues/386 */
+DROP TABLE IF EXISTS traffic;
+CREATE TABLE traffic (
+  event_date Date,
+  event_time DateTime,
+  datacenter LowCardinality(String),
+  interface LowCardinality(String),
+  rx_bytes UInt64,
+  tx_bytes UInt64
+) ENGINE=MergeTree
+ORDER BY (event_date, datacenter);
+
+INSERT INTO traffic SELECT
+  today() - INTERVAL number % 7 DAY AS event_date,
+  event_date + INTERVAL number % 1440 MINUTE AS event_time,
+  concat('dc', toString(number % 4)) AS datacenter,
+  concat('link', toString(number % 100)) AS interface,
+  number % 1000 AS rx_bytes,
+  rx_bytes * 2 AS tx_bytes
+FROM numbers(10080);
+

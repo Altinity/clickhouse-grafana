@@ -262,6 +262,62 @@ FROM
 
 ---
 
+### $rateColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need calculate `rate` for higher cardinality dimension and then aggregate by lower cardinality dimension
+
+Example usage:
+
+```sql
+$rateColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1014 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) FROM traffic
+```
+
+Query will be transformed into:
+
+```sql
+SELECT
+    t,
+    datacenter,
+    sum(tx_kbytesRate) AS tx_bytesRateAgg,
+    sum(rx_bytesRate) AS rx_bytesRateAgg
+FROM
+(
+    SELECT
+        t,
+        datacenter,
+        dc_interface,
+        tx_kbytes / runningDifference(t / 1000) AS tx_kbytesRate,
+        rx_bytes / runningDifference(t / 1000) AS rx_bytesRate
+    FROM
+    (
+        SELECT
+            (intDiv(toUInt32(event_time), 60) * 60) * 1000 AS t,
+            datacenter,
+            concat(datacenter,interface) AS dc_interface,
+            max(tx_bytes * 1024) AS tx_kbytes,
+            max(rx_bytes) AS rx_bytes
+        FROM traffic
+        WHERE ((event_date >= toDate(1482796867)) AND (event_date <= toDate(1482853383))) 
+          AND ((event_time >= toDateTime(1482796867)) AND (event_time <= toDateTime(1482853383)))
+        GROUP BY
+            t,
+            datacenter,
+            dc_interface
+        ORDER BY
+            t,
+            datacenter,
+            dc_interface
+    )
+)
+GROUP BY
+  t,
+  datacenter
+ORDER BY 
+  t
+```
+
+look [issue 386](https://github.com/Altinity/clickhouse-grafana/issues/386) for reasons for implementation  
+
+---
+
 ### $perSecond(cols...) - converts query results as "change rate per interval" for Counter-like(growing only) metrics
 
 Example usage:

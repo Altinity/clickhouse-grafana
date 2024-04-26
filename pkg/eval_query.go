@@ -262,6 +262,9 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	if q.contain(ast, "$columns") {
 		return q.columns(query, ast)
 	}
+	if q.contain(ast, "$rateColumnsAggregated") {
+		return q.rateColumnsAggregated(query, ast)
+	}
 	if q.contain(ast, "$rateColumns") {
 		return q.rateColumns(query, ast)
 	}
@@ -379,6 +382,83 @@ func (q *EvalQuery) rateColumns(query string, ast *EvalAST) (string, error) {
 		" FROM (" +
 		query +
 		")", nil
+}
+
+func (q *EvalQuery) rateColumnsAggregated(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$rateColumnsAggregated", query)
+	if err != nil {
+		return "", err
+	}
+
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var args = ast.Obj["$rateColumnsAggregated"].(*EvalAST).Arr
+
+	if args == nil || len(args) < 4 {
+		return "", fmt.Errorf("expect 2 or more amount of arguments for $rateColumnsAggregated func. Parsed arguments are: %v", args)
+	}
+
+	var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
+	var having = ""
+
+	if havingIndex != -1 {
+		having = " " + fromQuery[havingIndex:]
+		fromQuery = fromQuery[0 : havingIndex-1]
+	}
+	fromQuery = q._applyTimeFilter(fromQuery)
+
+	var key = args[0].(string)
+	var keySplit = strings.Split(strings.Trim(key, " \xA0\t\r\n"), " ")
+	var keyAlias = keySplit[len(keySplit)-1]
+	var subKey = args[1].(string)
+	var subKeySplit = strings.Split(strings.Trim(subKey, " \xA0\t\r\n"), " ")
+	var subKeyAlias = subKeySplit[len(subKeySplit)-1]
+
+	if len(args)%2 != 0 {
+		return "", fmt.Errorf("wrong arguments count, expect argument pairs aggregate function and value for $rateColumnsAggregated func. Parsed arguments are: %v", args)
+	}
+	var values []string
+	var aliases []string
+	var aggFuncs []string
+	for i := 2; i < len(args); i += 2 {
+		aggFuncs = append(aggFuncs, args[i].(string))
+
+		value := args[i+1].(string)
+		aliasSplit := strings.Split(strings.Trim(value, " \xA0\t\r\n"), " ")
+		alias := aliasSplit[len(aliasSplit)-1]
+		aliases = append(aliases, alias)
+
+		if len(aliasSplit) > 1 {
+			value = strings.Join(aliasSplit[:len(aliasSplit)-1], " ")
+			value = strings.TrimSuffix(strings.TrimSuffix(value, " AS"), " as")
+		}
+
+		if !strings.Contains(value, "(") {
+			value = "max(" + value + ")"
+		}
+		values = append(values, value+" AS "+alias)
+	}
+	var finalAggregatedValues []string
+	var rateValues []string
+	for i, a := range aliases {
+		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"Rate) AS "+a+"RateAgg")
+		rateValues = append(rateValues, a+" / runningDifference(t / 1000) AS "+a+"Rate")
+	}
+
+	return beforeMacrosQuery +
+		"SELECT t, " + keyAlias + ", " + strings.Join(finalAggregatedValues, ", ") +
+		" FROM (" +
+		"  SELECT t, " + keyAlias + ", " + subKeyAlias + ", " + strings.Join(rateValues, ", ") +
+		"  FROM (" +
+		"   SELECT $timeSeries AS t, " + key + ", " + subKey + ", " + strings.Join(values, ", ") +
+		"   " + fromQuery +
+		"   GROUP BY t, " + keyAlias + ", " + subKeyAlias + " " + having +
+		"   ORDER BY t, " + keyAlias + ", " + subKeyAlias +
+		"  )" +
+		" ) " +
+		"GROUP BY t, " + keyAlias + " ORDER BY t", nil
 }
 
 func (q *EvalQuery) _fromIndex(query, macro string) (int, error) {
@@ -1421,7 +1501,7 @@ const joinsRe = "\\b(" +
 	")\\b"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
+const macroFuncRe = "(\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
 const condRe = "\\b(or|and)\\b"
 const inRe = "\\b(global in|global not in|not in|in)\\b"
 const closureRe = "[\\(\\)\\[\\]]"
@@ -1680,6 +1760,11 @@ func printAST(AST *EvalAST, tab string) string {
 	if AST.hasOwnProperty("$rateColumns") {
 		result += tab + "$rateColumns("
 		result += printItems(AST.Obj["$rateColumns"].(*EvalAST), tab, ",") + ")"
+	}
+
+	if AST.hasOwnProperty("$rateColumnsAggregated") {
+		result += tab + "$rateColumnsAggregated("
+		result += printItems(AST.Obj["$rateColumnsAggregated"].(*EvalAST), tab, ",") + ")"
 	}
 
 	if AST.hasOwnProperty("with") {

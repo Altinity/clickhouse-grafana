@@ -457,7 +457,7 @@ export default class SqlQueryMacros {
       '   ORDER BY t, ' + keyAlias + ', ' + subKeyAlias +
       '  )' +
       ' ) ' +
-      'GROUP BY t, '+keyAlias+' ORDER BY t'
+      'GROUP BY t, '+keyAlias+' ORDER BY '+keyAlias+', t'
     );
   }
 

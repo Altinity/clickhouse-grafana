@@ -375,7 +375,7 @@ describe('$rateColumnsAggregated and subquery + $conditionalTest + SqlQuery.repl
     '        event_time,\n' +
     '        datacenter,\n' +
     '        interface\n' +
-    ')   GROUP BY t, datacenter, dc_interface    ORDER BY t, datacenter, dc_interface  ) ) GROUP BY t, datacenter ORDER BY t';
+    ')   GROUP BY t, datacenter, dc_interface    ORDER BY t, datacenter, dc_interface  ) ) GROUP BY t, datacenter ORDER BY datacenter, t';
   let templateSrv = new TemplateSrvStub();
   templateSrv.variables = [
     {

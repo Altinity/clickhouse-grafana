@@ -64,7 +64,7 @@ describe('macros builder:', () => {
       ' ) '+
       ')'+
       ' GROUP BY t, datacenter'+
-      ' ORDER BY t',
+      ' ORDER BY datacenter, t',
       SqlQueryMacros.rateColumnsAggregated
     ),
     new Case(

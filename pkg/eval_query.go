@@ -458,7 +458,7 @@ func (q *EvalQuery) rateColumnsAggregated(query string, ast *EvalAST) (string, e
 		"   ORDER BY t, " + keyAlias + ", " + subKeyAlias +
 		"  )" +
 		" ) " +
-		"GROUP BY t, " + keyAlias + " ORDER BY t", nil
+		"GROUP BY t, " + keyAlias + " ORDER BY " + keyAlias + ", t", nil
 }
 
 func (q *EvalQuery) _fromIndex(query, macro string) (int, error) {

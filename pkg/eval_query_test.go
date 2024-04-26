@@ -75,7 +75,7 @@ func TestMacrosBuilder(t *testing.T) {
 				"  )"+
 				" )"+
 				" GROUP BY t, datacenter"+
-				" ORDER BY t",
+				" ORDER BY datacenter, t",
 			q.rateColumnsAggregated,
 		),
 		newMacrosTestCase(

@@ -1219,7 +1219,30 @@ func TestScannerAST(t *testing.T) {
 				}},
 			}},
 		),
+		/* fixes: https://github.com/Altinity/clickhouse-grafana/issues/506 */
+		newASTTestCase(
+			"AST case 23 IN [...]",
+			"$columns(service_name,\n"+
+				"    count() c\n"+
+				")\n"+
+				"FROM $table  WHERE service_name IN ['mysql', 'postgresql'] AND $timeFilter",
+			&EvalAST{Obj: map[string]interface{}{
+				"root": newEvalAST(false),
+				"$columns": &EvalAST{Arr: []interface{}{
+					"service_name",
+					"count() c",
+				}},
+				"select": newEvalAST(false),
+				"from": &EvalAST{Arr: []interface{}{
+					"$table",
+				}},
+				"where": &EvalAST{Arr: []interface{}{
+					"service_name IN ['mysql', 'postgresql'] AND $timeFilter",
+				}},
+			}},
+		),
 	}
+
 	r := require.New(t)
 	for _, tc := range testCases {
 		ast, err := tc.scanner.toAST()

@@ -60,6 +60,7 @@
     "@grafana/data": "10.2.3",
     "@grafana/runtime": "10.2.3",
     "@grafana/ui": "10.2.3",
+    "jest-resolve": "^29.7.0",
     "lodash-es": "^4.17.21",
     "react": "17.0.2",
     "react-dom": "17.0.2",

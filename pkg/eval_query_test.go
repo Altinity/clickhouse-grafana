@@ -1208,17 +1208,16 @@ func TestScannerAST(t *testing.T) {
 					"service_name",
 					"count() c",
 				}},
-				"select": &EvalAST{Arr: []interface{}{
-        }},
+				"select": newEvalAST(false),
 				"from": &EvalAST{Arr: []interface{}{
 					"$table",
 				}},
 				"where": &EvalAST{Arr: []interface{}{
 					"service_name IN ['mysql', 'postgresql'] AND $timeFilter",
 				}},
-			},
+			}},
 		),
-	},
+	}
 
 	r := require.New(t)
 	for _, tc := range testCases {

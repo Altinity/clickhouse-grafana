@@ -1241,6 +1241,33 @@ func TestScannerAST(t *testing.T) {
 				}},
 			}},
 		),
+		/* fixes: https://github.com/Altinity/clickhouse-grafana/issues/386 */
+		newASTTestCase(
+			"AST case 24 $rateColumnsAggregated",
+			"/* comment */ $rateColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) "+
+				" FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+			&EvalAST{Obj: map[string]interface{}{
+				"root": &EvalAST{Arr: []interface{}{"/* comment */\n"}},
+				"$rateColumnsAggregated": &EvalAST{Arr: []interface{}{
+					"datacenter",
+					"concat(datacenter, interface) AS dc_interface",
+					"sum",
+					"tx_bytes * 1024 AS tx_kbytes",
+					"sum",
+					"max(rx_bytes) AS rx_bytes",
+				}},
+				"select": newEvalAST(false),
+				"from": &EvalAST{Arr: []interface{}{
+					"traffic",
+				}},
+				"where": &EvalAST{Arr: []interface{}{
+					"datacenter = 'dc1'",
+				}},
+				"having": &EvalAST{Arr: []interface{}{
+					"rx_bytes > $interval",
+				}},
+			}},
+		),
 	}
 
 	r := require.New(t)

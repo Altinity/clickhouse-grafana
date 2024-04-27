@@ -638,4 +638,25 @@ describe('scanner:', () => {
       expect(scanner.toAST()).toEqual(expectedAST);
     });
   });
+
+  describe('AST case 23 IN [...]', () => {
+    let query = `$columns(service_name,
+          count() c
+      )
+      FROM $table  WHERE service_name IN ['mysql', 'postgresql'] AND $timeFilter`;
+    const scanner = new Scanner(query);
+
+    let expectedAST = {
+        root: [],
+        '$columns': [ 'service_name', 'count() c' ],
+        select: [],
+        from: [ '$table' ],
+        where: [ "service_name IN ['mysql', 'postgresql'] AND $timeFilter" ]
+      }
+    ;
+
+    it('expects equality', () => {
+      expect(scanner.toAST()).toEqual(expectedAST);
+    });
+  });
 });

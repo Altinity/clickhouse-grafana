@@ -606,6 +606,11 @@ function print(AST, tab = '') {
     result += printItems(AST.$deltaColumns, tab, ',') + ')';
   }
 
+  if (isSet(AST, '$increaseColumnsAggregated')) {
+    result += tab + '$increaseColumnsAggregated(';
+    result += printItems(AST.$increaseColumnsAggregated, tab, ',') + ')';
+  }
+
   if (isSet(AST, '$columns')) {
     result += tab + '$columns(';
     result += printItems(AST.$columns, tab, ',') + ')';

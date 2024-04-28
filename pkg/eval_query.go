@@ -293,6 +293,9 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	if q.contain(ast, "$increaseColumns") {
 		return q.increaseColumns(query, ast)
 	}
+	if q.contain(ast, "$increaseColumnsAggregated") {
+		return q.increaseColumnsAggregated(query, ast)
+	}
 	return query, nil
 }
 

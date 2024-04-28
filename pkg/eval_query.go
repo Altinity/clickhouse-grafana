@@ -513,7 +513,25 @@ func (q *EvalQuery) increaseColumnsAggregated(query string, ast *EvalAST) (strin
 	var finalValues []string
 	for i, a := range aliases {
 		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"Increase) AS "+a+"IncreaseAgg")
-		finalValues = append(finalValues, "if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+")) AS "+a+"Increase")
+		finalValues = append(finalValues, "if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / 1) AS "+a+"Increase")
+	}
+
+	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
+}
+
+func (q *EvalQuery) deltaColumnsAggregated(query string, ast *EvalAST) (string, error) {
+	beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs, err := q._prepareColumnsAggregated("$deltaColumnsAggregated", query, ast)
+	if err != nil {
+		return "", err
+	}
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var finalAggregatedValues []string
+	var finalValues []string
+	for i, a := range aliases {
+		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"Delta) AS "+a+"DeltaAgg")
+		finalValues = append(finalValues, "if(neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", 0, runningDifference("+a+") / 1) AS "+a+"Delta")
 	}
 
 	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
@@ -1559,7 +1577,7 @@ const joinsRe = "\\b(" +
 	")\\b"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
+const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
 const condRe = "\\b(or|and)\\b"
 const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?"
 const closureRe = "[\\(\\)\\[\\]]"

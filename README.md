@@ -396,9 +396,7 @@ ORDER BY t
 
 ---
 
----
-
-### $perSecondColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need to calculate `per second` for higher cardinality dimension and then aggregate by lower cardinality dimension
+### $perSecondColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need to calculate `perSecond` for higher cardinality dimension and then aggregate by lower cardinality dimension
 
 Example usage:
 
@@ -421,7 +419,7 @@ FROM
         datacenter,
         dc_interface,
         if(runningDifference(tx_kbytes) < 0 OR neighbor(tx_kbytes,-1,tx_kbytes) != tx_kbytes, nan, runningDifference(tx_kbytes) / runningDifference(t / 1000)) AS tx_kbytesPerSecond,
-        if(runningDifference(rx_bytes) < 0 OR neighbor(rx_bytes,-1,rx_bytes) != rx_bytes, nan, runningDifference(rx_bytes) / runningDifference(t / 1000) AS rx_bytesPerSecond
+        if(runningDifference(rx_bytes) < 0 OR neighbor(rx_bytes,-1,rx_bytes) != rx_bytes, nan, runningDifference(rx_bytes) / runningDifference(t / 1000)) AS rx_bytesPerSecond
     FROM
     (
         SELECT
@@ -532,6 +530,63 @@ ORDER BY t
 
 ---
 
+### $deltaColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need to calculate `delta` for higher cardinality dimension and then aggregate by lower cardinality dimension
+
+Example usage:
+
+```sql
+$deltaColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1014 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) FROM traffic
+```
+
+Query will be transformed into:
+
+```sql
+SELECT
+    t,
+    datacenter,
+    sum(tx_kbytesDelta) AS tx_bytesDeltaAgg,
+    sum(rx_bytesDelta) AS rx_bytesDeltaAgg
+FROM
+(
+    SELECT
+        t,
+        datacenter,
+        dc_interface,
+        if(neighbor(tx_kbytes,-1,tx_kbytes) != tx_kbytes, 0, runningDifference(tx_kbytes) / 1) AS tx_kbytesDelta,
+        if(neighbor(rx_bytes,-1,rx_bytes) != rx_bytes, 0, runningDifference(rx_bytes) / 1) AS rx_bytesDelta
+    FROM
+    (
+        SELECT
+            (intDiv(toUInt32(event_time), 60) * 60) * 1000 AS t,
+            datacenter,
+            concat(datacenter,interface) AS dc_interface,
+            max(tx_bytes * 1024) AS tx_kbytes,
+            max(rx_bytes) AS rx_bytes
+        FROM traffic
+        WHERE ((event_date >= toDate(1482796867)) AND (event_date <= toDate(1482853383))) 
+          AND ((event_time >= toDateTime(1482796867)) AND (event_time <= toDateTime(1482853383)))
+        GROUP BY
+            t,
+            datacenter,
+            dc_interface
+        ORDER BY
+            t,
+            datacenter,
+            dc_interface
+    )
+)
+GROUP BY
+  t,
+  datacenter
+ORDER BY 
+  datacenter,
+  t
+```
+
+look [issue 386](https://github.com/Altinity/clickhouse-grafana/issues/386) for reasons for implementation
+
+---
+
 ### $increase(cols...) - converts query results as "non-negative delta value inside interval" for Counter-like(growing only) metrics, will zero if counter reset and delta less zero
 
 Example usage:
@@ -606,6 +661,63 @@ ORDER BY t
 ```
 
 // see [issue 455](https://github.com/Altinity/clickhouse-grafana/issues/455) for the background
+
+---
+
+### $increaseColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need to calculate `increase` for higher cardinality dimension and then aggregate by lower cardinality dimension
+
+Example usage:
+
+```sql
+$increaseColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1014 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) FROM traffic
+```
+
+Query will be transformed into:
+
+```sql
+SELECT
+    t,
+    datacenter,
+    sum(tx_kbytesIncrease) AS tx_bytesIncreaseAgg,
+    sum(rx_bytesIncrease) AS rx_bytesIncreaseAgg
+FROM
+(
+    SELECT
+        t,
+        datacenter,
+        dc_interface,
+        if(runningDifference(tx_kbytes) < 0 OR neighbor(tx_kbytes,-1,tx_kbytes) != tx_kbytes, nan, runningDifference(tx_kbytes) / 1) AS tx_kbytesIncrease,
+        if(runningDifference(rx_bytes) < 0 OR neighbor(rx_bytes,-1,rx_bytes) != rx_bytes, nan, runningDifference(rx_bytes) / 1) AS rx_bytesIncrease
+    FROM
+    (
+        SELECT
+            (intDiv(toUInt32(event_time), 60) * 60) * 1000 AS t,
+            datacenter,
+            concat(datacenter,interface) AS dc_interface,
+            max(tx_bytes * 1024) AS tx_kbytes,
+            max(rx_bytes) AS rx_bytes
+        FROM traffic
+        WHERE ((event_date >= toDate(1482796867)) AND (event_date <= toDate(1482853383))) 
+          AND ((event_time >= toDateTime(1482796867)) AND (event_time <= toDateTime(1482853383)))
+        GROUP BY
+            t,
+            datacenter,
+            dc_interface
+        ORDER BY
+            t,
+            datacenter,
+            dc_interface
+    )
+)
+GROUP BY
+  t,
+  datacenter
+ORDER BY 
+  datacenter,
+  t
+```
+
+look [issue 386](https://github.com/Altinity/clickhouse-grafana/issues/386) for reasons for implementation
 
 ---
 

@@ -49,6 +49,9 @@ export default class SqlQueryMacros {
     if (SqlQueryHelper.contain(ast, '$deltaColumns')) {
       return SqlQueryMacros.deltaColumns(query, ast);
     }
+    if (SqlQueryHelper.contain(ast, '$deltaColumnsAggregated')) {
+      return SqlQueryMacros.deltaColumnsAggregated(query, ast);
+    }
     return query;
   }
 
@@ -654,7 +657,7 @@ export default class SqlQueryMacros {
     const finalValues: string[] = [];
     aliases.forEach((a, i) => {
       finalAggregatedValues.push(aggFuncs[i]+"("+a+"Increase) AS "+a+"IncreaseAgg");
-      finalValues.push("if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+")) AS "+a+"Increase");
+      finalValues.push("if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / 1) AS "+a+"Increase");
     });
 
     return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
@@ -726,6 +729,18 @@ export default class SqlQueryMacros {
     );
   }
 
+  static deltaColumnsAggregated(query: string, ast: any): string {
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$deltaColumnsAggregated', query, ast)
+    const finalAggregatedValues: string[] = [];
+    const finalValues: string[] = [];
+    aliases.forEach((a, i) => {
+      finalAggregatedValues.push(aggFuncs[i]+"("+a+"Delta) AS "+a+"DeltaAgg");
+      finalValues.push("if(neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", 0, runningDifference("+a+") / 1) AS "+a+"Delta");
+    });
+
+    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
+  }
+  
   static replaceTimeFilters(query: string, range: TimeRange, dateTimeType = 'DATETIME', round?: number): string {
     let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.from, round || 0));
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.to, round || 0));

@@ -165,7 +165,7 @@ CREATE TABLE traffic (
 ORDER BY (event_date, datacenter);
 
 INSERT INTO traffic SELECT
-  today() - INTERVAL number % 7 DAY AS event_date,
+  today() + INTERVAL number % 7 DAY AS event_date,
   event_date + INTERVAL number % 1440 MINUTE AS event_time,
   concat('dc', toString(number % 4)) AS datacenter,
   concat('link', toString(number % 100)) AS interface,

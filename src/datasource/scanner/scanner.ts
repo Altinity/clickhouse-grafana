@@ -88,7 +88,7 @@ const joinsRe =
 const onJoinTokenRe = '\\b(using|on)\\b';
 const tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)';
 const macroFuncRe =
-  '(\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
+  '(\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
 const condRe = '\\b(or|and)\\b';
 const inRe = '\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:\'[^\']*\'\\s*,\\s*)*\'[^\']*\'\\s*\\])?';
 const closureRe = '[\\(\\)\\[\\]]';
@@ -579,6 +579,11 @@ function print(AST, tab = '') {
   if (isSet(AST, '$perSecondColumns')) {
     result += tab + '$perSecondColumns(';
     result += printItems(AST.$perSecondColumns, tab, ',') + ')';
+  }
+
+  if (isSet(AST, '$perSecondColumnsAggregated')) {
+    result += tab + '$perSecondColumnsAggregated(';
+    result += printItems(AST.$perSecondColumnsAggregated, tab, ',') + ')';
   }
 
   if (isSet(AST, '$delta')) {

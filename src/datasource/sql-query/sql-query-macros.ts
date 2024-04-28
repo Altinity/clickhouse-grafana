@@ -16,20 +16,23 @@ export default class SqlQueryMacros {
     if (SqlQueryHelper.contain(ast, '$columns')) {
       return SqlQueryMacros.columns(query, ast);
     }
-    if (SqlQueryHelper.contain(ast, '$rateColumnsAggregated')) {
-      return SqlQueryMacros.rateColumnsAggregated(query, ast);
+    if (SqlQueryHelper.contain(ast, '$rate')) {
+      return SqlQueryMacros.rate(query, ast);
     }
     if (SqlQueryHelper.contain(ast, '$rateColumns')) {
       return SqlQueryMacros.rateColumns(query, ast);
     }
-    if (SqlQueryHelper.contain(ast, '$rate')) {
-      return SqlQueryMacros.rate(query, ast);
+    if (SqlQueryHelper.contain(ast, '$rateColumnsAggregated')) {
+      return SqlQueryMacros.rateColumnsAggregated(query, ast);
     }
     if (SqlQueryHelper.contain(ast, '$perSecond')) {
       return SqlQueryMacros.perSecond(query, ast);
     }
     if (SqlQueryHelper.contain(ast, '$perSecondColumns')) {
       return SqlQueryMacros.perSecondColumns(query, ast);
+    }
+    if (SqlQueryHelper.contain(ast, '$perSecondColumnsAggregated')) {
+      return SqlQueryMacros.perSecondColumnsAggregated(query, ast);
     }
     if (SqlQueryHelper.contain(ast, '$increase')) {
       return SqlQueryMacros.increase(query, ast);
@@ -388,15 +391,17 @@ export default class SqlQueryMacros {
     );
   }
   /* https://github.com/Altinity/clickhouse-grafana/issues/386 */
-  static rateColumnsAggregated(query: string, ast: any): string {
-    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$rateColumnsAggregated', query);
+  private static _prepareColumnsAggregated(macroName: string, query: string, ast: any): [string, string, string, string, string, string, string, string[], string[], string[]] {
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro(macroName, query);
     if (fromQuery.length < 1) {
-      return query;
+      throw {
+        message: 'Missing FROM section after '+macroName+' function. Query: ' + query,
+      };
     }
-    let args = ast['$rateColumnsAggregated'];
+    let args = ast[macroName];
     if (args.length < 4) {
       throw {
-        message: 'Expect 2 or more amount of arguments for $rateColumnsAggregated func. Parsed arguments are: ' + args.join(', '),
+        message: 'Expect 2 or more amount of arguments for '+macroName+' function. Parsed arguments are: ' + args.join(', '),
       };
     }
     let havingIndex = fromQuery.toLowerCase().indexOf('having'),
@@ -438,28 +443,38 @@ export default class SqlQueryMacros {
       }
       values.push(value + " AS " + alias)
     }
-    const finalAggregatedValues: string[] = [];
-    const rateValues: string[] = [];
-    aliases.forEach((a, i) => {
-      finalAggregatedValues.push(aggFuncs[i]+"("+a + 'Rate) AS ' + a + 'RateAgg');
-      rateValues.push(a+' / runningDifference(t / 1000) AS '+a+'Rate');
-    });
+    return [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs]
+  }
 
+  private static _formatColumnsAggregated(beforeMacrosQuery: string, keyAlias: string, finalAggregatedValues: string[], subKeyAlias: string, finalValues: string[], key: string, subKey: string, values: string[], fromQuery: string, having: string) {
     return (
       beforeMacrosQuery +
       'SELECT t, ' + keyAlias + ', ' + finalAggregatedValues.join(', ') +
       ' FROM (' +
-      '  SELECT t, ' + keyAlias + ', ' + subKeyAlias + ', ' + rateValues.join(', ') +
+      '  SELECT t, ' + keyAlias + ', ' + subKeyAlias + ', ' + finalValues.join(', ') +
       '  FROM (' +
-      '   SELECT $timeSeries AS t, ' + key+', '+subKey+', '+values.join(', ')+
-      '   '+ fromQuery +
-      '   GROUP BY t, ' + keyAlias + ', ' + subKeyAlias + ' ' + having +
-      '   ORDER BY t, ' + keyAlias + ', ' + subKeyAlias +
+      '   SELECT $timeSeries AS t, ' + key + ', ' + subKey + ', ' + values.join(', ') +
+      '   ' + fromQuery +
+      '   GROUP BY ' + keyAlias + ', ' + subKeyAlias + ', t ' + having +
+      '   ORDER BY ' + keyAlias + ', ' + subKeyAlias + ', t' +
       '  )' +
       ' ) ' +
-      'GROUP BY t, '+keyAlias+' ORDER BY '+keyAlias+', t'
+      'GROUP BY ' + keyAlias + ', t ORDER BY ' + keyAlias + ', t'
     );
   }
+
+  static rateColumnsAggregated(query: string, ast: any): string {
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$rateColumnsAggregated', query, ast)
+    const finalAggregatedValues: string[] = [];
+    const finalValues: string[] = [];
+    aliases.forEach((a, i) => {
+      finalAggregatedValues.push(aggFuncs[i]+"("+a + "Rate) AS " + a + "RateAgg");
+      finalValues.push(a+" / runningDifference(t / 1000) AS "+a+"Rate");
+    });
+
+    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
+  }
+
 
   static _detectAliasAndApplyTimeFilter(
     aliasIndex: number,
@@ -547,6 +562,18 @@ export default class SqlQueryMacros {
       ' GROUP BY t' +
       ' ORDER BY t'
     );
+  }
+
+  static perSecondColumnsAggregated(query: string, ast: any): string {
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$perSecondColumnsAggregated', query, ast)
+    const finalAggregatedValues: string[] = [];
+    const finalValues: string[] = [];
+    aliases.forEach((a, i) => {
+      finalAggregatedValues.push(aggFuncs[i]+"("+a+"PerSecond) AS "+a+"PerSecondAgg");
+      finalValues.push("if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / runningDifference(t / 1000)) AS "+a+"PerSecond");
+    });
+
+    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
   }
 
   static increaseColumns(query: string, ast: any): string {

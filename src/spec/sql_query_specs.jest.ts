@@ -329,7 +329,7 @@ describe('$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adho
   });
 });
 
-/* check https://github.com/Altinity/clickhouse-grafana/issues/276 */
+/* check https://github.com/Altinity/clickhouse-grafana/issues/386 */
 describe('$rateColumnsAggregated and subquery + $conditionalTest + SqlQuery.replace + adhocFilters', () => {
   const query =
     '$rateColumnsAggregated(\n' +
@@ -375,7 +375,138 @@ describe('$rateColumnsAggregated and subquery + $conditionalTest + SqlQuery.repl
     '        event_time,\n' +
     '        datacenter,\n' +
     '        interface\n' +
-    ')   GROUP BY t, datacenter, dc_interface    ORDER BY t, datacenter, dc_interface  ) ) GROUP BY t, datacenter ORDER BY datacenter, t';
+    ')   GROUP BY datacenter, dc_interface, t    ORDER BY datacenter, dc_interface, t  ) ) GROUP BY datacenter, t ORDER BY datacenter, t';
+  let templateSrv = new TemplateSrvStub();
+  templateSrv.variables = [
+    {
+      name: 'repeated_datacenter',
+      type: 'query',
+      current: {
+        value: ['dc1', 'dc2'],
+      },
+      options: [
+        { selected: false, value: '$__all' },
+        { selected: true, value: 'dc1' },
+        { selected: true, value: 'dc2' },
+      ],
+    },
+  ];
+  const adhocFilters = [
+    {
+      key: 'test',
+      operator: '=',
+      value: 'value',
+    },
+    {
+      key: 'test2',
+      operator: '=~',
+      value: '%value%',
+    },
+    {
+      key: 'test3',
+      operator: '!~',
+      value: '%value%',
+    },
+  ];
+  let target = {
+    query: query,
+    interval: '20s',
+    intervalFactor: 1,
+    skip_comments: false,
+    table: 'traffic',
+    database: 'default',
+    dateTimeType: 'DATETIME',
+    dateColDataType: 'event_date',
+    dateTimeColDataType: 'event_time',
+    round: '1m',
+    rawQuery: '',
+  };
+  const options = {
+    rangeRaw: {
+      from: dayjs('2018-12-24 01:02:03Z'),
+      to: dayjs('2018-12-31 23:59:59Z'),
+    },
+    range: {
+      from: dayjs('2018-12-24 01:02:03Z'),
+      to: dayjs('2018-12-31 23:59:59Z'),
+    },
+    scopedVars: {
+      __interval: {
+        text: '20s',
+        value: '20s',
+      },
+      __interval_ms: {
+        text: '20000',
+        value: 20000,
+      },
+      repeated_datacenter: {
+        value: ['dc1', 'dc2'],
+        multi: true,
+        includeAll: true,
+        options: [
+          { selected: false, value: '$__all' },
+          { selected: true, value: 'dc1' },
+          { selected: true, value: 'dc2' },
+        ],
+      },
+    },
+  };
+  let sql_query = new SqlQuery(target, templateSrv, options);
+
+  it('applyMacros with subQuery and adHocFilters', () => {
+    expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+  });
+});
+
+/* check https://github.com/Altinity/clickhouse-grafana/issues/386 */
+describe('$perSecondColumnsAggregated and subquery + $conditionalTest + SqlQuery.replace + adhocFilters', () => {
+  const query =
+    '$perSecondColumnsAggregated(\n' +
+    "    datacenter, concat(datacenter,interface) AS dc_interface,\n" +
+    '    sum, max(tx_bytes) as value\n' +
+    ') FROM\n' +
+    '(\n' +
+    '    SELECT\n' +
+    '        toStartOfMinute(event_time) AS event_time,\n' +
+    '        datacenter,\n' +
+    '        interface,\n' +
+    '        max(tx_bytes) as tx_bytes\n' +
+    '    FROM $table\n' +
+    '\n' +
+    '    WHERE\n' +
+    '        $timeFilter\n' +
+    '        $conditionalTest(AND toLowerCase(datacenter) IN ($repeated_datacenter),$repeated_datacenter)\n' +
+    '    GROUP BY\n' +
+    '        event_time,\n' +
+    '        datacenter,\n' +
+    '        interface\n' +
+    ')';
+  const expQuery =
+    'SELECT t, datacenter, sum(valuePerSecond) AS valuePerSecondAgg FROM (  ' +
+    'SELECT t, datacenter, dc_interface,' +
+    ' if(runningDifference(value) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(value) / runningDifference(t / 1000)) AS valuePerSecond' +
+    '  FROM (' +
+    '   SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, datacenter, concat(datacenter, interface) AS dc_interface, ' +
+    'max(tx_bytes) AS value   FROM\n' +
+    '(\n' +
+    '    SELECT\n' +
+    '        toStartOfMinute(event_time) AS event_time,\n' +
+    '        datacenter,\n' +
+    '        interface,\n' +
+    '        max(tx_bytes) as tx_bytes\n' +
+    '    FROM default.traffic\n' +
+    '\n' +
+    '    WHERE event_date >= toDate(1545613320) AND event_date <= toDate(1546300740) AND event_time >= toDateTime(1545613320) AND event_time <= toDateTime(1546300740) AND\n' +
+    '        event_date >= toDate(1545613320) AND event_date <= toDate(1546300740) AND event_time >= toDateTime(1545613320) AND event_time <= toDateTime(1546300740)\n' +
+    "        AND toLowerCase(datacenter) IN ('dc1','dc2')\n" +
+    "        AND test = 'value'\n" +
+    "        AND test2 LIKE '%value%'\n" +
+    "        AND test3 NOT LIKE '%value%'\n" +
+    '    GROUP BY\n' +
+    '        event_time,\n' +
+    '        datacenter,\n' +
+    '        interface\n' +
+    ')   GROUP BY datacenter, dc_interface, t    ORDER BY datacenter, dc_interface, t  ) ) GROUP BY datacenter, t ORDER BY datacenter, t';
   let templateSrv = new TemplateSrvStub();
   templateSrv.variables = [
     {

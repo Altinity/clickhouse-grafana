@@ -56,27 +56,55 @@ func TestMacrosBuilder(t *testing.T) {
 		),
 		/* https://github.com/Altinity/clickhouse-grafana/issues/386 */
 		newMacrosTestCase(
-			"$rateColumnsAggregate",
+			"$rateColumnsAggregated",
 			"/* comment */ $rateColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) "+
 				" FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
 			"/* comment */ SELECT t, datacenter, sum(tx_kbytesRate) AS tx_kbytesRateAgg, sum(rx_bytesRate) AS rx_bytesRateAgg"+
 				" FROM"+
 				" ("+
-				"  SELECT t, datacenter, dc_interface, tx_kbytes / runningDifference(t / 1000) AS tx_kbytesRate, rx_bytes / runningDifference(t / 1000) AS rx_bytesRate "+
+				"  SELECT t, datacenter, dc_interface," +
+        " tx_kbytes / runningDifference(t / 1000) AS tx_kbytesRate," +
+        " rx_bytes / runningDifference(t / 1000) AS rx_bytesRate "+
 				" FROM ("+
 				"   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
 				" max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
 				"  FROM traffic"+
 				" WHERE $timeFilter"+
 				" AND datacenter = 'dc1'"+
-				"   GROUP BY t, datacenter, dc_interface"+
+				"   GROUP BY datacenter, dc_interface, t"+
 				"  HAVING rx_bytes > $interval"+
-				"   ORDER BY t, datacenter, dc_interface"+
+				"   ORDER BY datacenter, dc_interface, t"+
 				"  )"+
 				" )"+
-				" GROUP BY t, datacenter"+
+				" GROUP BY datacenter, t"+
 				" ORDER BY datacenter, t",
 			q.rateColumnsAggregated,
+		),
+		/* https://github.com/Altinity/clickhouse-grafana/issues/386 */
+		newMacrosTestCase(
+			"$perSecondColumnsAggregated",
+			"/* comment */ $perSecondColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) "+
+				" FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+			"/* comment */ SELECT t, datacenter, sum(tx_kbytesPerSecond) AS tx_kbytesPerSecondAgg, sum(rx_bytesPerSecond) AS rx_bytesPerSecondAgg"+
+				" FROM"+
+				" ("+
+				"  SELECT t, datacenter, dc_interface,"+
+				" if(runningDifference(tx_kbytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(tx_kbytes) / runningDifference(t / 1000)) AS tx_kbytesPerSecond," +
+        " if(runningDifference(rx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(rx_bytes) / runningDifference(t / 1000)) AS rx_bytesPerSecond "+
+				" FROM ("+
+				"   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
+				" max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
+				"  FROM traffic"+
+				" WHERE $timeFilter"+
+				" AND datacenter = 'dc1'"+
+				"   GROUP BY datacenter, dc_interface, t"+
+				"  HAVING rx_bytes > $interval"+
+				"   ORDER BY datacenter, dc_interface, t"+
+				"  )"+
+				" )"+
+				" GROUP BY datacenter, t"+
+				" ORDER BY datacenter, t",
+			q.perSecondColumnsAggregated,
 		),
 		newMacrosTestCase(
 			"$rateColumns",
@@ -244,6 +272,7 @@ func TestMacrosBuilder(t *testing.T) {
 	}
 	r := require.New(t)
 	for _, tc := range testCases {
+    t.Logf(tc.name)
 		ast, err := tc.scanner.toAST()
 		r.NoError(err)
 		tc.got, err = tc.fn(tc.query, ast)
@@ -809,7 +838,7 @@ func TestScannerAST(t *testing.T) {
 				}},
 			}},
 		),
-
+    /* formatt is required in other case it will parse as FORMAT */
 		newASTTestCase(
 			"AST case 13(partial statement match)",
 			"SELECT $timeSeries as t, count() as formatt FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
@@ -836,12 +865,12 @@ func TestScannerAST(t *testing.T) {
 
 		newASTTestCase(
 			"AST case 14(quoted literals)",
-			"SELECT $timeSeries as \"t\", count() as \"formatt\" FROM $table WHERE $timeFilter GROUP BY \"t\" ORDER BY \"t\"",
+			"SELECT $timeSeries as \"t\", count() as \"format\" FROM $table WHERE $timeFilter GROUP BY \"t\" ORDER BY \"t\"",
 			&EvalAST{Obj: map[string]interface{}{
 				"root": newEvalAST(false),
 				"select": &EvalAST{Arr: []interface{}{
 					"$timeSeries as \"t\"",
-					"count() as \"formatt\"",
+					"count() as \"format\"",
 				}},
 				"from": &EvalAST{Arr: []interface{}{
 					"$table",
@@ -1175,7 +1204,7 @@ func TestScannerAST(t *testing.T) {
 		/* fix https://github.com/Altinity/clickhouse-grafana/issues/421 */
 		newASTTestCase(
 			"AST case 22 (WITH + adhoc + SELECT x IN ( ... )",
-			"WITH topx AS (\n"+
+			"WITH topX AS (\n"+
 				"   SELECT DISTINCT CASE WHEN service_name = '' THEN 'other' ELSE service_name END AS filter, count() AS cnt \n"+
 				"   FROM $table WHERE $timeFilter AND $adhoc  GROUP BY service_name \n"+
 				"   ORDER BY cnt DESC LIMIT 10\n"+
@@ -1183,7 +1212,7 @@ func TestScannerAST(t *testing.T) {
 				"\n"+
 				"SELECT\n"+
 				"    $timeSeries as t,\n"+
-				"    CASE WHEN service_name IN (SELECT filter FROM topx) THEN service_name ELSE 'other' END AS spl,\n"+
+				"    CASE WHEN service_name IN (SELECT filter FROM topX) THEN service_name ELSE 'other' END AS spl,\n"+
 				"    count()\n"+
 				"FROM $table\n"+
 				"\n"+
@@ -1193,14 +1222,14 @@ func TestScannerAST(t *testing.T) {
 			&EvalAST{Obj: map[string]interface{}{
 				"root": newEvalAST(false),
 				"with": &EvalAST{Arr: []interface{}{
-					"topx AS(SELECT DISTINCT CASE WHEN service_name = '' THEN 'other' ELSE service_name END AS filter, count() AS cnt FROM $table WHERE $timeFilter AND $adhoc GROUP BY service_name ORDER BY cnt DESC LIMIT 10)",
+					"topX AS(SELECT DISTINCT CASE WHEN service_name = '' THEN 'other' ELSE service_name END AS filter, count() AS cnt FROM $table WHERE $timeFilter AND $adhoc GROUP BY service_name ORDER BY cnt DESC LIMIT 10)",
 				}},
 				"select": &EvalAST{Arr: []interface{}{
 					"$timeSeries as t",
 					"CASE WHEN service_name IN (\n" +
 						"    SELECT filter\n" +
 						"\n" +
-						"    FROM topx\n" +
+						"    FROM topX\n" +
 						") THEN service_name ELSE 'other' END AS spl",
 					"count()",
 				}},
@@ -1268,10 +1297,38 @@ func TestScannerAST(t *testing.T) {
 				}},
 			}},
 		),
+    /* fixes: https://github.com/Altinity/clickhouse-grafana/issues/386 */
+    newASTTestCase(
+      "AST case 25 $perSecondColumnsAggregated",
+      "/* comment */ $perSecondColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) "+
+        " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+      &EvalAST{Obj: map[string]interface{}{
+        "root": &EvalAST{Arr: []interface{}{"/* comment */\n"}},
+        "$perSecondColumnsAggregated": &EvalAST{Arr: []interface{}{
+          "datacenter",
+          "concat(datacenter, interface) AS dc_interface",
+          "sum",
+          "tx_bytes * 1024 AS tx_kbytes",
+          "sum",
+          "max(rx_bytes) AS rx_bytes",
+        }},
+        "select": newEvalAST(false),
+        "from": &EvalAST{Arr: []interface{}{
+          "traffic",
+        }},
+        "where": &EvalAST{Arr: []interface{}{
+          "datacenter = 'dc1'",
+        }},
+        "having": &EvalAST{Arr: []interface{}{
+          "rx_bytes > $interval",
+        }},
+      }},
+    ),
 	}
 
 	r := require.New(t)
 	for _, tc := range testCases {
+    t.Logf(tc.name)
 		ast, err := tc.scanner.toAST()
 		r.NoError(err)
 		check, err := tc.CheckASTEqual(tc.expectedAST, ast)
@@ -1415,7 +1472,7 @@ func TestEscapeIdentifier(t *testing.T) {
 	q := EvalQuery{}
 	r := require.New(t)
 	r.Equal("My_Identifier_33", q.escapeIdentifier("My_Identifier_33"), "Standard identifier - untouched")
-	r.Equal("\"1nfoVista\"", q.escapeIdentifier("1nfoVista"), "Begining with number")
+	r.Equal("\"1nfoVista\"", q.escapeIdentifier("1nfoVista"), "Beginning with number")
 	r.Equal("\"My Identifier\"", q.escapeIdentifier("My Identifier"), "Containing spaces")
 
 	for _, query := range []string{"a / 1000", "a + b", "b - c", "5*c", "a / 1000 + b - 5*c"} {
@@ -1431,7 +1488,7 @@ func TestEscapeTableIdentifier(t *testing.T) {
 	q := EvalQuery{}
 	r := require.New(t)
 	r.Equal("My_Identifier_33", q.escapeTableIdentifier("My_Identifier_33"), "Standard identifier - untouched")
-	r.Equal("`\"1nfoVista\"`", q.escapeTableIdentifier("\"1nfoVista\""), "Begining with number and quotes")
+	r.Equal("`\"1nfoVista\"`", q.escapeTableIdentifier("\"1nfoVista\""), "Beginning with number and quotes")
 	r.Equal("`My Identifier`", q.escapeTableIdentifier("My Identifier"), "Containing spaces")
 	r.Equal("`My\\`Identifier`", q.escapeTableIdentifier("My`Identifier"), "Containing single quote")
 

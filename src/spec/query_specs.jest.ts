@@ -255,6 +255,31 @@ describe('macros builder:', () => {
       ' ORDER BY datacenter, t',
       SqlQueryMacros.perSecondColumnsAggregated
     ),
+    new Case(
+      '$increaseColumnsAggregated',
+      '/* comment */ $increaseColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
+      " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+      '/* comment */ SELECT t, datacenter, sum(tx_kbytesIncrease) AS tx_kbytesIncreaseAgg, sum(rx_bytesIncrease) AS rx_bytesIncreaseAgg'+
+      ' FROM'+
+      ' ('+
+      '  SELECT t, datacenter, dc_interface,' +
+      ' if(runningDifference(tx_kbytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(tx_kbytes)) AS tx_kbytesIncrease,' +
+      ' if(runningDifference(rx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(rx_bytes)) AS rx_bytesIncrease'+
+      '  FROM ('+
+      '   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,'+
+      ' max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes '+
+      '  FROM traffic'+
+      ' WHERE $timeFilter'+
+      " AND datacenter = 'dc1'  "+
+      ' GROUP BY datacenter, dc_interface, t'+
+      '  HAVING rx_bytes > $interval  '+
+      ' ORDER BY datacenter, dc_interface, t ' +
+      ' ) '+
+      ')'+
+      ' GROUP BY datacenter, t'+
+      ' ORDER BY datacenter, t',
+      SqlQueryMacros.increaseColumnsAggregated
+    ),
   ];
 
   each(testCases, (tc) => {

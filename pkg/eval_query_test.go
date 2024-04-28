@@ -3,11 +3,12 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"github.com/stretchr/testify/require"
 	"reflect"
 	"sort"
 	"testing"
 	"time"
+
+	"github.com/stretchr/testify/require"
 )
 
 type macrosTestCase struct {
@@ -62,9 +63,9 @@ func TestMacrosBuilder(t *testing.T) {
 			"/* comment */ SELECT t, datacenter, sum(tx_kbytesRate) AS tx_kbytesRateAgg, sum(rx_bytesRate) AS rx_bytesRateAgg"+
 				" FROM"+
 				" ("+
-				"  SELECT t, datacenter, dc_interface," +
-        " tx_kbytes / runningDifference(t / 1000) AS tx_kbytesRate," +
-        " rx_bytes / runningDifference(t / 1000) AS rx_bytesRate "+
+				"  SELECT t, datacenter, dc_interface,"+
+				" tx_kbytes / runningDifference(t / 1000) AS tx_kbytesRate,"+
+				" rx_bytes / runningDifference(t / 1000) AS rx_bytesRate "+
 				" FROM ("+
 				"   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
 				" max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
@@ -89,8 +90,8 @@ func TestMacrosBuilder(t *testing.T) {
 				" FROM"+
 				" ("+
 				"  SELECT t, datacenter, dc_interface,"+
-				" if(runningDifference(tx_kbytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(tx_kbytes) / runningDifference(t / 1000)) AS tx_kbytesPerSecond," +
-        " if(runningDifference(rx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(rx_bytes) / runningDifference(t / 1000)) AS rx_bytesPerSecond "+
+				" if(runningDifference(tx_kbytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(tx_kbytes) / runningDifference(t / 1000)) AS tx_kbytesPerSecond,"+
+				" if(runningDifference(rx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(rx_bytes) / runningDifference(t / 1000)) AS rx_bytesPerSecond "+
 				" FROM ("+
 				"   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
 				" max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
@@ -106,6 +107,33 @@ func TestMacrosBuilder(t *testing.T) {
 				" ORDER BY datacenter, t",
 			q.perSecondColumnsAggregated,
 		),
+		/* https://github.com/Altinity/clickhouse-grafana/issues/386 */
+		newMacrosTestCase(
+			"$increaseColumnsAggregated",
+			"/* comment */ $increaseColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) "+
+				" FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+			"/* comment */ SELECT t, datacenter, sum(tx_kbytesIncrease) AS tx_kbytesIncreaseAgg, sum(rx_bytesIncrease) AS rx_bytesIncreaseAgg"+
+				" FROM"+
+				" ("+
+				"  SELECT t, datacenter, dc_interface,"+
+				" if(runningDifference(tx_kbytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(tx_kbytes)) AS tx_kbytesIncrease,"+
+				" if(runningDifference(rx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(rx_bytes)) AS rx_bytesIncrease "+
+				" FROM ("+
+				"   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
+				" max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
+				"  FROM traffic"+
+				" WHERE $timeFilter"+
+				" AND datacenter = 'dc1'"+
+				"   GROUP BY datacenter, dc_interface, t"+
+				"  HAVING rx_bytes > $interval"+
+				"   ORDER BY datacenter, dc_interface, t"+
+				"  )"+
+				" )"+
+				" GROUP BY datacenter, t"+
+				" ORDER BY datacenter, t",
+			q.increaseColumnsAggregated,
+		),
+
 		newMacrosTestCase(
 			"$rateColumns",
 			"/* comment */ $rateColumns((AppType = '' ? 'undefined' : AppType) from_type, sum(Hits) from_hits) "+
@@ -272,7 +300,7 @@ func TestMacrosBuilder(t *testing.T) {
 	}
 	r := require.New(t)
 	for _, tc := range testCases {
-    t.Logf(tc.name)
+		t.Logf(tc.name)
 		ast, err := tc.scanner.toAST()
 		r.NoError(err)
 		tc.got, err = tc.fn(tc.query, ast)
@@ -838,7 +866,7 @@ func TestScannerAST(t *testing.T) {
 				}},
 			}},
 		),
-    /* formatt is required in other case it will parse as FORMAT */
+		/* formatt is required in other case it will parse as FORMAT */
 		newASTTestCase(
 			"AST case 13(partial statement match)",
 			"SELECT $timeSeries as t, count() as formatt FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
@@ -1297,38 +1325,65 @@ func TestScannerAST(t *testing.T) {
 				}},
 			}},
 		),
-    /* fixes: https://github.com/Altinity/clickhouse-grafana/issues/386 */
-    newASTTestCase(
-      "AST case 25 $perSecondColumnsAggregated",
-      "/* comment */ $perSecondColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) "+
-        " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
-      &EvalAST{Obj: map[string]interface{}{
-        "root": &EvalAST{Arr: []interface{}{"/* comment */\n"}},
-        "$perSecondColumnsAggregated": &EvalAST{Arr: []interface{}{
-          "datacenter",
-          "concat(datacenter, interface) AS dc_interface",
-          "sum",
-          "tx_bytes * 1024 AS tx_kbytes",
-          "sum",
-          "max(rx_bytes) AS rx_bytes",
-        }},
-        "select": newEvalAST(false),
-        "from": &EvalAST{Arr: []interface{}{
-          "traffic",
-        }},
-        "where": &EvalAST{Arr: []interface{}{
-          "datacenter = 'dc1'",
-        }},
-        "having": &EvalAST{Arr: []interface{}{
-          "rx_bytes > $interval",
-        }},
-      }},
-    ),
+		/* fixes: https://github.com/Altinity/clickhouse-grafana/issues/386 */
+		newASTTestCase(
+			"AST case 25 $perSecondColumnsAggregated",
+			"/* comment */ $perSecondColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) "+
+				" FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+			&EvalAST{Obj: map[string]interface{}{
+				"root": &EvalAST{Arr: []interface{}{"/* comment */\n"}},
+				"$perSecondColumnsAggregated": &EvalAST{Arr: []interface{}{
+					"datacenter",
+					"concat(datacenter, interface) AS dc_interface",
+					"sum",
+					"tx_bytes * 1024 AS tx_kbytes",
+					"sum",
+					"max(rx_bytes) AS rx_bytes",
+				}},
+				"select": newEvalAST(false),
+				"from": &EvalAST{Arr: []interface{}{
+					"traffic",
+				}},
+				"where": &EvalAST{Arr: []interface{}{
+					"datacenter = 'dc1'",
+				}},
+				"having": &EvalAST{Arr: []interface{}{
+					"rx_bytes > $interval",
+				}},
+			}},
+		),
+		/* fixes: https://github.com/Altinity/clickhouse-grafana/issues/386 */
+		newASTTestCase(
+			"AST case 26 $increaseColumnsAggregated",
+			"/* comment */ $increaseColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) "+
+				" FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+			&EvalAST{Obj: map[string]interface{}{
+				"root": &EvalAST{Arr: []interface{}{"/* comment */\n"}},
+				"$increaseColumnsAggregated": &EvalAST{Arr: []interface{}{
+					"datacenter",
+					"concat(datacenter, interface) AS dc_interface",
+					"sum",
+					"tx_bytes * 1024 AS tx_kbytes",
+					"sum",
+					"max(rx_bytes) AS rx_bytes",
+				}},
+				"select": newEvalAST(false),
+				"from": &EvalAST{Arr: []interface{}{
+					"traffic",
+				}},
+				"where": &EvalAST{Arr: []interface{}{
+					"datacenter = 'dc1'",
+				}},
+				"having": &EvalAST{Arr: []interface{}{
+					"rx_bytes > $interval",
+				}},
+			}},
+		),
 	}
 
 	r := require.New(t)
 	for _, tc := range testCases {
-    t.Logf(tc.name)
+		t.Logf(tc.name)
 		ast, err := tc.scanner.toAST()
 		r.NoError(err)
 		check, err := tc.CheckASTEqual(tc.expectedAST, ast)

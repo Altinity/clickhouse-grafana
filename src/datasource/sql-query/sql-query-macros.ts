@@ -40,6 +40,9 @@ export default class SqlQueryMacros {
     if (SqlQueryHelper.contain(ast, '$increaseColumns')) {
       return SqlQueryMacros.increaseColumns(query, ast);
     }
+    if (SqlQueryHelper.contain(ast, '$increaseColumnsAggregated')) {
+      return SqlQueryMacros.increaseColumnsAggregated(query, ast);
+    }
     if (SqlQueryHelper.contain(ast, '$delta')) {
       return SqlQueryMacros.delta(query, ast);
     }
@@ -643,6 +646,18 @@ export default class SqlQueryMacros {
       ' GROUP BY t' +
       ' ORDER BY t'
     );
+  }
+
+  static increaseColumnsAggregated(query: string, ast: any): string {
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$increaseColumnsAggregated', query, ast)
+    const finalAggregatedValues: string[] = [];
+    const finalValues: string[] = [];
+    aliases.forEach((a, i) => {
+      finalAggregatedValues.push(aggFuncs[i]+"("+a+"Increase) AS "+a+"IncreaseAgg");
+      finalValues.push("if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+")) AS "+a+"Increase");
+    });
+
+    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
   }
 
   static deltaColumns(query: string, ast: any): string {

@@ -498,10 +498,28 @@ func (q *EvalQuery) perSecondColumnsAggregated(query string, ast *EvalAST) (stri
 	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
 }
 
+func (q *EvalQuery) increaseColumnsAggregated(query string, ast *EvalAST) (string, error) {
+	beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs, err := q._prepareColumnsAggregated("$increaseColumnsAggregated", query, ast)
+	if err != nil {
+		return "", err
+	}
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var finalAggregatedValues []string
+	var finalValues []string
+	for i, a := range aliases {
+		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"Increase) AS "+a+"IncreaseAgg")
+		finalValues = append(finalValues, "if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+")) AS "+a+"Increase")
+	}
+
+	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
+}
+
 func (q *EvalQuery) _fromIndex(query, macro string) (int, error) {
 	var fromRe = regexp.MustCompile("(?im)\\" + macro + "\\([\\w\\s\\S]+?\\)(\\s+FROM\\s+)")
 	var matches = fromRe.FindStringSubmatchIndex(query)
-	if matches == nil || len(matches) == 0 {
+	if len(matches) == 0 {
 		return 0, fmt.Errorf("could not find FROM-statement at: %s", query)
 	}
 	var fragmentWithFrom = query[matches[len(matches)-2]:matches[len(matches)-1]]
@@ -520,7 +538,7 @@ func (q *EvalQuery) rate(query string, ast *EvalAST) (string, error) {
 	}
 	var args = ast.Obj["$rate"].(*EvalAST).Arr
 	if args == nil || len(args) < 1 {
-		return "", fmt.Errorf("Amount of arguments must be > 0 for $rate func. Parsed arguments are: %v ", args)
+		return "", fmt.Errorf("amount of arguments must be > 0 for $rate func. Parsed arguments are: %v ", args)
 	}
 
 	return q._rate(args, beforeMacrosQuery, fromQuery)
@@ -840,7 +858,7 @@ func (q *EvalQuery) _increase(args []interface{}, beforeMacrosQuery, fromQuery s
 }
 
 func (q *EvalQuery) _applyTimeFilter(query string) string {
-	if strings.Index(strings.ToLower(query), "where") != -1 {
+	if strings.Contains(strings.ToLower(query), "where") {
 		whereRe := regexp.MustCompile("(?i)where")
 		query = whereRe.ReplaceAllString(query, "WHERE $$timeFilter AND")
 	} else {
@@ -1424,7 +1442,7 @@ func (s *EvalQueryScanner) parseJOIN(argument string) (string, error) {
 }
 
 func (s *EvalQueryScanner) CheckArrayJOINAndExpectNextOrNext(joinType string) (bool, error) {
-	if strings.Index(strings.ToUpper(joinType), "ARRAY JOIN") == -1 {
+	if !strings.Contains(strings.ToUpper(joinType), "ARRAY JOIN") {
 		expectNext, err := s.expectNext()
 		if err != nil {
 			return false, fmt.Errorf("parseJOIN s.expectNext() return: %v", err)
@@ -1538,7 +1556,7 @@ const joinsRe = "\\b(" +
 	")\\b"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
+const macroFuncRe = "(\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
 const condRe = "\\b(or|and)\\b"
 const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?"
 const closureRe = "[\\(\\)\\[\\]]"

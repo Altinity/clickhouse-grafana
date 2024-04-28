@@ -40,8 +40,8 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
 
   const handleStepChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    setFieldValues({ ...fieldValues, step: value });
-    onFieldChange({ ...fieldValues, step: value });
+    setFieldValues({ ...fieldValues, interval: value });
+    onFieldChange({ ...fieldValues, interval: value });
   };
 
   const handleResolutionChange = (value: number) => {
@@ -78,7 +78,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           <InlineField
             label={<InlineLabel width={10} tooltip="Leave blank for auto handling based on time range and panel width">Step</InlineLabel>}
           >
-            <Input placeholder="" onChange={handleStepChange} value={fieldValues.step} />
+            <Input placeholder="" onChange={handleStepChange} value={fieldValues.interval} />
           </InlineField>
           <InlineField
             label={<InlineLabel width={'auto'}>Resolution</InlineLabel>}

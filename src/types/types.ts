@@ -32,6 +32,7 @@ export interface CHQuery extends DataQuery {
 
   round?: string;
   intervalFactor?: number;
+  interval?: string;
   formattedQuery?: string;
 }
 

@@ -1006,7 +1006,7 @@ According to https://grafana.com/docs/grafana/latest/panels-visualizations/visua
 
 If you setup `query_profiler_real_time_period_ns` in profile or query level settings when you can try to visualize it as FlameGraph with the following query  
 Look to [system.trace_log](https://clickhouse.com/docs/en/operations/system-tables/trace_log) table description for how to get data for FlameGraph
-Look to [flamegraph dashboard example](https://github.com/Altinity/clickhouse-dashboards/blob/master/docker/grafana/dashboards/flamegraph_and_tracing_support.json) for example of dashboard with FlameGraph
+Look to [flamegraph dashboard example](https://github.com/Altinity/clickhouse-grafana/blob/master/docker/grafana/dashboards/flamegraph_and_tracing_support.json) for example of dashboard with FlameGraph
 
 ### Flamegraph query example: 
 ```sql
@@ -1027,7 +1027,7 @@ To show Traces you need query with format as "Traces" with following
 
 For example, if `<opentelemetry_start_trace_probability>1</opentelemetry_start_trace_probability>` in user profile and `system.opentelemetry_span_log` is not emtpy, then you can show traces about clickhouse query execution
 Look to [system.opentelemetry_span_log](https://clickhouse.com/docs/en/operations/system-tables/opentelemetry_span_log) table description for how to get data for FlameGraph
-Look to [tracing dashboard example](https://github.com/Altinity/clickhouse-dashboards/blob/master/docker/grafana/dashboards/flamegraph_and_tracing_support.json) for example of dashboard with FlameGraph
+Look to [tracing dashboard example](https://github.com/Altinity/clickhouse-grafana/blob/master/docker/grafana/dashboards/flamegraph_and_tracing_support.json) for example of dashboard with FlameGraph
 
 Tracing visualization requires following field names (case sensitive):
 - `traceID` - String

@@ -94,6 +94,7 @@ function initializeQueryDefaults(query: CHQuery): CHQuery {
     dateTimeType: query.dateTimeType || DEFAULT_DATE_TIME_TYPE,
     round: query.round || DEFAULT_ROUND,
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,
+    interval: query.interval || '',
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
     editorMode: EditorMode.Builder,

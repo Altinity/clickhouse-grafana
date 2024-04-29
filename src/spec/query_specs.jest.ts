@@ -45,29 +45,6 @@ describe('macros builder:', () => {
       SqlQueryMacros.rate
     ),
     new Case(
-      '$rateColumns',
-      "/* comment */ $rateColumns((AppType = '' ? 'undefined' : AppType) from_type, sum(Hits) from_hits) " +
-        " FROM table_all WHERE Event = 'request' AND (-1 IN ($template) OR col IN ($template)) HAVING hits > $interval",
-      '/* comment */ SELECT t,' +
-        ' arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
-        ' FROM' +
-        ' (SELECT t,' +
-        ' groupArray((from_type, from_hits)) AS groupArr' +
-        ' FROM (' +
-        ' SELECT $timeSeries AS t,' +
-        " (AppType = '' ? 'undefined' : AppType) from_type," +
-        ' sum(Hits) from_hits' +
-        ' FROM table_all' +
-        ' WHERE $timeFilter' +
-        " AND Event = 'request' AND (-1 IN ($template) OR col IN ($template))" +
-        ' GROUP BY t, from_type' +
-        ' HAVING hits > $interval' +
-        ' ORDER BY t, from_type)' +
-        ' GROUP BY t' +
-        ' ORDER BY t)',
-      SqlQueryMacros.rateColumns
-    ),
-    new Case(
       '$columns',
       '/* comment */$columns(from_OSName, count(*) c) FROM requests ANY INNER JOIN oses USING OS',
       '/* comment */SELECT t,' +
@@ -134,6 +111,29 @@ describe('macros builder:', () => {
         ' GROUP BY t' +
         ' ORDER BY t)',
       SqlQueryMacros.increase
+    ),
+    new Case(
+      '$rateColumns',
+      "/* comment */ $rateColumns((AppType = '' ? 'undefined' : AppType) from_type, sum(Hits) from_hits) " +
+      " FROM table_all WHERE Event = 'request' AND (-1 IN ($template) OR col IN ($template)) HAVING hits > $interval",
+      '/* comment */ SELECT t,' +
+      ' arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
+      ' FROM' +
+      ' (SELECT t,' +
+      ' groupArray((from_type, from_hits)) AS groupArr' +
+      ' FROM (' +
+      ' SELECT $timeSeries AS t,' +
+      " (AppType = '' ? 'undefined' : AppType) from_type," +
+      ' sum(Hits) from_hits' +
+      ' FROM table_all' +
+      ' WHERE $timeFilter' +
+      " AND Event = 'request' AND (-1 IN ($template) OR col IN ($template))" +
+      ' GROUP BY t, from_type' +
+      ' HAVING hits > $interval' +
+      ' ORDER BY t, from_type)' +
+      ' GROUP BY t' +
+      ' ORDER BY t)',
+      SqlQueryMacros.rateColumns
     ),
     new Case(
       '$perSecondColumns',
@@ -206,6 +206,104 @@ describe('macros builder:', () => {
         ' GROUP BY t' +
         ' ORDER BY t',
       SqlQueryMacros.increaseColumns
+    ),
+    new Case(
+      '$rateColumnsAggregated',
+      '/* comment */ $rateColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
+      " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+      '/* comment */ SELECT t, datacenter, sum(tx_kbytesRate) AS tx_kbytesRateAgg, sum(rx_bytesRate) AS rx_bytesRateAgg'+
+      ' FROM'+
+      ' ('+
+      '  SELECT t, datacenter, dc_interface, tx_kbytes / runningDifference(t / 1000) AS tx_kbytesRate, rx_bytes / runningDifference(t / 1000) AS rx_bytesRate '+
+      ' FROM ('+
+      '   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,'+
+      ' max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes '+
+      '  FROM traffic'+
+      ' WHERE $timeFilter'+
+      " AND datacenter = 'dc1'  "+
+      ' GROUP BY datacenter, dc_interface, t'+
+      '  HAVING rx_bytes > $interval  '+
+      ' ORDER BY datacenter, dc_interface, t ' +
+      ' ) '+
+      ')'+
+      ' GROUP BY datacenter, t'+
+      ' ORDER BY datacenter, t',
+      SqlQueryMacros.rateColumnsAggregated
+    ),
+    new Case(
+      '$perSecondColumnsAggregated',
+      '/* comment */ $perSecondColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
+      " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+      '/* comment */ SELECT t, datacenter, sum(tx_kbytesPerSecond) AS tx_kbytesPerSecondAgg, sum(rx_bytesPerSecond) AS rx_bytesPerSecondAgg'+
+      ' FROM'+
+      ' ('+
+      '  SELECT t, datacenter, dc_interface,' +
+      ' if(runningDifference(tx_kbytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(tx_kbytes) / runningDifference(t / 1000)) AS tx_kbytesPerSecond,' +
+      ' if(runningDifference(rx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(rx_bytes) / runningDifference(t / 1000)) AS rx_bytesPerSecond'+
+      '  FROM ('+
+      '   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,'+
+      ' max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes '+
+      '  FROM traffic'+
+      ' WHERE $timeFilter'+
+      " AND datacenter = 'dc1'  "+
+      ' GROUP BY datacenter, dc_interface, t'+
+      '  HAVING rx_bytes > $interval  '+
+      ' ORDER BY datacenter, dc_interface, t ' +
+      ' ) '+
+      ')'+
+      ' GROUP BY datacenter, t'+
+      ' ORDER BY datacenter, t',
+      SqlQueryMacros.perSecondColumnsAggregated
+    ),
+    new Case(
+      '$increaseColumnsAggregated',
+      '/* comment */ $increaseColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
+      " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+      '/* comment */ SELECT t, datacenter, sum(tx_kbytesIncrease) AS tx_kbytesIncreaseAgg, sum(rx_bytesIncrease) AS rx_bytesIncreaseAgg'+
+      ' FROM'+
+      ' ('+
+      '  SELECT t, datacenter, dc_interface,' +
+      ' if(runningDifference(tx_kbytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(tx_kbytes) / 1) AS tx_kbytesIncrease,' +
+      ' if(runningDifference(rx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(rx_bytes) / 1) AS rx_bytesIncrease'+
+      '  FROM ('+
+      '   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,'+
+      ' max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes '+
+      '  FROM traffic'+
+      ' WHERE $timeFilter'+
+      " AND datacenter = 'dc1'  "+
+      ' GROUP BY datacenter, dc_interface, t'+
+      '  HAVING rx_bytes > $interval  '+
+      ' ORDER BY datacenter, dc_interface, t ' +
+      ' ) '+
+      ')'+
+      ' GROUP BY datacenter, t'+
+      ' ORDER BY datacenter, t',
+      SqlQueryMacros.increaseColumnsAggregated
+    ),
+    new Case(
+      '$deltaColumnsAggregated',
+      '/* comment */ $deltaColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
+      " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+      '/* comment */ SELECT t, datacenter, sum(tx_kbytesDelta) AS tx_kbytesDeltaAgg, sum(rx_bytesDelta) AS rx_bytesDeltaAgg'+
+      ' FROM'+
+      ' ('+
+      '  SELECT t, datacenter, dc_interface,' +
+      ' if(neighbor(dc_interface,-1,dc_interface) != dc_interface, 0, runningDifference(tx_kbytes) / 1) AS tx_kbytesDelta,' +
+      ' if(neighbor(dc_interface,-1,dc_interface) != dc_interface, 0, runningDifference(rx_bytes) / 1) AS rx_bytesDelta'+
+      '  FROM ('+
+      '   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,'+
+      ' max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes '+
+      '  FROM traffic'+
+      ' WHERE $timeFilter'+
+      " AND datacenter = 'dc1'  "+
+      ' GROUP BY datacenter, dc_interface, t'+
+      '  HAVING rx_bytes > $interval  '+
+      ' ORDER BY datacenter, dc_interface, t ' +
+      ' ) '+
+      ')'+
+      ' GROUP BY datacenter, t'+
+      ' ORDER BY datacenter, t',
+      SqlQueryMacros.deltaColumnsAggregated
     ),
   ];
 

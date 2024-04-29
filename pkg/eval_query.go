@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/dlclark/regexp2"
 	"math"
 	"regexp"
 	"strings"
 	"time"
+
+	"github.com/dlclark/regexp2"
 )
 
 /* var NumberOnlyRegexp = regexp.MustCompile(`^[+-]?\d+(\.\d+)?$`) */
@@ -262,6 +263,9 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	if q.contain(ast, "$columns") {
 		return q.columns(query, ast)
 	}
+	if q.contain(ast, "$rateColumnsAggregated") {
+		return q.rateColumnsAggregated(query, ast)
+	}
 	if q.contain(ast, "$rateColumns") {
 		return q.rateColumns(query, ast)
 	}
@@ -274,6 +278,9 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	if q.contain(ast, "$perSecondColumns") {
 		return q.perSecondColumns(query, ast)
 	}
+	if q.contain(ast, "$perSecondColumnsAggregated") {
+		return q.perSecondColumnsAggregated(query, ast)
+	}
 	if q.contain(ast, "$delta") {
 		return q.delta(query, ast)
 	}
@@ -285,6 +292,9 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	}
 	if q.contain(ast, "$increaseColumns") {
 		return q.increaseColumns(query, ast)
+	}
+	if q.contain(ast, "$increaseColumnsAggregated") {
+		return q.increaseColumnsAggregated(query, ast)
 	}
 	return query, nil
 }
@@ -381,10 +391,156 @@ func (q *EvalQuery) rateColumns(query string, ast *EvalAST) (string, error) {
 		")", nil
 }
 
+func (q *EvalQuery) _prepareColumnsAggregated(macroName string, query string, ast *EvalAST) (string, string, string, string, string, string, string, []string, []string, []string, error) {
+	macroQueries, err := q._parseMacro(macroName, query)
+	if err != nil {
+		return "", "", "", "", "", "", "", nil, nil, nil, err
+	}
+
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return "", "", "", "", "", "", "", nil, nil, nil, nil
+	}
+	var args = ast.Obj[macroName].(*EvalAST).Arr
+
+	if args == nil || len(args) < 4 {
+		return "", "", "", "", "", "", "", nil, nil, nil, fmt.Errorf("expect 2 or more amount of arguments for $*ColumnsAggregated macro functions. Parsed arguments are: %v", args)
+	}
+
+	var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
+	var having = ""
+
+	if havingIndex != -1 {
+		having = " " + fromQuery[havingIndex:]
+		fromQuery = fromQuery[0 : havingIndex-1]
+	}
+	fromQuery = q._applyTimeFilter(fromQuery)
+
+	var key = args[0].(string)
+	var keySplit = strings.Split(strings.Trim(key, " \xA0\t\r\n"), " ")
+	var keyAlias = keySplit[len(keySplit)-1]
+	var subKey = args[1].(string)
+	var subKeySplit = strings.Split(strings.Trim(subKey, " \xA0\t\r\n"), " ")
+	var subKeyAlias = subKeySplit[len(subKeySplit)-1]
+
+	if len(args)%2 != 0 {
+		return "", "", "", "", "", "", "", nil, nil, nil, fmt.Errorf("wrong arguments count, expect argument pairs aggregate function and value for "+macroName+" function. Parsed arguments are: %v", args)
+	}
+	var values []string
+	var aliases []string
+	var aggFuncs []string
+	for i := 2; i < len(args); i += 2 {
+		aggFuncs = append(aggFuncs, args[i].(string))
+
+		value := args[i+1].(string)
+		aliasSplit := strings.Split(strings.Trim(value, " \xA0\t\r\n"), " ")
+		alias := aliasSplit[len(aliasSplit)-1]
+		aliases = append(aliases, alias)
+
+		if len(aliasSplit) > 1 {
+			value = strings.Join(aliasSplit[:len(aliasSplit)-1], " ")
+			value = strings.TrimSuffix(strings.TrimSuffix(value, " AS"), " as")
+		}
+
+		if !strings.Contains(value, "(") {
+			value = "max(" + value + ")"
+		}
+		values = append(values, value+" AS "+alias)
+	}
+	return beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs, nil
+}
+
+func (q *EvalQuery) _formatColumnsAggregatedSQL(beforeMacrosQuery string, fromQuery string, key string, keyAlias string, subKey string, subKeyAlias string, values []string, finalValues []string, finalAggregatedValues []string, having string) string {
+	return beforeMacrosQuery +
+		"SELECT t, " + keyAlias + ", " + strings.Join(finalAggregatedValues, ", ") +
+		" FROM (" +
+		"  SELECT t, " + keyAlias + ", " + subKeyAlias + ", " + strings.Join(finalValues, ", ") +
+		"  FROM (" +
+		"   SELECT $timeSeries AS t, " + key + ", " + subKey + ", " + strings.Join(values, ", ") +
+		"   " + fromQuery +
+		"   GROUP BY " + keyAlias + ", " + subKeyAlias + ", t " + having +
+		"   ORDER BY " + keyAlias + ", " + subKeyAlias + ", t" +
+		"  )" +
+		" ) " +
+		"GROUP BY " + keyAlias + ", t ORDER BY " + keyAlias + ", t"
+}
+
+func (q *EvalQuery) rateColumnsAggregated(query string, ast *EvalAST) (string, error) {
+	beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs, err := q._prepareColumnsAggregated("$rateColumnsAggregated", query, ast)
+	if err != nil {
+		return "", err
+	}
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var finalAggregatedValues []string
+	var finalValues []string
+	for i, a := range aliases {
+		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"Rate) AS "+a+"RateAgg")
+		finalValues = append(finalValues, a+" / runningDifference(t / 1000) AS "+a+"Rate")
+	}
+
+	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
+}
+
+func (q *EvalQuery) perSecondColumnsAggregated(query string, ast *EvalAST) (string, error) {
+	beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs, err := q._prepareColumnsAggregated("$perSecondColumnsAggregated", query, ast)
+	if err != nil {
+		return "", err
+	}
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var finalAggregatedValues []string
+	var finalValues []string
+	for i, a := range aliases {
+		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"PerSecond) AS "+a+"PerSecondAgg")
+		finalValues = append(finalValues, "if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / runningDifference(t / 1000)) AS "+a+"PerSecond")
+	}
+
+	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
+}
+
+func (q *EvalQuery) increaseColumnsAggregated(query string, ast *EvalAST) (string, error) {
+	beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs, err := q._prepareColumnsAggregated("$increaseColumnsAggregated", query, ast)
+	if err != nil {
+		return "", err
+	}
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var finalAggregatedValues []string
+	var finalValues []string
+	for i, a := range aliases {
+		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"Increase) AS "+a+"IncreaseAgg")
+		finalValues = append(finalValues, "if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / 1) AS "+a+"Increase")
+	}
+
+	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
+}
+
+func (q *EvalQuery) deltaColumnsAggregated(query string, ast *EvalAST) (string, error) {
+	beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs, err := q._prepareColumnsAggregated("$deltaColumnsAggregated", query, ast)
+	if err != nil {
+		return "", err
+	}
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	var finalAggregatedValues []string
+	var finalValues []string
+	for i, a := range aliases {
+		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"Delta) AS "+a+"DeltaAgg")
+		finalValues = append(finalValues, "if(neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", 0, runningDifference("+a+") / 1) AS "+a+"Delta")
+	}
+
+	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
+}
+
 func (q *EvalQuery) _fromIndex(query, macro string) (int, error) {
 	var fromRe = regexp.MustCompile("(?im)\\" + macro + "\\([\\w\\s\\S]+?\\)(\\s+FROM\\s+)")
 	var matches = fromRe.FindStringSubmatchIndex(query)
-	if matches == nil || len(matches) == 0 {
+	if len(matches) == 0 {
 		return 0, fmt.Errorf("could not find FROM-statement at: %s", query)
 	}
 	var fragmentWithFrom = query[matches[len(matches)-2]:matches[len(matches)-1]]
@@ -403,7 +559,7 @@ func (q *EvalQuery) rate(query string, ast *EvalAST) (string, error) {
 	}
 	var args = ast.Obj["$rate"].(*EvalAST).Arr
 	if args == nil || len(args) < 1 {
-		return "", fmt.Errorf("Amount of arguments must be > 0 for $rate func. Parsed arguments are: %v ", args)
+		return "", fmt.Errorf("amount of arguments must be > 0 for $rate func. Parsed arguments are: %v ", args)
 	}
 
 	return q._rate(args, beforeMacrosQuery, fromQuery)
@@ -723,7 +879,7 @@ func (q *EvalQuery) _increase(args []interface{}, beforeMacrosQuery, fromQuery s
 }
 
 func (q *EvalQuery) _applyTimeFilter(query string) string {
-	if strings.Index(strings.ToLower(query), "where") != -1 {
+	if strings.Contains(strings.ToLower(query), "where") {
 		whereRe := regexp.MustCompile("(?i)where")
 		query = whereRe.ReplaceAllString(query, "WHERE $$timeFilter AND")
 	} else {
@@ -1307,7 +1463,7 @@ func (s *EvalQueryScanner) parseJOIN(argument string) (string, error) {
 }
 
 func (s *EvalQueryScanner) CheckArrayJOINAndExpectNextOrNext(joinType string) (bool, error) {
-	if strings.Index(strings.ToUpper(joinType), "ARRAY JOIN") == -1 {
+	if !strings.Contains(strings.ToUpper(joinType), "ARRAY JOIN") {
 		expectNext, err := s.expectNext()
 		if err != nil {
 			return false, fmt.Errorf("parseJOIN s.expectNext() return: %v", err)
@@ -1421,7 +1577,7 @@ const joinsRe = "\\b(" +
 	")\\b"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
+const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
 const condRe = "\\b(or|and)\\b"
 const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?"
 const closureRe = "[\\(\\)\\[\\]]"
@@ -1680,6 +1836,11 @@ func printAST(AST *EvalAST, tab string) string {
 	if AST.hasOwnProperty("$rateColumns") {
 		result += tab + "$rateColumns("
 		result += printItems(AST.Obj["$rateColumns"].(*EvalAST), tab, ",") + ")"
+	}
+
+	if AST.hasOwnProperty("$rateColumnsAggregated") {
+		result += tab + "$rateColumnsAggregated("
+		result += printItems(AST.Obj["$rateColumnsAggregated"].(*EvalAST), tab, ",") + ")"
 	}
 
 	if AST.hasOwnProperty("with") {

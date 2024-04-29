@@ -16,11 +16,14 @@ export default class SqlQueryMacros {
     if (SqlQueryHelper.contain(ast, '$columns')) {
       return SqlQueryMacros.columns(query, ast);
     }
+    if (SqlQueryHelper.contain(ast, '$rate')) {
+      return SqlQueryMacros.rate(query, ast);
+    }
     if (SqlQueryHelper.contain(ast, '$rateColumns')) {
       return SqlQueryMacros.rateColumns(query, ast);
     }
-    if (SqlQueryHelper.contain(ast, '$rate')) {
-      return SqlQueryMacros.rate(query, ast);
+    if (SqlQueryHelper.contain(ast, '$rateColumnsAggregated')) {
+      return SqlQueryMacros.rateColumnsAggregated(query, ast);
     }
     if (SqlQueryHelper.contain(ast, '$perSecond')) {
       return SqlQueryMacros.perSecond(query, ast);
@@ -28,17 +31,26 @@ export default class SqlQueryMacros {
     if (SqlQueryHelper.contain(ast, '$perSecondColumns')) {
       return SqlQueryMacros.perSecondColumns(query, ast);
     }
+    if (SqlQueryHelper.contain(ast, '$perSecondColumnsAggregated')) {
+      return SqlQueryMacros.perSecondColumnsAggregated(query, ast);
+    }
     if (SqlQueryHelper.contain(ast, '$increase')) {
       return SqlQueryMacros.increase(query, ast);
     }
     if (SqlQueryHelper.contain(ast, '$increaseColumns')) {
       return SqlQueryMacros.increaseColumns(query, ast);
     }
+    if (SqlQueryHelper.contain(ast, '$increaseColumnsAggregated')) {
+      return SqlQueryMacros.increaseColumnsAggregated(query, ast);
+    }
     if (SqlQueryHelper.contain(ast, '$delta')) {
       return SqlQueryMacros.delta(query, ast);
     }
     if (SqlQueryHelper.contain(ast, '$deltaColumns')) {
       return SqlQueryMacros.deltaColumns(query, ast);
+    }
+    if (SqlQueryHelper.contain(ast, '$deltaColumnsAggregated')) {
+      return SqlQueryMacros.deltaColumnsAggregated(query, ast);
     }
     return query;
   }
@@ -384,6 +396,91 @@ export default class SqlQueryMacros {
       ')'
     );
   }
+  /* https://github.com/Altinity/clickhouse-grafana/issues/386 */
+  private static _prepareColumnsAggregated(macroName: string, query: string, ast: any): [string, string, string, string, string, string, string, string[], string[], string[]] {
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro(macroName, query);
+    if (fromQuery.length < 1) {
+      throw {
+        message: 'Missing FROM section after '+macroName+' function. Query: ' + query,
+      };
+    }
+    let args = ast[macroName];
+    if (args.length < 4) {
+      throw {
+        message: 'Expect 2 or more amount of arguments for '+macroName+' function. Parsed arguments are: ' + args.join(', '),
+      };
+    }
+    let havingIndex = fromQuery.toLowerCase().indexOf('having'),
+      having = '';
+
+    if (havingIndex !== -1) {
+      having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
+      fromQuery = fromQuery.slice(0, havingIndex - 1);
+    }
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
+
+    let key = args[0];
+    let keyAlias = key.trim().split(' ').pop();
+    let subKey = args[1];
+    let subKeyAlias = subKey.trim().split(' ').pop();
+
+    if (args.length % 2 !== 0) {
+      throw {
+        message: 'Wrong arguments count, expect argument pairs aggregate function and value for $rateColumnsAggregated func. Parsed arguments are: ' + args.join(', '),
+      };
+    }
+    const values: string[] = [];
+    const aliases: string[] = [];
+    const aggFuncs: string[] = [];
+    for (let i = 2; i < args.length; i+=2) {
+      aggFuncs.push(args[i]);
+
+      let value = args[i+1]
+      let aliasSplit = value.trim().split(' ')
+      let alias = aliasSplit.pop()
+      aliases.push(alias);
+
+      if (aliasSplit.length > 1) {
+        value = aliasSplit.join(' ').replace(/ AS$/i,"")
+      }
+      if (value.indexOf("(") === -1) {
+        value = 'max('+value+')'
+        values.push();
+      }
+      values.push(value + " AS " + alias)
+    }
+    return [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs]
+  }
+
+  private static _formatColumnsAggregated(beforeMacrosQuery: string, keyAlias: string, finalAggregatedValues: string[], subKeyAlias: string, finalValues: string[], key: string, subKey: string, values: string[], fromQuery: string, having: string) {
+    return (
+      beforeMacrosQuery +
+      'SELECT t, ' + keyAlias + ', ' + finalAggregatedValues.join(', ') +
+      ' FROM (' +
+      '  SELECT t, ' + keyAlias + ', ' + subKeyAlias + ', ' + finalValues.join(', ') +
+      '  FROM (' +
+      '   SELECT $timeSeries AS t, ' + key + ', ' + subKey + ', ' + values.join(', ') +
+      '   ' + fromQuery +
+      '   GROUP BY ' + keyAlias + ', ' + subKeyAlias + ', t ' + having +
+      '   ORDER BY ' + keyAlias + ', ' + subKeyAlias + ', t' +
+      '  )' +
+      ' ) ' +
+      'GROUP BY ' + keyAlias + ', t ORDER BY ' + keyAlias + ', t'
+    );
+  }
+
+  static rateColumnsAggregated(query: string, ast: any): string {
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$rateColumnsAggregated', query, ast)
+    const finalAggregatedValues: string[] = [];
+    const finalValues: string[] = [];
+    aliases.forEach((a, i) => {
+      finalAggregatedValues.push(aggFuncs[i]+"("+a + "Rate) AS " + a + "RateAgg");
+      finalValues.push(a+" / runningDifference(t / 1000) AS "+a+"Rate");
+    });
+
+    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
+  }
+
 
   static _detectAliasAndApplyTimeFilter(
     aliasIndex: number,
@@ -473,6 +570,18 @@ export default class SqlQueryMacros {
     );
   }
 
+  static perSecondColumnsAggregated(query: string, ast: any): string {
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$perSecondColumnsAggregated', query, ast)
+    const finalAggregatedValues: string[] = [];
+    const finalValues: string[] = [];
+    aliases.forEach((a, i) => {
+      finalAggregatedValues.push(aggFuncs[i]+"("+a+"PerSecond) AS "+a+"PerSecondAgg");
+      finalValues.push("if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / runningDifference(t / 1000)) AS "+a+"PerSecond");
+    });
+
+    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
+  }
+
   static increaseColumns(query: string, ast: any): string {
     // return 'Increase 1'
     let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$increaseColumns', query);
@@ -542,6 +651,18 @@ export default class SqlQueryMacros {
     );
   }
 
+  static increaseColumnsAggregated(query: string, ast: any): string {
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$increaseColumnsAggregated', query, ast)
+    const finalAggregatedValues: string[] = [];
+    const finalValues: string[] = [];
+    aliases.forEach((a, i) => {
+      finalAggregatedValues.push(aggFuncs[i]+"("+a+"Increase) AS "+a+"IncreaseAgg");
+      finalValues.push("if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / 1) AS "+a+"Increase");
+    });
+
+    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
+  }
+
   static deltaColumns(query: string, ast: any): string {
     let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$deltaColumns', query);
     if (fromQuery.length < 1) {
@@ -608,12 +729,23 @@ export default class SqlQueryMacros {
     );
   }
 
+  static deltaColumnsAggregated(query: string, ast: any): string {
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$deltaColumnsAggregated', query, ast)
+    const finalAggregatedValues: string[] = [];
+    const finalValues: string[] = [];
+    aliases.forEach((a, i) => {
+      finalAggregatedValues.push(aggFuncs[i]+"("+a+"Delta) AS "+a+"DeltaAgg");
+      finalValues.push("if(neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", 0, runningDifference("+a+") / 1) AS "+a+"Delta");
+    });
+
+    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
+  }
+  
   static replaceTimeFilters(query: string, range: TimeRange, dateTimeType = 'DATETIME', round?: number): string {
     let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.from, round || 0));
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.to, round || 0));
 
-    // Extend date range to be sure that first and last points
-    // data is not affected by round
+    // Extending date range to be sure that round does not affect first and last points data
     if (round && round > 0) {
       to += round * 2 - 1;
       from -= round * 2 - 1;

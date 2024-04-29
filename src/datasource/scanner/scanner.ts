@@ -88,7 +88,7 @@ const joinsRe =
 const onJoinTokenRe = '\\b(using|on)\\b';
 const tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)';
 const macroFuncRe =
-  '(\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
+  '(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
 const condRe = '\\b(or|and)\\b';
 const inRe = '\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:\'[^\']*\'\\s*,\\s*)*\'[^\']*\'\\s*\\])?';
 const closureRe = '[\\(\\)\\[\\]]';
@@ -581,6 +581,11 @@ function print(AST, tab = '') {
     result += printItems(AST.$perSecondColumns, tab, ',') + ')';
   }
 
+  if (isSet(AST, '$perSecondColumnsAggregated')) {
+    result += tab + '$perSecondColumnsAggregated(';
+    result += printItems(AST.$perSecondColumnsAggregated, tab, ',') + ')';
+  }
+
   if (isSet(AST, '$delta')) {
     result += tab + '$delta(';
     result += printItems(AST.$delta, tab, ',') + ')';
@@ -589,6 +594,11 @@ function print(AST, tab = '') {
   if (isSet(AST, '$deltaColumns')) {
     result += tab + '$deltaColumns(';
     result += printItems(AST.$deltaColumns, tab, ',') + ')';
+  }
+
+  if (isSet(AST, '$deltaColumnsAggregated')) {
+    result += tab + '$deltaColumnsAggregated(';
+    result += printItems(AST.$deltaColumnsAggregated, tab, ',') + ')';
   }
 
   if (isSet(AST, '$increase')) {
@@ -601,6 +611,11 @@ function print(AST, tab = '') {
     result += printItems(AST.$deltaColumns, tab, ',') + ')';
   }
 
+  if (isSet(AST, '$increaseColumnsAggregated')) {
+    result += tab + '$increaseColumnsAggregated(';
+    result += printItems(AST.$increaseColumnsAggregated, tab, ',') + ')';
+  }
+
   if (isSet(AST, '$columns')) {
     result += tab + '$columns(';
     result += printItems(AST.$columns, tab, ',') + ')';
@@ -609,6 +624,11 @@ function print(AST, tab = '') {
   if (isSet(AST, '$rateColumns')) {
     result += tab + '$rateColumns(';
     result += printItems(AST.$rateColumns, tab, ',') + ')';
+  }
+
+  if (isSet(AST, '$rateColumnsAggregated')) {
+    result += tab + '$rateColumnsAggregated(';
+    result += printItems(AST.$rateColumnsAggregated, tab, ',') + ')';
   }
 
   if (isSet(AST, 'with')) {

@@ -639,6 +639,7 @@ describe('scanner:', () => {
     });
   });
 
+  /* https://github.com/Altinity/clickhouse-grafana/issues/506 */
   describe('AST case 23 IN [...]', () => {
     let query = `$columns(service_name,
           count() c
@@ -659,4 +660,96 @@ describe('scanner:', () => {
       expect(scanner.toAST()).toEqual(expectedAST);
     });
   });
+  /* https://github.com/Altinity/clickhouse-grafana/issues/386 */
+  describe('AST case 24 $rateColumnsAggregated', () => {
+    let query =
+      '/* comment */ $rateColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
+      " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+      scanner = new Scanner(query);
+
+    let expectedAST = {
+      root: [
+        "/* comment */\n"
+      ],
+      $rateColumnsAggregated: ["datacenter", "concat(datacenter, interface) AS dc_interface", "sum", "tx_bytes * 1024 AS tx_kbytes", "sum", "max(rx_bytes) AS rx_bytes",],
+      select: [],
+      from: ['traffic'],
+      where: ["datacenter = 'dc1'"],
+      having: ['rx_bytes > $interval'],
+    };
+
+    it('expects equality', () => {
+      expect(scanner.toAST()).toEqual(expectedAST);
+    });
+  });
+
+  /* https://github.com/Altinity/clickhouse-grafana/issues/386 */
+  describe('AST case 25 $perSecondColumnsAggregated', () => {
+    let query =
+        '/* comment */ $perSecondColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
+        " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+      scanner = new Scanner(query);
+
+    let expectedAST = {
+      root: [
+        "/* comment */\n"
+      ],
+      $perSecondColumnsAggregated: ["datacenter", "concat(datacenter, interface) AS dc_interface", "sum", "tx_bytes * 1024 AS tx_kbytes", "sum", "max(rx_bytes) AS rx_bytes",],
+      select: [],
+      from: ['traffic'],
+      where: ["datacenter = 'dc1'"],
+      having: ['rx_bytes > $interval'],
+    };
+
+    it('expects equality', () => {
+      expect(scanner.toAST()).toEqual(expectedAST);
+    });
+  });
+  
+  /* https://github.com/Altinity/clickhouse-grafana/issues/386 */
+  describe('AST case 26 $increaseColumnsAggregated', () => {
+    let query =
+        '/* comment */ $increaseColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
+        " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+      scanner = new Scanner(query);
+
+    let expectedAST = {
+      root: [
+        "/* comment */\n"
+      ],
+      $increaseColumnsAggregated: ["datacenter", "concat(datacenter, interface) AS dc_interface", "sum", "tx_bytes * 1024 AS tx_kbytes", "sum", "max(rx_bytes) AS rx_bytes",],
+      select: [],
+      from: ['traffic'],
+      where: ["datacenter = 'dc1'"],
+      having: ['rx_bytes > $interval'],
+    };
+
+    it('expects equality', () => {
+      expect(scanner.toAST()).toEqual(expectedAST);
+    });
+  });
+
+  /* https://github.com/Altinity/clickhouse-grafana/issues/386 */
+  describe('AST case 27 $deltaColumnsAggregated', () => {
+    let query =
+        '/* comment */ $deltaColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
+        " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+      scanner = new Scanner(query);
+
+    let expectedAST = {
+      root: [
+        "/* comment */\n"
+      ],
+      $deltaColumnsAggregated: ["datacenter", "concat(datacenter, interface) AS dc_interface", "sum", "tx_bytes * 1024 AS tx_kbytes", "sum", "max(rx_bytes) AS rx_bytes",],
+      select: [],
+      from: ['traffic'],
+      where: ["datacenter = 'dc1'"],
+      having: ['rx_bytes > $interval'],
+    };
+
+    it('expects equality', () => {
+      expect(scanner.toAST()).toEqual(expectedAST);
+    });
+  });
+
 });

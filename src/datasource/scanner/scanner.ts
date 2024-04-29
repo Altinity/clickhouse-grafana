@@ -488,7 +488,7 @@ export default class Scanner {
   }
 
   static AddMetadata(query) {
-    return "/* grafana dashboard=$__dashboard, user=$__user */ " + query
+    return "/* grafana dashboard=$__dashboard, user=$__user */\n" + query
   }
 
 }

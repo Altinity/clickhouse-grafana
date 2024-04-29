@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 11,
+  "id": 37,
   "links": [],
   "panels": [
     {
@@ -231,6 +231,218 @@
         }
       ],
       "title": "$perSeocndColumnsAggregated",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/386",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "$increaseColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes, sum, rx_bytes) FROM traffic",
+          "rawQuery": "/* grafana dashboard=Aggregated macros visualizations, user=0 */ SELECT t, datacenter, sum(tx_bytesPerSecond) AS tx_bytesPerSecondAgg, sum(rx_bytesPerSecond) AS rx_bytesPerSecondAgg FROM (  SELECT t, datacenter, dc_interface, if(runningDifference(tx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(tx_bytes) / runningDifference(t / 1000)) AS tx_bytesPerSecond, if(runningDifference(rx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(rx_bytes) / runningDifference(t / 1000)) AS rx_bytesPerSecond  FROM (   SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 AS t, datacenter, concat(datacenter, interface) AS dc_interface, max(tx_bytes) AS tx_bytes, max(rx_bytes) AS rx_bytes   FROM traffic WHERE event_date >= toDate(1714300736) AND event_date <= toDate(1714322336) AND event_time >= toDateTime(1714300736) AND event_time <= toDateTime(1714322336)   GROUP BY datacenter, dc_interface, t    ORDER BY datacenter, dc_interface, t  ) ) GROUP BY datacenter, t ORDER BY datacenter, t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "traffic"
+        }
+      ],
+      "title": "$increaseColumnsAggregated",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/386",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "$deltaColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes, sum, rx_bytes) FROM traffic",
+          "rawQuery": "/* grafana dashboard=Aggregated macros visualizations, user=0 */ SELECT t, datacenter, sum(tx_bytesIncrease) AS tx_bytesIncreaseAgg, sum(rx_bytesIncrease) AS rx_bytesIncreaseAgg FROM (  SELECT t, datacenter, dc_interface, if(runningDifference(tx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(tx_bytes) / 1) AS tx_bytesIncrease, if(runningDifference(rx_bytes) < 0 OR neighbor(dc_interface,-1,dc_interface) != dc_interface, nan, runningDifference(rx_bytes) / 1) AS rx_bytesIncrease  FROM (   SELECT (intDiv(toUInt32(event_time), 30) * 30) * 1000 AS t, datacenter, concat(datacenter, interface) AS dc_interface, max(tx_bytes) AS tx_bytes, max(rx_bytes) AS rx_bytes   FROM traffic WHERE event_date >= toDate(1714305061) AND event_date <= toDate(1714326661) AND event_time >= toDateTime(1714305061) AND event_time <= toDateTime(1714326661)   GROUP BY datacenter, dc_interface, t    ORDER BY datacenter, dc_interface, t  ) ) GROUP BY datacenter, t ORDER BY datacenter, t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "traffic"
+        }
+      ],
+      "title": "$deltaColumnsAggregated",
       "type": "timeseries"
     }
   ],

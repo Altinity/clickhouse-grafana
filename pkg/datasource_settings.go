@@ -18,7 +18,9 @@ type DatasourceSettings struct {
 	UsePost                     bool   `json:"usePOST"`
 	UseYandexCloudAuthorization bool   `json:"useYandexCloudAuthorization"`
 	XHeaderKey                  string `json:"xHeaderKey,omitempty"`
-	XHeaderUser                 string `json:"xHeaderUser"`
+	XHeaderUser                 string `json:"xHeaderUser,omitempty"`
+	UseCompression              bool   `json:"useCompression,omitempty"`
+	CompressionType             string `json:"compressionType,omitempty"`
 	TLSSkipVerify               bool   `json:"tlsSkipVerify"`
 }
 

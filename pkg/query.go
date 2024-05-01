@@ -22,6 +22,7 @@ var ToMsValueRE = regexp.MustCompile(`(?miU)<=\s*toDateTime64\s*\((\d+)/1000,\s*
 type Query struct {
 	RefId    string `json:"refId"`
 	RawQuery string `json:"rawQuery"`
+	RuleUid  string
 	From     time.Time
 	To       time.Time
 }
@@ -38,7 +39,7 @@ func (query *Query) ApplyTimeRangeToQuery() string {
 	fmtQuery = formatTimeValue(fmtQuery, query.From, FromMsValueRE, true)
 	fmtQuery = formatTimeValue(fmtQuery, query.To, ToMsValueRE, true)
 
-	return fmtQuery + " /* grafana alerts query=" + query.RefId + " */;"
+	return fmtQuery
 }
 
 func formatTimeValue(fmtQuery string, fmtTime time.Time, fmtRE *regexp.Regexp, isMs bool) string {

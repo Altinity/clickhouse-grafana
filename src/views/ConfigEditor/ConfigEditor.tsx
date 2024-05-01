@@ -1,6 +1,6 @@
-import React, { FormEvent } from 'react';
-import { DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput } from '@grafana/ui';
-import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption } from '@grafana/data';
+import React, {FormEvent, useState} from 'react';
+import {DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput, Select} from '@grafana/ui';
+import {DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, SelectableValue} from '@grafana/data';
 import { CHDataSourceOptions } from '../../types/types';
 import _ from 'lodash';
 
@@ -16,12 +16,14 @@ export function ConfigEditor(props: Props) {
   const newOptions = _.cloneDeep(options)
   const { jsonData, secureJsonFields } = newOptions
   const secureJsonData = (options.secureJsonData || {}) as CHSecureJsonData;
+  const [selectedCompressionType, setSelectedCompressionType] = useState(jsonData.compressionType);
+
   // @todo remove when merged https://github.com/grafana/grafana/pull/80858
   if (newOptions.url !== "") {
     jsonData.dataSourceUrl = newOptions.url
   }
   const onSwitchToggle = (
-    key: keyof Pick<CHDataSourceOptions, 'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST'>,
+    key: keyof Pick<CHDataSourceOptions, 'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST' | 'useCompression'>,
     value: boolean
   ) => {
     onOptionsChange({
@@ -54,6 +56,16 @@ export function ConfigEditor(props: Props) {
       secureJsonData: { ...secureJsonData, xHeaderKey: event.currentTarget.value },
     });
   };
+
+  const onCompressionTypeChange = (compressionType: SelectableValue) => {
+    setSelectedCompressionType(compressionType.value);
+    jsonData.compressionType = compressionType.value;
+    onOptionsChange({
+      ...options,
+      jsonData: {...jsonData}
+    })
+  };
+
 
   return (
     <>
@@ -103,7 +115,7 @@ export function ConfigEditor(props: Props) {
       <div className="gf-form-group">
         <InlineField
           label="Add CORS flag to requests"
-          labelWidth={36}
+          labelWidth={32}
           tooltip="Whether 'add_http_cors_header=1' parameter should be attached to requests. Remember that read-only users cannot override this setting."
         >
           <InlineSwitch
@@ -115,7 +127,7 @@ export function ConfigEditor(props: Props) {
         </InlineField>
         <InlineField
           label="Use POST method to send queries"
-          labelWidth={36}
+          labelWidth={32}
           tooltip="Remember that it's possible to change data via POST requests. Better to avoid using POST method if you connecting not as Read-Only user."
         >
           <InlineSwitch
@@ -127,13 +139,44 @@ export function ConfigEditor(props: Props) {
         </InlineField>
         <InlineField
           label="Default database"
-          labelWidth={36}
+          labelWidth={32}
           tooltip="If you set the default database for this datasource, it will be prefilled in the query builder, and used to make ad-hoc filters more convenient."
         >
           <Input
             value={jsonData.defaultDatabase || 'default'}
             placeholder="default"
             onChange={onUpdateDatasourceJsonDataOption(props, 'defaultDatabase')}
+          />
+        </InlineField>
+        <InlineField
+          label="Use Compression"
+          labelWidth={32}
+          tooltip="Add `Accept-Encoding` header in each request."
+        >
+          <InlineSwitch
+            id="useCompressions"
+            className="gf-form"
+            value={jsonData.useCompression || false}
+            onChange={(e) => onSwitchToggle('useCompression', e.currentTarget.checked)}
+          />
+        </InlineField>
+        <InlineField
+          label="Compressions type"
+          labelWidth={32}
+          tooltip="read https://clickhouse.com/docs/en/interfaces/http#compression for details"
+        >
+          <Select
+            id="compressionType"
+            allowCustomValue={false}
+            width={24}
+            value={selectedCompressionType}
+            onChange={({ value }) => onCompressionTypeChange({ value })}
+            options={[
+              {label: 'gzip', value: 'gzip'},
+              {label: 'br', value: 'br'},
+              {label: 'deflate', value: 'deflate'},
+              {label: 'zstd', value: 'zstd'},
+            ]}
           />
         </InlineField>
       </div>

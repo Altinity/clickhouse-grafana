@@ -1086,6 +1086,10 @@ datasources:
      addCorsHeader: false
      # <bool> enable/disable using POST method for sending queries
      usePOST: false
+     # <bool> enable/disable using Accept-Encoding header in each request
+     useCompression: false
+     # <string> compression type allowed values: gzip, zstd, br, deflate
+     compressionType: ""
      # <string> default database name
      defaultDatabase: ""
      # <bool> enable/disable tls authorization
@@ -1097,7 +1101,7 @@ datasources:
      # <string> X-ClickHouse-Key header value for authorization
      xHeaderUser: ""
      # <string> the same value as url when `useYandexCloudAuthorization: true` 
-     # @todo remove this workarund when merge https://github.com/grafana/grafana/pull/80858
+     # @todo remove this workaround when merge https://github.com/grafana/grafana/pull/80858
      dataSourceUrl: "http://localhost:8123"
    secureJsonData:
      # <string> X-ClickHouse-User header value for authorization

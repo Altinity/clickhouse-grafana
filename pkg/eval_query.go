@@ -32,6 +32,7 @@ var intervalMsMacroRegexp = regexp.MustCompile(`\$__interval_ms\b`)
 
 type EvalQuery struct {
 	RefId          string `json:"refId"`
+	RuleUid        string
 	RawQuery       bool   `json:"rawQuery"`
 	Query          string `json:"query"`
 	DateTimeCol    string `json:"dateTimeColDataType"`
@@ -1484,7 +1485,7 @@ func (s *EvalQueryScanner) RemoveComments(query string) (string, error) {
 }
 
 func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
-	return "/* grafana alerts eval_query=" + q.RefId + " */ " + query
+	return "/* grafana alerts rule=" + q.RuleUid + " query=" + q.RefId + " */ " + query
 }
 
 const wsRe = "\\s+"

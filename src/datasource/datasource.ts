@@ -30,6 +30,8 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   addCorsHeader: boolean;
   xHeaderUser: string;
   useYandexCloudAuthorization: boolean;
+  useCompression: boolean;
+  compressionType: string;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
@@ -38,6 +40,8 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     this.withCredentials = instanceSettings.withCredentials;
     this.addCorsHeader = instanceSettings.jsonData.addCorsHeader || false;
     this.usePOST = instanceSettings.jsonData.usePOST || false;
+    this.useCompression = instanceSettings.jsonData.useCompression || false;
+    this.compressionType = instanceSettings.jsonData.compressionType || '';
     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
@@ -55,7 +59,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
       url: this.url,
       requestId: requestId,
     };
-    let params: String[] = [];
+    let params: string[] = [];
 
     if (usePOST) {
       options.method = 'POST';
@@ -76,6 +80,11 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     options.headers = options.headers || {};
     if (this.basicAuth) {
       options.headers.Authorization = this.basicAuth;
+    }
+
+    if (this.useCompression) {
+      options.headers['Accept-Encoding'] = this.compressionType
+      params.push("enable_http_compression=1")
     }
 
     if (this.useYandexCloudAuthorization) {

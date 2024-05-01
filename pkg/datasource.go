@@ -92,33 +92,35 @@ func (ds *ClickHouseDatasource) QueryData(
 		backend.Logger.Error(fmt.Sprintf("QueryData error: %v", err))
 		return nil, err
 	}
-
 	response := backend.NewQueryDataResponse()
 	wg, wgCtx := errgroup.WithContext(ctx)
+	ruleUid := req.Headers["X-Rule-Uid"]
 	for _, query := range req.Queries {
-		var q = Query{
-			From: query.TimeRange.From,
-			To:   query.TimeRange.To,
+		var evalQ = EvalQuery{
+			RuleUid:       ruleUid,
+			From:          query.TimeRange.From,
+			To:            query.TimeRange.To,
+			MaxDataPoints: query.MaxDataPoints,
 		}
-		err := json.Unmarshal(query.JSON, &q)
-		if err == nil {
+		evalJsonErr := json.Unmarshal(query.JSON, &evalQ)
+		if evalJsonErr == nil {
 			wg.Go(func() error {
-				response.Responses[q.RefId] = ds.executeQuery(req.PluginContext, wgCtx, &q)
+				response.Responses[evalQ.RefId] = ds.evalQuery(req.PluginContext, wgCtx, &evalQ)
 				return nil
 			})
 		}
-		if err != nil {
-			var evalQ = EvalQuery{
-				From:          query.TimeRange.From,
-				To:            query.TimeRange.To,
-				MaxDataPoints: query.MaxDataPoints,
+		if evalJsonErr != nil {
+			var q = Query{
+				From:    query.TimeRange.From,
+				To:      query.TimeRange.To,
+				RuleUid: ruleUid,
 			}
-			err := json.Unmarshal(query.JSON, &evalQ)
-			if err != nil {
-				return onErr(fmt.Errorf("unable to parse json %s into Query struct Error: %w", query.JSON, err))
+			jsonErr := json.Unmarshal(query.JSON, &q)
+			if jsonErr != nil {
+				return onErr(fmt.Errorf("unable to parse json %s into Query struct Error: %w", query.JSON, jsonErr))
 			}
 			wg.Go(func() error {
-				response.Responses[evalQ.RefId] = ds.evalQuery(req.PluginContext, wgCtx, &evalQ)
+				response.Responses[q.RefId] = ds.executeQuery(req.PluginContext, wgCtx, &q)
 				return nil
 			})
 		}

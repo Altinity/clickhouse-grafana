@@ -11,9 +11,14 @@ import (
 	"io"
 	"net/http"
 	"net/url"
+	"slices"
 	"time"
 
+	"compress/flate"
+	"compress/gzip"
+	"github.com/andybalholm/brotli"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/klauspost/compress/zstd"
 )
 
 const TimeZoneFieldName = "timezone()"
@@ -51,6 +56,12 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 		}
 		params := req.URL.Query()
 		params.Add("query", query)
+		req.URL.RawQuery = params.Encode()
+	}
+	if client.settings.UseCompression && slices.Contains([]string{"gzip", "br", "deflate", "zstd"}, client.settings.CompressionType) {
+		req.Header.Set("Accept-Encoding", client.settings.CompressionType)
+		params := req.URL.Query()
+		params.Add("enable_http_compression", "1")
 		req.URL.RawQuery = params.Encode()
 	}
 	if client.settings.Instance.BasicAuthEnabled {
@@ -98,7 +109,31 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 	if err != nil {
 		return onErr(err)
 	}
-	body, err := io.ReadAll(resp.Body)
+
+	var reader io.Reader
+	switch resp.Header.Get("Content-Encoding") {
+	case "gzip":
+		reader, err = gzip.NewReader(resp.Body)
+		if err != nil {
+			return onErr(fmt.Errorf("error creating GZIP reader: %v", err))
+		}
+	case "deflate":
+		reader = flate.NewReader(resp.Body)
+	case "br":
+		reader = brotli.NewReader(resp.Body)
+	case "zstd":
+		decoder, zstdErr := zstd.NewReader(resp.Body)
+		if zstdErr != nil {
+			return onErr(fmt.Errorf("error creating ZSTD reader: %v", zstdErr))
+		}
+		defer decoder.Close()
+		reader = decoder.IOReadCloser()
+	default:
+		reader = resp.Body
+		fmt.Println("No compression or unknown compression method")
+	}
+
+	body, err := io.ReadAll(reader)
 	if err != nil {
 		return onErr(err)
 	}

@@ -322,13 +322,44 @@ export default class SqlQueryMacros {
     }
 
     let keyAlias = key.trim().split(' ').pop(),
-      valueAlias = value.trim().split(' ').pop(),
-      havingIndex = fromQuery.toLowerCase().indexOf('having'),
-      having = '';
+      valueAlias = value.trim().split(' ').pop();
 
-    if (havingIndex !== -1) {
-      having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
-      fromQuery = fromQuery.slice(0, havingIndex - 1);
+    let groupByQuery = ' GROUP BY t, ' + keyAlias;
+    let havingQuery = '';
+    let orderByQuery = ' ORDER BY t, ' + keyAlias;
+    const fromRe = /^\s*FROM\s*\(/mi;
+    if (!fromRe.test(fromQuery)) {
+      const groupByIndex = fromQuery.toLowerCase().indexOf('group by');
+      const havingIndex = fromQuery.toLowerCase().indexOf('having');
+      const orderByIndex = fromQuery.toLowerCase().indexOf('order by');
+
+      if (havingIndex >= 0 && orderByIndex >= 0 &&  havingIndex >= orderByIndex) {
+        throw {message: "ORDER BY clause shall be before HAVING"};
+      }
+
+      if (groupByIndex >= 0 && orderByIndex >= 0 && groupByIndex >= orderByIndex) {
+        throw {message: "GROUP BY clause shall be before ORDER BY"};
+      }
+
+      if (groupByIndex >= 0 && havingIndex >= 0 && groupByIndex >= havingIndex) {
+        throw {message: "GROUP BY clause shall be before HAVING"};
+      }
+
+
+      if (orderByIndex !== -1) {
+        orderByQuery = ' ' + fromQuery.slice(orderByIndex, fromQuery.length);
+        fromQuery = fromQuery.slice(0, orderByIndex - 1);
+      }
+
+      if (havingIndex !== -1) {
+        havingQuery = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
+        fromQuery = fromQuery.slice(0, havingIndex - 1);
+      }
+
+      if (groupByIndex !== -1) {
+        groupByQuery = ' ' + fromQuery.slice(groupByIndex, fromQuery.length);
+        fromQuery = fromQuery.slice(0, groupByIndex - 1);
+      }
     }
     fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
 
@@ -349,11 +380,9 @@ export default class SqlQueryMacros {
       value +
       ' ' +
       fromQuery +
-      ' GROUP BY t, ' +
-      keyAlias +
-      having +
-      ' ORDER BY t, ' +
-      keyAlias +
+      groupByQuery +
+      havingQuery +
+      orderByQuery +
       ')' +
       ' GROUP BY t' +
       ' ORDER BY t'

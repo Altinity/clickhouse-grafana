@@ -112,8 +112,9 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
   }, [selectedTable, selectedDatabase, querySegment]);
 
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
-    setSelectedDateTimeType(dateTimeType.value);
-    query.dateTimeType = dateTimeType.value;
+    const value = dateTimeType?.value ? dateTimeType.value : null;
+    setSelectedDateTimeType(value);
+    query.dateTimeType = value;
     onChange(query);
   };
 
@@ -209,6 +210,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
           <Select
             width={24}
             onChange={onDateTimeTypeChanged}
+            isClearable
             placeholder={'Timestamp type'}
             options={[
               { label: 'DateTime', value: 'DATETIME' },

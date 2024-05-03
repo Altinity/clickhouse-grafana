@@ -48,6 +48,7 @@ export const UniversalSelectField: React.FC<UniversalSelectFieldProps> = ({
   return (
     <InlineField label={label ? label : null}>
       <Select
+        isClearable
         allowCustomValue={true}
         onCreateOption={v => {
           const customValue: SelectableValue<string> = {
@@ -59,7 +60,9 @@ export const UniversalSelectField: React.FC<UniversalSelectFieldProps> = ({
         }}
         width={width}
         value={value}
-        onChange={({ value }) => onChange({ value })}
+        onChange={(changeEvent) => {
+          onChange({ value: changeEvent ? changeEvent.value : null })
+        }}
         placeholder={placeholder}
         options={uniqueOptions}
         disabled={disabled}

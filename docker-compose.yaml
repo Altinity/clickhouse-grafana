@@ -36,12 +36,12 @@ services:
       - ./docker/clickhouse/profiling_users.xml:/etc/clickhouse-server/users.d/profiling_users.xml
 
   mysql:
-    image: mysql:latest
+    image: docker.io/mysql:${MYSQL_VERSION:-latest}
     environment:
       - MYSQL_ROOT_PASSWORD=grafana
 
   postgres:
-    image: postgres:latest
+    image: docker.io/postgres:${POSTGRES_VERSION:-latest}
     environment:
       - POSTGRES_PASSWORD=grafana
     volumes:

@@ -1,0 +1,148 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "https://github.com/Altinity/clickhouse-grafana/issues/409",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 36,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "add_metadata": false,
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$columns(\r\n service_name,\r\n count() as sum_req\r\n) FROM $table  \r\nWHERE\r\n    $timeFilter\r\n    AND service_name != 'deprecated'\r\nGROUP BY t, service_name\r\nORDER BY service_name, t WITH FILL STEP 6000\r\n",
+          "rawQuery": "SELECT t, groupArray((service_name, sum_req)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 30) * 30) * 1000 AS t, service_name, count() as sum_req FROM default.test_grafana  \r\nWHERE event_time >= toDateTime(1714722990) AND event_time <= toDateTime(1714744590) AND\r\n    event_time >= toDateTime(1714722990) AND event_time <= toDateTime(1714744590)\r\n    AND service_name != 'deprecated'\r GROUP BY t, status_code\r ORDER BY t WITH FILL STEP 6000) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_grafana"
+        }
+      ],
+      "title": "columns + ORDER BY WITH FILL",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "$columns + ORDER BY WITH FILL",
+  "uid": "adklfil16opa8e",
+  "version": 1,
+  "weekStart": ""
+}

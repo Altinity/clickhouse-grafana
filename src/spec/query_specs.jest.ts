@@ -413,10 +413,8 @@ describe('columns + order by with fill', () => {
     'ORDER BY t, category\n';
   const expQuery =
     'SELECT t, groupArray((category, value)) AS groupArr FROM ( SELECT $timeSeries AS t, category, sum(agg_value) as value FROM $table\n' +
-    'WHERE category=\'test\'\n' +
-    'GROUP BY t, category\n' +
-    'HAVING value > 100\n' +
-    'ORDER BY t, category\n' +
+    'WHERE $timeFilter AND category=\'test\'' +
+    ' GROUP BY t, category HAVING value > 100 ORDER BY t, category\n' +
     ') GROUP BY t ORDER BY t';
   const scanner = new Scanner(query);
   let ast = scanner.toAST();

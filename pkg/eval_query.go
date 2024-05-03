@@ -350,7 +350,7 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string) (s
 		var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
 		var orderByIndex = strings.Index(strings.ToLower(fromQuery), "order by")
 
-		if orderByIndex >= 0 && havingIndex >= 0 && orderByIndex >= havingIndex {
+		if havingIndex >= 0 && orderByIndex >= 0 && havingIndex >= orderByIndex {
 			return "", fmt.Errorf("ORDER BY clause shall be before HAVING")
 		}
 

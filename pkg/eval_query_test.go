@@ -1473,55 +1473,31 @@ func TestScannerAST(t *testing.T) {
 				"  sum(agg_value) as value\n"+
 				")\n"+
 				"FROM $table\n"+
+				"WHERE service_name='mysql'\n"+
 				"GROUP BY t, service_name\n"+
+				"HAVING value>100\n"+
 				"ORDER BY t, service_name WITH FILL 60000",
 			&EvalAST{Obj: map[string]interface{}{
-				"root":   EvalAST{},
+				"root":   newEvalAST(false),
 				"select": newEvalAST(false),
 				"$columns": &EvalAST{Arr: []interface{}{
 					"service_name",
 					"sum(agg_value) as value",
 				}},
-				"from": &EvalAST{Obj: map[string]interface{}{
-					"root": newEvalAST(false),
-					"select": &EvalAST{Arr: []interface{}{
-						"$timeSeries as t",
-						"service_name",
-						"sum(too_big_value) as agg_value",
-					}},
-					"from": &EvalAST{Arr: []interface{}{
-						"$table",
-					}},
-					"group by": &EvalAST{Arr: []interface{}{
-						"t",
-						"service_name",
-					}},
-					"union all": &EvalAST{Arr: []interface{}{
-						EvalAST{Obj: map[string]interface{}{
-							"from": &EvalAST{Arr: []interface{}{
-								"$table",
-							}},
-							"group by": &EvalAST{Arr: []interface{}{
-								"t",
-								"service_name",
-							}},
-							"root": newEvalAST(false),
-							"select": &EvalAST{Arr: []interface{}{
-								"$timeSeries as t",
-								"service_name",
-								"sum(too_big_value) / total_value as agg_value",
-							}},
-							"where": &EvalAST{Arr: []interface{}{
-								"$timeFilter",
-							}},
-							"with": &EvalAST{Arr: []interface{}{
-								"(SELECT sum(too_big_value) FROM $table) AS total_value",
-							}},
-						}},
-					}},
-					"where": &EvalAST{Arr: []interface{}{
-						"$timeFilter",
-					}},
+				"from": &EvalAST{Arr: []interface{}{
+					"$table",
+				}},
+				"where": &EvalAST{Arr: []interface{}{
+					"service_name = 'mysql'",
+				}},
+				"having": &EvalAST{Arr: []interface{}{
+					"value > 100",
+				}},
+				"group by": &EvalAST{Arr: []interface{}{
+					"t", "service_name",
+				}},
+				"order by": &EvalAST{Arr: []interface{}{
+					"t", "service_name WITH FILL 60000",
 				}},
 			}},
 		),

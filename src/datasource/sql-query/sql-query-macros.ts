@@ -327,13 +327,13 @@ export default class SqlQueryMacros {
     let groupByQuery = ' GROUP BY t, ' + keyAlias;
     let havingQuery = '';
     let orderByQuery = ' ORDER BY t, ' + keyAlias;
-    const fromRe = `/^\s*FROM\s*\(/mi`;
-    if (!fromRe.match(fromQuery)) {
+    const fromRe = /^\s*FROM\s*\(/mi;
+    if (!fromRe.test(fromQuery)) {
       const groupByIndex = fromQuery.toLowerCase().indexOf('group by');
       const havingIndex = fromQuery.toLowerCase().indexOf('having');
       const orderByIndex = fromQuery.toLowerCase().indexOf('order by');
 
-      if (orderByIndex >= 0 && havingIndex >= 0 && orderByIndex >= havingIndex) {
+      if (havingIndex >= 0 && orderByIndex >= 0 &&  havingIndex >= orderByIndex) {
         throw {message: "ORDER BY clause shall be before HAVING"};
       }
 

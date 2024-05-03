@@ -160,7 +160,7 @@ export const initiateEditor = (templateVariables: any, monacoInstance: any, auto
 	};
 
 	const registerAutocompletion = (templateVariables, monacoInstance) => {
-		monacoInstance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
+		return monacoInstance.languages.registerCompletionItemProvider(LANGUAGE_ID, {
 			provideCompletionItems: (model, position) => {
 				const word = model.getWordUntilPosition(position);
 

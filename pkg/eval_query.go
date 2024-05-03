@@ -342,12 +342,38 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string) (s
 	var keyAlias = keySplit[len(keySplit)-1]
 	var valueSplit = strings.Split(strings.Trim(value, " \xA0\t\r\n"), " ")
 	var valueAlias = valueSplit[len(valueSplit)-1]
-	var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
-	var having = ""
+	var groupByQuery = " GROUP BY t, " + keyAlias
+	var orderByQuery = " ORDER BY t, " + keyAlias
+	var havingQuery = ""
+	if matched, err := regexp.MatchString(`(?mi)^\s*FROM\s*\(`, fromQuery); err == nil && !matched {
+		var groupByIndex = strings.Index(strings.ToLower(fromQuery), "group by")
+		var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
+		var orderByIndex = strings.Index(strings.ToLower(fromQuery), "order by")
 
-	if havingIndex != -1 {
-		having = " " + fromQuery[havingIndex:]
-		fromQuery = fromQuery[0 : havingIndex-1]
+		if orderByIndex >= 0 && havingIndex >= 0 && orderByIndex >= havingIndex {
+			return "", fmt.Errorf("ORDER BY clause shall be before HAVING")
+		}
+
+		if groupByIndex >= 0 && orderByIndex >= 0 && groupByIndex >= orderByIndex {
+			return "", fmt.Errorf("GROUP BY clause shall be before ORDER BY")
+		}
+
+		if groupByIndex >= 0 && havingIndex >= 0 && groupByIndex >= havingIndex {
+			return "", fmt.Errorf("GROUP BY clause shall be before HAVING")
+		}
+
+		if orderByIndex != -1 {
+			orderByQuery = " " + fromQuery[orderByIndex:]
+			fromQuery = fromQuery[0 : orderByIndex-1]
+		}
+		if havingIndex != -1 {
+			havingQuery = " " + fromQuery[havingIndex:]
+			fromQuery = fromQuery[0 : havingIndex-1]
+		}
+		if groupByIndex != -1 {
+			groupByQuery = " " + fromQuery[groupByIndex:]
+			fromQuery = fromQuery[0 : groupByIndex-1]
+		}
 	}
 	fromQuery = q._applyTimeFilter(fromQuery)
 
@@ -359,9 +385,9 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string) (s
 		", " + key +
 		", " + value + " " +
 		fromQuery +
-		" GROUP BY t, " + keyAlias +
-		having +
-		" ORDER BY t, " + keyAlias +
+		groupByQuery +
+		havingQuery +
+		orderByQuery +
 		")" +
 		" GROUP BY t" +
 		" ORDER BY t", nil

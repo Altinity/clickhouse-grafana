@@ -398,3 +398,31 @@ describe('columns + union all + with', () => {
     expect(actual).toBe(expQuery);
   });
 });
+
+/* fix https://github.com/Altinity/clickhouse-grafana/issues/409 */
+describe('columns + order by with fill', () => {
+  const query =
+    '$columns(\n' +
+    '  category,   \n' +
+    '  sum(agg_value) as value\n' +
+    ')\n' +
+    'FROM $table\n' +
+    'WHERE category=\'test\'\n' +
+    'GROUP BY t, category\n' +
+    'HAVING value > 100\n' +
+    'ORDER BY t, category\n';
+  const expQuery =
+    'SELECT t, groupArray((category, value)) AS groupArr FROM ( SELECT $timeSeries AS t, category, sum(agg_value) as value FROM $table\n' +
+    'WHERE category=\'test\'\n' +
+    'GROUP BY t, category\n' +
+    'HAVING value > 100\n' +
+    'ORDER BY t, category\n' +
+    ') GROUP BY t ORDER BY t';
+  const scanner = new Scanner(query);
+  let ast = scanner.toAST();
+  let actual = SqlQueryMacros.applyMacros(query, ast);
+  it('gets replaced with right FROM query', () => {
+    expect(actual).toBe(expQuery);
+  });
+});
+

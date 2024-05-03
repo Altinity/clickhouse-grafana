@@ -353,7 +353,7 @@ func TestCommentsAndRateMacrosWithFromKeywordInFieldName(t *testing.T) {
 	r.NoError(err)
 	actual, err := q.applyMacros(query, ast)
 	r.NoError(err)
-	r.Equal(actual, expQuery, "gets replaced with right FROM query")
+	r.Equal(expQuery, actual, "gets replaced with right FROM query")
 }
 
 /*
@@ -414,7 +414,40 @@ func TestColumnsMacrosWithUnionAllAndWithKeyword(t *testing.T) {
 	r.NoError(err)
 	actual, err := q.applyMacros(query, ast)
 	r.NoError(err)
-	r.Equal(actual, expQuery, "gets replaced with right FROM query")
+	r.Equal(expQuery, actual, "gets replaced with right FROM query")
+}
+
+/*
+columns + ORDER BY WITH FILL
+fix https://github.com/Altinity/clickhouse-grafana/issues/409
+*/
+func TestColumnsMacrosWithGroupWithFill(t *testing.T) {
+	const query = "$columns(\n" +
+		" status_code,\n" +
+		" sum(request) as sum_req" +
+		"\n)\n" +
+		"FROM $table\n" +
+		"WHERE\n" +
+		"    $timeFilter\n" +
+		"    AND status_code != 201 AND status_code != 0\n" +
+		"GROUP BY t, status_code\n" +
+		"ORDER BY t WITH FILL STEP 60000"
+	const expQuery = "SELECT t, groupArray((status_code, sum_req)) AS groupArr FROM ( " +
+		"SELECT $timeSeries AS t, status_code, sum(request) as sum_req FROM $table\n" +
+		"WHERE $timeFilter AND\n" +
+		"    $timeFilter\n" +
+		"    AND status_code != 201 AND status_code != 0" +
+		" GROUP BY t, status_code" +
+		" ORDER BY t WITH FILL STEP 60000" +
+		") GROUP BY t ORDER BY t"
+	r := require.New(t)
+	q := EvalQuery{}
+	scanner := newScanner(query)
+	ast, err := scanner.toAST()
+	r.NoError(err)
+	actual, err := q.applyMacros(query, ast)
+	r.NoError(err)
+	r.Equal(expQuery, actual, "gets replaced with right FROM query")
 }
 
 type astTestCase struct {
@@ -1429,6 +1462,66 @@ func TestScannerAST(t *testing.T) {
 				}},
 				"having": &EvalAST{Arr: []interface{}{
 					"rx_bytes > $interval",
+				}},
+			}},
+		),
+		/* fix https://github.com/Altinity/clickhouse-grafana/issues/409 */
+		newASTTestCase(
+			"AST case 28 $columns + ORDER BY ... WITH FILL",
+			"$columns(\n"+
+				"  service_name,   \n"+
+				"  sum(agg_value) as value\n"+
+				")\n"+
+				"FROM $table\n"+
+				"GROUP BY t, service_name\n"+
+				"ORDER BY t, service_name WITH FILL 60000",
+			&EvalAST{Obj: map[string]interface{}{
+				"root":   EvalAST{},
+				"select": newEvalAST(false),
+				"$columns": &EvalAST{Arr: []interface{}{
+					"service_name",
+					"sum(agg_value) as value",
+				}},
+				"from": &EvalAST{Obj: map[string]interface{}{
+					"root": newEvalAST(false),
+					"select": &EvalAST{Arr: []interface{}{
+						"$timeSeries as t",
+						"service_name",
+						"sum(too_big_value) as agg_value",
+					}},
+					"from": &EvalAST{Arr: []interface{}{
+						"$table",
+					}},
+					"group by": &EvalAST{Arr: []interface{}{
+						"t",
+						"service_name",
+					}},
+					"union all": &EvalAST{Arr: []interface{}{
+						EvalAST{Obj: map[string]interface{}{
+							"from": &EvalAST{Arr: []interface{}{
+								"$table",
+							}},
+							"group by": &EvalAST{Arr: []interface{}{
+								"t",
+								"service_name",
+							}},
+							"root": newEvalAST(false),
+							"select": &EvalAST{Arr: []interface{}{
+								"$timeSeries as t",
+								"service_name",
+								"sum(too_big_value) / total_value as agg_value",
+							}},
+							"where": &EvalAST{Arr: []interface{}{
+								"$timeFilter",
+							}},
+							"with": &EvalAST{Arr: []interface{}{
+								"(SELECT sum(too_big_value) FROM $table) AS total_value",
+							}},
+						}},
+					}},
+					"where": &EvalAST{Arr: []interface{}{
+						"$timeFilter",
+					}},
 				}},
 			}},
 		),

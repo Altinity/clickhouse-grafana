@@ -65,7 +65,10 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} onTriggerQuery={onTriggerQuery} />
       {error ? <Alert title={error} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
       {editorMode === EditorMode.Builder && (
-        <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
+        <QueryBuilder query={initializedQuery} datasource={datasource} onChange={(items) => {
+          setQuery({...items})
+          onChange(items)
+        }} onRunQuery={onRunQuery} />
       )}
       {editorMode === EditorMode.SQL && (
         <>

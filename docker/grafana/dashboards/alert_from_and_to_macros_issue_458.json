@@ -18,7 +18,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 38,
   "links": [],
   "panels": [
     {
@@ -104,8 +103,7 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green",
-                "value": null
+                "color": "green"
               },
               {
                 "color": "red",
@@ -303,7 +301,7 @@
           "interval": "15s",
           "intervalFactor": 1,
           "query": "/* UI alerts with `from` and `to` */ SELECT $timeSeries as t, count() FROM $table WHERE EventTime>=$from AND EventTime<=$to GROUP BY t ORDER BY t",
-          "rawQuery": "/* UI alerts with `from` and `to` */ SELECT (intDiv(toUInt32(EventTime), 15) * 15) * 1000 as t, count() FROM default.test_alerts WHERE EventTime >= toDateTime(1714858479) AND EventTime <= toDateTime(1714880079) GROUP BY t ORDER BY t",
+          "rawQuery": "/* UI alerts with `from` and `to` */ SELECT (intDiv(toUInt32(EventTime), 15) * 15) * 1000 as t, count() FROM default.test_alerts WHERE EventTime >= 1714858479 AND EventTime <= 1714880079 GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,

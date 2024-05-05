@@ -117,7 +117,7 @@ func (ds *ClickHouseDatasource) QueryData(
 			}
 			jsonErr := json.Unmarshal(query.JSON, &q)
 			if jsonErr != nil {
-				return onErr(fmt.Errorf("unable to parse json %s into Query struct Error: %w", query.JSON, jsonErr))
+				return onErr(fmt.Errorf("unable to parse json, to Query error: %v, to EvalQuery error: %v, source JSON: %s", jsonErr, evalJsonErr, query.JSON))
 			}
 			wg.Go(func() error {
 				response.Responses[q.RefId] = ds.executeQuery(req.PluginContext, wgCtx, &q)

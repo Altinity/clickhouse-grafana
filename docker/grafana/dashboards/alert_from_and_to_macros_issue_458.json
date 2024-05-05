@@ -1,4 +1,4 @@
-﻿{
+{
   "annotations": {
     "list": [
       {
@@ -44,16 +44,16 @@
             },
             "reducer": {
               "params": [],
-              "type": "avg"
+              "type": "max"
             },
             "type": "query"
           }
         ],
         "executionErrorState": "alerting",
-        "for": "5m",
+        "for": "1m",
         "frequency": "1m",
         "handler": 1,
-        "name": "alert with timefilter",
+        "name": "alert with $timeFilter macros",
         "noDataState": "no_data",
         "notifications": []
       },
@@ -61,7 +61,7 @@
         "type": "vertamedia-clickhouse-datasource",
         "uid": "P7E099F39B84EA795"
       },
-      "description": "https://github.com/Altinity/clickhouse-grafana/issues/458",
+      "description": "mage test build:linux && GF_UNIFIED_ALERTING_ENABLED=false GF_ALERTING_ENABLED=true npm run server\nhttps://github.com/Altinity/clickhouse-grafana/issues/458",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -137,7 +137,7 @@
       },
       "targets": [
         {
-          "add_metadata": true,
+          "add_metadata": false,
           "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
@@ -149,11 +149,11 @@
           "editorMode": "builder",
           "extrapolate": true,
           "format": "time_series",
-          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "formattedQuery": "/* UI alerts with `timeFilter` */ SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "",
           "intervalFactor": 1,
-          "query": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
-          "rawQuery": "/* grafana dashboard=New dashboard, user=1 */\nSELECT (intDiv(toUInt32(EventTime), 15) * 15) * 1000 as t, count() FROM default.test_alerts WHERE EventTime >= toDateTime(1714858479) AND EventTime <= toDateTime(1714880079) GROUP BY t ORDER BY t",
+          "query": "/* UI alerts with `timeFilter` */ SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "rawQuery": "/* UI alerts with `timeFilter` */\nSELECT (intDiv(toUInt32(EventTime), 15) * 15) * 1000 as t, count() FROM default.test_alerts WHERE EventTime >= toDateTime(1714858479) AND EventTime <= toDateTime(1714880079) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "skip_comments": true,
@@ -178,7 +178,7 @@
           {
             "evaluator": {
               "params": [
-                null
+                0
               ],
               "type": "gt"
             },
@@ -188,19 +188,19 @@
             "query": {
               "params": [
                 "A",
-                "5m",
+                "15m",
                 "now"
               ]
             },
             "reducer": {
               "params": [],
-              "type": "avg"
+              "type": "max"
             },
             "type": "query"
           }
         ],
         "executionErrorState": "alerting",
-        "for": "5m",
+        "for": "1m",
         "frequency": "1m",
         "handler": 1,
         "name": "alert with from and to macro alert",
@@ -287,7 +287,7 @@
       },
       "targets": [
         {
-          "add_metadata": true,
+          "add_metadata": false,
           "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
@@ -299,11 +299,11 @@
           "editorMode": "builder",
           "extrapolate": true,
           "format": "time_series",
-          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "formattedQuery": "/* UI alerts with `from` and `to` */ SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "15s",
           "intervalFactor": 1,
-          "query": "SELECT $timeSeries as t, count() FROM $table WHERE EventTime>=$from AND EventTime<=$to GROUP BY t ORDER BY t",
-          "rawQuery": "/* grafana dashboard=New dashboard, user=1 */\nSELECT (intDiv(toUInt32(EventTime), 15) * 15) * 1000 as t, count() FROM default.test_alerts WHERE EventTime >= toDateTime(1714858479) AND EventTime <= toDateTime(1714880079) GROUP BY t ORDER BY t",
+          "query": "/* UI alerts with `from` and `to` */ SELECT $timeSeries as t, count() FROM $table WHERE EventTime>=$from AND EventTime<=$to GROUP BY t ORDER BY t",
+          "rawQuery": "/* UI alerts with `from` and `to` */ SELECT (intDiv(toUInt32(EventTime), 15) * 15) * 1000 as t, count() FROM default.test_alerts WHERE EventTime >= toDateTime(1714858479) AND EventTime <= toDateTime(1714880079) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
@@ -315,6 +315,7 @@
         {
           "colorMode": "critical",
           "op": "gt",
+          "value": 0,
           "visible": true
         }
       ],
@@ -333,8 +334,8 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "New dashboard",
-  "uid": "fdkr8z53hy60wf",
+  "title": "alerts from and to from UI issue-458",
+  "uid": "issue_458_alert_time_range_from_ui",
   "version": 1,
   "weekStart": ""
 }

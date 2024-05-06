@@ -19,8 +19,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 19,
   "links": [],
+  "liveNow": false,
   "panels": [
     {
       "datasource": {
@@ -43,6 +43,7 @@
       ],
       "targets": [
         {
+          "add_metadata": true,
           "database": "system",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
@@ -53,13 +54,13 @@
           "dateTimeType": "TIMESTAMP",
           "editorMode": "builder",
           "extrapolate": false,
-          "format": "table",
+          "format": "traces",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
-          "query": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    hostname AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map() AS serviceTags\r\nFROM\r\n   $table\r\nWHERE $timeFilter\r\n",
-          "rawQuery": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    hostname AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map() AS serviceTags\r\nFROM\r\n   system.opentelemetry_span_log\r\nWHERE finish_date >= toDate(1713096697) AND finish_date <= toDate(1713118297) AND intDiv(finish_time_us,1000000) >= 1713096697 AND intDiv(finish_time_us,1000000) <= 1713118297",
+          "query": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    'clickhouse' AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map('hostName',hostname) AS serviceTags\r\nFROM\r\n   $table\r\nWHERE $timeFilter\r\nORDER BY traceID, startTime",
+          "rawQuery": "/* grafana dashboard=FlameGraph and Tracing support, user=1 */ SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    hostname AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map() AS serviceTags\r\nFROM\r\n   system.opentelemetry_span_log\r\nWHERE finish_date >= toDate(1713432368) AND finish_date <= toDate(1713453968) AND intDiv(finish_time_us,1000000) >= 1713432368 AND intDiv(finish_time_us,1000000) <= 1713453968",
           "refId": "A",
-          "round": "",
+          "round": "0s",
           "showFormattedSQL": false,
           "showHelp": false,
           "skip_comments": false,
@@ -101,6 +102,7 @@
       ],
       "targets": [
         {
+          "add_metadata": true,
           "database": "system",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
@@ -111,14 +113,14 @@
           "dateTimeType": "DATETIME",
           "editorMode": "builder",
           "extrapolate": false,
-          "format": "table",
+          "format": "flamegraph",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
-          "query": "SELECT level, label, count() AS value, 0 self \r\nFROM $table \r\nARRAY JOIN arrayEnumerate(trace) AS level, \r\narrayMap(x -> demangle(addressToSymbol(x) ), trace) AS label \r\nWHERE trace_type='Real' AND $timeFilter\r\nGROUP BY ALL;",
-          "rawQuery": "SELECT (intDiv(toUInt32(event_time), 20) * 20) * 1000 as t, count() FROM system.trace_log WHERE event_date >= toDate(1713009520) AND event_date <= toDate(1713031120) AND event_time >= toDateTime(1713009520) AND event_time <= toDateTime(1713031120) GROUP BY t ORDER BY t",
+          "query": "SELECT length(trace)  - level_num AS level, label, count() AS value, 0 self \r\nFROM $table \r\nARRAY JOIN arrayEnumerate(trace) AS level_num, \r\narrayMap(x -> if(addressToSymbol(x) != '', demangle(addressToSymbol(x)), 'unknown') , trace) AS label \r\nWHERE trace_type='Real' AND $timeFilter\r\nGROUP BY level, label, trace\r\nORDER BY trace, level\r\n",
+          "rawQuery": "/* grafana dashboard=FlameGraph and Tracing support, user=1 */ SELECT level, label, count() AS value, 0 self \r\nFROM system.trace_log \r\nARRAY JOIN arrayEnumerate(trace) AS level, \r\narrayMap(x -> demangle(addressToSymbol(x) ), trace) AS label \r\nWHERE trace_type='Real' AND event_date >= toDate(1713685956) AND event_date <= toDate(1713707556) AND event_time >= toDateTime(1713685956) AND event_time <= toDateTime(1713707556)\r\nGROUP BY ALL;",
           "refId": "A",
-          "round": "",
-          "showFormattedSQL": true,
+          "round": "0s",
+          "showFormattedSQL": false,
           "showHelp": false,
           "skip_comments": false,
           "step": "",
@@ -129,19 +131,20 @@
       "type": "flamegraph"
     }
   ],
+  "refresh": "",
   "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": []
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-1m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "FlameGraph and Tracing support",
   "uid": "edimrzy0cijnkf",
-  "version": 1,
+  "version": 4,
   "weekStart": ""
 }

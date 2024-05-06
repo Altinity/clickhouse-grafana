@@ -4,15 +4,26 @@ import { SelectableValue } from '@grafana/data';
 import { UniversalSelectField } from './components/UniversalSelectComponent';
 
 export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) => {
+  let selectedDatabase;
+  let selectedTable;
+  let selectedColumnTimestampType;
+  let selectedColumnDateType;
+  let selectedDateTimeType;
+  let setSelectedDatabase;
+  let setSelectedTable;
+  let setSelectedColumnTimestampType;
+  let setSelectedColumnDateType;
+  let setSelectedDateTimeType;
+
   const [databases, setDatabases] = useState([]);
   const [tables, setTables] = useState([]);
   const [dateColumns, setdateColumns] = useState([]);
   const [timestampColumns, setTimestampColumns] = useState([]);
-  const [selectedDatabase, setSelectedDatabase] = useState<string | undefined>(query.database);
-  const [selectedTable, setSelectedTable] = useState<string | undefined>(query.table);
-  const [selectedColumnTimestampType, setSelectedColumnTimestampType] = useState(query.dateTimeColDataType);
-  const [selectedColumnDateType, setSelectedColumnDateType] = useState(query.dateColDataType);
-  const [selectedDateTimeType, setSelectedDateTimeType] = useState(query.dateTimeType);
+  [selectedDatabase, setSelectedDatabase] = useState<string | undefined>(selectedDatabase || query.database);
+  [selectedTable, setSelectedTable] = useState<string | undefined>(selectedTable || query.table);
+  [selectedColumnTimestampType, setSelectedColumnTimestampType] = useState(selectedColumnTimestampType || query.dateTimeColDataType);
+  [selectedColumnDateType, setSelectedColumnDateType] = useState(selectedColumnDateType || query.dateColDataType);
+  [selectedDateTimeType, setSelectedDateTimeType] = useState(selectedDateTimeType || query.dateTimeType);
 
   const buildExploreQuery = useCallback((type) => {
     let query;
@@ -112,35 +123,31 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
   }, [selectedTable, selectedDatabase, querySegment]);
 
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
-    setSelectedDateTimeType(dateTimeType.value);
-    query.dateTimeType = dateTimeType.value;
-    onChange(query);
+    const value = dateTimeType?.value ? dateTimeType.value : undefined;
+    setSelectedDateTimeType(value);
+    onChange({...query, dateTimeType});
   };
 
   const onDatabaseChange = (database?: string) => {
     setSelectedDatabase(database);
-    query.database = database;
-    onChange(query);
+    onChange({...query, database});
   };
 
   const onTableChange = (table?: string) => {
     setSelectedTable(table);
-    query.table = table;
-    onChange(query);
+    onChange({...query, table});
   };
 
   const onDateColDataTypeChange = (dateColDataType?: string) => {
     // @ts-ignore
     setSelectedColumnDateType((dateColDataType || '').trim());
-    query.dateColDataType = dateColDataType;
-    onChange(query);
+    onChange({...query, dateColDataType});
   };
 
   const onDateTimeColDataTypeChange = (dateTimeColDataType: string) => {
     // @ts-ignore
     setSelectedColumnTimestampType(dateTimeColDataType.trim());
-    query.dateTimeColDataType = dateTimeColDataType;
-    onChange(query);
+    onChange({...query, dateTimeColDataType});
   };
 
   return (
@@ -209,6 +216,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
           <Select
             width={24}
             onChange={onDateTimeTypeChanged}
+            isClearable
             placeholder={'Timestamp type'}
             options={[
               { label: 'DateTime', value: 'DATETIME' },

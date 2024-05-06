@@ -262,6 +262,63 @@ FROM
 
 ---
 
+### $rateColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need calculate `rate` for higher cardinality dimension and then aggregate by lower cardinality dimension
+
+Example usage:
+
+```sql
+$rateColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1014 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) FROM traffic
+```
+
+Query will be transformed into:
+
+```sql
+SELECT
+    t,
+    datacenter,
+    sum(tx_kbytesRate) AS tx_bytesRateAgg,
+    sum(rx_bytesRate) AS rx_bytesRateAgg
+FROM
+(
+    SELECT
+        t,
+        datacenter,
+        dc_interface,
+        tx_kbytes / runningDifference(t / 1000) AS tx_kbytesRate,
+        rx_bytes / runningDifference(t / 1000) AS rx_bytesRate
+    FROM
+    (
+        SELECT
+            (intDiv(toUInt32(event_time), 60) * 60) * 1000 AS t,
+            datacenter,
+            concat(datacenter,interface) AS dc_interface,
+            max(tx_bytes * 1024) AS tx_kbytes,
+            max(rx_bytes) AS rx_bytes
+        FROM traffic
+        WHERE ((event_date >= toDate(1482796867)) AND (event_date <= toDate(1482853383))) 
+          AND ((event_time >= toDateTime(1482796867)) AND (event_time <= toDateTime(1482853383)))
+        GROUP BY
+            t,
+            datacenter,
+            dc_interface
+        ORDER BY
+            t,
+            datacenter,
+            dc_interface
+    )
+)
+GROUP BY
+  t,
+  datacenter
+ORDER BY 
+  datacenter,
+  t
+```
+
+look [issue 386](https://github.com/Altinity/clickhouse-grafana/issues/386) for reasons for implementation  
+
+---
+
 ### $perSecond(cols...) - converts query results as "change rate per interval" for Counter-like(growing only) metrics
 
 Example usage:
@@ -336,6 +393,63 @@ ORDER BY t
 ```
 
 // see [issue 80](https://github.com/Altinity/clickhouse-grafana/issues/80) for the background
+
+---
+
+### $perSecondColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need to calculate `perSecond` for higher cardinality dimension and then aggregate by lower cardinality dimension
+
+Example usage:
+
+```sql
+$perSecondColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1014 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) FROM traffic
+```
+
+Query will be transformed into:
+
+```sql
+SELECT
+    t,
+    datacenter,
+    sum(tx_kbytesPerSecond) AS tx_bytesPerSecondAgg,
+    sum(rx_bytesPerSecond) AS rx_bytesPerSecondAgg
+FROM
+(
+    SELECT
+        t,
+        datacenter,
+        dc_interface,
+        if(runningDifference(tx_kbytes) < 0 OR neighbor(tx_kbytes,-1,tx_kbytes) != tx_kbytes, nan, runningDifference(tx_kbytes) / runningDifference(t / 1000)) AS tx_kbytesPerSecond,
+        if(runningDifference(rx_bytes) < 0 OR neighbor(rx_bytes,-1,rx_bytes) != rx_bytes, nan, runningDifference(rx_bytes) / runningDifference(t / 1000)) AS rx_bytesPerSecond
+    FROM
+    (
+        SELECT
+            (intDiv(toUInt32(event_time), 60) * 60) * 1000 AS t,
+            datacenter,
+            concat(datacenter,interface) AS dc_interface,
+            max(tx_bytes * 1024) AS tx_kbytes,
+            max(rx_bytes) AS rx_bytes
+        FROM traffic
+        WHERE ((event_date >= toDate(1482796867)) AND (event_date <= toDate(1482853383))) 
+          AND ((event_time >= toDateTime(1482796867)) AND (event_time <= toDateTime(1482853383)))
+        GROUP BY
+            t,
+            datacenter,
+            dc_interface
+        ORDER BY
+            t,
+            datacenter,
+            dc_interface
+    )
+)
+GROUP BY
+  t,
+  datacenter
+ORDER BY 
+  datacenter,
+  t
+```
+
+look [issue 386](https://github.com/Altinity/clickhouse-grafana/issues/386) for reasons for implementation  
 
 ---
 
@@ -416,6 +530,63 @@ ORDER BY t
 
 ---
 
+### $deltaColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need to calculate `delta` for higher cardinality dimension and then aggregate by lower cardinality dimension
+
+Example usage:
+
+```sql
+$deltaColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1014 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) FROM traffic
+```
+
+Query will be transformed into:
+
+```sql
+SELECT
+    t,
+    datacenter,
+    sum(tx_kbytesDelta) AS tx_bytesDeltaAgg,
+    sum(rx_bytesDelta) AS rx_bytesDeltaAgg
+FROM
+(
+    SELECT
+        t,
+        datacenter,
+        dc_interface,
+        if(neighbor(tx_kbytes,-1,tx_kbytes) != tx_kbytes, 0, runningDifference(tx_kbytes) / 1) AS tx_kbytesDelta,
+        if(neighbor(rx_bytes,-1,rx_bytes) != rx_bytes, 0, runningDifference(rx_bytes) / 1) AS rx_bytesDelta
+    FROM
+    (
+        SELECT
+            (intDiv(toUInt32(event_time), 60) * 60) * 1000 AS t,
+            datacenter,
+            concat(datacenter,interface) AS dc_interface,
+            max(tx_bytes * 1024) AS tx_kbytes,
+            max(rx_bytes) AS rx_bytes
+        FROM traffic
+        WHERE ((event_date >= toDate(1482796867)) AND (event_date <= toDate(1482853383))) 
+          AND ((event_time >= toDateTime(1482796867)) AND (event_time <= toDateTime(1482853383)))
+        GROUP BY
+            t,
+            datacenter,
+            dc_interface
+        ORDER BY
+            t,
+            datacenter,
+            dc_interface
+    )
+)
+GROUP BY
+  t,
+  datacenter
+ORDER BY 
+  datacenter,
+  t
+```
+
+look [issue 386](https://github.com/Altinity/clickhouse-grafana/issues/386) for reasons for implementation
+
+---
+
 ### $increase(cols...) - converts query results as "non-negative delta value inside interval" for Counter-like(growing only) metrics, will zero if counter reset and delta less zero
 
 Example usage:
@@ -490,6 +661,63 @@ ORDER BY t
 ```
 
 // see [issue 455](https://github.com/Altinity/clickhouse-grafana/issues/455) for the background
+
+---
+
+### $increaseColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need to calculate `increase` for higher cardinality dimension and then aggregate by lower cardinality dimension
+
+Example usage:
+
+```sql
+$increaseColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1014 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) FROM traffic
+```
+
+Query will be transformed into:
+
+```sql
+SELECT
+    t,
+    datacenter,
+    sum(tx_kbytesIncrease) AS tx_bytesIncreaseAgg,
+    sum(rx_bytesIncrease) AS rx_bytesIncreaseAgg
+FROM
+(
+    SELECT
+        t,
+        datacenter,
+        dc_interface,
+        if(runningDifference(tx_kbytes) < 0 OR neighbor(tx_kbytes,-1,tx_kbytes) != tx_kbytes, nan, runningDifference(tx_kbytes) / 1) AS tx_kbytesIncrease,
+        if(runningDifference(rx_bytes) < 0 OR neighbor(rx_bytes,-1,rx_bytes) != rx_bytes, nan, runningDifference(rx_bytes) / 1) AS rx_bytesIncrease
+    FROM
+    (
+        SELECT
+            (intDiv(toUInt32(event_time), 60) * 60) * 1000 AS t,
+            datacenter,
+            concat(datacenter,interface) AS dc_interface,
+            max(tx_bytes * 1024) AS tx_kbytes,
+            max(rx_bytes) AS rx_bytes
+        FROM traffic
+        WHERE ((event_date >= toDate(1482796867)) AND (event_date <= toDate(1482853383))) 
+          AND ((event_time >= toDateTime(1482796867)) AND (event_time <= toDateTime(1482853383)))
+        GROUP BY
+            t,
+            datacenter,
+            dc_interface
+        ORDER BY
+            t,
+            datacenter,
+            dc_interface
+    )
+)
+GROUP BY
+  t,
+  datacenter
+ORDER BY 
+  datacenter,
+  t
+```
+
+look [issue 386](https://github.com/Altinity/clickhouse-grafana/issues/386) for reasons for implementation
 
 ---
 
@@ -763,35 +991,71 @@ There are few dedicated fields that are recognized by Grafana:
 All other fields returned from data source will be recognized by Grafana as [detected fields](https://grafana.com/docs/grafana/latest/explore/logs-integration/#labels-and-detected-fields)
 
 ## Flamegraph support
-According to https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/flame-graph/#data-api
+![Format as: Traces](https://github.com/Altinity/clickhouse-grafana/assets/105560/2a4813ad-af83-46f2-98e0-797744b766bd)
+
+![Tracing Example](https://github.com/Altinity/clickhouse-grafana/assets/105560/0a3c915d-84b3-41bb-b6a7-f3f5a10d655b)
+
+To show Traces you need query in format as "Flame Graph"
+According to https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/flame-graph/#data-api, you need to have recordset with 4 fields
+- `level` - Numeric - the level of the stack frame. The root frame is level 0.
+- `label` - String - the function name or other symbol which identify
+- `value` - Numeric - the number of samples or bytes that were recorded in this stack trace
+- `self` - Numeric - the number of samples or bytes that were recorded in only this stack frame excluding the children, for clickhouse this is usually zero cause we can't calculate)
+
+**Moreover, rows shall be ordered by stack trace and level**
+
 If you setup `query_profiler_real_time_period_ns` in profile or query level settings when you can try to visualize it as FlameGraph with the following query  
+Look to [system.trace_log](https://clickhouse.com/docs/en/operations/system-tables/trace_log) table description for how to get data for FlameGraph
+Look to [flamegraph dashboard example](https://github.com/Altinity/clickhouse-grafana/blob/master/docker/grafana/dashboards/flamegraph_and_tracing_support.json) for example of dashboard with FlameGraph
 
+### Flamegraph query example: 
 ```sql
-SELECT level, label, count() AS value, 0 self 
+SELECT length(trace)  - level_num AS level, label, count() AS value, 0 self
 FROM system.trace_log
-ARRAY JOIN arrayEnumerate(trace) AS level, 
-arrayMap(x -> demangle(addressToSymbol(x) ), trace) AS label 
+  ARRAY JOIN arrayEnumerate(trace) AS level_num,
+  arrayMap(x -> if(addressToSymbol(x) != '', demangle(addressToSymbol(x)), 'unknown') , trace) AS label
 WHERE trace_type='Real' AND $timeFilter
-GROUP BY ALL;
+GROUP BY level, label, trace
+ORDER BY trace, level
 ```
-## Traces support
-To show Traces you need query in format "As Table" with following
-For example, if `<opentelemetry_start_trace_probability>1</opentelemetry_start_trace_probability>` in user profile and `system.opentelemetry_span_log` is not emtpy, then you can show traces about clickhouse query execution 
 
+## Traces support
+To show Traces you need query with format as "Traces" with following
+![Format as Traces](https://github.com/Altinity/clickhouse-grafana/assets/105560/2a4813ad-af83-46f2-98e0-797744b766bd)
+
+![Trace example](https://github.com/Altinity/clickhouse-grafana/assets/105560/0a3c915d-84b3-41bb-b6a7-f3f5a10d655b)
+
+For example, if `<opentelemetry_start_trace_probability>1</opentelemetry_start_trace_probability>` in user profile and `system.opentelemetry_span_log` is not emtpy, then you can show traces about clickhouse query execution
+Look to [system.opentelemetry_span_log](https://clickhouse.com/docs/en/operations/system-tables/opentelemetry_span_log) table description for how to get data for FlameGraph
+Look to [tracing dashboard example](https://github.com/Altinity/clickhouse-grafana/blob/master/docker/grafana/dashboards/flamegraph_and_tracing_support.json) for example of dashboard with FlameGraph
+
+Tracing visualization requires following field names (case sensitive):
+- `traceID` - String
+- `spanID` - String
+- `operationName` - String
+- `parentSpanID` - String
+- `serviceName` - String
+- `duration` - UInt64 - duration in milliseconds
+- `startTime` - UInt64 - start time in milliseconds
+- `tags` - map(String, String) - tags for span
+- `serviceTags` - map(String, String) - tags for service (for example 'hostName')
+
+### Traces query example for system.opentelemetry_span_log
 ```sql
 SELECT
   trace_id AS traceID,
   span_id AS spanID,
   operation_name AS operationName,
   parent_span_id AS parentSpanID,
-  hostname AS serviceName,
+  'clickhouse' AS serviceName,
   intDiv(finish_time_us - start_time_us, 1000) AS duration,
   intDiv(start_time_us,1000) AS startTime,
   attribute AS tags,
-  map() AS serviceTags
+  map('hostName',hostname) AS serviceTags
 FROM
-  system.opentelemety_span_log
+  system.opentelemetry_span_log
 WHERE $timeFilter
+ORDER BY traceID, startTime
 ```
 ## Configure the Datasource with Provisioning
 
@@ -822,6 +1086,10 @@ datasources:
      addCorsHeader: false
      # <bool> enable/disable using POST method for sending queries
      usePOST: false
+     # <bool> enable/disable using Accept-Encoding header in each request
+     useCompression: false
+     # <string> compression type allowed values: gzip, zstd, br, deflate
+     compressionType: ""
      # <string> default database name
      defaultDatabase: ""
      # <bool> enable/disable tls authorization
@@ -833,7 +1101,7 @@ datasources:
      # <string> X-ClickHouse-Key header value for authorization
      xHeaderUser: ""
      # <string> the same value as url when `useYandexCloudAuthorization: true` 
-     # @todo remove this workarund when merge https://github.com/grafana/grafana/pull/80858
+     # @todo remove this workaround when merge https://github.com/grafana/grafana/pull/80858
      dataSourceUrl: "http://localhost:8123"
    secureJsonData:
      # <string> X-ClickHouse-User header value for authorization

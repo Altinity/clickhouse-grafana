@@ -32,6 +32,7 @@ export interface CHQuery extends DataQuery {
 
   round?: string;
   intervalFactor?: number;
+  interval?: string;
   formattedQuery?: string;
 }
 
@@ -44,6 +45,8 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   addCorsHeader?: boolean;
   usePOST?: boolean;
   defaultDatabase?: string;
+  useCompression?: boolean;
+  compressionType?: string;
   // @todo remove workaround after merge https://github.com/grafana/grafana/pull/80858, also remove from src/plugin.json
   dataSourceUrl?: string;
 }

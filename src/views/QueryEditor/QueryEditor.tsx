@@ -65,7 +65,10 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} onTriggerQuery={onTriggerQuery} />
       {error ? <Alert title={error} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
       {editorMode === EditorMode.Builder && (
-        <QueryBuilder query={initializedQuery} datasource={datasource} onChange={onChange} onRunQuery={onRunQuery} />
+        <QueryBuilder query={initializedQuery} datasource={datasource} onChange={(items) => {
+          setQuery({...items})
+          onChange(items)
+        }} onRunQuery={onRunQuery} />
       )}
       {editorMode === EditorMode.SQL && (
         <>
@@ -94,6 +97,7 @@ function initializeQueryDefaults(query: CHQuery): CHQuery {
     dateTimeType: query.dateTimeType || DEFAULT_DATE_TIME_TYPE,
     round: query.round || DEFAULT_ROUND,
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,
+    interval: query.interval || '',
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
     editorMode: EditorMode.Builder,

@@ -14,6 +14,7 @@ module.exports = {
     'react-inlinesvg': path.resolve(__dirname, 'jest', 'mocks', 'react-inlinesvg.tsx'),
   },
   modulePaths: ['<rootDir>/src'],
+  modulePathIgnorePatterns: ["<rootDir>/dist/", "<rootDir>/.cache/", "<rootDir>/.go-cache/", "<rootDir>/node_modules/"],
   setupFilesAfterEnv: ['<rootDir>/jest-setup.js'],
   testEnvironment: 'jest-environment-jsdom',
   testMatch: [

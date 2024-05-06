@@ -1,5 +1,12 @@
 <!-- https://github.com/Altinity/clickhouse-grafana/issues/508 -->
 <clickhouse>
+  <!-- global profiler enabled only in unreleased 24.4 version -->
+  <skip_check_for_incorrect_settings>1</skip_check_for_incorrect_settings>
+  <!-- fill system.trace_log for 10 times per second for CPU time -->
+  <global_profiler_cpu_time_period_ns>100000000</global_profiler_cpu_time_period_ns>
+  <!-- fill system.trace_log for 1 times per second for Real time, it produce too much data now -->
+  <global_profiler_real_time_period_ns>1000000000</global_profiler_real_time_period_ns>
+  <!-- fill system.trace_log for 1% of memory operations each 4Mb -->
   <total_memory_profiler_step>4194304</total_memory_profiler_step>
-  <total_memory_tracker_sample_probability>0.0</total_memory_tracker_sample_probability>
+  <total_memory_profiler_sample_probability>0.01</total_memory_profiler_sample_probability>
 </clickhouse>

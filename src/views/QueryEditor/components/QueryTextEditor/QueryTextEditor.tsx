@@ -18,6 +18,8 @@ const FORMAT_OPTIONS = [
   { label: 'Time series', value: 'time_series' },
   { label: 'Table', value: 'table' },
   { label: 'Logs', value: 'logs' },
+  { label: 'Traces', value: 'traces' },
+  { label: 'Flame Graph', value: 'flamegraph' },
 ];
 
 export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource }: any) => {
@@ -26,41 +28,35 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
 
   useEffect(() => {
     const scanner = new Scanner(formattedData);
-    let data = formattedData;
-    try {
-      data = scanner.Format();
-    } catch (err) {
-      data = scanner.raw();
-    }
-
-    setSqlFormattedData(data);
+    // removed scanner.Format as it contains bugs inherited from v2
+    setSqlFormattedData(scanner.raw());
   }, [formattedData]);
 
   const handleStepChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    setFieldValues({ ...fieldValues, step: value });
-    onFieldChange({ ...fieldValues, step: value });
+    setFieldValues({ ...fieldValues, query: query.query, interval: value });
+    onFieldChange({ ...fieldValues, query: query.query, interval: value });
   };
 
   const handleResolutionChange = (value: number) => {
-    setFieldValues({ ...fieldValues, intervalFactor: value });
-    onFieldChange({ ...fieldValues, intervalFactor: value });
+    setFieldValues({ ...fieldValues, query: query.query, intervalFactor: value });
+    onFieldChange({ ...fieldValues, query: query.query, intervalFactor: value });
   };
 
   const handleRoundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    setFieldValues({ ...fieldValues, round: value });
-    onFieldChange({ ...fieldValues, round: value });
+    setFieldValues({ ...fieldValues, query: query.query, round: value });
+    onFieldChange({ ...fieldValues, query: query.query, round: value });
   };
 
   const handleFormatChange = (value: string | undefined) => {
-    setFieldValues({ ...fieldValues, format: value || '' });
-    onFieldChange({ ...fieldValues, format: value });
+    setFieldValues({ ...fieldValues, query: query.query, format: value || '' });
+    onFieldChange({ ...fieldValues, query: query.query, format: value });
   };
 
   const handleToggleField = (fieldName: string) => {
-    setFieldValues({ ...fieldValues, [fieldName]: !fieldValues[fieldName] });
-    onFieldChange({ ...fieldValues, [fieldName]: !fieldValues[fieldName] });
+    setFieldValues({ ...fieldValues, query: query.query, [fieldName]: !fieldValues[fieldName] });
+    onFieldChange({ ...fieldValues, query: query.query, [fieldName]: !fieldValues[fieldName] });
   };
 
   return (
@@ -76,7 +72,7 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           <InlineField
             label={<InlineLabel width={10} tooltip="Leave blank for auto handling based on time range and panel width">Step</InlineLabel>}
           >
-            <Input placeholder="" onChange={handleStepChange} value={fieldValues.step} />
+            <Input placeholder="" onChange={handleStepChange} value={fieldValues.interval} />
           </InlineField>
           <InlineField
             label={<InlineLabel width={'auto'}>Resolution</InlineLabel>}

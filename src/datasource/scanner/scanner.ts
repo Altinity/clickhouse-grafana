@@ -88,9 +88,9 @@ const joinsRe =
 const onJoinTokenRe = '\\b(using|on)\\b';
 const tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)';
 const macroFuncRe =
-  '(\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
+  '(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
 const condRe = '\\b(or|and)\\b';
-const inRe = '\\b(global in|global not in|not in|in)\\b';
+const inRe = '\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:\'[^\']*\'\\s*,\\s*)*\'[^\']*\'\\s*\\])?';
 const closureRe = '[\\(\\)\\[\\]]';
 const specCharsRe = '[,?:]';
 const macroRe = '\\$[A-Za-z0-9_$]+';
@@ -173,16 +173,18 @@ export default class Scanner {
   }
 
   _next() {
+
     if (this._s.length === 0) {
       return false;
     }
-    // @ts-ignore
-    let r = this.re.exec(this._s);
+
+    let r = this.re?.exec(this._s);
+
     if (r === null) {
       throw 'cannot find next token in [' + this._s + ']';
     }
 
-    this.token = r[0];
+    this.token = r && r[0];
     this._s = this._s.substring(this.token.length);
 
     return true;
@@ -249,14 +251,20 @@ export default class Scanner {
           argument = '';
         }
         this.setRoot(this.token);
-      } else if (this.token === ',' && isClosured(argument)) {
+        continue;
+      }
+
+      if (this.token === ',' && isClosured(argument)) {
         this.push(argument);
         argument = '';
         if (this.rootToken === 'where') {
           this.push(this.token);
         }
         this.expectedNext = true;
-      } else if (isClosureChars(this.token) && this.rootToken === 'from') {
+        continue;
+      }
+
+      if (isClosureChars(this.token) && this.rootToken === 'from') {
         subQuery = betweenBraces(this._s);
         if (!isTableFunc(argument)) {
           this.tree[this.rootToken] = toAST(subQuery);
@@ -265,7 +273,10 @@ export default class Scanner {
           argument = '';
         }
         this._s = this._s.substring(subQuery.length + 1);
-      } else if (isMacroFunc(this.token)) {
+        continue;
+      }
+
+      if (isMacroFunc(this.token)) {
         let func = this.token;
         if (!this.next()) {
           throw 'wrong function signature for `' + func + '` at [' + this._s + ']';
@@ -284,8 +295,11 @@ export default class Scanner {
 
         // macro funcs are used instead of SELECT statement
         this.tree['select'] = [];
-      } else if (isIn(this.token)) {
-        argument += ' ' + this.token;
+        continue;
+      }
+
+      if (isIn(this.token)) {
+        argument += ' ' +this.token;
         if (!this.next()) {
           throw 'wrong in signature for `' + argument + '` at [' + this._s + ']';
         }
@@ -311,16 +325,25 @@ export default class Scanner {
         } else {
           argument += ' ' + this.token;
         }
-      } else if (isCond(this.token) && (this.rootToken === 'where' || this.rootToken === 'prewhere')) {
+        continue;
+      }
+
+      if (isCond(this.token) && (this.rootToken === 'where' || this.rootToken === 'prewhere')) {
         if (isClosured(argument)) {
           this.push(argument);
           argument = this.token;
         } else {
           argument += ' ' + this.token;
         }
-      } else if (isJoin(this.token)) {
+        continue;
+      }
+
+      if (isJoin(this.token)) {
         argument = this.parseJOIN(argument);
-      } else if (this.rootToken === 'union all') {
+        continue;
+      }
+
+      if (this.rootToken === 'union all') {
         let statement = 'union all';
         this._s = this.token + ' ' + this._s;
         let subQueryPos = this._s.toLowerCase().indexOf(statement);
@@ -334,21 +357,33 @@ export default class Scanner {
         let ast = toAST(this._s);
         this._s = '';
         this.tree[statement].push(ast);
-      } else if (isComment(this.token)) {
+        continue;
+      }
+
+      if (isComment(this.token)) {
         //comment is part of push element, and will be add after next statement
         argument += this.token + '\n';
-      } else if (isClosureChars(this.token) || this.token === '.') {
-        argument += this.token;
-      } else if (this.token === ',') {
-        argument += this.token + ' ';
-      } else {
-        argument += this.appendToken(argument);
+        continue;
       }
+
+      if (isClosureChars(this.token) || this.token === '.') {
+        argument += this.token;
+        continue;
+      }
+
+      if (this.token === ',') {
+        argument += this.token + ' ';
+        continue;
+      }
+
+      argument += this.appendToken(argument);
+
     }
 
     if (argument !== '') {
       this.push(argument);
     }
+
     return this.tree;
   }
 
@@ -453,7 +488,7 @@ export default class Scanner {
   }
 
   static AddMetadata(query) {
-    return "/* grafana dashboard=$__dashboard, user=$__user */ " + query
+    return "/* grafana dashboard=$__dashboard, user=$__user */\n" + query
   }
 
 }
@@ -546,6 +581,11 @@ function print(AST, tab = '') {
     result += printItems(AST.$perSecondColumns, tab, ',') + ')';
   }
 
+  if (isSet(AST, '$perSecondColumnsAggregated')) {
+    result += tab + '$perSecondColumnsAggregated(';
+    result += printItems(AST.$perSecondColumnsAggregated, tab, ',') + ')';
+  }
+
   if (isSet(AST, '$delta')) {
     result += tab + '$delta(';
     result += printItems(AST.$delta, tab, ',') + ')';
@@ -554,6 +594,11 @@ function print(AST, tab = '') {
   if (isSet(AST, '$deltaColumns')) {
     result += tab + '$deltaColumns(';
     result += printItems(AST.$deltaColumns, tab, ',') + ')';
+  }
+
+  if (isSet(AST, '$deltaColumnsAggregated')) {
+    result += tab + '$deltaColumnsAggregated(';
+    result += printItems(AST.$deltaColumnsAggregated, tab, ',') + ')';
   }
 
   if (isSet(AST, '$increase')) {
@@ -566,6 +611,11 @@ function print(AST, tab = '') {
     result += printItems(AST.$deltaColumns, tab, ',') + ')';
   }
 
+  if (isSet(AST, '$increaseColumnsAggregated')) {
+    result += tab + '$increaseColumnsAggregated(';
+    result += printItems(AST.$increaseColumnsAggregated, tab, ',') + ')';
+  }
+
   if (isSet(AST, '$columns')) {
     result += tab + '$columns(';
     result += printItems(AST.$columns, tab, ',') + ')';
@@ -574,6 +624,11 @@ function print(AST, tab = '') {
   if (isSet(AST, '$rateColumns')) {
     result += tab + '$rateColumns(';
     result += printItems(AST.$rateColumns, tab, ',') + ')';
+  }
+
+  if (isSet(AST, '$rateColumnsAggregated')) {
+    result += tab + '$rateColumnsAggregated(';
+    result += printItems(AST.$rateColumnsAggregated, tab, ',') + ')';
   }
 
   if (isSet(AST, 'with')) {

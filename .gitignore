@@ -33,8 +33,9 @@ e2e-results/
 **/cypress/report.json
 
 # Editor
-.idea
+.idea/
 .eslintcache
+.vscode/
 
 # secrets
 .env

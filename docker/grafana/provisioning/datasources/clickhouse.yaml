@@ -13,3 +13,5 @@ datasources:
     jsonData:
       addCorsHeader: true
       usePOST: true
+      useCompression: true
+      compressionType: gzip

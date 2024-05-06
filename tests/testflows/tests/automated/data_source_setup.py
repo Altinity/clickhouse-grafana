@@ -20,8 +20,8 @@ from steps.panel.view import *
 def check_existing_data_sources(self):
     """Check that existing data sources are connected."""
 
-    data_sources = [connections_locators.Datasource.clickhouse,
-                    connections_locators.Datasource.clickhouse_direct]
+    data_sources = [connections_locators.clickhouse,
+                    connections_locators.clickhouse_direct]
 
     with When("I check data sources"):
         for data_source in data_sources:

@@ -65,7 +65,7 @@ def regression(self, before, after):
         open_endpoint(endpoint=self.context.endpoint+'plugins')
     # Feature(run=load("testflows.tests.automated.e2e", "feature"))
     # Feature(run=load("testflows.tests.automated.dashboard", "feature"))
-    Feature(run=load("testflows.tests.automated.data_source", "feature"))
+    Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
 
 
 if main():

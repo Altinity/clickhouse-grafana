@@ -155,7 +155,7 @@ services:
     ports:
       - "4444:4444"
     volumes:
-      - /dev/shm:/dev/shm
+#      - /dev/shm:/dev/shm
       - ./config.toml:/opt/bin/config.toml
       - /tmp/target:/opt/selenium/assets
       - /var/run/docker.sock:/var/run/docker.sock

@@ -85,7 +85,32 @@ class Locators:
     @property
     def select_data_source_dropdown(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Select a data source']")    
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Select a data source']")
+
+    @property
+    def time_range_dropdown(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid TimePicker Open Button']")
+
+    @property
+    def time_range_from_field(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Time Range from field']")
+
+    @property
+    def time_range_to_field(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Time Range to field']")
+
+    @property
+    def time_range_apply_field(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid TimePicker submit button']")
+
+    @property
+    def visualization(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[class='css-kuoxoh-panel-content']")
 
 
 locators = Locators()

@@ -8,6 +8,7 @@ from steps.ui import *
 from steps.dashboard.locators import locators
 from steps.delay import delay
 from selenium.webdriver import ActionChains
+from selenium.common.exceptions import NoSuchElementException
 
 
 @TestStep(When)
@@ -119,7 +120,6 @@ def click_save_dashboard_button(self):
     """Save dashboard."""
     locators.save_dashboard_button.click()
 
-    
 
 @TestStep(When)
 def saving_dashboard(self, dashboard_name):
@@ -152,7 +152,6 @@ def click_dahsboard_settings_button(self):
     locators.dashboard_settings_button.click()
 
 
-
 @TestStep(When)
 def click_variables_tab(self):
     """Click variables tab."""
@@ -171,7 +170,6 @@ def enter_variable_query(self, query):
     locators.query_field_for_variable.send_keys(query)
 
 
-
 @TestStep(When)
 def select_datasource(self, datasource_name):
     """Select datasource."""
@@ -183,10 +181,12 @@ def click_include_all_options_checkbox(self):
     """Click All option checkbox for variable setup."""
     locators.include_all_options_checkbox.click()
 
+
 @TestStep(When)
 def click_run_query_button(self):
     """Click run variable query button."""
     locators.run_variable_query_button.click()
+
 
 @TestStep(When)
 def click_apply_variable(self):
@@ -204,7 +204,7 @@ def create_new_variable(self, query, datasource_name):
 
     with And("clicking variables tab"):
         click_variables_tab()
-    
+
     with And("clicking add variable button"):
         with delay():
             click_add_variable_button()
@@ -228,11 +228,14 @@ def create_new_variable(self, query, datasource_name):
 
 
 @TestStep(Then)
-def check_panel_exists(self):
-    try:
-        pass
-    except:
-        pass
+def check_panel_exists(self, panel_name):
+    """Check dashboard contains panel."""
+    with By("checking dashboard exists"):
+        try:
+            locators.panel(panel_name=panel_name)
+            return True
+        except NoSuchElementException:
+            return False
 
 
 @TestStep(Then)
@@ -246,9 +249,12 @@ def take_screenshot_for_panel(self, panel_name, screenshot_name):
 
 
 @TestStep(When)
-def open_new_dashboard_view(self):
+def open_new_dashboard_endpoint(self, endpoint=None):
     """Open new dashboard view."""
-    open_endpoint(endpoint=f"{self.context.endpoint}dashboard/new")
+    if endpoint is None:
+        endpoint = f"{self.context.endpoint}dashboard/new"
+
+    open_endpoint(endpoint=endpoint)
 
 
 @TestStep(When)
@@ -262,7 +268,53 @@ def add_visualization(self):
     with By("Clicking add visualization button"):
         click_add_visualization_button()
 
-@TestStep
+
+@TestStep(When)
+def open_time_range_dropdown(self):
+    """Open time range dropdown"""
+
+    locators.time_range_dropdown.click()
+
+
+@TestStep(When)
+def enter_from_time(self, from_time):
+    """Enter from field in time range dropdown."""
+
+    locators.time_range_from_field.send_keys(from_time)
+
+
+@TestStep(When)
+def enter_to_time(self, to_time):
+    """Enter to field in time range dropdown."""
+
+    locators.time_range_to_field.send_keys(to_time)
+
+
+@TestStep(When)
+def time_range_apply_field(self):
+    """Click Apply button in time range dropdown."""
+
+    locators.time_range_apply_field.click()
+
+
+@TestStep(When)
 def change_time_range_selector_for_dashboard(from_time, to_time):
     """Change time range selector for dashboard"""
-    pass
+    with By("opening time range dropdown"):
+        open_time_range_dropdown()
+
+    with And("entering from_time"):
+        enter_from_time(from_time=from_time)
+
+    with And("entering to_time"):
+        enter_to_time(to_time=to_time)
+
+    with And("clicking on visualization to update it"):
+        time_range_apply_field()
+
+
+@TestStep(When)
+def double_click_on_panel(self):
+    """Double-click on panel to change time range"""
+
+    ActionChains(self.context.driver).double_click(locators.visualization).click(locators.visualization).perform()

@@ -182,3 +182,10 @@ def take_screenshot_for_visualization(self, screenshot_name):
 
     with Then("I take screenshot"):
         take_visualization_screenshot(screenshot_name=screenshot_name)
+
+
+@TestStep(When)
+def double_click_on_visualization(self):
+    """Double-click on visualization to change time range"""
+
+    ActionChains(self.context.driver).double_click(locators.visualization).click(locators.visualization).perform()

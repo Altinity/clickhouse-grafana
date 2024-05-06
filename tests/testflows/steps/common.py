@@ -113,7 +113,7 @@ def create_remote_chrome_driver(self, browser, hub_url, common_options, timeout,
         remote_chrome_options.set_capability("se:screenResolution", "1920x1080")
 
         start_time = time.time()
-
+        # pause()
     with And("try to create a remote webdriver instance"):
         while True:
             try:
@@ -212,7 +212,7 @@ def create_dashboard(self, dashboard_name):
     try:
         with delay():
             with When("I open new dashboard view"):
-                open_new_dashboard_view()
+                open_new_dashboard_endpoint()
 
         with And("I save new dashboard"):
             saving_dashboard(dashboard_name=dashboard_name)

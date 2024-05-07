@@ -44,36 +44,30 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const { datasource, query, onChange, onRunQuery } = props;
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
   const initializedQuery = initializeQueryDefaults(query);
-  const [externalQuery, setQuery] = useState({ ...initializedQuery });
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
 
   const onSqlChange = (sql: string) => {
-    setQuery({ ...initializedQuery, query: sql });
+    onChange({ ...initializedQuery, query: sql });
   };
 
   const onFieldChange = (value: any) => {
-    setQuery({ ...query, ...value });
+    onChange({ ...query, ...value });
+
   };
 
-  const onTriggerQuery = () => {
-    onChange(externalQuery);
-    onRunQuery();
-  };
+  const onTriggerQuery = () => onRunQuery()
 
   return (
     <>
       <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} onTriggerQuery={onTriggerQuery} />
       {error ? <Alert title={error} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
       {editorMode === EditorMode.Builder && (
-        <QueryBuilder query={initializedQuery} datasource={datasource} onChange={(items) => {
-          setQuery({...items})
-          onChange(items)
-        }} onRunQuery={onRunQuery} />
+        <QueryBuilder query={initializedQuery} datasource={datasource} onChange={(items: CHQuery) => onChange({...items})} onRunQuery={onTriggerQuery} />
       )}
       {editorMode === EditorMode.SQL && (
         <>
           <QueryTextEditor
-            query={externalQuery}
+            query={initializedQuery}
             height={200}
             onSqlChange={onSqlChange}
             onRunQuery={onTriggerQuery}

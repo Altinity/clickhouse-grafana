@@ -1,0 +1,427 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "https://github.com/Altinity/clickhouse-grafana/issues/514",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 39,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/514",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 99,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineStyle": {
+              "fill": "solid"
+            },
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "never",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "right",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "10s",
+          "intervalFactor": 1,
+          "query": "$columns(OSName, sum(req_count) c)\r\nFROM requests\r\nINNER JOIN oses USING (OS)\r\n",
+          "rawQuery": "/* grafana dashboard=OS columns, user=1 */\nSELECT t, groupArray((OSName, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(EventTime), 30) * 30) * 1000 AS t, OSName, sum(req_count) c FROM requests\r\nANY INNER JOIN oses USING (OS) WHERE EventTime >= toDateTime(1715149231) AND EventTime <= toDateTime(1715170831) GROUP BY t, OSName ORDER BY t, OSName) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "requests"
+        }
+      ],
+      "title": "Requests by OS",
+      "type": "timeseries"
+    },
+    {
+      "aliasColors": {},
+      "breakPoint": "50%",
+      "combine": {
+        "label": "Others",
+        "threshold": "0.01"
+      },
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/514",
+      "fontSize": "80%",
+      "format": "short",
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "legend": {
+        "percentage": true,
+        "show": true,
+        "values": true
+      },
+      "legendType": "Right side",
+      "nullPointMode": "connected",
+      "pieType": "pie",
+      "strokeWidth": 1,
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "10s",
+          "intervalFactor": 1,
+          "query": "SELECT 1 AS t, UserName, sum(req_count*randUniform(40,100)) req\r\nFROM $table\r\nWHERE $timeFilter\r\nGROUP BY UserName\r\nORDER BY req DESC\r\nLIMIT 5",
+          "rawQuery": "/* grafana dashboard=OS columns, user=1 */\nSELECT 1 AS t, UserName, sum(req_count) req\r\nFROM default.requests\r\nWHERE EventTime >= toDateTime(1715154784) AND EventTime <= toDateTime(1715176384)\r\nGROUP BY UserName\r\nORDER BY req DESC\r\nLIMIT 5",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "requests"
+        },
+        {
+          "add_metadata": true,
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "hide": false,
+          "interval": "10s",
+          "intervalFactor": 1,
+          "query": "SELECT\r\n    1 AS t, /* fake timestamp value */\r\n    UserName,\r\n    sum(req_count) AS req\r\nFROM requests\r\nGROUP BY t, UserName\r\nORDER BY req DESC\r\nLIMIT 5,10000000000000 /* select some ridiculous number after first 5 */\r\n",
+          "rawQuery": "/* grafana dashboard=OS columns, user=1 */\nSELECT 1 AS t, UserName, sum(req_count) req\r\nFROM default.requests\r\nWHERE EventTime >= toDateTime(1715154713) AND EventTime <= toDateTime(1715176313)\r\nGROUP BY UserName\r\nORDER BY req DESC\r\nLIMIT 5",
+          "refId": "B",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "requests"
+        }
+      ],
+      "title": "Requests by User",
+      "type": "grafana-piechart-panel",
+      "valueName": "current"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/514",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "10s",
+          "intervalFactor": 1,
+          "query": "SELECT UserName, sum(req_count) req\r\nFROM $table\r\nWHERE $timeFilter\r\nGROUP BY UserName\r\n",
+          "rawQuery": "/* grafana dashboard=OS columns, user=1 */\nSELECT t, groupArray((OSName, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(EventTime), 10) * 10) * 1000 AS t, OSName, sum(req_count) c FROM requests\r\nINNER JOIN oses USING (OS) WHERE EventTime >= toDateTime(1715164603) AND EventTime <= toDateTime(1715164953) GROUP BY t, OSName ORDER BY t, OSName) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "requests"
+        }
+      ],
+      "title": "Requests by User",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/514",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 4,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.97,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "10.4.2",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "10s",
+          "intervalFactor": 1,
+          "query": "SELECT \r\n now() AS t,\r\n 100 AS small,\r\n 500 AS medium,\r\n 1000 AS big\r\n\r\n",
+          "rawQuery": "/* grafana dashboard=OS columns, user=1 */\nSELECT \r\n 100 AS small,\r\n 500 AS medium,\r\n 1000 AS big",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "requests"
+        }
+      ],
+      "title": "Vertical Histogram",
+      "type": "barchart"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Dashboard for screenshots",
+  "uid": "edl35olhfoqo0d",
+  "version": 1,
+  "weekStart": ""
+}

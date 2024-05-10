@@ -5,7 +5,13 @@ import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
 import Scanner from './scanner/scanner';
 
-import {AnnotationEvent, DataQueryRequest, DataSourceApi, DataSourceInstanceSettings, TypedVariableModel} from '@grafana/data';
+import {
+  AnnotationEvent,
+  DataQueryRequest,
+  DataSourceApi,
+  DataSourceInstanceSettings,
+  TypedVariableModel
+} from '@grafana/data';
 import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
 import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
@@ -157,6 +163,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           to: SqlQueryHelper.convertTimestamp(options.range.to),
         });
 
+        console.log(target.format)
         if (target.format === 'table') {
           _.each(sqlSeries.toTable(), (data) => {
             result.push(data);
@@ -167,13 +174,17 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           result = sqlSeries.toFlamegraph();
         } else if (target.format === 'logs') {
           result = sqlSeries.toLogs();
+        } else if (target.format === 'ANNOTATION') {
+          result = sqlSeries.toAnnotation(response.data);
         } else {
           _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
             result.push(data);
           });
         }
       });
-      return { data: result };
+
+
+      return { data: result }
     });
   }
 

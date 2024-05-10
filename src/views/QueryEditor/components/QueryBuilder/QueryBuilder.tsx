@@ -144,9 +144,9 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
     onChange({...query, dateColDataType});
   };
 
-  const onDateTimeColDataTypeChange = (dateTimeColDataType: string) => {
+  const onDateTimeColDataTypeChange = (dateTimeColDataType?: string) => {
     // @ts-ignore
-    setSelectedColumnTimestampType(dateTimeColDataType.trim());
+    setSelectedColumnTimestampType((dateTimeColDataType || '').trim());
     onChange({...query, dateTimeColDataType});
   };
 

@@ -22,7 +22,7 @@ const FORMAT_OPTIONS = [
   { label: 'Flame Graph', value: 'flamegraph' },
 ];
 
-export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource }: any) => {
+export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource, isAnnotationView }: any) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
   const [fieldValues, setFieldValues] = useState(query);
 
@@ -79,11 +79,11 @@ export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onF
           >
             <Select width={'auto'} onChange={(e) => handleResolutionChange(Number(e.value))} options={RESOLUTION_OPTIONS} value={fieldValues.intervalFactor} />
           </InlineField>
-          <InlineField
+          { !isAnnotationView && <InlineField
             label={<InlineLabel width={'auto'}>Format As</InlineLabel>}
           >
             <Select width={'auto'} onChange={(e) => handleFormatChange(e.value)} options={FORMAT_OPTIONS} value={fieldValues.format} />
-          </InlineField>
+          </InlineField> }
         </InlineFieldRow>
         <InlineFieldRow>
           <InlineField

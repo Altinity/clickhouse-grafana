@@ -42,44 +42,40 @@ function useFormattedData(query: CHQuery, datasource: CHDataSource): [string, st
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const { datasource, query, onChange, onRunQuery } = props;
+  const isAnnotationView = !props.app;
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
-  const initializedQuery = initializeQueryDefaults(query);
-  const [externalQuery, setQuery] = useState({ ...initializedQuery });
+  const initializedQuery = initializeQueryDefaults(query, isAnnotationView);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
 
   const onSqlChange = (sql: string) => {
-    setQuery({ ...initializedQuery, query: sql });
+    onChange({ ...initializedQuery, query: sql });
   };
 
   const onFieldChange = (value: any) => {
-    setQuery({ ...query, ...value });
+    onChange({ ...query, ...value });
+
   };
 
-  const onTriggerQuery = () => {
-    onChange(externalQuery);
-    onRunQuery();
-  };
+  const onTriggerQuery = () => onRunQuery()
 
   return (
     <>
-      <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} onTriggerQuery={onTriggerQuery} />
+      <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} isAnnotationView={isAnnotationView} onTriggerQuery={onTriggerQuery} />
       {error ? <Alert title={error} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
       {editorMode === EditorMode.Builder && (
-        <QueryBuilder query={initializedQuery} datasource={datasource} onChange={(items) => {
-          setQuery({...items})
-          onChange(items)
-        }} onRunQuery={onRunQuery} />
+        <QueryBuilder query={initializedQuery} datasource={datasource} onChange={(items: CHQuery) => onChange({...items})} onRunQuery={onTriggerQuery} />
       )}
       {editorMode === EditorMode.SQL && (
         <>
           <QueryTextEditor
-            query={externalQuery}
+            query={initializedQuery}
             height={200}
             onSqlChange={onSqlChange}
             onRunQuery={onTriggerQuery}
             onFieldChange={onFieldChange}
             formattedData={formattedData}
             datasource={datasource}
+            isAnnotationView={isAnnotationView}
           />
         </>
       )}
@@ -87,8 +83,8 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   );
 }
 
-function initializeQueryDefaults(query: CHQuery): CHQuery {
-  return {
+function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean): CHQuery {
+  const initializedQuery = {
     ...query,
     format: query.format || DEFAULT_FORMAT,
     extrapolate: query.extrapolate ?? true,
@@ -102,4 +98,10 @@ function initializeQueryDefaults(query: CHQuery): CHQuery {
     formattedQuery: query.formattedQuery || query.query,
     editorMode: EditorMode.Builder,
   };
+
+  if (isAnnotationView) {
+    initializedQuery.format = 'ANNOTATION'
+  }
+
+  return initializedQuery
 }

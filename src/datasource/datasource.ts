@@ -173,7 +173,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           result = sqlSeries.toFlamegraph();
         } else if (target.format === 'logs') {
           result = sqlSeries.toLogs();
-        } else if (target.format === 'ANNOTATION') {
+        } else if (target.refId === 'Anno') {
           result = sqlSeries.toAnnotation(response.data);
         } else {
           _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {

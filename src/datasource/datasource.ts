@@ -163,7 +163,6 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           to: SqlQueryHelper.convertTimestamp(options.range.to),
         });
 
-        console.log(target.format)
         if (target.format === 'table') {
           _.each(sqlSeries.toTable(), (data) => {
             result.push(data);

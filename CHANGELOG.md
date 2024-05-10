@@ -1,16 +1,25 @@
-# 3.1.0 (not released yet)
+# 3.1.0 (2024-05-10)
+
 ## Enhancements:
 * add additional auto-complete functions the same as `clickhouse-client`, fix https://github.com/Altinity/clickhouse-grafana/issues/509
 * add support for Flamegraph and Tracing, fix https://github.com/Altinity/clickhouse-grafana/issues/508
+* enchanced support for Annotations Query builder.
+* added support for HTTP Compression in Connection Settings, fix https://github.com/Altinity/clickhouse-grafana/issues/494 
 * switched to go 1.22
+* updated README with grafana 10 screenshots
+* added $rateColumnsAggregated, $perSecondsColumnsAggregated, $increaseColumnsAggregated, $deltaColumnsAggregated macros for aggregating per-second rates - fix https://github.com/Altinity/clickhouse-grafana/issues/386
+* added `Add metadata` option which added SQL comment to allow detection which dashboard and user is source of query on ClickHouse server side, fix https://github.com/Altinity/clickhouse-grafana/issues/435
 
 ## Fixes:
-* fix support grafana cloud fix https://github.com/Altinity/clickhouse-grafana/issues/517, fix https://github.com/Altinity/clickhouse-grafana/issues/516
-* fix tlsSkipVerify was ignored when empty tlsCARoot or tlsClientCert and tlsClientKey, fix https://github.com/Altinity/clickhouse-grafana/issues/532
-* fix multiple issues for format `As table`, fix https://github.com/Altinity/clickhouse-grafana/issues/515, https://github.com/Altinity/clickhouse-grafana/issues/529
-* fix Annotations setup page don't contain Query textfield, fix https://github.com/Altinity/clickhouse-grafana/issues/518
+* fixed support grafana cloud fix https://github.com/Altinity/clickhouse-grafana/issues/517, fix https://github.com/Altinity/clickhouse-grafana/issues/516
+* multiple UI fixes for QueryEditor component, fix https://github.com/Altinity/clickhouse-grafana/issues/551, https://github.com/Altinity/clickhouse-grafana/issues/546, https://github.com/Altinity/clickhouse-grafana/issues/555, https://github.com/Altinity/clickhouse-grafana/issues/547, https://github.com/Altinity/clickhouse-grafana/issues/540, https://github.com/Altinity/clickhouse-grafana/issues/542,
+* fixed tlsSkipVerify was ignored when empty tlsCARoot or tlsClientCert and tlsClientKey, fix https://github.com/Altinity/clickhouse-grafana/issues/532
+* fixed multiple issues for format `As table`, fix https://github.com/Altinity/clickhouse-grafana/issues/515, https://github.com/Altinity/clickhouse-grafana/issues/529
+* fixed Annotations setup page don't contain Query textfield, fix https://github.com/Altinity/clickhouse-grafana/issues/518
 * refactored processing macros and whole query on client side, fix https://github.com/Altinity/clickhouse-grafana/issues/524
-
+* fixed legacy alerting when use $from and $to macros in query, fix https://github.com/Altinity/clickhouse-grafana/issues/458
+* fixed corner case for WHERE field IN ('value1','value2') vs WHERE field IN ['value1','value2'], fix https://github.com/Altinity/clickhouse-grafana/issues/506
+* fixed corner case for $conditionalTest macro, fix https://github.com/Altinity/clickhouse-grafana/issues/524
 
 # 3.0.0 (2024-01-19)
 ## Enhancements:

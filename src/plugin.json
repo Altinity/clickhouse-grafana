@@ -26,6 +26,10 @@
         "path": "img/datasource.png"
       },
       {
+        "name": "Query settings",
+        "path": "img/query_editor.png"
+      },
+      {
         "name": "Query editor",
         "path": "img/query_editor.png"
       },

@@ -90,7 +90,7 @@ export default class SqlSeries {
     function transformAnnotationData(inputData: any): any[] {
       const fields: { [key: string]: Field } = {
         time: { name: 'time', type: 'number', values: [], config: {} },
-        time_end: { name: 'time_end', type: 'number', values: [], config: {} },
+        timeEnd: { name: 'timeEnd', type: 'number', values: [], config: {} },
         title: { name: 'title', type: 'string', values: [], config: {} },
         text: { name: 'text', type: 'string', values: [], config: {} },
         tags: { name: 'tags', type: 'array', values: [], config: {} },
@@ -98,7 +98,7 @@ export default class SqlSeries {
 
       inputData.forEach(annotation => {
         fields.time.values.push(parseInt(annotation.time, 10));
-        fields.time_end.values.push(parseInt(annotation.time_end, 10));
+        fields.timeEnd.values.push(parseInt(annotation.time_end, 10));
         fields.title.values.push(annotation.title);
         fields.text.values.push(annotation.text);
         fields.tags.values.push(annotation.tags.split(',')); // Split tags into an array

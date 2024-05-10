@@ -963,13 +963,23 @@ SELECT ClientID FROM events WHERE EventTime > toDateTime($from) AND EventTime < 
 
 Plugin support Annotations with regions. To enable this feature open Dashboard `settings` and add new annotation query with `clickhouse` datasource with properly field names.
 
-![Annotation query example](https://user-images.githubusercontent.com/105560/115864672-a35c3480-a450-11eb-88f4-1103a00c6563.png)
+![Annotation query add](./.github/images/16_annotations_query_add.png)
 
-![Annotation with regions graph panel](https://user-images.githubusercontent.com/105560/115865059-3d23e180-a451-11eb-91ce-1159aef29541.png)
+![Annotation query example](./.github/images/17_annotations_query_example.png)
+
+![Annotation with regions graph panel](./.github/images/18_annotations_graph.png)
 
 ## Alerts support
 
+Grafana provide two kind of alerts. Unified alerts and graph panel related alerts (legacy). 
+Both kind of alerts supports by our plugin can't be used together. 
+Use `GF_UNIFIED_ALERTING_ENABLED=1` (preferable) or `GF_ALERTING_ENABLED=1` environment variables for switch.
+
+### Panel related alerts (legacy)
 To enable alerts open "alerts" tab in panel, and define alert expression as described on [grafana.com](https://grafana.com/docs/grafana/latest/alerting/)
+
+![Alerts in graph panel](./.github/images/19_alerts_tab.png)
+
 
 Be careful with Template variables values, currently grafana doesn't support template variables in alert queries itself.
 Also, grafana UI doesn't pass template variables values to a backend, after you change it on frontend UI.
@@ -983,14 +993,30 @@ and save a whole dashboard to the Grafana server
 WARNING: `Test alert` button doesn't save a current state of alert rules to a backend part of the plugin.
 
 If the "Generated SQL" properly passed into backend part of plugin, you will see something like this:
-![Graph panel with alerts](https://user-images.githubusercontent.com/105560/115866047-95a7ae80-a452-11eb-9dd0-8e85b89e99ec.png)
+![Graph panel with alerts](./.github/images/20_alerts_panel.png)
 
-You also can try to troubleshoot alerts in clickhouse grafana plugin when enable `level=debug` in `log` section `grafana.ini` or via `GF_LOG_LEVEL=debug` environment variable.
+
+### Unified Alerts support
+
+Unified alerts could be provisioned with YAML file, look to https://github.com/Altinity/clickhouse-grafana/tree/master/docker/grafana/provisioning/alerting/
+
+![Unified alerts menu](./.github/images/21_unified_alerts_menu.png)
+
+![Unified alerts panel](./.github/images/22_unified_alerts_adding.png)
+
+To export exists unified alerts to YAML use Export alerts
+
+![Unified alerts export](./.github/images/24_alerts_export.png)
+
+### Alerts troubleshooting 
+To troubleshoot alerts in clickhouse grafana plugin when enable `level=debug` in `log` section `grafana.ini` or via `GF_LOG_LEVEL=debug` environment variable.
 
 ## Logs support
 
 To render your ClickHouse data as Logs, please use special format in "Format as" dropdown in Query Editor called "Logs". This option helps Grafana recognizes data as logs and shows logs visualization automatically in Explore UI. On dashboards you can use [Logs panel](https://grafana.com/docs/grafana/latest/visualizations/logs-panel/) as well.
 
+![Format as Logs](./.github/images/23_logs_support.png)
+  
 To return suitable for logs data - query should return at least one time field (assumed that it will be first field) and one text field from the ClickHouse.
 
 Plugin is also transforming all text fields, except log line, into the labels using following rules:
@@ -1006,9 +1032,7 @@ There are few dedicated fields that are recognized by Grafana:
 All other fields returned from data source will be recognized by Grafana as [detected fields](https://grafana.com/docs/grafana/latest/explore/logs-integration/#labels-and-detected-fields)
 
 ## Flamegraph support
-![Format as: Traces](https://github.com/Altinity/clickhouse-grafana/assets/105560/2a4813ad-af83-46f2-98e0-797744b766bd)
-
-![Tracing Example](https://github.com/Altinity/clickhouse-grafana/assets/105560/0a3c915d-84b3-41bb-b6a7-f3f5a10d655b)
+![Format as: Flamegraph](./.github/images/25_format_as_flamegraph.png)
 
 To show Traces you need query in format as "Flame Graph"
 According to https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/flame-graph/#data-api, you need to have recordset with 4 fields
@@ -1036,9 +1060,9 @@ ORDER BY trace, level
 
 ## Traces support
 To show Traces you need query with format as "Traces" with following
-![Format as Traces](https://github.com/Altinity/clickhouse-grafana/assets/105560/2a4813ad-af83-46f2-98e0-797744b766bd)
+![Format as Traces](./.github/images/26_format_as_trace.png)
 
-![Trace example](https://github.com/Altinity/clickhouse-grafana/assets/105560/0a3c915d-84b3-41bb-b6a7-f3f5a10d655b)
+![Trace example](./.github/images/27_traces_example.png)
 
 For example, if `<opentelemetry_start_trace_probability>1</opentelemetry_start_trace_probability>` in user profile and `system.opentelemetry_span_log` is not emtpy, then you can show traces about clickhouse query execution
 Look to [system.opentelemetry_span_log](https://clickhouse.com/docs/en/operations/system-tables/opentelemetry_span_log) table description for how to get data for FlameGraph

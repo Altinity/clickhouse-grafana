@@ -19,7 +19,14 @@ class Locators:
     @property
     def save_and_test_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Data source settings page Save and Test button']")
+        return driver.find_element(SelectBy.CSS_SELECTOR,
+                                   "[data-testid='data-testid Data source settings page Save and Test button']")
+
+    @property
+    def alert_success(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR,
+                                   "[data-testid='data-testid Alert success']")
 
 
 locators = Locators()

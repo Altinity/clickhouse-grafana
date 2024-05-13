@@ -24,7 +24,7 @@ def check_existing_data_sources(self):
         open_connections_datasources_endpoint()
 
     with When("I get list of data sources"):
-        data_sources_nums = [1, 2]
+        data_sources_nums = [1, 2, 3, 5]
 
     with When("I check data sources"):
         for data_source_num in data_sources_nums:
@@ -32,14 +32,15 @@ def check_existing_data_sources(self):
                 with Given("I open connections data sources view"):
                     open_connections_datasources_endpoint()
 
-            with When(f"I open data source setup for data source"):
+            with When(f"I open data source setup for data source {data_source_num}"):
                 connections_locators.data_source(num=data_source_num).click()
 
             with delay():
                 with When("I click save and test button"):
                     click_save_and_test_button()
 
-            # with Then("I check ")
+            with Then("I check save and test button works correctly"):
+                assert check_alert_success() is True, error()
 
 
 @TestFeature

@@ -15,5 +15,10 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, "/html/body/div/div[1]/div/main/div/div[2]/div[3]/div/div[1]/div/div[2]/ul/li[2]/div")
 
+    def data_source(self, num):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f"/html/body/div/div[1]/div/main/div/div[2]/div[3]/div/div[1]/div/div[2]/ul/li[{num}]/div")
+
 
 locators = Locators()

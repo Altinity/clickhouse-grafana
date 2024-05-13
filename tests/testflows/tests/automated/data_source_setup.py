@@ -20,17 +20,20 @@ from steps.panel.view import *
 def check_existing_data_sources(self):
     """Check that existing data sources are connected."""
 
-    data_sources = [connections_locators.clickhouse,
-                    connections_locators.clickhouse_direct]
+    with Given("I open connections data sources view"):
+        open_connections_datasources_endpoint()
+
+    with When("I get list of data sources"):
+        data_sources_nums = [1, 2]
 
     with When("I check data sources"):
-        for data_source in data_sources:
+        for data_source_num in data_sources_nums:
             with delay():
                 with Given("I open connections data sources view"):
                     open_connections_datasources_endpoint()
 
-            with When(f"I open data source setup for data source {data_source}"):
-                data_source.click()
+            with When(f"I open data source setup for data source"):
+                connections_locators.data_source(num=data_source_num).click()
 
             with delay():
                 with When("I click save and test button"):

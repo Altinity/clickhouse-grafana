@@ -125,7 +125,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
     const value = dateTimeType?.value ? dateTimeType.value : undefined;
     setSelectedDateTimeType(value);
-    onChange({...query, dateTimeType});
+    onChange({...query, dateTimeType: value});
   };
 
   const onDatabaseChange = (database?: string) => {

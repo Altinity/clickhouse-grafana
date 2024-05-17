@@ -9,7 +9,7 @@ const databasesQuery = 'SELECT name FROM system.tables\n' +
   ')'
 
 export const useSystemDatabases = (datasource) => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<null | any[]>(null);
   useEffect(() => {
     const fetchData = async () => {
       const storageKey = `altinity_systemDatabases_${datasource.uid}`;

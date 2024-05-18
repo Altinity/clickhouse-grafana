@@ -1,3 +1,8 @@
+# 3.1.1 (2024-05-16)
+## Fixes:
+* fixed wrong encoding messages in golang part of plugin
+* fixed wrong screenshots reference in plugin.json
+
 # 3.1.0 (2024-05-10)
 
 ## Enhancements:

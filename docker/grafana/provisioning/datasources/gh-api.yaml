@@ -1,13 +1,14 @@
+apiVersion: 1
+
 datasources:
-  - name: ClickHouse
-    isDefault: true
+  - name: gh-api
     type: vertamedia-clickhouse-datasource
-    uid: clickhouse
+    editable: true
+    uid: gh-api
     access: proxy
     url: https://gh-api.clickhouse.tech
     basicAuth: true
     basicAuthUser: play
-    secureJsonData:
     jsonData:
       addCorsHeader: false
       defaultDatabase:

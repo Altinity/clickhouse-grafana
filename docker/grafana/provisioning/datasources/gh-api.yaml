@@ -1,0 +1,19 @@
+datasources:
+  - name: ClickHouse
+    isDefault: true
+    type: vertamedia-clickhouse-datasource
+    uid: clickhouse
+    access: proxy
+    url: https://gh-api.clickhouse.tech
+    basicAuth: true
+    basicAuthUser: play
+    secureJsonData:
+    jsonData:
+      addCorsHeader: false
+      defaultDatabase:
+      usePOST: true
+      useYandexCloudAuthorization: false
+      xHeaderKey:
+      xHeaderUser: play
+      useCompression: true
+      compressionType: gzip

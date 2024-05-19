@@ -46,6 +46,53 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
+  const [datasourceName] = useState(datasource.name);
+
+  useEffect(() => {
+    // On component mount
+    const storedData = localStorage.getItem('datasourceInfo');
+    if (storedData) {
+      const { name, timestamp } = JSON.parse(storedData);
+      const currentTime = new Date().getTime();
+      const timeDifference = (currentTime - timestamp) / 1000; // Convert milliseconds to seconds
+
+      if (timeDifference < 5) {
+        if (name !== datasourceName) {
+
+          const initialQuery = {
+            ...query,
+            format: DEFAULT_FORMAT,
+            extrapolate: true,
+            skip_comments: true,
+            add_metadata: true,
+            dateTimeType: DEFAULT_DATE_TIME_TYPE,
+            round: DEFAULT_ROUND,
+            intervalFactor: DEFAULT_INTERVAL_FACTOR,
+            interval: '',
+            query: defaultQuery,
+            formattedQuery: query.query,
+            editorMode: EditorMode.Builder,
+            database: undefined,
+            table: undefined,
+            dateColDataType: undefined,
+            dateTimeColDataType: undefined,
+          };
+
+          onChange(initialQuery);
+        }
+      }
+    }
+
+    // On component unmount
+    return () => {
+      const dataToStore = {
+        name: datasourceName,
+        timestamp: new Date().getTime()
+      };
+      localStorage.setItem('datasourceInfo', JSON.stringify(dataToStore));
+    };
+    // eslint-disable-next-line
+  }, []);
 
   const onSqlChange = (sql: string) => {
     onChange({ ...initializedQuery, query: sql });

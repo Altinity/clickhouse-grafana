@@ -1,14 +1,17 @@
-# 3.1.1 (2024-05-16)
+# 3.1.1 (2024-05-20)
 ## Fixes:
 * fixed wrong encoding messages in golang part of plugin
 * fixed wrong screenshots reference in plugin.json
+* fixed wrong alerts query editor behavior, fix https://github.com/Altinity/clickhouse-grafana/issues/560 (affected 3.1.0)
+* fixed syntax highlight when auto-complete items sql query failed, fix https://github.com/Altinity/clickhouse-grafana/issues/559
+* fixed drop-down fields values clean when datasource changed https://github.com/Altinity/clickhouse-grafana/issues/561
 
 # 3.1.0 (2024-05-10)
 
 ## Enhancements:
 * add additional auto-complete functions the same as `clickhouse-client`, fix https://github.com/Altinity/clickhouse-grafana/issues/509
 * add support for Flamegraph and Tracing, fix https://github.com/Altinity/clickhouse-grafana/issues/508
-* enchanced support for Annotations Query builder.
+* enhanced support for Annotations Query builder.
 * added support for HTTP Compression in Connection Settings, fix https://github.com/Altinity/clickhouse-grafana/issues/494 
 * switched to go 1.22
 * updated README with grafana 10 screenshots

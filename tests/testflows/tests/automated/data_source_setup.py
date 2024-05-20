@@ -24,7 +24,7 @@ def check_existing_data_sources(self):
         open_connections_datasources_endpoint()
 
     with When("I get list of data sources"):
-        data_sources_nums = [1, 2, 3, 5]
+        data_sources_nums = [1, 3, 5, 6, 9]
 
     with When("I check data sources"):
         for data_source_num in data_sources_nums:

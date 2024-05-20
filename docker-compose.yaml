@@ -70,8 +70,6 @@ services:
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
     depends_on:
       - clickhouse
-      - backend_builder
-      - plugin_signer
 
     ports:
       - "3000:3000"
@@ -123,9 +121,6 @@ services:
       GOCACHE: "/go-cache"
       RUN_TESTS: "${RUN_TESTS:-.+}"
       CGO_ENABLED: "0"
-    depends_on:
-      - clickhouse
-      - frontend_builder
     volumes:
       - ./:/go/src/grafana-clickhouse
       - ./.go-cache:/go/pkg/mod

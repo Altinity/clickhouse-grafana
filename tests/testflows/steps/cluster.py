@@ -203,19 +203,12 @@ class Cluster(object):
                         if cmd.exitcode != 0:
                             continue
                     with And("executing docker-compose up"):
-                        cmd = self.command(
-                            None,
-                            f"{self.docker_compose} up -d 2>&1 | tee",
-                            timeout=timeout,
-                        )
-                        self.down()
 
                         cmd = self.command(
                             None,
                             f"{self.docker_compose} up -d 2>&1 | tee",
                             timeout=timeout,
                         )
-
                     with Then("check there are no unhealthy containers"):
                         if "is unhealthy" in cmd.output:
                             self.command(None, f"{self.docker_compose} ps | tee")

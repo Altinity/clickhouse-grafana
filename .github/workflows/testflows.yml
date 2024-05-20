@@ -32,6 +32,11 @@ jobs:
       - name: Setup
         run: .github/setup.sh
 
+      - name: Creating plugin
+        run: python3
+          -u ./tests/testflows/regression.py
+          --only "/nothing"
+
       - name: Run Altinity Grafana Plugin tests
         run: python3
           -u ./tests/testflows/regression.py

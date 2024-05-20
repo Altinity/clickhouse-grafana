@@ -38,7 +38,7 @@ FROM (
 `;
 
 export const useAutocompleteData = (datasource) => {
-  const [data, setData] = useState(null);
+  const [data, setData] = useState<null|any[]>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -76,6 +76,7 @@ export const useAutocompleteData = (datasource) => {
         // @ts-ignore
         setData(groupedResult);
       } catch (error) {
+        setData([]);
         console.error("Failed to fetch autocomplete data:", error);
       }
     };

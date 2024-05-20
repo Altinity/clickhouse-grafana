@@ -25,6 +25,14 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
   [selectedColumnDateType, setSelectedColumnDateType] = useState(selectedColumnDateType || query.dateColDataType);
   [selectedDateTimeType, setSelectedDateTimeType] = useState(selectedDateTimeType || query.dateTimeType);
 
+  useEffect(() => {
+    setSelectedDatabase(query.database);
+    setSelectedTable(query.table);
+    setSelectedColumnTimestampType(query.dateTimeColDataType);
+    setSelectedColumnDateType(query.dateColDataType);
+    setSelectedDateTimeType(query.dateTimeType);
+  }, [query.database, query.dateColDataType, query.dateTimeColDataType, query.dateTimeType, query.table, setSelectedColumnDateType, setSelectedColumnTimestampType, setSelectedDatabase, setSelectedDateTimeType, setSelectedTable]);
+
   const buildExploreQuery = useCallback((type) => {
     let query;
     switch (type) {
@@ -125,7 +133,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
     const value = dateTimeType?.value ? dateTimeType.value : undefined;
     setSelectedDateTimeType(value);
-    onChange({...query, dateTimeType});
+    onChange({...query, dateTimeType: value});
   };
 
   const onDatabaseChange = (database?: string) => {
@@ -144,9 +152,9 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
     onChange({...query, dateColDataType});
   };
 
-  const onDateTimeColDataTypeChange = (dateTimeColDataType: string) => {
+  const onDateTimeColDataTypeChange = (dateTimeColDataType?: string) => {
     // @ts-ignore
-    setSelectedColumnTimestampType(dateTimeColDataType.trim());
+    setSelectedColumnTimestampType((dateTimeColDataType || '').trim());
     onChange({...query, dateTimeColDataType});
   };
 
@@ -231,7 +239,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
         <UniversalSelectField
           width={24}
           label={<InlineLabel width={24}>Timestamp Column</InlineLabel>}
-          placeholder="Select Timestamp column"
+          placeholder="Timestamp column"
           value={selectedColumnTimestampType}
           onChange={({ value }) => onDateTimeColDataTypeChange(value as string)}
           options={timestampColumns}

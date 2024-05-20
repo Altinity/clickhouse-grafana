@@ -34,7 +34,7 @@ export const UniversalSelectField: React.FC<UniversalSelectFieldProps> = ({
         value: value,
         label: value
       };
-      setCustomOptions([...customOptions, customValue]);
+      setCustomOptions([...customOptions, customValue].filter(option => option.label !== undefined && option.label.trim() !== ""));
     }
   }, [value, options, customOptions]);
 
@@ -43,7 +43,7 @@ export const UniversalSelectField: React.FC<UniversalSelectFieldProps> = ({
   const uniqueOptions = mergedOptions.filter((option, index) => {
     const firstIndex = mergedOptions.findIndex(opt => opt.value === option.value);
     return index === firstIndex;
-  });
+  }).filter(option => option.label !== undefined && option.label.trim() !== "");
 
   return (
     <InlineField label={label ? label : null}>
@@ -55,8 +55,8 @@ export const UniversalSelectField: React.FC<UniversalSelectFieldProps> = ({
             value: v,
             label: v
           };
-          setCustomOptions([...customOptions, customValue]);
-          onChange({ value: v });
+          setCustomOptions([...customOptions, customValue].filter(option => option.label !== undefined && option.label.trim() !== ""));
+          onChange({ value: v.trim() });
         }}
         width={width}
         value={value}

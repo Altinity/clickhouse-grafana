@@ -130,7 +130,6 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 		reader = decoder.IOReadCloser()
 	default:
 		reader = resp.Body
-		fmt.Println("No compression or unknown compression method")
 	}
 
 	body, err := io.ReadAll(reader)

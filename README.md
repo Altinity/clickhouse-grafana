@@ -42,9 +42,9 @@ OR
 Copy files to your [Grafana plugin directory](https://grafana.com/docs/grafana/latest/plugins/installation/#install-plugin-on-local-grafana).
 Restart Grafana, check data sources list at Configuration -> Datasources -> New, choose ClickHouse option.
 
-![Datasources](https://user-images.githubusercontent.com/105560/171434732-944f05a3-cf10-466a-b24e-7ba929b54dbb.png)
-![Add new datasource](https://user-images.githubusercontent.com/105560/171435032-126105fe-18d9-425d-b65b-ba334d341dc4.png)
-![Datasource types](https://user-images.githubusercontent.com/105560/171435316-ed096a40-c0e8-417a-b8ed-371ae61773b2.png)
+![Datasources](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/01_data_sources.png)
+![Add new datasource](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/02_add_data_source.png)
+![Datasource types](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/03_filter_click_to_plugin.png)
 
 
 ## Features
@@ -65,11 +65,11 @@ Restart Grafana, check data sources list at Configuration -> Datasources -> New,
 * Flamegraph support
 * Traces support
 
-## Access to CH via HTTP / HTTPS
+## Access to ClickHouse via HTTP / HTTPS
 
 Page configuration is standard
 
-![settings](https://cloud.githubusercontent.com/assets/2902918/25473216/3ebd20fc-2b37-11e7-9743-fbbf2c5bdd3f.png)
+![settings](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/04_datasource_settings.png)
 
 There is a small feature - ClickHouse treats HTTP Basic Authentication credentials as a database user and will try to run queries using its name.
 
@@ -92,17 +92,21 @@ To learn more - read about params `max_queue_size` and `max_queue_time` at [CHPr
 
 Query setup interface:
 
-![query editor image](https://user-images.githubusercontent.com/2902918/32498037-2e9df438-c3d7-11e7-90de-73957c20cf6d.png)
+![query editor image](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/05_query_settings.png)
 
 First row `FROM` contains two options: database and table. Table values depends on a selected database.
-Second row contains selectors for time filtering:
+Next rows contains selectors for time filtering:
 
-* Column:Date ([EventDate](https://clickhouse.tech/docs/en/sql-reference/data-types/date/))
-* Column:DateTime ([DateTime](https://clickhouse.tech/docs/en/sql-reference/data-types/datetime/))
-* Column:TimeStamp ([UInt32](https://clickhouse.tech/docs/en/sql-reference/data-types/int-uint/)).
+Column timestamp time
+* DateTime ([DateTime](https://clickhouse.com/docs/en/sql-reference/data-types/datetime/))
+* DateTime64 ([DateTime64](https://clickhouse.com/docs/en/sql-reference/data-types/datetime64/))
+* TimeStamp ([UInt32](https://clickhouse.com/docs/en/sql-reference/data-types/int-uint/)).
 
-> Plugin will try to detect date columns automatically
-> `Column:DateTime` or `Column:TimeStamp` are required for time-based macros and functions because all analytics based on these values
+Timestamp column
+Date column
+
+> `Timestmap column` are required for time-based macros and functions because all analytics based on these values.
+> Plugin will try to detect Date, Date32 column automatically
 
 Button `Go to Query` is just a toggler to Raw SQL Editor
 
@@ -110,10 +114,17 @@ Button `Go to Query` is just a toggler to Raw SQL Editor
 
 Raw Editor allows custom SQL queries to be written:
 
-![raw editor image](https://user-images.githubusercontent.com/2902918/32843338-337f2efc-ca28-11e7-9bde-ec65faa3cdc9.png)
+![raw editor image](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/06_raw_sql_editor.png)
 
 Raw Editor allows typing queries, get info about functions and macros, format queries as Clickhouse do.
-Under the Editor you can find a raw query (all macros and functions have already been replaced) which will be sent directly to ClickHouse.
+To Execute query on server press "Run Query" or just leave focus from SQL editor textarea.
+
+Under the Editor you can find options which allows setup rounding, time column step 
+and `Add metadata` to SQL query which allows know which dashboard and user produce workload to your ClickHouse server.
+
+Press `Show Generated SQL` for see a raw query (all macros and functions have already been replaced) which will be sent directly to ClickHouse.
+![generated sql](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/07_generated_sql.png)
+
 
 ## Macros support
 
@@ -185,7 +196,7 @@ Example usage:
 ```sql
 $columns(OSName, count(*) c)
 FROM requests
-ANY INNER JOIN oses USING (OS)
+INNER JOIN oses USING (OS)
 ```
 
 Query will be transformed into:
@@ -201,7 +212,7 @@ FROM
         OSName,
         count(*) AS c
     FROM requests
-    ANY INNER JOIN oses USING (OS)
+    INNER JOIN oses USING (OS)
     WHERE ((EventDate >= toDate(1482796627)) AND (EventDate <= toDate(1482853383))) AND ((EventTime >= toDateTime(1482796627)) AND (EventTime <= toDateTime(1482853383)))
     GROUP BY
         t,
@@ -216,7 +227,7 @@ ORDER BY t
 
 This will help to build the next graph:
 
-![req_by_os image](https://cloud.githubusercontent.com/assets/2902918/21719222/2feabf30-d425-11e6-9042-9d290ef07884.png)
+![req_by_os image](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/08_requests_by_os.png)
 
 ---
 
@@ -812,7 +823,7 @@ with 2 variables
 
 Remember that pie chart plugin is not welcome for using in grafana - see [Grafana BLog - Friends don't let friends abuse pie charts](https://grafana.com/blog/2015/12/04/friends-dont-let-friends-abuse-pie-charts)
 
-![top5things](https://cloud.githubusercontent.com/assets/2902918/25392562/9fadb202-29e1-11e7-95ca-5b0d2921c592.png)
+![top users](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/09_requests_by_user_pie_chart.png)
 
 To create "Top 5" diagram we will need two queries: one for 'Top 5' rows and one for 'Other' row.
 
@@ -838,13 +849,14 @@ SELECT
     sum(Requests) AS Reqs
 FROM requests
 GROUP BY t, UserName
-ORDER BY Reqs
+ORDER BY Reqs DESC
 LIMIT 5,10000000000000 /* select some ridiculous number after first 5 */
 ```
 
 ### Table view ([https://grafana.com/plugins/table](https://grafana.com/plugins/table))
 
-There are don't contain any tricks in displaying time-series data. To print summary data, omit time column, and format the result as "Table".
+There are don't contain any tricks in displaying time-series data. To print summary data, omit time column, and format the result as "Table" and press "Run query".
+
 
 ```sql
 SELECT
@@ -857,9 +869,12 @@ ORDER BY
     Reqs
 ```
 
+![table view](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/10_table_view.png)
+
+
 ### Vertical histogram ([https://grafana.com/plugins/graph](https://grafana.com/plugins/graph))
 
-![vertical histogram](https://cloud.githubusercontent.com/assets/2902918/25392561/9f3777e0-29e1-11e7-8b23-2ea9ae46a029.png)
+![vertical histogram](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/11_vertical_histogram.png)
 
 To make the vertical histogram from graph panel we will need to edit some settings:
 
@@ -879,7 +894,7 @@ FROM some_table
 
 ### Worldmap panel ([https://github.com/grafana/worldmap-panel](https://github.com/grafana/worldmap-panel))
 
-![worldmap](https://user-images.githubusercontent.com/2902918/39430337-47513f4c-4c96-11e8-981d-04533538abec.png)
+![worldmap](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/12_worldmap_example.png)
 
 If you have a table with country/city codes:
 
@@ -902,11 +917,11 @@ ORDER BY Reqs DESC
 
 If you are using [geohash](https://github.com/grafana/worldmap-panel#geohashes-as-the-data-source) set following options:
 
-![Format](https://user-images.githubusercontent.com/2902918/32726398-96793438-c881-11e7-84b8-26e82dbdb40c.png)
+![Format](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/13_worldmap_format.png)
 
 You can make following query with `Table` formatting:
 
-![geohash-query](https://user-images.githubusercontent.com/2902918/32726399-96a01e86-c881-11e7-9368-61207bae72fd.png)
+![geohash-query](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/14_worldmap_query.png)
 
 ## Ad-hoc filters
 
@@ -919,7 +934,7 @@ Plugin will apply Ad-hoc filters to all queries on the dashboard if their settin
 as `database.table` specified in Ad-hoc control. If the ad-hoc filter doesn't specify a table, it will apply to all queries regardless of the table.
 This is useful if the dashboard contains queries to multiple different tables.
 
-![ad-hoc](https://user-images.githubusercontent.com/2902918/37139531-ed67f222-22b6-11e8-8815-9268850f16fb.png)
+![ad-hoc](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/15_adhoc_filter.png)
 
 > There are no option to apply OR operator for multiple Ad-hoc filters - see grafana/grafana#10918
 > There are no option to use IN operator for Ad-hoc filters due to Grafana limitations
@@ -948,13 +963,23 @@ SELECT ClientID FROM events WHERE EventTime > toDateTime($from) AND EventTime < 
 
 Plugin support Annotations with regions. To enable this feature open Dashboard `settings` and add new annotation query with `clickhouse` datasource with properly field names.
 
-![Annotation query example](https://user-images.githubusercontent.com/105560/115864672-a35c3480-a450-11eb-88f4-1103a00c6563.png)
+![Annotation query add](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/16_annotations_query_add.png)
 
-![Annotation with regions graph panel](https://user-images.githubusercontent.com/105560/115865059-3d23e180-a451-11eb-91ce-1159aef29541.png)
+![Annotation query example](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/17_annotations_query_example.png)
+
+![Annotation with regions graph panel](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/18_annotations_graph.png)
 
 ## Alerts support
 
+Grafana provide two kind of alerts. Unified alerts and graph panel related alerts (legacy). 
+Both kind of alerts supports by our plugin can't be used together. 
+Use `GF_UNIFIED_ALERTING_ENABLED=1` (preferable) or `GF_ALERTING_ENABLED=1` environment variables for switch.
+
+### Panel related alerts (legacy)
 To enable alerts open "alerts" tab in panel, and define alert expression as described on [grafana.com](https://grafana.com/docs/grafana/latest/alerting/)
+
+![Alerts in graph panel](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/19_alerts_tab.png)
+
 
 Be careful with Template variables values, currently grafana doesn't support template variables in alert queries itself.
 Also, grafana UI doesn't pass template variables values to a backend, after you change it on frontend UI.
@@ -968,14 +993,30 @@ and save a whole dashboard to the Grafana server
 WARNING: `Test alert` button doesn't save a current state of alert rules to a backend part of the plugin.
 
 If the "Generated SQL" properly passed into backend part of plugin, you will see something like this:
-![Graph panel with alerts](https://user-images.githubusercontent.com/105560/115866047-95a7ae80-a452-11eb-9dd0-8e85b89e99ec.png)
+![Graph panel with alerts](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/20_alerts_panel.png)
 
-You also can try to troubleshoot alerts in clickhouse grafana plugin when enable `level=debug` in `log` section `grafana.ini` or via `GF_LOG_LEVEL=debug` environment variable.
+
+### Unified Alerts support
+
+Unified alerts could be provisioned with YAML file, look to https://github.com/Altinity/clickhouse-grafana/tree/master/docker/grafana/provisioning/alerting/
+
+![Unified alerts menu](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/21_unified_alerts_menu.png)
+
+![Unified alerts panel](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/22_unified_alerts_adding.png)
+
+To export exists unified alerts to YAML use Export alerts
+
+![Unified alerts export](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/24_alerts_export.png)
+
+### Alerts troubleshooting 
+To troubleshoot alerts in clickhouse grafana plugin when enable `level=debug` in `log` section `grafana.ini` or via `GF_LOG_LEVEL=debug` environment variable.
 
 ## Logs support
 
 To render your ClickHouse data as Logs, please use special format in "Format as" dropdown in Query Editor called "Logs". This option helps Grafana recognizes data as logs and shows logs visualization automatically in Explore UI. On dashboards you can use [Logs panel](https://grafana.com/docs/grafana/latest/visualizations/logs-panel/) as well.
 
+![Format as Logs](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/23_logs_support.png)
+  
 To return suitable for logs data - query should return at least one time field (assumed that it will be first field) and one text field from the ClickHouse.
 
 Plugin is also transforming all text fields, except log line, into the labels using following rules:
@@ -991,9 +1032,7 @@ There are few dedicated fields that are recognized by Grafana:
 All other fields returned from data source will be recognized by Grafana as [detected fields](https://grafana.com/docs/grafana/latest/explore/logs-integration/#labels-and-detected-fields)
 
 ## Flamegraph support
-![Format as: Traces](https://github.com/Altinity/clickhouse-grafana/assets/105560/2a4813ad-af83-46f2-98e0-797744b766bd)
-
-![Tracing Example](https://github.com/Altinity/clickhouse-grafana/assets/105560/0a3c915d-84b3-41bb-b6a7-f3f5a10d655b)
+![Format as: Flamegraph](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/25_format_as_flamegraph.png)
 
 To show Traces you need query in format as "Flame Graph"
 According to https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/flame-graph/#data-api, you need to have recordset with 4 fields
@@ -1021,9 +1060,9 @@ ORDER BY trace, level
 
 ## Traces support
 To show Traces you need query with format as "Traces" with following
-![Format as Traces](https://github.com/Altinity/clickhouse-grafana/assets/105560/2a4813ad-af83-46f2-98e0-797744b766bd)
+![Format as Traces](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/26_format_as_trace.png)
 
-![Trace example](https://github.com/Altinity/clickhouse-grafana/assets/105560/0a3c915d-84b3-41bb-b6a7-f3f5a10d655b)
+![Trace example](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/27_traces_example.png)
 
 For example, if `<opentelemetry_start_trace_probability>1</opentelemetry_start_trace_probability>` in user profile and `system.opentelemetry_span_log` is not emtpy, then you can show traces about clickhouse query execution
 Look to [system.opentelemetry_span_log](https://clickhouse.com/docs/en/operations/system-tables/opentelemetry_span_log) table description for how to get data for FlameGraph

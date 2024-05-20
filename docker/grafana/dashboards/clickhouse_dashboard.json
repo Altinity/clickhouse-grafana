@@ -9,7 +9,7 @@
         "hide": false,
         "iconColor": "#5794F2",
         "limit": 100,
-        "name": "Annotations & Alerts + Regions",
+        "name": "ClickHouse Annotations & Alerts + Regions",
         "query": "SELECT \n       toUInt64(event_time) * 1000 AS time,\n       (toUInt64(event_time) + (rand() % 600)) * 1000 AS time_end,\n       if(rand() % 2 = 1, '[alert] title', '[annotation] title') AS title,\n       if(rand() % 2 = 1, '[alert] description', '[annotation] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,50) AND\n  toUInt64(event_time) >= $from AND toUInt64(event_time) < $to\n",
         "rawQuery": "SELECT \n       toUInt64(event_time) * 1000 AS time,\n       (toUInt64(event_time) + (rand() % 600)) * 1000 AS time_end,\n       if(rand() % 2 = 1, '[alert] title', '[annotation] title') AS title,\n       if(rand() % 2 = 1, '[alert] description', '[annotation] description') AS text,\n       arrayStringConcat(['test1', 'test2', service_name],',') AS tags\nFROM default.test_grafana\nWHERE\n  rand() % 100 IN (1,50) AND\n  toUInt64(event_time) >= 1606291685 AND toUInt64(event_time) < 1606313285",
         "showIn": 0,

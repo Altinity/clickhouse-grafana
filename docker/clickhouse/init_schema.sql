@@ -173,3 +173,26 @@ INSERT INTO traffic SELECT
   rx_bytes * 2 AS tx_bytes
 FROM numbers(10080);
 
+
+DROP TABLE IF EXISTS oses;
+CREATE TABLE oses (
+  OS LowCardinality(String),
+  OSName LowCardinality(String)
+) ENGINE=MergeTree()
+ORDER BY OS;
+
+INSERT INTO oses VALUES('os1','Windows XP'),('os2','Windows 7'),('os3','Windows 8'),('os4','Windows 10'),('os5','Windows 11'),('os6','MacOS'),('os7','Linux'),('os8','Android'),('os9','iOS');
+
+
+DROP TABLE IF EXISTS requests;
+CREATE TABLE requests (
+    EventTime DateTime,
+    OS LowCardinality(String),
+    UserName LowCardinality(String),
+    req_count UInt64
+) ENGINE=MergeTree()
+ORDER BY EventTime;
+
+INSERT INTO requests SELECT now()-INTERVAL 3 HOUR+INTERVAL number SECOND, 'os' || rand() % 9 AS OS, 'user' || rand() % 1000 AS UserName, randUniform(10,10000) AS req_count FROM numbers(10000);
+
+

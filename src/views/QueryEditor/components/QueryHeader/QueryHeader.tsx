@@ -19,13 +19,14 @@ export const selectors: { components: E2ESelectors<typeof Components> } = {
   components: Components,
 };
 interface QueryHeaderProps {
+  isAnnotationView: boolean;
   query: CHQuery;
   editorMode: EditorMode;
   setEditorMode: (mode: any) => void;
   onTriggerQuery: () => void;
 }
 
-export const QueryHeader = ({ editorMode, setEditorMode, onTriggerQuery }: QueryHeaderProps) => {
+export const QueryHeader = ({ editorMode, setEditorMode,isAnnotationView, onTriggerQuery }: QueryHeaderProps) => {
   const options: Array<SelectableValue<EditorMode>> = [
     { label: selectors.components.QueryEditor.EditorMode.options.QuerySettings, value: EditorMode.Builder },
     { label: selectors.components.QueryEditor.EditorMode.options.SQLEditor, value: EditorMode.SQL },
@@ -42,7 +43,7 @@ export const QueryHeader = ({ editorMode, setEditorMode, onTriggerQuery }: Query
         value={editorMode}
         onChange={(e: EditorMode) => onEditorModeChange(e!)}
       />
-      { editorMode === EditorMode.SQL ? <Button variant="primary" icon="play" size={'sm'} style={{marginLeft: '10px'}} onClick={onTriggerQuery}>
+      { (editorMode === EditorMode.SQL && !isAnnotationView) ? <Button variant="primary" icon="play" size={'sm'} style={{marginLeft: '10px'}} onClick={onTriggerQuery}>
         Run Query
       </Button> : null }
       { editorMode === EditorMode.Builder ? <Button variant="primary" size={'sm'} icon="arrow-right"  style={{marginLeft: '10px'}} onClick={() => setEditorMode(EditorMode.SQL)} >

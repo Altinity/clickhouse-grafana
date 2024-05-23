@@ -3,6 +3,7 @@ import {DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput, S
 import {DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, SelectableValue} from '@grafana/data';
 import { CHDataSourceOptions } from '../../types/types';
 import _ from 'lodash';
+import { DefaultValues } from "./FormParts/DefaultValues/DefaultValues";
 
 export interface CHSecureJsonData {
   password?: string;
@@ -66,6 +67,10 @@ export function ConfigEditor(props: Props) {
     })
   };
 
+  const onFieldChange = (column: SelectableValue, fieldName) => {
+    jsonData[fieldName] = column.value;
+    onOptionsChange({ ...options, jsonData: {...jsonData}})
+  };
 
   return (
     <>
@@ -115,6 +120,7 @@ export function ConfigEditor(props: Props) {
           </>
         )}
       </div>
+      <DefaultValues jsonData={jsonData} onSwitchToggle={onSwitchToggle} onFieldChange={onFieldChange} externalProps={props}/>
       <h3 className="page-heading">Additional</h3>
       <div className="gf-form-group">
         <InlineField
@@ -179,7 +185,7 @@ export function ConfigEditor(props: Props) {
             allowCustomValue={false}
             width={24}
             value={selectedCompressionType}
-            onChange={({ value }) => onCompressionTypeChange({ value })}
+            onChange={({value}) => onCompressionTypeChange({value})}
             options={[
               {label: 'gzip', value: 'gzip'},
               {label: 'br', value: 'br'},

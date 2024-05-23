@@ -18,6 +18,7 @@ import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
 import { SqlQueryHelper } from './sql-query/sql-query-helper';
 import SqlQueryMacros from './sql-query/sql-query-macros';
 import { QueryEditor } from "../views/QueryEditor/QueryEditor";
+import dataTypes from "../views/QueryEditor/components/QueryTextEditor/editor/constants/data-types";
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
@@ -51,6 +52,17 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
+    if (instanceSettings.jsonData.useDefaultConfiguration) {
+      this.defaultValues = {
+        dateTime: {
+          defaultDateTime64: instanceSettings.jsonData.defaultDateTime64,
+          defaultDateTime: instanceSettings.jsonData.defaultDateTime,
+          defaultUint32: instanceSettings.jsonData.defaultUint32,
+          defaultDateDate32: instanceSettings.jsonData.defaultDateDate32,
+        }
+      };
+    }
+
     this.backendSrv = getBackendSrv();
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);

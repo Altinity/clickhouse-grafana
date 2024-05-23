@@ -1,0 +1,132 @@
+import {InlineField, InlineSwitch, Input, Select} from "@grafana/ui";
+import React, {useEffect, useState} from "react";
+import {getOptions} from "./DefaultValues.api";
+import {onUpdateDatasourceJsonDataOption} from "@grafana/data";
+const TABLES_QUERY = "SELECT name,database,table,type FROM system.columns WHERE type LIKE 'Date32%'  OR type LIKE 'DateTime64%' OR type = 'UInt32' OR match(type,'^DateTime$|^DateTime\\\\([^)]+\\\\)$')  OR match(type,'^Date$|^Date\\([^)]+\\)$') ORDER BY type,name FORMAT JSON";
+
+export const DefaultValues = ({jsonData, onSwitchToggle, onFieldChange, externalProps}: {jsonData: any, onSwitchToggle: any, onFieldChange: any, externalProps: any}) => {
+
+  const [defaultDateTime64Options, setDefaultDateTime64Options] = useState<any[]>([]);
+  const [defaultDateTimeOptions, setDefaultDateTimeOptions] = useState<any[]>([]);
+  const [defaultUint32Options, setDefaultUint32Options] = useState<any[]>([]);
+  const [defaultDateDate32Options, setDefaultDateDate32Options] = useState<any[]>([]);
+
+  useEffect(() => {
+    const doRequest = async () => {
+      try {
+        const data = await getOptions(TABLES_QUERY, jsonData.dataSourceUrl)
+
+        const groupedByType = data.data?.reduce((acc, item) => {
+          // If the type is not yet a key in the accumulator, add it
+          if (!acc[item.type]) {
+            acc[item.type] = [];
+          }
+          // Append the current item to the array for its type
+          // Save only name because we already know type
+          acc[item.type].push(item.name);
+          return acc;
+        }, {});
+
+        const transformDataToOptions = (data: any): any[] => {
+          const dataSetList = Array.from(new Set(data));
+          return dataSetList.map((item: any) => ({label: item, value: item}));
+        }
+
+        setDefaultDateTime64Options(transformDataToOptions(groupedByType['DateTime64']));
+        setDefaultDateDate32Options(transformDataToOptions(groupedByType['Date']));
+        setDefaultUint32Options(transformDataToOptions(groupedByType['UInt32']));
+        setDefaultDateTimeOptions(transformDataToOptions(groupedByType['DateTime']));
+      } catch (e) {
+        setDefaultUint32Options([])
+        setDefaultDateTimeOptions([])
+        setDefaultDateTime64Options([])
+        setDefaultDateDate32Options([])
+      }
+    }
+
+    doRequest()
+  }, [jsonData.dataSourceUrl]);
+
+  return <div className="gf-form-group">
+    <InlineField
+      label="Use default values"
+      labelWidth={36}
+    >
+      <InlineSwitch
+        id="useDefaultConfiguration"
+        className="gf-form"
+        value={jsonData.useDefaultConfiguration || false}
+        onChange={(e) => onSwitchToggle('useDefaultConfiguration', e.currentTarget.checked)}
+      />
+    </InlineField>
+    {jsonData.useDefaultConfiguration && <>
+      <h6>DateTime columns</h6>
+      <InlineField
+        label="Datetime Field"
+        labelWidth={32}
+      >
+        <Select
+          id="defaultDateTime"
+          allowCustomValue={false}
+          width={24}
+          value={jsonData.defaultDateTime}
+          onChange={({value}) => onFieldChange({value}, 'defaultDateTime')}
+          options={defaultDateTimeOptions}
+        />
+      </InlineField>
+      <InlineField
+        label="Timestamp (Uint32) Field"
+        labelWidth={32}
+      >
+        <Select
+          id="defaultUint32"
+          allowCustomValue={false}
+          width={24}
+          value={jsonData.defaultUint32}
+          onChange={({value}) => onFieldChange({value}, 'defaultUint32')}
+          options={defaultUint32Options}
+        />
+      </InlineField>
+      <InlineField
+        label="Datetime64 Field"
+        labelWidth={32}
+      >
+        <Select
+          id="defaultDateTime64"
+          allowCustomValue={false}
+          width={24}
+          value={jsonData.defaultDateTime64}
+          onChange={({value}) => onFieldChange({value}, 'defaultDateTime64')}
+          options={defaultDateTime64Options}
+        />
+      </InlineField>
+      <h6>Default Date column</h6>
+      <InlineField
+        label="Date Field"
+        labelWidth={32}
+      >
+        <Select
+          id="defaultDateDate32"
+          allowCustomValue={false}
+          width={24}
+          value={jsonData.defaultDateDate32}
+          onChange={({value}) => onFieldChange({value}, 'defaultDateDate32')}
+          options={defaultDateDate32Options}
+        />
+      </InlineField>
+      <h6>Default Database</h6>
+      <InlineField
+        label="Default database"
+        labelWidth={32}
+        tooltip="If you set the default database for this datasource, it will be prefilled in the query builder, and used to make ad-hoc filters more convenient."
+      >
+        <Input
+          value={jsonData.defaultDatabase || 'default'}
+          placeholder="default"
+          width={24}
+          onChange={onUpdateDatasourceJsonDataOption(externalProps, 'defaultDatabase')}
+        />
+      </InlineField>
+    </>}
+  </div>
+}

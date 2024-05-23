@@ -44,7 +44,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const { datasource, query, onChange, onRunQuery } = props;
   const isAnnotationView = !props.app;
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
-  const initializedQuery = initializeQueryDefaults(query, isAnnotationView);
+  const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
   const [datasourceName] = useState(datasource.name);
 
@@ -125,7 +125,8 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   );
 }
 
-function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean): CHQuery {
+function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, datasource: any): CHQuery {
+  console.log(datasource.defaultValues, '-----------')
   const initializedQuery = {
     ...query,
     format: query.format || DEFAULT_FORMAT,
@@ -138,8 +139,34 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean): CHQ
     interval: query.interval || '',
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
-    editorMode: EditorMode.Builder,
+    editorMode: EditorMode.Builder
   };
+
+  enum DateTimeType {
+    DateTime = 'DATETIME',
+    DateTime64 = 'DATETIME64',
+    TimeStamp = 'TIMESTAMP'
+  }
+
+  if (datasource.defaultValues) {
+    console.log(datasource.defaultValues)
+    console.log(datasource.defaultValues.dateTime.defaultDateTime, initializedQuery.dateTimeType === DateTimeType.DateTime, !initializedQuery.dateTimeColDataType)
+    if (datasource.defaultValues.dateTime.defaultDateTime && initializedQuery.dateTimeType === DateTimeType.DateTime && !initializedQuery.dateTimeColDataType) {
+      initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultDateTime;
+    }
+
+    if (datasource.defaultValues.dateTime.defaultDateTime64 && initializedQuery.dateTimeType === DateTimeType.DateTime64 && !initializedQuery.dateTimeColDataType) {
+      initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultDateTime64;
+    }
+
+    if (datasource.defaultValues.dateTime.defaultDateDate32 && !initializedQuery.dateColDataType) {
+      initializedQuery.dateColDataType = datasource.defaultValues.dateTime.defaultDateDate32;
+    }
+
+    if (datasource.defaultValues.dateTime.defaultUint32 && initializedQuery.dateTimeType === DateTimeType.TimeStamp  && !initializedQuery.dateTimeColDataType) {
+      initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultUint32;
+    }
+  }
 
   if (isAnnotationView) {
     initializedQuery.format = 'ANNOTATION'

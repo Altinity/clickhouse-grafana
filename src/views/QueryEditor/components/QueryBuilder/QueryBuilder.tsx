@@ -3,6 +3,7 @@ import { InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { UniversalSelectField } from './components/UniversalSelectComponent';
 import {TimestampFormat} from "../../../../types/types";
+import {useConnectionData} from "./components/useConnectionData";
 
 
 const options = [
@@ -12,26 +13,8 @@ const options = [
 ];
 
 export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) => {
-  let selectedDatabase;
-  let selectedTable;
-  let selectedColumnTimestampType;
-  let selectedColumnDateType;
-  let selectedDateTimeType;
-  let setSelectedDatabase;
-  let setSelectedTable;
-  let setSelectedColumnTimestampType;
-  let setSelectedColumnDateType;
-  let setSelectedDateTimeType;
+  const [databases, tables, dateColumns, timestampColumns, selectedColumnTimestampType, selectedColumnDateType, setSelectedDatabase, setSelectedTable, setSelectedColumnTimestampType, setSelectedColumnDateType, setSelectedDateTimeType, selectedTable, selectedDatabase, selectedDateTimeType] =  useConnectionData(query, datasource)
 
-  const [databases, setDatabases] = useState([]);
-  const [tables, setTables] = useState([]);
-  const [dateColumns, setdateColumns] = useState([]);
-  const [timestampColumns, setTimestampColumns] = useState([]);
-  [selectedDatabase, setSelectedDatabase] = useState<string | undefined>(selectedDatabase || query.database);
-  [selectedTable, setSelectedTable] = useState<string | undefined>(selectedTable || query.table);
-  [selectedColumnTimestampType, setSelectedColumnTimestampType] = useState(selectedColumnTimestampType || query.dateTimeColDataType);
-  [selectedColumnDateType, setSelectedColumnDateType] = useState(selectedColumnDateType || query.dateColDataType);
-  [selectedDateTimeType, setSelectedDateTimeType] = useState(selectedDateTimeType || query.dateTimeType);
 
   useEffect(() => {
     setSelectedDatabase(query.database);
@@ -40,103 +23,6 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
     setSelectedColumnDateType(query.dateColDataType);
     setSelectedDateTimeType(query.dateTimeType);
   }, [query.database, query.dateColDataType, query.dateTimeColDataType, query.dateTimeType, query.table, setSelectedColumnDateType, setSelectedColumnTimestampType, setSelectedDatabase, setSelectedDateTimeType, setSelectedTable]);
-
-  const buildExploreQuery = useCallback((type) => {
-    let query;
-    switch (type) {
-      case 'TABLES':
-        query = 'SELECT name ' +
-          'FROM system.tables ' +
-          'WHERE database = \'' + selectedDatabase + '\' ' +
-          'ORDER BY name';
-        break;
-      case 'DATE':
-        query = 'SELECT name ' +
-          'FROM system.columns ' +
-          'WHERE database = \'' + selectedDatabase + '\' AND ' +
-          'table = \'' + selectedTable + '\' AND ' +
-          'match(type,\'^Date$|^Date\\([^)]+\\)$\') ' +
-          'ORDER BY name ' +
-          'UNION ALL SELECT \' \' AS name';
-        break;
-      case TimestampFormat.DateTime:
-        query = 'SELECT name ' +
-          'FROM system.columns ' +
-          'WHERE database = \'' + selectedDatabase + '\' AND ' +
-          'table = \'' + selectedTable + '\' AND ' +
-          'match(type,\'^DateTime$|^DateTime\\([^)]+\\)$\') ' +
-          'ORDER BY name';
-        break;
-      case TimestampFormat.DateTime64:
-        query = 'SELECT name ' +
-          'FROM system.columns ' +
-          'WHERE database = \'' + selectedDatabase + '\' AND ' +
-          'table = \'' + selectedTable + '\' AND ' +
-          'type LIKE \'DateTime64%\' ' +
-          'ORDER BY name';
-        break;
-      case 'TIMESTAMP':
-        query = 'SELECT name ' +
-          'FROM system.columns ' +
-          'WHERE database = \'' + selectedDatabase + '\' AND ' +
-          'table = \'' + selectedTable + '\' AND ' +
-          'type = \'UInt32\' ' +
-          'ORDER BY name';
-        break;
-      case 'DATABASES':
-        query = 'SELECT name ' +
-          'FROM system.databases ' +
-          'ORDER BY name';
-        break;
-      case 'COLUMNS':
-        query = 'SELECT name text, type value ' +
-          'FROM system.columns ' +
-          'WHERE database = \'' + selectedDatabase + '\' AND ' +
-          'table = \'' + selectedTable + '\'';
-        break;
-    }
-    return query;
-  },[selectedTable, selectedDatabase])
-
-  const querySegment = useCallback((type: any) => {
-    let query = buildExploreQuery(type);
-    return datasource.metricFindQuery(query)
-  },[buildExploreQuery, datasource])
-
-  useEffect(() => {
-    (async () => {
-      const databases = await querySegment('DATABASES')
-      setDatabases(databases.map((item: any) => ({ label: item.text, value: item.text })))
-    })()
-  }, [querySegment]);
-
-  useEffect(() => {
-    if (selectedDatabase) {
-      (async () => {
-        const tables = await querySegment('TABLES')
-        setTables(tables.map((item: any) => ({ label: item.text, value: item.text })))
-      })()
-    }
-  }, [selectedDatabase, querySegment]);
-
-  useEffect(() => {
-    if (!!selectedDatabase || !!selectedTable || !!selectedDateTimeType) {
-      (async () => {
-        const timestampColumns = await querySegment(selectedDateTimeType)
-        setTimestampColumns(timestampColumns.map((item: any) => ({ label: item.text, value: item.text })))
-      })()
-    }
-  }, [selectedTable, selectedDatabase, selectedDateTimeType, querySegment]);
-
-  useEffect(() => {
-    if (!!selectedDatabase || !!selectedTable) {
-
-      (async () => {
-        const dateColumns = await querySegment('DATE')
-        setdateColumns(dateColumns.map((item: any) => ({ label: item.text, value: item.text })))
-      })()
-    }
-  }, [selectedTable, selectedDatabase, querySegment]);
 
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
     const value = dateTimeType?.value ? dateTimeType.value : undefined;

@@ -2,6 +2,14 @@ import React, {useCallback, useEffect, useState} from 'react';
 import { InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
 import { SelectableValue } from '@grafana/data';
 import { UniversalSelectField } from './components/UniversalSelectComponent';
+import {TimestampFormat} from "../../../../types/types";
+
+
+const options = [
+  { label: 'DateTime', value: TimestampFormat.DateTime },
+  { label: 'DateTime64', value: TimestampFormat.DateTime64 },
+  { label: 'TimeStamp', value: TimestampFormat.TimeStamp },
+];
 
 export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) => {
   let selectedDatabase;
@@ -51,7 +59,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
           'ORDER BY name ' +
           'UNION ALL SELECT \' \' AS name';
         break;
-      case 'DATETIME':
+      case TimestampFormat.DateTime:
         query = 'SELECT name ' +
           'FROM system.columns ' +
           'WHERE database = \'' + selectedDatabase + '\' AND ' +
@@ -59,7 +67,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
           'match(type,\'^DateTime$|^DateTime\\([^)]+\\)$\') ' +
           'ORDER BY name';
         break;
-      case 'DATETIME64':
+      case TimestampFormat.DateTime64:
         query = 'SELECT name ' +
           'FROM system.columns ' +
           'WHERE database = \'' + selectedDatabase + '\' AND ' +
@@ -226,11 +234,7 @@ export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) =
             onChange={onDateTimeTypeChanged}
             isClearable
             placeholder={'Timestamp type'}
-            options={[
-              { label: 'DateTime', value: 'DATETIME' },
-              { label: 'DateTime64', value: 'DATETIME64' },
-              { label: 'TimeStamp', value: 'TIMESTAMP' },
-            ]}
+            options={options}
             value={selectedDateTimeType}
           />
         </InlineField>

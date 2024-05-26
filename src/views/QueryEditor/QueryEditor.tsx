@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { QueryEditorProps } from '@grafana/data';
 import { CHDataSource } from '../../datasource/datasource';
-import { CHDataSourceOptions, CHQuery, EditorMode } from '../../types/types';
+import {CHDataSourceOptions, CHQuery, EditorMode, TimestampFormat} from '../../types/types';
 import { QueryHeader } from './components/QueryHeader/QueryHeader';
 import { QueryTextEditor } from './components/QueryTextEditor/QueryTextEditor';
 import { QueryBuilder } from './components/QueryBuilder/QueryBuilder';
@@ -12,7 +12,7 @@ import {useAutocompleteData} from "../hooks/useAutocompletionData";
 
 const defaultQuery = 'SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t';
 const DEFAULT_FORMAT = 'time_series';
-const DEFAULT_DATE_TIME_TYPE = 'DATETIME';
+const DEFAULT_DATE_TIME_TYPE = TimestampFormat.DateTime;
 const DEFAULT_ROUND = '0s';
 const DEFAULT_INTERVAL_FACTOR = 1;
 
@@ -139,7 +139,7 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
     extrapolate: query.extrapolate ?? true,
     skip_comments: query.skip_comments ?? true,
     add_metadata: query.add_metadata ?? true,
-    dateTimeType: query.dateTimeType || DEFAULT_DATE_TIME_TYPE,
+    TimestampFormat: query.TimestampFormat || DEFAULT_DATE_TIME_TYPE,
     round: query.round || DEFAULT_ROUND,
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,
     interval: query.interval || '',
@@ -148,21 +148,12 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
     editorMode: EditorMode.Builder
   };
 
-  enum DateTimeType {
-    DateTime = 'DATETIME',
-    DateTime64 = 'DATETIME64',
-    TimeStamp = 'TIMESTAMP'
-  }
-
-  console.log(datasource.defaultValues)
   if (datasource.defaultValues) {
-    console.log(datasource.defaultValues)
-    console.log(datasource.defaultValues.dateTime.defaultDateTime, initializedQuery.dateTimeType === DateTimeType.DateTime, !initializedQuery.dateTimeColDataType)
-    if (datasource.defaultValues.dateTime.defaultDateTime && initializedQuery.dateTimeType === DateTimeType.DateTime && !initializedQuery.dateTimeColDataType) {
+    if (datasource.defaultValues.dateTime.defaultDateTime && initializedQuery.TimestampFormat === TimestampFormat.DateTime && !initializedQuery.dateTimeColDataType) {
       initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultDateTime;
     }
 
-    if (datasource.defaultValues.dateTime.defaultDateTime64 && initializedQuery.dateTimeType === DateTimeType.DateTime64 && !initializedQuery.dateTimeColDataType) {
+    if (datasource.defaultValues.dateTime.defaultDateTime64 && initializedQuery.TimestampFormat === TimestampFormat.DateTime64 && !initializedQuery.dateTimeColDataType) {
       initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultDateTime64;
     }
 
@@ -170,7 +161,7 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
       initializedQuery.dateColDataType = datasource.defaultValues.dateTime.defaultDateDate32;
     }
 
-    if (datasource.defaultValues.dateTime.defaultUint32 && initializedQuery.dateTimeType === DateTimeType.TimeStamp  && !initializedQuery.dateTimeColDataType) {
+    if (datasource.defaultValues.dateTime.defaultUint32 && initializedQuery.TimestampFormat === TimestampFormat.TimeStamp  && !initializedQuery.dateTimeColDataType) {
       initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultUint32;
     }
   }

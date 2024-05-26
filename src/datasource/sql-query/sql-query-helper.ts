@@ -2,6 +2,7 @@ import { each, isEmpty, isString, map } from 'lodash';
 import { dateMath, TypedVariableModel } from '@grafana/data';
 import dayjs from 'dayjs';
 import { TemplateSrv } from '@grafana/runtime';
+import {TimestampFormat} from "../../types/types";
 
 export class SqlQueryHelper {
   static convertTimestamp(date: any) {
@@ -265,11 +266,11 @@ export class SqlQueryHelper {
   static getFilterSqlForDateTime(columnName: string, dateTimeType: string) {
     const getConvertFn = (dateTimeType: string) => {
       return function (t: string): string {
-        if (dateTimeType === 'DATETIME') {
+        if (dateTimeType === DateT) {
           return 'toDateTime(' + t + ')';
         }
 
-        if (dateTimeType === 'DATETIME64') {
+        if (dateTimeType === TimestampFormat.DateTime64) {
           return 'toDateTime64(' + t + ', 3)';
         }
         return t;
@@ -279,7 +280,7 @@ export class SqlQueryHelper {
     const convertFn = getConvertFn(dateTimeType);
     let from = '$from';
     let to = '$to';
-    if (dateTimeType === 'DATETIME64') {
+    if (dateTimeType === TimestampFormat.DateTime64) {
       from = '$__from/1000';
       to = '$__to/1000';
     }

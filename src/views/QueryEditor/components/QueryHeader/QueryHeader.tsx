@@ -1,6 +1,6 @@
 import React, {useState} from 'react';
 import {Button, Label, Modal, RadioButtonGroup} from '@grafana/ui';
-import { CHQuery, EditorMode } from '../../../../types/types';
+import {CHQuery, EditorMode, TimestampFormat} from '../../../../types/types';
 import { SelectableValue } from '@grafana/data';
 import { E2ESelectors } from '@grafana/e2e-selectors';
 import {CHDataSource} from "../../../../datasource/datasource";
@@ -33,19 +33,19 @@ function findDifferences(query, datasource) {
 
   if (defaultValues) {
     if (defaultValues.dateTime.defaultDateDate32 && query.dateColDataType !== defaultValues.dateTime.defaultDateDate32) {
-      differences.push({ key: 'Date column', original: query.dateColDataType, updated: defaultValues.dateTime.defaultDateDate32 });
+      differences.push({ key: 'Date column', original: String(query.dateColDataType).trim() || 'EMPTY', updated: defaultValues.dateTime.defaultDateDate32 });
     }
 
 
     if (query.dateTimeType === 'TIMESTAMP' && defaultValues.dateTime.defaultUint32 && query.dateTimeColDataType !== defaultValues.dateTime.defaultUint32) {
-      differences.push({ key: 'Timestamp Column', original: query.dateTimeColDataType || 'EMPTY', updated: defaultValues.dateTime.defaultUint32 });
+      differences.push({ key: 'Timestamp Column', original: String(query.dateTimeColDataType).trim() || 'EMPTY', updated: defaultValues.dateTime.defaultUint32 });
     }
 
-    if (query.dateTimeType === 'DATETIME64' && defaultValues.dateTime.defaultDateTime64 && query.dateTimeColDataType !== defaultValues.dateTime.defaultDateTime64) {
+    if (query.dateTimeType === TimestampFormat.DateTime64 && defaultValues.dateTime.defaultDateTime64 && query.dateTimeColDataType !== defaultValues.dateTime.defaultDateTime64) {
       differences.push({ key: 'Timestamp Column', original: query.dateTimeColDataType || 'EMPTY', updated: defaultValues.dateTime.defaultDateTime64 });
     }
 
-    if (query.dateTimeType === 'DATETIME' && defaultValues.dateTime.defaultDateTime && query.dateTimeColDataType !== defaultValues.dateTime.defaultDateTime) {
+    if (query.dateTimeType === TimestampFormat.DateTime && defaultValues.dateTime.defaultDateTime && query.dateTimeColDataType !== defaultValues.dateTime.defaultDateTime) {
       differences.push({ key: 'Timestamp Column', original: query.dateTimeColDataType || 'EMPTY', updated: defaultValues.dateTime.defaultDateTime });
     }
   }
@@ -114,7 +114,7 @@ export const QueryHeader = ({ editorMode, setEditorMode, isAnnotationView, onTri
       <Modal title={'Confirmation'} isOpen={modalOpen} onClickBackdrop={() => setModalOpen(false)} onDismiss={() => setModalOpen(false)}>
         <div>
           <p>Configuration will be reset to default values defined in datasource configuration</p>
-          {differences.map(item => <Label style={{fontSize: '16px'}} children={item.key} description={`${item.original} -> ${item.updated}`} />)}
+          {differences.map(item => <Label style={{fontSize: '16px'}} children={item.key} description={`${item.original}  ---->  ${item.updated}`} />)}
 
         </div>
         <Modal.ButtonRow>

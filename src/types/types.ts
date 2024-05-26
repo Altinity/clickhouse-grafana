@@ -14,6 +14,12 @@ export enum DateTimeColumnSelectorType {
   Date = 'date',
 }
 
+export enum TimestampFormat {
+  DateTime = 'DATETIME',
+  DateTime64 = 'DATETIME64',
+  TimeStamp = 'TIMESTAMP',
+}
+
 export interface CHQuery extends DataQuery {
   query: string;
   format: string;

@@ -6,6 +6,7 @@ import { RawTimeRangeStub } from './lib/raw_time_range_stub';
 import TemplateSrvStub from './lib/template_srv_stub';
 import SqlQueryMacros, { TimeRange } from '../datasource/sql-query/sql-query-macros';
 import { SqlQueryHelper } from '../datasource/sql-query/sql-query-helper';
+import {TimestampFormat} from "../types/types";
 
 describe('Query SELECT with $timeFilterByColumn and range with from and to:', () => {
   const query = 'SELECT * FROM table WHERE $timeFilterByColumn(column_name)';
@@ -16,10 +17,10 @@ describe('Query SELECT with $timeFilterByColumn and range with from and to:', ()
   };
 
   it('gets replaced with BETWEEN filter', () => {
-    expect(SqlQueryMacros.replaceTimeFilters(query, range, 'DATETIME')).toBe(
+    expect(SqlQueryMacros.replaceTimeFilters(query, range, TimestampFormat.DateTime)).toBe(
       'SELECT * FROM table WHERE column_name >= toDateTime(1545613323) AND column_name <= toDateTime(1546300799)'
     );
-    expect(SqlQueryMacros.replaceTimeFilters(query, range, 'DATETIME64')).toBe(
+    expect(SqlQueryMacros.replaceTimeFilters(query, range, TimestampFormat.DateTime64)).toBe(
       'SELECT * FROM table WHERE column_name >= toDateTime64(1545613323000/1000, 3) AND column_name <= toDateTime64(1546300799000/1000, 3)'
     );
   });
@@ -38,7 +39,7 @@ describe('Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range
   };
 
   it('gets replaced with >= filter', () => {
-    expect(SqlQueryMacros.replaceTimeFilters(query, range, 'DATETIME')).toBe(
+    expect(SqlQueryMacros.replaceTimeFilters(query, range, TimestampFormat.DateTime)).toBe(
       'SELECT * FROM table WHERE ' +
         'column_name >= toDateTime(' +
         range.from.unix() +
@@ -47,7 +48,7 @@ describe('Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range
         range.to.unix() +
         ')'
     );
-    expect(SqlQueryMacros.replaceTimeFilters(query, range, 'DATETIME64')).toBe(
+    expect(SqlQueryMacros.replaceTimeFilters(query, range, TimestampFormat.DateTime64)).toBe(
       'SELECT * FROM table WHERE ' +
         'column_name >= toDateTime64(' +
         range.from.unix() +
@@ -56,7 +57,7 @@ describe('Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range
         range.to.valueOf() +
         '/1000, 3)'
     );
-    expect(SqlQueryMacros.replaceTimeFilters(query64, range, 'DATETIME')).toBe(
+    expect(SqlQueryMacros.replaceTimeFilters(query64, range, TimestampFormat.DateTime)).toBe(
       'SELECT * FROM table WHERE ' +
         'column_name >= toDateTime64(' +
         range.from.unix() +
@@ -65,7 +66,7 @@ describe('Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range
         range.to.valueOf() +
         '/1000, 3)'
     );
-    expect(SqlQueryMacros.replaceTimeFilters(query64, range, 'DATETIME64')).toBe(
+    expect(SqlQueryMacros.replaceTimeFilters(query64, range, TimestampFormat.DateTime64)).toBe(
       'SELECT * FROM table WHERE ' +
         'column_name >= toDateTime64(' +
         range.from.unix() +

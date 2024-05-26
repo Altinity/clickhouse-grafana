@@ -1,5 +1,6 @@
 import { each } from 'lodash';
 import { SqlQueryHelper } from './sql-query-helper';
+import {TimestampFormat} from "../../types/types";
 
 export interface RawTimeRange {
   from: any | string;
@@ -61,10 +62,10 @@ export default class SqlQueryMacros {
 
   static getDateTimeFilter(dateTimeType: string) {
     let convertFn = function (t: string): string {
-      if (dateTimeType === 'DATETIME') {
+      if (dateTimeType === TimestampFormat.DateTime) {
         return 'toDateTime(' + t + ')';
       }
-      if (dateTimeType === 'DATETIME64') {
+      if (dateTimeType === TimestampFormat.DateTime64) {
         return 'toDateTime64(' + t + ', 3)';
       }
       return t;
@@ -74,10 +75,10 @@ export default class SqlQueryMacros {
 
   static getDateTimeFilterMs(dateTimeType: string) {
     let convertFn = function (t: string): string {
-      if (dateTimeType === 'DATETIME') {
+      if (dateTimeType === TimestampFormat.DateTime) {
         return 'toDateTime(' + t + ')';
       }
-      if (dateTimeType === 'DATETIME64') {
+      if (dateTimeType === TimestampFormat.DateTime64) {
         return 'toDateTime64(' + t + ', 3)';
       }
       return '(' + t + ')';
@@ -86,20 +87,20 @@ export default class SqlQueryMacros {
   }
 
   static getTimeSeries(dateTimeType: string): string {
-    if (dateTimeType === 'DATETIME') {
+    if (dateTimeType === TimestampFormat.DateTime) {
       return '(intDiv(toUInt32($dateTimeCol), $interval) * $interval) * 1000';
     }
-    if (dateTimeType === 'DATETIME64') {
+    if (dateTimeType === TimestampFormat.DateTime64) {
       return '(intDiv(toFloat64($dateTimeCol) * 1000, ($interval * 1000)) * ($interval * 1000))';
     }
     return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
   }
 
   static getTimeSeriesMs(dateTimeType: string): string {
-    if (dateTimeType === 'DATETIME') {
+    if (dateTimeType === TimestampFormat.DateTime) {
       return '(intDiv(toUInt32($dateTimeCol) * 1000, $__interval_ms) * $__interval_ms)';
     }
-    if (dateTimeType === 'DATETIME64') {
+    if (dateTimeType === TimestampFormat.DateTime64) {
       return '(intDiv(toFloat64($dateTimeCol) * 1000, $__interval_ms) * $__interval_ms)';
     }
     return '(intDiv($dateTimeCol, $__interval_ms) * $__interval_ms)';
@@ -114,7 +115,7 @@ export default class SqlQueryMacros {
     let MANY_WEEKS = 60 * 60 * 24 * 7 * 15;
     let FEW_MONTHS = 60 * 60 * 24 * 30 * 10;
     let FEW_YEARS = 60 * 60 * 24 * 365 * 6;
-    if (dateTimeType === 'DATETIME' || dateTimeType === 'DATETIME64') {
+    if (dateTimeType === TimestampFormat.DateTime || dateTimeType === TimestampFormat.DateTime64) {
       let duration = to - from;
       if (duration < SOME_MINUTES) {
         return 'toUInt32($dateTimeCol) * 1000';
@@ -770,7 +771,7 @@ export default class SqlQueryMacros {
     return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
   }
   
-  static replaceTimeFilters(query: string, range: TimeRange, dateTimeType = 'DATETIME', round?: number): string {
+  static replaceTimeFilters(query: string, range: TimeRange, dateTimeType = TimestampFormat.DateTime, round?: number): string {
     let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.from, round || 0));
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.to, round || 0));
 
@@ -787,7 +788,7 @@ export default class SqlQueryMacros {
       )
       .replace(
         /\$timeFilter64ByColumn\(([\w_]+)\)/g,
-        (match: string, columnName: string) => `${SqlQueryHelper.getFilterSqlForDateTime(columnName, 'DATETIME64')}`
+        (match: string, columnName: string) => `${SqlQueryHelper.getFilterSqlForDateTime(columnName, TimestampFormat.DateTime64)}`
       )
       .replace(/\$from/g, from.toString())
       .replace(/\$to/g, to.toString())

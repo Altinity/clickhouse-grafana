@@ -102,7 +102,14 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   return (
     <>
-      <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} isAnnotationView={isAnnotationView} onTriggerQuery={onTriggerQuery} />
+      <QueryHeader
+        query={initializedQuery}
+        datasource={datasource}
+        editorMode={editorMode}
+        setEditorMode={setEditorMode}
+        isAnnotationView={isAnnotationView}
+        onTriggerQuery={onTriggerQuery}
+      />
       {error ? <Alert title={error} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
       {editorMode === EditorMode.Builder && (
         <QueryBuilder query={initializedQuery} datasource={datasource} onChange={(items: CHQuery) => onChange({...items})} onRunQuery={onTriggerQuery} />
@@ -126,7 +133,6 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 }
 
 function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, datasource: any): CHQuery {
-  console.log(datasource.defaultValues, '-----------')
   const initializedQuery = {
     ...query,
     format: query.format || DEFAULT_FORMAT,
@@ -148,6 +154,7 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
     TimeStamp = 'TIMESTAMP'
   }
 
+  console.log(datasource.defaultValues)
   if (datasource.defaultValues) {
     console.log(datasource.defaultValues)
     console.log(datasource.defaultValues.dateTime.defaultDateTime, initializedQuery.dateTimeType === DateTimeType.DateTime, !initializedQuery.dateTimeColDataType)

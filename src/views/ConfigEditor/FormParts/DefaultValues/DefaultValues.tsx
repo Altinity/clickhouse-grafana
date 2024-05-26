@@ -60,12 +60,45 @@ export const DefaultValues = ({jsonData, onSwitchToggle, onFieldChange, external
       />
     </InlineField>
     {jsonData.useDefaultConfiguration && <>
+      <h6>Connection Parameters</h6>
+      <InlineField
+        label="Database"
+        labelWidth={32}
+        style={{marginLeft: '30px'}}
+      >
+        <Select
+          isClearable
+          id="defaultDateTime"
+          allowCustomValue={false}
+          width={24}
+          value={jsonData.defaultDateTime}
+          onChange={({value}) => onFieldChange({value}, 'defaultDateTime')}
+          options={defaultDateTimeOptions}
+        />
+      </InlineField>
+      <InlineField
+        label="Table"
+        labelWidth={32}
+        style={{marginLeft: '30px'}}
+      >
+        <Select
+          isClearable
+          id="defaultDateTime"
+          allowCustomValue={false}
+          width={24}
+          value={jsonData.defaultDateTime}
+          onChange={({value}) => onFieldChange({value}, 'defaultDateTime')}
+          options={defaultDateTimeOptions}
+        />
+      </InlineField>
       <h6>DateTime columns</h6>
       <InlineField
         label="Datetime Field"
         labelWidth={32}
+        style={{marginLeft: '30px'}}
       >
         <Select
+          isClearable
           id="defaultDateTime"
           allowCustomValue={false}
           width={24}
@@ -77,8 +110,10 @@ export const DefaultValues = ({jsonData, onSwitchToggle, onFieldChange, external
       <InlineField
         label="Timestamp (Uint32) Field"
         labelWidth={32}
+        style={{marginLeft: '30px'}}
       >
         <Select
+          isClearable
           id="defaultUint32"
           allowCustomValue={false}
           width={24}
@@ -90,8 +125,10 @@ export const DefaultValues = ({jsonData, onSwitchToggle, onFieldChange, external
       <InlineField
         label="Datetime64 Field"
         labelWidth={32}
+        style={{marginLeft: '30px'}}
       >
         <Select
+          isClearable
           id="defaultDateTime64"
           allowCustomValue={false}
           width={24}
@@ -100,12 +137,14 @@ export const DefaultValues = ({jsonData, onSwitchToggle, onFieldChange, external
           options={defaultDateTime64Options}
         />
       </InlineField>
-      <h6>Default Date column</h6>
+      <h6>Date column</h6>
       <InlineField
         label="Date Field"
         labelWidth={32}
+        style={{marginLeft: '30px'}}
       >
         <Select
+          isClearable
           id="defaultDateDate32"
           allowCustomValue={false}
           width={24}
@@ -116,8 +155,9 @@ export const DefaultValues = ({jsonData, onSwitchToggle, onFieldChange, external
       </InlineField>
       <h6>Default Database</h6>
       <InlineField
-        label="Default database"
+        label="Database"
         labelWidth={32}
+        style={{marginLeft: '30px'}}
         tooltip="If you set the default database for this datasource, it will be prefilled in the query builder, and used to make ad-hoc filters more convenient."
       >
         <Input

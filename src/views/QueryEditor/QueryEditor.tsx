@@ -170,7 +170,7 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
       initializedQuery.dateTimeType = datasource.defaultValues.defaultDateTimeType;
     }
 
-    onChange({ ...query, initialized: true });
+    onChange({ ...query, ...initializedQuery, initialized: true });
   }
 
   if (isAnnotationView) {

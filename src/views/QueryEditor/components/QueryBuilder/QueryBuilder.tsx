@@ -1,4 +1,4 @@
-import React from 'react';
+import React, {useEffect} from 'react';
 import {InlineField, InlineFieldRow, InlineLabel, Select} from '@grafana/ui';
 import {SelectableValue} from '@grafana/data';
 import {UniversalSelectField} from './components/UniversalSelectComponent';

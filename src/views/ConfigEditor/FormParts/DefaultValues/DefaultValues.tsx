@@ -160,7 +160,9 @@ jsonData, onSwitchToggle, onFieldChange, externalProps
       >
         <Select
           width={24}
-          onChange={({value}) => onFieldChange({value}, 'defaultDateTimeType')}
+          onChange={(changeEvent) => {
+            onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultDateTimeType')
+          }}
           isClearable
           placeholder={'Timestamp type'}
           options={[
@@ -183,7 +185,9 @@ jsonData, onSwitchToggle, onFieldChange, externalProps
           allowCustomValue={false}
           width={24}
           value={jsonData.defaultDateTime}
-          onChange={({value}) => onFieldChange({value}, 'defaultDateTime')}
+          onChange={(changeEvent) => {
+            onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultDateTime')
+          }}
           options={defaultDateTimeOptions}
         />
       </InlineField>
@@ -198,7 +202,9 @@ jsonData, onSwitchToggle, onFieldChange, externalProps
           allowCustomValue={false}
           width={24}
           value={jsonData.defaultUint32}
-          onChange={({value}) => onFieldChange({value}, 'defaultUint32')}
+          onChange={(changeEvent) => {
+            onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultUint32')
+          }}
           options={defaultUint32Options}
         />
       </InlineField>
@@ -213,7 +219,9 @@ jsonData, onSwitchToggle, onFieldChange, externalProps
           allowCustomValue={false}
           width={24}
           value={jsonData.defaultDateTime64}
-          onChange={({value}) => onFieldChange({value}, 'defaultDateTime64')}
+          onChange={(changeEvent) => {
+            onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultDateTime64')
+          }}
           options={defaultDateTime64Options}
         />
       </InlineField>
@@ -229,7 +237,9 @@ jsonData, onSwitchToggle, onFieldChange, externalProps
           allowCustomValue={false}
           width={24}
           value={jsonData.defaultDateDate32}
-          onChange={({value}) => onFieldChange({value}, 'defaultDateDate32')}
+          onChange={(changeEvent) => {
+            onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultDateDate32')
+          }}
           options={defaultDateDate32Options}
         />
       </InlineField>

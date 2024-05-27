@@ -152,6 +152,11 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
   };
 
   if (datasource.defaultValues && !query.initialized) {
+    // !!!!!!!!
+    if (datasource.defaultValues.defaultDateTimeType && !initializedQuery.dateTimeType) {
+      initializedQuery.dateTimeType = datasource.defaultValues.defaultDateTimeType;
+    }
+
     if (datasource.defaultValues.dateTime.defaultDateTime && initializedQuery.dateTimeType === TimestampFormat.DateTime && !initializedQuery.dateTimeColDataType) {
       initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultDateTime;
     }
@@ -166,11 +171,6 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
 
     if (datasource.defaultValues.dateTime.defaultUint32 && initializedQuery.dateTimeType === TimestampFormat.TimeStamp  && !initializedQuery.dateTimeColDataType) {
       initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultUint32;
-    }
-
-    // !!!!!!!!
-    if (datasource.defaultValues.defaultDateTimeType && !initializedQuery.dateTimeType) {
-      initializedQuery.dateTimeType = datasource.defaultValues.defaultDateTimeType;
     }
 
     onChange({ ...query, ...initializedQuery, initialized: true });

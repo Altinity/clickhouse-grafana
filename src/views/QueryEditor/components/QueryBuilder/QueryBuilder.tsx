@@ -31,13 +31,13 @@ export const QueryBuilder = ({
           selectedDateTimeType] =  useConnectionData(query, datasource)
 
 
-  useEffect(() => {
-    setSelectedDatabase(query.database);
-    setSelectedTable(query.table);
-    setSelectedColumnTimestampType(query.dateTimeColDataType);
-    setSelectedColumnDateType(query.dateColDataType);
-    setSelectedDateTimeType(query.dateTimeType);
-  }, [query.database, query.dateColDataType, query.dateTimeColDataType, query.dateTimeType, query.table, setSelectedColumnDateType, setSelectedColumnTimestampType, setSelectedDatabase, setSelectedDateTimeType, setSelectedTable]);
+  // useEffect(() => {
+  //   setSelectedDatabase(query.database);
+  //   setSelectedTable(query.table);
+  //   setSelectedColumnTimestampType(query.dateTimeColDataType);
+  //   setSelectedColumnDateType(query.dateColDataType);
+  //   setSelectedDateTimeType(query.dateTimeType);
+  // }, [query.database, query.dateColDataType, query.dateTimeColDataType, query.dateTimeType, query.table, setSelectedColumnDateType, setSelectedColumnTimestampType, setSelectedDatabase, setSelectedDateTimeType, setSelectedTable]);
 
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
     const value = dateTimeType?.value ? dateTimeType.value : undefined;

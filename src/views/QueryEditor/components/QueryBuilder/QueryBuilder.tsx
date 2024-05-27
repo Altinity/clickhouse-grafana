@@ -12,8 +12,23 @@ const options = [
   { label: 'TimeStamp', value: TimestampFormat.TimeStamp },
 ];
 
-export const QueryBuilder = ({ query, onRunQuery, onChange, datasource }: any) => {
-  const [databases, tables, dateColumns, timestampColumns, selectedColumnTimestampType, selectedColumnDateType, setSelectedDatabase, setSelectedTable, setSelectedColumnTimestampType, setSelectedColumnDateType, setSelectedDateTimeType, selectedTable, selectedDatabase, selectedDateTimeType] =  useConnectionData(query, datasource)
+export const QueryBuilder = ({
+ query, onChange, datasource 
+}: any) => {
+  const [databases,
+          tables,
+          dateColumns,
+          timestampColumns,
+          selectedColumnTimestampType,
+          selectedColumnDateType,
+          setSelectedDatabase,
+          setSelectedTable,
+          setSelectedColumnTimestampType,
+          setSelectedColumnDateType,
+          setSelectedDateTimeType,
+          selectedTable,
+          selectedDatabase,
+          selectedDateTimeType] =  useConnectionData(query, datasource)
 
 
   useEffect(() => {

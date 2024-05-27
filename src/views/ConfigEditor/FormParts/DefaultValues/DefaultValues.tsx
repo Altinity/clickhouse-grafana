@@ -5,7 +5,9 @@ import {onUpdateDatasourceJsonDataOption} from "@grafana/data";
 import {TimestampFormat} from "../../../../types/types";
 const TABLES_QUERY = "SELECT name,database,table,type FROM system.columns WHERE type LIKE 'Date32%'  OR type LIKE 'DateTime64%' OR type = 'UInt32' OR match(type,'^DateTime$|^DateTime\\\\([^)]+\\\\)$')  OR match(type,'^Date$|^Date\\([^)]+\\)$') ORDER BY type,name FORMAT JSON";
 
-export const DefaultValues = ({jsonData, onSwitchToggle, onFieldChange, externalProps}: {jsonData: any, onSwitchToggle: any, onFieldChange: any, externalProps: any}) => {
+export const DefaultValues = ({
+jsonData, onSwitchToggle, onFieldChange, externalProps
+}: {jsonData: any, onSwitchToggle: any, onFieldChange: any, externalProps: any}) => {
   const [defaultDateTime64Options, setDefaultDateTime64Options] = useState<any[]>([]);
   const [defaultDateTimeOptions, setDefaultDateTimeOptions] = useState<any[]>([]);
   const [defaultUint32Options, setDefaultUint32Options] = useState<any[]>([]);

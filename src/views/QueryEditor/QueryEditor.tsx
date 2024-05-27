@@ -41,7 +41,9 @@ function useFormattedData(query: CHQuery, datasource: CHDataSource): [string, st
 }
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
-  const { datasource, query, onChange, onRunQuery } = props;
+  const {
+ datasource, query, onChange, onRunQuery 
+} = props;
   const isAnnotationView = !props.app;
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
@@ -109,6 +111,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
         setEditorMode={setEditorMode}
         isAnnotationView={isAnnotationView}
         onTriggerQuery={onTriggerQuery}
+        onChange={onChange}
       />
       {error ? <Alert title={error} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
       {editorMode === EditorMode.Builder && (
@@ -139,7 +142,7 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
     extrapolate: query.extrapolate ?? true,
     skip_comments: query.skip_comments ?? true,
     add_metadata: query.add_metadata ?? true,
-    dateTimeType: query.dateTimeType || DEFAULT_DATE_TIME_TYPE,
+    dateTimeType: query.dateTimeType,
     round: query.round || DEFAULT_ROUND,
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,
     interval: query.interval || '',

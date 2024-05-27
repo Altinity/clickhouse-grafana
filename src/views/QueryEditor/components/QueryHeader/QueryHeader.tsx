@@ -12,25 +12,24 @@ function findDifferences(query: CHQuery, datasource: CHDataSource) {
   const differences: any[] = [];
 
   if (defaultValues) {
-    if (defaultValues.dateTime.defaultDateDate32 && query.dateColDataType !== defaultValues.dateTime.defaultDateDate32) {
-      differences.push({ key: 'Date column', original: String(query.dateColDataType).trim() || 'EMPTY', updated: defaultValues.dateTime.defaultDateDate32 });
-    }
-
-
     if (query.dateTimeType !== defaultValues.defaultDateTimeType) {
-      differences.push({ key: 'Timestamp type Column', original: query.dateTimeType || 'EMPTY', updated: defaultValues.defaultDateTimeType });
+      differences.push({ key: 'Timestamp type Column', original: query.dateTimeType || 'EMPTY', updated: defaultValues.defaultDateTimeType, fieldName: 'dateTimeType'});
     }
 
     if ((defaultValues.defaultDateTimeType === 'TIMESTAMP') && defaultValues.dateTime.defaultUint32 && query.dateTimeColDataType !== defaultValues.dateTime.defaultUint32) {
-      differences.push({ key: 'Timestamp Column', original: String(query.dateTimeColDataType).trim() || 'EMPTY', updated: defaultValues.dateTime.defaultUint32 });
+      differences.push({ key: 'Timestamp Column', original: String(query.dateTimeColDataType).trim() || 'EMPTY', updated: defaultValues.dateTime.defaultUint32, fieldName: 'dateTimeColDataType' });
     }
 
     if ((defaultValues.defaultDateTimeType === TimestampFormat.DateTime64) && defaultValues.dateTime.defaultDateTime64 && query.dateTimeColDataType !== defaultValues.dateTime.defaultDateTime64) {
-      differences.push({ key: 'Timestamp Column', original: query.dateTimeColDataType || 'EMPTY', updated: defaultValues.dateTime.defaultDateTime64 });
+      differences.push({ key: 'Timestamp Column', original: String(query.dateTimeColDataType).trim() || 'EMPTY', updated: defaultValues.dateTime.defaultDateTime64, fieldName: 'dateTimeColDataType' });
     }
 
     if ((defaultValues.defaultDateTimeType === TimestampFormat.DateTime) && defaultValues.dateTime.defaultDateTime && query.dateTimeColDataType !== defaultValues.dateTime.defaultDateTime) {
-      differences.push({ key: 'Timestamp Column', original: query.dateTimeColDataType || 'EMPTY', updated: defaultValues.dateTime.defaultDateTime });
+      differences.push({ key: 'Timestamp Column', original: String(query.dateTimeColDataType).trim() || 'EMPTY', updated: defaultValues.dateTime.defaultDateTime, fieldName: 'dateTimeColDataType' });
+    }
+
+    if (defaultValues.dateTime.defaultDateDate32 && query.dateColDataType !== defaultValues.dateTime.defaultDateDate32) {
+      differences.push({ key: 'Date column', original: String(query.dateColDataType).trim() || 'EMPTY', updated: defaultValues.dateTime.defaultDateDate32, fieldName: 'dateColDataType' });
     }
 
   }
@@ -59,9 +58,12 @@ interface QueryHeaderProps {
   setEditorMode: (mode: any) => void;
   onTriggerQuery: () => void;
   datasource: CHDataSource;
+  onChange: any;
 }
 
-export const QueryHeader = ({ editorMode, setEditorMode, isAnnotationView, onTriggerQuery, datasource, query}: QueryHeaderProps) => {
+export const QueryHeader = ({
+ editorMode, setEditorMode, isAnnotationView, onTriggerQuery, datasource, query, onChange
+}: QueryHeaderProps) => {
   const [modalOpen, setModalOpen] = useState(false)
   const [differences, setDifferences] = useState<any[]>([])
   const options: Array<SelectableValue<EditorMode>> = [
@@ -77,9 +79,17 @@ export const QueryHeader = ({ editorMode, setEditorMode, isAnnotationView, onTri
     setDifferences(findDifferences(query, datasource))
   }, [query, datasource]);
 
-  // const onCancel = () => {
-  //
-  // }
+  const onConfirm = () => {
+    setModalOpen(false)
+    const fieldsToReset = differences.reduce((acc, item) => {
+      acc[item.fieldName] = item.updated
+
+      return acc
+    },{})
+
+    onChange({...query, ...fieldsToReset})
+  }
+
   return (
     <div style={{display: "flex", marginTop: "10px"}}>
       <RadioButtonGroup
@@ -106,7 +116,7 @@ export const QueryHeader = ({ editorMode, setEditorMode, isAnnotationView, onTri
         </div>
         <Modal.ButtonRow>
           <Button variant="secondary" onClick={() => setModalOpen(false)}>Cancel</Button>
-          <Button variant="primary" onClick={() => setModalOpen(false)}>Confirm</Button>
+          <Button variant="primary" onClick={onConfirm}>Confirm</Button>
         </Modal.ButtonRow>
       </Modal>
     </div>

@@ -500,7 +500,16 @@ export default class SqlQueryMacros {
   }
 
   static rateColumnsAggregated(query: string, ast: any): string {
-    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$rateColumnsAggregated', query, ast)
+    const [beforeMacrosQuery,
+            fromQuery,
+            having,
+            key,
+            keyAlias,
+            subKey,
+            subKeyAlias,
+            values,
+            aliases,
+            aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$rateColumnsAggregated', query, ast)
     const finalAggregatedValues: string[] = [];
     const finalValues: string[] = [];
     aliases.forEach((a, i) => {
@@ -552,7 +561,10 @@ export default class SqlQueryMacros {
       having = '',
       aliasIndex = key.toLowerCase().indexOf(' as '),
       alias = 'perSecondColumns';
-    [key, alias, having, fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
+    [key,
+alias,
+having,
+fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       aliasIndex,
       key,
       alias,
@@ -601,7 +613,16 @@ export default class SqlQueryMacros {
   }
 
   static perSecondColumnsAggregated(query: string, ast: any): string {
-    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$perSecondColumnsAggregated', query, ast)
+    const [beforeMacrosQuery,
+fromQuery,
+having,
+key,
+keyAlias,
+subKey,
+subKeyAlias,
+values,
+aliases,
+aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$perSecondColumnsAggregated', query, ast)
     const finalAggregatedValues: string[] = [];
     const finalValues: string[] = [];
     aliases.forEach((a, i) => {
@@ -633,7 +654,10 @@ export default class SqlQueryMacros {
       aliasIndex = key.toLowerCase().indexOf(' as '),
       alias = 'increaseColumns';
 
-    [key, alias, having, fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
+    [key,
+alias,
+having,
+fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       aliasIndex,
       key,
       alias,
@@ -682,7 +706,16 @@ export default class SqlQueryMacros {
   }
 
   static increaseColumnsAggregated(query: string, ast: any): string {
-    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$increaseColumnsAggregated', query, ast)
+    const [beforeMacrosQuery,
+fromQuery,
+having,
+key,
+keyAlias,
+subKey,
+subKeyAlias,
+values,
+aliases,
+aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$increaseColumnsAggregated', query, ast)
     const finalAggregatedValues: string[] = [];
     const finalValues: string[] = [];
     aliases.forEach((a, i) => {
@@ -711,7 +744,10 @@ export default class SqlQueryMacros {
       having = '',
       aliasIndex = key.toLowerCase().indexOf(' as '),
       alias = 'deltaColumns';
-    [key, alias, having, fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
+    [key,
+alias,
+having,
+fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       aliasIndex,
       key,
       alias,
@@ -760,7 +796,16 @@ export default class SqlQueryMacros {
   }
 
   static deltaColumnsAggregated(query: string, ast: any): string {
-    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$deltaColumnsAggregated', query, ast)
+    const [beforeMacrosQuery,
+fromQuery,
+having,
+key,
+keyAlias,
+subKey,
+subKeyAlias,
+values,
+aliases,
+aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$deltaColumnsAggregated', query, ast)
     const finalAggregatedValues: string[] = [];
     const finalValues: string[] = [];
     aliases.forEach((a, i) => {

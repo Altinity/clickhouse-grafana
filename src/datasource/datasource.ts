@@ -18,7 +18,6 @@ import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
 import { SqlQueryHelper } from './sql-query/sql-query-helper';
 import SqlQueryMacros from './sql-query/sql-query-macros';
 import { QueryEditor } from "../views/QueryEditor/QueryEditor";
-import dataTypes from "../views/QueryEditor/components/QueryTextEditor/editor/constants/data-types";
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
@@ -36,6 +35,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   defaultDatabase: string;
   addCorsHeader: boolean;
   xHeaderUser: string;
+  defaultValues: any;
   useYandexCloudAuthorization: boolean;
   useCompression: boolean;
   compressionType: string;
@@ -59,7 +59,8 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           defaultDateTime: instanceSettings.jsonData.defaultDateTime,
           defaultUint32: instanceSettings.jsonData.defaultUint32,
           defaultDateDate32: instanceSettings.jsonData.defaultDateDate32,
-        }
+        },
+        defaultDateTimeType: instanceSettings.jsonData.defaultDateTimeType,
       };
     }
 

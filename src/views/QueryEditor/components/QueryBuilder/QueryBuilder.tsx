@@ -1,7 +1,7 @@
-import React, {useCallback, useEffect, useState} from 'react';
-import { InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
-import { SelectableValue } from '@grafana/data';
-import { UniversalSelectField } from './components/UniversalSelectComponent';
+import React from 'react';
+import {InlineField, InlineFieldRow, InlineLabel, Select} from '@grafana/ui';
+import {SelectableValue} from '@grafana/data';
+import {UniversalSelectField} from './components/UniversalSelectComponent';
 import {TimestampFormat} from "../../../../types/types";
 import {useConnectionData} from "./components/useConnectionData";
 

@@ -44,7 +44,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const { datasource, query, onChange, onRunQuery } = props;
   const isAnnotationView = !props.app;
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
-  const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource);
+  const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
   const [datasourceName] = useState(datasource.name);
 
@@ -132,14 +132,14 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   );
 }
 
-function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, datasource: any): CHQuery {
+function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, datasource: any, onChange: any): CHQuery {
   const initializedQuery = {
     ...query,
     format: query.format || DEFAULT_FORMAT,
     extrapolate: query.extrapolate ?? true,
     skip_comments: query.skip_comments ?? true,
     add_metadata: query.add_metadata ?? true,
-    TimestampFormat: query.TimestampFormat || DEFAULT_DATE_TIME_TYPE,
+    dateTimeType: query.dateTimeType || DEFAULT_DATE_TIME_TYPE,
     round: query.round || DEFAULT_ROUND,
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,
     interval: query.interval || '',
@@ -148,12 +148,12 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
     editorMode: EditorMode.Builder
   };
 
-  if (datasource.defaultValues) {
-    if (datasource.defaultValues.dateTime.defaultDateTime && initializedQuery.TimestampFormat === TimestampFormat.DateTime && !initializedQuery.dateTimeColDataType) {
+  if (datasource.defaultValues && !query.initialized) {
+    if (datasource.defaultValues.dateTime.defaultDateTime && initializedQuery.dateTimeType === TimestampFormat.DateTime && !initializedQuery.dateTimeColDataType) {
       initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultDateTime;
     }
 
-    if (datasource.defaultValues.dateTime.defaultDateTime64 && initializedQuery.TimestampFormat === TimestampFormat.DateTime64 && !initializedQuery.dateTimeColDataType) {
+    if (datasource.defaultValues.dateTime.defaultDateTime64 && initializedQuery.dateTimeType === TimestampFormat.DateTime64 && !initializedQuery.dateTimeColDataType) {
       initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultDateTime64;
     }
 
@@ -161,9 +161,16 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
       initializedQuery.dateColDataType = datasource.defaultValues.dateTime.defaultDateDate32;
     }
 
-    if (datasource.defaultValues.dateTime.defaultUint32 && initializedQuery.TimestampFormat === TimestampFormat.TimeStamp  && !initializedQuery.dateTimeColDataType) {
+    if (datasource.defaultValues.dateTime.defaultUint32 && initializedQuery.dateTimeType === TimestampFormat.TimeStamp  && !initializedQuery.dateTimeColDataType) {
       initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultUint32;
     }
+
+    // !!!!!!!!
+    if (datasource.defaultValues.defaultDateTimeType && !initializedQuery.dateTimeType) {
+      initializedQuery.dateTimeType = datasource.defaultValues.defaultDateTimeType;
+    }
+
+    onChange({ ...query, initialized: true });
   }
 
   if (isAnnotationView) {

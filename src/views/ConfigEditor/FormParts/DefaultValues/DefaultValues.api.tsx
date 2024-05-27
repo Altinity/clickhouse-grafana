@@ -1,7 +1,7 @@
 import {getBackendSrv} from '@grafana/runtime';
 
 
-export const getOptions = (query: string, url: string) => {
+export const getOptions = (query: string, url: string): Promise<any> => {
   const backendSrv = getBackendSrv();
 
   return new Promise((resolve, reject) => {

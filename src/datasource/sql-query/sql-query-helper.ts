@@ -266,7 +266,7 @@ export class SqlQueryHelper {
   static getFilterSqlForDateTime(columnName: string, dateTimeType: string) {
     const getConvertFn = (dateTimeType: string) => {
       return function (t: string): string {
-        if (dateTimeType === DateT) {
+        if (dateTimeType === TimestampFormat.DateTime) {
           return 'toDateTime(' + t + ')';
         }
 

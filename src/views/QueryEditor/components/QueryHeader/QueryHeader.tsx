@@ -51,6 +51,7 @@ export const Components = {
 export const selectors: { components: E2ESelectors<typeof Components> } = {
   components: Components,
 };
+
 interface QueryHeaderProps {
   isAnnotationView: boolean;
   query: CHQuery;

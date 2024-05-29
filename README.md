@@ -61,6 +61,7 @@ Restart Grafana, check data sources list at Configuration -> Datasources -> New,
 * Ad-hoc filters
 * Annotations
 * Alerts support
+* Histogram support
 * Logs support
 * Flamegraph support
 * Traces support
@@ -1010,6 +1011,13 @@ To export exists unified alerts to YAML use Export alerts
 
 ### Alerts troubleshooting 
 To troubleshoot alerts in clickhouse grafana plugin when enable `level=debug` in `log` section `grafana.ini` or via `GF_LOG_LEVEL=debug` environment variable.
+
+## Histogram support
+![Histogram](https://github.com/Altinity/clickhouse-grafana/assets/9621964/153dc5f9-44cd-444d-b966-34e64a28bd2c)
+
+To show Histogram you need query in format as "Time Series"
+
+According to https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/histogram, Histograms support time series and any table results with one or more numerical fields.
 
 ## Logs support
 

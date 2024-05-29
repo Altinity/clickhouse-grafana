@@ -172,6 +172,26 @@ func parseStringValue(value interface{}, isNullable bool) Value {
 	}
 }
 
+// parseMapValue parses a map value to JSON.
+func parseMapValue(value interface{}, isNullable bool) Value {
+	// Check if the value is a map
+	switch m := value.(type) {
+	case map[string]interface{}: // Check if it's a map with string keys and any type of value
+		jsonValue, err := json.Marshal(m)
+		if err != nil {
+			return nil
+		}
+		// Return the JSON bytes
+		return string(jsonValue)
+	default:
+		if isNullable {
+			return nil
+		} else {
+			return ""
+		}
+	}
+}
+
 func parseUInt64Value(value interface{}, isNullable bool) Value {
 	if value != nil {
 		ui64v, err := strconv.ParseUint(fmt.Sprintf("%v", value), 10, 64)
@@ -259,6 +279,8 @@ func ParseValue(fieldName string, fieldType string, tz *time.Location, value int
 		return ParseValue(fieldName, strings.TrimSuffix(strings.TrimPrefix(fieldType, "Nullable("), ")"), tz, value, true)
 	} else if strings.HasPrefix(fieldType, "LowCardinality") {
 		return ParseValue(fieldName, strings.TrimSuffix(strings.TrimPrefix(fieldType, "LowCardinality("), ")"), tz, value, isNullable)
+	} else if strings.HasPrefix(fieldType, "Map(") && strings.HasSuffix(fieldType, ")") {
+		return parseMapValue(value, isNullable)
 	} else {
 		switch fieldType {
 		case "String", "UUID", "IPv4", "IPv6":

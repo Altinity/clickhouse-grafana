@@ -488,9 +488,12 @@ export default class SqlSeries {
   }
 
   static _formatValue(value: any) {
-    console.log('AAAA', value)
     if (value === null) {
       return value;
+    }
+
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
     }
 
     let numeric = Number(value);
@@ -504,6 +507,10 @@ export default class SqlSeries {
   static _formatValueByType(value: any, t: string) {
     if (value === null) {
       return value;
+    }
+
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
     }
 
     let numeric = Number(value);

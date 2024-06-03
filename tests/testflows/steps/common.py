@@ -21,9 +21,9 @@ from selenium import webdriver as selenium_webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from PIL import Image
-# from PIL import ImageFilter
-# import numpy as np
-# import cv2 as cv
+from PIL import ImageFilter
+import numpy as np
+import cv2 as cv
 
 from steps.dashboards.view import *
 from steps.dashboard.view import *

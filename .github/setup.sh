@@ -23,7 +23,7 @@ sudo chmod 777 /tmp/target
 echo "Install required packages..."
 ./retry.sh 60 2 "pip install -r pip_requirements.txt --break-system-packages"
 sudo apt-get update
-# sudo apt-get install ffmpeg libsm6 libxext6  -y
+sudo apt-get install ffmpeg libsm6 libxext6  -y
 sudo mkdir assets
 sudo chmod 777 assets
 sudo touch assets/sessions.json

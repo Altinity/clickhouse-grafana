@@ -267,7 +267,7 @@ if only the `Server` option is selected in the `Access` dropdown menu.
 ### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess
 version: 1.0
 
-The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Browser` option` in the `Access` dropdown menu
+The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Browser` option in the `Access` dropdown menu
 in the data source setup view. In this case all requests SHALL be made from the browser directly to the data source.
 
 ## ClickHouse Authentification Setup

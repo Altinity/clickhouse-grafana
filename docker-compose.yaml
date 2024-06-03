@@ -154,7 +154,7 @@ services:
       - ./config.toml:/opt/bin/config.toml
       - /tmp/target:/opt/selenium/assets
       - /var/run/docker.sock:/var/run/docker.sock
-    privileged: true
+#    privileged: true
 
 volumes:
   node_modules:

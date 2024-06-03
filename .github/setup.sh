@@ -21,7 +21,7 @@ sudo mkdir /tmp/target
 sudo chmod 777 /tmp/target
 
 echo "Install required packages..."
-./retry.sh 60 2 "sudo pip install -r --break-system-packages pip_requirements.txt"
+./retry.sh 60 2 "sudo pip install -r pip_requirements.txt --break-system-packages"
 sudo apt-get update
 
 sudo mkdir assets

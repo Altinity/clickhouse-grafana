@@ -119,9 +119,14 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
 
     const dataRequest = new Promise((resolve, reject) => {
       this.backendSrv.fetch(queryParams).subscribe((response) => {
-        resolve(response.data)
-      },(e) => {
-        reject(e)
+        if (response && response?.data) {
+          resolve(response.data)
+        } else {
+          resolve(null)
+        }
+
+      },() => {
+        resolve(null)
       })
     })
 

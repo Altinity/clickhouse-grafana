@@ -21,6 +21,9 @@ from selenium import webdriver as selenium_webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
 from PIL import Image
+from PIL import ImageFilter
+import numpy as np
+import cv2 as cv
 
 from steps.dashboards.view import *
 from steps.dashboard.view import *
@@ -184,6 +187,7 @@ def webdriver(
                 driver.close()
                 driver.quit()
 
+
 @TestStep(Given)
 def create_driver(self, incognito=True, clean_up=True, suite=None):
     """Create a driver based on the arguments in the context."""
@@ -201,7 +205,7 @@ def create_driver(self, incognito=True, clean_up=True, suite=None):
 
 @TestStep(Then)
 def compare_screenshots(self, screenshot_name_1, screenshot_name_2):
-
+    """Check that screenshots are similar."""
     image_1 = Image.open(f"./tests/testflows/screenshots/{screenshot_name_1}.png")
     image_2 = Image.open(f"./tests/testflows/screenshots/{screenshot_name_2}.png")
     return image_1 == image_2
@@ -221,6 +225,54 @@ def create_dashboard(self, dashboard_name):
     finally:
         with Finally(f"I delete dashboard {dashboard_name}"):
             delete_dashboard(dashboard_name=dashboard_name)
+
+
+def distance(a, b):
+    """Distance between two points."""
+    return ((a[0] - b[0])**2 + (a[1]-b[1])**2)**(1/2)
+
+
+@TestStep(Then)
+def check_screenshot(self, screenshot_name):
+    """Check that graph is valid."""
+    with By("opening image"):
+        image = Image.open(f"./tests/testflows/screenshots/{screenshot_name}.png")
+
+    with By("processing image"):
+        red, green, blue, _ = image.split()
+        threshold = 10
+        im = green.point(lambda x: 255 if x > threshold else 0)
+        threshold = 120
+        bl = blue.point(lambda x: 255 if x < threshold else 0)
+        threshold = 130
+        re = red.point(lambda x: 255 if x < threshold else 0)
+        threshold = 100
+        gr = green.point(lambda x: 255 if x > threshold else 0)
+        blank = image.point(lambda _: 0)
+        segmented = Image.composite(image, blank, gr)
+        segmented_1 = Image.composite(segmented, blank, bl)
+        segmented_2 = Image.composite(segmented_1, blank, re)
+        segmented_3 = segmented_2.filter(ImageFilter.GaussianBlur(3))
+        threshold = 7
+        segmented_4 = segmented_3.point(lambda x: 200 if x > threshold else 100)
+
+    with By("finding contours in the image"):
+        hsv_min = np.array((0, 54, 5), np.uint8)
+        hsv_max = np.array((187, 255, 253), np.uint8)
+        img = cv.cvtColor(np.array(segmented_4), cv.COLOR_RGBA2BGR)
+        hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
+        thresh = cv.inRange(img, hsv_min, hsv_max)
+        contours0, hierarchy = cv.findContours(thresh.copy(), cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        boxes = []
+
+        for cnt in contours0:
+            rect = cv.minAreaRect(cnt)
+            box = cv.boxPoints(rect)
+            box = np.int0(box)
+            if (distance(box[0], box[1]) / distance(box[1], box[2]) > 10) or distance(box[0], box[1]) / distance(box[1], box[2]) < 1 / 10:
+                boxes.append(box)
+
+    return len(boxes) == 1
 
 
 @TestStep(Given)

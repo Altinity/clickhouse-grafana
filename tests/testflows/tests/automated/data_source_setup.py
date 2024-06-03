@@ -44,6 +44,8 @@ def check_existing_data_sources(self):
 
 
 @TestFeature
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView("1.0"),
+              RQ_SRS_Plugin_DataSourceSetupView_SaveAndTestButton("1.0"))
 @Name("data source setup")
 def feature(self):
     """Check that Plugin supports Grafana dashboards."""

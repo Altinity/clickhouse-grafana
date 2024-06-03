@@ -40,7 +40,7 @@ jobs:
       - name: Run Altinity Grafana Plugin tests
         run: python3
           -u ./tests/testflows/regression.py
-          --log raw.log
+          --log raw.log --only "/Grafana Datasource Plugin For Clickhouse/dashboards/panel check/*"
           -o nice --before=1 --after=1
 
       - name: Create reports

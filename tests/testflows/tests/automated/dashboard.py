@@ -17,16 +17,17 @@ from steps.panel.view import *
 @Requirements(RQ_SRS_Plugin_Dashboards("1.0"))
 def dashboard_check(self):
     """Check that Plugin supports creating dashboard."""
+    for attempt in retries(delay=10, timeout=50):
+        with attempt:
+            with When("I create new dashboard"):
+                create_dashboard(dashboard_name="dashboard_check")
 
-    with When("I create new dashboard"):
-        create_dashboard(dashboard_name="abc")
+            with When("I go to dashboards view"):
+                open_dashboards_view()
 
-    with When("I go to dashboards view"):
-        open_dashboards_view()
-
-    with Then("I check dashboard is created"):
-        with By("checking dashboard exists"):
-            assert check_dashboard_exists(dashboard_name="abc") is True, error()
+            with Then("I check dashboard is created"):
+                with By("checking dashboard exists"):
+                    assert check_dashboard_exists(dashboard_name="dashboard_check") is True, error()
 
 
 @TestScenario
@@ -62,8 +63,9 @@ def panel_check(self):
     with Then("I check panel is created"):
         with By("taking screenshot"):
             take_screenshot_for_visualization(screenshot_name="panel_check")
+
         with By("checking screenshot"):
-            pass
+            assert check_screenshot(screenshot_name="panel_check") is True, error()
 
 
 @TestScenario

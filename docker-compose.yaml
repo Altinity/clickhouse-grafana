@@ -109,6 +109,7 @@ services:
       # - "node_modules:/grafana-clickhouse/node_modules"
     command: |
       bash -xec '
+        mkdir ./node_modules && \
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
         npm run build && \
         npm run test:ci

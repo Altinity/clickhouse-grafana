@@ -40,10 +40,10 @@ def click_select_datasource_button(self):
 
 
 @TestStep(When)
-def click_datasource_in_select_datasource_dropdown(self, datasource_name):
+def click_datasource_in_select_datasource_dropdown(self, datasource_number):
     """Click select datasource button."""
 
-    locators.select_datasource(datasource_name=datasource_name).click()
+    locators.select_datasource(datasource_number=datasource_number).click()
 
 
 @TestStep(When)
@@ -121,6 +121,7 @@ def change_panel_title(self, panel_title):
 def change_repeat_by_variable_option(self, variable_name):
     """Change repeat by variable option."""
     locators.repeat_by_variable_dropdown.send_keys(variable_name)
+
 
 @TestStep(When)
 def enter_sql_editor_input(self, request):

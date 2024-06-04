@@ -47,7 +47,7 @@ def panel_check(self):
     with delay():
         click_select_datasource_button()
 
-    click_datasource_in_select_datasource_dropdown(datasource_name='clickhouse')
+    click_datasource_in_select_datasource_dropdown(datasource_number=2)
 
     with delay():
         with When("I open SQL editor"):

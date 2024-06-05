@@ -69,19 +69,19 @@ def open_dashboards_view(self, wait_dashboard_name="clickhouse dashboard"):
 
 @TestStep(When)
 def click_new_button(self):
-    """Click 'New' button"""
+    """Click 'New' button."""
     locators.new_button.click()
 
 
 @TestStep(When)
 def click_new_dashboard_button(self):
-    """Click 'New dashboard' button"""
+    """Click 'New dashboard' button."""
     locators.new_dashboard_button.click()
 
 
 @TestStep(When)
 def create_new_dashboard(self):
-    """Create new empty dashboard"""
+    """Create new empty dashboard."""
     with By("clicking 'New' button"):
         click_new_button()
 

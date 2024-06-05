@@ -2,7 +2,7 @@
 
 export PYTHONIOENCODING=utf-8
 mkdir Assets
-cp -r  /tmp/target/ ./Assets
+cp -r  tests/testflows/tmp/target/ ./Assets
 mkdir Reports
 cp raw.log  ./Reports/raw.log
 tfs --debug --no-colors transform compact raw.log > ./Reports/compact.log

@@ -36,10 +36,7 @@ def panel_check(self):
     """Check that Plugin supports creating panels."""
 
     with Given("I create new dashboard"):
-        create_dashboard(dashboard_name="dashboard_panel")
-
-    with When("I open dashboard"):
-        open_dashboard(dashboard_name="dashboard_panel")
+        create_dashboard_and_open_it(dashboard_name="dashboard_panel")
 
     with When("I add visualization for panel"):
         add_visualization()

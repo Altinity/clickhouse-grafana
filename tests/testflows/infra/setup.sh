@@ -21,7 +21,7 @@ python3 -m venv venv
 source venv/bin/activate
 echo PATH=$PATH >> $GITHUB_ENV
 
-./retry.sh 60 2 "pip install -r pip_requirements.txt"
+./retry.sh 60 2 "pip install -r tests/testflows/requirements.txt"
 
 sudo apt-get update
 sudo apt-get install ffmpeg libsm6 libxext6  -y
@@ -30,11 +30,11 @@ echo "Install docker-compose..."
 sudo curl -SL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64 -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
-sudo mkdir /tmp/target
-sudo chmod 777 /tmp/target
+sudo mkdir tests/testflows/tmp/target
+sudo chmod 777 tests/testflows/tmp/target
 
-sudo mkdir assets
-sudo chmod 777 assets
-sudo touch assets/sessions.json
-sudo chmod 777 assets/sessions.json
-sudo echo '{}' > assets/sessions.json
+sudo mkdir tests/testflows/assets
+sudo chmod 777 tests/testflows/assets
+sudo touch tests/testflows/assets/sessions.json
+sudo chmod 777 tests/testflows/assets/sessions.json
+sudo echo '{}' > tests/testflows/assets/sessions.json

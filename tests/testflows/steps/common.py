@@ -45,7 +45,7 @@ def new_webdriver(self):
 @TestStep(Finally)
 def append_session(self, suite_name, session_id):
 
-    sessions_file_path = 'assets/sessions.json'
+    sessions_file_path = 'tests/testflows/assets/sessions.json'
 
     if os.path.exists(sessions_file_path):
         with open(sessions_file_path, 'r') as file:
@@ -212,19 +212,25 @@ def compare_screenshots(self, screenshot_name_1, screenshot_name_2):
 
 
 @TestStep(Given)
-def create_dashboard(self, dashboard_name):
+def create_dashboard_and_open_it(self, dashboard_name):
+    """Create new dashboard named dashboard name and open it."""
     try:
-        with delay():
-            with When("I open new dashboard view"):
-                open_new_dashboard_endpoint()
+        for attempt in retries(delay=10, timeout=120):
+            with attempt:
+                with delay():
+                    with When("I open new dashboard view"):
+                        open_new_dashboard_endpoint()
 
-        with And("I save new dashboard"):
-            saving_dashboard(dashboard_name=dashboard_name)
+                with And("I save new dashboard"):
+                    saving_dashboard(dashboard_name=dashboard_name)
 
+                with When("I open dashboard"):
+                    open_dashboard(dashboard_name="dashboard_panel")
         yield
     finally:
         with Finally(f"I delete dashboard {dashboard_name}"):
             delete_dashboard(dashboard_name=dashboard_name)
+
 
 
 def distance(a, b):

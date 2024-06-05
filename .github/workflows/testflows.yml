@@ -30,7 +30,7 @@ jobs:
           ref: ${{ inputs.ref }}
 
       - name: Setup
-        run: .github/setup.sh
+        run: tests/testflows/infra/setup.sh
 
       - name: Run Altinity Grafana Plugin tests
         run: python3
@@ -40,7 +40,7 @@ jobs:
 
       - name: Create reports
         if: always()
-        run: .github/create-report.sh
+        run: tests/testflows/infra/create-report.sh
 
       - uses: actions/upload-artifact@v4
         if: always()

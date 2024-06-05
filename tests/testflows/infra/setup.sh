@@ -21,7 +21,7 @@ python3 -m venv venv
 source venv/bin/activate
 echo PATH=$PATH >> $GITHUB_ENV
 
-./retry.sh 60 2 "pip install -r tests/testflows/requirements.txt"
+./tests/testflows/infra/retry.sh 60 2 "pip install -r tests/testflows/requirements.txt"
 
 sudo apt-get update
 sudo apt-get install ffmpeg libsm6 libxext6  -y

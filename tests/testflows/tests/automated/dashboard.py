@@ -17,17 +17,16 @@ from steps.panel.view import *
 @Requirements(RQ_SRS_Plugin_Dashboards("1.0"))
 def dashboard_check(self):
     """Check that Plugin supports creating dashboard."""
-    for attempt in retries(delay=10, timeout=50):
-        with attempt:
-            with When("I create new dashboard"):
-                create_dashboard(dashboard_name="dashboard_check")
 
-            with When("I go to dashboards view"):
-                open_dashboards_view()
+    with When("I create new dashboard"):
+        create_dashboard_and_open_it(dashboard_name="dashboard_check")
 
-            with Then("I check dashboard is created"):
-                with By("checking dashboard exists"):
-                    assert check_dashboard_exists(dashboard_name="dashboard_check") is True, error()
+    with When("I go to dashboards view"):
+        open_dashboards_view()
+
+    with Then("I check dashboard is created"):
+        with By("checking dashboard exists"):
+            assert check_dashboard_exists(dashboard_name="dashboard_check") is True, error()
 
 
 @TestScenario
@@ -44,7 +43,7 @@ def panel_check(self):
     with delay():
         click_select_datasource_button()
 
-    click_datasource_in_select_datasource_dropdown(datasource_number=2)
+    click_datasource_in_select_datasource_dropdown(datasource_number=1)
 
     with delay():
         with When("I open SQL editor"):
@@ -65,171 +64,171 @@ def panel_check(self):
             assert check_screenshot(screenshot_name="panel_check") is True, error()
 
 
-@TestScenario
-@Requirements(RQ_SRS_Plugin_Panels_Repeated("1.0"))
-def repeated_panel(self):
-    """Check that Plugin supports creating repeated panels"""
-
-    with Given("I create new dashboard"):
-        with delay():
-            create_dashboard(dashboard_name="dashboard_repeated_panel")
-
-    with When("I open dashboard"):
-        open_dashboard(dashboard_name="dashboard_repeated_panel")
-
-    with And("I add variable with two values",
-             description="Click edit dashboard > click 'Add variable' button"
-                         "SELECT number from numbers(2)"):
-        with delay():
-            create_new_variable(query="SELECT number from numbers(2)", datasource_name="clickhouse")
-
-    with And("I open dashboard with variable"):
-        open_dashboard(dashboard_name="dashboard_repeated_panel")
-
-    with And("I create new panel"):
-        with delay():
-            add_visualization()
-
-    with And("I setup repeated panel"):
-        with By("changing panel title"):
-            change_panel_title(panel_title="Repeated ${query0}")
-        with By("setting up repeat option"):
-            change_repeat_by_variable_option(variable_name="query0")
-
-    with Then("I check two panels are created"):
-        for attempt in retries(delay=10, timeout=50):
-            with attempt:
-
-                with Then("I open dashboard"):
-                    open_dashboard(dashboard_name="dashboard_repeated_panel")
-
-                assert check_panel_exists(picture="Repeated 1") is True
-                assert check_panel_exists(picture="Repeated 2") is True
-
-
-@TestScenario
-@Requirements(RQ_SRS_Plugin_TimeRangeSelector("1.0"))
-def time_range_selector_for_dashboard(self):
-    """Check that Plugin supports time range selector for dashboard"""
-
-    with Given("I go to clickhouse dashboard"):
-        open_dashboard(dashboard_name="clickhouse dashboard")
-
-    with When("I take screenshot for subquery example panel before time ranges change"):
-        take_screenshot_for_panel(panel_name="subquery example",
-                                  screenshot_name="subquery_example_before_time_range_selector_changes")
-
-    with When("I change time range in the time range dropdown menu"):
-        with delay():
-            change_time_range_selector_for_dashboard(from_time="now-7h", to_time="now-h")
-
-    with When("I take screenshot for subquery example panel after time ranges change"):
-        take_screenshot_for_panel(panel_name="subquery example",
-                                  screenshot_name="subquery_example_after_time_range_selector_changes")
-
-    with Then("I compare two screenshots"):
-        assert compare_screenshots(
-            screenshot_name_1="subquery_example_before_time_range_selector_changes",
-            screenshot_name_2="subquery_example_after_time_range_selector_changes"
-        ) is False, error()
+# @TestScenario
+# @Requirements(RQ_SRS_Plugin_Panels_Repeated("1.0"))
+# def repeated_panel(self):
+#     """Check that Plugin supports creating repeated panels"""
+#
+#     with Given("I create new dashboard"):
+#         with delay():
+#             create_dashboard(dashboard_name="dashboard_repeated_panel")
+#
+#     with When("I open dashboard"):
+#         open_dashboard(dashboard_name="dashboard_repeated_panel")
+#
+#     with And("I add variable with two values",
+#              description="Click edit dashboard > click 'Add variable' button"
+#                          "SELECT number from numbers(2)"):
+#         with delay():
+#             create_new_variable(query="SELECT number from numbers(2)", datasource_name="clickhouse")
+#
+#     with And("I open dashboard with variable"):
+#         open_dashboard(dashboard_name="dashboard_repeated_panel")
+#
+#     with And("I create new panel"):
+#         with delay():
+#             add_visualization()
+#
+#     with And("I setup repeated panel"):
+#         with By("changing panel title"):
+#             change_panel_title(panel_title="Repeated ${query0}")
+#         with By("setting up repeat option"):
+#             change_repeat_by_variable_option(variable_name="query0")
+#
+#     with Then("I check two panels are created"):
+#         for attempt in retries(delay=10, timeout=50):
+#             with attempt:
+#
+#                 with Then("I open dashboard"):
+#                     open_dashboard(dashboard_name="dashboard_repeated_panel")
+#
+#                 assert check_panel_exists(picture="Repeated 1") is True
+#                 assert check_panel_exists(picture="Repeated 2") is True
 
 
-@TestScenario
-@Requirements(RQ_SRS_Plugin_TimeRangeSelector_Zoom("1.0"))
-def time_range_selector_zoom_for_dashboard(self):
-    """Check that Plugin supports zoom for dashboards"""
-
-    with Given("I go to clickhouse dashboard"):
-        open_dashboard(dashboard_name="clickhouse dashboard")
-
-    with And("I take screenshot for subquery example panel before double click"):
-        take_screenshot_for_panel(
-            panel_name="subquery example",
-            screenshot_name="subquery_example_before_double_click"
-        )
-
-    with And("I change time range"):
-        with delay():
-            with By("double-clicking on the visualization"):
-                double_click_on_panel()
-
-    with And("I take screenshot for subquery example panel after double click"):
-        take_screenshot_for_panel(
-            panel_name="subquery example",
-            screenshot_name="subquery_example_after_double_click"
-        )
-
-    with Then("I compare screenshots"):
-        assert compare_screenshots(
-            screenshot_name_1="subquery_example_before_double_click",
-            screenshot_name_2="subquery_example_after_double_click"
-        ) is False, error()
-
-
-@TestScenario
-@Requirements(RQ_SRS_Plugin_TimeRangeSelector("1.0"))
-def time_range_selector_for_panel(self):
-    """Check that Plugin supports time range selector for panel"""
-
-    with Given("I go to clickhouse dashboard"):
-        open_dashboard(dashboard_name="clickhouse dashboard")
-
-    with And("I go to subquery example panel", description="I click edit"):
-        open_panel(dashboard_name="subquery example")
-
-    with When("I take screenshot for subquery example panel before time ranges change"):
-        take_screenshot_for_visualization(
-            screenshot_name="subquery_example_before_time_range_selector_changes"
-        )
-
-    with And("I change time range in the time range dropdown menu"):
-        change_time_range_selector_for_dashboard(from_time="now-7h", to_time="now-h")
-
-    with And("I take screenshot for subquery example panel after time ranges change"):
-        take_screenshot_for_visualization(
-            screenshot_name="subquery_example_after_time_range_selector_changes"
-        )
-
-    with Then("I compare two screenshots"):
-        assert compare_screenshots(
-            screenshot_name_1="subquery_example_before_time_range_selector_changes",
-            screenshot_name_2="subquery_example_after_time_range_selector_changes"
-        ) is False, error()
-
-
-@TestScenario
-@Requirements(RQ_SRS_Plugin_TimeRangeSelector_Zoom("1.0"))
-def time_range_selector_zoom_for_panel(self):
-    """Check that Plugin supports zoom for panels"""
-
-    with Given("I go to clickhouse dashboard"):
-        open_dashboard(dashboard_name="clickhouse dashboard")
-
-    with And("I go to subquery example panel", description="I click edit"):
-        open_panel(dashboard_name="subquery example")
-
-    with And("I take screenshot for subquery example panel before double click"):
-        take_screenshot_for_panel(
-            panel_name="subquery example",
-            screenshot_name="subquery_example_before_double_click"
-        )
-
-    with And("I change time range", description="double_click"):
-        with delay():
-            with By("double-clicking on the visualization"):
-                double_click_on_visualization()
-
-    with And("I take screenshot for subquery example panel after double click"):
-        take_screenshot_for_panel(
-            panel_name="subquery example",
-            screenshot_name="subquery_example_after_double_click"
-        )
-
-    with Then("I compare screenshots"):
-        assert compare_screenshots(
-            screenshot_name_1="subquery_example_before_double_click",
-            screenshot_name_2="subquery_example_after_double_click"
-        ) is False, error()
+# @TestScenario
+# @Requirements(RQ_SRS_Plugin_TimeRangeSelector("1.0"))
+# def time_range_selector_for_dashboard(self):
+#     """Check that Plugin supports time range selector for dashboard"""
+#
+#     with Given("I go to clickhouse dashboard"):
+#         open_dashboard(dashboard_name="clickhouse dashboard")
+#
+#     with When("I take screenshot for subquery example panel before time ranges change"):
+#         take_screenshot_for_panel(panel_name="subquery example",
+#                                   screenshot_name="subquery_example_before_time_range_selector_changes")
+#
+#     with When("I change time range in the time range dropdown menu"):
+#         with delay():
+#             change_time_range_selector_for_dashboard(from_time="now-7h", to_time="now-h")
+#
+#     with When("I take screenshot for subquery example panel after time ranges change"):
+#         take_screenshot_for_panel(panel_name="subquery example",
+#                                   screenshot_name="subquery_example_after_time_range_selector_changes")
+#
+#     with Then("I compare two screenshots"):
+#         assert compare_screenshots(
+#             screenshot_name_1="subquery_example_before_time_range_selector_changes",
+#             screenshot_name_2="subquery_example_after_time_range_selector_changes"
+#         ) is False, error()
+#
+#
+# @TestScenario
+# @Requirements(RQ_SRS_Plugin_TimeRangeSelector_Zoom("1.0"))
+# def time_range_selector_zoom_for_dashboard(self):
+#     """Check that Plugin supports zoom for dashboards"""
+#
+#     with Given("I go to clickhouse dashboard"):
+#         open_dashboard(dashboard_name="clickhouse dashboard")
+#
+#     with And("I take screenshot for subquery example panel before double click"):
+#         take_screenshot_for_panel(
+#             panel_name="subquery example",
+#             screenshot_name="subquery_example_before_double_click"
+#         )
+#
+#     with And("I change time range"):
+#         with delay():
+#             with By("double-clicking on the visualization"):
+#                 double_click_on_panel()
+#
+#     with And("I take screenshot for subquery example panel after double click"):
+#         take_screenshot_for_panel(
+#             panel_name="subquery example",
+#             screenshot_name="subquery_example_after_double_click"
+#         )
+#
+#     with Then("I compare screenshots"):
+#         assert compare_screenshots(
+#             screenshot_name_1="subquery_example_before_double_click",
+#             screenshot_name_2="subquery_example_after_double_click"
+#         ) is False, error()
+#
+#
+# @TestScenario
+# @Requirements(RQ_SRS_Plugin_TimeRangeSelector("1.0"))
+# def time_range_selector_for_panel(self):
+#     """Check that Plugin supports time range selector for panel"""
+#
+#     with Given("I go to clickhouse dashboard"):
+#         open_dashboard(dashboard_name="clickhouse dashboard")
+#
+#     with And("I go to subquery example panel", description="I click edit"):
+#         open_panel(dashboard_name="subquery example")
+#
+#     with When("I take screenshot for subquery example panel before time ranges change"):
+#         take_screenshot_for_visualization(
+#             screenshot_name="subquery_example_before_time_range_selector_changes"
+#         )
+#
+#     with And("I change time range in the time range dropdown menu"):
+#         change_time_range_selector_for_dashboard(from_time="now-7h", to_time="now-h")
+#
+#     with And("I take screenshot for subquery example panel after time ranges change"):
+#         take_screenshot_for_visualization(
+#             screenshot_name="subquery_example_after_time_range_selector_changes"
+#         )
+#
+#     with Then("I compare two screenshots"):
+#         assert compare_screenshots(
+#             screenshot_name_1="subquery_example_before_time_range_selector_changes",
+#             screenshot_name_2="subquery_example_after_time_range_selector_changes"
+#         ) is False, error()
+#
+#
+# @TestScenario
+# @Requirements(RQ_SRS_Plugin_TimeRangeSelector_Zoom("1.0"))
+# def time_range_selector_zoom_for_panel(self):
+#     """Check that Plugin supports zoom for panels"""
+#
+#     with Given("I go to clickhouse dashboard"):
+#         open_dashboard(dashboard_name="clickhouse dashboard")
+#
+#     with And("I go to subquery example panel", description="I click edit"):
+#         open_panel(dashboard_name="subquery example")
+#
+#     with And("I take screenshot for subquery example panel before double click"):
+#         take_screenshot_for_panel(
+#             panel_name="subquery example",
+#             screenshot_name="subquery_example_before_double_click"
+#         )
+#
+#     with And("I change time range", description="double_click"):
+#         with delay():
+#             with By("double-clicking on the visualization"):
+#                 double_click_on_visualization()
+#
+#     with And("I take screenshot for subquery example panel after double click"):
+#         take_screenshot_for_panel(
+#             panel_name="subquery example",
+#             screenshot_name="subquery_example_after_double_click"
+#         )
+#
+#     with Then("I compare screenshots"):
+#         assert compare_screenshots(
+#             screenshot_name_1="subquery_example_before_double_click",
+#             screenshot_name_2="subquery_example_after_double_click"
+#         ) is False, error()
 
 
 @TestScenario

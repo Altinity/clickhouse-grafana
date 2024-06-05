@@ -213,7 +213,7 @@ def compare_screenshots(self, screenshot_name_1, screenshot_name_2):
 
 @TestStep(Given)
 def create_dashboard_and_open_it(self, dashboard_name):
-    """Create new dashboard named dashboard name and open it."""
+    """Create new dashboard named {dashboard_name} and open it."""
     try:
         for attempt in retries(delay=10, timeout=120):
             with attempt:
@@ -225,7 +225,7 @@ def create_dashboard_and_open_it(self, dashboard_name):
                     saving_dashboard(dashboard_name=dashboard_name)
 
                 with When("I open dashboard"):
-                    open_dashboard(dashboard_name="dashboard_panel")
+                    open_dashboard(dashboard_name=dashboard_name)
         yield
     finally:
         with Finally(f"I delete dashboard {dashboard_name}"):

@@ -27,7 +27,7 @@ class Locators:
 
     def select_datasource(self, datasource_number):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"/html/body/div[1]/div[2]/div/div/div[2]/div/div[1]/div[1]/div/div[{datasource_number}]")
+        return driver.find_element(SelectBy.XPATH, f"//div[@data-testid='data-testid Data source list dropdown']/div[{datasource_number}]")
 
     @property
     def sql_editor_toggle(self):

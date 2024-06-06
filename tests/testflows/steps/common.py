@@ -26,7 +26,9 @@ import numpy as np
 import cv2 as cv
 
 from steps.dashboards.view import *
+from steps.datasource_setup.view import *
 from steps.dashboard.view import *
+from steps.connections.view import *
 
 
 @TestStep(Given)
@@ -116,7 +118,7 @@ def create_remote_chrome_driver(self, browser, hub_url, common_options, timeout,
         remote_chrome_options.set_capability("se:screenResolution", "1920x1080")
 
         start_time = time.time()
-        # pause()
+
     with And("try to create a remote webdriver instance"):
         while True:
             try:
@@ -280,6 +282,49 @@ def check_screenshot(self, screenshot_name):
 
     return len(boxes) == 1
 
+
+@TestStep(Given)
+def create_new_altinity_datasource(self, datasource_name, url):
+    """Create new datasource."""
+    try:
+        with Given("I create new Altinity datasource"):
+            with delay():
+                with By("opening create new datasource view"):
+                    open_add_new_datasource_endpoint()
+
+            with delay():
+                with By("clicking new altinity grafana plugin"):
+                    click_new_altinity_plugin_datasource()
+
+            with delay():
+                with By("entering datasource name"):
+                    enter_name_into_name_field(datasource_name=datasource_name)
+
+            with delay():
+                with By("entering url"):
+                    enter_url_into_url_field(url=url)
+
+            with delay():
+                with By("clicking save and test button"):
+                    click_save_and_test_button()
+
+                with And("checking save and test button returns green alert"):
+                    assert check_alert_success() is True, error()
+        yield
+    finally:
+        with Finally("I delete datasource"):
+            with delay():
+                with By("opening datasources view"):
+                    open_connections_datasources_endpoint()
+            with delay():
+                with And(f"opening datasource setup view for {datasource_name}"):
+                    click_datasource_in_datasources_view(datasource_name=datasource_name)
+            with delay():
+                with And("clicking delete button"):
+                    click_delete_datasource()
+            with delay():
+                with And("clicking delete button in confirmation modal dialog"):
+                    click_confirm_delete_datasource()
 
 @TestStep(Given)
 def create_panel(self, panel_name):

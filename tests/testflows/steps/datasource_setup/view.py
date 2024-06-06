@@ -24,7 +24,35 @@ def check_alert_success(self):
 
 
 @TestStep(When)
+def enter_name_into_name_field(self, datasource_name):
+    """Enter name into name field in datasource setup page."""
+    locators.name_field.clear()
+    locators.name_field.send_keys(datasource_name)
+
+
+@TestStep(When)
+def enter_url_into_url_field(self, url):
+    """Enter url into url field in datasource setup page."""
+
+    locators.url_field.send_keys(url)
+
+
+@TestStep(When)
 def click_save_and_test_button(self):
     """Click submit button."""
 
     locators.save_and_test_button.click()
+
+
+@TestStep(When)
+def click_delete_datasource(self):
+    """Click delete datasource button."""
+
+    locators.delete_button.click()
+
+
+@TestStep(When)
+def click_confirm_delete_datasource(self):
+    """Click delete datasource button in confirmation modal dialog."""
+
+    locators.confirm_delete_button.click()

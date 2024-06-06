@@ -6,8 +6,14 @@ from selenium.webdriver.common.by import By as SelectBy
 class Locators:
     # Locators for connections page
 
-    def data_source(self, num):
+    def datasource(self, datasource_name):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//div[@class='css-1736fpx-page-content']/ul/li[{num}]/div")
+        return driver.find_element(SelectBy.XPATH, f"//a[text()='{datasource_name}']")
+
+    @property
+    def new_altinity_plugin_datasource(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Add new data source Altinity plugin for ClickHouse']")
+
 
 locators = Locators()

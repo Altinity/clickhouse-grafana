@@ -5,7 +5,7 @@ from testflows.connect import Shell
 from testflows.asserts import error
 
 from steps.ui import *
-from steps.dashboard.locators import locators
+from steps.connections.locators import locators
 from steps.delay import delay
 from selenium.webdriver import ActionChains
 from selenium.common.exceptions import NoSuchElementException
@@ -18,3 +18,26 @@ def open_connections_datasources_endpoint(self, endpoint=None):
         endpoint = f"{self.context.endpoint}connections/datasources"
 
     open_endpoint(endpoint=endpoint)
+
+
+@TestStep(When)
+def open_add_new_datasource_endpoint(self, endpoint=None):
+    """Open /connections/datasources/new."""
+    if endpoint is None:
+        endpoint = f"{self.context.endpoint}connections/datasources/new"
+
+    open_endpoint(endpoint=endpoint)
+
+
+@TestStep(When)
+def click_new_altinity_plugin_datasource(self):
+    """Click new Altinity plugin for ClickHouse."""
+
+    locators.new_altinity_plugin_datasource.click()
+
+
+@TestStep(When)
+def click_datasource_in_datasources_view(self, datasource_name):
+    """Click datasource in datasources view."""
+
+    locators.datasource(datasource_name=datasource_name).click()

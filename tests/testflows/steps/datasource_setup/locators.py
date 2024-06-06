@@ -28,5 +28,16 @@ class Locators:
         return driver.find_element(SelectBy.CSS_SELECTOR,
                                    "[data-testid='data-testid Alert success']")
 
+    @property
+    def delete_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR,
+                                   "[data-testid='Data source settings page Delete button']")
+
+    @property
+    def confirm_delete_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR,
+                                   "[data-testid='data-testid Confirm Modal Danger Button']")
 
 locators = Locators()

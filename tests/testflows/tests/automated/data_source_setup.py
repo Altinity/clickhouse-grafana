@@ -24,16 +24,22 @@ def check_existing_data_sources(self):
         open_connections_datasources_endpoint()
 
     with When("I get list of data sources"):
-        data_sources_nums = [1, 3, 5, 6, 9]
+        data_sources_names = [
+            "clickhouse",
+            "clickhouse-get",
+            "clickhouse-x-auth",
+            "gh-api",
+            "trickster"
+        ]
 
     with When("I check data sources"):
-        for data_source_num in data_sources_nums:
+        for datasource_name in data_sources_names:
             with delay():
                 with Given("I open connections data sources view"):
                     open_connections_datasources_endpoint()
 
-            with When(f"I open data source setup for data source {data_source_num}"):
-                connections_locators.data_source(num=data_source_num).click()
+            with When(f"I open data source setup for data source {datasource_name}"):
+                click_datasource_in_datasources_view(datasource_name=datasource_name)
 
             with delay():
                 with When("I click save and test button"):

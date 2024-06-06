@@ -40,10 +40,10 @@ def click_select_datasource_button(self):
 
 
 @TestStep(When)
-def click_datasource_in_select_datasource_dropdown(self, datasource_number):
+def click_datasource_in_select_datasource_dropdown(self, datasource_name):
     """Click select datasource button."""
 
-    locators.select_datasource(datasource_number=datasource_number).click()
+    locators.select_datasource(datasource_name=datasource_name).click()
 
 
 @TestStep(When)

@@ -34,16 +34,19 @@ def dashboard_check(self):
 def panel_check(self):
     """Check that Plugin supports creating panels."""
 
+    with Given("I create new altinity datasource"):
+        create_new_altinity_datasource(datasource_name="test_datasource", url="http://clickhouse:8123")
+
     with Given("I create new dashboard"):
         create_dashboard_and_open_it(dashboard_name="dashboard_panel")
 
     with When("I add visualization for panel"):
         add_visualization()
 
-    with delay():
-        click_select_datasource_button()
-
-    click_datasource_in_select_datasource_dropdown(datasource_number=1)
+    with When("I select datasource"):
+        with delay():
+            click_select_datasource_button()
+        click_datasource_in_select_datasource_dropdown(datasource_name="test_datasource")
 
     with delay():
         with When("I open SQL editor"):
@@ -259,9 +262,6 @@ def changing_size_of_visualization(self):
     with And("I compare two screenshots"):
         assert compare_screenshots(screenshot_name_1="fill", screenshot_name_2="actual") is False, error()
 
-    with delay():
-        with Then("I open SQL editor"):
-            go_to_sql_editor()
 
 
 @TestFeature

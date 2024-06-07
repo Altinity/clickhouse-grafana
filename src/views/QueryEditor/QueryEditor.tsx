@@ -94,14 +94,9 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
     // eslint-disable-next-line
   }, []);
 
-  const onSqlChange = (sql: string) => {
-    onChange({ ...initializedQuery, query: sql });
-  };
+  const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });
 
-  const onFieldChange = (value: any) => {
-    onChange({ ...query, ...value });
-
-  };
+  const onFieldChange = (value: any) => onChange({ ...query, ...value });
 
   const onTriggerQuery = () => onRunQuery()
 

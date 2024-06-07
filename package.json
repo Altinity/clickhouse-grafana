@@ -1,6 +1,6 @@
 {
   "name": "altinity-clickhouse-grafana",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "description": "Altinity grafana datasource for ClickHouse",
   "scripts": {
     "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",

@@ -6,8 +6,14 @@ import {useAutocompleteData} from "../../../hooks/useAutocompletionData";
 
 export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: any) => {
   const [initialized, setInitialized] = useState(false)
+  const [updatedSQLQuery, setUpdatedSQLQuery] = useState(query.query)
   const autocompletionData = useAutocompleteData(datasource);
   const databasesData = useSystemDatabases(datasource);
+
+  useEffect(() => {
+    onSqlChange(updatedSQLQuery)
+    // eslint-disable-next-line
+  }, [updatedSQLQuery]);
 
   useEffect(() => {
     if (!autocompletionData || !databasesData || !initialized) {
@@ -46,7 +52,7 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: an
         language={LANGUAGE_ID}
         monacoOptions={options}
         onBeforeEditorMount={() => setInitialized(true)}
-        onChange={onSqlChange}
+        onChange={setUpdatedSQLQuery}
         onBlur={onRunQuery}
       />
     </div>

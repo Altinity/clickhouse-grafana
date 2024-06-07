@@ -5,9 +5,12 @@ from testflows.connect import Shell
 from testflows.asserts import error
 
 from steps.ui import *
+from steps.delay import delay
 from steps.panel.locators import locators
-# from steps.common import *
 from selenium.webdriver import ActionChains
+from selenium.webdriver.common.by import By as SelectBy
+from selenium.common.exceptions import NoSuchElementException
+
 
 @TestStep(When)
 def wait_fill_actual_toggle(self):
@@ -90,6 +93,7 @@ def wait_sql_editor_input(self):
         select_type=SelectBy.CSS_SELECTOR, element=f"[class='view-lines monaco-mouse-cursor-text']"
     )
 
+
 @TestStep(When)
 def select_input_query(self):
     """Select input query using triple click on textarea."""
@@ -108,6 +112,7 @@ def enter_panel_title(self, panel_title):
     """Enter panel title."""
     locators.panel_title_textfield.send_keys(panel_title)
 
+
 @TestStep(When)
 def change_panel_title(self, panel_title):
     """Change panel title"""
@@ -116,6 +121,7 @@ def change_panel_title(self, panel_title):
 
     with And("entering new panel title"):
         enter_panel_title(panel_title=panel_title)
+
 
 @TestStep(When)
 def change_repeat_by_variable_option(self, variable_name):
@@ -190,3 +196,24 @@ def double_click_on_visualization(self):
     """Double-click on visualization to change time range"""
 
     ActionChains(self.context.driver).double_click(locators.visualization).click(locators.visualization).perform()
+
+
+@TestStep(When)
+def select_datasource_in_panel_view(self, datasource_name):
+    """Select datasource in datasource dropdown."""
+    with By("clicking datasource dropdown"):
+        click_select_datasource_button()
+    with delay():
+        with By("selecting datasource in dropdown"):
+            click_datasource_in_select_datasource_dropdown(datasource_name=datasource_name)
+
+
+@TestStep(Then)
+def check_panel_error_exists(self):
+    """Check dashboard contains panel."""
+    with By("checking dashboard exists"):
+        try:
+            locators.panel_error
+            return True
+        except NoSuchElementException:
+            return False

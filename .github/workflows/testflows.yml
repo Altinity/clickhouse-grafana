@@ -36,7 +36,7 @@ jobs:
         run: python3
           -u ./tests/testflows/regression.py
           --log raw.log
-          -o nice --before=1 --after=1
+          -o classic
 
       - name: Create reports
         if: always()

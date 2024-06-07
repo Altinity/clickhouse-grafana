@@ -5,9 +5,10 @@ from testflows.connect import Shell
 from testflows.asserts import error
 
 from steps.ui import *
-from steps.dashboard.locators import locators
 from steps.delay import delay
 from selenium.webdriver import ActionChains
+from steps.dashboard.locators import locators
+from selenium.webdriver.common.by import By as SelectBy
 from selenium.common.exceptions import NoSuchElementException
 
 

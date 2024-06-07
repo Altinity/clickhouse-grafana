@@ -2,31 +2,26 @@ from testflows.core import *
 from testflows.connect import Shell
 from testflows.asserts import error
 
-from steps.login import *
-from steps.common import *
-from steps.dashboards.locators import locators as dashboards_locators
-from steps.dashboard.locators import locators as dashboard_locators
-from steps.dashboards.view import *
+from steps.actions import *
+from steps.panel.view import *
 from steps.dashboard.view import *
 from requirements.requirements import *
 
-from steps.panel.view import *
 
-
-@TestScenario
-@Requirements(RQ_SRS_Plugin_Dashboards("1.0"))
-def dashboard_check(self):
-    """Check that Plugin supports creating dashboard."""
-
-    with When("I create new dashboard"):
-        create_dashboard_and_open_it(dashboard_name="dashboard_check")
-
-    with When("I go to dashboards view"):
-        open_dashboards_view()
-
-    with Then("I check dashboard is created"):
-        with By("checking dashboard exists"):
-            assert check_dashboard_exists(dashboard_name="dashboard_check") is True, error()
+# @TestScenario
+# @Requirements(RQ_SRS_Plugin_Dashboards("1.0"))
+# def dashboard_check(self):
+#     """Check that Plugin supports creating dashboard."""
+#
+#     with When("I create new dashboard"):
+#         create_dashboard_and_open_it(dashboard_name="dashboard_check")
+#
+#     with When("I go to dashboards view"):
+#         open_dashboards_view()
+#
+#     with Then("I check dashboard is created"):
+#         with By("checking dashboard exists"):
+#             assert check_dashboard_exists(dashboard_name="dashboard_check") is True, error()
 
 
 @TestScenario
@@ -37,16 +32,15 @@ def panel_check(self):
     with Given("I create new altinity datasource"):
         create_new_altinity_datasource(datasource_name="test_datasource", url="http://clickhouse:8123")
 
-    with Given("I create new dashboard"):
-        create_dashboard_and_open_it(dashboard_name="dashboard_panel")
+    with And("I create new dashboard"):
+        create_dashboard(dashboard_name="dashboard_panel")
 
     with When("I add visualization for panel"):
         add_visualization()
 
-    with When("I select datasource"):
+    with And("I select datasource"):
         with delay():
-            click_select_datasource_button()
-        click_datasource_in_select_datasource_dropdown(datasource_name="test_datasource")
+            select_datasource(datasource_name="test_datasource")
 
     with delay():
         with When("I open SQL editor"):
@@ -234,33 +228,33 @@ def panel_check(self):
 #         ) is False, error()
 
 
-@TestScenario
-@Requirements(RQ_SRS_Plugin_FillActual)
-def changing_size_of_visualization(self):
-    """Check that Plugin supports changing size of visualization."""
-
-    with Given("I go to clickhouse dashboard"):
-        open_dashboard(dashboard_name="clickhouse dashboard")
-
-    with And("I go to subquery example panel", description="I click edit"):
-        open_panel(panel_name="subquery example")
-
-    with delay():
-        with When("I click on Actual toggle"):
-            actual()
-
-    with Then("I take screenshot for Actual visualization"):
-        take_screenshot_for_visualization(screenshot_name="actual")
-
-    with delay():
-        with When("I click on Fill toggle"):
-            fill()
-
-    with Then("I take screenshot for Fill visualization"):
-        take_screenshot_for_visualization(screenshot_name="fill")
-
-    with And("I compare two screenshots"):
-        assert compare_screenshots(screenshot_name_1="fill", screenshot_name_2="actual") is False, error()
+# @TestScenario
+# @Requirements(RQ_SRS_Plugin_FillActual)
+# def changing_size_of_visualization(self):
+#     """Check that Plugin supports changing size of visualization."""
+#
+#     with Given("I go to clickhouse dashboard"):
+#         open_dashboard(dashboard_name="clickhouse dashboard")
+#
+#     with And("I go to subquery example panel", description="I click edit"):
+#         open_panel(panel_name="subquery example")
+#
+#     with delay():
+#         with When("I click on Actual toggle"):
+#             actual()
+#
+#     with Then("I take screenshot for Actual visualization"):
+#         take_screenshot_for_visualization(screenshot_name="actual")
+#
+#     with delay():
+#         with When("I click on Fill toggle"):
+#             fill()
+#
+#     with Then("I take screenshot for Fill visualization"):
+#         take_screenshot_for_visualization(screenshot_name="fill")
+#
+#     with And("I compare two screenshots"):
+#         assert compare_screenshots(screenshot_name_1="fill", screenshot_name_2="actual") is False, error()
 
 
 

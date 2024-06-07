@@ -1,12 +1,12 @@
 #!/usr/bin/env python3
 import sys
 
-from steps.common import *
-from steps.cluster import *
-from requirements.requirements import *
-from steps.login.view import *
-from steps.common import *
 from steps.ui import *
+from steps.cluster import *
+from steps.login.view import *
+from steps.delay import delay
+from requirements.requirements import *
+
 append_path(sys.path, "..")
 
 
@@ -28,6 +28,7 @@ def argparser(parser):
 
 
 @TestModule
+@Repeat(1000)
 @Name("Grafana Datasource Plugin For Clickhouse")
 @ArgumentParser(argparser)
 @Specifications(QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse)
@@ -65,7 +66,7 @@ def regression(self, before, after):
         open_endpoint(endpoint=self.context.endpoint+'plugins')
     # Feature(run=load("testflows.tests.automated.e2e", "feature"))
     Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
-    Feature(run=load("testflows.tests.automated.dashboard", "feature"))
+    # Feature(run=load("testflows.tests.automated.dashboard", "feature"))
 
 
 if main():

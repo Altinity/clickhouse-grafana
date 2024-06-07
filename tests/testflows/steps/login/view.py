@@ -6,6 +6,7 @@ from testflows.asserts import error
 
 from steps.ui import *
 from steps.login.locators import locators
+from selenium.webdriver.common.by import By as SelectBy
 
 
 @TestStep(When)

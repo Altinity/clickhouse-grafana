@@ -3,10 +3,12 @@ import time
 from testflows.core import *
 from testflows.connect import Shell
 from testflows.asserts import error
-from selenium.common.exceptions import NoSuchElementException
+
 from steps.ui import *
-from steps.dashboards.locators import locators
 from steps.delay import delay
+from steps.dashboards.locators import locators
+from selenium.webdriver.common.by import By as SelectBy
+from selenium.common.exceptions import NoSuchElementException
 
 
 @TestStep(When)

@@ -16,7 +16,7 @@ def check_alert_success(self):
     """Check save and test button returns success alert."""
     with By("checking alert success"):
         try:
-            wait_for_element_to_be_present(
+            wait_for_element_to_be_visible(
                 select_type=SelectBy.CSS_SELECTOR,
                 element=f"[data-testid='data-testid Alert success']"
             )
@@ -30,7 +30,7 @@ def check_alert_not_success(self):
     """Check save and test button returns success alert."""
     with By("checking alert success"):
         try:
-            wait_for_element_to_be_present(
+            wait_for_element_to_be_visible(
                 select_type=SelectBy.CSS_SELECTOR,
                 element=f"[data-testid='data-testid Alert error']"
             )

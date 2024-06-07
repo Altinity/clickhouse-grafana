@@ -206,6 +206,7 @@ def wait_datasource_in_datasource_dropdown(self, datasource_name):
         select_type=SelectBy.XPATH, element=f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']"
     )
 
+
 @TestStep(When)
 def select_datasource_in_panel_view(self, datasource_name):
     """Select datasource in datasource dropdown."""

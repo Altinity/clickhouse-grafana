@@ -30,8 +30,9 @@ echo "Install docker-compose..."
 sudo curl -SL https://github.com/docker/compose/releases/download/1.29.2/docker-compose-Linux-x86_64 -o /usr/local/bin/docker-compose
 sudo chmod +x /usr/local/bin/docker-compose
 
+sudo mkdir tests/testflows/tmp/
 sudo mkdir tests/testflows/tmp/target
-sudo chmod 777 tests/testflows/tmp/target
+sudo chmod 777 -R tests/testflows/tmp/
 
 sudo mkdir tests/testflows/assets
 sudo chmod 777 tests/testflows/assets

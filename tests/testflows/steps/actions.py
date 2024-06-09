@@ -155,11 +155,12 @@ def create_new_altinity_datasource(
             with delay():
                 with By("clicking save and test button"):
                     click_save_and_test_button()
+
             if success_connection:
                 with And("checking save and test button returns green alert"):
                     assert check_alert_success() is True, error()
             else:
-                with And("checking save and test button returns green alert"):
+                with And("checking save and test button returns red alert"):
                     assert check_alert_not_success() is True, error()
         yield
     finally:

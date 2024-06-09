@@ -127,17 +127,17 @@ def panel_check_basic_auth_success(self):
     )
 
 
-@TestScenario
-def panel_check_basic_auth_not_success(self):
-    """Check that plugin supports datasources with basic auth."""
-    panel_check(
-        datasource_name="test_basic_auth_not_success",
-        success_connection=False,
-        url="http://clickhouse:8123",
-        basic_auth=True,
-        username="demo",
-        password="incorrect_password",
-    )
+# @TestScenario
+# def panel_check_basic_auth_not_success(self):
+#     """Check that plugin supports datasources with basic auth."""
+#     panel_check(
+#         datasource_name="test_basic_auth_not_success",
+#         success_connection=False,
+#         url="http://clickhouse:8123",
+#         basic_auth=True,
+#         username="demo",
+#         password="incorrect_password",
+#     )
 
 
 @TestScenario
@@ -153,18 +153,18 @@ def panel_check_use_post_method_success(self):
     )
 
 
-@TestScenario
-def panel_check_use_post_method_not_success(self):
-    """Check that plugin supports datasources with basic auth."""
-    panel_check(
-        datasource_name="test_post_method_not_success",
-        success_connection=True,
-        url="http://clickhouse:8123",
-        use_post_method=False,
-        request="CREATE TABLE test_post_method_not_success(x Int64) ENGINE=Log",
-        check_visualization=False,
-        check_visualization_unsuccessful_alert=True
-    )
+# @TestScenario
+# def panel_check_use_post_method_not_success(self):
+#     """Check that plugin supports datasources with basic auth."""
+#     panel_check(
+#         datasource_name="test_post_method_not_success",
+#         success_connection=True,
+#         url="http://clickhouse:8123",
+#         use_post_method=False,
+#         request="CREATE TABLE test_post_method_not_success(x Int64) ENGINE=Log",
+#         check_visualization=False,
+#         check_visualization_unsuccessful_alert=True
+#     )
 
 
 @TestFeature

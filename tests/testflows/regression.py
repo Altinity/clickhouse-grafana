@@ -14,14 +14,14 @@ def argparser(parser):
     parser.add_argument(
         "--before",
         metavar="before",
-        type=int,
+        type=float,
         help="delay before steps",
         default=0
     )
     parser.add_argument(
         "--after",
         metavar="after",
-        type=int,
+        type=float,
         help="delay after steps",
         default=0
     )

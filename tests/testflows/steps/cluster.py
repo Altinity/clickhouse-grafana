@@ -170,7 +170,8 @@ class Cluster(object):
                     else:
                         self._bash[id] = shell
         finally:
-            return self.command(None, f"{self.docker_compose} down", timeout=timeout)
+            self.command(None, f"{self.docker_compose} down", timeout=timeout)
+            return self.command(None, f"docker volume prune -f", timeout=timeout)
 
     def up(self, timeout=30 * 60):
         with Given("I set all the necessary environment variables"):

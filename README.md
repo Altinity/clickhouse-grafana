@@ -1013,7 +1013,7 @@ To export exists unified alerts to YAML use Export alerts
 To troubleshoot alerts in clickhouse grafana plugin when enable `level=debug` in `log` section `grafana.ini` or via `GF_LOG_LEVEL=debug` environment variable.
 
 ## Histogram support
-![Histogram](https://github.com/Altinity/clickhouse-grafana/assets/9621964/153dc5f9-44cd-444d-b966-34e64a28bd2c)
+![Histogram](https://github.com/Altinity/clickhouse-grafana/raw/master/src/img/histogram.png)
 
 To show Histogram you need query in format as "Time Series"
 

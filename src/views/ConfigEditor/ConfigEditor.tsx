@@ -70,6 +70,7 @@ export function ConfigEditor(props: Props) {
   return (
     <>
       <DataSourceHttpSettings
+        data-test-id='http-settings'
         defaultUrl="http://localhost:8123"
         dataSourceConfig={options}
         showAccessOptions={true}
@@ -83,6 +84,7 @@ export function ConfigEditor(props: Props) {
           labelWidth={36}
         >
           <InlineSwitch
+            data-test-id='use-yandex-cloud-authorization-switch'
             id="useYandexCloudAuthorization"
             className="gf-form"
             value={jsonData.useYandexCloudAuthorization || false}
@@ -94,6 +96,7 @@ export function ConfigEditor(props: Props) {
             <InlineField label="X-ClickHouse-User" labelWidth={36}>
               <Input
                 id="xHeaderUser"
+                data-test-id='x-header-user-input'
                 onChange={onUpdateDatasourceJsonDataOption(props, 'xHeaderUser')}
                 value={jsonData.xHeaderUser || ''}
                 placeholder="DB user name"
@@ -101,6 +104,7 @@ export function ConfigEditor(props: Props) {
             </InlineField>
             <InlineField label={'X-ClickHouse-Key'} labelWidth={36}>
               <SecretInput
+                data-test-id='x-header-key-input'
                 isConfigured={!!secureJsonFields?.['xHeaderKey']}
                 value={secureJsonData['xHeaderKey'] || ''}
                 placeholder={`DB user password`}
@@ -120,6 +124,7 @@ export function ConfigEditor(props: Props) {
         >
           <InlineSwitch
             id="addCorsHeader"
+            data-test-id='add-cors-header-switch'
             className="gf-form"
             value={jsonData.addCorsHeader || false}
             onChange={(e) => onSwitchToggle('addCorsHeader', e.currentTarget.checked)}
@@ -131,6 +136,7 @@ export function ConfigEditor(props: Props) {
           tooltip="Remember that it's possible to change data via POST requests. Better to avoid using POST method if you connecting not as Read-Only user."
         >
           <InlineSwitch
+            data-test-id='use-post-method-switch'
             id="usePOST"
             className="gf-form"
             value={jsonData.usePOST || false}
@@ -143,6 +149,7 @@ export function ConfigEditor(props: Props) {
           tooltip="If you set the default database for this datasource, it will be prefilled in the query builder, and used to make ad-hoc filters more convenient."
         >
           <Input
+            data-test-id='default-database-input'
             value={jsonData.defaultDatabase || 'default'}
             placeholder="default"
             onChange={onUpdateDatasourceJsonDataOption(props, 'defaultDatabase')}
@@ -154,6 +161,7 @@ export function ConfigEditor(props: Props) {
           tooltip="Add `Accept-Encoding` header in each request."
         >
           <InlineSwitch
+            data-test-id='use-compression-switch'
             id="useCompressions"
             className="gf-form"
             value={jsonData.useCompression || false}
@@ -166,6 +174,7 @@ export function ConfigEditor(props: Props) {
           tooltip="read https://clickhouse.com/docs/en/interfaces/http#compression for details"
         >
           <Select
+            data-test-id="compression-type-select"
             id="compressionType"
             allowCustomValue={false}
             width={24}

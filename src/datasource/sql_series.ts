@@ -289,9 +289,18 @@ export default class SqlSeries {
       let t = SqlSeries._formatValue(row[timeCol.name]);
       /* Build composite key (categories) from GROUP BY */
       let metricKey: any = null;
+
       if (keyColumns.length > 0) {
-        metricKey = keyColumns.map((name: string) => row[name]).join(', ');
+        metricKey = keyColumns.map((name: string) => {
+          const value = row[name];
+          if (typeof value === 'object') {
+            return JSON.stringify(value);
+          } else {
+            return String(value);
+          }
+        }).join(', ');
       }
+
       /* Make sure all series end with a value or nil for current timestamp
        * to render discontinuous timeseries properly. */
       if (lastTimeStamp < t) {
@@ -483,6 +492,10 @@ export default class SqlSeries {
       return value;
     }
 
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
+    }
+
     let numeric = Number(value);
     if (isNaN(numeric)) {
       return value;
@@ -494,6 +507,10 @@ export default class SqlSeries {
   static _formatValueByType(value: any, t: string) {
     if (value === null) {
       return value;
+    }
+
+    if (typeof value === 'object') {
+      return JSON.stringify(value);
     }
 
     let numeric = Number(value);

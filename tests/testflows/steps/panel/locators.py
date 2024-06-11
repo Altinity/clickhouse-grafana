@@ -4,6 +4,7 @@ from selenium.webdriver.common.by import By as SelectBy
 
 
 class Locators:
+    # Locators for panel page
 
     @property
     def fill(self):

@@ -1,15 +1,8 @@
-import time
-
 from testflows.core import *
-from testflows.connect import Shell
-from testflows.asserts import error
 
-from steps.ui import *
-from steps.delay import delay
-from selenium.webdriver import ActionChains
-from selenium.webdriver.common.by import By as SelectBy
 from steps.connections.datasources.locators import locators
-from selenium.common.exceptions import NoSuchElementException
+
+import steps.ui as ui
 
 
 @TestStep(When)
@@ -18,7 +11,7 @@ def open_connections_datasources_endpoint(self, endpoint=None):
     if endpoint is None:
         endpoint = f"{self.context.endpoint}connections/datasources"
 
-    open_endpoint(endpoint=endpoint)
+    ui.open_endpoint(endpoint=endpoint)
 
 
 @TestStep(When)

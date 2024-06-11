@@ -1,12 +1,9 @@
-import time
-
 from testflows.core import *
-from testflows.connect import Shell
-from testflows.asserts import error
 
-from steps.ui import *
 from steps.login.locators import locators
 from selenium.webdriver.common.by import By as SelectBy
+
+import steps.ui as ui
 
 
 @TestStep(When)
@@ -15,14 +12,14 @@ def open_login_endpoint(self, endpoint=None):
     if endpoint is None:
         endpoint = f"{self.context.endpoint}login"
 
-    open_endpoint(endpoint=endpoint)
+    ui.open_endpoint(endpoint=endpoint)
 
 
 @TestStep(When)
 def wait_login_button(self):
     """Wait login button."""
 
-    wait_for_element_to_be_clickable(
+    ui.wait_for_element_to_be_clickable(
         select_type=SelectBy.CSS_SELECTOR, element="[data-testid='data-testid Login button']"
     )
 
@@ -52,7 +49,7 @@ def click_submit_button(self):
 def wait_skip_change_password_button(self):
     """Wait skip change password button."""
 
-    wait_for_element_to_be_clickable(
+    ui.wait_for_element_to_be_clickable(
         select_type=SelectBy.CSS_SELECTOR, element="[data-testid='data-testid Skip change password button']"
     )
 

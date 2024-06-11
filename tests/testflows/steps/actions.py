@@ -3,11 +3,15 @@ import numpy as np
 from PIL import Image
 from PIL import ImageFilter
 
-from steps.dashboard.view import *
-from steps.dashboards.view import *
-from steps.connections.datasources.view import *
-from steps.connections.datasources.new.view import *
-from steps.connections.datasources.altinity_edit.view import *
+from testflows.core import *
+from steps.delay import delay
+from testflows.asserts import error
+
+import steps.dashboard.view as dashboard
+import steps.dashboards.view as dashboards
+import steps.connections.datasources.view as datasources
+import steps.connections.datasources.new.view as datasources_new
+import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
 
 
 @TestStep(Then)
@@ -26,21 +30,21 @@ def create_dashboard(self, dashboard_name, open_it=True):
             with attempt:
                 with delay():
                     with When("I open new dashboard view"):
-                        open_new_dashboard_endpoint()
+                        dashboard.open_new_dashboard_endpoint()
 
                 with And("I save new dashboard"):
-                    saving_dashboard(dashboard_name=dashboard_name)
+                    dashboard.saving_dashboard(dashboard_name=dashboard_name)
 
                 with Then("I check dashboard created"):
-                    check_dashboard_exists(dashboard_name=dashboard_name)
+                    dashboards.check_dashboard_exists(dashboard_name=dashboard_name)
 
                 if open_it:
                     with Then("I open dashboard"):
-                        open_dashboard(dashboard_name=dashboard_name)
+                        dashboards.open_dashboard(dashboard_name=dashboard_name)
         yield
     finally:
         with Finally(f"I delete dashboard {dashboard_name}"):
-            delete_dashboard(dashboard_name=dashboard_name)
+            dashboards.delete_dashboard(dashboard_name=dashboard_name)
 
 
 def distance(a, b):
@@ -96,14 +100,18 @@ def create_new_altinity_datasource(
         self,
         datasource_name,
         url,
-        success_connection=True,
+        successful_connection=True,
         access_type=None,
         basic_auth=False,
         username="default",
         password="",
         with_credentials=False,
         tls_client_auth=False,
+        server_name=None,
+        client_cert=None,
+        client_key=None,
         with_ca_cert=False,
+        ca_cert=None,
         skip_tls_verify=False,
         forward_oauth_identity=False,
         use_post_method=False,
@@ -113,67 +121,89 @@ def create_new_altinity_datasource(
         with Given("I create new Altinity datasource"):
             with delay():
                 with By("opening create new datasource view"):
-                    open_add_new_datasource_endpoint()
+                    datasources_new.open_add_new_datasource_endpoint()
 
             with delay():
                 with And("clicking new altinity grafana plugin"):
-                    click_new_altinity_plugin_datasource()
+                    datasources_new.click_new_altinity_plugin_datasource()
 
             with delay():
                 with And("entering datasource name"):
-                    enter_name_into_name_field(datasource_name=datasource_name)
+                    datasources_altinity_edit.enter_name_into_name_field(datasource_name=datasource_name)
 
             with delay():
                 with By("entering url"):
-                    enter_url_into_url_field(url=url)
+                    datasources_altinity_edit.enter_url_into_url_field(url=url)
 
             if not (access_type is None):
                 with delay():
                     with By("clicking access dropdown"):
-                        click_access_dropdown()
+                        datasources_altinity_edit.click_access_dropdown()
 
                 with delay():
                     with And("choosing access type in dropdown"):
-                        choose_access_type_in_access_dropdown(access_type=access_type)
+                        datasources_altinity_edit.choose_access_type_in_access_dropdown(access_type=access_type)
 
             if basic_auth:
                 with delay():
                     with By("clicking basic auth toggle"):
-                        click_basic_auth_toggle()
+                        datasources_altinity_edit.click_basic_auth_toggle()
                 with delay():
                     with By("entering username"):
-                        enter_clickhouse_username(username=username)
+                        datasources_altinity_edit.enter_clickhouse_username(username=username)
                 with delay():
                     with By("entering password"):
-                        enter_clickhouse_password(password=password)
+                        datasources_altinity_edit.enter_clickhouse_password(password=password)
+
+            if tls_client_auth:
+                with delay():
+                    with By("clicking TLS Client Auth toggle"):
+                        datasources_altinity_edit.click_tls_client_auth_toggle()
+                with delay():
+                    with By("entering server name"):
+                        datasources_altinity_edit.enter_server_name(server_name=server_name)
+                with delay():
+                    with By("entering Client Cert"):
+                        datasources_altinity_edit.enter_client_cert(client_cert=client_cert)
+                with delay():
+                    with By("entering Client Key"):
+                        datasources_altinity_edit.enter_client_key(client_key=client_key)
+
+            if with_ca_cert:
+                with delay():
+                    with By("clicking with CA Cert method"):
+                        datasources_altinity_edit.click_with_ca_cert_toggle()
+                with delay():
+                    with By("entering CA Cert"):
+                        datasources_altinity_edit.enter_ca_cert(ca_cert=ca_cert)
 
             if use_post_method:
                 with delay():
                     with By("clicking use post method toggle"):
-                        click_use_post_method_toggle()
+                        datasources_altinity_edit.click_use_post_method_toggle()
 
             with delay():
                 with By("clicking save and test button"):
-                    click_save_and_test_button()
+                    datasources_altinity_edit.click_save_and_test_button()
 
-            if success_connection:
+            if successful_connection:
                 with And("checking save and test button returns green alert"):
-                    assert check_alert_success() is True, error()
+                    assert datasources_altinity_edit.check_alert_success() is True, error()
             else:
                 with And("checking save and test button returns red alert"):
-                    assert check_alert_not_success() is True, error()
+                    assert datasources_altinity_edit.check_alert_not_success() is True, error()
         yield
     finally:
         with Finally("I delete datasource"):
             with delay():
                 with By("opening datasources view"):
-                    open_connections_datasources_endpoint()
+                    datasources.open_connections_datasources_endpoint()
             with delay():
                 with And(f"opening datasource setup view for {datasource_name}"):
-                    click_datasource_in_datasources_view(datasource_name=datasource_name)
+                    datasources.click_datasource_in_datasources_view(datasource_name=datasource_name)
             with delay():
                 with And("clicking delete button"):
-                    click_delete_datasource()
+                    datasources_altinity_edit.click_delete_datasource()
             with delay():
                 with And("clicking delete button in confirmation modal dialog"):
-                    click_confirm_delete_datasource()
+                    datasources_altinity_edit.click_confirm_delete_datasource()

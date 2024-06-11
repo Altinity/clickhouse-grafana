@@ -1,22 +1,19 @@
-import time
-
 from testflows.core import *
-from testflows.connect import Shell
-from testflows.asserts import error
 
-from steps.ui import *
 from steps.delay import delay
 from selenium.webdriver import ActionChains
 from steps.dashboard.locators import locators
 from selenium.webdriver.common.by import By as SelectBy
 from selenium.common.exceptions import NoSuchElementException
 
+import steps.ui as ui
+
 
 @TestStep(When)
 def wait_panel_menu_button(self, panel_name):
     """Wait panel menu button for panel."""
 
-    wait_for_element_to_be_present(
+    ui.wait_for_element_to_be_present(
         select_type=SelectBy.CSS_SELECTOR, element=f"[data-testid='data-testid Panel menu {panel_name}']"
     )
 
@@ -39,7 +36,7 @@ def move_cursor_to_menu_button(self, panel_name):
 def wait_edit_button_in_panel_menu(self):
     """Wait edit button in dropdown menu for panel."""
 
-    wait_for_element_to_be_clickable(
+    ui.wait_for_element_to_be_clickable(
         select_type=SelectBy.CSS_SELECTOR, element="[data-testid='data-testid Panel menu item Edit']"
     )
 
@@ -91,7 +88,7 @@ def edit_panel(self, panel_name):
 @TestStep(When)
 def wait_panel(self, panel_name):
     """Wait panel to be loaded."""
-    wait_for_element_to_be_visible(
+    ui.wait_for_element_to_be_visible(
         select_type=SelectBy.CSS_SELECTOR, element=f"[data-testid='data-testid Panel header {panel_name}']"
     )
 
@@ -255,7 +252,7 @@ def open_new_dashboard_endpoint(self, endpoint=None):
     if endpoint is None:
         endpoint = f"{self.context.endpoint}dashboard/new"
 
-    open_endpoint(endpoint=endpoint)
+    ui.open_endpoint(endpoint=endpoint)
 
 
 @TestStep(When)

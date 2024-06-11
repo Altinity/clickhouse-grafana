@@ -1,14 +1,11 @@
-import time
-
 from testflows.core import *
-from testflows.connect import Shell
-from testflows.asserts import error
 
-from steps.ui import *
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By as SelectBy
-from selenium.common.exceptions import NoSuchElementException
+
 from steps.connections.datasources.altinity_edit.locators import locators
+
+import steps.ui as ui
 
 
 @TestStep(Then)
@@ -16,7 +13,7 @@ def check_alert_success(self):
     """Check save and test button returns success alert."""
     with By("checking alert success"):
         try:
-            wait_for_element_to_be_visible(
+            ui.wait_for_element_to_be_visible(
                 select_type=SelectBy.CSS_SELECTOR,
                 element=f"[data-testid='data-testid Alert success']"
             )
@@ -30,7 +27,7 @@ def check_alert_not_success(self):
     """Check save and test button returns success alert."""
     with By("checking alert success"):
         try:
-            wait_for_element_to_be_visible(
+            ui.wait_for_element_to_be_visible(
                 select_type=SelectBy.CSS_SELECTOR,
                 element=f"[data-testid='data-testid Alert error']"
             )
@@ -104,7 +101,7 @@ def click_with_credentials_toggle(self):
 
 
 @TestStep(When)
-def click_tls_client_auth_togglee(self):
+def click_tls_client_auth_toggle(self):
     """Click tls client auth toggle."""
 
     locators.tls_client_auth_toggle.click()
@@ -140,13 +137,49 @@ def click_use_post_method_toggle(self):
 
 @TestStep(When)
 def enter_clickhouse_username(self, username):
-    """Enter clickhouse username into the username textfield."""
+    """Enter ClickHouse username into the username textfield."""
 
     locators.username_textfield.send_keys(username)
 
 
 @TestStep(When)
 def enter_clickhouse_password(self, password):
-    """Enter clickhouse password into the password textfield."""
+    """Enter ClickHouse password into the password textfield."""
 
     locators.password_textfield.send_keys(password)
+
+
+@TestStep(When)
+def enter_ca_cert(self, ca_cert=None):
+    """Enter CA Cert into CA Cert textfield."""
+    if ca_cert is None:
+        ca_cert = self.context.ca_cert
+
+    locators.ca_cert_textfield.send_keys(ca_cert)
+
+
+@TestStep(When)
+def enter_client_cert(self, client_cert=None):
+    """Enter Client Cert into Client Cert textfield."""
+    if client_cert is None:
+        client_cert = self.context.client_cert
+
+    locators.client_cert_textfield.send_keys(client_cert)
+
+
+@TestStep(When)
+def enter_client_key(self, client_key=None):
+    """Enter Client Key into Client Key textfield."""
+    if client_key is None:
+        client_key = self.context.client_key
+
+    locators.client_key_textfield.send_keys(client_key)
+
+
+@TestStep(When)
+def enter_server_name(self, server_name=None):
+    """Enter Server Name into Server Name textfield."""
+    if server_name is None:
+        server_name = self.context.server_name
+
+    locators.server_name_textfield.send_keys(server_name)

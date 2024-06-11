@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By as SelectBy
 
 
 class Locators:
-    # Locators for connections page
+    # Locators for connections/datasources/new page
 
     @property
     def new_altinity_plugin_datasource(self):

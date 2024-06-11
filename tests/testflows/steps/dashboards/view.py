@@ -1,14 +1,11 @@
-import time
-
 from testflows.core import *
-from testflows.connect import Shell
-from testflows.asserts import error
 
-from steps.ui import *
 from steps.delay import delay
 from steps.dashboards.locators import locators
 from selenium.webdriver.common.by import By as SelectBy
 from selenium.common.exceptions import NoSuchElementException
+
+import steps.ui as ui
 
 
 @TestStep(When)
@@ -17,13 +14,13 @@ def open_dashboards_endpoint(self, endpoint=None):
     if endpoint is None:
         endpoint = f"{self.context.endpoint}dashboards"
 
-    open_endpoint(endpoint=endpoint)
+    ui.open_endpoint(endpoint=endpoint)
 
 
 @TestStep(When)
 def wait_dashboard(self, dashboard_name):
     """Wait dashboard to be loaded."""
-    wait_for_element_to_be_clickable(
+    ui.wait_for_element_to_be_clickable(
         select_type=SelectBy.LINK_TEXT, element=f"{dashboard_name}"
     )
 

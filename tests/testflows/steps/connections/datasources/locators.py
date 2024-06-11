@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By as SelectBy
 
 
 class Locators:
-    # Locators for connections page
+    # Locators for connections/datasources page
 
     def datasource(self, datasource_name):
         driver: WebDriver = current().context.driver

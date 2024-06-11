@@ -185,7 +185,7 @@ def create_driver(self, incognito=True, clean_up=True, suite=None):
 
 
 @TestStep(Given)
-def wait_for_element_to_be_visible(self, select_type=None, element=None, timeout=3):
+def wait_for_element_to_be_visible(self, select_type=None, element=None, timeout=5):
     """An expectation for checking that an element is present on the DOM of a
     page and visible. Visibility means that the element is not only displayed
     but also has a height and width that is greater than 0.
@@ -209,7 +209,7 @@ def wait_for_element_to_be_clickable(
     """
     driver = self.context.driver
     if timeout is None:
-        timeout = 3
+        timeout = 5
     if poll_frequency is None:
         poll_frequency = 1
 
@@ -226,7 +226,7 @@ def wait_for_element_to_be_present(self, select_type=None, element=None):
     """
     driver = self.context.driver
 
-    wait = WebDriverWait(driver, 3)
+    wait = WebDriverWait(driver, 5)
     wait.until(EC.presence_of_element_located((select_type, element)))
 
 

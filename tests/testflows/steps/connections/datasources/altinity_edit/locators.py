@@ -4,7 +4,7 @@ from selenium.webdriver.common.by import By as SelectBy
 
 
 class Locators:
-    # Locators for datasource setup page
+    # Locators for connections/datasources/altinity_edit page
 
     @property
     def name_field(self):
@@ -74,6 +74,26 @@ class Locators:
     def use_post_method_to_send_queries(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[for='usePOST']")
+
+    @property
+    def ca_cert_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[placeholder='Begins with -----BEGIN CERTIFICATE-----']")
+
+    @property
+    def client_cert_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[placeholder='Begins with -----BEGIN CERTIFICATE-----']")
+
+    @property
+    def client_key_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[placeholder='Begins with -----BEGIN RSA PRIVATE KEY-----']")
+
+    @property
+    def server_name_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[placeholder='domain.example.com']")
 
     @property
     def username_textfield(self):

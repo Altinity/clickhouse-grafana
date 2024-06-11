@@ -1,11 +1,14 @@
 #!/usr/bin/env python3
 import sys
+import inspect
 
-from steps.ui import *
-from steps.cluster import *
-from steps.login.view import *
+from testflows.core import *
 from steps.delay import delay
 from requirements.requirements import *
+
+import steps.ui as ui
+import steps.cluster as cluster
+import steps.login.view as login
 
 append_path(sys.path, "..")
 
@@ -28,7 +31,7 @@ def argparser(parser):
 
 
 @TestModule
-@Repeat(100)
+# @Repeat(100)
 @Name("Grafana Datasource Plugin For Clickhouse")
 @ArgumentParser(argparser)
 @Specifications(QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse)
@@ -45,25 +48,34 @@ def regression(self, before, after):
     self.context.endpoint = "http://grafana:3000/"
     self.context.before = before
     self.context.after = after
+    self.context.server_name = "test.example.com"
 
     with Given("docker-compose cluster"):
-        self.context.cluster = cluster(frame=inspect.currentframe())
+        self.context.cluster = cluster.cluster(frame=inspect.currentframe())
+
+    with And("I copy CA Cert"):
+        self.context.ca_cert = self.context.cluster.command(None, "cat ./docker/clickhouse/ca-cert.pem").output
+
+    with And("I copy Client Cert"):
+        self.context.client_cert = self.context.cluster.command(None, "cat ./docker/clickhouse/client-cert.pem").output
+
+    with And("I copy Client Key"):
+        self.context.client_key = self.context.cluster.command(None, "cat ./docker/clickhouse/client-key.pem").output
 
     with And("webdriver"):
-        self.context.driver = create_driver()
+        self.context.driver = ui.create_driver()
 
     with And("I wait for grafana to be started"):
         for attempt in retries(delay=10, timeout=50):
             with attempt:
-                open_endpoint(endpoint=self.context.endpoint)
+                ui.open_endpoint(endpoint=self.context.endpoint)
 
     with delay():
         with Given("I login in grafana"):
-            login()
+            login.login()
 
     # pause()
-    with delay():
-        open_endpoint(endpoint=self.context.endpoint+'plugins')
+
     # Feature(run=load("testflows.tests.automated.e2e", "feature"))
     Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
     # Feature(run=load("testflows.tests.automated.dashboard", "feature"))

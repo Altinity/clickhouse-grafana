@@ -1,22 +1,18 @@
-import time
-
 from testflows.core import *
-from testflows.connect import Shell
-from testflows.asserts import error
 
-from steps.ui import *
 from steps.delay import delay
 from steps.panel.locators import locators
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.by import By as SelectBy
-from selenium.common.exceptions import NoSuchElementException
+
+import steps.ui as ui
 
 
 @TestStep(When)
 def wait_fill_actual_toggle(self):
     """Wait Fill/Actual toggle to be clickable."""
 
-    wait_for_element_to_be_clickable(
+    ui.wait_for_element_to_be_clickable(
         select_type=SelectBy.CSS_SELECTOR, element="[data-testid='data-testid radio-button']"
     )
 
@@ -59,7 +55,7 @@ def click_sql_editor_toggle(self):
 def wait_sql_editor_toggle(self):
     """Wait SQL editor toggle to be loaded."""
 
-    wait_for_element_to_be_present(
+    ui.wait_for_element_to_be_present(
         select_type=SelectBy.CSS_SELECTOR, element=f"[id*='option-sql']"
     )
 
@@ -89,7 +85,7 @@ def go_to_sql_editor(self):
 @TestStep(When)
 def wait_sql_editor_input(self):
     """Wait SQL editor input field."""
-    wait_for_element_to_be_present(
+    ui.wait_for_element_to_be_present(
         select_type=SelectBy.CSS_SELECTOR, element=f"[class='view-lines monaco-mouse-cursor-text']"
     )
 
@@ -130,10 +126,9 @@ def change_repeat_by_variable_option(self, variable_name):
 
 
 @TestStep(When)
-def enter_sql_editor_input(self, request):
+def enter_sql_editor_input(self, query):
     """Enter SQL request into sql editor input field."""
 
-    # note(self.context.driver.find_element(SelectBy.XPATH, '/html/body').text)
     with By("waiting SQL editor"):
         wait_sql_editor_input()
 
@@ -141,7 +136,7 @@ def enter_sql_editor_input(self, request):
         select_input_query()
 
     with By("entering request"):
-        locators.input_in_sql_editor.send_keys(request)
+        locators.input_in_sql_editor.send_keys(query)
 
 
 @TestStep(When)
@@ -170,7 +165,7 @@ def fill(self):
 def wait_visualization(self):
     """Wait visualization to be loaded."""
 
-    wait_for_element_to_be_visible(
+    ui.wait_for_element_to_be_visible(
         select_type=SelectBy.CSS_SELECTOR, element=f"[class='css-1hy9z4n']"
     )
 
@@ -202,7 +197,7 @@ def double_click_on_visualization(self):
 def wait_datasource_in_datasource_dropdown(self, datasource_name):
     """Wait panel menu button for panel."""
 
-    wait_for_element_to_be_clickable(
+    ui.wait_for_element_to_be_clickable(
         select_type=SelectBy.XPATH, element=f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']"
     )
 
@@ -221,10 +216,13 @@ def select_datasource_in_panel_view(self, datasource_name):
 
 @TestStep(Then)
 def check_panel_error_exists(self):
-    """Check dashboard contains panel."""
-    with By("checking dashboard exists"):
+    """Check panel error exists."""
+    with By("checking error"):
         try:
-            locators.panel_error
+            ui.wait_for_element_to_be_visible(
+                select_type=SelectBy.CSS_SELECTOR,
+                element="[data-testid='data-testid Panel status error']"
+            )
             return True
-        except NoSuchElementException:
+        except:
             return False

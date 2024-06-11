@@ -3,7 +3,6 @@ from testflows.connect import Shell
 from testflows.asserts import error
 
 from steps.login import *
-from steps.common import *
 from steps.dashboards.locators import locators as dashboards_locators
 from steps.dashboard.locators import locators as dashboard_locators
 from steps.dashboards.view import *

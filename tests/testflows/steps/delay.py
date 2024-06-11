@@ -1,6 +1,7 @@
-from contextlib import contextmanager
-from testflows.core import *
 import time
+
+from testflows.core import *
+from contextlib import contextmanager
 
 
 @contextmanager

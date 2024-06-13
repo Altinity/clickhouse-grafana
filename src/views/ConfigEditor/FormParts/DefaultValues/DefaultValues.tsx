@@ -1,7 +1,6 @@
-import {InlineField, InlineLabel, InlineSwitch, Input, Select} from "@grafana/ui";
+import {InlineField, InlineLabel, InlineSwitch, Select} from "@grafana/ui";
 import React, {useEffect, useState} from "react";
 import {getOptions} from "./DefaultValues.api";
-import {onUpdateDatasourceJsonDataOption} from "@grafana/data";
 import {TimestampFormat} from "../../../../types/types";
 const TABLES_QUERY = "SELECT name,database,table,type FROM system.columns WHERE type LIKE 'Date32%'  OR type LIKE 'DateTime64%' OR type = 'UInt32' OR match(type,'^DateTime$|^DateTime\\\\([^)]+\\\\)$')  OR match(type,'^Date$|^Date\\([^)]+\\)$') ORDER BY type,name FORMAT JSON";
 

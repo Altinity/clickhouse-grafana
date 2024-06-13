@@ -243,21 +243,6 @@ jsonData, onSwitchToggle, onFieldChange, externalProps
           options={defaultDateDate32Options}
         />
       </InlineField>
-      <h6>Default Database</h6>
-      <InlineField
-        label="Database"
-        labelWidth={32}
-        style={{marginLeft: '30px'}}
-        tooltip="If you set the default database for this datasource, it will be prefilled in the query builder, and used to make ad-hoc filters more convenient."
-      >
-        <Input
-          value={jsonData.defaultDatabase || 'default'}
-          placeholder="default"
-          width={24}
-          // @ts-ignore
-          onChange={onUpdateDatasourceJsonDataOption(externalProps, 'defaultDatabase')}
-        />
-      </InlineField>
     </>}
   </div>
 }

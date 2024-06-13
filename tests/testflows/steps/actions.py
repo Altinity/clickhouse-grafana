@@ -105,6 +105,9 @@ def create_new_altinity_datasource(
         basic_auth=False,
         username="default",
         password="",
+        use_yandex_cloud_authorization=False,
+        yandex_cloud_username="demo",
+        yandex_cloud_password="demo",
         with_credentials=False,
         tls_client_auth=False,
         server_name=None,
@@ -116,7 +119,26 @@ def create_new_altinity_datasource(
         forward_oauth_identity=False,
         use_post_method=False,
 ):
-    """Create new datasource."""
+    """Create new datasource.
+
+    :param datasource_name: name of the datasource that we are creating
+    :param url: url of the datasource that we are creating
+    :param successful_connection: check that the `save and test` button in connection settings returns green or red alert, default: True
+    :param access_type: access type in connections settings from ['Server(default)', 'Browser'], default: None
+    :param basic_auth: use basic auth, default: False
+    :param username: username for basic auth, default: 'demo'
+    :param password: password for basic auth, default: 'demo'
+    :param use_yandex_cloud_authorization: use Yandex.Cloud authorization, default: False
+    :param yandex_cloud_username: username for Yandex.Cloud authorization, default 'demo'
+    :param yandex_cloud_password: password for Yandex.Cloud authorization, default 'demo'
+    :param tls_client_auth: use tls client auth, default: False
+    :param server_name: server name for tls client auth, default: None
+    :param client_cert: Client Cert for tls client auth, default: None
+    :param client_key: Client Key for tls client auth, default: None
+    :param with_ca_cert: use Ca Cert, default: False
+    :param ca_cert: Ca Cert, default: None
+    :param use_post_method: use post method in http requests, default: False
+    """
     try:
         with Given("I create new Altinity datasource"):
             with delay():
@@ -154,6 +176,17 @@ def create_new_altinity_datasource(
                 with delay():
                     with By("entering password"):
                         datasources_altinity_edit.enter_clickhouse_password(password=password)
+
+            if use_yandex_cloud_authorization:
+                with delay():
+                    with By("clicking use Yandex.Cloud authorization toggle"):
+                        datasources_altinity_edit.click_use_yandex_cloud_authorization_toggle()
+                with delay():
+                    with By("entering Yandex.Cloud username"):
+                        datasources_altinity_edit.enter_clickhouse_yandex_cloud_username(username=yandex_cloud_username)
+                with delay():
+                    with By("entering Yandex.Cloud password"):
+                        datasources_altinity_edit.enter_clickhouse_yandex_cloud_password(password=yandex_cloud_password)
 
             if tls_client_auth:
                 with delay():

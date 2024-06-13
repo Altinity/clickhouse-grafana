@@ -40,7 +40,7 @@ def argparser(parser):
     RQ_SRS_Plugin_DockerComposeEnvironment("1.0"),
     RQ_SRS_Plugin_VersionCompatibility("1.0")
 )
-def regression(self, before, after):
+def regression(self, before, after): # todo add stress
 
     self.context.browser = "chrome"
     self.context.local = False

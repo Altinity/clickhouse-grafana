@@ -63,7 +63,7 @@ class Locators:
     @property
     def use_yandex_cloud_authorization_toggle(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[for ='useYandexCloudAuthorization']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[for='useYandexCloudAuthorization']")
 
     @property
     def add_cors_flag_to_requests(self):
@@ -104,6 +104,16 @@ class Locators:
     def password_textfield(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[placeholder='Password']")
+
+    @property
+    def yandex_cloud_username_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-test-id='x-header-user-input']")
+
+    @property
+    def yandex_cloud_password_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-test-id='x-header-key-input']")
 
     @property
     def alert_success(self):

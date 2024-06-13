@@ -1,5 +1,6 @@
 import time
 
+import testflows.settings as settings
 from testflows.core import *
 from contextlib import contextmanager
 
@@ -14,9 +15,11 @@ def delay(before=None, after=None):
         after = current().context.after
 
     # before
-    note(f"I sleep for {before} before step")
+    if settings.debug:
+        note(f"I sleep for {before} before step")
     time.sleep(before)
     yield
     # after
-    note(f"I sleep for {after} after step")
+    if settings.debug:
+        note(f"I sleep for {after} after step")
     time.sleep(after)

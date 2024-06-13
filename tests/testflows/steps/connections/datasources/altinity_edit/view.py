@@ -25,7 +25,7 @@ def check_alert_success(self):
 @TestStep(Then)
 def check_alert_not_success(self):
     """Check save and test button returns success alert."""
-    with By("checking alert success"):
+    with By("checking alert not success"):
         try:
             ui.wait_for_element_to_be_visible(
                 select_type=SelectBy.CSS_SELECTOR,
@@ -136,6 +136,13 @@ def click_use_post_method_toggle(self):
 
 
 @TestStep(When)
+def click_use_yandex_cloud_authorization_toggle(self):
+    """Click Use Yandex.Cloud authorization header toggle."""
+
+    locators.use_yandex_cloud_authorization_toggle.click()
+
+
+@TestStep(When)
 def enter_clickhouse_username(self, username):
     """Enter ClickHouse username into the username textfield."""
 
@@ -147,6 +154,20 @@ def enter_clickhouse_password(self, password):
     """Enter ClickHouse password into the password textfield."""
 
     locators.password_textfield.send_keys(password)
+
+
+@TestStep(When)
+def enter_clickhouse_yandex_cloud_username(self, username):
+    """Enter ClickHouse Yandex.Cloud username into the username textfield."""
+
+    locators.yandex_cloud_username_textfield.send_keys(username)
+
+
+@TestStep(When)
+def enter_clickhouse_yandex_cloud_password(self, password):
+    """Enter ClickHouse Yandex.Cloud password into the username textfield."""
+
+    locators.yandex_cloud_password_textfield.send_keys(password)
 
 
 @TestStep(When)

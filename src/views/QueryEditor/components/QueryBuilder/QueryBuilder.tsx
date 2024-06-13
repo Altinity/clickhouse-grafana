@@ -3,7 +3,7 @@ import {InlineField, InlineFieldRow, InlineLabel, Select} from '@grafana/ui';
 import {SelectableValue} from '@grafana/data';
 import {UniversalSelectField} from './components/UniversalSelectComponent';
 import {TimestampFormat} from "../../../../types/types";
-import {useConnectionData} from "./components/useConnectionData";
+import { useConnectionData } from "./components/useConnectionData";
 
 
 const options = [

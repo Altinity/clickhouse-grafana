@@ -137,9 +137,8 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
         } else {
           resolve(null)
         }
-
-      },() => {
-        resolve(null)
+      },(e) => {
+        reject(e)
       })
     })
 

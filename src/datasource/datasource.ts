@@ -170,7 +170,6 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
           return;
         }
 
-        console.log(response.data, '<<<<<<')
         let sqlSeries = new SqlSeries({
           refId: target.refId,
           series: response.data,

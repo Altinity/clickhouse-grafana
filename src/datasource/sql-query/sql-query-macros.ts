@@ -317,8 +317,6 @@ export default class SqlQueryMacros {
   }
 
   static _columns(key: string, value: string, beforeMacrosQuery: string, fromQuery: string): string {
-
-    console.log(beforeMacrosQuery, fromQuery);
     if (key.slice(-1) === ')' || value.slice(-1) === ')') {
       throw { message: 'Some of passed arguments are without aliases: ' + key + ', ' + value };
     }

@@ -393,15 +393,32 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string) (s
 		" ORDER BY t", nil
 }
 
-func findKeywordOutsideBrackets(query string, keyword string) int {
-	pattern := fmt.Sprintf(`\b%s\b(?![^\(]*\))`, regexp.QuoteMeta(keyword))
-	re := regexp.MustCompile(pattern)
+func findKeywordOutsideBrackets(query, keyword string) int {
+	bracketDepth := 0
+	keywordRegex := regexp.MustCompile("(?i)" + regexp.QuoteMeta(keyword)) // Case-insensitive match
 
-	match := re.FindStringSubmatchIndex(query)
-	if match != nil {
-		return match[0] // Return the start index of the first match
+	for i := 0; i < len(query); i++ {
+		switch query[i] {
+		case '(':
+			bracketDepth++
+		case ')':
+			if bracketDepth > 0 {
+				bracketDepth--
+			}
+		default:
+			if bracketDepth == 0 {
+				// Check if the current segment matches the keyword
+				if keywordRegex.MatchString(query[i:]) {
+					// Check if this match is really starting at i
+					if matchIndexes := keywordRegex.FindStringIndex(query[i:]); matchIndexes != nil && matchIndexes[0] == 0 {
+						return i // Match found at index i
+					}
+				}
+			}
+		}
 	}
-	return -1 // Return -1 if no valid index is found
+
+	return -1 // No match found
 }
 
 func (q *EvalQuery) rateColumns(query string, ast *EvalAST) (string, error) {

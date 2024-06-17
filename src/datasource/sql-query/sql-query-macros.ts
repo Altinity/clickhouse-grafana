@@ -317,6 +317,8 @@ export default class SqlQueryMacros {
   }
 
   static _columns(key: string, value: string, beforeMacrosQuery: string, fromQuery: string): string {
+
+    console.log(beforeMacrosQuery, fromQuery);
     if (key.slice(-1) === ')' || value.slice(-1) === ')') {
       throw { message: 'Some of passed arguments are without aliases: ' + key + ', ' + value };
     }
@@ -329,9 +331,21 @@ export default class SqlQueryMacros {
     let orderByQuery = ' ORDER BY t, ' + keyAlias;
     const fromRe = /^\s*FROM\s*\(/mi;
     if (!fromRe.test(fromQuery)) {
-      const groupByIndex = fromQuery.toLowerCase().indexOf('group by');
-      const havingIndex = fromQuery.toLowerCase().indexOf('having');
-      const orderByIndex = fromQuery.toLowerCase().indexOf('order by');
+
+      function findKeywordOutsideBrackets(query, keyword) {
+        // This regex will match the keyword only if it is not within brackets.
+        const regex = new RegExp(
+          `(?<!\\([^)]*)${keyword}(?![^(]*\\))`,
+          'gi'
+        );
+
+        const match = regex.exec(query);
+        return match ? match.index : -1;
+      }
+
+      const groupByIndex = findKeywordOutsideBrackets(fromQuery, 'group by')
+      const havingIndex = findKeywordOutsideBrackets(fromQuery, 'having')
+      const orderByIndex = findKeywordOutsideBrackets(fromQuery, 'order by')
 
       if (havingIndex >= 0 && orderByIndex >= 0 &&  havingIndex >= orderByIndex) {
         throw {message: "ORDER BY clause shall be before HAVING"};

@@ -122,6 +122,7 @@ def change_panel_title(self, panel_title):
 @TestStep(When)
 def change_repeat_by_variable_option(self, variable_name):
     """Change repeat by variable option."""
+
     locators.repeat_by_variable_dropdown.send_keys(variable_name)
 
 

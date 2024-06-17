@@ -31,7 +31,6 @@ def argparser(parser):
 
 
 @TestModule
-# @Repeat(100)
 @Name("Grafana Datasource Plugin For Clickhouse")
 @ArgumentParser(argparser)
 @Specifications(QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse)
@@ -40,7 +39,7 @@ def argparser(parser):
     RQ_SRS_Plugin_DockerComposeEnvironment("1.0"),
     RQ_SRS_Plugin_VersionCompatibility("1.0")
 )
-def regression(self, before, after): # todo add stress
+def regression(self, before, after):
 
     self.context.browser = "chrome"
     self.context.local = False
@@ -74,11 +73,7 @@ def regression(self, before, after): # todo add stress
         with Given("I login in grafana"):
             login.login()
 
-    # pause()
-
-    # Feature(run=load("testflows.tests.automated.e2e", "feature"))
     Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
-    # Feature(run=load("testflows.tests.automated.dashboard", "feature"))
 
 
 if main():

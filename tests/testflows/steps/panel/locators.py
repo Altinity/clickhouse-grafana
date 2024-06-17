@@ -53,7 +53,7 @@ class Locators:
     @property
     def repeat_by_variable_dropdown(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[id='css-1nmqu8c-input-wrapper css-1age63q']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[id='repeat-by-variable-select']")
 
     @property
     def panel_error(self):

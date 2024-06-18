@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { QueryEditorProps } from '@grafana/data';
 import { CHDataSource } from '../../datasource/datasource';
-import { CHDataSourceOptions, CHQuery, EditorMode } from '../../types/types';
+import {CHDataSourceOptions, CHQuery, EditorMode, TimestampFormat} from '../../types/types';
 import { QueryHeader } from './components/QueryHeader/QueryHeader';
 import { QueryTextEditor } from './components/QueryTextEditor/QueryTextEditor';
 import { QueryBuilder } from './components/QueryBuilder/QueryBuilder';
@@ -12,7 +12,7 @@ import {useAutocompleteData} from "../hooks/useAutocompletionData";
 
 const defaultQuery = 'SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t';
 const DEFAULT_FORMAT = 'time_series';
-const DEFAULT_DATE_TIME_TYPE = 'DATETIME';
+const DEFAULT_DATE_TIME_TYPE = TimestampFormat.DateTime;
 const DEFAULT_ROUND = '0s';
 const DEFAULT_INTERVAL_FACTOR = 1;
 
@@ -41,10 +41,12 @@ function useFormattedData(query: CHQuery, datasource: CHDataSource): [string, st
 }
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
-  const { datasource, query, onChange, onRunQuery } = props;
+  const {
+ datasource, query, onChange, onRunQuery 
+} = props;
   const isAnnotationView = !props.app;
   const [editorMode, setEditorMode] = useState(EditorMode.Builder);
-  const initializedQuery = initializeQueryDefaults(query, isAnnotationView);
+  const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
   const [datasourceName] = useState(datasource.name);
 
@@ -102,7 +104,15 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   return (
     <>
-      <QueryHeader query={initializedQuery} editorMode={editorMode} setEditorMode={setEditorMode} isAnnotationView={isAnnotationView} onTriggerQuery={onTriggerQuery} />
+      <QueryHeader
+        query={initializedQuery}
+        datasource={datasource}
+        editorMode={editorMode}
+        setEditorMode={setEditorMode}
+        isAnnotationView={isAnnotationView}
+        onTriggerQuery={onTriggerQuery}
+        onChange={onChange}
+      />
       {error ? <Alert title={error} elevated style={{marginTop: "5px", marginBottom: "5px"}}/> : null}
       {editorMode === EditorMode.Builder && (
         <QueryBuilder query={initializedQuery} datasource={datasource} onChange={(items: CHQuery) => onChange({...items})} onRunQuery={onTriggerQuery} />
@@ -125,21 +135,45 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   );
 }
 
-function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean): CHQuery {
+function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, datasource: any, onChange: any): CHQuery {
   const initializedQuery = {
     ...query,
     format: query.format || DEFAULT_FORMAT,
     extrapolate: query.extrapolate ?? true,
     skip_comments: query.skip_comments ?? true,
     add_metadata: query.add_metadata ?? true,
-    dateTimeType: query.dateTimeType || DEFAULT_DATE_TIME_TYPE,
+    dateTimeType: query.dateTimeType,
     round: query.round || DEFAULT_ROUND,
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,
     interval: query.interval || '',
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
-    editorMode: EditorMode.Builder,
+    editorMode: EditorMode.Builder
   };
+
+  if (datasource.defaultValues && !query.initialized) {
+    if (datasource.defaultValues.defaultDateTimeType && !initializedQuery.dateTimeType) {
+      initializedQuery.dateTimeType = datasource.defaultValues.defaultDateTimeType;
+    }
+
+    if (datasource.defaultValues.dateTime.defaultDateTime && initializedQuery.dateTimeType === TimestampFormat.DateTime && !initializedQuery.dateTimeColDataType) {
+      initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultDateTime;
+    }
+
+    if (datasource.defaultValues.dateTime.defaultDateTime64 && initializedQuery.dateTimeType === TimestampFormat.DateTime64 && !initializedQuery.dateTimeColDataType) {
+      initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultDateTime64;
+    }
+
+    if (datasource.defaultValues.dateTime.defaultDateDate32 && !initializedQuery.dateColDataType) {
+      initializedQuery.dateColDataType = datasource.defaultValues.dateTime.defaultDateDate32;
+    }
+
+    if (datasource.defaultValues.dateTime.defaultUint32 && initializedQuery.dateTimeType === TimestampFormat.TimeStamp  && !initializedQuery.dateTimeColDataType) {
+      initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultUint32;
+    }
+
+    onChange({ ...query, ...initializedQuery, initialized: true });
+  }
 
   if (isAnnotationView) {
     initializedQuery.format = 'ANNOTATION'

@@ -4,7 +4,9 @@ import {CodeEditor} from "@grafana/ui";
 import {useSystemDatabases} from "../../../hooks/useSystemDatabases";
 import {useAutocompleteData} from "../../../hooks/useAutocompletionData";
 
-export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: any) => {
+export const SQLCodeEditor = ({
+ query, onSqlChange, onRunQuery, datasource 
+}: any) => {
   const [initialized, setInitialized] = useState(false)
   const [updatedSQLQuery, setUpdatedSQLQuery] = useState(query.query)
   const autocompletionData = useAutocompleteData(datasource);

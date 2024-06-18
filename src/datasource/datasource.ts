@@ -35,6 +35,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   defaultDatabase: string;
   addCorsHeader: boolean;
   xHeaderUser: string;
+  defaultValues: any;
   useYandexCloudAuthorization: boolean;
   useCompression: boolean;
   compressionType: string;
@@ -51,6 +52,18 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
+    if (instanceSettings.jsonData.useDefaultConfiguration) {
+      this.defaultValues = {
+        dateTime: {
+          defaultDateTime64: instanceSettings.jsonData.defaultDateTime64,
+          defaultDateTime: instanceSettings.jsonData.defaultDateTime,
+          defaultUint32: instanceSettings.jsonData.defaultUint32,
+          defaultDateDate32: instanceSettings.jsonData.defaultDateDate32,
+        },
+        defaultDateTimeType: instanceSettings.jsonData.defaultDateTimeType,
+      };
+    }
+
     this.backendSrv = getBackendSrv();
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);
@@ -124,7 +137,6 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
         } else {
           resolve(null)
         }
-
       },(e) => {
         reject(e)
       })

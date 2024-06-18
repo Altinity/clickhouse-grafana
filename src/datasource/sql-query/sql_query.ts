@@ -3,6 +3,7 @@ import Scanner from '../scanner/scanner';
 import { TemplateSrv } from '@grafana/runtime';
 import { SqlQueryHelper } from './sql-query-helper';
 import SqlQueryMacros from './sql-query-macros';
+import {TimestampFormat} from "../../types/types";
 
 export default class SqlQuery {
   target: any;
@@ -36,7 +37,7 @@ export default class SqlQuery {
       SqlQueryHelper.interpolateQueryExpr
     );
     let scanner = new Scanner(query);
-    let dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : 'DATETIME';
+    let dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : TimestampFormat.DateTime;
     let i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval;
     let interval = SqlQueryHelper.convertInterval(i, this.target.intervalFactor || 1);
     let intervalMs = SqlQueryHelper.convertInterval(i, this.target.intervalFactor || 1, true);

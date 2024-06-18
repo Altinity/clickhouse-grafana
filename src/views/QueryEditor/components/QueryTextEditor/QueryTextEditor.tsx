@@ -22,7 +22,9 @@ const FORMAT_OPTIONS = [
   { label: 'Flame Graph', value: 'flamegraph' },
 ];
 
-export const QueryTextEditor = ({ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource, isAnnotationView }: any) => {
+export const QueryTextEditor = ({
+ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource, isAnnotationView 
+}: any) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
   const [fieldValues, setFieldValues] = useState(query);
 

@@ -88,7 +88,11 @@ export default class AdHocFilter {
     }
     let field, database, table;
     if (key_items.length === 3) {
-      [database, table, field] = key_items;
+      [
+        database,
+        table,
+        field
+      ] = key_items;
     }
     if (key_items.length === 2) {
       database = self.datasource.defaultDatabase;

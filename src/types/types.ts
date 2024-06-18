@@ -14,6 +14,12 @@ export enum DateTimeColumnSelectorType {
   Date = 'date',
 }
 
+export enum TimestampFormat {
+  DateTime = 'DATETIME',
+  DateTime64 = 'DATETIME64',
+  TimeStamp = 'TIMESTAMP',
+}
+
 export interface CHQuery extends DataQuery {
   query: string;
   format: string;
@@ -22,6 +28,7 @@ export interface CHQuery extends DataQuery {
   editorMode?: EditorMode;
   database?: string;
   table?: string;
+  initialized?: boolean;
 
   dateTimeType?: string;
   dateColDataType?: string;
@@ -49,6 +56,12 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   compressionType?: string;
   // @todo remove workaround after merge https://github.com/grafana/grafana/pull/80858, also remove from src/plugin.json
   dataSourceUrl?: string;
+  useDefaultConfiguration?: boolean;
+  defaultDateTime64?: string;
+  defaultDateTime?: string;
+  defaultUint32?: string;
+  defaultDateDate32?: string;
+  defaultDateTimeType?: string;
 }
 
 /**

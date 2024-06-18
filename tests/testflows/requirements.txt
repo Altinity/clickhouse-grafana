@@ -1,0 +1,6 @@
+selenium==4.19.0
+testflows==2.3.0
+testflows.texts==2.0.211217.1011222
+pillow==10.3.0
+opencv-python==4.9.0.80
+numpy==1.26.4

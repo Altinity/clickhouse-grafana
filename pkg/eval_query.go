@@ -346,9 +346,9 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string) (s
 	var orderByQuery = " ORDER BY t, " + keyAlias
 	var havingQuery = ""
 	if matched, err := regexp.MatchString(`(?mi)^\s*FROM\s*\(`, fromQuery); err == nil && !matched {
-		var groupByIndex = strings.Index(strings.ToLower(fromQuery), "group by")
-		var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
-		var orderByIndex = strings.Index(strings.ToLower(fromQuery), "order by")
+		var groupByIndex = findKeywordOutsideBrackets(strings.ToLower(fromQuery), "group by")
+		var havingIndex = findKeywordOutsideBrackets(strings.ToLower(fromQuery), "having")
+		var orderByIndex = findKeywordOutsideBrackets(strings.ToLower(fromQuery), "order by")
 
 		if havingIndex >= 0 && orderByIndex >= 0 && havingIndex >= orderByIndex {
 			return "", fmt.Errorf("ORDER BY clause shall be before HAVING")
@@ -391,6 +391,34 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string) (s
 		")" +
 		" GROUP BY t" +
 		" ORDER BY t", nil
+}
+
+func findKeywordOutsideBrackets(query, keyword string) int {
+	bracketDepth := 0
+	keywordRegex := regexp.MustCompile("(?i)" + regexp.QuoteMeta(keyword)) // Case-insensitive match
+
+	for i := 0; i < len(query); i++ {
+		switch query[i] {
+		case '(':
+			bracketDepth++
+		case ')':
+			if bracketDepth > 0 {
+				bracketDepth--
+			}
+		default:
+			if bracketDepth == 0 {
+				// Check if the current segment matches the keyword
+				if keywordRegex.MatchString(query[i:]) {
+					// Check if this match is really starting at i
+					if matchIndexes := keywordRegex.FindStringIndex(query[i:]); matchIndexes != nil && matchIndexes[0] == 0 {
+						return i // Match found at index i
+					}
+				}
+			}
+		}
+	}
+
+	return -1 // No match found
 }
 
 func (q *EvalQuery) rateColumns(query string, ast *EvalAST) (string, error) {

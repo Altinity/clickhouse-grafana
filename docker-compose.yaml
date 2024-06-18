@@ -9,6 +9,7 @@ services:
       - ./docker/clickhouse/load_ontime.sh:/docker-entrypoint-initdb.d/load_ontime.sh
       - /var/lib/clickhouse/
       - /var/log/clickhouse-server/
+      
   clickhouse:
     image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-latest}
     environment:
@@ -67,10 +68,11 @@ services:
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
-    ports:
-      - 3000:3000/tcp
     depends_on:
       - clickhouse
+
+    ports:
+      - "3000:3000"
 
   grafana_external_install:
     image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-latest}
@@ -141,6 +143,19 @@ services:
       - "node_modules:/grafana-clickhouse/node_modules"
     command: |
       npm run sign
+
+  selenium-standalone:
+    profiles: [test]
+    image: selenium/standalone-docker:4.18.1-20240224
+    container_name: selenium-docker
+    ports:
+      - "4444:4444"
+    volumes:
+      - /dev/shm:/dev/shm
+      - ./tests/testflows/infra/config.toml:/opt/bin/config.toml
+      - ./tests/testflows/tmp/target:/opt/selenium/assets
+      - /var/run/docker.sock:/var/run/docker.sock
+#    privileged: true
 
 volumes:
   node_modules:

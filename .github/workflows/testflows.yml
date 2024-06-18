@@ -1,0 +1,49 @@
+name: Run testflows tests
+run-name: ${{ github.actor }} is running Altinity Grafana Plugin testflows tests
+
+on:
+  push:
+    branches:
+      - master
+      - main
+  pull_request:
+    branches:
+      - master
+      - main
+      
+env:
+  artifact_paths: |
+    ./Reports/*
+    ./Assets/*
+
+jobs:
+  tests:
+    runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-app-docker-ce ]
+    env:
+      GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
+
+    timeout-minutes: 3000
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ inputs.ref }}
+
+      - name: Setup
+        run: tests/testflows/infra/setup.sh
+
+      - name: Run Altinity Grafana Plugin tests
+        run: python3
+          -u ./tests/testflows/regression.py --before=0.3 --after=0.3
+          --log raw.log
+          -o classic 
+
+      - name: Create reports
+        if: always()
+        run: tests/testflows/infra/create-report.sh
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: tests-logs
+          path: ${{ env.artifact_paths}}

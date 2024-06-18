@@ -3,6 +3,9 @@ import {getBackendSrv} from '@grafana/runtime';
 
 export const getOptions = (query: string, url: string): Promise<any> => {
   const backendSrv = getBackendSrv();
+  if (!url || !query) {
+    return Promise.reject('Invalid parameters')
+  }
 
   return new Promise((resolve, reject) => {
     backendSrv.fetch({

@@ -54,7 +54,6 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   defaultDatabase?: string;
   useCompression?: boolean;
   compressionType?: string;
-  def
   // @todo remove workaround after merge https://github.com/grafana/grafana/pull/80858, also remove from src/plugin.json
   dataSourceUrl?: string;
   useDefaultConfiguration?: boolean;

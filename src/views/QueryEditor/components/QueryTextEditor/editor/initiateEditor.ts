@@ -30,8 +30,13 @@ export const LANGUAGE_ID = "clickhouseLanguage";
 
 export const initiateEditor = (templateVariables: any, monacoInstance: any, autocompletionData: any, systemDatabasesData: any) => {
 	const {
-Method, Variable, Constant, Keyword, TypeParameter, Text
-} = monacoInstance.languages.CompletionItemKind
+    Method,
+    Variable,
+    Constant,
+    Keyword,
+    TypeParameter,
+    Text
+  } = monacoInstance.languages.CompletionItemKind
 
 
 	let dynamicIdentifier: string[]

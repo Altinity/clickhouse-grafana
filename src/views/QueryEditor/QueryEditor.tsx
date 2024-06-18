@@ -152,7 +152,6 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
   };
 
   if (datasource.defaultValues && !query.initialized) {
-    // !!!!!!!!
     if (datasource.defaultValues.defaultDateTimeType && !initializedQuery.dateTimeType) {
       initializedQuery.dateTimeType = datasource.defaultValues.defaultDateTimeType;
     }

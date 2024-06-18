@@ -48,28 +48,6 @@ jsonData, onSwitchToggle, onFieldChange, externalProps
     doRequest()
   }, [jsonData.dataSourceUrl]);
 
-
-  // const [defaultDatabaseOptions, setDefaultDatabaseOptions] = useState<any[]>([]);
-  // const [defaultTableOptions, setDefaultTableOptions] = useState<any[]>([]);
-  //
-  // useEffect(() => {
-  //   const doRequest = async () => {
-  //     try {
-  //       const data = await getOptions(TABLES_QUERY, jsonData.dataSourceUrl)
-  //       const tables = await getOptions(TABLES_QUERY, jsonData.dataSourceUrl)
-  //       const databases = await (TABLES_QUERY, jsonData.dataSourceUrl)
-  //
-  //       setDefaultDatabaseOptions([])
-  //       setDefaultTableOptions([])
-  //     } catch (e) {
-  //       setDefaultDatabaseOptions([])
-  //       setDefaultTableOptions([])
-  //     }
-  //   }
-  //
-  //   doRequest()
-  // }, [jsonData.dataSourceUrl]);
-
   return <div className="gf-form-group">
     <InlineField
       label="Use default values"
@@ -83,37 +61,6 @@ jsonData, onSwitchToggle, onFieldChange, externalProps
       />
     </InlineField>
     {jsonData.useDefaultConfiguration && <>
-      {/*<h6>Connection Parameters</h6>*/}
-      {/*<InlineField*/}
-      {/*  label="Database"*/}
-      {/*  labelWidth={32}*/}
-      {/*  style={{marginLeft: '30px'}}*/}
-      {/*>*/}
-      {/*  <Select*/}
-      {/*    isClearable*/}
-      {/*    id="defaultDateTime"*/}
-      {/*    allowCustomValue={false}*/}
-      {/*    width={24}*/}
-      {/*    value={jsonData.defaultDateTime}*/}
-      {/*    onChange={({value}) => onFieldChange({value}, 'defaultDateTime')}*/}
-      {/*    options={defaultDateTimeOptions}*/}
-      {/*  />*/}
-      {/*</InlineField>*/}
-      {/*<InlineField*/}
-      {/*  label="Table"*/}
-      {/*  labelWidth={32}*/}
-      {/*  style={{marginLeft: '30px'}}*/}
-      {/*>*/}
-      {/*  <Select*/}
-      {/*    isClearable*/}
-      {/*    id="defaultDateTime"*/}
-      {/*    allowCustomValue={false}*/}
-      {/*    width={24}*/}
-      {/*    value={jsonData.defaultDateTime}*/}
-      {/*    onChange={({value}) => onFieldChange({value}, 'defaultDateTime')}*/}
-      {/*    options={defaultDateTimeOptions}*/}
-      {/*  />*/}
-      {/*</InlineField>*/}
       <h6>TimestampType</h6>
       <InlineField
         labelWidth={32}

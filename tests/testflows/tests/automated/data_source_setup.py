@@ -195,7 +195,7 @@ def check_success_use_post_method(self):
         successful_connection=True,
         url="http://clickhouse:8123",
         use_post_method=True,
-        query="CREATE TABLE test_success_post_method(x Int64) ENGINE=Log",
+        query="INSERT INTO default.test_alerts select 'test', now() - number, now() - number, number from numbers(10)",
         check_visualization=False,
     )
 
@@ -209,7 +209,7 @@ def check_fail_use_post_method(self):
         successful_connection=True,
         url="http://clickhouse:8123",
         use_post_method=False,
-        query="CREATE TABLE test_fail_post_method(x Int64) ENGINE=Log",
+        query="INSERT INTO default.test_alerts select 'test', now() - number, now() - number, number from numbers(10)",
         check_visualization=False,
         check_visualization_alert=True
     )

@@ -1,3 +1,14 @@
+# 3.2.0 (2024-06-24)
+## Enhancements:
+* add ability to setup default values for query builder in connection properties to avoid unnecessary duplicated UI actions, fix https://github.com/Altinity/clickhouse-grafana/issues/495 
+* add example dashboard for Histogram support, fix https://github.com/Altinity/clickhouse-grafana/issues/497
+* add properly visualization for Map and JSON ClickHouse types, fix https://github.com/Altinity/clickhouse-grafana/issues/486 and https://github.com/Altinity/clickhouse-grafana/issues/189
+* add e2e test which cover basic happy path scenarios
+
+## Fixes:
+* fixed wrong time range reset after query editing in explore mode, fix https://github.com/Altinity/clickhouse-grafana/issues/566
+* fixed wrong behavior for $columns + subqueries, fix https://github.com/Altinity/clickhouse-grafana/issues/565
+
 # 3.1.1 (2024-05-20)
 ## Fixes:
 * fixed wrong encoding messages in golang part of plugin

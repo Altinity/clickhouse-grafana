@@ -1,0 +1,175 @@
+{
+    "annotations": {
+      "list": [
+        {
+          "builtIn": 1,
+          "datasource": "-- Grafana --",
+          "enable": true,
+          "hide": true,
+          "iconColor": "rgba(0, 211, 255, 1)",
+          "name": "Annotations & Alerts",
+          "target": {
+            "limit": 100,
+            "matchAny": false,
+            "tags": [],
+            "type": "dashboard"
+          },
+          "type": "dashboard"
+        }
+      ]
+    },
+    "editable": true,
+    "fiscalYearStartMonth": 0,
+    "graphTooltip": 0,
+    "links": [],
+    "liveNow": false,
+    "panels": [
+      {
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "gh-api"
+        },
+        "fieldConfig": {
+          "defaults": {
+            "color": {
+              "mode": "palette-classic"
+            },
+            "custom": {
+              "axisLabel": "",
+              "axisPlacement": "auto",
+              "barAlignment": 0,
+              "drawStyle": "bars",
+              "fillOpacity": 100,
+              "gradientMode": "none",
+              "hideFrom": {
+                "legend": false,
+                "tooltip": false,
+                "viz": false
+              },
+              "lineInterpolation": "linear",
+              "lineWidth": 1,
+              "pointSize": 5,
+              "scaleDistribution": {
+                "type": "linear"
+              },
+              "showPoints": "never",
+              "spanNulls": true,
+              "stacking": {
+                "group": "A",
+                "mode": "none"
+              },
+              "thresholdsStyle": {
+                "mode": "off"
+              }
+            },
+            "mappings": [],
+            "thresholds": {
+              "mode": "absolute",
+              "steps": [
+                {
+                  "color": "green",
+                  "value": null
+                },
+                {
+                  "color": "red",
+                  "value": 80
+                }
+              ]
+            },
+            "unit": "short"
+          },
+          "overrides": [
+            {
+              "matcher": {
+                "id": "byName",
+                "options": "count()"
+              },
+              "properties": [
+                {
+                  "id": "color",
+                  "value": {
+                    "fixedColor": "green",
+                    "mode": "fixed"
+                  }
+                }
+              ]
+            }
+          ]
+        },
+        "gridPos": {
+          "h": 13,
+          "w": 24,
+          "x": 0,
+          "y": 0
+        },
+        "id": 2,
+        "options": {
+          "legend": {
+            "calcs": [],
+            "displayMode": "list",
+            "placement": "bottom"
+          },
+          "tooltip": {
+            "mode": "single"
+          }
+        },
+        "pluginVersion": "8.1.0-pre",
+        "targets": [
+          {
+            "database": "default",
+            "datasource": {
+              "type": "vertamedia-clickhouse-datasource",
+              "uid": "gh-api"
+            },
+            "dateColDataType": "",
+            "dateLoading": false,
+            "dateTimeColDataType": "closed_at",
+            "dateTimeType": "DATETIME",
+            "datetimeLoading": false,
+            "extrapolate": true,
+            "format": "time_series",
+            "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+            "intervalFactor": 1,
+            "query": "SELECT\n    Time as DateTime,\n    count()\nFROM github_events\n\nWHERE\n    (repo_name = 'grafana/grafana')\n    AND(event_type = 'PullRequestEvent')\n    AND(Time >= $from) \n    AND(Time <= $to)\nGROUP BY toStartOfDay(created_at) AS Time\n\nORDER BY Time ASC\n",
+            "rawQuery": "SELECT\n    Time as DateTime,\n    count()\nFROM github_events\n\nWHERE\n    (repo_name = 'grafana/grafana')\n    AND(event_type = 'PullRequestEvent')\n    AND(Time >= 1635688854) \n    AND(Time <= 1638280854)\nGROUP BY toStartOfDay(created_at) AS Time\n\nORDER BY Time ASC",
+            "refId": "A",
+            "round": "0s",
+            "skip_comments": true,
+            "table": "github_events",
+            "tableLoading": false
+          }
+        ],
+        "title": "Pull request events for grafana/grafana",
+        "transformations": [
+          {
+            "id": "filterFieldsByName",
+            "options": {
+              "include": {
+                "names": [
+                  "count()",
+                  "Time"
+                ]
+              }
+            }
+          }
+        ],
+        "type": "timeseries"
+      }
+    ],
+    "schemaVersion": 33,
+    "style": "dark",
+    "tags": [],
+    "templating": {
+      "list": []
+    },
+    "time": {
+      "from": "now-30d",
+      "to": "now"
+    },
+    "timepicker": {},
+    "timezone": "",
+    "title": "gh-api",
+    "uid": "gh-api",
+    "version": 8,
+    "weekStart": ""
+  }

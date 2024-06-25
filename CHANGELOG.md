@@ -1,3 +1,7 @@
+# 3.2.1 (2024-06-25)
+## Fixes:
+* fix wrong time series conversion when custom GROUP BY clause, fix https://github.com/Altinity/clickhouse-grafana/issues/583
+
 # 3.2.0 (2024-06-24)
 ## Enhancements:
 * add ability to setup default values for query builder in connection properties to avoid unnecessary duplicated UI actions, fix https://github.com/Altinity/clickhouse-grafana/issues/495 

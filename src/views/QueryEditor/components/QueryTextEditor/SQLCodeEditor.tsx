@@ -49,8 +49,8 @@ export const SQLCodeEditor = ({
   return (
     <div style={{ position: 'relative', width: '100%', marginTop: '10px'}} >
       <CodeEditor
-        height={Math.max(query.query.split('\n').length * 18, 150)}
-        value={query.query}
+        height={Math.max(updatedSQLQuery.split('\n').length * 18, 150)}
+        value={updatedSQLQuery}
         language={LANGUAGE_ID}
         monacoOptions={options}
         onBeforeEditorMount={() => setInitialized(true)}

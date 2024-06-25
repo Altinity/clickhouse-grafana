@@ -293,6 +293,11 @@ export default class SqlSeries {
       if (keyColumns.length > 0) {
         metricKey = keyColumns.map((name: string) => {
           const value = row[name];
+
+          if (typeof value === 'undefined') {
+            return undefined;
+          }
+
           if (typeof value === 'object') {
             return JSON.stringify(value);
           } else {

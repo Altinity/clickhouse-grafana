@@ -5,7 +5,7 @@ export default class AdHocFilter {
   query: string;
 
   constructor(datasource: any) {
-    const queryFilter = "database NOT IN ('system','INFORMATION_SCHEMA')";
+    const queryFilter = "database NOT IN ('system','INFORMATION_SCHEMA','information_schema')";
     const columnsQuery =
       'SELECT database, table, name, type FROM system.columns WHERE {filter} ORDER BY database, table';
 

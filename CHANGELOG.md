@@ -1,3 +1,6 @@
+# 3.2.2 (not yet released)
+* remove information_schema from adhoc system.columns drop down query
+
 # 3.2.1 (2024-06-25)
 ## Fixes:
 * fix wrong time series conversion when custom GROUP BY clause, fix https://github.com/Altinity/clickhouse-grafana/issues/583

@@ -1,6 +1,6 @@
 # These requirements were auto generated
 # from software requirements specification (SRS)
-# document by TestFlows v2.0.240111.1210833.
+# document by TestFlows v2.1.240306.1133530.
 # Do not edit by hand but re-generate instead
 # using 'tfs requirements generate' command.
 from testflows.core import Specification
@@ -214,7 +214,7 @@ RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection_BrowserAccess = Requirement(
     type=None,
     uid=None,
     description=(
-        'The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Browser` option` in the `Access` dropdown menu\n'
+        'The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Browser` option in the `Access` dropdown menu\n'
         'in the data source setup view. In this case all requests SHALL be made from the browser directly to the data source.\n'
         '\n'
     ),
@@ -336,6 +336,24 @@ RQ_SRS_Plugin_DataSourceSetupView_Auth_WithCACert = Requirement(
     num='16.1'
 )
 
+RQ_SRS_Plugin_DataSourceSetupView_Auth_SkipTLSVerify = Requirement(
+    name='RQ.SRS.Plugin.DataSourceSetupView.Auth.SkipTLSVerify',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        'The [Plugin] SHALL support connecting to clickhouse using HTTPS connection without specifying CA certificate\n'
+        'by turning on `Skip TLS verify` toggle.\n'
+        '\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='17.1'
+)
+
 RQ_SRS_Plugin_DataSourceSetupView_CustomHTTPHeaders = Requirement(
     name='RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders',
     version='1.0',
@@ -350,7 +368,7 @@ RQ_SRS_Plugin_DataSourceSetupView_CustomHTTPHeaders = Requirement(
     ),
     link=None,
     level=2,
-    num='17.1'
+    num='18.1'
 )
 
 RQ_SRS_Plugin_DataSourceSetupView_DeletingCustomHTTPHeaders = Requirement(
@@ -366,7 +384,7 @@ RQ_SRS_Plugin_DataSourceSetupView_DeletingCustomHTTPHeaders = Requirement(
     ),
     link=None,
     level=2,
-    num='17.2'
+    num='18.2'
 )
 
 RQ_SRS_Plugin_DataSourceSetupView_UseYandexCloudAuthorizationHeaders = Requirement(
@@ -384,7 +402,7 @@ RQ_SRS_Plugin_DataSourceSetupView_UseYandexCloudAuthorizationHeaders = Requireme
     ),
     link=None,
     level=2,
-    num='18.1'
+    num='19.1'
 )
 
 RQ_SRS_Plugin_DataSourceSetupView_AddCORSFlagToRequests = Requirement(
@@ -401,7 +419,7 @@ RQ_SRS_Plugin_DataSourceSetupView_AddCORSFlagToRequests = Requirement(
     ),
     link=None,
     level=2,
-    num='19.1'
+    num='20.1'
 )
 
 RQ_SRS_Plugin_DataSourceSetupView_UsePostRequests = Requirement(
@@ -418,7 +436,7 @@ RQ_SRS_Plugin_DataSourceSetupView_UsePostRequests = Requirement(
     ),
     link=None,
     level=2,
-    num='20.1'
+    num='21.1'
 )
 
 RQ_SRS_Plugin_DataSourceSetupView_DefaultDatabase = Requirement(
@@ -435,7 +453,7 @@ RQ_SRS_Plugin_DataSourceSetupView_DefaultDatabase = Requirement(
     ),
     link=None,
     level=2,
-    num='21.1'
+    num='22.1'
 )
 
 RQ_SRS_Plugin_DataSourceSetupView_HTTPCompression = Requirement(
@@ -451,7 +469,7 @@ RQ_SRS_Plugin_DataSourceSetupView_HTTPCompression = Requirement(
     ),
     link=None,
     level=2,
-    num='22.1'
+    num='23.1'
 )
 
 RQ_SRS_Plugin_Dashboards = Requirement(
@@ -467,7 +485,7 @@ RQ_SRS_Plugin_Dashboards = Requirement(
     ),
     link=None,
     level=2,
-    num='23.1'
+    num='24.1'
 )
 
 RQ_SRS_Plugin_Panels = Requirement(
@@ -484,7 +502,7 @@ RQ_SRS_Plugin_Panels = Requirement(
     ),
     link=None,
     level=2,
-    num='24.1'
+    num='25.1'
 )
 
 RQ_SRS_Plugin_Panels_Repeated = Requirement(
@@ -500,7 +518,7 @@ RQ_SRS_Plugin_Panels_Repeated = Requirement(
     ),
     link=None,
     level=2,
-    num='24.2'
+    num='25.2'
 )
 
 RQ_SRS_Plugin_MultiUserUsage = Requirement(
@@ -517,7 +535,7 @@ RQ_SRS_Plugin_MultiUserUsage = Requirement(
     ),
     link=None,
     level=2,
-    num='25.1'
+    num='26.1'
 )
 
 RQ_SRS_Plugin_MultiUserUsage_SamePanel = Requirement(
@@ -534,7 +552,7 @@ RQ_SRS_Plugin_MultiUserUsage_SamePanel = Requirement(
     ),
     link=None,
     level=2,
-    num='25.2'
+    num='26.2'
 )
 
 RQ_SRS_Plugin_MultiUserUsage_DifferentPanels = Requirement(
@@ -551,7 +569,7 @@ RQ_SRS_Plugin_MultiUserUsage_DifferentPanels = Requirement(
     ),
     link=None,
     level=2,
-    num='25.3'
+    num='26.3'
 )
 
 RQ_SRS_Plugin_MultiUserUsage_SameDashboard = Requirement(
@@ -568,7 +586,7 @@ RQ_SRS_Plugin_MultiUserUsage_SameDashboard = Requirement(
     ),
     link=None,
     level=2,
-    num='25.4'
+    num='26.4'
 )
 
 RQ_SRS_Plugin_MultiUserUsage_DifferentDashboards = Requirement(
@@ -584,7 +602,7 @@ RQ_SRS_Plugin_MultiUserUsage_DifferentDashboards = Requirement(
     ),
     link=None,
     level=2,
-    num='25.5'
+    num='26.5'
 )
 
 RQ_SRS_Plugin_QuerySetup = Requirement(
@@ -600,7 +618,7 @@ RQ_SRS_Plugin_QuerySetup = Requirement(
     ),
     link=None,
     level=2,
-    num='26.1'
+    num='27.1'
 )
 
 RQ_SRS_Plugin_QuerySetupInterface = Requirement(
@@ -626,7 +644,7 @@ RQ_SRS_Plugin_QuerySetupInterface = Requirement(
     ),
     link=None,
     level=2,
-    num='27.1'
+    num='28.1'
 )
 
 RQ_SRS_Plugin_QueryOptions = Requirement(
@@ -650,7 +668,7 @@ RQ_SRS_Plugin_QueryOptions = Requirement(
     ),
     link=None,
     level=2,
-    num='28.1'
+    num='29.1'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface = Requirement(
@@ -680,7 +698,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface = Requirement(
     ),
     link=None,
     level=2,
-    num='29.1'
+    num='30.1'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_SQLEditor = Requirement(
@@ -696,7 +714,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_SQLEditor = Requirement(
     ),
     link=None,
     level=2,
-    num='29.2'
+    num='30.2'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_Extrapolation = Requirement(
@@ -712,7 +730,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_Extrapolation = Requirement(
     ),
     link=None,
     level=2,
-    num='29.3'
+    num='30.3'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_SkipComments = Requirement(
@@ -728,7 +746,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_SkipComments = Requirement(
     ),
     link=None,
     level=2,
-    num='29.4'
+    num='30.4'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_Step = Requirement(
@@ -744,7 +762,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_Step = Requirement(
     ),
     link=None,
     level=2,
-    num='29.5'
+    num='30.5'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_Round = Requirement(
@@ -760,7 +778,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_Round = Requirement(
     ),
     link=None,
     level=2,
-    num='29.6'
+    num='30.6'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_Resolution = Requirement(
@@ -776,7 +794,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_Resolution = Requirement(
     ),
     link=None,
     level=2,
-    num='29.7'
+    num='30.7'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_FormatAs = Requirement(
@@ -793,7 +811,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_FormatAs = Requirement(
     ),
     link=None,
     level=2,
-    num='29.8'
+    num='30.8'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_ShowHelp = Requirement(
@@ -809,7 +827,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_ShowHelp = Requirement(
     ),
     link=None,
     level=2,
-    num='29.9'
+    num='30.9'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_ShowGeneratedSQL = Requirement(
@@ -826,7 +844,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_ShowGeneratedSQL = Requirement(
     ),
     link=None,
     level=2,
-    num='29.10'
+    num='30.10'
 )
 
 RQ_SRS_Plugin_RawSQLEditorInterface_ReformatQuery = Requirement(
@@ -842,7 +860,7 @@ RQ_SRS_Plugin_RawSQLEditorInterface_ReformatQuery = Requirement(
     ),
     link=None,
     level=2,
-    num='29.11'
+    num='30.11'
 )
 
 RQ_SRS_Plugin_AutoCompleteInQueries = Requirement(
@@ -858,7 +876,7 @@ RQ_SRS_Plugin_AutoCompleteInQueries = Requirement(
     ),
     link=None,
     level=2,
-    num='30.1'
+    num='31.1'
 )
 
 RQ_SRS_Plugin_TimeRangeSelector = Requirement(
@@ -874,7 +892,7 @@ RQ_SRS_Plugin_TimeRangeSelector = Requirement(
     ),
     link=None,
     level=2,
-    num='31.1'
+    num='32.1'
 )
 
 RQ_SRS_Plugin_TimeRangeSelector_Zoom = Requirement(
@@ -890,7 +908,7 @@ RQ_SRS_Plugin_TimeRangeSelector_Zoom = Requirement(
     ),
     link=None,
     level=2,
-    num='31.2'
+    num='32.2'
 )
 
 RQ_SRS_Plugin_FillActual = Requirement(
@@ -906,7 +924,7 @@ RQ_SRS_Plugin_FillActual = Requirement(
     ),
     link=None,
     level=2,
-    num='32.1'
+    num='33.1'
 )
 
 RQ_SRS_Plugin_RefreshDataboard = Requirement(
@@ -922,7 +940,7 @@ RQ_SRS_Plugin_RefreshDataboard = Requirement(
     ),
     link=None,
     level=2,
-    num='33.1'
+    num='34.1'
 )
 
 RQ_SRS_Plugin_QueryInspector = Requirement(
@@ -942,7 +960,7 @@ RQ_SRS_Plugin_QueryInspector = Requirement(
     ),
     link=None,
     level=2,
-    num='34.1'
+    num='35.1'
 )
 
 RQ_SRS_Plugin_QueryInspector_QueryTab = Requirement(
@@ -960,7 +978,7 @@ RQ_SRS_Plugin_QueryInspector_QueryTab = Requirement(
     ),
     link=None,
     level=2,
-    num='34.2'
+    num='35.2'
 )
 
 RQ_SRS_Plugin_Visualization = Requirement(
@@ -976,7 +994,7 @@ RQ_SRS_Plugin_Visualization = Requirement(
     ),
     link=None,
     level=2,
-    num='35.1'
+    num='36.1'
 )
 
 RQ_SRS_Plugin_Visualization_Table = Requirement(
@@ -992,7 +1010,7 @@ RQ_SRS_Plugin_Visualization_Table = Requirement(
     ),
     link=None,
     level=3,
-    num='35.3.1'
+    num='36.3.1'
 )
 
 RQ_SRS_Plugin_Visualization_VisualizationTypes = Requirement(
@@ -1003,7 +1021,7 @@ RQ_SRS_Plugin_Visualization_VisualizationTypes = Requirement(
     type=None,
     uid=None,
     description=(
-        'The [Plugin] SHALL support the following visualization types for data:\n'
+        'The [Plugin] SHALL support the following visualization types for any supported clickhouse data types:\n'
         '\n'
         '* Time series\n'
         '* Bar chart\n'
@@ -1028,53 +1046,11 @@ RQ_SRS_Plugin_Visualization_VisualizationTypes = Requirement(
         '* Node Graph\n'
         '* Traces\n'
         '\n'
-    ),
-    link=None,
-    level=3,
-    num='35.4.1'
-)
-
-RQ_SRS_Plugin_Visualization_VisualizationTypes_DataTypes = Requirement(
-    name='RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes',
-    version='1.0',
-    priority=None,
-    group=None,
-    type=None,
-    uid=None,
-    description=(
-        'The [Plugin] SHALL support the following visualization types for the following ClickHouse datatypes:\n'
-        '\n'
-        '\n'
-        '| Vizualization Type | Supported ClickHouse datatypes                                                      |\n'
-        '|--------------------|-------------------------------------------------------------------------------------|\n'
-        '| Time series        |                                                                                     |\n'
-        '| Bar chart          |                                                                                     |\n'
-        '| Stat               |                                                                                     |\n'
-        '| Gauge              |                                                                                     |\n'
-        '| Bar Gauge          |                                                                                     |\n'
-        '| Pie chart          |                                                                                     |\n'
-        '| State timeline     |                                                                                     |\n'
-        '| Heatmap            |                                                                                     |\n'
-        '| Status history     |                                                                                     |\n'
-        '| Histogram          |                                                                                     |\n'
-        '| Text               |                                                                                     |\n'
-        '| Alert List         |                                                                                     |\n'
-        '| Dashboard list     |                                                                                     |\n'
-        '| News               |                                                                                     |\n'
-        '| Annotation list    |                                                                                     |\n'
-        '| Candlestick        |                                                                                     |\n'
-        '| Canvas             |                                                                                     |\n'
-        '| Flame Graph        |                                                                                     |\n'
-        '| Geomap             |                                                                                     |\n'
-        '| Logs               |                                                                                     |\n'
-        '| Node Graph         |                                                                                     |\n'
-        '| Traces             |                                                                                     |\n'
-        '\n'
         '\n'
     ),
     link=None,
     level=3,
-    num='35.4.2'
+    num='36.4.1'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros = Requirement(
@@ -1107,7 +1083,7 @@ RQ_SRS_Plugin_QuerySettings_Macros = Requirement(
     ),
     link=None,
     level=2,
-    num='36.1'
+    num='37.1'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_Table = Requirement(
@@ -1124,7 +1100,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_Table = Requirement(
     ),
     link=None,
     level=2,
-    num='36.2'
+    num='37.2'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_DateCol = Requirement(
@@ -1140,7 +1116,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_DateCol = Requirement(
     ),
     link=None,
     level=2,
-    num='36.3'
+    num='37.3'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_DateTimeCol = Requirement(
@@ -1156,7 +1132,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_DateTimeCol = Requirement(
     ),
     link=None,
     level=2,
-    num='36.4'
+    num='37.4'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_From = Requirement(
@@ -1172,7 +1148,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_From = Requirement(
     ),
     link=None,
     level=2,
-    num='36.5'
+    num='37.5'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_To = Requirement(
@@ -1188,7 +1164,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_To = Requirement(
     ),
     link=None,
     level=2,
-    num='36.6'
+    num='37.6'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_Interval = Requirement(
@@ -1204,7 +1180,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_Interval = Requirement(
     ),
     link=None,
     level=2,
-    num='36.7'
+    num='37.7'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_TimeFilterByColumn = Requirement(
@@ -1221,7 +1197,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_TimeFilterByColumn = Requirement(
     ),
     link=None,
     level=2,
-    num='36.8'
+    num='37.8'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_TimeSeries = Requirement(
@@ -1238,7 +1214,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_TimeSeries = Requirement(
     ),
     link=None,
     level=2,
-    num='36.9'
+    num='37.9'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_NaturalTimeSeries = Requirement(
@@ -1255,7 +1231,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_NaturalTimeSeries = Requirement(
     ),
     link=None,
     level=2,
-    num='36.10'
+    num='37.10'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_Unescape = Requirement(
@@ -1273,7 +1249,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_Unescape = Requirement(
     ),
     link=None,
     level=2,
-    num='36.11'
+    num='37.11'
 )
 
 RQ_SRS_Plugin_QuerySettings_Macros_Adhoc = Requirement(
@@ -1290,7 +1266,7 @@ RQ_SRS_Plugin_QuerySettings_Macros_Adhoc = Requirement(
     ),
     link=None,
     level=2,
-    num='36.12'
+    num='37.12'
 )
 
 RQ_SRS_Plugin_Variables = Requirement(
@@ -1314,7 +1290,7 @@ RQ_SRS_Plugin_Variables = Requirement(
     ),
     link=None,
     level=2,
-    num='37.1'
+    num='38.1'
 )
 
 RQ_SRS_Plugin_Annotations = Requirement(
@@ -1331,7 +1307,7 @@ RQ_SRS_Plugin_Annotations = Requirement(
     ),
     link=None,
     level=2,
-    num='38.1'
+    num='39.1'
 )
 
 RQ_SRS_Plugin_Alerts = Requirement(
@@ -1348,7 +1324,7 @@ RQ_SRS_Plugin_Alerts = Requirement(
     ),
     link=None,
     level=2,
-    num='39.1'
+    num='40.1'
 )
 
 RQ_SRS_Plugin_Alerts_AlertSetupPage = Requirement(
@@ -1364,7 +1340,7 @@ RQ_SRS_Plugin_Alerts_AlertSetupPage = Requirement(
     ),
     link=None,
     level=2,
-    num='39.2'
+    num='40.2'
 )
 
 RQ_SRS_Plugin_Alerts_RuleType_GrafanaManaged = Requirement(
@@ -1382,7 +1358,7 @@ RQ_SRS_Plugin_Alerts_RuleType_GrafanaManaged = Requirement(
     ),
     link=None,
     level=2,
-    num='39.3'
+    num='40.3'
 )
 
 RQ_SRS_Plugin_Alerts_RuleType_DataSourceManaged = Requirement(
@@ -1399,7 +1375,7 @@ RQ_SRS_Plugin_Alerts_RuleType_DataSourceManaged = Requirement(
     ),
     link=None,
     level=2,
-    num='39.4'
+    num='40.4'
 )
 
 RQ_SRS_Plugin_Functions = Requirement(
@@ -1431,7 +1407,7 @@ RQ_SRS_Plugin_Functions = Requirement(
     ),
     link=None,
     level=2,
-    num='40.1'
+    num='41.1'
 )
 
 RQ_SRS_Plugin_Functions_Rate = Requirement(
@@ -1447,7 +1423,7 @@ RQ_SRS_Plugin_Functions_Rate = Requirement(
     ),
     link=None,
     level=2,
-    num='40.2'
+    num='41.2'
 )
 
 RQ_SRS_Plugin_Functions_Columns = Requirement(
@@ -1464,7 +1440,7 @@ RQ_SRS_Plugin_Functions_Columns = Requirement(
     ),
     link=None,
     level=2,
-    num='40.3'
+    num='41.3'
 )
 
 RQ_SRS_Plugin_Functions_RateColumns = Requirement(
@@ -1480,7 +1456,7 @@ RQ_SRS_Plugin_Functions_RateColumns = Requirement(
     ),
     link=None,
     level=2,
-    num='40.4'
+    num='41.4'
 )
 
 RQ_SRS_Plugin_Functions_PerSecond = Requirement(
@@ -1497,7 +1473,7 @@ RQ_SRS_Plugin_Functions_PerSecond = Requirement(
     ),
     link=None,
     level=2,
-    num='40.5'
+    num='41.5'
 )
 
 RQ_SRS_Plugin_Functions_PerSecondColumns = Requirement(
@@ -1514,7 +1490,7 @@ RQ_SRS_Plugin_Functions_PerSecondColumns = Requirement(
     ),
     link=None,
     level=2,
-    num='40.6'
+    num='41.6'
 )
 
 RQ_SRS_Plugin_Functions_Delta = Requirement(
@@ -1531,7 +1507,7 @@ RQ_SRS_Plugin_Functions_Delta = Requirement(
     ),
     link=None,
     level=2,
-    num='40.7'
+    num='41.7'
 )
 
 RQ_SRS_Plugin_Functions_DeltaColumns = Requirement(
@@ -1548,7 +1524,7 @@ RQ_SRS_Plugin_Functions_DeltaColumns = Requirement(
     ),
     link=None,
     level=2,
-    num='40.8'
+    num='41.8'
 )
 
 RQ_SRS_Plugin_Functions_Increase = Requirement(
@@ -1565,7 +1541,7 @@ RQ_SRS_Plugin_Functions_Increase = Requirement(
     ),
     link=None,
     level=2,
-    num='40.9'
+    num='41.9'
 )
 
 RQ_SRS_Plugin_Functions_IncreaseColumns = Requirement(
@@ -1582,7 +1558,7 @@ RQ_SRS_Plugin_Functions_IncreaseColumns = Requirement(
     ),
     link=None,
     level=2,
-    num='40.10'
+    num='41.10'
 )
 
 RQ_SRS_Plugin_Functions_Lttb = Requirement(
@@ -1598,7 +1574,7 @@ RQ_SRS_Plugin_Functions_Lttb = Requirement(
     ),
     link=None,
     level=2,
-    num='40.11'
+    num='41.11'
 )
 
 RQ_SRS_Plugin_Functions_SubQuery = Requirement(
@@ -1614,7 +1590,7 @@ RQ_SRS_Plugin_Functions_SubQuery = Requirement(
     ),
     link=None,
     level=2,
-    num='40.12'
+    num='41.12'
 )
 
 RQ_SRS_Plugin_SupportedDataTypes = Requirement(
@@ -1628,43 +1604,44 @@ RQ_SRS_Plugin_SupportedDataTypes = Requirement(
         'The [Plugin] SHALL support scalar data types. The following data types SHALL be supported:\n'
         '\n'
         '\n'
+        '\n'
         '| Data Type                                                                           | Supported in Grafana |\n'
         '| ----------------------------------------------------------------------------------- |:--------------------:|\n'
-        '| UInt8, UInt16, UInt32, UInt64, UInt128, UInt256                                     |                      |\n'
-        '| Int8, Int16, Int32, Int64, Int128, Int256                                           |                      |\n'
-        '| Float32, Float64                                                                    |                      |\n'
-        '| Decimal(P), Decimal(P, S), Decimal32(S), Decimal64(S), Decimal128(S), Decimal256(S) |                      |\n'
-        '| Bool                                                                                |                      |\n'
-        '| String                                                                              |                      |\n'
-        '| FixedString(N)                                                                      |                      |\n'
-        '| Date, Date32, DateTime, DateTime64                                                  |                      |\n'
-        '| JSON                                                                                |                      |\n'
-        '| UUID                                                                                |                      |\n'
-        '| Enum                                                                                |                      |\n'
-        '| LowCardinality                                                                      |                      |\n'
-        '| Array                                                                               |                      |\n'
-        '| Map                                                                                 |                      |\n'
-        '| SimpleAggregateFunction                                                             |                      |\n'
-        '| AggregateFunction                                                                   |                      |\n'
-        '| Nested                                                                              |                      |\n'
-        '| Tuple                                                                               |                      |\n'
-        '| Nullable                                                                            |                      |\n'
-        '| IPv4                                                                                |                      |\n'
-        '| IPv6                                                                                |                      |\n'
-        '| Point                                                                               |                      |\n'
-        '| Ring                                                                                |                      |\n'
-        '| Polygon                                                                             |                      |\n'
-        '| MultiPolygon                                                                        |                      |\n'
-        '| Expression                                                                          |                      |\n'
-        '| Set                                                                                 |                      |\n'
-        '| Nothing                                                                             |                      |\n'
-        '| Interval                                                                            |                      |\n'
+        '| UInt8, UInt16, UInt32, UInt64, UInt128, UInt256                                     |       &#10004;       |\n'
+        '| Int8, Int16, Int32, Int64, Int128, Int256                                           |       &#10004;       |\n'
+        '| Float32, Float64                                                                    |       &#10004;       |\n'
+        '| Decimal(P), Decimal(P, S), Decimal32(S), Decimal64(S), Decimal128(S), Decimal256(S) |       &#10004;       |\n'
+        '| Bool                                                                                |       &#10004;       |\n'
+        '| String                                                                              |       &#10004;       |\n'
+        '| FixedString(N)                                                                      |       &#10004;       |\n'
+        '| Date, Date32, DateTime, DateTime64                                                  |       &#10004;       |\n'
+        '| JSON                                                                                |       &#10060;       |\n'
+        '| UUID                                                                                |       &#10004;       |\n'
+        '| Enum                                                                                |       &#10004;       |\n'
+        '| LowCardinality                                                                      |       &#10004;       |\n'
+        '| Array                                                                               |       &#10060;       |\n'
+        '| Map                                                                                 |       &#10060;       |\n'
+        '| SimpleAggregateFunction                                                             |       &#10004;       |\n'
+        '| AggregateFunction                                                                   |       &#10004;       |\n'
+        '| Nested                                                                              |       &#10060;       |\n'
+        '| Tuple                                                                               |       &#10060;       |\n'
+        '| Nullable                                                                            |       &#10004;       |\n'
+        '| IPv4                                                                                |       &#10004;       |\n'
+        '| IPv6                                                                                |       &#10004;       |\n'
+        '| Point                                                                               |       &#10060;       |\n'
+        '| Ring                                                                                |       &#10060;       |\n'
+        '| Polygon                                                                             |       &#10060;       |\n'
+        '| MultiPolygon                                                                        |       &#10060;       |\n'
+        '| Expression                                                                          |       &#10060;       |\n'
+        '| Set                                                                                 |       &#10060;       |\n'
+        '| Nothing                                                                             |       &#10060;       |\n'
+        '| Interval                                                                            |       &#10060;       |\n'
         '\n'
         '\n'
     ),
     link=None,
     level=2,
-    num='41.1'
+    num='42.1'
 )
 
 RQ_SRS_Plugin_SupportedDataTypes_LimitValues = Requirement(
@@ -1675,12 +1652,28 @@ RQ_SRS_Plugin_SupportedDataTypes_LimitValues = Requirement(
     type=None,
     uid=None,
     description=(
-        'The [Plugin] SHALL support max and min values of [ClickHouse] datatypes.\n'
+        'The [Plugin] SHALL support max and min values of [ClickHouse] numeric datatypes.\n'
+        '\n'
+        '* Int8 — [-128 : 127]\n'
+        '* Int16 — [-32768 : 32767]\n'
+        '* Int32 — [-2147483648 : 2147483647]\n'
+        '* Int64 — [-9223372036854775808 : 9223372036854775807]\n'
+        '* Int128 — [-170141183460469231731687303715884105728 : 170141183460469231731687303715884105727]\n'
+        '* Int256 — [-57896044618658097711785492504343953926634992332820282019728792003956564819968 : 57896044618658097711785492504343953926634992332820282019728792003956564819967]\n'
+        '* UInt8 — [0 : 255]\n'
+        '* UInt16 — [0 : 65535]\n'
+        '* UInt32 — [0 : 4294967295]\n'
+        '* UInt64 — [0 : 18446744073709551615]\n'
+        '* UInt128 — [0 : 340282366920938463463374607431768211455]\n'
+        '* UInt256 — [0 : 115792089237316195423570985008687907853269984665640564039457584007913129639935]\n'
+        '\n'
+        ' For float datatypes inf and - inf values not supported.\n'
+        ' \n'
         '\n'
     ),
     link=None,
     level=2,
-    num='41.2'
+    num='42.2'
 )
 
 RQ_SRS_Plugin_VersionCompatibility = Requirement(
@@ -1707,7 +1700,7 @@ RQ_SRS_Plugin_VersionCompatibility = Requirement(
     ),
     link=None,
     level=2,
-    num='42.1'
+    num='43.1'
 )
 
 QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
@@ -1751,120 +1744,121 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.ServerAccess', level=2, num='9.1'),
         Heading(name='Connecting to the Clickhouse Server Without Using Grafana Backend Server ', level=1, num='10'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess', level=2, num='10.1'),
-        Heading(name='ClickHouse Authentification Setup', level=1, num='11'),
+        Heading(name='ClickHouse Authentication Setup', level=1, num='11'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.Auth', level=2, num='11.1'),
-        Heading(name='ClickHouse Authentification Setup Using Username And Password', level=1, num='12'),
+        Heading(name='ClickHouse Authentication Setup Using Username And Password', level=1, num='12'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.BasicAuth', level=2, num='12.1'),
-        Heading(name='ClickHouse Authentification Setup Using TLS/SSL Auth Details', level=1, num='13'),
+        Heading(name='ClickHouse Authentication Setup Using TLS/SSL Auth Details', level=1, num='13'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.TLS/SSLAuthDetails', level=2, num='13.1'),
-        Heading(name='ClickHouse Authentification Using Forward OAuth Identity', level=1, num='14'),
+        Heading(name='ClickHouse Authentication Using Forward OAuth Identity', level=1, num='14'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.ForwardOAuthIdentity', level=2, num='14.1'),
         Heading(name='Sending Credentials Setup', level=1, num='15'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.WithCredentials', level=2, num='15.1'),
-        Heading(name='ClickHouse Authentification With CA Certificate', level=1, num='16'),
+        Heading(name='ClickHouse Authentication With CA Certificate', level=1, num='16'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.Auth.WithCACert', level=2, num='16.1'),
-        Heading(name='Specifying Custom HTTP Headers', level=1, num='17'),
-        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders', level=2, num='17.1'),
-        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders', level=2, num='17.2'),
-        Heading(name='Connection To Managed Yandex.Cloud ClickHouse Database Setup', level=1, num='18'),
-        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders', level=2, num='18.1'),
-        Heading(name='Specifying Use CORS Flag In Requests', level=1, num='19'),
-        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests', level=2, num='19.1'),
-        Heading(name='Specifying Use POST Requests', level=1, num='20'),
-        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests', level=2, num='20.1'),
-        Heading(name='Specifying Default Database', level=1, num='21'),
-        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase', level=2, num='21.1'),
-        Heading(name='Specifying HTTP compression', level=1, num='22'),
-        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression', level=2, num='22.1'),
-        Heading(name='Creating Dashboards', level=1, num='23'),
-        Heading(name='RQ.SRS.Plugin.Dashboards', level=2, num='23.1'),
-        Heading(name='Creating Panels', level=1, num='24'),
-        Heading(name='RQ.SRS.Plugin.Panels', level=2, num='24.1'),
-        Heading(name='RQ.SRS.Plugin.Panels.Repeated', level=2, num='24.2'),
-        Heading(name='Multi-user Usage', level=1, num='25'),
-        Heading(name='RQ.SRS.Plugin.MultiUserUsage', level=2, num='25.1'),
-        Heading(name='RQ.SRS.Plugin.MultiUserUsage.SamePanel', level=2, num='25.2'),
-        Heading(name='RQ.SRS.Plugin.MultiUserUsage.DifferentPanels', level=2, num='25.3'),
-        Heading(name='RQ.SRS.Plugin.MultiUserUsage.SameDashboard', level=2, num='25.4'),
-        Heading(name='RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards', level=2, num='25.5'),
-        Heading(name='Query Setup', level=1, num='26'),
-        Heading(name='RQ.SRS.Plugin.QuerySetup', level=2, num='26.1'),
-        Heading(name='Query Setup Interface', level=1, num='27'),
-        Heading(name='RQ.SRS.Plugin.QuerySetupInterface', level=2, num='27.1'),
-        Heading(name='Query Options', level=1, num='28'),
-        Heading(name='RQ.SRS.Plugin.QueryOptions', level=2, num='28.1'),
-        Heading(name='Raw SQL Editor', level=1, num='29'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface', level=2, num='29.1'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor', level=2, num='29.2'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation', level=2, num='29.3'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments', level=2, num='29.4'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Step', level=2, num='29.5'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Round', level=2, num='29.6'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Resolution', level=2, num='29.7'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs', level=2, num='29.8'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp', level=2, num='29.9'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL', level=2, num='29.10'),
-        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery', level=2, num='29.11'),
-        Heading(name='Auto-complete In Queries', level=1, num='30'),
-        Heading(name='RQ.SRS.Plugin.AutoCompleteInQueries', level=2, num='30.1'),
-        Heading(name='Time range selector', level=1, num='31'),
-        Heading(name='RQ.SRS.Plugin.TimeRangeSelector', level=2, num='31.1'),
-        Heading(name='RQ.SRS.Plugin.TimeRangeSelector.Zoom', level=2, num='31.2'),
-        Heading(name='Сhanging The Size Of The Graph', level=1, num='32'),
-        Heading(name='RQ.SRS.Plugin.FillActual', level=2, num='32.1'),
-        Heading(name='Refresh Databoard', level=1, num='33'),
-        Heading(name='RQ.SRS.Plugin.RefreshDataboard', level=2, num='33.1'),
-        Heading(name='Inspecting Query', level=1, num='34'),
-        Heading(name='RQ.SRS.Plugin.QueryInspector', level=2, num='34.1'),
-        Heading(name='RQ.SRS.Plugin.QueryInspector.QueryTab', level=2, num='34.2'),
-        Heading(name='Visualization', level=1, num='35'),
-        Heading(name='RQ.SRS.Plugin.Visualization', level=2, num='35.1'),
-        Heading(name='RQ.SRS.Plugin.Visualization.Legends', level=2, num='35.2'),
-        Heading(name='Table View', level=2, num='35.3'),
-        Heading(name='RQ.SRS.Plugin.Visualization.Table', level=3, num='35.3.1'),
-        Heading(name='Visualization Types', level=2, num='35.4'),
-        Heading(name='RQ.SRS.Plugin.Visualization.VisualizationTypes', level=3, num='35.4.1'),
-        Heading(name='RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes', level=3, num='35.4.2'),
-        Heading(name='Macros', level=1, num='36'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros', level=2, num='36.1'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Table', level=2, num='36.2'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.DateCol', level=2, num='36.3'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol', level=2, num='36.4'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.From', level=2, num='36.5'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.To', level=2, num='36.6'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Interval', level=2, num='36.7'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn', level=2, num='36.8'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries', level=2, num='36.9'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries', level=2, num='36.10'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Unescape', level=2, num='36.11'),
-        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Adhoc', level=2, num='36.12'),
-        Heading(name='Variables Setup', level=1, num='37'),
-        Heading(name='RQ.SRS.Plugin.Variables', level=2, num='37.1'),
-        Heading(name='Annotations Setup', level=1, num='38'),
-        Heading(name='RQ.SRS.Plugin.Annotations', level=2, num='38.1'),
-        Heading(name='Setaping Alerts', level=1, num='39'),
-        Heading(name='RQ.SRS.Plugin.Alerts', level=2, num='39.1'),
-        Heading(name='RQ.SRS.Plugin.Alerts.AlertSetupPage', level=2, num='39.2'),
-        Heading(name='RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged', level=2, num='39.3'),
-        Heading(name='RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged', level=2, num='39.4'),
-        Heading(name='Functions', level=1, num='40'),
-        Heading(name='RQ.SRS.Plugin.Functions', level=2, num='40.1'),
-        Heading(name='RQ.SRS.Plugin.Functions.Rate', level=2, num='40.2'),
-        Heading(name='RQ.SRS.Plugin.Functions.Columns', level=2, num='40.3'),
-        Heading(name='RQ.SRS.Plugin.Functions.RateColumns', level=2, num='40.4'),
-        Heading(name='RQ.SRS.Plugin.Functions.PerSecond', level=2, num='40.5'),
-        Heading(name='RQ.SRS.Plugin.Functions.PerSecondColumns', level=2, num='40.6'),
-        Heading(name='RQ.SRS.Plugin.Functions.Delta', level=2, num='40.7'),
-        Heading(name='RQ.SRS.Plugin.Functions.DeltaColumns', level=2, num='40.8'),
-        Heading(name='RQ.SRS.Plugin.Functions.Increase', level=2, num='40.9'),
-        Heading(name='RQ.SRS.Plugin.Functions.IncreaseColumns', level=2, num='40.10'),
-        Heading(name='RQ.SRS.Plugin.Functions.Lttb', level=2, num='40.11'),
-        Heading(name='RQ.SRS.Plugin.Functions.SubQuery', level=2, num='40.12'),
-        Heading(name='Supported ClickHouse Datatypes', level=1, num='41'),
-        Heading(name='RQ.SRS.Plugin.SupportedDataTypes', level=2, num='41.1'),
-        Heading(name='RQ.SRS.Plugin.SupportedDataTypes.LimitValues', level=2, num='41.2'),
-        Heading(name='Versions Compatibility', level=1, num='42'),
-        Heading(name='RQ.SRS.Plugin.VersionCompatibility', level=2, num='42.1'),
+        Heading(name='ClickHouse Authentication Without CA Certificate', level=1, num='17'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.Auth.SkipTLSVerify', level=2, num='17.1'),
+        Heading(name='Specifying Custom HTTP Headers', level=1, num='18'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders', level=2, num='18.1'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders', level=2, num='18.2'),
+        Heading(name='Connection To Managed Yandex.Cloud ClickHouse Database Setup', level=1, num='19'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders', level=2, num='19.1'),
+        Heading(name='Specifying Use CORS Flag In Requests', level=1, num='20'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests', level=2, num='20.1'),
+        Heading(name='Specifying Use POST Requests', level=1, num='21'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests', level=2, num='21.1'),
+        Heading(name='Specifying Default Database', level=1, num='22'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase', level=2, num='22.1'),
+        Heading(name='Specifying HTTP compression', level=1, num='23'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression', level=2, num='23.1'),
+        Heading(name='Creating Dashboards', level=1, num='24'),
+        Heading(name='RQ.SRS.Plugin.Dashboards', level=2, num='24.1'),
+        Heading(name='Creating Panels', level=1, num='25'),
+        Heading(name='RQ.SRS.Plugin.Panels', level=2, num='25.1'),
+        Heading(name='RQ.SRS.Plugin.Panels.Repeated', level=2, num='25.2'),
+        Heading(name='Multi-user Usage', level=1, num='26'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage', level=2, num='26.1'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.SamePanel', level=2, num='26.2'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.DifferentPanels', level=2, num='26.3'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.SameDashboard', level=2, num='26.4'),
+        Heading(name='RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards', level=2, num='26.5'),
+        Heading(name='Query Setup', level=1, num='27'),
+        Heading(name='RQ.SRS.Plugin.QuerySetup', level=2, num='27.1'),
+        Heading(name='Query Setup Interface', level=1, num='28'),
+        Heading(name='RQ.SRS.Plugin.QuerySetupInterface', level=2, num='28.1'),
+        Heading(name='Query Options', level=1, num='29'),
+        Heading(name='RQ.SRS.Plugin.QueryOptions', level=2, num='29.1'),
+        Heading(name='Raw SQL Editor', level=1, num='30'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface', level=2, num='30.1'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor', level=2, num='30.2'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation', level=2, num='30.3'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments', level=2, num='30.4'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Step', level=2, num='30.5'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Round', level=2, num='30.6'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.Resolution', level=2, num='30.7'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs', level=2, num='30.8'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp', level=2, num='30.9'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL', level=2, num='30.10'),
+        Heading(name='RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery', level=2, num='30.11'),
+        Heading(name='Auto-complete In Queries', level=1, num='31'),
+        Heading(name='RQ.SRS.Plugin.AutoCompleteInQueries', level=2, num='31.1'),
+        Heading(name='Time range selector', level=1, num='32'),
+        Heading(name='RQ.SRS.Plugin.TimeRangeSelector', level=2, num='32.1'),
+        Heading(name='RQ.SRS.Plugin.TimeRangeSelector.Zoom', level=2, num='32.2'),
+        Heading(name='Сhanging The Size Of The Graph', level=1, num='33'),
+        Heading(name='RQ.SRS.Plugin.FillActual', level=2, num='33.1'),
+        Heading(name='Refresh Databoard', level=1, num='34'),
+        Heading(name='RQ.SRS.Plugin.RefreshDataboard', level=2, num='34.1'),
+        Heading(name='Inspecting Query', level=1, num='35'),
+        Heading(name='RQ.SRS.Plugin.QueryInspector', level=2, num='35.1'),
+        Heading(name='RQ.SRS.Plugin.QueryInspector.QueryTab', level=2, num='35.2'),
+        Heading(name='Visualization', level=1, num='36'),
+        Heading(name='RQ.SRS.Plugin.Visualization', level=2, num='36.1'),
+        Heading(name='RQ.SRS.Plugin.Visualization.Legends', level=2, num='36.2'),
+        Heading(name='Table View', level=2, num='36.3'),
+        Heading(name='RQ.SRS.Plugin.Visualization.Table', level=3, num='36.3.1'),
+        Heading(name='Visualization Types', level=2, num='36.4'),
+        Heading(name='RQ.SRS.Plugin.Visualization.VisualizationTypes', level=3, num='36.4.1'),
+        Heading(name='Macros', level=1, num='37'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros', level=2, num='37.1'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Table', level=2, num='37.2'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.DateCol', level=2, num='37.3'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol', level=2, num='37.4'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.From', level=2, num='37.5'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.To', level=2, num='37.6'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Interval', level=2, num='37.7'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn', level=2, num='37.8'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries', level=2, num='37.9'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries', level=2, num='37.10'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Unescape', level=2, num='37.11'),
+        Heading(name='RQ.SRS.Plugin.QuerySettings.Macros.Adhoc', level=2, num='37.12'),
+        Heading(name='Variables Setup', level=1, num='38'),
+        Heading(name='RQ.SRS.Plugin.Variables', level=2, num='38.1'),
+        Heading(name='Annotations Setup', level=1, num='39'),
+        Heading(name='RQ.SRS.Plugin.Annotations', level=2, num='39.1'),
+        Heading(name='Setaping Alerts', level=1, num='40'),
+        Heading(name='RQ.SRS.Plugin.Alerts', level=2, num='40.1'),
+        Heading(name='RQ.SRS.Plugin.Alerts.AlertSetupPage', level=2, num='40.2'),
+        Heading(name='RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged', level=2, num='40.3'),
+        Heading(name='RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged', level=2, num='40.4'),
+        Heading(name='Functions', level=1, num='41'),
+        Heading(name='RQ.SRS.Plugin.Functions', level=2, num='41.1'),
+        Heading(name='RQ.SRS.Plugin.Functions.Rate', level=2, num='41.2'),
+        Heading(name='RQ.SRS.Plugin.Functions.Columns', level=2, num='41.3'),
+        Heading(name='RQ.SRS.Plugin.Functions.RateColumns', level=2, num='41.4'),
+        Heading(name='RQ.SRS.Plugin.Functions.PerSecond', level=2, num='41.5'),
+        Heading(name='RQ.SRS.Plugin.Functions.PerSecondColumns', level=2, num='41.6'),
+        Heading(name='RQ.SRS.Plugin.Functions.Delta', level=2, num='41.7'),
+        Heading(name='RQ.SRS.Plugin.Functions.DeltaColumns', level=2, num='41.8'),
+        Heading(name='RQ.SRS.Plugin.Functions.Increase', level=2, num='41.9'),
+        Heading(name='RQ.SRS.Plugin.Functions.IncreaseColumns', level=2, num='41.10'),
+        Heading(name='RQ.SRS.Plugin.Functions.Lttb', level=2, num='41.11'),
+        Heading(name='RQ.SRS.Plugin.Functions.SubQuery', level=2, num='41.12'),
+        Heading(name='Supported ClickHouse Datatypes', level=1, num='42'),
+        Heading(name='RQ.SRS.Plugin.SupportedDataTypes', level=2, num='42.1'),
+        Heading(name='RQ.SRS.Plugin.SupportedDataTypes.LimitValues', level=2, num='42.2'),
+        Heading(name='Versions Compatibility', level=1, num='43'),
+        Heading(name='RQ.SRS.Plugin.VersionCompatibility', level=2, num='43.1'),
         ),
     requirements=(
         RQ_SRS_Plugin_ManualPluginInstallation,
@@ -1884,6 +1878,7 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         RQ_SRS_Plugin_DataSourceSetupView_ForwardOAuthIdentity,
         RQ_SRS_Plugin_DataSourceSetupView_WithCredentials,
         RQ_SRS_Plugin_DataSourceSetupView_Auth_WithCACert,
+        RQ_SRS_Plugin_DataSourceSetupView_Auth_SkipTLSVerify,
         RQ_SRS_Plugin_DataSourceSetupView_CustomHTTPHeaders,
         RQ_SRS_Plugin_DataSourceSetupView_DeletingCustomHTTPHeaders,
         RQ_SRS_Plugin_DataSourceSetupView_UseYandexCloudAuthorizationHeaders,
@@ -1923,7 +1918,6 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         RQ_SRS_Plugin_Visualization,
         RQ_SRS_Plugin_Visualization_Table,
         RQ_SRS_Plugin_Visualization_VisualizationTypes,
-        RQ_SRS_Plugin_Visualization_VisualizationTypes_DataTypes,
         RQ_SRS_Plugin_QuerySettings_Macros,
         RQ_SRS_Plugin_QuerySettings_Macros_Table,
         RQ_SRS_Plugin_QuerySettings_Macros_DateCol,
@@ -1988,120 +1982,121 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
     * 9.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.ServerAccess](#rqsrsplugindatasourcesetupviewhttpconnectionserveraccess)
 * 10 [Connecting to the Clickhouse Server Without Using Grafana Backend Server ](#connecting-to-the-clickhouse-server-without-using-grafana-backend-server-)
     * 10.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess](#rqsrsplugindatasourcesetupviewhttpconnectionbrowseraccess)
-* 11 [ClickHouse Authentification Setup](#clickhouse-authentification-setup)
+* 11 [ClickHouse Authentication Setup](#clickhouse-authentication-setup)
     * 11.1 [RQ.SRS.Plugin.DataSourceSetupView.Auth](#rqsrsplugindatasourcesetupviewauth)
-* 12 [ClickHouse Authentification Setup Using Username And Password](#clickhouse-authentification-setup-using-username-and-password)
+* 12 [ClickHouse Authentication Setup Using Username And Password](#clickhouse-authentication-setup-using-username-and-password)
     * 12.1 [RQ.SRS.Plugin.DataSourceSetupView.BasicAuth](#rqsrsplugindatasourcesetupviewbasicauth)
-* 13 [ClickHouse Authentification Setup Using TLS/SSL Auth Details](#clickhouse-authentification-setup-using-tlsssl-auth-details)
+* 13 [ClickHouse Authentication Setup Using TLS/SSL Auth Details](#clickhouse-authentication-setup-using-tlsssl-auth-details)
     * 13.1 [RQ.SRS.Plugin.DataSourceSetupView.TLS/SSLAuthDetails](#rqsrsplugindatasourcesetupviewtlssslauthdetails)
-* 14 [ClickHouse Authentification Using Forward OAuth Identity](#clickhouse-authentification-using-forward-oauth-identity)
+* 14 [ClickHouse Authentication Using Forward OAuth Identity](#clickhouse-authentication-using-forward-oauth-identity)
     * 14.1 [RQ.SRS.Plugin.DataSourceSetupView.ForwardOAuthIdentity](#rqsrsplugindatasourcesetupviewforwardoauthidentity)
 * 15 [Sending Credentials Setup](#sending-credentials-setup)
     * 15.1 [RQ.SRS.Plugin.DataSourceSetupView.WithCredentials](#rqsrsplugindatasourcesetupviewwithcredentials)
-* 16 [ClickHouse Authentification With CA Certificate](#clickhouse-authentification-with-ca-certificate)
+* 16 [ClickHouse Authentication With CA Certificate](#clickhouse-authentication-with-ca-certificate)
     * 16.1 [RQ.SRS.Plugin.DataSourceSetupView.Auth.WithCACert](#rqsrsplugindatasourcesetupviewauthwithcacert)
-* 17 [Specifying Custom HTTP Headers](#specifying-custom-http-headers)
-    * 17.1 [RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders](#rqsrsplugindatasourcesetupviewcustomhttpheaders)
-    * 17.2 [RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders](#rqsrsplugindatasourcesetupviewdeletingcustomhttpheaders)
-* 18 [Connection To Managed Yandex.Cloud ClickHouse Database Setup](#connection-to-managed-yandexcloud-clickhouse-database-setup)
-    * 18.1 [RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders](#rqsrsplugindatasourcesetupviewuseyandexcloudauthorizationheaders)
-* 19 [Specifying Use CORS Flag In Requests](#specifying-use-cors-flag-in-requests)
-    * 19.1 [RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests](#rqsrsplugindatasourcesetupviewaddcorsflagtorequests)
-* 20 [Specifying Use POST Requests](#specifying-use-post-requests)
-    * 20.1 [RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests](#rqsrsplugindatasourcesetupviewusepostrequests)
-* 21 [Specifying Default Database](#specifying-default-database)
-    * 21.1 [RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase](#rqsrsplugindatasourcesetupviewdefaultdatabase)
-* 22 [Specifying HTTP compression](#specifying-http-compression)
-    * 22.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression](#rqsrsplugindatasourcesetupviewhttpcompression)
-* 23 [Creating Dashboards](#creating-dashboards)
-    * 23.1 [RQ.SRS.Plugin.Dashboards](#rqsrsplugindashboards)
-* 24 [Creating Panels](#creating-panels)
-    * 24.1 [RQ.SRS.Plugin.Panels](#rqsrspluginpanels)
-    * 24.2 [RQ.SRS.Plugin.Panels.Repeated](#rqsrspluginpanelsrepeated)
-* 25 [Multi-user Usage](#multi-user-usage)
-    * 25.1 [RQ.SRS.Plugin.MultiUserUsage](#rqsrspluginmultiuserusage)
-    * 25.2 [RQ.SRS.Plugin.MultiUserUsage.SamePanel](#rqsrspluginmultiuserusagesamepanel)
-    * 25.3 [RQ.SRS.Plugin.MultiUserUsage.DifferentPanels](#rqsrspluginmultiuserusagedifferentpanels)
-    * 25.4 [RQ.SRS.Plugin.MultiUserUsage.SameDashboard](#rqsrspluginmultiuserusagesamedashboard)
-    * 25.5 [RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards](#rqsrspluginmultiuserusagedifferentdashboards)
-* 26 [Query Setup](#query-setup)
-    * 26.1 [RQ.SRS.Plugin.QuerySetup](#rqsrspluginquerysetup)
-* 27 [Query Setup Interface](#query-setup-interface)
-    * 27.1 [RQ.SRS.Plugin.QuerySetupInterface](#rqsrspluginquerysetupinterface)
-* 28 [Query Options](#query-options)
-    * 28.1 [RQ.SRS.Plugin.QueryOptions](#rqsrspluginqueryoptions)
-* 29 [Raw SQL Editor](#raw-sql-editor)
-    * 29.1 [RQ.SRS.Plugin.RawSQLEditorInterface](#rqsrspluginrawsqleditorinterface)
-    * 29.2 [RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor](#rqsrspluginrawsqleditorinterfacesqleditor)
-    * 29.3 [RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation](#rqsrspluginrawsqleditorinterfaceextrapolation)
-    * 29.4 [RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments](#rqsrspluginrawsqleditorinterfaceskipcomments)
-    * 29.5 [RQ.SRS.Plugin.RawSQLEditorInterface.Step](#rqsrspluginrawsqleditorinterfacestep)
-    * 29.6 [RQ.SRS.Plugin.RawSQLEditorInterface.Round](#rqsrspluginrawsqleditorinterfaceround)
-    * 29.7 [RQ.SRS.Plugin.RawSQLEditorInterface.Resolution](#rqsrspluginrawsqleditorinterfaceresolution)
-    * 29.8 [RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs](#rqsrspluginrawsqleditorinterfaceformatas)
-    * 29.9 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp](#rqsrspluginrawsqleditorinterfaceshowhelp)
-    * 29.10 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL](#rqsrspluginrawsqleditorinterfaceshowgeneratedsql)
-    * 29.11 [RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery](#rqsrspluginrawsqleditorinterfacereformatquery)
-* 30 [Auto-complete In Queries](#auto-complete-in-queries)
-    * 30.1 [RQ.SRS.Plugin.AutoCompleteInQueries](#rqsrspluginautocompleteinqueries)
-* 31 [Time range selector](#time-range-selector)
-    * 31.1 [RQ.SRS.Plugin.TimeRangeSelector](#rqsrsplugintimerangeselector)
-    * 31.2 [RQ.SRS.Plugin.TimeRangeSelector.Zoom](#rqsrsplugintimerangeselectorzoom)
-* 32 [Сhanging The Size Of The Graph](#hanging-the-size-of-the-graph)
-    * 32.1 [RQ.SRS.Plugin.FillActual](#rqsrspluginfillactual)
-* 33 [Refresh Databoard](#refresh-databoard)
-    * 33.1 [RQ.SRS.Plugin.RefreshDataboard](#rqsrspluginrefreshdataboard)
-* 34 [Inspecting Query](#inspecting-query)
-    * 34.1 [RQ.SRS.Plugin.QueryInspector](#rqsrspluginqueryinspector)
-    * 34.2 [RQ.SRS.Plugin.QueryInspector.QueryTab](#rqsrspluginqueryinspectorquerytab)
-* 35 [Visualization](#visualization)
-    * 35.1 [RQ.SRS.Plugin.Visualization](#rqsrspluginvisualization)
-    * 35.2 [RQ.SRS.Plugin.Visualization.Legends](#rqsrspluginvisualizationlegends)
-    * 35.3 [Table View](#table-view)
-        * 35.3.1 [RQ.SRS.Plugin.Visualization.Table](#rqsrspluginvisualizationtable)
-    * 35.4 [Visualization Types](#visualization-types)
-        * 35.4.1 [RQ.SRS.Plugin.Visualization.VisualizationTypes](#rqsrspluginvisualizationvisualizationtypes)
-        * 35.4.2 [RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes](#rqsrspluginvisualizationvisualizationtypesdatatypes)
-* 36 [Macros](#macros)
-    * 36.1 [RQ.SRS.Plugin.QuerySettings.Macros](#rqsrspluginquerysettingsmacros)
-    * 36.2 [RQ.SRS.Plugin.QuerySettings.Macros.Table](#rqsrspluginquerysettingsmacrostable)
-    * 36.3 [RQ.SRS.Plugin.QuerySettings.Macros.DateCol](#rqsrspluginquerysettingsmacrosdatecol)
-    * 36.4 [RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol](#rqsrspluginquerysettingsmacrosdatetimecol)
-    * 36.5 [RQ.SRS.Plugin.QuerySettings.Macros.From](#rqsrspluginquerysettingsmacrosfrom)
-    * 36.6 [RQ.SRS.Plugin.QuerySettings.Macros.To](#rqsrspluginquerysettingsmacrosto)
-    * 36.7 [RQ.SRS.Plugin.QuerySettings.Macros.Interval](#rqsrspluginquerysettingsmacrosinterval)
-    * 36.8 [RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn](#rqsrspluginquerysettingsmacrostimefilterbycolumn)
-    * 36.9 [RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries](#rqsrspluginquerysettingsmacrostimeseries)
-    * 36.10 [RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries](#rqsrspluginquerysettingsmacrosnaturaltimeseries)
-    * 36.11 [RQ.SRS.Plugin.QuerySettings.Macros.Unescape](#rqsrspluginquerysettingsmacrosunescape)
-    * 36.12 [RQ.SRS.Plugin.QuerySettings.Macros.Adhoc](#rqsrspluginquerysettingsmacrosadhoc)
-* 37 [Variables Setup](#variables-setup)
-    * 37.1 [RQ.SRS.Plugin.Variables](#rqsrspluginvariables)
-* 38 [Annotations Setup](#annotations-setup)
-    * 38.1 [RQ.SRS.Plugin.Annotations](#rqsrspluginannotations)
-* 39 [Setaping Alerts](#setaping-alerts)
-    * 39.1 [RQ.SRS.Plugin.Alerts](#rqsrspluginalerts)
-    * 39.2 [RQ.SRS.Plugin.Alerts.AlertSetupPage](#rqsrspluginalertsalertsetuppage)
-    * 39.3 [RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged](#rqsrspluginalertsruletypegrafanamanaged)
-    * 39.4 [RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged](#rqsrspluginalertsruletypedatasourcemanaged)
-* 40 [Functions](#functions)
-    * 40.1 [RQ.SRS.Plugin.Functions](#rqsrspluginfunctions)
-    * 40.2 [RQ.SRS.Plugin.Functions.Rate](#rqsrspluginfunctionsrate)
-    * 40.3 [RQ.SRS.Plugin.Functions.Columns](#rqsrspluginfunctionscolumns)
-    * 40.4 [RQ.SRS.Plugin.Functions.RateColumns](#rqsrspluginfunctionsratecolumns)
-    * 40.5 [RQ.SRS.Plugin.Functions.PerSecond](#rqsrspluginfunctionspersecond)
-    * 40.6 [RQ.SRS.Plugin.Functions.PerSecondColumns](#rqsrspluginfunctionspersecondcolumns)
-    * 40.7 [RQ.SRS.Plugin.Functions.Delta](#rqsrspluginfunctionsdelta)
-    * 40.8 [RQ.SRS.Plugin.Functions.DeltaColumns](#rqsrspluginfunctionsdeltacolumns)
-    * 40.9 [RQ.SRS.Plugin.Functions.Increase](#rqsrspluginfunctionsincrease)
-    * 40.10 [RQ.SRS.Plugin.Functions.IncreaseColumns](#rqsrspluginfunctionsincreasecolumns)
-    * 40.11 [RQ.SRS.Plugin.Functions.Lttb](#rqsrspluginfunctionslttb)
-    * 40.12 [RQ.SRS.Plugin.Functions.SubQuery](#rqsrspluginfunctionssubquery)
-* 41 [Supported ClickHouse Datatypes](#supported-clickhouse-datatypes)
-    * 41.1 [RQ.SRS.Plugin.SupportedDataTypes](#rqsrspluginsupporteddatatypes)
-    * 41.2 [RQ.SRS.Plugin.SupportedDataTypes.LimitValues](#rqsrspluginsupporteddatatypeslimitvalues)
-* 42 [Versions Compatibility](#versions-compatibility)
-    * 42.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrspluginversioncompatibility)
+* 17 [ClickHouse Authentication Without CA Certificate](#clickhouse-authentication-without-ca-certificate)
+    * 17.1 [RQ.SRS.Plugin.DataSourceSetupView.Auth.SkipTLSVerify](#rqsrsplugindatasourcesetupviewauthskiptlsverify)
+* 18 [Specifying Custom HTTP Headers](#specifying-custom-http-headers)
+    * 18.1 [RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders](#rqsrsplugindatasourcesetupviewcustomhttpheaders)
+    * 18.2 [RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders](#rqsrsplugindatasourcesetupviewdeletingcustomhttpheaders)
+* 19 [Connection To Managed Yandex.Cloud ClickHouse Database Setup](#connection-to-managed-yandexcloud-clickhouse-database-setup)
+    * 19.1 [RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders](#rqsrsplugindatasourcesetupviewuseyandexcloudauthorizationheaders)
+* 20 [Specifying Use CORS Flag In Requests](#specifying-use-cors-flag-in-requests)
+    * 20.1 [RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests](#rqsrsplugindatasourcesetupviewaddcorsflagtorequests)
+* 21 [Specifying Use POST Requests](#specifying-use-post-requests)
+    * 21.1 [RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests](#rqsrsplugindatasourcesetupviewusepostrequests)
+* 22 [Specifying Default Database](#specifying-default-database)
+    * 22.1 [RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase](#rqsrsplugindatasourcesetupviewdefaultdatabase)
+* 23 [Specifying HTTP compression](#specifying-http-compression)
+    * 23.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression](#rqsrsplugindatasourcesetupviewhttpcompression)
+* 24 [Creating Dashboards](#creating-dashboards)
+    * 24.1 [RQ.SRS.Plugin.Dashboards](#rqsrsplugindashboards)
+* 25 [Creating Panels](#creating-panels)
+    * 25.1 [RQ.SRS.Plugin.Panels](#rqsrspluginpanels)
+    * 25.2 [RQ.SRS.Plugin.Panels.Repeated](#rqsrspluginpanelsrepeated)
+* 26 [Multi-user Usage](#multi-user-usage)
+    * 26.1 [RQ.SRS.Plugin.MultiUserUsage](#rqsrspluginmultiuserusage)
+    * 26.2 [RQ.SRS.Plugin.MultiUserUsage.SamePanel](#rqsrspluginmultiuserusagesamepanel)
+    * 26.3 [RQ.SRS.Plugin.MultiUserUsage.DifferentPanels](#rqsrspluginmultiuserusagedifferentpanels)
+    * 26.4 [RQ.SRS.Plugin.MultiUserUsage.SameDashboard](#rqsrspluginmultiuserusagesamedashboard)
+    * 26.5 [RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards](#rqsrspluginmultiuserusagedifferentdashboards)
+* 27 [Query Setup](#query-setup)
+    * 27.1 [RQ.SRS.Plugin.QuerySetup](#rqsrspluginquerysetup)
+* 28 [Query Setup Interface](#query-setup-interface)
+    * 28.1 [RQ.SRS.Plugin.QuerySetupInterface](#rqsrspluginquerysetupinterface)
+* 29 [Query Options](#query-options)
+    * 29.1 [RQ.SRS.Plugin.QueryOptions](#rqsrspluginqueryoptions)
+* 30 [Raw SQL Editor](#raw-sql-editor)
+    * 30.1 [RQ.SRS.Plugin.RawSQLEditorInterface](#rqsrspluginrawsqleditorinterface)
+    * 30.2 [RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor](#rqsrspluginrawsqleditorinterfacesqleditor)
+    * 30.3 [RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation](#rqsrspluginrawsqleditorinterfaceextrapolation)
+    * 30.4 [RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments](#rqsrspluginrawsqleditorinterfaceskipcomments)
+    * 30.5 [RQ.SRS.Plugin.RawSQLEditorInterface.Step](#rqsrspluginrawsqleditorinterfacestep)
+    * 30.6 [RQ.SRS.Plugin.RawSQLEditorInterface.Round](#rqsrspluginrawsqleditorinterfaceround)
+    * 30.7 [RQ.SRS.Plugin.RawSQLEditorInterface.Resolution](#rqsrspluginrawsqleditorinterfaceresolution)
+    * 30.8 [RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs](#rqsrspluginrawsqleditorinterfaceformatas)
+    * 30.9 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp](#rqsrspluginrawsqleditorinterfaceshowhelp)
+    * 30.10 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL](#rqsrspluginrawsqleditorinterfaceshowgeneratedsql)
+    * 30.11 [RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery](#rqsrspluginrawsqleditorinterfacereformatquery)
+* 31 [Auto-complete In Queries](#auto-complete-in-queries)
+    * 31.1 [RQ.SRS.Plugin.AutoCompleteInQueries](#rqsrspluginautocompleteinqueries)
+* 32 [Time range selector](#time-range-selector)
+    * 32.1 [RQ.SRS.Plugin.TimeRangeSelector](#rqsrsplugintimerangeselector)
+    * 32.2 [RQ.SRS.Plugin.TimeRangeSelector.Zoom](#rqsrsplugintimerangeselectorzoom)
+* 33 [Сhanging The Size Of The Graph](#hanging-the-size-of-the-graph)
+    * 33.1 [RQ.SRS.Plugin.FillActual](#rqsrspluginfillactual)
+* 34 [Refresh Databoard](#refresh-databoard)
+    * 34.1 [RQ.SRS.Plugin.RefreshDataboard](#rqsrspluginrefreshdataboard)
+* 35 [Inspecting Query](#inspecting-query)
+    * 35.1 [RQ.SRS.Plugin.QueryInspector](#rqsrspluginqueryinspector)
+    * 35.2 [RQ.SRS.Plugin.QueryInspector.QueryTab](#rqsrspluginqueryinspectorquerytab)
+* 36 [Visualization](#visualization)
+    * 36.1 [RQ.SRS.Plugin.Visualization](#rqsrspluginvisualization)
+    * 36.2 [RQ.SRS.Plugin.Visualization.Legends](#rqsrspluginvisualizationlegends)
+    * 36.3 [Table View](#table-view)
+        * 36.3.1 [RQ.SRS.Plugin.Visualization.Table](#rqsrspluginvisualizationtable)
+    * 36.4 [Visualization Types](#visualization-types)
+        * 36.4.1 [RQ.SRS.Plugin.Visualization.VisualizationTypes](#rqsrspluginvisualizationvisualizationtypes)
+* 37 [Macros](#macros)
+    * 37.1 [RQ.SRS.Plugin.QuerySettings.Macros](#rqsrspluginquerysettingsmacros)
+    * 37.2 [RQ.SRS.Plugin.QuerySettings.Macros.Table](#rqsrspluginquerysettingsmacrostable)
+    * 37.3 [RQ.SRS.Plugin.QuerySettings.Macros.DateCol](#rqsrspluginquerysettingsmacrosdatecol)
+    * 37.4 [RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol](#rqsrspluginquerysettingsmacrosdatetimecol)
+    * 37.5 [RQ.SRS.Plugin.QuerySettings.Macros.From](#rqsrspluginquerysettingsmacrosfrom)
+    * 37.6 [RQ.SRS.Plugin.QuerySettings.Macros.To](#rqsrspluginquerysettingsmacrosto)
+    * 37.7 [RQ.SRS.Plugin.QuerySettings.Macros.Interval](#rqsrspluginquerysettingsmacrosinterval)
+    * 37.8 [RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn](#rqsrspluginquerysettingsmacrostimefilterbycolumn)
+    * 37.9 [RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries](#rqsrspluginquerysettingsmacrostimeseries)
+    * 37.10 [RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries](#rqsrspluginquerysettingsmacrosnaturaltimeseries)
+    * 37.11 [RQ.SRS.Plugin.QuerySettings.Macros.Unescape](#rqsrspluginquerysettingsmacrosunescape)
+    * 37.12 [RQ.SRS.Plugin.QuerySettings.Macros.Adhoc](#rqsrspluginquerysettingsmacrosadhoc)
+* 38 [Variables Setup](#variables-setup)
+    * 38.1 [RQ.SRS.Plugin.Variables](#rqsrspluginvariables)
+* 39 [Annotations Setup](#annotations-setup)
+    * 39.1 [RQ.SRS.Plugin.Annotations](#rqsrspluginannotations)
+* 40 [Setaping Alerts](#setaping-alerts)
+    * 40.1 [RQ.SRS.Plugin.Alerts](#rqsrspluginalerts)
+    * 40.2 [RQ.SRS.Plugin.Alerts.AlertSetupPage](#rqsrspluginalertsalertsetuppage)
+    * 40.3 [RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged](#rqsrspluginalertsruletypegrafanamanaged)
+    * 40.4 [RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged](#rqsrspluginalertsruletypedatasourcemanaged)
+* 41 [Functions](#functions)
+    * 41.1 [RQ.SRS.Plugin.Functions](#rqsrspluginfunctions)
+    * 41.2 [RQ.SRS.Plugin.Functions.Rate](#rqsrspluginfunctionsrate)
+    * 41.3 [RQ.SRS.Plugin.Functions.Columns](#rqsrspluginfunctionscolumns)
+    * 41.4 [RQ.SRS.Plugin.Functions.RateColumns](#rqsrspluginfunctionsratecolumns)
+    * 41.5 [RQ.SRS.Plugin.Functions.PerSecond](#rqsrspluginfunctionspersecond)
+    * 41.6 [RQ.SRS.Plugin.Functions.PerSecondColumns](#rqsrspluginfunctionspersecondcolumns)
+    * 41.7 [RQ.SRS.Plugin.Functions.Delta](#rqsrspluginfunctionsdelta)
+    * 41.8 [RQ.SRS.Plugin.Functions.DeltaColumns](#rqsrspluginfunctionsdeltacolumns)
+    * 41.9 [RQ.SRS.Plugin.Functions.Increase](#rqsrspluginfunctionsincrease)
+    * 41.10 [RQ.SRS.Plugin.Functions.IncreaseColumns](#rqsrspluginfunctionsincreasecolumns)
+    * 41.11 [RQ.SRS.Plugin.Functions.Lttb](#rqsrspluginfunctionslttb)
+    * 41.12 [RQ.SRS.Plugin.Functions.SubQuery](#rqsrspluginfunctionssubquery)
+* 42 [Supported ClickHouse Datatypes](#supported-clickhouse-datatypes)
+    * 42.1 [RQ.SRS.Plugin.SupportedDataTypes](#rqsrspluginsupporteddatatypes)
+    * 42.2 [RQ.SRS.Plugin.SupportedDataTypes.LimitValues](#rqsrspluginsupporteddatatypeslimitvalues)
+* 43 [Versions Compatibility](#versions-compatibility)
+    * 43.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrspluginversioncompatibility)
 
 
 ## Revision History
@@ -2228,10 +2223,10 @@ if only the `Server` option is selected in the `Access` dropdown menu.
 ### RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess
 version: 1.0
 
-The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Browser` option` in the `Access` dropdown menu
+The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Browser` option in the `Access` dropdown menu
 in the data source setup view. In this case all requests SHALL be made from the browser directly to the data source.
 
-## ClickHouse Authentification Setup
+## ClickHouse Authentication Setup
 
 ### RQ.SRS.Plugin.DataSourceSetupView.Auth
 version: 1.0
@@ -2245,7 +2240,7 @@ The [Plugin] SHALL support specifying authentication details by specifying the f
 * `With Credentials`
 * `With CA Cert`
 
-## ClickHouse Authentification Setup Using Username And Password
+## ClickHouse Authentication Setup Using Username And Password
 
 ### RQ.SRS.Plugin.DataSourceSetupView.BasicAuth
 version: 1.0
@@ -2255,7 +2250,7 @@ and specifying username and password in the `User` and `Password` text fields, r
 be able to be empty. The [Plugin] SHALL add the `Basic Auth Details` section to the data source setup view only if the `Basic auth`
 toggle is on.
 
-## ClickHouse Authentification Setup Using TLS/SSL Auth Details
+## ClickHouse Authentication Setup Using TLS/SSL Auth Details
 
 ### RQ.SRS.Plugin.DataSourceSetupView.TLS/SSLAuthDetails
 version: 1.0
@@ -2265,7 +2260,7 @@ the `TLS Client Auth` toggle and specifying these options in the `ServerName`, `
 The [Plugin] SHALL add `ServerName`, `Client Cert`, and `Client Key` text fields to the data source setup view only if the 
 `TLS Client Auth` toggle is on.
 
-## ClickHouse Authentification Using Forward OAuth Identity
+## ClickHouse Authentication Using Forward OAuth Identity
 
 ### RQ.SRS.Plugin.DataSourceSetupView.ForwardOAuthIdentity
 version: 1.0
@@ -2281,7 +2276,7 @@ version: 1.0
 The [Plugin] SHALL support sending credentials such as cookies or authentication headers with cross-site 
 requests by turning on the `With Credentials` toggle.
 
-## ClickHouse Authentification With CA Certificate
+## ClickHouse Authentication With CA Certificate
 
 ### RQ.SRS.Plugin.DataSourceSetupView.Auth.WithCACert
 version: 1.0
@@ -2289,6 +2284,15 @@ version: 1.0
 The [Plugin] SHALL support specifying the CA certificate that will be used to access the [ClickHouse] server 
 by turning on the `With CA Cert` toggle and specifying the `CA Cert` text field. The [Plugin] SHALL add the 
 `CA Cert` text field to the data source setup view only if the `TLS Client Auth` toggle is on.
+
+## ClickHouse Authentication Without CA Certificate
+
+### RQ.SRS.Plugin.DataSourceSetupView.Auth.SkipTLSVerify
+version: 1.0
+
+The [Plugin] SHALL support connecting to clickhouse using HTTPS connection without specifying CA certificate
+by turning on `Skip TLS verify` toggle.
+
 
 ## Specifying Custom HTTP Headers
 
@@ -2580,7 +2584,7 @@ The [Plugin] SHALL support table view for data.
 #### RQ.SRS.Plugin.Visualization.VisualizationTypes
 version: 1.0
 
-The [Plugin] SHALL support the following visualization types for data:
+The [Plugin] SHALL support the following visualization types for any supported clickhouse data types:
 
 * Time series
 * Bar chart
@@ -2604,37 +2608,6 @@ The [Plugin] SHALL support the following visualization types for data:
 * Logs
 * Node Graph
 * Traces
-
-#### RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes
-version: 1.0
-
-The [Plugin] SHALL support the following visualization types for the following ClickHouse datatypes:
-
-
-| Vizualization Type | Supported ClickHouse datatypes                                                      |
-|--------------------|-------------------------------------------------------------------------------------|
-| Time series        |                                                                                     |
-| Bar chart          |                                                                                     |
-| Stat               |                                                                                     |
-| Gauge              |                                                                                     |
-| Bar Gauge          |                                                                                     |
-| Pie chart          |                                                                                     |
-| State timeline     |                                                                                     |
-| Heatmap            |                                                                                     |
-| Status history     |                                                                                     |
-| Histogram          |                                                                                     |
-| Text               |                                                                                     |
-| Alert List         |                                                                                     |
-| Dashboard list     |                                                                                     |
-| News               |                                                                                     |
-| Annotation list    |                                                                                     |
-| Candlestick        |                                                                                     |
-| Canvas             |                                                                                     |
-| Flame Graph        |                                                                                     |
-| Geomap             |                                                                                     |
-| Logs               |                                                                                     |
-| Node Graph         |                                                                                     |
-| Traces             |                                                                                     |
 
 
 ## Macros
@@ -2865,43 +2838,60 @@ version: 1.0
 The [Plugin] SHALL support scalar data types. The following data types SHALL be supported:
 
 
+
 | Data Type                                                                           | Supported in Grafana |
 | ----------------------------------------------------------------------------------- |:--------------------:|
-| UInt8, UInt16, UInt32, UInt64, UInt128, UInt256                                     |                      |
-| Int8, Int16, Int32, Int64, Int128, Int256                                           |                      |
-| Float32, Float64                                                                    |                      |
-| Decimal(P), Decimal(P, S), Decimal32(S), Decimal64(S), Decimal128(S), Decimal256(S) |                      |
-| Bool                                                                                |                      |
-| String                                                                              |                      |
-| FixedString(N)                                                                      |                      |
-| Date, Date32, DateTime, DateTime64                                                  |                      |
-| JSON                                                                                |                      |
-| UUID                                                                                |                      |
-| Enum                                                                                |                      |
-| LowCardinality                                                                      |                      |
-| Array                                                                               |                      |
-| Map                                                                                 |                      |
-| SimpleAggregateFunction                                                             |                      |
-| AggregateFunction                                                                   |                      |
-| Nested                                                                              |                      |
-| Tuple                                                                               |                      |
-| Nullable                                                                            |                      |
-| IPv4                                                                                |                      |
-| IPv6                                                                                |                      |
-| Point                                                                               |                      |
-| Ring                                                                                |                      |
-| Polygon                                                                             |                      |
-| MultiPolygon                                                                        |                      |
-| Expression                                                                          |                      |
-| Set                                                                                 |                      |
-| Nothing                                                                             |                      |
-| Interval                                                                            |                      |
+| UInt8, UInt16, UInt32, UInt64, UInt128, UInt256                                     |       &#10004;       |
+| Int8, Int16, Int32, Int64, Int128, Int256                                           |       &#10004;       |
+| Float32, Float64                                                                    |       &#10004;       |
+| Decimal(P), Decimal(P, S), Decimal32(S), Decimal64(S), Decimal128(S), Decimal256(S) |       &#10004;       |
+| Bool                                                                                |       &#10004;       |
+| String                                                                              |       &#10004;       |
+| FixedString(N)                                                                      |       &#10004;       |
+| Date, Date32, DateTime, DateTime64                                                  |       &#10004;       |
+| JSON                                                                                |       &#10060;       |
+| UUID                                                                                |       &#10004;       |
+| Enum                                                                                |       &#10004;       |
+| LowCardinality                                                                      |       &#10004;       |
+| Array                                                                               |       &#10060;       |
+| Map                                                                                 |       &#10060;       |
+| SimpleAggregateFunction                                                             |       &#10004;       |
+| AggregateFunction                                                                   |       &#10004;       |
+| Nested                                                                              |       &#10060;       |
+| Tuple                                                                               |       &#10060;       |
+| Nullable                                                                            |       &#10004;       |
+| IPv4                                                                                |       &#10004;       |
+| IPv6                                                                                |       &#10004;       |
+| Point                                                                               |       &#10060;       |
+| Ring                                                                                |       &#10060;       |
+| Polygon                                                                             |       &#10060;       |
+| MultiPolygon                                                                        |       &#10060;       |
+| Expression                                                                          |       &#10060;       |
+| Set                                                                                 |       &#10060;       |
+| Nothing                                                                             |       &#10060;       |
+| Interval                                                                            |       &#10060;       |
 
 
 ### RQ.SRS.Plugin.SupportedDataTypes.LimitValues
 version: 1.0
 
-The [Plugin] SHALL support max and min values of [ClickHouse] datatypes.
+The [Plugin] SHALL support max and min values of [ClickHouse] numeric datatypes.
+
+* Int8 — [-128 : 127]
+* Int16 — [-32768 : 32767]
+* Int32 — [-2147483648 : 2147483647]
+* Int64 — [-9223372036854775808 : 9223372036854775807]
+* Int128 — [-170141183460469231731687303715884105728 : 170141183460469231731687303715884105727]
+* Int256 — [-57896044618658097711785492504343953926634992332820282019728792003956564819968 : 57896044618658097711785492504343953926634992332820282019728792003956564819967]
+* UInt8 — [0 : 255]
+* UInt16 — [0 : 65535]
+* UInt32 — [0 : 4294967295]
+* UInt64 — [0 : 18446744073709551615]
+* UInt128 — [0 : 340282366920938463463374607431768211455]
+* UInt256 — [0 : 115792089237316195423570985008687907853269984665640564039457584007913129639935]
+
+ For float datatypes inf and - inf values not supported.
+ 
 
 ## Versions Compatibility
 

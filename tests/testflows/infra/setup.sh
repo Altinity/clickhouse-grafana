@@ -39,4 +39,4 @@ sudo chmod 777 tests/testflows/assets
 sudo touch tests/testflows/assets/sessions.json
 sudo chmod 777 tests/testflows/assets/sessions.json
 sudo echo '{}' > tests/testflows/assets/sessions.json
-sudo mkdir mkdir ./node_modules
+sudo mkdir  ./node_modules

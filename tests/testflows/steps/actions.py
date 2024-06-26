@@ -133,6 +133,7 @@ def create_new_altinity_datasource(
         ca_cert=None,
         skip_tls_verify=False,
         forward_oauth_identity=False,
+        default_database=None,
         add_cors_flag=False,
         use_post_method=False,
         use_compression=False,
@@ -233,6 +234,11 @@ def create_new_altinity_datasource(
                     with By("entering CA Cert"):
                         datasources_altinity_edit.enter_ca_cert(ca_cert=ca_cert)
 
+            if skip_tls_verify:
+                with delay():
+                    with By("clicking skip TLS verify toggle"):
+                        datasources_altinity_edit.click_skip_tls_verify_toggle()
+
             if use_post_method:
                 with delay():
                     with By("clicking use post method toggle"):
@@ -242,6 +248,11 @@ def create_new_altinity_datasource(
                 with delay():
                     with By("clicking add CORS flag toggle"):
                         datasources_altinity_edit.click_add_cors_flag_to_request_toggle()
+
+            if not(default_database is None):
+                with delay():
+                    with By("entering default database"):
+                        datasources_altinity_edit.enter_default_database(database_name=default_database)
 
             if use_compression:
                 with delay():

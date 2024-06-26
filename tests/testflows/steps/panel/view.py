@@ -1,4 +1,5 @@
 from testflows.core import *
+from testflows.asserts import error
 
 from steps.delay import delay
 from steps.panel.locators import locators
@@ -227,3 +228,43 @@ def check_panel_error_exists(self):
             return True
         except:
             return False
+
+
+@TestStep(When)
+def click_inspect_query_button(self):
+    """Click inspect query button."""
+
+    locators.query_inspector_button.click()
+
+
+@TestStep(When)
+def click_inspect_query_refresh_button(self):
+    """Click inspect query button."""
+
+    locators.query_inspector_refresh_button.click()
+
+
+@TestStep(When)
+def get_query_inspector_url_text(self):
+    """Get url text from query inspector."""
+
+    with By("getting url from query inspector"):
+        return locators.query_inspector_url.text
+
+
+@TestStep(Then)
+def check_query_inspector_request(self, headers):
+    """Check url in query inspector."""
+
+    with By("opening query inspector"):
+        with delay():
+            click_inspect_query_button()
+
+    with By("clicking refresh button in query inspector"):
+        with delay():
+            click_inspect_query_refresh_button()
+
+    with By("checking url contains necessary headers"):
+        for header in headers:
+            with By(f"checking url contains {header} header"):
+                assert header in get_query_inspector_url_text(), error()

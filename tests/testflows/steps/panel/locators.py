@@ -60,5 +60,20 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Panel status error']")
 
+    @property
+    def query_inspector_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[aria-label='Query inspector button']")
+
+    @property
+    def query_inspector_refresh_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[aria-label='Panel inspector Query refresh button']")
+
+    @property
+    def query_inspector_url(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, "//*[@class='json-formatter-string' and contains(text(), 'api')]")
+
 
 locators = Locators()

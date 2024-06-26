@@ -27,120 +27,121 @@
     * 9.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.ServerAccess](#rqsrsplugindatasourcesetupviewhttpconnectionserveraccess)
 * 10 [Connecting to the Clickhouse Server Without Using Grafana Backend Server ](#connecting-to-the-clickhouse-server-without-using-grafana-backend-server-)
     * 10.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPConnection.BrowserAccess](#rqsrsplugindatasourcesetupviewhttpconnectionbrowseraccess)
-* 11 [ClickHouse Authentification Setup](#clickhouse-authentification-setup)
+* 11 [ClickHouse Authentication Setup](#clickhouse-authentication-setup)
     * 11.1 [RQ.SRS.Plugin.DataSourceSetupView.Auth](#rqsrsplugindatasourcesetupviewauth)
-* 12 [ClickHouse Authentification Setup Using Username And Password](#clickhouse-authentification-setup-using-username-and-password)
+* 12 [ClickHouse Authentication Setup Using Username And Password](#clickhouse-authentication-setup-using-username-and-password)
     * 12.1 [RQ.SRS.Plugin.DataSourceSetupView.BasicAuth](#rqsrsplugindatasourcesetupviewbasicauth)
-* 13 [ClickHouse Authentification Setup Using TLS/SSL Auth Details](#clickhouse-authentification-setup-using-tlsssl-auth-details)
+* 13 [ClickHouse Authentication Setup Using TLS/SSL Auth Details](#clickhouse-authentication-setup-using-tlsssl-auth-details)
     * 13.1 [RQ.SRS.Plugin.DataSourceSetupView.TLS/SSLAuthDetails](#rqsrsplugindatasourcesetupviewtlssslauthdetails)
-* 14 [ClickHouse Authentification Using Forward OAuth Identity](#clickhouse-authentification-using-forward-oauth-identity)
+* 14 [ClickHouse Authentication Using Forward OAuth Identity](#clickhouse-authentication-using-forward-oauth-identity)
     * 14.1 [RQ.SRS.Plugin.DataSourceSetupView.ForwardOAuthIdentity](#rqsrsplugindatasourcesetupviewforwardoauthidentity)
 * 15 [Sending Credentials Setup](#sending-credentials-setup)
     * 15.1 [RQ.SRS.Plugin.DataSourceSetupView.WithCredentials](#rqsrsplugindatasourcesetupviewwithcredentials)
-* 16 [ClickHouse Authentification With CA Certificate](#clickhouse-authentification-with-ca-certificate)
+* 16 [ClickHouse Authentication With CA Certificate](#clickhouse-authentication-with-ca-certificate)
     * 16.1 [RQ.SRS.Plugin.DataSourceSetupView.Auth.WithCACert](#rqsrsplugindatasourcesetupviewauthwithcacert)
-* 17 [Specifying Custom HTTP Headers](#specifying-custom-http-headers)
-    * 17.1 [RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders](#rqsrsplugindatasourcesetupviewcustomhttpheaders)
-    * 17.2 [RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders](#rqsrsplugindatasourcesetupviewdeletingcustomhttpheaders)
-* 18 [Connection To Managed Yandex.Cloud ClickHouse Database Setup](#connection-to-managed-yandexcloud-clickhouse-database-setup)
-    * 18.1 [RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders](#rqsrsplugindatasourcesetupviewuseyandexcloudauthorizationheaders)
-* 19 [Specifying Use CORS Flag In Requests](#specifying-use-cors-flag-in-requests)
-    * 19.1 [RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests](#rqsrsplugindatasourcesetupviewaddcorsflagtorequests)
-* 20 [Specifying Use POST Requests](#specifying-use-post-requests)
-    * 20.1 [RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests](#rqsrsplugindatasourcesetupviewusepostrequests)
-* 21 [Specifying Default Database](#specifying-default-database)
-    * 21.1 [RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase](#rqsrsplugindatasourcesetupviewdefaultdatabase)
-* 22 [Specifying HTTP compression](#specifying-http-compression)
-    * 22.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression](#rqsrsplugindatasourcesetupviewhttpcompression)
-* 23 [Creating Dashboards](#creating-dashboards)
-    * 23.1 [RQ.SRS.Plugin.Dashboards](#rqsrsplugindashboards)
-* 24 [Creating Panels](#creating-panels)
-    * 24.1 [RQ.SRS.Plugin.Panels](#rqsrspluginpanels)
-    * 24.2 [RQ.SRS.Plugin.Panels.Repeated](#rqsrspluginpanelsrepeated)
-* 25 [Multi-user Usage](#multi-user-usage)
-    * 25.1 [RQ.SRS.Plugin.MultiUserUsage](#rqsrspluginmultiuserusage)
-    * 25.2 [RQ.SRS.Plugin.MultiUserUsage.SamePanel](#rqsrspluginmultiuserusagesamepanel)
-    * 25.3 [RQ.SRS.Plugin.MultiUserUsage.DifferentPanels](#rqsrspluginmultiuserusagedifferentpanels)
-    * 25.4 [RQ.SRS.Plugin.MultiUserUsage.SameDashboard](#rqsrspluginmultiuserusagesamedashboard)
-    * 25.5 [RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards](#rqsrspluginmultiuserusagedifferentdashboards)
-* 26 [Query Setup](#query-setup)
-    * 26.1 [RQ.SRS.Plugin.QuerySetup](#rqsrspluginquerysetup)
-* 27 [Query Setup Interface](#query-setup-interface)
-    * 27.1 [RQ.SRS.Plugin.QuerySetupInterface](#rqsrspluginquerysetupinterface)
-* 28 [Query Options](#query-options)
-    * 28.1 [RQ.SRS.Plugin.QueryOptions](#rqsrspluginqueryoptions)
-* 29 [Raw SQL Editor](#raw-sql-editor)
-    * 29.1 [RQ.SRS.Plugin.RawSQLEditorInterface](#rqsrspluginrawsqleditorinterface)
-    * 29.2 [RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor](#rqsrspluginrawsqleditorinterfacesqleditor)
-    * 29.3 [RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation](#rqsrspluginrawsqleditorinterfaceextrapolation)
-    * 29.4 [RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments](#rqsrspluginrawsqleditorinterfaceskipcomments)
-    * 29.5 [RQ.SRS.Plugin.RawSQLEditorInterface.Step](#rqsrspluginrawsqleditorinterfacestep)
-    * 29.6 [RQ.SRS.Plugin.RawSQLEditorInterface.Round](#rqsrspluginrawsqleditorinterfaceround)
-    * 29.7 [RQ.SRS.Plugin.RawSQLEditorInterface.Resolution](#rqsrspluginrawsqleditorinterfaceresolution)
-    * 29.8 [RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs](#rqsrspluginrawsqleditorinterfaceformatas)
-    * 29.9 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp](#rqsrspluginrawsqleditorinterfaceshowhelp)
-    * 29.10 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL](#rqsrspluginrawsqleditorinterfaceshowgeneratedsql)
-    * 29.11 [RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery](#rqsrspluginrawsqleditorinterfacereformatquery)
-* 30 [Auto-complete In Queries](#auto-complete-in-queries)
-    * 30.1 [RQ.SRS.Plugin.AutoCompleteInQueries](#rqsrspluginautocompleteinqueries)
-* 31 [Time range selector](#time-range-selector)
-    * 31.1 [RQ.SRS.Plugin.TimeRangeSelector](#rqsrsplugintimerangeselector)
-    * 31.2 [RQ.SRS.Plugin.TimeRangeSelector.Zoom](#rqsrsplugintimerangeselectorzoom)
-* 32 [Сhanging The Size Of The Graph](#hanging-the-size-of-the-graph)
-    * 32.1 [RQ.SRS.Plugin.FillActual](#rqsrspluginfillactual)
-* 33 [Refresh Databoard](#refresh-databoard)
-    * 33.1 [RQ.SRS.Plugin.RefreshDataboard](#rqsrspluginrefreshdataboard)
-* 34 [Inspecting Query](#inspecting-query)
-    * 34.1 [RQ.SRS.Plugin.QueryInspector](#rqsrspluginqueryinspector)
-    * 34.2 [RQ.SRS.Plugin.QueryInspector.QueryTab](#rqsrspluginqueryinspectorquerytab)
-* 35 [Visualization](#visualization)
-    * 35.1 [RQ.SRS.Plugin.Visualization](#rqsrspluginvisualization)
-    * 35.2 [RQ.SRS.Plugin.Visualization.Legends](#rqsrspluginvisualizationlegends)
-    * 35.3 [Table View](#table-view)
-        * 35.3.1 [RQ.SRS.Plugin.Visualization.Table](#rqsrspluginvisualizationtable)
-    * 35.4 [Visualization Types](#visualization-types)
-        * 35.4.1 [RQ.SRS.Plugin.Visualization.VisualizationTypes](#rqsrspluginvisualizationvisualizationtypes)
-        * 35.4.2 [RQ.SRS.Plugin.Visualization.VisualizationTypes.DataTypes](#rqsrspluginvisualizationvisualizationtypesdatatypes)
-* 36 [Macros](#macros)
-    * 36.1 [RQ.SRS.Plugin.QuerySettings.Macros](#rqsrspluginquerysettingsmacros)
-    * 36.2 [RQ.SRS.Plugin.QuerySettings.Macros.Table](#rqsrspluginquerysettingsmacrostable)
-    * 36.3 [RQ.SRS.Plugin.QuerySettings.Macros.DateCol](#rqsrspluginquerysettingsmacrosdatecol)
-    * 36.4 [RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol](#rqsrspluginquerysettingsmacrosdatetimecol)
-    * 36.5 [RQ.SRS.Plugin.QuerySettings.Macros.From](#rqsrspluginquerysettingsmacrosfrom)
-    * 36.6 [RQ.SRS.Plugin.QuerySettings.Macros.To](#rqsrspluginquerysettingsmacrosto)
-    * 36.7 [RQ.SRS.Plugin.QuerySettings.Macros.Interval](#rqsrspluginquerysettingsmacrosinterval)
-    * 36.8 [RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn](#rqsrspluginquerysettingsmacrostimefilterbycolumn)
-    * 36.9 [RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries](#rqsrspluginquerysettingsmacrostimeseries)
-    * 36.10 [RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries](#rqsrspluginquerysettingsmacrosnaturaltimeseries)
-    * 36.11 [RQ.SRS.Plugin.QuerySettings.Macros.Unescape](#rqsrspluginquerysettingsmacrosunescape)
-    * 36.12 [RQ.SRS.Plugin.QuerySettings.Macros.Adhoc](#rqsrspluginquerysettingsmacrosadhoc)
-* 37 [Variables Setup](#variables-setup)
-    * 37.1 [RQ.SRS.Plugin.Variables](#rqsrspluginvariables)
-* 38 [Annotations Setup](#annotations-setup)
-    * 38.1 [RQ.SRS.Plugin.Annotations](#rqsrspluginannotations)
-* 39 [Setaping Alerts](#setaping-alerts)
-    * 39.1 [RQ.SRS.Plugin.Alerts](#rqsrspluginalerts)
-    * 39.2 [RQ.SRS.Plugin.Alerts.AlertSetupPage](#rqsrspluginalertsalertsetuppage)
-    * 39.3 [RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged](#rqsrspluginalertsruletypegrafanamanaged)
-    * 39.4 [RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged](#rqsrspluginalertsruletypedatasourcemanaged)
-* 40 [Functions](#functions)
-    * 40.1 [RQ.SRS.Plugin.Functions](#rqsrspluginfunctions)
-    * 40.2 [RQ.SRS.Plugin.Functions.Rate](#rqsrspluginfunctionsrate)
-    * 40.3 [RQ.SRS.Plugin.Functions.Columns](#rqsrspluginfunctionscolumns)
-    * 40.4 [RQ.SRS.Plugin.Functions.RateColumns](#rqsrspluginfunctionsratecolumns)
-    * 40.5 [RQ.SRS.Plugin.Functions.PerSecond](#rqsrspluginfunctionspersecond)
-    * 40.6 [RQ.SRS.Plugin.Functions.PerSecondColumns](#rqsrspluginfunctionspersecondcolumns)
-    * 40.7 [RQ.SRS.Plugin.Functions.Delta](#rqsrspluginfunctionsdelta)
-    * 40.8 [RQ.SRS.Plugin.Functions.DeltaColumns](#rqsrspluginfunctionsdeltacolumns)
-    * 40.9 [RQ.SRS.Plugin.Functions.Increase](#rqsrspluginfunctionsincrease)
-    * 40.10 [RQ.SRS.Plugin.Functions.IncreaseColumns](#rqsrspluginfunctionsincreasecolumns)
-    * 40.11 [RQ.SRS.Plugin.Functions.Lttb](#rqsrspluginfunctionslttb)
-    * 40.12 [RQ.SRS.Plugin.Functions.SubQuery](#rqsrspluginfunctionssubquery)
-* 41 [Supported ClickHouse Datatypes](#supported-clickhouse-datatypes)
-    * 41.1 [RQ.SRS.Plugin.SupportedDataTypes](#rqsrspluginsupporteddatatypes)
-    * 41.2 [RQ.SRS.Plugin.SupportedDataTypes.LimitValues](#rqsrspluginsupporteddatatypeslimitvalues)
-* 42 [Versions Compatibility](#versions-compatibility)
-    * 42.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrspluginversioncompatibility)
+* 17 [ClickHouse Authentication Without CA Certificate](#clickhouse-authentication-without-ca-certificate)
+    * 17.1 [RQ.SRS.Plugin.DataSourceSetupView.Auth.SkipTLSVerify](#rqsrsplugindatasourcesetupviewauthskiptlsverify)
+* 18 [Specifying Custom HTTP Headers](#specifying-custom-http-headers)
+    * 18.1 [RQ.SRS.Plugin.DataSourceSetupView.CustomHTTPHeaders](#rqsrsplugindatasourcesetupviewcustomhttpheaders)
+    * 18.2 [RQ.SRS.Plugin.DataSourceSetupView.DeletingCustomHTTPHeaders](#rqsrsplugindatasourcesetupviewdeletingcustomhttpheaders)
+* 19 [Connection To Managed Yandex.Cloud ClickHouse Database Setup](#connection-to-managed-yandexcloud-clickhouse-database-setup)
+    * 19.1 [RQ.SRS.Plugin.DataSourceSetupView.UseYandexCloudAuthorizationHeaders](#rqsrsplugindatasourcesetupviewuseyandexcloudauthorizationheaders)
+* 20 [Specifying Use CORS Flag In Requests](#specifying-use-cors-flag-in-requests)
+    * 20.1 [RQ.SRS.Plugin.DataSourceSetupView.AddCORSFlagToRequests](#rqsrsplugindatasourcesetupviewaddcorsflagtorequests)
+* 21 [Specifying Use POST Requests](#specifying-use-post-requests)
+    * 21.1 [RQ.SRS.Plugin.DataSourceSetupView.UsePostRequests](#rqsrsplugindatasourcesetupviewusepostrequests)
+* 22 [Specifying Default Database](#specifying-default-database)
+    * 22.1 [RQ.SRS.Plugin.DataSourceSetupView.DefaultDatabase](#rqsrsplugindatasourcesetupviewdefaultdatabase)
+* 23 [Specifying HTTP compression](#specifying-http-compression)
+    * 23.1 [RQ.SRS.Plugin.DataSourceSetupView.HTTPCompression](#rqsrsplugindatasourcesetupviewhttpcompression)
+* 24 [Creating Dashboards](#creating-dashboards)
+    * 24.1 [RQ.SRS.Plugin.Dashboards](#rqsrsplugindashboards)
+* 25 [Creating Panels](#creating-panels)
+    * 25.1 [RQ.SRS.Plugin.Panels](#rqsrspluginpanels)
+    * 25.2 [RQ.SRS.Plugin.Panels.Repeated](#rqsrspluginpanelsrepeated)
+* 26 [Multi-user Usage](#multi-user-usage)
+    * 26.1 [RQ.SRS.Plugin.MultiUserUsage](#rqsrspluginmultiuserusage)
+    * 26.2 [RQ.SRS.Plugin.MultiUserUsage.SamePanel](#rqsrspluginmultiuserusagesamepanel)
+    * 26.3 [RQ.SRS.Plugin.MultiUserUsage.DifferentPanels](#rqsrspluginmultiuserusagedifferentpanels)
+    * 26.4 [RQ.SRS.Plugin.MultiUserUsage.SameDashboard](#rqsrspluginmultiuserusagesamedashboard)
+    * 26.5 [RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards](#rqsrspluginmultiuserusagedifferentdashboards)
+* 27 [Query Setup](#query-setup)
+    * 27.1 [RQ.SRS.Plugin.QuerySetup](#rqsrspluginquerysetup)
+* 28 [Query Setup Interface](#query-setup-interface)
+    * 28.1 [RQ.SRS.Plugin.QuerySetupInterface](#rqsrspluginquerysetupinterface)
+* 29 [Query Options](#query-options)
+    * 29.1 [RQ.SRS.Plugin.QueryOptions](#rqsrspluginqueryoptions)
+* 30 [Raw SQL Editor](#raw-sql-editor)
+    * 30.1 [RQ.SRS.Plugin.RawSQLEditorInterface](#rqsrspluginrawsqleditorinterface)
+    * 30.2 [RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor](#rqsrspluginrawsqleditorinterfacesqleditor)
+    * 30.3 [RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation](#rqsrspluginrawsqleditorinterfaceextrapolation)
+    * 30.4 [RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments](#rqsrspluginrawsqleditorinterfaceskipcomments)
+    * 30.5 [RQ.SRS.Plugin.RawSQLEditorInterface.Step](#rqsrspluginrawsqleditorinterfacestep)
+    * 30.6 [RQ.SRS.Plugin.RawSQLEditorInterface.Round](#rqsrspluginrawsqleditorinterfaceround)
+    * 30.7 [RQ.SRS.Plugin.RawSQLEditorInterface.Resolution](#rqsrspluginrawsqleditorinterfaceresolution)
+    * 30.8 [RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs](#rqsrspluginrawsqleditorinterfaceformatas)
+    * 30.9 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp](#rqsrspluginrawsqleditorinterfaceshowhelp)
+    * 30.10 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL](#rqsrspluginrawsqleditorinterfaceshowgeneratedsql)
+    * 30.11 [RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery](#rqsrspluginrawsqleditorinterfacereformatquery)
+* 31 [Auto-complete In Queries](#auto-complete-in-queries)
+    * 31.1 [RQ.SRS.Plugin.AutoCompleteInQueries](#rqsrspluginautocompleteinqueries)
+* 32 [Time range selector](#time-range-selector)
+    * 32.1 [RQ.SRS.Plugin.TimeRangeSelector](#rqsrsplugintimerangeselector)
+    * 32.2 [RQ.SRS.Plugin.TimeRangeSelector.Zoom](#rqsrsplugintimerangeselectorzoom)
+* 33 [Сhanging The Size Of The Graph](#hanging-the-size-of-the-graph)
+    * 33.1 [RQ.SRS.Plugin.FillActual](#rqsrspluginfillactual)
+* 34 [Refresh Databoard](#refresh-databoard)
+    * 34.1 [RQ.SRS.Plugin.RefreshDataboard](#rqsrspluginrefreshdataboard)
+* 35 [Inspecting Query](#inspecting-query)
+    * 35.1 [RQ.SRS.Plugin.QueryInspector](#rqsrspluginqueryinspector)
+    * 35.2 [RQ.SRS.Plugin.QueryInspector.QueryTab](#rqsrspluginqueryinspectorquerytab)
+* 36 [Visualization](#visualization)
+    * 36.1 [RQ.SRS.Plugin.Visualization](#rqsrspluginvisualization)
+    * 36.2 [RQ.SRS.Plugin.Visualization.Legends](#rqsrspluginvisualizationlegends)
+    * 36.3 [Table View](#table-view)
+        * 36.3.1 [RQ.SRS.Plugin.Visualization.Table](#rqsrspluginvisualizationtable)
+    * 36.4 [Visualization Types](#visualization-types)
+        * 36.4.1 [RQ.SRS.Plugin.Visualization.VisualizationTypes](#rqsrspluginvisualizationvisualizationtypes)
+* 37 [Macros](#macros)
+    * 37.1 [RQ.SRS.Plugin.QuerySettings.Macros](#rqsrspluginquerysettingsmacros)
+    * 37.2 [RQ.SRS.Plugin.QuerySettings.Macros.Table](#rqsrspluginquerysettingsmacrostable)
+    * 37.3 [RQ.SRS.Plugin.QuerySettings.Macros.DateCol](#rqsrspluginquerysettingsmacrosdatecol)
+    * 37.4 [RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol](#rqsrspluginquerysettingsmacrosdatetimecol)
+    * 37.5 [RQ.SRS.Plugin.QuerySettings.Macros.From](#rqsrspluginquerysettingsmacrosfrom)
+    * 37.6 [RQ.SRS.Plugin.QuerySettings.Macros.To](#rqsrspluginquerysettingsmacrosto)
+    * 37.7 [RQ.SRS.Plugin.QuerySettings.Macros.Interval](#rqsrspluginquerysettingsmacrosinterval)
+    * 37.8 [RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn](#rqsrspluginquerysettingsmacrostimefilterbycolumn)
+    * 37.9 [RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries](#rqsrspluginquerysettingsmacrostimeseries)
+    * 37.10 [RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries](#rqsrspluginquerysettingsmacrosnaturaltimeseries)
+    * 37.11 [RQ.SRS.Plugin.QuerySettings.Macros.Unescape](#rqsrspluginquerysettingsmacrosunescape)
+    * 37.12 [RQ.SRS.Plugin.QuerySettings.Macros.Adhoc](#rqsrspluginquerysettingsmacrosadhoc)
+* 38 [Variables Setup](#variables-setup)
+    * 38.1 [RQ.SRS.Plugin.Variables](#rqsrspluginvariables)
+* 39 [Annotations Setup](#annotations-setup)
+    * 39.1 [RQ.SRS.Plugin.Annotations](#rqsrspluginannotations)
+* 40 [Setaping Alerts](#setaping-alerts)
+    * 40.1 [RQ.SRS.Plugin.Alerts](#rqsrspluginalerts)
+    * 40.2 [RQ.SRS.Plugin.Alerts.AlertSetupPage](#rqsrspluginalertsalertsetuppage)
+    * 40.3 [RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged](#rqsrspluginalertsruletypegrafanamanaged)
+    * 40.4 [RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged](#rqsrspluginalertsruletypedatasourcemanaged)
+* 41 [Functions](#functions)
+    * 41.1 [RQ.SRS.Plugin.Functions](#rqsrspluginfunctions)
+    * 41.2 [RQ.SRS.Plugin.Functions.Rate](#rqsrspluginfunctionsrate)
+    * 41.3 [RQ.SRS.Plugin.Functions.Columns](#rqsrspluginfunctionscolumns)
+    * 41.4 [RQ.SRS.Plugin.Functions.RateColumns](#rqsrspluginfunctionsratecolumns)
+    * 41.5 [RQ.SRS.Plugin.Functions.PerSecond](#rqsrspluginfunctionspersecond)
+    * 41.6 [RQ.SRS.Plugin.Functions.PerSecondColumns](#rqsrspluginfunctionspersecondcolumns)
+    * 41.7 [RQ.SRS.Plugin.Functions.Delta](#rqsrspluginfunctionsdelta)
+    * 41.8 [RQ.SRS.Plugin.Functions.DeltaColumns](#rqsrspluginfunctionsdeltacolumns)
+    * 41.9 [RQ.SRS.Plugin.Functions.Increase](#rqsrspluginfunctionsincrease)
+    * 41.10 [RQ.SRS.Plugin.Functions.IncreaseColumns](#rqsrspluginfunctionsincreasecolumns)
+    * 41.11 [RQ.SRS.Plugin.Functions.Lttb](#rqsrspluginfunctionslttb)
+    * 41.12 [RQ.SRS.Plugin.Functions.SubQuery](#rqsrspluginfunctionssubquery)
+* 42 [Supported ClickHouse Datatypes](#supported-clickhouse-datatypes)
+    * 42.1 [RQ.SRS.Plugin.SupportedDataTypes](#rqsrspluginsupporteddatatypes)
+    * 42.2 [RQ.SRS.Plugin.SupportedDataTypes.LimitValues](#rqsrspluginsupporteddatatypeslimitvalues)
+* 43 [Versions Compatibility](#versions-compatibility)
+    * 43.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrspluginversioncompatibility)
 
 
 ## Revision History
@@ -270,7 +271,7 @@ version: 1.0
 The [Plugin] SHALL support connecting to the [ClickHouse] server by selecting the `Browser` option in the `Access` dropdown menu
 in the data source setup view. In this case all requests SHALL be made from the browser directly to the data source.
 
-## ClickHouse Authentification Setup
+## ClickHouse Authentication Setup
 
 ### RQ.SRS.Plugin.DataSourceSetupView.Auth
 version: 1.0
@@ -284,7 +285,7 @@ The [Plugin] SHALL support specifying authentication details by specifying the f
 * `With Credentials`
 * `With CA Cert`
 
-## ClickHouse Authentification Setup Using Username And Password
+## ClickHouse Authentication Setup Using Username And Password
 
 ### RQ.SRS.Plugin.DataSourceSetupView.BasicAuth
 version: 1.0
@@ -294,7 +295,7 @@ and specifying username and password in the `User` and `Password` text fields, r
 be able to be empty. The [Plugin] SHALL add the `Basic Auth Details` section to the data source setup view only if the `Basic auth`
 toggle is on.
 
-## ClickHouse Authentification Setup Using TLS/SSL Auth Details
+## ClickHouse Authentication Setup Using TLS/SSL Auth Details
 
 ### RQ.SRS.Plugin.DataSourceSetupView.TLS/SSLAuthDetails
 version: 1.0
@@ -304,7 +305,7 @@ the `TLS Client Auth` toggle and specifying these options in the `ServerName`, `
 The [Plugin] SHALL add `ServerName`, `Client Cert`, and `Client Key` text fields to the data source setup view only if the 
 `TLS Client Auth` toggle is on.
 
-## ClickHouse Authentification Using Forward OAuth Identity
+## ClickHouse Authentication Using Forward OAuth Identity
 
 ### RQ.SRS.Plugin.DataSourceSetupView.ForwardOAuthIdentity
 version: 1.0
@@ -320,7 +321,7 @@ version: 1.0
 The [Plugin] SHALL support sending credentials such as cookies or authentication headers with cross-site 
 requests by turning on the `With Credentials` toggle.
 
-## ClickHouse Authentification With CA Certificate
+## ClickHouse Authentication With CA Certificate
 
 ### RQ.SRS.Plugin.DataSourceSetupView.Auth.WithCACert
 version: 1.0
@@ -328,6 +329,15 @@ version: 1.0
 The [Plugin] SHALL support specifying the CA certificate that will be used to access the [ClickHouse] server 
 by turning on the `With CA Cert` toggle and specifying the `CA Cert` text field. The [Plugin] SHALL add the 
 `CA Cert` text field to the data source setup view only if the `TLS Client Auth` toggle is on.
+
+## ClickHouse Authentication Without CA Certificate
+
+### RQ.SRS.Plugin.DataSourceSetupView.Auth.SkipTLSVerify
+version: 1.0
+
+The [Plugin] SHALL support connecting to clickhouse using HTTPS connection without specifying CA certificate
+by turning on `Skip TLS verify` toggle.
+
 
 ## Specifying Custom HTTP Headers
 

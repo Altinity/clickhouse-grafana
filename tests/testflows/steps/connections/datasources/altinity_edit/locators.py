@@ -16,6 +16,11 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Datasource HTTP settings url']")
 
+    @property
+    def default_toggle(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[for='basic-settings-default']")
+
     def access_dropdown(self, value="Server"):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[class*='input-wrapper width-20 gf-form-input']")
@@ -56,6 +61,11 @@ class Locators:
         return driver.find_element(SelectBy.CSS_SELECTOR, "[for='http-settings-skip-tls-verify']")
 
     @property
+    def default_database_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-test-id='default-database-input']")
+
+    @property
     def forward_oauth_identity_toggle(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[for='http-settings-forward-oauth']")
@@ -74,6 +84,17 @@ class Locators:
     def use_post_method_to_send_queries(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[for='usePOST']")
+
+    @property
+    def use_compression(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[for='useCompressions']")
+
+    @property
+    def compression_type_input(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR,
+                                   "[id = 'react-select-3-input']")
 
     @property
     def ca_cert_textfield(self):
@@ -132,5 +153,7 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR,
                                    "[data-testid='data-testid Confirm Modal Danger Button']")
+
+
 
 locators = Locators()

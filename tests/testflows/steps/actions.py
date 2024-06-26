@@ -95,11 +95,27 @@ def check_screenshot(self, screenshot_name):
     return len(boxes) == 1
 
 
+@TestStep(Then)
+def check_screenshot_contains_green(self, screenshot_name, expected_green_pixels=3000):
+    """Check that graph is valid."""
+    with By("opening image"):
+        image = Image.open(f"./tests/testflows/screenshots/{screenshot_name}.png")
+
+    with By("processing image"):
+        red, green, blue, _ = image.split()
+        threshold = 100
+        gr = green.point(lambda x: 255 if x > threshold else 0)
+
+    with By("checking graph contains enough green pixels"):
+        return gr.histogram()[255] > expected_green_pixels
+
+
 @TestStep(Given)
 def create_new_altinity_datasource(
         self,
         datasource_name,
         url,
+        default=False,
         successful_connection=True,
         access_type=None,
         basic_auth=False,
@@ -117,7 +133,9 @@ def create_new_altinity_datasource(
         ca_cert=None,
         skip_tls_verify=False,
         forward_oauth_identity=False,
+        add_cors_flag=False,
         use_post_method=False,
+        use_compression=False,
 ):
     """Create new datasource.
 
@@ -156,6 +174,11 @@ def create_new_altinity_datasource(
             with delay():
                 with By("entering url"):
                     datasources_altinity_edit.enter_url_into_url_field(url=url)
+
+            if default:
+                with delay():
+                    with By("clicking default toggle"):
+                        datasources_altinity_edit.click_default_toggle()
 
             if not (access_type is None):
                 with delay():
@@ -214,6 +237,19 @@ def create_new_altinity_datasource(
                 with delay():
                     with By("clicking use post method toggle"):
                         datasources_altinity_edit.click_use_post_method_toggle()
+
+            if add_cors_flag:
+                with delay():
+                    with By("clicking add CORS flag toggle"):
+                        datasources_altinity_edit.click_add_cors_flag_to_request_toggle()
+
+            if use_compression:
+                with delay():
+                    with By("clicking use compression toggle"):
+                        datasources_altinity_edit.click_use_compression_toggle()
+                with delay():
+                    with By("enter compression type"):
+                        datasources_altinity_edit.enter_compression_type(compression_type='gzip')
 
             with delay():
                 with By("clicking save and test button"):

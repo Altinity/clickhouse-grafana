@@ -74,6 +74,7 @@ def regression(self, before, after):
             login.login()
 
     Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
+    Feature(run=load("testflows.tests.automated.e2e", "feature"))
 
 
 if main():

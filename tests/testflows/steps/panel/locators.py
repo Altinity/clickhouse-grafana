@@ -73,7 +73,10 @@ class Locators:
     @property
     def query_inspector_url(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, "//*[@class='json-formatter-string' and contains(text(), 'api')]")
+        return driver.find_element(SelectBy.XPATH, "//*[(@class='json-formatter-string' and "
+                                                   "contains(text(), 'api')) or "
+                                                   "(@class='json-formatter-string json-formatter-url' and "
+                                                   "contains(text(), 'http'))]")
 
 
 locators = Locators()

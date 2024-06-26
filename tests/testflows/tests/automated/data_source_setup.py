@@ -49,7 +49,7 @@ def check_existing_data_sources(self):
 def check_creating_datasource_and_panel(
         self,
         datasource_name,
-        url,
+        url="http://clickhouse:8123",
         default=False,
         successful_connection=True,
         access_type=None,
@@ -69,7 +69,7 @@ def check_creating_datasource_and_panel(
         dashboard_name="dashboard_panel",
         use_post_method=False,
         add_cors_flag=False,
-        headers=None,
+        url_contains=None,
         use_compression=False,
         query="SELECT now() - Interval number minute, number from numbers(60)",
         check_visualization=True,
@@ -176,7 +176,7 @@ def check_creating_datasource_and_panel(
 
     if check_url_in_query_inspector:
         with Then("I check url in query inspector"):
-            panel.check_query_inspector_request(headers=headers)
+            panel.check_query_inspector_request(url_contains=url_contains)
 
 
 @TestScenario
@@ -330,7 +330,7 @@ def check_success_cors_headers(self):
         url="http://clickhouse:8123",
         add_cors_flag=True,
         check_url_in_query_inspector=True,
-        headers=["add_http_cors_header=1"]
+        url_contains=["add_http_cors_header=1"]
     )
 
 
@@ -343,7 +343,7 @@ def check_success_use_compression(self):
         url="http://clickhouse:8123",
         use_compression=True,
         check_url_in_query_inspector=True,
-        headers=["enable_http_compression"]
+        url_contains=["enable_http_compression"]
     )
 
 
@@ -420,14 +420,25 @@ def check_fail_skip_tls_verify(self):
     )
 
 
+@TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection_BrowserAccess("1.0"))
+def check_success_browser_access(self):
+    """Check that plugin not supports datasources with browser access."""
+    check_creating_datasource_and_panel(
+        datasource_name="test_success_browser_access",
+        access_type='Browser',
+        check_url_in_query_inspector=True,
+        url_contains=["clickhouse:8123"]
+    )
+
 
 @TestFeature
 @Requirements(
     RQ_SRS_Plugin_DataSourceSetupView("1.0"),
     RQ_SRS_Plugin_DataSourceSetupView_DataSourceName("1.0"),
     RQ_SRS_Plugin_DataSourceSetupView_SaveAndTestButton("1.0"),
-    RQ_SRS_Plugin_Panels("1.0")
-
+    RQ_SRS_Plugin_Panels("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection_ServerAccess("1.0")
 )
 @Name("data source setup")
 def feature(self):

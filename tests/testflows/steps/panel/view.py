@@ -253,7 +253,7 @@ def get_query_inspector_url_text(self):
 
 
 @TestStep(Then)
-def check_query_inspector_request(self, headers):
+def check_query_inspector_request(self, url_contains):
     """Check url in query inspector."""
 
     with By("opening query inspector"):
@@ -264,7 +264,7 @@ def check_query_inspector_request(self, headers):
         with delay():
             click_inspect_query_refresh_button()
 
-    with By("checking url contains necessary headers"):
-        for header in headers:
-            with By(f"checking url contains {header} header"):
-                assert header in get_query_inspector_url_text(), error()
+    with By("checking url contains necessary parts"):
+        for url_part in url_contains:
+            with By(f"checking url contains {url_part}"):
+                assert url_part in get_query_inspector_url_text(), error()

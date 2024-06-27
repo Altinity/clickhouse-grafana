@@ -10,5 +10,9 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, f"//a[text()='{datasource_name}']")
 
+    def datasource_card(self, datasource_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f"//a[text()='{datasource_name}']/parent::*/parent::*")
+
 
 locators = Locators()

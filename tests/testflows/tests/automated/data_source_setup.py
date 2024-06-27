@@ -49,7 +49,8 @@ def check_existing_data_sources(self):
 def check_creating_datasource_and_panel(
         self,
         datasource_name,
-        url,
+        url="http://clickhouse:8123",
+        default=False,
         successful_connection=True,
         access_type=None,
         basic_auth=False,
@@ -64,11 +65,18 @@ def check_creating_datasource_and_panel(
         client_key=None,
         with_ca_cert=False,
         ca_cert=None,
+        skip_tls_verify=False,
         dashboard_name="dashboard_panel",
         use_post_method=False,
+        add_cors_flag=False,
+        url_contains=None,
+        use_compression=False,
         query="SELECT now() - Interval number minute, number from numbers(60)",
         check_visualization=True,
         check_visualization_alert=False,
+        check_url_in_query_inspector=False,
+        check_datasource_is_default=False,
+        default_database=None,
 ):
     """Check that Plugin supports creating altinity datasources and panels using altinity datasources.
 
@@ -101,6 +109,7 @@ def check_creating_datasource_and_panel(
             datasource_name=datasource_name,
             access_type=access_type,
             url=url,
+            default=default,
             successful_connection=successful_connection,
             basic_auth=basic_auth,
             username=username,
@@ -110,14 +119,23 @@ def check_creating_datasource_and_panel(
             yandex_cloud_password=yandex_cloud_password,
             with_ca_cert=with_ca_cert,
             ca_cert=ca_cert,
+            skip_tls_verify=skip_tls_verify,
             tls_client_auth=tls_client_auth,
             server_name=server_name,
             client_cert=client_cert,
             client_key=client_key,
+            add_cors_flag=add_cors_flag,
+            use_compression=use_compression,
+            default_database=default_database
         )
 
     if not successful_connection:
         return
+
+    if check_datasource_is_default:
+        with Then("I check datasource is default"):
+            with delay():
+                assert datasources.check_datasource_is_default(datasource_name=datasource_name) is True
 
     with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name=dashboard_name)
@@ -129,15 +147,15 @@ def check_creating_datasource_and_panel(
         with delay():
             panel.select_datasource_in_panel_view(datasource_name=datasource_name)
 
-    with delay():
-        with When("I open SQL editor"):
+    with When("I open SQL editor"):
+        with delay():
             panel.go_to_sql_editor()
 
     with When("I enter query to SQL editor"):
         panel.enter_sql_editor_input(query=query)
 
-    with delay():
-        with Then("I click on the visualization to see results"):
+    with Then("I click on the visualization to see results"):
+        with delay():
             panel.click_on_the_visualization()
 
     if check_visualization:
@@ -155,6 +173,10 @@ def check_creating_datasource_and_panel(
         else:
             with Then("I check there is no alert"):
                 assert panel.check_panel_error_exists() is False, error()
+
+    if check_url_in_query_inspector:
+        with Then("I check url in query inspector"):
+            panel.check_query_inspector_request(url_contains=url_contains)
 
 
 @TestScenario
@@ -299,13 +321,124 @@ def check_fail_use_yandex_cloud(self):
     )
 
 
+@TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_AddCORSFlagToRequests("1.0"))
+def check_success_cors_headers(self):
+    """Check that plugin supports datasources with add CORS flag toggle turned on."""
+    check_creating_datasource_and_panel(
+        datasource_name="test_cors_flag_success",
+        url="http://clickhouse:8123",
+        add_cors_flag=True,
+        check_url_in_query_inspector=True,
+        url_contains=["add_http_cors_header=1"]
+    )
+
+
+@TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_HTTPCompression("1.0"))
+def check_success_use_compression(self):
+    """Check that plugin supports datasources with use compression toggle turned on."""
+    check_creating_datasource_and_panel(
+        datasource_name="test_use_compression_success",
+        url="http://clickhouse:8123",
+        use_compression=True,
+        check_url_in_query_inspector=True,
+        url_contains=["enable_http_compression"]
+    )
+
+
+@TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_DefaultDataSource("1.0"))
+def check_success_default_datasource(self):
+    """Check that plugin supports datasources with use compression toggle turned on."""
+    check_creating_datasource_and_panel(
+        datasource_name="test_success_default_datasource",
+        url="http://clickhouse:8123",
+        default=True,
+        check_datasource_is_default=True
+    )
+
+
+@TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_DefaultDatabase("1.0"))
+def check_success_default_database(self):
+    """Check that plugin supports datasources with specified default database and
+    query that contains table from this database."""
+    check_creating_datasource_and_panel(
+        datasource_name="test_success_default_database",
+        url="http://clickhouse:8123",
+        default_database="system",
+        query="SELECT * FROM backups",
+        check_visualization=False,
+    )
+
+
+@TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_DefaultDatabase("1.0"))
+def check_fail_default_database(self):
+    """Check that plugin not supports datasources without specified default database and
+    query that contains table from this database."""
+    check_creating_datasource_and_panel(
+        datasource_name="test_fail_default_database",
+        url="http://clickhouse:8123",
+        query="SELECT * FROM backups",
+        check_visualization_alert=True,
+        check_visualization=False,
+    )
+
+
+@TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_Auth_SkipTLSVerify("1.0"))
+def check_success_skip_tls_verify(self):
+    """Check that plugin supports datasources with Skip TLS Verify toggle turned on
+    with secured port and without CA cert configured."""
+    check_creating_datasource_and_panel(
+        datasource_name="test_success_skip_tls_verify",
+        url="https://clickhouse:8443",
+        tls_client_auth=True,
+        server_name=None,
+        client_cert=None,
+        client_key=None,
+        skip_tls_verify=True,
+    )
+
+
+@TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_Auth_SkipTLSVerify("1.0"))
+def check_fail_skip_tls_verify(self):
+    """Check that plugin not supports datasources with Skip TLS Verify toggle turned off
+    with secured port and without CA cert configured."""
+    check_creating_datasource_and_panel(
+        datasource_name="test_fail_skip_tls_verify",
+        url="https://clickhouse:8443",
+        tls_client_auth=True,
+        server_name=None,
+        client_cert=None,
+        client_key=None,
+        skip_tls_verify=False,
+        successful_connection=False,
+    )
+
+
+@TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection_BrowserAccess("1.0"))
+def check_success_browser_access(self):
+    """Check that plugin not supports datasources with browser access."""
+    check_creating_datasource_and_panel(
+        datasource_name="test_success_browser_access",
+        access_type='Browser',
+        check_url_in_query_inspector=True,
+        url_contains=["clickhouse:8123"]
+    )
+
+
 @TestFeature
 @Requirements(
     RQ_SRS_Plugin_DataSourceSetupView("1.0"),
     RQ_SRS_Plugin_DataSourceSetupView_DataSourceName("1.0"),
     RQ_SRS_Plugin_DataSourceSetupView_SaveAndTestButton("1.0"),
-    RQ_SRS_Plugin_Panels("1.0")
-
+    RQ_SRS_Plugin_Panels("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection_ServerAccess("1.0")
 )
 @Name("data source setup")
 def feature(self):

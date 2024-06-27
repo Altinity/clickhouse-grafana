@@ -1,5 +1,6 @@
 from testflows.core import *
 
+from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By as SelectBy
 
@@ -55,6 +56,13 @@ def click_save_and_test_button(self):
     """Click submit button."""
 
     locators.save_and_test_button.click()
+
+
+@TestStep(When)
+def click_default_toggle(self):
+    """Click default toggle."""
+
+    locators.default_toggle.click()
 
 
 @TestStep(When)
@@ -122,6 +130,14 @@ def click_skip_tls_verify_toggle(self):
 
 
 @TestStep(When)
+def enter_default_database(self, database_name):
+    """Enter default database into default database textfield."""
+
+    ActionChains(self.context.driver).double_click(locators.default_database_textfield).click(locators.default_database_textfield).perform()
+    locators.default_database_textfield.send_keys(database_name)
+
+
+@TestStep(When)
 def click_forward_oauth_identity_toggle(self):
     """Click forward oauth identity toggle."""
 
@@ -133,6 +149,28 @@ def click_use_post_method_toggle(self):
     """Click forward oauth identity toggle."""
 
     locators.use_post_method_to_send_queries.click()
+
+
+@TestStep(When)
+def click_add_cors_flag_to_request_toggle(self):
+    """Click add CORS flag to request toggle."""
+
+    locators.add_cors_flag_to_requests.click()
+
+
+@TestStep(When)
+def click_use_compression_toggle(self):
+    """Click Use Compression toggle."""
+
+    locators.use_compression.click()
+
+
+@TestStep(When)
+def enter_compression_type(self, compression_type):
+    """Enter Compression type."""
+
+    locators.compression_type_input.send_keys(compression_type)
+    locators.compression_type_input.send_keys(Keys.ENTER)
 
 
 @TestStep(When)

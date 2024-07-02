@@ -69,7 +69,7 @@ def check_creating_datasource_and_panel(
         dashboard_name="dashboard_panel",
         use_post_method=False,
         add_cors_flag=False,
-        url_contains=None,
+        url_parts=None,
         use_compression=False,
         query="SELECT now() - Interval number minute, number from numbers(60)",
         check_visualization=True,
@@ -176,7 +176,7 @@ def check_creating_datasource_and_panel(
 
     if check_url_in_query_inspector:
         with Then("I check url in query inspector"):
-            panel.check_query_inspector_request(url_contains=url_contains)
+            panel.check_query_inspector_request(url_parts=url_parts)
 
 
 @TestScenario
@@ -330,7 +330,7 @@ def check_success_cors_headers(self):
         url="http://clickhouse:8123",
         add_cors_flag=True,
         check_url_in_query_inspector=True,
-        url_contains=["add_http_cors_header=1"]
+        url_parts=["add_http_cors_header=1"]
     )
 
 
@@ -343,7 +343,7 @@ def check_success_use_compression(self):
         url="http://clickhouse:8123",
         use_compression=True,
         check_url_in_query_inspector=True,
-        url_contains=["enable_http_compression"]
+        url_parts=["enable_http_compression"]
     )
 
 
@@ -428,7 +428,7 @@ def check_success_browser_access(self):
         datasource_name="test_success_browser_access",
         access_type='Browser',
         check_url_in_query_inspector=True,
-        url_contains=["clickhouse:8123"]
+        url_parts=["clickhouse:8123"]
     )
 
 

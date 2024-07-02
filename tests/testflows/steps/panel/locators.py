@@ -19,7 +19,7 @@ class Locators:
     @property
     def visualization(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[class ='css-1hy9z4n']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid panel content']")
 
     @property
     def select_datasource_button(self):

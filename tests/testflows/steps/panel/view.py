@@ -168,7 +168,7 @@ def wait_visualization(self):
     """Wait visualization to be loaded."""
 
     ui.wait_for_element_to_be_visible(
-        select_type=SelectBy.CSS_SELECTOR, element=f"[class='css-1hy9z4n']"
+        select_type=SelectBy.CSS_SELECTOR, element=f"[data-testid='data-testid panel content']"
     )
 
 
@@ -253,7 +253,7 @@ def get_query_inspector_url_text(self):
 
 
 @TestStep(Then)
-def check_query_inspector_request(self, url_contains):
+def check_query_inspector_request(self, url_parts):
     """Check url in query inspector."""
 
     with By("opening query inspector"):
@@ -265,6 +265,6 @@ def check_query_inspector_request(self, url_contains):
             click_inspect_query_refresh_button()
 
     with By("checking url contains necessary parts"):
-        for url_part in url_contains:
+        for url_part in url_parts:
             with By(f"checking url contains {url_part}"):
                 assert url_part in get_query_inspector_url_text(), error()

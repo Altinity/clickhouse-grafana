@@ -1,6 +1,6 @@
 #!/bin/bash
 
-set -x
+set -xe
 
 export RUNNER_IP=$(hostname -I | cut -d ' ' -f 1)
 export RUNNER_SSH_COMMAND="ssh -o StrictHostKeyChecking=no -o UserKnownHostsFile=/dev/null root@$RUNNER_IP"
@@ -14,6 +14,7 @@ sudo rm -rf /tmp/*
 echo "Install Python modules..."
 sudo apt-get clean
 sudo apt-get update
+sudo python -m pip install --upgrade
 sudo apt-get install -y python3.12-venv
 
 echo "Create and activate Python virtual environment..."

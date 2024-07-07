@@ -9,7 +9,6 @@
     "noImplicitAny": false,
     "alwaysStrict": true,
     "declaration": false,
-    "rootDir": "../src",
     "baseUrl": "../src",
     "typeRoots": ["../node_modules/@types"],
     "resolveJsonModule": true
@@ -22,6 +21,6 @@
     },
     "transpileOnly": true
   },
-  "include": ["../src", "./types"],
+  "include": ["../src", "./types", "/Users/lunaticus/Documents/Work/grafana-plugin-sdk-typescript3/**/*"],
   "extends": "@grafana/tsconfig"
 }

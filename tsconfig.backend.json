@@ -10,6 +10,6 @@
     "esModuleInterop": true,
     "typeRoots": ["node_modules/@types", "types"]
   },
-  "exclude": ["dist", "node_modules/**", "../grafana-plugin-sdk-typescript3/node_modules", "src/views/**", "src/module.ts", "src/datasource/datasource.ts"],
-  "include": ["src/backend/**/*.ts*", "node_modules/@grafana/ts-backend/**/*"]
+  "exclude": ["dist", "node_modules/**"],
+  "include": ["src/**/*.ts*", "node_modules/@grafana/ts-backend/**/*"]
 }

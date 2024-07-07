@@ -1,0 +1,70 @@
+{
+  "$schema": "https://raw.githubusercontent.com/grafana/grafana/master/docs/sources/developers/plugins/plugin.schema.json",
+  "id": "vertamedia-clickhouse-datasource",
+  "type": "datasource",
+  "name": "Altinity plugin for ClickHouse",
+  "metrics": true,
+  "annotations": true,
+  "backend": true,
+  "alerting": true,
+  "logs": true,
+  "executable": "altinity-clickhouse-plugin",
+  "info": {
+    "description": "Altinity Grafana datasource for ClickHouse",
+    "author": {
+      "name": "Altinity",
+      "url": "https://altinity.com/"
+    },
+    "keywords": ["clickhouse", "datasource", "analytics", "timeseries"],
+    "logos": {
+      "small": "img/altinity_logo.svg",
+      "large": "img/altinity_logo.svg"
+    },
+    "screenshots": [
+      {
+        "name": "Connection properties",
+        "path": "img/datasource.png"
+      },
+      {
+        "name": "Query settings",
+        "path": "img/query_settings.png"
+      },
+      {
+        "name": "Query editor",
+        "path": "img/query_editor.png"
+      },
+      {
+        "name": "Annotations editor",
+        "path": "img/annotations.png"
+      }
+    ],
+    "links": [
+      {
+        "name": "GitHub",
+        "url": "https://github.com/Altinity/clickhouse-grafana"
+      }
+    ],
+    "version": "%VERSION%",
+    "updated": "%TODAY%"
+  },
+  "dependencies": {
+    "grafanaDependency": ">=10.0.3",
+    "plugins": []
+  },
+  "routes": [
+    {
+      "path": "xHeaderKey",
+      "url": "{{ .JsonData.dataSourceUrl }}",
+      "headers": [
+        {
+          "name": "X-ClickHouse-User",
+          "content": "{{ .JsonData.xHeaderUser }}"
+        },
+        {
+          "name": "X-ClickHouse-Key",
+          "content": "{{ .SecureJsonData.xHeaderKey }}"
+        }
+      ]
+    }
+  ]
+}

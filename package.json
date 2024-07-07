@@ -43,7 +43,6 @@
     "identity-obj-proxy": "^3.0.0",
     "jest": "^29.7.0",
     "jest-environment-jsdom": "^29.5.0",
-    "native-dns": "^0.7.0",
     "path-browserify": "^1.0.1",
     "prettier": "^2.8.7",
     "replace-in-file-webpack-plugin": "^1.0.6",

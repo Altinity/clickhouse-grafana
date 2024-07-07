@@ -14,18 +14,15 @@ module.exports = {
         ],
     },
     resolve: {
-        extensions: ['.ts', '.js'],
+        extensions: ['.tsx', '.ts', '.js'],
         alias: {
             'http2': 'http', // Alias http2 to http
             'dns': 'native-dns', // Alias dns to native-dns
-            // 'dgram': 'node:dgram', // Alias dns to native-dns
         },
         fallback: {
-            // "fs": false,
             "net": false,
             "tls": false,
             "dgram": false,
-            // "http2": require.resolve("http"),
             "dns": require.resolve("native-dns"),
             "path": require.resolve("path-browserify"),
             "stream": require.resolve("stream-browserify"),

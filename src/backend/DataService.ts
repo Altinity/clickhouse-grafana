@@ -1,8 +1,8 @@
 // @ts-nocheck
 import { DataFrame, DataService } from '@grafana/ts-backend';
-import {ClickHouseClient, Settings} from "./be_ts_functions/clickhouseClient";
+import {ClickhouseClient, Settings} from "./be_ts_functions/clickhouse-client";
 import {transformData} from "./be_ts_functions/transform-data";
-import SqlQuery from "./frontend-datasource/sql_query";
+import SqlQuery from "../datasource/sql-query/sql_query";
 import Scanner from "../datasource/scanner/scanner";
 
 const getRequestSettings = () => {
@@ -27,20 +27,6 @@ const getRequestSettings = () => {
     TLSSkipVerify: false // Set to true to skip TLS verification
   };
 }
-
-const getParsedQuery = (request) => {
-  return `/* grafana dashboard=$__searchFilter in template variables, user=0 */
-    SELECT
-        (intDiv(toUInt32(event_time), 30) * 30) * 1000 as t,
-        count()
-    FROM default.test_grafana
-    
-    WHERE event_time >= toDateTime(1720242516) AND event_time <= toDateTime(1720264116)
-     AND country = 'RU' 
-    GROUP BY t
-    
-    ORDER BY t FORMAT JSON`
-};
 
 const createQuery = (options: any, target: any) => {
   // replace template SRV with null
@@ -75,12 +61,89 @@ export class TemplateDataService extends DataService<any,any> {
   }
 
   async QueryData(request: any, pluginContext): Promise<DataFrame[]> {
+    const data = {
+      "queriesList": [
+        {
+          "refid": "A",
+          "maxdatapoints": 43200,
+          "intervalms": 1000,
+          "timerange": {
+            "fromepochms": 1720649620000,
+            "toepochms": 1720650220000
+          },
+          "json": {
+            "add_metadata": true,
+            "database": "default",
+            "dateColDataType": "",
+            "dateLoading": false,
+            "dateTimeColDataType": "EventTime",
+            "dateTimeType": "DATETIME",
+            "datetimeLoading": false,
+            "extrapolate": true,
+            "format": "time_series",
+            "formattedQuery": "SELECT $timeSeries as t, Name, count() FROM $table WHERE $timeFilter GROUP BY t,Name ORDER BY t,Name",
+            "interval": "",
+            "intervalFactor": 1,
+            "intervalMs": 1000,
+            "maxDataPoints": 43200,
+            "query": "SELECT\n    $timeSeries as t,\n    Name,\n    sum(Value) v\nFROM $table\n\nWHERE $timeFilter\n\nGROUP BY t, Name\n\nORDER BY t, Name\n",
+            "rawQuery": true,
+            "refId": "A",
+            "round": "0s",
+            "skip_comments": true,
+            "table": "test_alerts",
+            "tableLoading": false
+          },
+          "querytype": ""
+        }
+      ],
+      "pluginContext": {
+        "orgid": 1,
+        "pluginid": "vertamedia-clickhouse-datasource",
+        "user": {
+          "login": "grafana_scheduler",
+          "name": "grafana_scheduler",
+          "email": "",
+          "role": "Admin"
+        },
+        "datasourceinstancesettings": {
+          "id": 1,
+          "name": "clickhouse",
+          "url": "http://clickhouse:8123",
+          "user": "",
+          "database": "",
+          "basicauthenabled": true,
+          "basicauthuser": "default",
+          "jsondata": "eyJhZGRDb3JzSGVhZGVyIjp0cnVlLCJjb21wcmVzc2lvblR5cGUiOiJnemlwIiwidXNlQ29tcHJlc3Npb24iOnRydWUsInVzZVBPU1QiOnRydWV9",
+          "decryptedsecurejsondataMap": [
+            [
+              "basicAuthPassword",
+              ""
+            ]
+          ],
+          "lastupdatedms": 1720650216000,
+          "uid": "P7E099F39B84EA795",
+          "json": {
+            "addCorsHeader": true,
+            "compressionType": "gzip",
+            "useCompression": true,
+            "usePOST": true
+          }
+        }
+      }
+    }
+
+
+    pluginContext = data.pluginContext
+    request = {
+      ...data.queriesList[0],
+      query: data.queriesList[0].json,
+    }
+    console.log('HAHAHA')
     const target = request.query
+
     const newQuery = createQuery({interval: "30s"}, target)
-
-    const clickhouseClient = new ClickHouseClient(getRequestSettings());
-    const parsedQuery = getParsedQuery(request);
-
+    const clickhouseClient = new ClickhouseClient(getRequestSettings());
     //TODO: fix missing format JSON issue
     const result = await clickhouseClient.query({}, newQuery.stmt + " FORMAT JSON");
     const response = {

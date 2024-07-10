@@ -8,8 +8,8 @@
     "experimentalDecorators": true,
     "emitDecoratorMetadata": true,
     "esModuleInterop": true,
-    "typeRoots": ["node_modules/@types", "types"]
+    "typeRoots": ["node_modules/@types", "types"],
   },
   "exclude": ["dist", "node_modules/**"],
-  "include": ["src/**/*.ts*", "node_modules/@grafana/ts-backend/**/*"]
+  "include": ["src/backend/*.ts"]
 }

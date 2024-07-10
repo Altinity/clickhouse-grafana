@@ -25,7 +25,7 @@ interface Response {
     // other properties
 }
 
-export class ClickHouseClient {
+export class ClickhouseClient {
     settings: Settings;
 
     constructor(settings: Settings) {

@@ -1,9 +1,9 @@
 import { isArray } from 'lodash';
-import Scanner from '../scanner/scanner';
+import Scanner from '../../datasource/scanner/scanner';
 import { TemplateSrv } from '@grafana/runtime';
-import { SqlQueryHelper } from './sql-query-helper';
-import SqlQueryMacros from './sql-query-macros';
-import {TimestampFormat} from "../../../types/types";
+import { SqlQueryHelper } from '../../datasource/sql-query/sql-query-helper';
+import SqlQueryMacros from '../../datasource/sql-query/sql-query-macros';
+import {TimestampFormat} from "../../types/types";
 
 export default class SqlQuery {
   target: any;

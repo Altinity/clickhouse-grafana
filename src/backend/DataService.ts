@@ -1,20 +1,16 @@
 // @ts-nocheck
 import { DataFrame, DataService } from '@grafana/ts-backend';
-import { FieldType, ArrayVector } from '@grafana/data';
-import SqlSeries from "./frontend-datasource/sql_series";
-import {SqlQueryHelper} from "./frontend-datasource/sql-query/sql-query-helper";
-import _ from "lodash";
 import {ClickHouseClient, Settings} from "./be_ts_functions/clickhouseClient";
 import {transformData} from "./be_ts_functions/transform-data";
-// import SqlQuery from "./frontend-datasource/sql-query/sql_query";
-// import Scanner from "./frontend-datasource/scanner/scanner";
+import SqlQuery from "./frontend-datasource/sql_query";
+import Scanner from "../datasource/scanner/scanner";
 
 const getRequestSettings = () => {
   const jsonData = JSON.parse(Buffer.from("eyJhZGRDb3JzSGVhZGVyIjp0cnVlLCJjb21wcmVzc2lvblR5cGUiOiJnemlwIiwidXNlQ29tcHJlc3Npb24iOnRydWUsInVzZVBPU1QiOnRydWV9", 'base64').toString());
 
   return {
     Instance: {
-      URL: 'http://localhost:8123',
+      URL: 'http://clickhouse:8123',
       BasicAuthEnabled: true,
       DecryptedSecureJSONData: {
         basicAuthPassword: '', // Replace with your actual password
@@ -31,6 +27,7 @@ const getRequestSettings = () => {
     TLSSkipVerify: false // Set to true to skip TLS verification
   };
 }
+
 const getParsedQuery = (request) => {
   return `/* grafana dashboard=$__searchFilter in template variables, user=0 */
     SELECT
@@ -46,30 +43,30 @@ const getParsedQuery = (request) => {
 };
 
 const createQuery = (options: any, target: any) => {
-  // // replace template SRV with null
-  // const queryModel = new SqlQuery(target, null, {range: {
-  //   from: 1720124290000,
-  //     to: 2920124290000,
-  //   }, interval: '30s'});
-  // const stmt = queryModel.replace({range: {
-  //     from: 1720124290000,
-  //     to: 2920124290000,
-  //   },interval: '30s'}, []);
-  //
-  // let keys = [];
-  //
-  // try {
-  //   let queryAST = new Scanner(stmt).toAST();
-  //   keys = queryAST['group by'] || [];
-  // } catch (err) {
-  //   console.log('AST parser error: ', err);
-  // }
-  //
-  // return {
-  //   keys: keys,
-  //   requestId: options.panelId + target.refId,
-  //   stmt: stmt,
-  // };
+  // replace template SRV with null
+  const queryModel = new SqlQuery(target, null, {range: {
+    from: 1720124290000,
+      to: 2920124290000,
+    }, interval: '30s'});
+  const stmt = queryModel.replace({range: {
+      from: 1720124290000,
+      to: 2920124290000,
+    },interval: '30s'}, []);
+
+  let keys = [];
+
+  try {
+    let queryAST = new Scanner(stmt).toAST();
+    keys = queryAST['group by'] || [];
+  } catch (err) {
+    console.log('AST parser error: ', err);
+  }
+
+  return {
+    keys: keys,
+    requestId: options.panelId + target.refId,
+    stmt: stmt,
+  };
 }
 
 export class TemplateDataService extends DataService<any,any> {
@@ -78,67 +75,14 @@ export class TemplateDataService extends DataService<any,any> {
   }
 
   async QueryData(request: any, pluginContext): Promise<DataFrame[]> {
-
     const target = request.query
     const newQuery = createQuery({interval: "30s"}, target)
 
-    // const clickhouseClient = new ClickHouseClient(getRequestSettings());
-    // const parsedQuery = getParsedQuery(request);
-    //
-    // const result = await clickhouseClient.query({}, newQuery.stmt);
-    //
-    //
-    //
-    //
-    // console.log(result.body.data)
-    // console.log(result)
+    const clickhouseClient = new ClickHouseClient(getRequestSettings());
+    const parsedQuery = getParsedQuery(request);
 
-    // this.options = options;
-    // const target = options.targets[0]
-    // const query = this.createQuery(options, target)
-    // const response =  this._seriesQuery(query.stmt, query.requestId);
-    //
-    // // parse response, no network request
-    // if (!response || !response.rows) {
-    //   return;
-    // }
-    //
-    // let result: any[] = [];
-    // let i = 0;
-    // const keys = query.keys;
-    //
-    // let sqlSeries = new SqlSeries({
-    //   refId: target.refId,
-    //   series: response.data,
-    //   meta: response.meta,
-    //   keys: keys,
-    //   tillNow: options.rangeRaw?.to === 'now',
-    //   from: SqlQueryHelper.convertTimestamp(options.range.from),
-    //   to: SqlQueryHelper.convertTimestamp(options.range.to),
-    // });
-    //
-    // if (target.format === 'table') {
-    //   _.each(sqlSeries.toTable(), (data) => {
-    //     result.push(data);
-    //   });
-    // } else if (target.format === 'traces') {
-    //   result = sqlSeries.toTraces();
-    // } else if (target.format === 'flamegraph') {
-    //   result = sqlSeries.toFlamegraph();
-    // } else if (target.format === 'logs') {
-    //   result = sqlSeries.toLogs();
-    // } else if (target.refId === 'Anno') {
-    //   result = sqlSeries.toAnnotation(response.data);
-    // } else {
-    //   _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
-    //     result.push(data);
-    //   });
-    // }
-
-    // return { data: result }
-    //
-    // console.log('QueryData', request)
-
+    //TODO: fix missing format JSON issue
+    const result = await clickhouseClient.query({}, newQuery.stmt + " FORMAT JSON");
     const response = {
       "meta":
         [
@@ -634,18 +578,9 @@ export class TemplateDataService extends DataService<any,any> {
             "t": "1720530510000",
             "count()": "1"
           }
-        ],
-
-      "rows": 120,
-
-      "statistics":
-        {
-          "elapsed": 0.013793848,
-          "rows_read": 180,
-          "bytes_read": 1080
-        }
-    }
-
+        ]};
+    // const result = await clickhouseClient.query({}, newQuery.stmt + " FORMAT JSON");
+    // return transformData(result.body);
     return transformData(response);
   }
 }

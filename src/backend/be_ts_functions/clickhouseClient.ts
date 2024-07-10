@@ -104,7 +104,7 @@ export class ClickHouseClient {
         let resp;
         try {
             resp = await axios.request(reqConfig);
-            console.log('_REQUEST', resp.status, resp)
+            // console.log('_REQUEST', resp.status, resp)
             let body: string;
 
             if (['gzip', 'deflate', 'br', 'zstd'].includes(resp.headers['content-encoding'])) {

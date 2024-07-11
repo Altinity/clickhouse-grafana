@@ -35,10 +35,6 @@ export class SqlQueryHelper {
       return 0;
     }
 
-    // if (!match) {
-    //   throw new Error('Received interval is invalid: ' + interval);
-    // }
-
     const value = parseInt(match[1], 10);
     const unit = match[2];
 

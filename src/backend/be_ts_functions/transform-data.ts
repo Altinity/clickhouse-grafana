@@ -1,4 +1,6 @@
 // @ts-nocheck
+import SqlSeries from "../../datasource/sql_series";
+
 const FieldType = {
   time: 'time',
   number: 'number',
@@ -38,9 +40,17 @@ export const transformData = (inputData: { meta: any; data: any; }) => {
 
   const fields = meta.map((metaField, index) => {
     const fieldName = metaField.name;
-    const fieldType = determineFieldType(metaField.type);
+    let fieldType = SqlSeries._toFieldType(metaField.type);
 
     const values = data.map(entry => {
+      if (fieldName === 'time' || fieldName === 't') {
+        return new Date(Number(entry[metaField.name]));
+      }
+
+      if (index === 0 && metaField.type === 'UInt64') {
+        fieldType = FieldType.time;
+      }
+
       switch (fieldType) {
         case FieldType.number:
           return Number(entry[fieldName]);
@@ -61,10 +71,8 @@ export const transformData = (inputData: { meta: any; data: any; }) => {
     };
   });
 
-  const transformedData = {
+  return {
     fields: fields,
     length: data.length
   };
-
-  return transformedData
 };

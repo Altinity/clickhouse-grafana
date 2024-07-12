@@ -1,80 +1,78 @@
-// @ts-nocheck
-import { DataFrame, DataService } from '@grafana/ts-backend';
-import {ClickhouseClient, Settings} from "./be_ts_functions/clickhouse-client";
-import {transformData} from "./be_ts_functions/transform-data";
-import SqlQuery from "../datasource/sql-query/sql_query";
-import Scanner from "../datasource/scanner/scanner";
-import {SqlQueryHelper} from "../datasource/sql-query/sql-query-helper";
+import { DataService } from '@grafana/ts-backend';
+import { ClickhouseClient } from "./helpers/clickhouse-client";
+import { transformData } from "./helpers/transform-data";
+import { createQuery, getRequestSettings } from "./helpers/query";
 
-const getRequestSettings = (pluginContext: any) => {
-  const jsonData = JSON.parse(Buffer.from(pluginContext.datasourceinstancesettings.jsondata, 'base64').toString());
-
-  return {
-    Instance: {
-      URL: pluginContext.datasourceinstancesettings.url,
-      BasicAuthEnabled: pluginContext.datasourceinstancesettings.basicauthenabled,
-      DecryptedSecureJSONData: {
-        // basicAuthPassword: pluginContext.datasourceinstancesettings.decryptedsecurejsondataMap.find(item => item[0] === "basicAuthPassword")[1],
-        // Add other fields as necessary (e.g., tlsCACert, tlsClientCert, tlsClientKey, xHeaderKey)
-      },
-      BasicAuthUser: pluginContext.datasourceinstancesettings.basicauthuser
-    },
-    UsePost: jsonData.usePOST, // True based on the provided jsondata
-    UseCompression: jsonData.useCompression, // True based on the provided jsondata
-    CompressionType: jsonData.compressionType || 'gzip', // Defaulting to gzip if not provided
-    UseYandexCloudAuthorization: false, // Set to true if using Yandex Cloud Authorization, based on additional context
-    XHeaderUser: '', // Required if using Yandex Cloud Authorization
-    XHeaderKey: '', // Optional, required if using Yandex Cloud Authorization
-    TLSSkipVerify: false // Set to true to skip TLS verification
-  };
+interface User {
+  login: string;
+  name: string;
+  email: string;
+  role: string;
 }
 
-const createQuery = (options: any, target: any, request: any) => {
-
-  const queryModel = new SqlQuery(target, null, {range: {
-    from: request.timerange.fromepochms,
-      to: request.timerange.toepochms,
-    }, interval: target.interval});
-
-  const stmt = queryModel.replace({range: {
-      from: request.timerange.fromepochms,
-      to: request.timerange.toepochms,
-    },interval: target.interval}, []);
-
-  let keys = [];
-
-  try {
-    let queryAST = new Scanner(stmt).toAST();
-    keys = queryAST['group by'] || [];
-  } catch (err) {
-    console.log('AST parser error: ', err);
-  }
-
-  return {
-    keys: keys,
-    requestId: options.panelId + target.refId,
-    stmt: stmt,
-  };
+interface DatasourceInstanceSettings {
+  id: number;
+  name: string;
+  url: string;
+  user: string;
+  database: string;
+  basicauthenabled: boolean;
+  basicauthuser: string;
+  jsondata: string;
+  decryptedsecurejsondataMap: [string, string][];
+  lastupdatedms: number;
+  uid: string;
 }
 
-export class TemplateDataService extends DataService<any,any> {
+interface PluginContext {
+  orgid: number;
+  pluginid: string;
+  user: User;
+  datasourceinstancesettings: DatasourceInstanceSettings;
+}
+
+interface Header {
+  key: string;
+  value: string;
+}
+
+interface TimeRange {
+  fromepochms: number;
+  toepochms: number;
+}
+
+interface Query {
+  refid: string;
+  maxdatapoints: number;
+  intervalms: number;
+  interval: string;
+  timerange: TimeRange;
+  json: string;
+  querytype: string;
+}
+
+interface Request {
+  plugincontext: PluginContext;
+  headersMap: Header[];
+  queriesList: Query[];
+}
+
+export class TemplateDataService extends DataService<Request, any> {
   constructor() {
     super();
   }
 
-  async QueryData(request: any, pluginContext): Promise<DataFrame[]> {
-    const target = request.query
+  async QueryData(request: any, pluginContext: any): Promise<any[]> {
+    const target = request.queriesList[0];
 
-    target.interval = '30s'
+    target.interval = '30s';
 
-    const newQuery = createQuery({interval: target.interval}, target, request)
+    const newQuery = createQuery({ interval: target.interval }, target, request);
 
     const clickhouseClient = new ClickhouseClient(getRequestSettings(pluginContext));
 
-    //TODO: fix missing format JSON issue
     const result = await clickhouseClient.query({}, newQuery.stmt + " FORMAT JSON");
 
-    console.log(JSON.stringify(transformData(result.body)))
     return transformData(result.body);
   }
 }

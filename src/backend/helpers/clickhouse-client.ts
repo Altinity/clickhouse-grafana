@@ -38,16 +38,12 @@ export class ClickhouseClient {
             throw err;
         };
 
-        console.log(6)
         let datasourceUrl: URL;
         try {
             datasourceUrl = new URL(this.settings.Instance.URL);
         } catch (err) {
             return onErr(new Error(`unable to parse clickhouse datasource url: ${err}`));
         }
-
-        console.log(7)
-
 
         const httpsAgentOptions: https.AgentOptions = {};
         let reqConfig: AxiosRequestConfig = {
@@ -63,7 +59,6 @@ export class ClickhouseClient {
             reqConfig.headers['Accept-Encoding'] = this.settings.CompressionType;
             reqConfig.params = { ...reqConfig.params, enable_http_compression: '1' };
         }
-        // throw new Error('Psina Middle')
 
         if (this.settings.Instance.BasicAuthEnabled) {
             const password = this.settings.Instance.DecryptedSecureJSONData['basicAuthPassword'];
@@ -104,11 +99,9 @@ export class ClickhouseClient {
         let resp;
         try {
             resp = await axios.request(reqConfig);
-            // console.log('_REQUEST', resp.status, resp)
             let body: string;
 
             if (['gzip', 'deflate', 'br', 'zstd'].includes(resp.headers['content-encoding'])) {
-                console.log('encoding', resp.headers['content-encoding'])
                 body = await new Promise((resolve, reject) => {
                     let buffer: Buffer[] = [];
                     resp.data.on('data', (chunk: Buffer) => buffer.push(chunk));

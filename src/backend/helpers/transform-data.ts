@@ -34,7 +34,7 @@ function determineFieldType(type) {
   }
 };
 
-export const transformData = (inputData: { meta: any; data: any; }) => {
+export const transformData = (inputData: any): any => {
   const meta = inputData.meta;
   const data = inputData.data;
 

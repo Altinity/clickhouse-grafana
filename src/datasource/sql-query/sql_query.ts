@@ -7,10 +7,10 @@ import {TimestampFormat} from "../../types/types";
 
 export default class SqlQuery {
   target: any;
-  templateSrv: TemplateSrv;
+  templateSrv: TemplateSrv | null;
   options: any;
 
-  constructor(target: any, templateSrv: TemplateSrv, options: any) {
+  constructor(target: any, templateSrv: TemplateSrv | null, options: any) {
     this.target = target;
     this.templateSrv = templateSrv;
     this.options = options;

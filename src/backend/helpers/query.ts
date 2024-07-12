@@ -1,7 +1,8 @@
 import SqlQuery from "../../datasource/sql-query/sql_query";
 import Scanner from "../../datasource/scanner/scanner";
+import { CHDataSourceOptions } from "../../types/types";
 
-export const getRequestSettings = (pluginContext: PluginContext): RequestSettings => {
+export const getRequestSettings = (pluginContext: any): any => {
   const jsonData: CHDataSourceOptions = JSON.parse(Buffer.from(pluginContext.datasourceInstanceSettings.jsonData, 'base64').toString());
 
   return {

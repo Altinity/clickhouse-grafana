@@ -17,8 +17,8 @@ import steps.connections.datasources.altinity_edit.view as datasources_altinity_
 @TestStep(Then)
 def compare_screenshots(self, screenshot_name_1, screenshot_name_2):
     """Check that screenshots are similar."""
-    image_1 = Image.open(f"./tests/testflows/screenshots/{screenshot_name_1}.png")
-    image_2 = Image.open(f"./tests/testflows/screenshots/{screenshot_name_2}.png")
+    image_1 = Image.open(f"./screenshots/{screenshot_name_1}.png")
+    image_2 = Image.open(f"./screenshots/{screenshot_name_2}.png")
     return image_1 == image_2
 
 
@@ -56,7 +56,7 @@ def distance(a, b):
 def check_screenshot(self, screenshot_name):
     """Check that graph is valid."""
     with By("opening image"):
-        image = Image.open(f"./tests/testflows/screenshots/{screenshot_name}.png")
+        image = Image.open(f"./screenshots/{screenshot_name}.png")
 
     with By("processing image"):
         red, green, blue, _ = image.split()
@@ -99,7 +99,7 @@ def check_screenshot(self, screenshot_name):
 def check_screenshot_contains_green(self, screenshot_name, expected_green_pixels=3000):
     """Check that graph is valid."""
     with By("opening image"):
-        image = Image.open(f"./tests/testflows/screenshots/{screenshot_name}.png")
+        image = Image.open(f"./screenshots/{screenshot_name}.png")
 
     with By("processing image"):
         red, green, blue, _ = image.split()

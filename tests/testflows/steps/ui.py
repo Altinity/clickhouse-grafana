@@ -26,7 +26,7 @@ def new_webdriver(self):
 
 @TestStep(Finally)
 def append_session(self, suite_name, session_id):
-    sessions_file_path = 'tests/testflows/assets/sessions.json'
+    sessions_file_path = 'assets/sessions.json'
 
     if os.path.exists(sessions_file_path):
         with open(sessions_file_path, 'r') as file:

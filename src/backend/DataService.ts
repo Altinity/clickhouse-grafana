@@ -16,27 +16,27 @@ export class ClickhouseDataService extends DataService<Request, any> {
   async QueryData(parameters: any): Promise<any[]> {
     const transformInputToOptions = (options: any): BackendDataQueryRequest<CHQuery> => {
 
-      logger.info("QueryData options", options);
+      logger.info("QueryData options", JSON.stringify(options), options.timerange);
       return {
         requestId: options.refid,
         interval: options.interval,
         intervalMs: options.intervalms,
         maxDataPoints: options.maxdatapoints,
         range: {
-          from: options.timerange?.fromepochms || '2013-10-11T00:00:00.000Z',
-          to: options.timerange?.toepochms || '2033-10-11T00:00:00.000Z',
+          from: new Date(options.targets[0].timerange.fromepochms),
+          to: new Date(options.targets[0].timerange.toepochms),
           raw: {
-            from: options.timerange?.fromepochms || '1421028367',
-            to: options.timerange?.toepochms || '2721028367',
+            from: options.targets[0].timerange.fromepochms,
+            to: options.targets[0].timerange.toepochms,
           }
         },
         targets: options.targets,
         rangeRaw: {
-          from: options.timerange?.fromepochms || '2013-10-11T00:00:00.000Z',
-          to: options.timerange?.toepochms || '2033-10-11T00:00:00.000Z',
+          from: new Date(options.targets[0].timerange.fromepochms),
+          to: new Date(options.targets[0].timerange.toepochms),
         },
-        startTime: options.timerange?.fromepochms || '2013-10-11T00:00:00.000Z',
-        endTime: options.timerange?.toepochms || '2033-10-11T00:00:00.000Z',
+        startTime: new Date(options.targets[0].timerange.fromepochms),
+        endTime: new Date(options.targets[0].timerange.toepochms),
         datasourceinstancesettings: options.datasourceinstancesettings,
       }
     }
@@ -62,10 +62,10 @@ export class ClickhouseDataService extends DataService<Request, any> {
     const results = await Promise.all(allQueryPromise);
     logger.info("QueryData result", JSON.stringify(results));
 
-    const dataFrames = results.map((result: any, index: number) => transformData(result.body, targets[index].refId))
+    const dataFrames = results.map((result: any, index: number) => transformData(result.body, targets[index].refid))
 
 
-    logger.info('Data Frames', JSON.stringify(dataFrames))
+    logger.info('Data Frames', JSON.stringify(dataFrames), targets.map((target: any) => target.refid));
 
     return dataFrames
   }

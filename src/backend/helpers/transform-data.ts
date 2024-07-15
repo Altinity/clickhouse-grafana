@@ -76,12 +76,12 @@ export const transformData = (inputData: any, refId: string): any => {
       config: {},
       type: fieldType,
       values: values,
-      refId: refId
     };
   });
 
   return {
     fields: fields,
+    refId: refId,
     length: data.length
   };
 };

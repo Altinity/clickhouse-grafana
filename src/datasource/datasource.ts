@@ -150,6 +150,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     this.options = options;
     const targets = options.targets.filter((target) => !target.hide && target.query);
     const queries = targets.map((target) => this.createQuery(options, target));
+    console.log(targets, options)
     // No valid targets, return the empty result to save a round trip.
     if (!queries.length) {
       return Promise.resolve({ data: [] });

@@ -100,6 +100,7 @@ export class ClickhouseClient {
 
         let resp;
         try {
+            logger.info('Clickhouse request', reqConfig)
             resp = await axios.request(reqConfig);
             let body: string;
 
@@ -111,10 +112,11 @@ export class ClickhouseClient {
                     resp.data.on('error', (err: Error) => reject(err));
                 });
             } else {
-                logger.error('no encoding')
+                logger.info('no encoding')
                 body = resp.data;
             }
 
+            logger.info('Clickhouse response', resp.status, body)
             if (resp.status !== 200) {
                 return onErr(new Error(body));
             }

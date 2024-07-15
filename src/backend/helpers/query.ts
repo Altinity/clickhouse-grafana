@@ -27,7 +27,7 @@ export const createQuery = (options: any, target: any, request: any) => {
   logger.info("createQuery options", options, target)
   const queryModel = new SqlQuery(target.query, null, {
     range: {
-      from: request.from || '1721024406',
+      from: request.from || '1521024406',
       to: request.to || '2721024406',
     }, interval: target.interval
   });
@@ -35,7 +35,7 @@ export const createQuery = (options: any, target: any, request: any) => {
   logger.info("createQuery queryModel", queryModel.replace)
   const stmt = queryModel.replace({
     range: {
-      from: request.from || '1721024406',
+      from: request.from || '1521024406',
       to: request.to || '2721024406',
     },
     interval: target.interval

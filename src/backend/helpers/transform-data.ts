@@ -1,5 +1,6 @@
 // @ts-nocheck
 import SqlSeries from "../../datasource/sql_series";
+import {logger} from "../../../../grafana-plugin-sdk-typescript3";
 
 const FieldType = {
   time: 'time',
@@ -35,6 +36,7 @@ function determineFieldType(type) {
 };
 
 export const transformData = (inputData: any): any => {
+  logger.info("transformData", inputData)
   const meta = inputData.meta;
   const data = inputData.data;
 

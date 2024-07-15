@@ -23,20 +23,20 @@ export class ClickhouseDataService extends DataService<Request, any> {
         intervalMs: options.intervalms,
         maxDataPoints: options.maxdatapoints,
         range: {
-          from: options.timerange?.fromepochms,
-          to: options.timerange?.toepochms,
+          from: options.timerange?.fromepochms || 1421028367,
+          to: options.timerange?.toepochms || 2721028367,
           raw: {
-            from: options.timerange?.fromepochms,
-            to: options.timerange?.toepochms,
+            from: options.timerange?.fromepochms || 1421028367,
+            to: options.timerange?.toepochms || 2721028367,
           }
         },
         targets: options.targets,
         rangeRaw: {
-          from: options.timerange?.fromepochms,
-          to: options.timerange?.toepochms,
+          from: options.timerange?.fromepochms || 1421028367,
+          to: options.timerange?.toepochms || 2721028367,
         },
-        startTime: options.timerange?.fromepochms,
-        endTime: options.timerange?.toepochms,
+        startTime: options.timerange?.fromepochms || 1421028367,
+        endTime: options.timerange?.toepochms || 2721028367,
         datasourceinstancesettings: options.datasourceinstancesettings,
       }
     }
@@ -60,6 +60,10 @@ export class ClickhouseDataService extends DataService<Request, any> {
     });
 
 
-    return Promise.all(allQueryPromise).then(result => transformData(result.body));
+    return Promise.all(allQueryPromise).then(results => {
+      logger.info("QueryData result", JSON.stringify(results));
+
+      return results.map((result: any) => transformData(result.body))
+    });
   }
 }

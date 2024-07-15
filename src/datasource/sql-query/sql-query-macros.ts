@@ -1,6 +1,7 @@
 import { each } from 'lodash';
 import { SqlQueryHelper } from './sql-query-helper';
 import {TimestampFormat} from "../../types/types";
+import {logger} from "../../../../grafana-plugin-sdk-typescript3";
 
 export interface RawTimeRange {
   from: any | string;
@@ -840,6 +841,8 @@ fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
   }
   
   static replaceTimeFilters(query: string, range: TimeRange, dateTimeType = TimestampFormat.DateTime, round?: number): string {
+    logger.info('replaceTimeFilters', range)
+    console.log('Rounding time', range)
     let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.from, round || 0));
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.to, round || 0));
 

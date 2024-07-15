@@ -4,6 +4,7 @@ import { TemplateSrv } from '@grafana/runtime';
 import { SqlQueryHelper } from './sql-query-helper';
 import SqlQueryMacros from './sql-query-macros';
 import {TimestampFormat} from "../../types/types";
+import {logger} from "../../../../grafana-plugin-sdk-typescript3";
 
 export default class SqlQuery {
   target: any;
@@ -21,7 +22,9 @@ export default class SqlQuery {
       return ''
     }
 
+    logger.info("replace query -1")
     let query = this.target.query.trim()
+    logger.info("replace query 0")
 
     if (this.target.skip_comments) {
       query = Scanner.RemoveComments(query);
@@ -31,17 +34,23 @@ export default class SqlQuery {
       query = Scanner.AddMetadata(query);
     }
 
+    logger.info("replace query 1")
     query = this.templateSrv ? this.templateSrv.replace(
       SqlQueryHelper.conditionalTest(query, this.templateSrv),
       options.scopedVars,
       SqlQueryHelper.interpolateQueryExpr
     ) : query;
+    logger.info("replace query 2")
+
     let scanner = new Scanner(query);
     let dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : TimestampFormat.DateTime;
     let i = this.templateSrv && this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval;
+    logger.info("replace query 3")
+
     let interval = SqlQueryHelper.convertInterval(i, this.target.intervalFactor || 1);
     let intervalMs = SqlQueryHelper.convertInterval(i, this.target.intervalFactor || 1, true);
     let adhocCondition: any[] = [];
+    logger.info("replace query 4")
 
     // @ts-ignore
     // adhocFilters = this.templateSrv.getAdhocFilters('clickhouse')
@@ -103,7 +112,7 @@ export default class SqlQuery {
 
       query = SqlQueryMacros.applyMacros(query, topQueryAST);
     } catch (err) {
-      console.error('AST parser error: ', err);
+      logger.error('AST parser error: ', err);
     }
 
     /* Render the ad-hoc condition or evaluate to an always true condition */

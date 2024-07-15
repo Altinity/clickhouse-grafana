@@ -2,6 +2,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import * as https from 'https';
 import { URL } from 'url';
+import {logger} from "../../../../grafana-plugin-sdk-typescript3";
 
 export interface Settings {
     Instance: {
@@ -77,9 +78,10 @@ export class ClickhouseClient {
             }
         }
 
-        const tlsCACert = this.settings.Instance.DecryptedSecureJSONData['tlsCACert'];
-        const tlsClientCert = this.settings.Instance.DecryptedSecureJSONData['tlsClientCert'];
-        const tlsClientKey = this.settings.Instance.DecryptedSecureJSONData['tlsClientKey'];
+        logger.info('Work with settings', this.settings)
+        const tlsCACert = this.settings.Instance?.DecryptedSecureJSONData?.tlsCACert
+        const tlsClientCert = this.settings.Instance?.DecryptedSecureJSONData?.tlsClientCert
+        const tlsClientKey = this.settings.Instance?.DecryptedSecureJSONData?.tlsClientKey
 
         if (tlsCACert) {
             httpsAgentOptions.ca = tlsCACert;
@@ -109,7 +111,7 @@ export class ClickhouseClient {
                     resp.data.on('error', (err: Error) => reject(err));
                 });
             } else {
-                console.log('no encoding')
+                logger.error('no encoding')
                 body = resp.data;
             }
 

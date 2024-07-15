@@ -1,78 +1,65 @@
-import { DataService } from '@grafana/ts-backend';
-import { ClickhouseClient } from "./helpers/clickhouse-client";
-import { transformData } from "./helpers/transform-data";
-import { createQuery, getRequestSettings } from "./helpers/query";
+import {DataService, logger} from '@grafana/ts-backend';
+import {ClickhouseClient} from "./helpers/clickhouse-client";
+import {transformData} from "./helpers/transform-data";
+import {createQuery, getRequestSettings} from "./helpers/query";
+import {DataQueryRequest} from "@grafana/data";
+import {CHQuery} from "../types/types";
 
-interface User {
-  login: string;
-  name: string;
-  email: string;
-  role: string;
-}
+// @ts-ignore
+type BackendDataQueryRequest<T> = Omit<DataQueryRequest<T>, "app", "timezone", "scopedVars">;
 
-interface DatasourceInstanceSettings {
-  id: number;
-  name: string;
-  url: string;
-  user: string;
-  database: string;
-  basicauthenabled: boolean;
-  basicauthuser: string;
-  jsondata: string;
-  decryptedsecurejsondataMap: [string, string][];
-  lastupdatedms: number;
-  uid: string;
-}
-
-interface PluginContext {
-  orgid: number;
-  pluginid: string;
-  user: User;
-  datasourceinstancesettings: DatasourceInstanceSettings;
-}
-
-interface Header {
-  key: string;
-  value: string;
-}
-
-interface TimeRange {
-  fromepochms: number;
-  toepochms: number;
-}
-
-interface Query {
-  refid: string;
-  maxdatapoints: number;
-  intervalms: number;
-  interval: string;
-  timerange: TimeRange;
-  json: string;
-  querytype: string;
-}
-
-interface Request {
-  plugincontext: PluginContext;
-  headersMap: Header[];
-  queriesList: Query[];
-}
-
-export class TemplateDataService extends DataService<Request, any> {
+export class ClickhouseDataService extends DataService<Request, any> {
   constructor() {
     super();
   }
 
-  async QueryData(request: any, pluginContext: any): Promise<any[]> {
-    const target = request.queriesList[0];
+  async QueryData(parameters: any): Promise<any[]> {
+    const transformInputToOptions = (options: any): BackendDataQueryRequest<CHQuery> => {
 
-    target.interval = '30s';
+      logger.info("QueryData options", options);
+      return {
+        requestId: options.refid,
+        interval: options.interval,
+        intervalMs: options.intervalms,
+        maxDataPoints: options.maxdatapoints,
+        range: {
+          from: options.timerange?.fromepochms,
+          to: options.timerange?.toepochms,
+          raw: {
+            from: options.timerange?.fromepochms,
+            to: options.timerange?.toepochms,
+          }
+        },
+        targets: options.targets,
+        rangeRaw: {
+          from: options.timerange?.fromepochms,
+          to: options.timerange?.toepochms,
+        },
+        startTime: options.timerange?.fromepochms,
+        endTime: options.timerange?.toepochms,
+        datasourceinstancesettings: options.datasourceinstancesettings,
+      }
+    }
 
-    const newQuery = createQuery({ interval: target.interval }, target, request);
+    const options = transformInputToOptions(parameters);
+    const clickhouseClient = new ClickhouseClient(getRequestSettings(parameters));
 
-    const clickhouseClient = new ClickhouseClient(getRequestSettings(pluginContext));
+    const targets = options.targets.filter((target) => !target.hide && target.query);
+    const queries = targets.map((target: CHQuery) => {
+      target.interval = '30s';
 
-    const result = await clickhouseClient.query({}, newQuery.stmt + " FORMAT JSON");
+      return createQuery({ interval: target.interval }, target, options)
+    });
 
-    return transformData(result.body);
+    if (!queries.length) {
+      return Promise.resolve({ data: [] } as any);
+    }
+
+    const allQueryPromise = queries.map((query) => {
+      return clickhouseClient.query({}, query.stmt + " FORMAT JSON");
+    });
+
+
+    return Promise.all(allQueryPromise).then(result => transformData(result.body));
   }
 }

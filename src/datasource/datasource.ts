@@ -146,6 +146,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   }
 
   query(options: DataQueryRequest<CHQuery>) {
+
     this.options = options;
     const targets = options.targets.filter((target) => !target.hide && target.query);
     const queries = targets.map((target) => this.createQuery(options, target));

@@ -56,13 +56,13 @@ def regression(self, before, after):
         self.context.cluster = cluster.cluster(frame=inspect.currentframe())
 
     with And("I copy CA Cert"):
-        self.context.ca_cert = self.context.cluster.command(None, "cat " + os.path.join(project_root_dir, "docker", "clickhouse", "ca-cert.pem")).output
+        self.context.ca_cert = self.context.cluster.command(None, "cat \"" + os.path.join(project_root_dir, "docker", "clickhouse", "ca-cert.pem") + "\"").output
 
     with And("I copy Client Cert"):
-        self.context.client_cert = self.context.cluster.command(None, "cat " + os.path.join(project_root_dir, "docker", "clickhouse", "client-cert.pem")).output
+        self.context.client_cert = self.context.cluster.command(None, "cat \"" + os.path.join(project_root_dir, "docker", "clickhouse", "client-cert.pem") + "\"").output
 
     with And("I copy Client Key"):
-        self.context.client_key = self.context.cluster.command(None, "cat " + os.path.join(project_root_dir, "docker", "clickhouse", "client-key.pem")).output
+        self.context.client_key = self.context.cluster.command(None, "cat \"" + os.path.join(project_root_dir, "docker", "clickhouse", "client-key.pem") + "\"").output
 
     with And("webdriver"):
         self.context.driver = ui.create_driver()

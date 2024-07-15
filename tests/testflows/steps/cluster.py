@@ -207,7 +207,7 @@ class Cluster(object):
                         with By("executing mkdir node_modules"):
                             cmd = self.command(
                                 None,
-                                f"set -o pipefail && mkdir -p {os.path.join(current_dir(), '..', '..', '..')}/node_modules 2>&1 | tee",
+                                f"""set -o pipefail && mkdir -p "{os.path.join(current_dir(), '..', '..', '..')}/node_modules" 2>&1 | tee""",
                                 timeout=timeout,
                             )
 

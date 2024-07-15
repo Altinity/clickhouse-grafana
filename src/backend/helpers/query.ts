@@ -1,7 +1,7 @@
 import SqlQuery from "../../datasource/sql-query/sql_query";
 import Scanner from "../../datasource/scanner/scanner";
 import { CHDataSourceOptions } from "../../types/types";
-import {logger} from "../../../../grafana-plugin-sdk-typescript3";
+import {logger} from '@grafana/ts-backend';
 
 export const getRequestSettings = (pluginContext: any): any => {
   logger.info("getRequestSettings pluginContext", pluginContext);

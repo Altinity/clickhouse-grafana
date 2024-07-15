@@ -60,7 +60,6 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
-
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel
       GF_LOG_LEVEL: debug

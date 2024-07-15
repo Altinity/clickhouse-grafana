@@ -2,7 +2,7 @@
 import axios, { AxiosRequestConfig } from 'axios';
 import * as https from 'https';
 import { URL } from 'url';
-import {logger} from "../../../../grafana-plugin-sdk-typescript3";
+import {logger} from '@grafana/ts-backend';
 
 export interface Settings {
     Instance: {

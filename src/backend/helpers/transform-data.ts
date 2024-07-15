@@ -1,6 +1,6 @@
 // @ts-nocheck
 import SqlSeries from "../../datasource/sql_series";
-import {logger} from "../../../../grafana-plugin-sdk-typescript3";
+import {logger} from '@grafana/ts-backend';
 
 const FieldType = {
   time: 'time',

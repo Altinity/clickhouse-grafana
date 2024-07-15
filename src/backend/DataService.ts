@@ -23,20 +23,20 @@ export class ClickhouseDataService extends DataService<Request, any> {
         intervalMs: options.intervalms,
         maxDataPoints: options.maxdatapoints,
         range: {
-          from: options.timerange?.fromepochms || 1421028367,
-          to: options.timerange?.toepochms || 2721028367,
+          from: options.timerange?.fromepochms || '2013-10-11T00:00:00.000Z',
+          to: options.timerange?.toepochms || '2033-10-11T00:00:00.000Z',
           raw: {
-            from: options.timerange?.fromepochms || 1421028367,
-            to: options.timerange?.toepochms || 2721028367,
+            from: options.timerange?.fromepochms || '1421028367',
+            to: options.timerange?.toepochms || '2721028367',
           }
         },
         targets: options.targets,
         rangeRaw: {
-          from: options.timerange?.fromepochms || 1421028367,
-          to: options.timerange?.toepochms || 2721028367,
+          from: options.timerange?.fromepochms || '2013-10-11T00:00:00.000Z',
+          to: options.timerange?.toepochms || '2033-10-11T00:00:00.000Z',
         },
-        startTime: options.timerange?.fromepochms || 1421028367,
-        endTime: options.timerange?.toepochms || 2721028367,
+        startTime: options.timerange?.fromepochms || '2013-10-11T00:00:00.000Z',
+        endTime: options.timerange?.toepochms || '2033-10-11T00:00:00.000Z',
         datasourceinstancesettings: options.datasourceinstancesettings,
       }
     }
@@ -59,11 +59,14 @@ export class ClickhouseDataService extends DataService<Request, any> {
       return clickhouseClient.query({}, query.stmt + " FORMAT JSON");
     });
 
+    const results = await Promise.all(allQueryPromise);
+    logger.info("QueryData result", JSON.stringify(results));
 
-    return Promise.all(allQueryPromise).then(results => {
-      logger.info("QueryData result", JSON.stringify(results));
+    const dataFrames = results.map((result: any) => transformData(result.body))
 
-      return results.map((result: any) => transformData(result.body))
-    });
+
+    logger.info('Data Frames', JSON.stringify(dataFrames))
+
+    return dataFrames
   }
 }

@@ -24,19 +24,19 @@ export const getRequestSettings = (pluginContext: any): any => {
   };
 };
 export const createQuery = (options: any, target: any, request: any) => {
-  logger.info("createQuery options", options, target)
+  logger.info("createQuery options", options, target, request)
   const queryModel = new SqlQuery(target.query, null, {
     range: {
-      from: request.from || '1521024406',
-      to: request.to || '2721024406',
+      from: request.from || '2013-10-11T00:00:00.000Z',
+      to: request.to || '2033-10-11T00:00:00.000Z',
     }, interval: target.interval
   });
 
   logger.info("createQuery queryModel", queryModel.replace)
   const stmt = queryModel.replace({
     range: {
-      from: request.from || '1521024406',
-      to: request.to || '2721024406',
+      from: request.from || '2013-10-11T00:00:00.000Z',
+      to: request.to || '2033-10-11T00:00:00.000Z',
     },
     interval: target.interval
   }, []);

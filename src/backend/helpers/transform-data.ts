@@ -36,20 +36,26 @@ function determineFieldType(type) {
 };
 
 export const transformData = (inputData: any): any => {
-  logger.info("transformData", inputData)
   const meta = inputData.meta;
   const data = inputData.data;
+
+  // console.log('meta', meta)
+
+  logger.info("transformData inputData", meta)
 
   const fields = meta.map((metaField, index) => {
     const fieldName = metaField.name;
     let fieldType = SqlSeries._toFieldType(metaField.type);
 
+    logger.info('-------', fieldType, fieldName)
     const values = data.map(entry => {
       if (fieldName === 'time' || fieldName === 't') {
+        console.log(1)
         return new Date(Number(entry[metaField.name]));
       }
 
       if (index === 0 && metaField.type === 'UInt64') {
+        console.log(2)
         fieldType = FieldType.time;
       }
 

@@ -9,7 +9,7 @@
 4. Run regression.py
   `./regression.py`
   
-# useful options
+# Useful options
   The following options can be useful:
     `--before=0.5 --after=0.5` - delay before and after steps.
 

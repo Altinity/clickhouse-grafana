@@ -123,7 +123,7 @@ services:
           npm install;
         fi &&
         npm run backend:build &&
-        npm run build-all &&
+        npm run backend:build:binary &&
         chmod +x ./dist/altinity-clickhouse-plugin*
       '
 

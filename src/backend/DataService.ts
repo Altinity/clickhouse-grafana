@@ -62,7 +62,7 @@ export class ClickhouseDataService extends DataService<Request, any> {
     const results = await Promise.all(allQueryPromise);
     logger.info("QueryData result", JSON.stringify(results));
 
-    const dataFrames = results.map((result: any) => transformData(result.body))
+    const dataFrames = results.map((result: any, index: number) => transformData(result.body, targets[index].refId))
 
 
     logger.info('Data Frames', JSON.stringify(dataFrames))

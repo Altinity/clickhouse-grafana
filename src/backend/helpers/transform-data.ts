@@ -35,7 +35,7 @@ function determineFieldType(type) {
   }
 };
 
-export const transformData = (inputData: any): any => {
+export const transformData = (inputData: any, refId: string): any => {
   const meta = inputData.meta;
   const data = inputData.data;
 
@@ -75,7 +75,8 @@ export const transformData = (inputData: any): any => {
       name: fieldName,
       config: {},
       type: fieldType,
-      values: values
+      values: values,
+      refId: refId
     };
   });
 

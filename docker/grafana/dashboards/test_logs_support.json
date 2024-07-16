@@ -21,7 +21,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "iteration": 1654018129313,
+  "id": 6,
   "links": [],
   "liveNow": false,
   "panels": [
@@ -33,7 +33,7 @@
       "description": "reproduce https://github.com/Altinity/clickhouse-grafana/issues/125 and https://github.com/Altinity/clickhouse-grafana/issues/331",
       "gridPos": {
         "h": 9,
-        "w": 12,
+        "w": 11,
         "x": 0,
         "y": 0
       },
@@ -74,12 +74,125 @@
           "tableLoading": false
         }
       ],
-      "title": "Logs",
+      "title": "Altinity Plugin Logs",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "grafana-clickhouse-datasource",
+        "uid": "P4F4839B759FB0509"
+      },
+      "description": "",
+      "gridPos": {
+        "h": 9,
+        "w": 11,
+        "x": 11,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": true,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Ascending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "builderOptions": {
+            "columns": [
+              {
+                "alias": "label",
+                "custom": false,
+                "name": "label",
+                "type": "LowCardinality(String)"
+              },
+              {
+                "alias": "detected_field",
+                "custom": false,
+                "name": "detected_field",
+                "type": "Float64"
+              },
+              {
+                "alias": "id",
+                "custom": false,
+                "name": "id",
+                "type": "UUID"
+              },
+              {
+                "hint": "time",
+                "name": "event_time",
+                "type": "DateTime"
+              },
+              {
+                "alias": "level",
+                "hint": "log_level",
+                "name": "level",
+                "type": "LowCardinality(String)"
+              },
+              {
+                "alias": "content",
+                "hint": "log_message",
+                "name": "content",
+                "type": "LowCardinality(String)"
+              }
+            ],
+            "database": "default",
+            "filters": [
+              {
+                "condition": "AND",
+                "filterType": "custom",
+                "hint": "time",
+                "key": "",
+                "operator": "WITH IN DASHBOARD TIME RANGE",
+                "type": "datetime"
+              },
+              {
+                "condition": "AND",
+                "filterType": "custom",
+                "hint": "log_level",
+                "key": "",
+                "operator": "IS ANYTHING",
+                "type": "string"
+              }
+            ],
+            "limit": 100000,
+            "meta": {
+              "logMessageLike": "",
+              "otelEnabled": false,
+              "otelVersion": "latest"
+            },
+            "mode": "list",
+            "orderBy": [
+              {
+                "default": true,
+                "dir": "DESC",
+                "hint": "time",
+                "name": ""
+              }
+            ],
+            "queryType": "logs",
+            "table": "test_logs"
+          },
+          "datasource": {
+            "type": "grafana-clickhouse-datasource",
+            "uid": "P4F4839B759FB0509"
+          },
+          "editorType": "builder",
+          "format": 2,
+          "pluginVersion": "4.2.0",
+          "rawSql": "SELECT event_time as \"timestamp\", content as \"body\", level, label, detected_field, id FROM \"default\".\"test_logs\" WHERE ( timestamp >= $__fromTime AND timestamp <= $__toTime ) ORDER BY timestamp DESC LIMIT 100000",
+          "refId": "A"
+        }
+      ],
+      "title": "Grafana plugin Logs",
       "type": "logs"
     }
   ],
-  "schemaVersion": 36,
-  "style": "dark",
+  "schemaVersion": 39,
   "tags": [],
   "templating": {
     "list": [
@@ -88,7 +201,13 @@
           "type": "vertamedia-clickhouse-datasource",
           "uid": "P7E099F39B84EA795"
         },
-        "filters": [],
+        "filters": [
+          {
+            "key": "default.test_logs.level",
+            "operator": "=",
+            "value": "Info"
+          }
+        ],
         "hide": 0,
         "name": "adhoc_variable",
         "skipUrlSync": false,
@@ -97,28 +216,29 @@
       {
         "current": {
           "selected": false,
-          "text": "%Info%line 11%",
-          "value": "%Info%line 11%"
+          "text": "",
+          "value": ""
         },
         "hide": 0,
         "name": "filter",
         "options": [
           {
-            "selected": true,
+            "selected": false,
             "text": "%Info%line 11%",
             "value": "%Info%line 11%"
           }
         ],
-        "query": "%Info%line 11%",
+        "query": "",
         "skipUrlSync": false,
         "type": "textbox"
       }
     ]
   },
   "time": {
-    "from": "now-6h",
+    "from": "now-2d",
     "to": "now"
   },
+  "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {},
   "timezone": "",
   "title": "Test Logs support",

@@ -44,6 +44,10 @@ services:
     image: docker.io/mysql:${MYSQL_VERSION:-latest}
     environment:
       - MYSQL_ROOT_PASSWORD=grafana
+    healthcheck:
+      test: mysqladmin -p=root ping -h localhost
+      timeout: 20s
+      retries: 10
 
   postgres:
     image: docker.io/postgres:${POSTGRES_VERSION:-latest}
@@ -51,6 +55,10 @@ services:
       - POSTGRES_PASSWORD=grafana
     volumes:
       - ./docker/postgres/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
+    healthcheck:
+      test: pg_isready
+      timeout: 20s
+      retries: 10
 
   grafana:
     image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-latest}

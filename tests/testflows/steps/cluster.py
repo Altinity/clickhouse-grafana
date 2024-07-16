@@ -219,7 +219,7 @@ class Cluster(object):
                         with By("executing docker-compose up"):
                             cmd = self.command(
                                 None,
-                                f"{self.docker_compose} --env-file=./tests/testflows/infra/env_file up -d 2>&1 | tee",
+                                f"{self.docker_compose} --env-file=./tests/testflows/infra/env_file up -d selenium-standalone 2>&1 | tee",
                                 timeout=timeout,
                             )
                     with Then("check there are no unhealthy containers"):

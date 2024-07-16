@@ -80,6 +80,10 @@ services:
     depends_on:
       clickhouse:
         condition: service_healthy
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
     ports:
       - "3000:3000"
 

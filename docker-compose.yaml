@@ -117,6 +117,8 @@ services:
     working_dir: /grafana-clickhouse
     volumes:
       - ./:/grafana-clickhouse
+    environment:
+      PKG_CACHE_PATH: /grafana-clickhouse/node_modules
     command: |
       bash -xec '
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \

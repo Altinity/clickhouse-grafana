@@ -1,6 +1,6 @@
 import { each } from 'lodash';
 import { SqlQueryHelper } from './sql-query-helper';
-import {TimestampFormat} from "../../types/types";
+import { TimestampFormat } from "../../types/types";
 
 export interface RawTimeRange {
   from: any | string;
@@ -12,6 +12,7 @@ export interface TimeRange {
   to: any;
   raw: RawTimeRange;
 }
+
 export default class SqlQueryMacros {
   static applyMacros(query: string, ast: any): string {
     if (SqlQueryHelper.contain(ast, '$columns')) {

@@ -1,0 +1,15 @@
+{
+  "compilerOptions": {
+    "module": "ESNext",
+    "target": "ES6",
+    "moduleResolution": "node",
+    "sourceMap": true,
+    "outDir": "dist",
+    "experimentalDecorators": true,
+    "emitDecoratorMetadata": true,
+    "esModuleInterop": true,
+    "typeRoots": ["node_modules/@types", "types"],
+  },
+  "exclude": ["dist", "node_modules/**"],
+  "include": ["src/backend/*.ts"]
+}

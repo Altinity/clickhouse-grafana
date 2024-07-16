@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   clickhouse-ontime:
     image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-latest}
@@ -35,6 +33,12 @@ services:
       - ./docker/clickhouse/${OPTIONS_METHOD:-options_method}.xml:/etc/clickhouse-server/config.d/options_method.xml
       - ./docker/clickhouse/profiling_config.xml:/etc/clickhouse-server/config.d/profiling_config.xml
       - ./docker/clickhouse/profiling_users.xml:/etc/clickhouse-server/users.d/profiling_users.xml
+    healthcheck:
+      test: clickhouse client -q "SELECT 1"
+      interval: 10s
+      timeout: 2s
+      retries: 30
+      start_period: 5s
 
   mysql:
     image: docker.io/mysql:${MYSQL_VERSION:-latest}
@@ -67,9 +71,15 @@ services:
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
+    healthcheck:
+      test: curl http://localhost:3000/
+      interval: 10s
+      timeout: 1s
+      retries: 30
+      start_period: 30s
     depends_on:
-      - clickhouse
-
+      clickhouse:
+        condition: service_healthy
     ports:
       - "3000:3000"
 
@@ -87,7 +97,14 @@ services:
     ports:
       - "3001:3000"
     depends_on:
-      - clickhouse
+      clickhouse:
+        condition: service_healthy
+    healthcheck:
+      test: curl http://localhost:3001/
+      interval: 10s
+      timeout: 1s
+      retries: 30
+      start_period: 30s
 
   trickster:
     image: tricksterio/trickster:${TRICKSTER_VERSION:-latest}
@@ -96,7 +113,8 @@ services:
     ports:
       - "8480:8480"
     depends_on:
-      - clickhouse
+      clickhouse:
+        condition: service_healthy
 
   frontend_builder:
     image: node:lts
@@ -149,6 +167,9 @@ services:
       - ./tests/testflows/tmp/target:/opt/selenium/assets
       - /var/run/docker.sock:/var/run/docker.sock
 #    privileged: true
+    depends_on:
+      grafana:
+        condition: service_healthy
 
 volumes:
   node_modules:

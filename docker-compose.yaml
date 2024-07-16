@@ -117,13 +117,11 @@ services:
     working_dir: /grafana-clickhouse
     volumes:
       - ./:/grafana-clickhouse
-    command: >
+    command: |
       bash -xec '
-        if [[ "$(ls -la ./node_modules/ | wc -l)" == "3" ]]; then
-          npm install;
-        fi &&
-        npm run backend:build &&
-        npm run backend:build:binary &&
+        if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
+        npm run backend:build && \
+        npm run backend:build:binary && \
         chmod +x ./dist/altinity-clickhouse-plugin*
       '
 

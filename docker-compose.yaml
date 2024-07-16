@@ -61,7 +61,7 @@ services:
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
     environment:
-      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel
+      GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
@@ -79,7 +79,7 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
     environment:
-      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,https://github.com/Altinity/clickhouse-grafana/releases/download/v${CLICKHOUSE_PLUGIN_VERSION:-3.1.0}/vertamedia-clickhouse-datasource-${CLICKHOUSE_PLUGIN_VERSION:-3.1.0}.zip;vertamedia-clickhouse-datasource"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,https://github.com/Altinity/clickhouse-grafana/releases/download/v${CLICKHOUSE_PLUGIN_VERSION:-3.2.1}/vertamedia-clickhouse-datasource-${CLICKHOUSE_PLUGIN_VERSION:-3.2.1}.zip;vertamedia-clickhouse-datasource"
       GF_LOG_LEVEL: debug
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}

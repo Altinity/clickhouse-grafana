@@ -182,6 +182,8 @@ services:
     depends_on:
       grafana:
         condition: service_healthy
+      trickster:
+        condition: service_started
 
 volumes:
   node_modules:

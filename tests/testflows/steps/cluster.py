@@ -227,7 +227,7 @@ class Cluster(object):
                             env_file = os.path.join(current_dir(), "..", "infra", "env_file")
                             cmd = self.command(
                                 None,
-                                f"set -o pipefail && {self.docker_compose} --env-file=\"{env_file}\" up -d -d selenium-standalone 2>&1 | tee",
+                                f"set -o pipefail && {self.docker_compose} --env-file=\"{env_file}\" up -d selenium-standalone 2>&1 | tee",
                                 timeout=timeout,
                             )
                     with Then("check there are no unhealthy containers"):

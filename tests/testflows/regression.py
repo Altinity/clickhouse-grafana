@@ -51,6 +51,7 @@ def regression(self, before, after):
     self.context.server_name = "test.example.com"
     
     project_root_dir = os.path.join(current_dir(),"..","..")
+    self.context.project_root_dir = project_root_dir
 
     with Given("docker-compose cluster"):
         self.context.cluster = cluster.cluster(frame=inspect.currentframe())

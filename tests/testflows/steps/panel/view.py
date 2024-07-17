@@ -176,7 +176,7 @@ def wait_visualization(self):
 def take_visualization_screenshot(self, screenshot_name):
     """Take screenshot for visualization."""
 
-    locators.visualization.screenshot(f'./tests/testflows/screenshots/{screenshot_name}.png')
+    locators.visualization.screenshot(f'./screenshots/{screenshot_name}.png')
 
 
 @TestStep(Then)

@@ -51,7 +51,7 @@ class Cluster(object):
         configs_dir=None,
         nodes=None,
         docker_compose="docker-compose --log-level ERROR --profile test",
-        docker_compose_project_dir="./",
+        docker_compose_project_dir=os.path.join(current_dir(), "..", "..", ".."),
         docker_compose_file="docker-compose.yaml",
         frame=None,
     ):
@@ -170,7 +170,7 @@ class Cluster(object):
                     else:
                         self._bash[id] = shell
         finally:
-            self.command(None, f"{self.docker_compose} down", timeout=timeout)
+            self.command(None, f"{self.docker_compose} down -v --remove-orphans", timeout=timeout)
             return self.command(None, f"docker volume prune -f", timeout=timeout)
 
     def up(self, timeout=30 * 60):
@@ -188,7 +188,7 @@ class Cluster(object):
                     with By("pulling images for all the services"):
                         cmd = self.command(
                             None,
-                            f"{self.docker_compose} pull 2>&1 | tee",
+                            f"set -o pipefail && {self.docker_compose} pull 2>&1 | tee",
                             exitcode=None,
                             timeout=timeout,
                         )
@@ -197,35 +197,43 @@ class Cluster(object):
                     with And("executing docker-compose down just in case it is up"):
                         cmd = self.command(
                             None,
-                            f"{self.docker_compose} down 2>&1 | tee",
+                            f"set -o pipefail && {self.docker_compose} down 2>&1 | tee",
                             exitcode=None,
                             timeout=timeout,
                         )
                         if cmd.exitcode != 0:
                             continue
                     with And("executing docker-compose up"):
+                        with By("executing mkdir node_modules"):
+                            cmd = self.command(
+                                None,
+                                f"""set -o pipefail && mkdir -p "{os.path.join(current_dir(), '..', '..', '..')}/node_modules" 2>&1 | tee""",
+                                timeout=timeout,
+                            )
+
                         with By("executing docker-compose run frontend builder"):
                             cmd = self.command(
                                 None,
-                                f"docker-compose run --rm frontend_builder 2>&1 | tee",
+                                f"set -o pipefail && docker-compose run --rm frontend_builder 2>&1 | tee",
                                 timeout=timeout,
                             )
                         with By("executing docker-compose run backend builder"):
                             cmd = self.command(
                                 None,
-                                f"docker-compose run --rm backend_builder 2>&1 | tee",
+                                f"set -o pipefail && docker-compose run --rm backend_builder 2>&1 | tee",
                                 timeout=timeout,
                             )
                         with By("executing docker-compose up"):
+                            env_file = os.path.join(current_dir(), "..", "infra", "env_file")
                             cmd = self.command(
                                 None,
-                                f"{self.docker_compose} --env-file=./tests/testflows/infra/env_file up -d 2>&1 | tee",
+                                f"set -o pipefail && {self.docker_compose} --env-file=\"{env_file}\" up -d 2>&1 | tee",
                                 timeout=timeout,
                             )
                     with Then("check there are no unhealthy containers"):
                         if "is unhealthy" in cmd.output:
-                            self.command(None, f"{self.docker_compose} ps | tee")
-                            self.command(None, f"{self.docker_compose} logs | tee")
+                            self.command(None, f"set -o pipefail && {self.docker_compose} ps | tee")
+                            self.command(None, f"set -o pipefail && {self.docker_compose} logs | tee")
 
                     if cmd.exitcode == 0:
                         break
@@ -234,7 +242,7 @@ class Cluster(object):
                 fail("could not bring up docker-compose cluster")
 
     def command(
-        self, node, command, message=None, exitcode=None, steps=True, *args, **kwargs
+        self, node, command, message=None, exitcode=0, steps=False, *args, **kwargs
     ):
         """Execute and check command.
 

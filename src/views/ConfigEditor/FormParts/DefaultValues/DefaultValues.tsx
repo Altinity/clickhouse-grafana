@@ -14,6 +14,10 @@ jsonData, onSwitchToggle, onFieldChange, externalProps
 
   useEffect(() => {
     const doRequest = async () => {
+      if (!jsonData.dataSourceUrl.startsWith('http://') && !jsonData.dataSourceUrl.startsWith('https://')) {
+       return;
+      }
+
       try {
         const data = await getOptions(TABLES_QUERY, jsonData.dataSourceUrl)
 

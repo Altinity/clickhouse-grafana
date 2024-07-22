@@ -1,4 +1,4 @@
-# Altinity Grafana datasource plugin for ClickHouse (grafana Grafana 4.6+ supported)
+# Altinity Grafana datasource plugin for ClickHouse® (grafana Grafana 4.6+ supported)
 
 Altinity ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.tech) as a backend database.
 

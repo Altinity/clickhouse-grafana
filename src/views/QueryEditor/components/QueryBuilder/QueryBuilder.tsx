@@ -79,7 +79,6 @@ export const QueryBuilder = ({
           value={selectedDatabase}
           onChange={(item: SelectableValue<string>) => onDatabaseChange(item.value)}
           options={databases}
-          testId={'database-select'}
         />
         <UniversalSelectField
           width={24}
@@ -88,7 +87,6 @@ export const QueryBuilder = ({
           onChange={(selectedItem: SelectableValue<string>) => onTableChange(selectedItem.value)}
           options={tables}
           disabled={true}
-          testId={'table-select'}
         />
       </InlineFieldRow>
       <InlineFieldRow>
@@ -139,7 +137,6 @@ export const QueryBuilder = ({
             placeholder={'Timestamp type'}
             options={options}
             value={selectedDateTimeType}
-            data-testid={'timestamp-type-select'}
           />
         </InlineField>
       </InlineFieldRow>
@@ -152,7 +149,6 @@ export const QueryBuilder = ({
           onChange={({ value }) => onDateTimeColDataTypeChange(value as string)}
           options={timestampColumns}
           disabled={!timestampColumns.length}
-          testId={'timestamp-column-select'}
         />
       </InlineFieldRow>
       <InlineFieldRow>
@@ -182,7 +178,6 @@ export const QueryBuilder = ({
           value={selectedColumnDateType}
           onChange={(selectedItem) => onDateColDataTypeChange(selectedItem.value)}
           options={dateColumns}
-          testId={'date-column-select'}
         />
       </InlineFieldRow>
     </div>

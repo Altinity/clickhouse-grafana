@@ -1,12 +1,12 @@
-import {Alert, InlineField, InlineLabel, InlineSwitch, Select, Tooltip} from "@grafana/ui";
+import {InlineField, InlineLabel, InlineSwitch, Select} from "@grafana/ui";
 import React, {useEffect, useState} from "react";
 import {getOptions} from "./DefaultValues.api";
 import {TimestampFormat} from "../../../../types/types";
 const TABLES_QUERY = "SELECT name,database,table,type FROM system.columns WHERE type LIKE 'Date32%'  OR type LIKE 'DateTime64%' OR type = 'UInt32' OR match(type,'^DateTime$|^DateTime\\\\([^)]+\\\\)$')  OR match(type,'^Date$|^Date\\([^)]+\\)$') ORDER BY type,name FORMAT JSON";
 
 export const DefaultValues = ({
-jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
-}: {jsonData: any, onSwitchToggle: any, newOptions: any, onFieldChange: any, externalProps: any}) => {
+jsonData, onSwitchToggle, onFieldChange, externalProps
+}: {jsonData: any, onSwitchToggle: any, onFieldChange: any, externalProps: any}) => {
   const [defaultDateTime64Options, setDefaultDateTime64Options] = useState<any[]>([]);
   const [defaultDateTimeOptions, setDefaultDateTimeOptions] = useState<any[]>([]);
   const [defaultUint32Options, setDefaultUint32Options] = useState<any[]>([]);
@@ -14,17 +14,12 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
 
   useEffect(() => {
     const doRequest = async () => {
-      if (
-        newOptions.version === 1 ||
-        !jsonData.useDefaultConfiguration ||
-        (!jsonData.dataSourceUrl.startsWith('http://') &&
-        !jsonData.dataSourceUrl.startsWith('https://'))
-      ) {
+      if (!jsonData.useDefaultConfiguration || (!jsonData.dataSourceUrl.startsWith('http://') && !jsonData.dataSourceUrl.startsWith('https://'))) {
        return;
       }
 
       try {
-        const data = await getOptions(TABLES_QUERY, jsonData.dataSourceUrl, newOptions)
+        const data = await getOptions(TABLES_QUERY, jsonData.dataSourceUrl)
 
         const groupedByType = data?.data?.reduce((acc, item) => {
           // If the type is not yet a key in the accumulator, add it
@@ -55,30 +50,21 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
     }
 
     doRequest()
-  }, [jsonData.dataSourceUrl, jsonData.useDefaultConfiguration, newOptions]);
+  }, [jsonData.dataSourceUrl, jsonData.useDefaultConfiguration]);
 
   return <div className="gf-form-group">
     <InlineField
       label="Use default values"
       labelWidth={36}
     >
-      <Tooltip content={newOptions.version === 1 ? 'Please save and test dashboard first' : ''}>
-        <InlineSwitch
-          id="useDefaultConfiguration"
-          className="gf-form"
-          value={jsonData.useDefaultConfiguration || false}
-          onChange={(e) => onSwitchToggle('useDefaultConfiguration', e.currentTarget.checked)}
-        />
-      </Tooltip>
+      <InlineSwitch
+        id="useDefaultConfiguration"
+        className="gf-form"
+        value={jsonData.useDefaultConfiguration || false}
+        onChange={(e) => onSwitchToggle('useDefaultConfiguration', e.currentTarget.checked)}
+      />
     </InlineField>
     {jsonData.useDefaultConfiguration && <>
-    {newOptions.version === 1 &&
-      <Alert
-        title={`Please save dashboard before use default configurations, 
-        we need configured clickhouse connection to fetch options`}
-        severity={'info'}
-        key={'info'}/>
-    }
       <h6>TimestampType</h6>
       <InlineField
         labelWidth={32}

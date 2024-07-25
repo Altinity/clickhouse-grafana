@@ -69,22 +69,22 @@ export const QueryTextEditor = ({
           <InlineField
             label={<InlineLabel width={18} tooltip="Turn on if you don't like when last data point in time series much lower then previous">Extrapolation</InlineLabel>}
           >
-            <InlineSwitch transparent data-testid="extrapolate-switch" value={fieldValues.extrapolate} onChange={() => handleToggleField('extrapolate')} />
+            <InlineSwitch transparent value={fieldValues.extrapolate} onChange={() => handleToggleField('extrapolate')} />
           </InlineField>
           <InlineField
             label={<InlineLabel width={10} tooltip="Leave blank for auto handling based on time range and panel width">Step</InlineLabel>}
           >
-            <Input placeholder="" onChange={handleStepChange} data-testid="interval-input" value={fieldValues.interval} />
+            <Input placeholder="" onChange={handleStepChange} value={fieldValues.interval} />
           </InlineField>
           <InlineField
             label={<InlineLabel width={'auto'}>Resolution</InlineLabel>}
           >
-            <Select width={'auto'} data-testid="resolution-select" onChange={(e) => handleResolutionChange(Number(e.value))} options={RESOLUTION_OPTIONS} value={fieldValues.intervalFactor} />
+            <Select width={'auto'} onChange={(e) => handleResolutionChange(Number(e.value))} options={RESOLUTION_OPTIONS} value={fieldValues.intervalFactor} />
           </InlineField>
           { !isAnnotationView && <InlineField
             label={<InlineLabel width={'auto'}>Format As</InlineLabel>}
           >
-            <Select width={'auto'} data-testid="format-as-select" onChange={(e) => handleFormatChange(e.value)} options={FORMAT_OPTIONS} value={fieldValues.format} />
+            <Select width={'auto'} onChange={(e) => handleFormatChange(e.value)} options={FORMAT_OPTIONS} value={fieldValues.format} />
           </InlineField> }
         </InlineFieldRow>
         <InlineFieldRow>
@@ -92,18 +92,18 @@ export const QueryTextEditor = ({
             label={<InlineLabel width={18} tooltip="Add /* $__dashboard $__user */ to query">Add metadata</InlineLabel>}
             style={{ height: '100%' }}
           >
-            <InlineSwitch data-testid="metadata-switch" width="auto" value={fieldValues.add_metadata} onChange={() => handleToggleField('add_metadata')} transparent />
+            <InlineSwitch width="auto" value={fieldValues.add_metadata} onChange={() => handleToggleField('add_metadata')} transparent />
           </InlineField>
           <InlineField
             label={<InlineLabel width={18} tooltip="Turn off if you would like pass comments in SQL query to server">Skip Comments</InlineLabel>}
             style={{ height: '100%' }}
           >
-            <InlineSwitch data-testid="skip-comments-switch" width="auto" value={fieldValues.skip_comments} onChange={() => handleToggleField('skip_comments')} transparent />
+            <InlineSwitch width="auto" value={fieldValues.skip_comments} onChange={() => handleToggleField('skip_comments')} transparent />
           </InlineField>
           <InlineField
             label={<InlineLabel width={10} tooltip="Set rounding for $from and $to timestamps...">Round</InlineLabel>}
           >
-            <Input data-testid="round-input" placeholder="" onChange={handleRoundChange} value={fieldValues.round} />
+            <Input placeholder="" onChange={handleRoundChange} value={fieldValues.round} />
           </InlineField>
           <InlineField>
             <ToolbarButton variant={'primary'} onClick={() => handleToggleField('showHelp')} isOpen={fieldValues.showHelp}>Show help</ToolbarButton>

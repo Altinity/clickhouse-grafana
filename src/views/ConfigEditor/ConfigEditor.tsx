@@ -120,7 +120,7 @@ export function ConfigEditor(props: Props) {
           </>
         )}
       </div>
-      <DefaultValues jsonData={jsonData} newOptions={newOptions} onSwitchToggle={onSwitchToggle} onFieldChange={onFieldChange} externalProps={props}/>
+      <DefaultValues jsonData={jsonData} onSwitchToggle={onSwitchToggle} onFieldChange={onFieldChange} externalProps={props}/>
       <h3 className="page-heading">Additional</h3>
       <div className="gf-form-group">
         <InlineField

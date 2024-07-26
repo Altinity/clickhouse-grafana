@@ -1,4 +1,4 @@
-import {Alert, InlineField, InlineLabel, InlineSwitch, Select, Tooltip} from "@grafana/ui";
+import {Alert, InlineField, InlineLabel, InlineSwitch, Select} from "@grafana/ui";
 import React, {useEffect, useState} from "react";
 import {getOptions} from "./DefaultValues.api";
 import {TimestampFormat} from "../../../../types/types";

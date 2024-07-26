@@ -10,6 +10,7 @@ type UniversalSelectFieldProps = {
   placeholder?: string;
   disabled?: boolean;
   width?: number;
+  testId?: string;
 };
 
 export const UniversalSelectField: React.FC<UniversalSelectFieldProps> = ({
@@ -19,7 +20,8 @@ export const UniversalSelectField: React.FC<UniversalSelectFieldProps> = ({
                                                                             label,
                                                                             placeholder,
                                                                             disabled,
-                                                                            width
+                                                                            width,
+                                                                            testId,
                                                                           }) => {
   const [customOptions, setCustomOptions] = useState<Array<SelectableValue<string>>>([]);
 
@@ -66,6 +68,7 @@ export const UniversalSelectField: React.FC<UniversalSelectFieldProps> = ({
         placeholder={placeholder}
         options={uniqueOptions}
         disabled={disabled}
+        data-testid={testId}
       />
     </InlineField>
   );

@@ -47,3 +47,10 @@ e2e-results/
 
 # pycache
 *__pycache__*
+
+# pyenv
+venv/
+
+# testflows temporay output
+test/testflows/tmp/target/
+test/testflows/assets/sessions.json

@@ -38,10 +38,10 @@ def check_existing_data_sources(self):
                 datasources.click_datasource_in_datasources_view(datasource_name=datasource_name)
 
             with delay():
-                with When("I click save and test button"):
+                with When(f"I click save and test button {datasource_name}"):
                     datasources_altinity_edit.click_save_and_test_button()
 
-            with Then("I check save and test button works correctly"):
+            with Then(f"I check save and test button works correctly {datasource_name}"):
                 assert datasources_altinity_edit.check_alert_success() is True, error()
 
 

@@ -28,7 +28,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
-
+      - name: Show machine IP
+        run: |
+          ip addr
       - name: Setup
         run: tests/testflows/infra/setup.sh
 
@@ -37,7 +39,7 @@ jobs:
           python3
           -u ./regression.py --before=0.3 --after=0.3
           --log raw.log
-          -o classic 
+          --debug
 
       - name: Create reports
         if: always()

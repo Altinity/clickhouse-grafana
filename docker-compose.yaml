@@ -1,5 +1,3 @@
-version: "3"
-
 services:
   clickhouse-ontime:
     image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-latest}

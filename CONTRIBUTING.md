@@ -2,13 +2,21 @@
 
 This document is a starting point for building a Altinity Grafana datasource plugin for ClickHouse.
 
-## Build from scratch with docker-compose
+## Requirements
+```
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) test" | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin 
+```
+
+## Build from scratch with `docker compose` (use )
 This is a simple environment which mounts the current `dist` directory inside the `grafana` container. The `grafana` container connects to the docker `clickhouse` database container.
 Also `grafana` container contains some datasource and dashboards installed via `/etc/grafana/provisioning/` folder.
 
-To run the development environment install Docker and docker-compose:
+To run the development environment install Docker and docker compose:
 ```sh
-docker-compose up --no-deps -d grafana clickhouse
+docker compose up --no-deps -d grafana clickhouse
 ```
 after that open http://localhost:3000/ to open grafana instance with one clickhouse datasource
 
@@ -18,15 +26,15 @@ The frontend builder is the docker container used to transpile the typescript so
 
 To develop using docker, the process looks like:
 1. change source files
-2. `docker-compose run --rm frontend_builder`
-3. `docker-compose restart grafana`
+2. `docker compose run --rm frontend_builder`
+3. `docker compose restart grafana`
 4. open http://localhost:3000/
 
 To develop without build inside a docker, the development process for frontend part of code looks like:
 1. change source files
 2. `npm run test`
 3. `npm run build`
-4. `docker-compose restart grafana`
+4. `docker compose restart grafana`
 5. open http://localhost:3000/
 
 #### Backend Builder
@@ -35,13 +43,13 @@ The backend builder is the docker container used to compile the golang source co
 
 To develop using docker, the development process for backend part of code looks like:
 1. change source files
-2. `docker-compose run --rm backend_builder`
-3. `docker-compose restart grafana`
+2. `docker compose run --rm backend_builder`
+3. `docker compose restart grafana`
 4. open http://localhost:3000/
 
 To format your go code, use the command:
 ```sh
-docker-compose run --rm backend_builder go fmt .
+docker compose run --rm backend_builder go fmt .
 ```
 
 ## Build from source on Host Machine  Docker

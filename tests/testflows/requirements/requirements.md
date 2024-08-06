@@ -190,11 +190,11 @@ version: 1.0
 
 The [Plugin] SHALL be available to be run using docker compose with the following commands:
 ```
-docker-compose run --rm frontend_builder
-docker-compose run --rm backend_builder
+docker compose run --rm frontend_builder
+docker compose run --rm backend_builder
 echo 'export GRAFANA_ACCESS_POLICY_TOKEN="{grafana_token}"' > .release_env
-docker-compose run --rm plugin_signer
-docker-compose up -d grafana
+docker compose run --rm plugin_signer
+docker compose up -d grafana
 ```
 
 ## Grafana Datasource Plugin For ClickHouse

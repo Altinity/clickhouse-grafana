@@ -79,7 +79,7 @@ jobs:
 
       - name: Stop grafana docker
         if: steps.check-for-e2e.outputs.has-e2e == 'true'
-        run: docker-compose down
+        run: docker compose down
 
       - name: Archive E2E output
         uses: actions/upload-artifact@v4

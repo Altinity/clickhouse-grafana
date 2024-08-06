@@ -47,3 +47,6 @@ e2e-results/
 
 # pycache
 *__pycache__*
+
+# virtual environment
+venv/

@@ -146,6 +146,7 @@ services:
     profiles: [test]
     image: selenium/standalone-docker:4.18.1-20240224
     container_name: selenium-docker
+#    user: root
     ports:
       - "4444:4444"
     volumes:

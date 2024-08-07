@@ -11,6 +11,7 @@ from testflows.asserts import error
 import steps.dashboard.view as dashboard
 import steps.dashboards.view as dashboards
 import steps.connections.datasources.view as datasources
+import steps.panel.query_settings.view as query_settings
 import steps.connections.datasources.new.view as datasources_new
 import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
 
@@ -288,3 +289,36 @@ def create_new_altinity_datasource(
             with delay():
                 with And("clicking delete button in confirmation modal dialog"):
                     datasources_altinity_edit.click_confirm_delete_datasource()
+
+
+@TestStep(When)
+def setup_query_settings(
+        self,
+        query_name="A",
+        database="default",
+        table="test_alerts",
+        column_timestamp_type="DateTime",
+        timestamp_column="EventTime",
+        date_column="EventDate"
+):
+    """Setup all macro in Query Settings."""
+
+    with When("I setup database"):
+        with delay():
+            query_settings.enter_database(query_name=query_name, database=database)
+
+    with When("I setup table"):
+        with delay():
+            query_settings.enter_table(query_name=query_name, table=table)
+
+    with When("I setup column timestamp type"):
+        with delay():
+            query_settings.enter_column_timestamp_type(query_name=query_name, column_timestamp_type=column_timestamp_type)
+
+    with When("I setup timestamp column"):
+        with delay():
+            query_settings.enter_timestamp_column(query_name=query_name, timestamp_column=timestamp_column)
+
+    with When("I setup date column"):
+        with delay():
+            query_settings.enter_date_column(query_name=query_name, date_column=date_column)

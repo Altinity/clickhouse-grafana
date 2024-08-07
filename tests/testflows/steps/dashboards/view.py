@@ -58,7 +58,7 @@ def open_dashboard_view(self, dashboard_name):
 
 @TestStep(When)
 def open_dashboards_view(self, wait_dashboard_name="clickhouse dashboard"):
-    """Open login view and wait it to be loaded."""
+    """Open dashboards view and wait it to be loaded."""
     with When("I go to dashboards endpoint"):
         open_dashboards_endpoint()
 

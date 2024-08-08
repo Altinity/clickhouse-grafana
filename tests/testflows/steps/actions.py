@@ -171,10 +171,6 @@ def create_new_altinity_datasource(
                     datasources_new.click_new_altinity_plugin_datasource()
 
             with delay():
-                with And("entering datasource name"):
-                    datasources_altinity_edit.enter_name_into_name_field(datasource_name=datasource_name)
-
-            with delay():
                 with By("entering url"):
                     datasources_altinity_edit.enter_url_into_url_field(url=url)
 
@@ -264,6 +260,10 @@ def create_new_altinity_datasource(
                     with By("enter compression type"):
                         datasources_altinity_edit.enter_compression_type(compression_type='gzip')
 
+            with delay():
+                with And("entering datasource name"):
+                    datasources_altinity_edit.enter_name_into_name_field(datasource_name=datasource_name)
+                    
             with delay():
                 with By("clicking save and test button"):
                     datasources_altinity_edit.click_save_and_test_button()

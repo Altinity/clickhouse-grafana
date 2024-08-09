@@ -73,62 +73,62 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     };
   }
 
-  _getRequestOptions(query: string, usePOST?: boolean, requestId?: string) {
-    let options: any = {
-      url: this.url,
+  static _getRequestOptions(query: string, usePOST?: boolean, requestId?: string, options?: any) {
+    let requestOptions: any = {
+      url: options.url,
       requestId: requestId,
     };
     let params: string[] = [];
 
     if (usePOST) {
-      options.method = 'POST';
-      options.data = query;
+      requestOptions.method = 'POST';
+      requestOptions.data = query;
     } else {
-      options.method = 'GET';
+      requestOptions.method = 'GET';
       params.push('query=' + encodeURIComponent(query));
     }
 
-    if (this.defaultDatabase) {
-      params.push('database=' + this.defaultDatabase);
+    if (options.defaultDatabase) {
+      params.push('database=' + options.defaultDatabase);
     }
 
-    if (this.basicAuth || this.withCredentials) {
-      options.withCredentials = true;
+    if (options.basicAuth || options.withCredentials) {
+      requestOptions.withCredentials = true;
     }
 
-    options.headers = options.headers || {};
-    if (this.basicAuth) {
-      options.headers.Authorization = this.basicAuth;
+    requestOptions.headers = options.headers || {};
+    if (options.basicAuth) {
+      requestOptions.headers.Authorization = options.basicAuth;
     }
 
-    if (this.useCompression) {
-      options.headers['Accept-Encoding'] = this.compressionType
+    if (options.useCompression) {
+      requestOptions.headers['Accept-Encoding'] = options.compressionType
       params.push("enable_http_compression=1")
     }
 
-    if (this.useYandexCloudAuthorization) {
-      options.headers['X-ClickHouse-User'] = this.xHeaderUser;
+    if (options.useYandexCloudAuthorization) {
+      requestOptions.headers['X-ClickHouse-User'] = options.xHeaderUser;
       // look to routes in plugin.json
-      if (options.url.indexOf('/?') === -1) {
-        options.url += '/xHeaderKey';
+      if (requestOptions.url.indexOf('/?') === -1) {
+        requestOptions.url += '/xHeaderKey';
       } else {
-        options.url.replace('/?', '/xHeaderKey/?');
+        requestOptions.url.replace('/?', '/xHeaderKey/?');
       }
     }
 
-    if (this.addCorsHeader) {
+    if (options.addCorsHeader) {
       params.push('add_http_cors_header=1');
     }
 
     if (params.length) {
-      options.url += (options.url.indexOf('?') !== -1 ? '&' : '/?') + params.join('&');
+      requestOptions.url += (requestOptions.url.indexOf('?') !== -1 ? '&' : '/?') + params.join('&');
     }
 
-    return options;
+    return requestOptions;
   }
 
   _request(query: string, requestId?: string) {
-    const queryParams = this._getRequestOptions(query, this.usePOST, requestId);
+    const queryParams = CHDataSource._getRequestOptions(query, this.usePOST, requestId);
 
     const dataRequest = new Promise((resolve, reject) => {
       this.backendSrv.fetch(queryParams).subscribe((response) => {
@@ -291,7 +291,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     query = queryModel.replace(/\r\n|\r|\n/g, ' ');
     query += ' FORMAT JSON';
 
-    const queryParams = this._getRequestOptions(query, true);
+    const queryParams = CHDataSource._getRequestOptions(query, true);
 
     const dataRequest = new Promise((resolve, reject) => {
       this.backendSrv.fetch(queryParams).subscribe((response) => {

@@ -4,6 +4,7 @@ from testflows.asserts import error
 from steps.delay import delay
 from steps.panel.locators import locators
 from selenium.webdriver import ActionChains
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By as SelectBy
 
 import steps.ui as ui
@@ -47,9 +48,9 @@ def click_datasource_in_select_datasource_dropdown(self, datasource_name):
 
 
 @TestStep(When)
-def click_sql_editor_toggle(self):
+def click_sql_editor_toggle(self, query_name):
     """Click SQL editor toggle."""
-    locators.sql_editor_toggle.click()
+    locators.sql_editor_toggle(query_name).click()
 
 
 @TestStep(When)
@@ -74,13 +75,25 @@ def click_on_the_visualization(self):
 
 
 @TestStep(When)
-def go_to_sql_editor(self):
+def click_add_query_button(self):
+    """Click Add query button."""
+    locators.add_query_button.click()
+
+
+@TestStep(When)
+def click_expression_button(self):
+    """Click Expression button."""
+    locators.expression_button.click()
+
+
+@TestStep(When)
+def go_to_sql_editor(self, query_name='A'):
     """Wait sql editor toggle and click it."""
     with By("waiting sql editor toggle"):
         wait_sql_editor_toggle()
 
     with By("clicking SQL Editor toggle"):
-        click_sql_editor_toggle()
+        click_sql_editor_toggle(query_name=query_name)
 
 
 @TestStep(When)
@@ -92,10 +105,10 @@ def wait_sql_editor_input(self):
 
 
 @TestStep(When)
-def select_input_query(self):
+def select_input_query(self, query_name):
     """Select input query using triple click on textarea."""
 
-    ActionChains(self.context.driver).double_click(locators.sql_editor_input).click(locators.sql_editor_input).perform()
+    ActionChains(self.context.driver).double_click(locators.sql_editor_input(query_name=query_name)).click(locators.sql_editor_input(query_name=query_name)).perform()
 
 
 @TestStep(When)
@@ -128,17 +141,24 @@ def change_repeat_by_variable_option(self, variable_name):
 
 
 @TestStep(When)
-def enter_sql_editor_input(self, query):
+def enter_sql_editor_input(self, query, query_name='A'):
     """Enter SQL request into sql editor input field."""
 
     with By("waiting SQL editor"):
         wait_sql_editor_input()
 
     with By("selecting input string"):
-        select_input_query()
+        select_input_query(query_name=query_name)
 
     with By("entering request"):
-        locators.input_in_sql_editor.send_keys(query)
+        locators.input_in_sql_editor(query_name=query_name).send_keys(query)
+
+
+@TestStep(When)
+def get_input_query(self, query_name='A'):
+    """Get SQL query."""
+
+    return locators.input_in_sql_editor(query_name=query_name).text
 
 
 @TestStep(When)
@@ -268,3 +288,124 @@ def check_query_inspector_request(self, url_parts):
         for url_part in url_parts:
             with By(f"checking url contains {url_part}"):
                 assert url_part in get_query_inspector_url_text(), error()
+
+
+@TestStep(When)
+def change_query_name(self, query_name, new_query_name):
+    """Change query name."""
+
+    locators.query_name_field(query_name=query_name).click()
+    locators.query_name_textfield(query_name=query_name).send_keys(new_query_name)
+    locators.query_name_textfield(query_name=query_name).send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def change_expression_name(self, expression_name, new_expression_name):
+    """Change expression name."""
+
+    locators.expression_name_field(expression_name=expression_name).click()
+    locators.expression_name_textfield(expression_name=expression_name).send_keys(new_expression_name)
+    locators.expression_name_textfield(expression_name=expression_name).send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def click_duplicate_query(self, query_name):
+    """Click duplicate query."""
+
+    locators.duplicate_query_button(query_name=query_name).click()
+
+
+@TestStep(When)
+def click_duplicate_expression(self, expression_name):
+    """Click duplicate expression."""
+
+    locators.duplicate_expression_button(expression_name=expression_name).click()
+
+
+@TestStep(When)
+def click_hide_response_query(self, query_name):
+    """Click hide response query button."""
+
+    locators.hide_response_query_button(query_name=query_name).click()
+
+
+@TestStep(When)
+def click_hide_response_expression(self, expression_name):
+    """Click hide response expression button."""
+
+    locators.hide_response_expression_button(expression_name=expression_name).click()
+
+
+@TestStep(When)
+def click_delete_query(self, query_name):
+    """Click delete query button."""
+
+    locators.delete_query_button(query_name=query_name).click()
+
+
+@TestStep(When)
+def click_hide_response_expression(self, expression_name):
+    """Click delete expression button."""
+
+    locators.delete_expression_button(expression_name=expression_name).click()
+
+
+@TestStep(When)
+def enter_expression_operation(self, expression_name, operation_type):
+    """Enter expression operation type."""
+
+    locators.expression_operation_dropdown(expression_name=expression_name).send_keys(operation_type)
+    locators.expression_operation_dropdown(expression_name=expression_name).send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_expression(self, expression_name, expression):
+    """Enter expression."""
+
+    locators.expression_textfield(expression_name=expression_name).send_keys(expression)
+    locators.expression_textfield(expression_name=expression_name).send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_time(self, time_from, time_to):
+    """Enter time."""
+
+    with When("I open time modal"):
+        with delay():
+            locators.time_picker_button.click()
+
+    with When("I enter time from"):
+        with delay():
+            locators.time_picker_from_textfield.clear()
+            locators.time_picker_from_textfield.send_keys(time_from)
+
+    with When("I enter time to"):
+        with delay():
+            locators.time_picker_to_textfield.clear()
+            locators.time_picker_to_textfield.send_keys(time_to)
+
+    with When("I click submit button"):
+        with delay():
+            locators.time_picker_submit_button.click()
+
+
+@TestStep(When)
+def enter_data_source_for_query(self, query_name, datasource_name):
+    """Enter data source for query."""
+
+    locators.data_source_picker(query_name=query_name).send_keys(datasource_name)
+    locators.data_source_picker(query_name=query_name).send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def click_apply_button(self):
+    """Click apply button for panel."""
+
+    locators.apply_button.click()
+
+
+@TestStep(When)
+def click_discard_button(self):
+    """Click apply button for panel."""
+
+    locators.discard_button.click()

@@ -120,16 +120,20 @@ def click_save_dashboard_button(self):
 
 
 @TestStep(When)
-def saving_dashboard(self, dashboard_name):
+def saving_dashboard(self, dashboard_name=None):
     """Save current dashboard"""
     with By("clicking save in dashboard view"):
-        click_save_button()
+        with delay():
+            click_save_button()
 
-    with By("entering dashboard name"):
-        change_title_for_dashboard(dashboard_name=dashboard_name)
+    if not (dashboard_name is None):
+        with By("entering dashboard name"):
+            with delay():
+                change_title_for_dashboard(dashboard_name=dashboard_name)
 
     with By("clicking save button"):
-        click_save_dashboard_button()
+        with delay():
+            click_save_dashboard_button()
 
 
 @TestStep(When)

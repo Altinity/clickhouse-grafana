@@ -30,20 +30,17 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']")
 
-    @property
-    def sql_editor_toggle(self):
+    def sql_editor_toggle(self, query_name):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[id*='option-sql']")
+        return driver.find_element(SelectBy.XPATH, f"//*[contains(@data-rbd-draggable-id, '{query_name}')]//*[contains(@id, 'option-sql')]")
 
-    @property
-    def sql_editor_input(self):
+    def sql_editor_input(self, query_name):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[class='view-lines monaco-mouse-cursor-text']")
+        return driver.find_element(SelectBy.XPATH, f"//*[contains(@data-rbd-draggable-id, '{query_name}')]//*[@class='view-lines monaco-mouse-cursor-text']")
 
-    @property
-    def input_in_sql_editor(self):
+    def input_in_sql_editor(self, query_name='A'):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[class='inputarea monaco-mouse-cursor-text']")
+        return driver.find_element(SelectBy.XPATH, f"//*[contains(@data-rbd-draggable-id, '{query_name}')]//*[@class='inputarea monaco-mouse-cursor-text']")
 
     @property
     def panel_title_textfield(self):
@@ -77,6 +74,100 @@ class Locators:
                                                    "contains(text(), 'api')) or "
                                                    "(@class='json-formatter-string json-formatter-url' and "
                                                    "contains(text(), 'http'))]")
+
+    @property
+    def add_query_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid query-tab-add-query']")
+
+    @property
+    def expression_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='query-tab-add-expression']")
+
+    def query_name_field(self, query_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{query_name}")]//button[@data-testid="query-name-div"]')
+
+    def query_name_textfield(self, query_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{query_name}")]//button[@data-testid="query-name-div"]//input')
+
+    def duplicate_query_button(self, query_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{query_name}")]//button[@data-testid="data-testid Duplicate query"]')
+
+    def hide_response_query_button(self, query_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{query_name}")]//button[@data-testid="data-testid Hide response"]')
+
+    def delete_query_button(self, query_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{query_name}")]//button[@data-testid="data-testid Remove query"]')
+
+    def expression_name_field(self, expression_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{expression_name}")]//button[@data-testid="query-name-div"]')
+
+    def expression_name_textfield(self, expression_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{expression_name}")]//button[@data-testid="query-name-div"]//input')
+
+    def expression_query_button(self, expression_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{expression_name}")]//button[@data-testid="data-testid Duplicate query"]')
+
+    def hide_response_expression_button(self, expression_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{expression_name}")]//button[@data-testid="data-testid Hide response"]')
+
+    def delete_expression_button(self, expression_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{expression_name}")]//button[@data-testid="data-testid Remove query"]')
+
+    def expression_operation_dropdown(self, expression_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@data-rbd-draggable-id, "{expression_name}")]//div[contains(@class, "grafana-select-value-container")]')
+
+    def expression_textfield(self, expression_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@data-rbd-draggable-id, "{expression_name}")]//div[contains(@class, "grafana-select-value-container")]')
+
+    @property
+    def time_picker_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid TimePicker Open Button"]')
+
+    @property
+    def time_picker_from_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Time Range from field"]')
+
+    @property
+    def time_picker_to_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Time Range to field"]')
+
+    @property
+    def time_picker_submit_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid TimePicker submit button"]')
+
+    def data_source_picker(self, query_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rbd-draggable-id, "{query_name}")]//input[@data-testid="data-testid Select a data source"]')
+
+    @property
+    def apply_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Apply changes and go back to dashboard"]')
+
+    @property
+    def discard_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[title="Undo all changes"]')
 
 
 locators = Locators()

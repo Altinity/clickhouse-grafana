@@ -137,7 +137,7 @@ class Cluster(object):
             return self._bash[id]
 
     def __enter__(self):
-        with Given("docker-compose cluster"):
+        with Given("docker compose cluster"):
             self.up()
         return self
 

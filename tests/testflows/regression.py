@@ -31,17 +31,24 @@ def argparser(parser):
     )
 
 
+xfails = {
+    "/Grafana Datasource Plugin For Clickhouse/e2e/mixed data sources/*": [
+        (Fail, "https://github.com/Altinity/clickhouse-grafana/issues/604")
+    ],
+}
+
+
 @TestModule
 @Name("Grafana Datasource Plugin For Clickhouse")
 @ArgumentParser(argparser)
 @Specifications(QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse)
+@XFails(xfails)
 @Requirements(
     RQ_SRS_Plugin("1.0"),
     RQ_SRS_Plugin_DockerComposeEnvironment("1.0"),
     RQ_SRS_Plugin_VersionCompatibility("1.0")
 )
 def regression(self, before, after):
-
     self.context.browser = "chrome"
     self.context.local = False
     self.context.global_wait_time = 30
@@ -49,21 +56,28 @@ def regression(self, before, after):
     self.context.before = before
     self.context.after = after
     self.context.server_name = "test.example.com"
-    
-    project_root_dir = os.path.join(current_dir(),"..","..")
+
+    project_root_dir = os.path.join(current_dir(), "..", "..")
     self.context.project_root_dir = project_root_dir
 
     with Given("docker-compose cluster"):
         self.context.cluster = cluster.cluster(frame=inspect.currentframe())
 
     with And("I copy CA Cert"):
-        self.context.ca_cert = self.context.cluster.command(None, "cat \"" + os.path.join(project_root_dir, "docker", "clickhouse", "ca-cert.pem") + "\"").output
+        self.context.ca_cert = self.context.cluster.command(None, "cat \"" + os.path.join(project_root_dir, "docker",
+                                                                                          "clickhouse",
+                                                                                          "ca-cert.pem") + "\"").output
 
     with And("I copy Client Cert"):
-        self.context.client_cert = self.context.cluster.command(None, "cat \"" + os.path.join(project_root_dir, "docker", "clickhouse", "client-cert.pem") + "\"").output
+        self.context.client_cert = self.context.cluster.command(None,
+                                                                "cat \"" + os.path.join(project_root_dir, "docker",
+                                                                                        "clickhouse",
+                                                                                        "client-cert.pem") + "\"").output
 
     with And("I copy Client Key"):
-        self.context.client_key = self.context.cluster.command(None, "cat \"" + os.path.join(project_root_dir, "docker", "clickhouse", "client-key.pem") + "\"").output
+        self.context.client_key = self.context.cluster.command(None, "cat \"" + os.path.join(project_root_dir, "docker",
+                                                                                             "clickhouse",
+                                                                                             "client-key.pem") + "\"").output
 
     with And("webdriver"):
         self.context.driver = ui.create_driver()

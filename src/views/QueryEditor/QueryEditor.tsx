@@ -49,18 +49,20 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
   const [datasourceName] = useState(datasource.name);
+  const [datasourceUid] = useState(datasource.uid);
+  const [refId] = useState(query.refId);
 
   useEffect(() => {
+    const accessKey = `dataStorage_${datasourceName}_${datasourceUid}_${refId}`;
     // On component mount
-    const storedData = localStorage.getItem('datasourceInfo');
+    const storedData = localStorage.getItem(accessKey);
     if (storedData) {
       const { name, timestamp } = JSON.parse(storedData);
       const currentTime = new Date().getTime();
       const timeDifference = (currentTime - timestamp) / 1000; // Convert milliseconds to seconds
 
       if (timeDifference < 5) {
-        if (name !== datasourceName) {
-
+        if (name !== accessKey) {
           const initialQuery = {
             ...query,
             format: DEFAULT_FORMAT,
@@ -88,10 +90,10 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
     // On component unmount
     return () => {
       const dataToStore = {
-        name: datasourceName,
+        name: accessKey,
         timestamp: new Date().getTime()
       };
-      localStorage.setItem('datasourceInfo', JSON.stringify(dataToStore));
+      localStorage.setItem(accessKey, JSON.stringify(dataToStore));
     };
     // eslint-disable-next-line
   }, []);

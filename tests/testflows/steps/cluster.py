@@ -42,7 +42,7 @@ class Node(object):
 
 
 class Cluster(object):
-    """Simple object around docker-compose cluster."""
+    """Simple object around docker compose cluster."""
 
     def __init__(
         self,
@@ -50,7 +50,7 @@ class Cluster(object):
         clickhouse_binary_path=None,
         configs_dir=None,
         nodes=None,
-        docker_compose="docker-compose --log-level ERROR --profile test",
+        docker_compose="docker compose --progress plain --profile test",
         docker_compose_project_dir=os.path.join(current_dir(), "..", "..", ".."),
         docker_compose_file="docker-compose.yaml",
         frame=None,
@@ -75,7 +75,7 @@ class Cluster(object):
         if not os.path.exists(self.configs_dir):
             raise TypeError("configs directory '{self.configs_dir}' does not exist")
 
-        # auto set docker-compose project directory
+        # auto set docker compose project directory
         if docker_compose_project_dir is None:
             caller_project_dir = os.path.join(caller_dir, "docker-compose")
             if os.path.exists(caller_project_dir):
@@ -143,7 +143,7 @@ class Cluster(object):
 
     def __exit__(self, type, value, traceback):
         try:
-            with Finally("I clean up"):
+            with Finally("I clean up, docker compose cluster"):
                 self.down()
         finally:
             with self.lock:
@@ -158,7 +158,7 @@ class Cluster(object):
         return Node(self, name)
 
     def down(self, timeout=120):
-        """Bring cluster down by executing docker-compose down."""
+        """Bring cluster down by executing docker compose down."""
         try:
             bash = self.bash(None)
             with self.lock:
@@ -181,7 +181,7 @@ class Cluster(object):
         with And("I list environment variables to show their values"):
             self.command(None, "env | grep TEST")
 
-        with And("I bring up docker-compose"):
+        with And("I bring up docker compose"):
             max_attempts = 5
             for attempt in range(max_attempts):
                 with When(f"attempt {attempt}/{max_attempts}"):
@@ -194,7 +194,7 @@ class Cluster(object):
                         )
                         if cmd.exitcode != 0:
                             continue
-                    with And("executing docker-compose down just in case it is up"):
+                    with And("executing docker compose down just in case it is up"):
                         cmd = self.command(
                             None,
                             f"set -o pipefail && {self.docker_compose} down 2>&1 | tee",
@@ -203,7 +203,7 @@ class Cluster(object):
                         )
                         if cmd.exitcode != 0:
                             continue
-                    with And("executing docker-compose up"):
+                    with And("executing docker compose up"):
                         with By("executing mkdir node_modules"):
                             cmd = self.command(
                                 None,
@@ -211,19 +211,19 @@ class Cluster(object):
                                 timeout=timeout,
                             )
 
-                        with By("executing docker-compose run frontend builder"):
+                        with By("executing docker compose run frontend builder"):
                             cmd = self.command(
                                 None,
-                                f"set -o pipefail && docker-compose run --rm frontend_builder 2>&1 | tee",
+                                f"set -o pipefail && docker compose run --rm frontend_builder 2>&1 | tee",
                                 timeout=timeout,
                             )
-                        with By("executing docker-compose run backend builder"):
+                        with By("executing docker compose run backend builder"):
                             cmd = self.command(
                                 None,
-                                f"set -o pipefail && docker-compose run --rm backend_builder 2>&1 | tee",
+                                f"set -o pipefail && docker compose run --rm backend_builder 2>&1 | tee",
                                 timeout=timeout,
                             )
-                        with By("executing docker-compose up"):
+                        with By("executing docker compose up"):
                             env_file = os.path.join(current_dir(), "..", "infra", "env_file")
                             cmd = self.command(
                                 None,
@@ -239,7 +239,7 @@ class Cluster(object):
                         break
 
             if cmd.exitcode != 0:
-                fail("could not bring up docker-compose cluster")
+                fail("could not bring docker compose up")
 
     def command(
         self, node, command, message=None, exitcode=0, steps=False, *args, **kwargs
@@ -272,6 +272,6 @@ class Cluster(object):
 
 @TestStep(Given)
 def cluster(self, frame):
-    """Create docker-compose cluster."""
+    """Create docker compose cluster."""
     with Cluster(frame=frame) as cluster:
         yield cluster

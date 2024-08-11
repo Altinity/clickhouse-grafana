@@ -164,7 +164,7 @@ def webdriver(
                 append_session(suite_name=suite, session_id=driver.session_id)
 
         if clean_up and driver:
-            with Finally("clean up"):
+            with Finally("clean up UI.driver"):
                 driver.close()
                 driver.quit()
 

@@ -159,6 +159,6 @@ services:
         grafana_image: ${GRAFANA_IMAGE:-grafana}
 ```
 
-In this example we are assigning the environment variable `GRAFANA_IMAGE` to the build arg `grafana_image` with a default value of `grafana`. This will give you the possibility to set the value while running the docker-compose commands which might be convinent in some scenarios.
+In this example we are assigning the environment variable `GRAFANA_IMAGE` to the build arg `grafana_image` with a default value of `grafana`. This will give you the possibility to set the value while running the docker compose commands which might be convinent in some scenarios.
 
 ---

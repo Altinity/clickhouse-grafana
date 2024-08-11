@@ -60,7 +60,7 @@ def regression(self, before, after):
     project_root_dir = os.path.join(current_dir(), "..", "..")
     self.context.project_root_dir = project_root_dir
 
-    with Given("docker-compose cluster"):
+    with Given("docker compose cluster"):
         self.context.cluster = cluster.cluster(frame=inspect.currentframe())
 
     with And("I copy CA Cert"):

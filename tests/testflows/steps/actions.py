@@ -11,6 +11,7 @@ from testflows.asserts import error
 import steps.dashboard.view as dashboard
 import steps.dashboards.view as dashboards
 import steps.connections.datasources.view as datasources
+import steps.panel.query_settings.view as query_settings
 import steps.connections.datasources.new.view as datasources_new
 import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
 
@@ -170,10 +171,6 @@ def create_new_altinity_datasource(
                     datasources_new.click_new_altinity_plugin_datasource()
 
             with delay():
-                with And("entering datasource name"):
-                    datasources_altinity_edit.enter_name_into_name_field(datasource_name=datasource_name)
-
-            with delay():
                 with By("entering url"):
                     datasources_altinity_edit.enter_url_into_url_field(url=url)
 
@@ -264,6 +261,10 @@ def create_new_altinity_datasource(
                         datasources_altinity_edit.enter_compression_type(compression_type='gzip')
 
             with delay():
+                with And("entering datasource name"):
+                    datasources_altinity_edit.enter_name_into_name_field(datasource_name=datasource_name)
+                    
+            with delay():
                 with By("clicking save and test button"):
                     datasources_altinity_edit.click_save_and_test_button()
 
@@ -288,3 +289,36 @@ def create_new_altinity_datasource(
             with delay():
                 with And("clicking delete button in confirmation modal dialog"):
                     datasources_altinity_edit.click_confirm_delete_datasource()
+
+
+@TestStep(When)
+def setup_query_settings(
+        self,
+        query_name="A",
+        database="default",
+        table="test_alerts",
+        column_timestamp_type="DateTime",
+        timestamp_column="EventTime",
+        date_column="EventDate"
+):
+    """Setup all macro in Query Settings."""
+
+    with When("I setup database"):
+        with delay():
+            query_settings.enter_database(query_name=query_name, database=database)
+
+    with When("I setup table"):
+        with delay():
+            query_settings.enter_table(query_name=query_name, table=table)
+
+    with When("I setup column timestamp type"):
+        with delay():
+            query_settings.enter_column_timestamp_type(query_name=query_name, column_timestamp_type=column_timestamp_type)
+
+    with When("I setup timestamp column"):
+        with delay():
+            query_settings.enter_timestamp_column(query_name=query_name, timestamp_column=timestamp_column)
+
+    with When("I setup date column"):
+        with delay():
+            query_settings.enter_date_column(query_name=query_name, date_column=date_column)

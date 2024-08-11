@@ -1,6 +1,12 @@
 # Running Altinity grafana plugin testflows tests locally
 
-1. Install docker-compose.
+1. Install docker compose.
+```bash
+curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] https://download.docker.com/linux/ubuntu $(lsb_release -cs) test" | sudo tee /etc/apt/sources.list.d/docker.list
+sudo apt-get update
+sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin 
+```
 2. Install required python packages:
   `pip install -r tests/testflows/requirements.txt`
 3. Stop applications that use the following ports:

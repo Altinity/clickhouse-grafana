@@ -5,7 +5,7 @@ export default class ResponseParser {
   constructor() {}
 
   parse(query: string, results: any): any[] {
-    if (!results || results.data.length === 0) {
+    if (!results || !results.data || results.data?.length === 0) {
       return [];
     }
 

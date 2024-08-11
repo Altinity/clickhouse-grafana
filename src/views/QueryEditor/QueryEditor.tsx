@@ -45,12 +45,12 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
  datasource, query, onChange, onRunQuery 
 } = props;
   const isAnnotationView = !props.app;
-  const [editorMode, setEditorMode] = useState(EditorMode.Builder);
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
   const [datasourceName] = useState(datasource.name);
   const [datasourceUid] = useState(datasource.uid);
   const [refId] = useState(query.refId);
+  const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
 
   useEffect(() => {
     const accessKey = `dataStorage_${datasourceName}_${datasourceUid}_${refId}`;
@@ -150,7 +150,7 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
     interval: query.interval || '',
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
-    editorMode: EditorMode.Builder
+    editorMode: (query.database && query.table) ? EditorMode.SQL : EditorMode.Builder,
   };
 
   if (datasource.defaultValues && !query.initialized) {

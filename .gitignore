@@ -50,3 +50,4 @@ e2e-results/
 
 # virtual environment
 venv/
+tests/testflows/

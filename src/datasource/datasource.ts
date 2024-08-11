@@ -128,7 +128,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
   }
 
   _request(query: string, requestId?: string) {
-    const queryParams = CHDataSource._getRequestOptions(query, this.usePOST, requestId);
+    const queryParams = CHDataSource._getRequestOptions(query, this.usePOST, requestId, this);
 
     const dataRequest = new Promise((resolve, reject) => {
       this.backendSrv.fetch(queryParams).subscribe((response) => {
@@ -291,7 +291,7 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     query = queryModel.replace(/\r\n|\r|\n/g, ' ');
     query += ' FORMAT JSON';
 
-    const queryParams = CHDataSource._getRequestOptions(query, true);
+    const queryParams = CHDataSource._getRequestOptions(query, true, undefined, this);
 
     const dataRequest = new Promise((resolve, reject) => {
       this.backendSrv.fetch(queryParams).subscribe((response) => {

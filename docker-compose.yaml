@@ -147,6 +147,8 @@ services:
     image: selenium/standalone-docker:4.18.1-20240224
     container_name: selenium-docker
 #    user: root
+    links:
+      - grafana
     ports:
       - "4444:4444"
     volumes:
@@ -155,6 +157,8 @@ services:
       - ./tests/testflows/tmp/target:/opt/selenium/assets
       - /var/run/docker.sock:/var/run/docker.sock
 #    privileged: true
-
+    depends_on:
+      - grafana
+      - trickster
 volumes:
   node_modules:

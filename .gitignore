@@ -50,3 +50,5 @@ e2e-results/
 
 # virtual environment
 venv/
+tests/testflows/tmp/target/
+tests/testflows/assets/

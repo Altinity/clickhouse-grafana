@@ -1,5 +1,13 @@
-# 3.2.2 (not yet released)
-* remove information_schema from adhoc system.columns drop down query
+# 3.2.2 (2024-08-11)
+## Enhancements:
+* improve e2e tests, more scenarios covered
+* if query is filled then switched to Query Editor instead of Query Settings, fix https://github.com/Altinity/clickhouse-grafana/issues/605 
+
+## Fixes: 
+* remove `information_schema` from adhoc system.columns drop down query
+* fix issues with `use defaul values` option in connection settings dialog, fix https://github.com/Altinity/clickhouse-grafana/issues/600  
+* fix query reset error when edit multiple queries panel, fix https://github.com/Altinity/clickhouse-grafana/issues/604
+* properly handle empty response with 502 status code, fix https://github.com/Altinity/clickhouse-grafana/issues/595
 
 # 3.2.1 (2024-06-25)
 ## Fixes:

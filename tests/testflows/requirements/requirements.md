@@ -67,22 +67,28 @@
     * 26.5 [RQ.SRS.Plugin.MultiUserUsage.DifferentDashboards](#rqsrspluginmultiuserusagedifferentdashboards)
 * 27 [Query Setup](#query-setup)
     * 27.1 [RQ.SRS.Plugin.QuerySetup](#rqsrspluginquerysetup)
-* 28 [Query Setup Interface](#query-setup-interface)
-    * 28.1 [RQ.SRS.Plugin.QuerySetupInterface](#rqsrspluginquerysetupinterface)
+* 28 [Query Settings](#query-settings)
+    * 28.1 [RQ.SRS.Plugin.QuerySettings](#rqsrspluginquerysettings)
 * 29 [Query Options](#query-options)
     * 29.1 [RQ.SRS.Plugin.QueryOptions](#rqsrspluginqueryoptions)
+    * 29.2 [RQ.SRS.Plugin.QueryOptions.MaxDataPoints](#rqsrspluginqueryoptionsmaxdatapoints)
+    * 29.3 [RQ.SRS.Plugin.QueryOptions.MinInterval](#rqsrspluginqueryoptionsmininterval)
+    * 29.4 [RQ.SRS.Plugin.QueryOptions.Interval](#rqsrspluginqueryoptionsinterval)
+    * 29.5 [RQ.SRS.Plugin.QueryOptions.RelativeTime](#rqsrspluginqueryoptionsrelativetime)
+    * 29.6 [RQ.SRS.Plugin.QueryOptions.TimeShift](#rqsrspluginqueryoptionstimeshift)
 * 30 [Raw SQL Editor](#raw-sql-editor)
     * 30.1 [RQ.SRS.Plugin.RawSQLEditorInterface](#rqsrspluginrawsqleditorinterface)
     * 30.2 [RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor](#rqsrspluginrawsqleditorinterfacesqleditor)
-    * 30.3 [RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation](#rqsrspluginrawsqleditorinterfaceextrapolation)
-    * 30.4 [RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments](#rqsrspluginrawsqleditorinterfaceskipcomments)
-    * 30.5 [RQ.SRS.Plugin.RawSQLEditorInterface.Step](#rqsrspluginrawsqleditorinterfacestep)
-    * 30.6 [RQ.SRS.Plugin.RawSQLEditorInterface.Round](#rqsrspluginrawsqleditorinterfaceround)
-    * 30.7 [RQ.SRS.Plugin.RawSQLEditorInterface.Resolution](#rqsrspluginrawsqleditorinterfaceresolution)
-    * 30.8 [RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs](#rqsrspluginrawsqleditorinterfaceformatas)
-    * 30.9 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp](#rqsrspluginrawsqleditorinterfaceshowhelp)
-    * 30.10 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL](#rqsrspluginrawsqleditorinterfaceshowgeneratedsql)
-    * 30.11 [RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery](#rqsrspluginrawsqleditorinterfacereformatquery)
+    * 30.3 [RQ.SRS.Plugin.RawSQLEditorInterface.AddMetadata](#rqsrspluginrawsqleditorinterfaceaddmetadata)
+    * 30.4 [RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation](#rqsrspluginrawsqleditorinterfaceextrapolation)
+    * 30.5 [RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments](#rqsrspluginrawsqleditorinterfaceskipcomments)
+    * 30.6 [RQ.SRS.Plugin.RawSQLEditorInterface.Step](#rqsrspluginrawsqleditorinterfacestep)
+    * 30.7 [RQ.SRS.Plugin.RawSQLEditorInterface.Round](#rqsrspluginrawsqleditorinterfaceround)
+    * 30.8 [RQ.SRS.Plugin.RawSQLEditorInterface.Resolution](#rqsrspluginrawsqleditorinterfaceresolution)
+    * 30.9 [RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs](#rqsrspluginrawsqleditorinterfaceformatas)
+    * 30.10 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp](#rqsrspluginrawsqleditorinterfaceshowhelp)
+    * 30.11 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL](#rqsrspluginrawsqleditorinterfaceshowgeneratedsql)
+    * 30.12 [RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery](#rqsrspluginrawsqleditorinterfacereformatquery)
 * 31 [Auto-complete In Queries](#auto-complete-in-queries)
     * 31.1 [RQ.SRS.Plugin.AutoCompleteInQueries](#rqsrspluginautocompleteinqueries)
 * 32 [Time range selector](#time-range-selector)
@@ -450,9 +456,9 @@ version: 1.0
 
 The [Plugin] SHALL support creating Grafana visualizations using the query setup interface and raw SQL editor.
 
-## Query Setup Interface
+## Query Settings
 
-### RQ.SRS.Plugin.QuerySetupInterface
+### RQ.SRS.Plugin.QuerySettings
 version: 1.0
 
 The [Plugin]'s query setup interface SHALL contain the following fields:
@@ -482,6 +488,35 @@ The [Plugin] SHALL support the following options for the query:
 
 ![query options](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/query%20options.png)
 
+### RQ.SRS.Plugin.QueryOptions.MaxDataPoints
+version: 1.0
+
+The [Plugin] SHALL support specifying maximum data points per series using `Max data points` text field.
+
+### RQ.SRS.Plugin.QueryOptions.MinInterval
+version: 1.0
+
+The [Plugin] SHALL support specifying lower limit for the interval using `Min interval` text field.
+
+### RQ.SRS.Plugin.QueryOptions.Interval
+version: 1.0
+
+The [Plugin] SHALL evaluate interval that is used in $__interval and $__interval_ms macro. 
+This interval SHALL be displayed in `Interval` text field.
+
+### RQ.SRS.Plugin.QueryOptions.RelativeTime
+version: 1.0
+
+The [Plugin] SHALL support specifying relative time using `Relative time` text field.
+This relative time SHALL override the relative time range for individual panel.
+
+### RQ.SRS.Plugin.QueryOptions.TimeShift
+version: 1.0
+
+The [Plugin] SHALL support specifying time shift using `Time shift` text field.
+This relative time SHALL override the time range for individual panel 
+by shifting its start and end relative to the time picker.
+
 ## Raw SQL Editor
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface
@@ -490,6 +525,7 @@ version: 1.0
 The [Plugin]'s raw SQL editor interface SHALL contain the following fields:
 
 * SQL editor
+* `Add Metadata`
 * `Extrapolation`
 * `Skip Comments`
 * `Step`
@@ -508,10 +544,16 @@ version: 1.0
 
 The [Plugin] SHALL support specifying SQL query by using SQL Editor text field for SQL query.
 
+### RQ.SRS.Plugin.RawSQLEditorInterface.AddMetadata
+version: 1.0
+
+The [Plugin] SHALL support turning on and off adding metadata for queries in reformatted query
+for visualizations using the `Add Metadata` toggle.
+
 ### RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation
 version: 1.0
 
-The [Plugin] SHALL support turning on and off extrapolation for vizualizations using the `Extrapolation` toggle.
+The [Plugin] SHALL support turning on and off extrapolation for visualizations using the `Extrapolation` toggle.
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments
 version: 1.0

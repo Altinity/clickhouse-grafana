@@ -409,3 +409,75 @@ def click_discard_button(self):
     """Click apply button for panel."""
 
     locators.discard_button.click()
+
+
+@TestStep(When)
+def click_run_query_button(self):
+    """Click Run Query button."""
+
+    locators.run_query_button.click()
+
+
+@TestStep(When)
+def click_table_view_toggle(self):
+    """Click table view toggle."""
+
+    locators.table_view_toggle.click()
+
+
+@TestStep(Then)
+def check_data_is_missing_text(self):
+    """Check that 'Data is missing a time field' text is displayed."""
+    with By("checking 'Data is missing a time field' text is displayed"):
+        try:
+            ui.wait_for_element_to_be_visible(
+                select_type=SelectBy.XPATH,
+                element='//*[text()="Data is missing a time field"]'
+            )
+            return True
+        except:
+            return False
+
+
+@TestStep(Then)
+def check_columns_in_table_view(self, columns):
+    """Check that columns in table view is displayed."""
+    with By(f"checking {','.join(columns)} columns is displayed"):
+        try:
+            for column_name in columns:
+                ui.wait_for_element_to_be_visible(
+                    select_type=SelectBy.XPATH,
+                    element=f'//*[text()="{column_name}"]'
+                )
+            return True
+        except:
+            return False
+
+
+@TestStep(Then)
+def check_no_data_text(self):
+    """Check that columns in table view is displayed."""
+    with By(f"checking 'No data' text is displayed"):
+        try:
+            ui.wait_for_element_to_be_visible(
+                select_type=SelectBy.XPATH,
+                element=f'//*[text()="No data"]'
+            )
+            return True
+        except:
+            return False
+
+
+@TestStep(Then)
+def check_error_for_table_view(self):
+    """Check that columns in table view is displayed."""
+    with By(f"checking 'No data' text is displayed"):
+        try:
+            ui.wait_for_element_to_be_visible(
+                select_type=SelectBy.XPATH,
+                element=f'//*[text()="No data"]'
+            )
+            return True
+        except:
+            return False
+

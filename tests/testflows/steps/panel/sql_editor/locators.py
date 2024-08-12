@@ -26,7 +26,7 @@ class Locators:
     def format_as_dropdown(self, query_name):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[contains(@data-rbd-draggable-id, "{query_name}")]//*[contains(@data-rbd-draggable-id, "{query_name}")]//*[./text()="Format As"]/..//*[contains(@class, "grafana-select-value-container")]')
+                                   f'//*[contains(@data-rbd-draggable-id, "{query_name}")]//*[./text()="Format As"]/..//input[contains(@id, "react-select")]')
 
     def add_metadata_toggle(self, query_name):
         driver: WebDriver = current().context.driver

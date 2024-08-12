@@ -58,6 +58,11 @@ class Locators:
         return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Panel status error']")
 
     @property
+    def panel_error_for_table_view(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[aria-label='Panel header error']")
+
+    @property
     def query_inspector_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[aria-label='Query inspector button']")
@@ -168,6 +173,30 @@ class Locators:
     def discard_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[title="Undo all changes"]')
+
+    @property
+    def run_query_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//div[contains(@id, "A")]//button')
+
+    @property
+    def data_is_missing_text(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[text()="Data is missing a time field"]')
+
+    @property
+    def no_data_text(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[text()="No data"]')
+
+    @property
+    def table_view_toggle(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[for="table-view"]')
+
+    def table_column_name(self, column_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[text()="{column_name}"]')
 
 
 locators = Locators()

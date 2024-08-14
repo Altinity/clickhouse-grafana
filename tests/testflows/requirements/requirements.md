@@ -76,6 +76,7 @@
     * 29.4 [RQ.SRS.Plugin.QueryOptions.Interval](#rqsrspluginqueryoptionsinterval)
     * 29.5 [RQ.SRS.Plugin.QueryOptions.RelativeTime](#rqsrspluginqueryoptionsrelativetime)
     * 29.6 [RQ.SRS.Plugin.QueryOptions.TimeShift](#rqsrspluginqueryoptionstimeshift)
+    * 29.7 [RQ.SRS.Plugin.QueryOptions.HideTimeInfo](#rqsrspluginqueryoptionshidetimeinfo)
 * 30 [Raw SQL Editor](#raw-sql-editor)
     * 30.1 [RQ.SRS.Plugin.RawSQLEditorInterface](#rqsrspluginrawsqleditorinterface)
     * 30.2 [RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor](#rqsrspluginrawsqleditorinterfacesqleditor)
@@ -480,11 +481,12 @@ version: 1.0
 
 The [Plugin] SHALL support the following options for the query:
 
-* `Max data points` - text field that defines the maximum data points per series
-* `Min interval` - text field that defines a lower limit for the interval
-* `Interval` - invariable text field. It is the evaluated interval that is sent to the data source and is used in $__interval and $__interval_ms
-* `Relative time` - text field that overrides the relative time range for individual panel
-* `Time shift` - text field that overrides the time range for individual panel by shifting its start and end relative to the time picker.
+* `Max data points`
+* `Min interval`
+* `Interval`
+* `Relative time`
+* `Time shift`
+* `Hide time info`
 
 ![query options](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/query%20options.png)
 
@@ -516,6 +518,12 @@ version: 1.0
 The [Plugin] SHALL support specifying time shift using `Time shift` text field.
 This relative time SHALL override the time range for individual panel 
 by shifting its start and end relative to the time picker.
+
+### RQ.SRS.Plugin.QueryOptions.HideTimeInfo
+version: 1.0
+
+The [Plugin] SHALL support `Hide time info` toggle. 
+This toggle SHALL hide time info regarding relative time and time shift in panel title if turned on. 
 
 ## Raw SQL Editor
 

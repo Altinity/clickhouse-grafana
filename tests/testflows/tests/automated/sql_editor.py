@@ -137,7 +137,7 @@ def round_textfield(self):
             with delay():
                 sql_editor.enter_round(query_name='A', round="10000s")
 
-        with Then("I check reformatted contains rounded by 10000s 'time from' and 'time to'"):
+        with Then("I check reformatted query contains rounded by 10000s 'time from' and 'time to'"):
             with delay():
                 assert (sql_editor.get_time_from_in_seconds(query_name='A') % 10000) == 0, error()
                 assert (sql_editor.get_time_to_in_seconds(query_name='A') % 10000) == 0, error()

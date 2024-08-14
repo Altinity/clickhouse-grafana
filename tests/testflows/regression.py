@@ -94,6 +94,7 @@ def regression(self, before, after):
     Feature(run=load("testflows.tests.automated.sql_editor", "feature"))
     Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
     Feature(run=load("testflows.tests.automated.e2e", "feature"))
+    Feature(run=load("testflows.tests.automated.query_settings", "feature"))
 
 
 if main():

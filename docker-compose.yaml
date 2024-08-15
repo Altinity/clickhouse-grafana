@@ -76,8 +76,8 @@ services:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
       GF_DATABASE_WAL: "true"
-      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
-      GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
+      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
+      GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
     healthcheck:
       test: curl http://localhost:3000/
@@ -88,10 +88,6 @@ services:
     depends_on:
       clickhouse:
         condition: service_healthy
-      mysql:
-        condition: service_healthy
-      postgres:
-        condition: service_healthy
     ports:
       - "3000:3000"
 
@@ -101,7 +97,7 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
     environment:
-      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,https://github.com/Altinity/clickhouse-grafana/releases/download/v${CLICKHOUSE_PLUGIN_VERSION:-3.2.1}/vertamedia-clickhouse-datasource-${CLICKHOUSE_PLUGIN_VERSION:-3.2.1}.zip;vertamedia-clickhouse-datasource"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,https://github.com/Altinity/clickhouse-grafana/releases/download/v${CLICKHOUSE_PLUGIN_VERSION:-3.2.1}/vertamedia-clickhouse-datasource-${CLICKHOUSE_PLUGIN_VERSION:-3.2.2}.zip;vertamedia-clickhouse-datasource"
       GF_LOG_LEVEL: debug
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
@@ -172,6 +168,8 @@ services:
     image: selenium/standalone-docker:4.18.1-20240224
     container_name: selenium-docker
 #    user: root
+    links:
+      - grafana
     ports:
       - "4444:4444"
     volumes:
@@ -185,6 +183,10 @@ services:
         condition: service_healthy
       trickster:
         condition: service_started
+      mysql:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
 
 volumes:
   node_modules:

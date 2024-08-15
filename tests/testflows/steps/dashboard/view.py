@@ -143,9 +143,8 @@ def open_panel(self, panel_name):
         with When(f"I open dropdown menu for panel {panel_name}"):
             open_dropdown_menu_for_panel(panel_name=panel_name)
 
-    with delay():
-        with When("I open panel view"):
-            edit_panel(panel_name=panel_name)
+    with When("I open panel view"):
+        edit_panel(panel_name=panel_name)
 
 
 @TestStep(When)

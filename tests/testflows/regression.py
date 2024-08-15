@@ -60,7 +60,7 @@ def regression(self, before, after):
     project_root_dir = os.path.join(current_dir(), "..", "..")
     self.context.project_root_dir = project_root_dir
 
-    with Given("docker-compose cluster"):
+    with Given("docker compose cluster"):
         self.context.cluster = cluster.cluster(frame=inspect.currentframe())
 
     with And("I copy CA Cert"):
@@ -91,8 +91,10 @@ def regression(self, before, after):
         with Given("I login in grafana"):
             login.login()
 
+    Feature(run=load("testflows.tests.automated.sql_editor", "feature"))
     Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
     Feature(run=load("testflows.tests.automated.e2e", "feature"))
+    Feature(run=load("testflows.tests.automated.query_settings", "feature"))
 
 
 if main():

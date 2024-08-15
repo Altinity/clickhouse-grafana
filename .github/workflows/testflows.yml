@@ -37,7 +37,7 @@ jobs:
       - name: Run Altinity Grafana Plugin tests
         run: cd ./tests/testflows/ &&
           python3
-          -u ./regression.py --before=0.3 --after=0.3
+          -u ./regression.py --before=0.1 --after=0.1
           --log raw.log
           --debug
 

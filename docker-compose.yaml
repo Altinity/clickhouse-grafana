@@ -76,8 +76,8 @@ services:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
       GF_DATABASE_WAL: "true"
-      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
-      GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
+      GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
+      GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
     healthcheck:
       test: curl http://localhost:3000/
@@ -179,14 +179,14 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock
 #    privileged: true
     depends_on:
-      grafana:
-        condition: service_healthy
-      trickster:
-        condition: service_started
       mysql:
         condition: service_healthy
       postgres:
         condition: service_healthy
+      grafana:
+        condition: service_healthy
+      trickster:
+        condition: service_started
 
 volumes:
   node_modules:

@@ -52,5 +52,5 @@ e2e-results/
 venv/
 
 # testflows temporay output
-test/testflows/tmp/target/
-test/testflows/assets/sessions.json
+tests/testflows/tmp/target/
+tests/testflows/assets/

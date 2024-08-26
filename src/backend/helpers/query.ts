@@ -4,14 +4,18 @@ import { CHDataSourceOptions } from "../../types/types";
 import {logger} from '@grafana/ts-backend';
 
 export const getRequestSettings = (pluginContext: any): any => {
-  logger.info("getRequestSettings pluginContext", pluginContext);
+  logger.info("getRequestSettings pluginContext", JSON.stringify( pluginContext?.datasourceinstancesettings));
   const jsonData: CHDataSourceOptions = pluginContext?.datasourceinstancesettings?.json
-
+  const decryptedSecureJsonData = pluginContext?.
+    datasourceinstancesettings?.decryptedsecurejsondataMap.reduce((acc: any, [key, value]: [string, string]) => {
+      acc[key] = value;
+      return acc;
+    },{});
   return {
     Instance: {
       URL: pluginContext.datasourceinstancesettings.url,
       BasicAuthEnabled: pluginContext.datasourceinstancesettings.basicAuthEnabled,
-      DecryptedSecureJSONData: pluginContext.datasourceinstancesettings.decryptedSecureJsonData,
+      DecryptedSecureJSONData: decryptedSecureJsonData,
       BasicAuthUser: pluginContext.datasourceinstancesettings.basicAuthUser,
     },
     UsePost: jsonData.usePOST || false,
@@ -19,8 +23,8 @@ export const getRequestSettings = (pluginContext: any): any => {
     CompressionType: jsonData.compressionType || 'gzip',
     UseYandexCloudAuthorization: jsonData.useYandexCloudAuthorization || false,
     XHeaderUser: jsonData.xHeaderUser || '',
-    XHeaderKey: '', // Optional, set as needed
-    TLSSkipVerify: false, // Set as needed
+    XHeaderKey: decryptedSecureJsonData.xHeaderKey, // Optional, set as needed
+    TLSSkipVerify: true, // Set as needed
   };
 };
 export const createQuery = (options: any, target: any, request: any) => {

@@ -93,7 +93,7 @@ class Response {
 
 
 
-export const transformResponse = (response) => {
+export const transformResponse = (response, refId) => {
 
   const resp = new Response(response.meta)
   const { labelTypesMap, hasLabels } = resp.prepareLabelFieldsMap();
@@ -122,6 +122,7 @@ export const transformResponse = (response) => {
       throw new Error(`Unexpected type from parseValue of field ${timestampFieldName}. Expected Date, got ${typeof value}`);
     }
 
+    logger.info('Labels', hasLabels, labelTypesMap)
     if (hasLabels) {
       const framePrefix = resp.generateFrameNameByLabels(row, metaTypes, labelTypesMap);
       const frameLabels = resp.generateFrameLabelsByLabels(row, metaTypes, labelTypesMap);
@@ -142,8 +143,6 @@ export const transformResponse = (response) => {
           } else {
             valueDataFieldMap[frameName].labels = frameLabels;
           }
-
-          const refId = 'A';
 
           if (!framesMap.hasOwnProperty(frameName)) {
             framesMap[frameName] = { }

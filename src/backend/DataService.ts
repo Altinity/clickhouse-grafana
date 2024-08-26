@@ -15,7 +15,6 @@ export class ClickhouseDataService extends DataService<Request, any> {
   }
 
   async QueryData(parameters: any): Promise<any[]> {
-    logger.info('QueryData', 1)
     const transformInputToOptions = (options: any): BackendDataQueryRequest<CHQuery> => {
 
       logger.info("QueryData options", JSON.stringify(options), options.timerange);
@@ -53,8 +52,6 @@ export class ClickhouseDataService extends DataService<Request, any> {
       return createQuery({ interval: target.interval }, target, options)
     });
 
-    logger.info('QueryData', 2)
-
     if (!queries.length) {
       return Promise.resolve({ data: [] } as any);
     }
@@ -63,20 +60,10 @@ export class ClickhouseDataService extends DataService<Request, any> {
       return clickhouseClient.query({}, query.stmt + " FORMAT JSON");
     });
 
-    logger.info('QueryData', 3)
-
     const results = await Promise.all(allQueryPromise);
-    logger.info("QueryData result", JSON.stringify(results));
 
-    const dataFrames = results.map((result: any, index: number) => transformData(result.body, targets[index].refid))
-
-    logger.info('QueryData',4)
-
-    logger.info('Data Frames', JSON.stringify(dataFrames), targets.map((target: any) => target.refid));
-
-    // return dataFrames
-
-    logger.info('TRANS', transformResponse(results[0].body))
-    return transformResponse(results[0].body)
+    logger.info('ResultsData',JSON.stringify(transformResponse(results[0].body, targets[0].refid)))
+    // results.map((result: any, index: number) => transformData(result.body, targets[index].refid))
+    return transformResponse(results[0].body, targets[0].refid)
   }
 }

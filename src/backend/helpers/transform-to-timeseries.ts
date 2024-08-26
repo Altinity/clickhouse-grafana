@@ -153,7 +153,8 @@ export const transformResponse = (response, refId) => {
             framesMap[frameName].refId = refId;
           }
 
-          timeStampDataFieldMap[frameName].push(new Date(row[timestampFieldName]));
+          logger.info('Row', row, timestampFieldName)
+          timeStampDataFieldMap[frameName].push(new Date(Number(row[timestampFieldName] + '000')));
           valueDataFieldMap[frameName].points.push(
             parseValue(fieldName, fieldType, 'UTC', fieldValue, false)
           );
@@ -182,11 +183,6 @@ export const transformResponse = (response, refId) => {
                       tsNameString = tsName.toString() || "null";
                     }
 
-                    // createFrameIfNotExistsAndAddPoint(
-                    //   query, framesMap, tsNameString, timeStampDataFieldMap, timestampFieldName, valueDataFieldMap,
-                    //   fieldName, valueType, timestampValue, 'UTC', array[1]
-                    // );
-
                     if (!valueDataFieldMap[frameName]) {
                       valueDataFieldMap[frameName] = {
                         points: []
@@ -202,6 +198,7 @@ export const transformResponse = (response, refId) => {
                       framesMap[frameName].refId = refId;
                     }
 
+                    logger.info('Row', row, timestampFieldName)
                     timeStampDataFieldMap[frameName].push(new Date(row[timestampFieldName]));
                     valueDataFieldMap[frameName].points.push(
                       parseValue(fieldName, metaTypes[fieldName], 'UTC', array[1], false)
@@ -252,7 +249,8 @@ export const transformResponse = (response, refId) => {
   for (const dataFrameKey of dataFrames) {
     const dataFrame= valuesInput[dataFrameKey]
     const values = dataFrame.points.map(item => Number(item))
-    const timestampsProcessed = timestamps[dataFrameKey].map((item, index) => new Date(Number(`${172456834 + index*10}` + `0000000`)))
+    // const timestampsProcessed = timestamps[dataFrameKey].map((item, index) => new Date(Number(`${172456834 + index*10}` + `0000000`)))
+    const timestampsProcessed = timestamps[dataFrameKey]
 
     // @ts-ignore
     timeseries.push({

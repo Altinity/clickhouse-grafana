@@ -153,13 +153,92 @@ export const transformResponse = (response, refId) => {
             framesMap[frameName].refId = refId;
           }
 
-          console.log(valueDataFieldMap, parseValue(fieldName, fieldType, 'UTC', fieldValue, false))
-          timeStampDataFieldMap[frameName].push(new Date(123));
+          timeStampDataFieldMap[frameName].push(new Date(row[timestampFieldName]));
           valueDataFieldMap[frameName].points.push(
             parseValue(fieldName, fieldType, 'UTC', fieldValue, false)
           );
         }
       });
+    } else {
+      const seriesFromMacrosRE = /Array\(Tuple\(([^,]+), ([^)]+)\)\)/;
+
+      for (const [fieldName, fieldValue] of Object.entries(row)) {
+        if (fieldName !== timestampFieldName) {
+          if (seriesFromMacrosRE.test(metaTypes[fieldName])) {
+            const matches = metaTypes[fieldName].matchAll(seriesFromMacrosRE);
+            for (const match of matches) {
+              const labelType = match[1];
+              const valueType = match[2];
+
+              if (Array.isArray(fieldValue)) {
+                for (const array of fieldValue) {
+                  if (Array.isArray(array)) {
+                    const tsName = parseValue(fieldName, labelType, 'UTC', array[0], true);
+                    let tsNameString = "null";
+
+                    if (typeof tsName === 'string') {
+                      tsNameString = tsName || "null";
+                    } else if (typeof tsName === 'object' && tsName !== null && 'toString' in tsName) {
+                      tsNameString = tsName.toString() || "null";
+                    }
+
+                    // createFrameIfNotExistsAndAddPoint(
+                    //   query, framesMap, tsNameString, timeStampDataFieldMap, timestampFieldName, valueDataFieldMap,
+                    //   fieldName, valueType, timestampValue, 'UTC', array[1]
+                    // );
+
+                    if (!valueDataFieldMap[frameName]) {
+                      valueDataFieldMap[frameName] = {
+                        points: []
+                      }
+                    }
+
+                    if (!framesMap.hasOwnProperty(frameName)) {
+                      framesMap[frameName] = { }
+                      if (!timeStampDataFieldMap[frameName]) {
+                        timeStampDataFieldMap[frameName] = []
+                      }
+
+                      framesMap[frameName].refId = refId;
+                    }
+
+                    timeStampDataFieldMap[frameName].push(new Date(row[timestampFieldName]));
+                    valueDataFieldMap[frameName].points.push(
+                      parseValue(fieldName, metaTypes[fieldName], 'UTC', array[1], false)
+                    );
+
+                  } else {
+                    throw new Error(`Unable to parse data section type=${typeof array} in response json: ${array}`);
+                  }
+                }
+              } else {
+                throw new Error(`Unable to parse data section name=${fieldName} type=${typeof fieldValue} in response json: ${fieldValue}`);
+              }
+            }
+          } else {
+            const frameName = fieldName;
+            if (!valueDataFieldMap[frameName]) {
+              valueDataFieldMap[frameName] = {
+                points: []
+              }
+            }
+
+            if (!framesMap.hasOwnProperty(frameName)) {
+              framesMap[frameName] = { }
+              if (!timeStampDataFieldMap[frameName]) {
+                timeStampDataFieldMap[frameName] = []
+              }
+
+              framesMap[frameName].refId = refId;
+            }
+
+            timeStampDataFieldMap[frameName].push(new Date(row[timestampFieldName]));
+            valueDataFieldMap[frameName].points.push(
+              parseValue(fieldName, metaTypes[fieldName], 'UTC', 123, false)
+            );
+          }
+        }
+      }
     }
   });
 
@@ -173,11 +252,11 @@ export const transformResponse = (response, refId) => {
   for (const dataFrameKey of dataFrames) {
     const dataFrame= valuesInput[dataFrameKey]
     const values = dataFrame.points.map(item => Number(item))
-    const timestamps2 = timestamps[dataFrameKey].map((item, index) => new Date(Number(`${172456834 + index*10}` + `0000000`)))
+    const timestampsProcessed = timestamps[dataFrameKey].map((item, index) => new Date(Number(`${172456834 + index*10}` + `0000000`)))
 
     // @ts-ignore
     timeseries.push({
-      t: timestamps2,
+      t: timestampsProcessed,
       [dataFrameKey]: values
     })
   }

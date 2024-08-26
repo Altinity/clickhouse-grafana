@@ -1,6 +1,5 @@
 import {DataService, logger} from '@grafana/ts-backend';
 import {ClickhouseClient} from "./helpers/clickhouse-client";
-import {transformData} from "./helpers/transform-data";
 import {createQuery, getRequestSettings} from "./helpers/query";
 import {DataQueryRequest} from "@grafana/data";
 import {CHQuery} from "../types/types";

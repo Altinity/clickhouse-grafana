@@ -195,8 +195,10 @@ ORDER BY EventTime;
 
 INSERT INTO requests SELECT now()-INTERVAL 3 HOUR+INTERVAL number SECOND, 'os' || rand() % 9 AS OS, 'user' || rand() % 1000 AS UserName, randUniform(10,10000) AS req_count FROM numbers(10000);
 
+DROP DATABASE IF EXISTS test SYNC;
 CREATE DATABASE test;
 
+DROP TABLE IF EXISTS test.map_table SYNC;
 CREATE TABLE test.map_table
 (
     `time` DateTime,
@@ -210,6 +212,6 @@ ORDER BY (toDate(time), id)
 TTL toStartOfMonth(time) + toIntervalMonth(12 * 5)
 SETTINGS index_granularity = 8192, ttl_only_drop_parts = 1;
 
-INSERT INTO test.map_table values (now(), 'id1', {'key1': 'value1', 'key2':'value2'})
-INSERT INTO test.map_table values (now(), 'id2', {'key1': 'value1', 'key2':'value2'})
-INSERT INTO test.map_table values (now(), 'id2', {'key1': 'value1', 'key2':'value2'})
+INSERT INTO test.map_table values (now(), 'id1', {'key1': 'value1', 'key2':'value2'});
+INSERT INTO test.map_table values (now(), 'id2', {'key1': 'value1', 'key2':'value2'});
+INSERT INTO test.map_table values (now(), 'id2', {'key1': 'value1', 'key2':'value2'});

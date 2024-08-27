@@ -2,8 +2,9 @@ import {getBackendSrv} from '@grafana/runtime';
 import {CHDataSource} from "../../../../datasource/datasource";
 
 
-export const getOptions = async (query: string, url: string, options: any): Promise<any> => {
+export const getOptions = async (query: string, url: string, datasourceOptions: any): Promise<any> => {
   const backendSrv = getBackendSrv();
+  const options = JSON.parse(JSON.stringify(datasourceOptions))
 
   options.url = options.access === 'proxy'
     ? `/api/datasources/proxy/uid/${options.uid}`

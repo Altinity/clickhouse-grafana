@@ -319,3 +319,27 @@ def double_click_on_panel(self):
     """Double-click on panel to change time range"""
 
     ActionChains(self.context.driver).double_click(locators.visualization).click(locators.visualization).perform()
+
+
+@TestStep(When)
+def check_green_alert_for_panel(self):
+    """Check that panel title contains green alert."""
+    with By("checking green alert exists"):
+        try:
+            locators.green_alert_for_panel
+            return True
+
+        except NoSuchElementException:
+            return False
+
+
+@TestStep(When)
+def check_red_alert_for_panel(self):
+    """Check that panel title contains red alert."""
+    with By("checking reg alert exists"):
+        try:
+            assert 'path d="M18.17' in locators.alert_for_panel.get_attribute('innerHTML')
+            return True
+
+        except:
+            return False

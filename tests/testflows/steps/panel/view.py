@@ -425,6 +425,13 @@ def click_table_view_toggle(self):
     locators.table_view_toggle.click()
 
 
+@TestStep(When)
+def click_alert_tab(self):
+    """Click alert tab."""
+
+    locators.alert_tab.click()
+
+
 @TestStep(Then)
 def check_data_is_missing_text(self):
     """Check that 'Data is missing a time field' text is displayed."""
@@ -481,3 +488,35 @@ def check_error_for_table_view(self):
         except:
             return False
 
+
+@TestStep(Then)
+def get_value_from_table(self, time):
+    """Get value from table."""
+
+    return locators.column_row(time=time).text
+
+
+@TestStep(When)
+def click_save_button(self):
+    """Click save button."""
+
+    locators.save_button.click()
+
+
+@TestStep(When)
+def click_save_confirmation_button(self):
+    """Click save confirmation button."""
+
+    locators.save_confirmations_button.click()
+
+
+@TestStep(When)
+def save_dashboard(self):
+    """Save dashboard from panel view."""
+    with By("clicking save button"):
+        with delay():
+            click_save_button()
+
+    with And("clicking save confirmation button"):
+        with delay():
+            click_save_confirmation_button()

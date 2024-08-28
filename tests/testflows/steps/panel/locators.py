@@ -170,6 +170,16 @@ class Locators:
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Apply changes and go back to dashboard"]')
 
     @property
+    def save_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[title="Apply changes and save dashboard"]')
+
+    @property
+    def save_confirmations_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Dashboard settings Save Dashboard Modal Save button"]')
+
+    @property
     def discard_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[title="Undo all changes"]')
@@ -197,6 +207,15 @@ class Locators:
     def table_column_name(self, column_name):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, f'//*[text()="{column_name}"]')
+
+    def column_row(self, time):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[text()="{time}"]/../[1]')
+
+    @property
+    def alert_tab(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Tab Alert"]')
 
 
 locators = Locators()

@@ -1,3 +1,7 @@
+# 3.2.3 (2024-09-03)
+## Fixes:
+* fix default values in connection editor behavior when changing fields, also change URL, fix https://github.com/Altinity/clickhouse-grafana/issues/615
+
 # 3.2.2 (2024-08-11)
 ## Enhancements:
 * improve e2e tests, more scenarios covered

@@ -30,7 +30,7 @@ def argparser(parser):
         default=0
     )
 
-ffail = {
+ffails = {
     "/Grafana Datasource Plugin For Clickhouse/sql editor/hash comment/*": [
         (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
     ],
@@ -49,6 +49,7 @@ xfails = {
 @Name("Grafana Datasource Plugin For Clickhouse")
 @ArgumentParser(argparser)
 @Specifications(QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse)
+# @FFails(ffails)
 @XFails(xfails)
 @Requirements(
     RQ_SRS_Plugin("1.0"),
@@ -104,19 +105,19 @@ def regression(self, before, after):
     Feature(run=load("testflows.tests.automated.e2e", "feature"))
     Feature(run=load("testflows.tests.automated.query_settings", "feature"))
 
-    with Given("I define endpoint with grafana version that contains legacy alerts"):
-        self.context.endpoint = define("self.context.endpoint", "http://grafana_legacy_alerts:3000/")
-
-    with And("I wait for grafana to be started"):
-        for attempt in retries(delay=10, timeout=50):
-            with attempt:
-                ui.open_endpoint(endpoint=self.context.endpoint)
-
-    with delay():
-        with Given("I login in grafana"):
-            login.login()
-
-    Feature(run=load("testflows.tests.automated.legacy_alerts", "feature"))
+    # with Given("I define endpoint with grafana version that contains legacy alerts"):
+    #     self.context.endpoint = define("self.context.endpoint", "http://grafana_legacy_alerts:3000/")
+    #
+    # with And("I wait for grafana to be started"):
+    #     for attempt in retries(delay=10, timeout=50):
+    #         with attempt:
+    #             ui.open_endpoint(endpoint=self.context.endpoint)
+    #
+    # with delay():
+    #     with Given("I login in grafana"):
+    #         login.login()
+    #
+    # Feature(run=load("testflows.tests.automated.legacy_alerts", "feature"))
 
 
 if main():

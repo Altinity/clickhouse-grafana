@@ -21,6 +21,6 @@
     },
     "transpileOnly": true
   },
-  "include": ["../src", "./types", "/Users/lunaticus/Documents/Work/grafana-plugin-sdk-typescript3/**/*"],
+  "include": ["../src", "./types"],
   "extends": "@grafana/tsconfig"
 }

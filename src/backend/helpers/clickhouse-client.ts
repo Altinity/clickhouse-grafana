@@ -53,7 +53,7 @@ export class ClickhouseClient {
             data: this.settings.UsePost ? query : undefined,
             params: !this.settings.UsePost ? { query } : undefined,
             headers: {},
-            httpsAgent: new https.Agent(httpsAgentOptions)
+            // httpsAgent: new https.Agent(httpsAgentOptions)
         };
 
         if (this.settings.UseCompression && ['gzip', 'br', 'deflate', 'zstd'].includes(this.settings.CompressionType)) {
@@ -68,8 +68,10 @@ export class ClickhouseClient {
                 password
             };
         } else if (this.settings.UseYandexCloudAuthorization) {
-            reqConfig.headers['X-ClickHouse-User'] = this.settings.XHeaderUser;
-            if (this.settings.XHeaderKey) {
+          reqConfig.headers['X-ClickHouse-User'] = this.settings.XHeaderUser;
+          logger.info('Work with settings', this.settings)
+
+          if (this.settings.XHeaderKey) {
                 reqConfig.headers['X-ClickHouse-Key'] = this.settings.XHeaderKey;
             }
             const password = this.settings.Instance.DecryptedSecureJSONData['xHeaderKey'];

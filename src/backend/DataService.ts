@@ -1,9 +1,9 @@
 import {DataService, logger} from '@grafana/ts-backend';
 import {ClickhouseClient} from "./helpers/clickhouse-client";
-import {transformData} from "./helpers/transform-data";
 import {createQuery, getRequestSettings} from "./helpers/query";
 import {DataQueryRequest} from "@grafana/data";
 import {CHQuery} from "../types/types";
+import {transformResponse} from "./helpers/transform-to-timeseries";
 
 // @ts-ignore
 type BackendDataQueryRequest<T> = Omit<DataQueryRequest<T>, "app", "timezone", "scopedVars">;
@@ -60,13 +60,9 @@ export class ClickhouseDataService extends DataService<Request, any> {
     });
 
     const results = await Promise.all(allQueryPromise);
-    logger.info("QueryData result", JSON.stringify(results));
 
-    const dataFrames = results.map((result: any, index: number) => transformData(result.body, targets[index].refid))
-
-
-    logger.info('Data Frames', JSON.stringify(dataFrames), targets.map((target: any) => target.refid));
-
-    return dataFrames
+    logger.info('ResultsData',JSON.stringify(transformResponse(results[0].body, targets[0].refid)))
+    // results.map((result: any, index: number) => transformData(result.body, targets[index].refid))
+    return transformResponse(results[0].body, targets[0].refid)
   }
 }

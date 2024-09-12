@@ -52,6 +52,13 @@ def enter_url_into_url_field(self, url):
 
 
 @TestStep(When)
+def get_url_textfield_text(self):
+    """Get url from url textfield."""
+
+    return locators.url_field.get_attribute('value')
+
+
+@TestStep(When)
 def click_save_and_test_button(self):
     """Click submit button."""
 
@@ -149,6 +156,13 @@ def click_use_post_method_toggle(self):
     """Click forward oauth identity toggle."""
 
     locators.use_post_method_to_send_queries.click()
+
+
+@TestStep(When)
+def click_use_default_values_toggle(self):
+    """Click `Use default values toggle`."""
+
+    locators.use_default_values_toggle.click()
 
 
 @TestStep(When)

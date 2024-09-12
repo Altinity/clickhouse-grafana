@@ -154,6 +154,11 @@ class Locators:
         return driver.find_element(SelectBy.CSS_SELECTOR,
                                    "[data-testid='data-testid Confirm Modal Danger Button']")
 
+    @property
+    def use_default_values_toggle(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR,
+                                   "[for='useDefaultConfiguration']")
 
 
 locators = Locators()

@@ -7,8 +7,6 @@ on:
       - master
       - main
   pull_request:
-    branches:
-      - *
 
 env:
   artifact_paths: |

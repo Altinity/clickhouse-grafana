@@ -114,7 +114,7 @@ class Locators:
     def no_data_dropdown(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f"//a[@class='pointer dropdown-toggle' and //icon]")
+                                   f"//a[@ng-click='triggerPartAction(action)' and //text()='A']//input")
 
     @property
     def error_dropdown(self):
@@ -126,7 +126,7 @@ class Locators:
     def message_textfield(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f"//a[@class='pointer dropdown-toggle' and //icon]")
+                                   f"//alert-tab//button[//text()='State history']")
 
     def tag_name_textfield(self, tag_number):
         driver: WebDriver = current().context.driver

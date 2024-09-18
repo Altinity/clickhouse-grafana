@@ -31,13 +31,14 @@ def argparser(parser):
     )
 
 ffails = {
-    "/Grafana Datasource Plugin For Clickhouse/sql editor/hash comment/*": [
+    "/Grafana Datasource Plugin For Clickhouse/sql editor/hash comment/":
         (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
-    ],
-    "/Grafana Datasource Plugin For Clickhouse/sql editor/hash exclamation comment/*": [
+    ,
+    "/Grafana Datasource Plugin For Clickhouse/sql editor/hash exclamation comment/":
         (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
-    ],
+    ,
 }
+
 xfails = {
     "/Grafana Datasource Plugin For Clickhouse/e2e/mixed data sources/*": [
         (Fail, "https://github.com/Altinity/clickhouse-grafana/issues/604")
@@ -51,7 +52,7 @@ grafana_version = ""
 @Name("Grafana Datasource Plugin For Clickhouse")
 @ArgumentParser(argparser)
 @Specifications(QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse)
-# @FFails(ffails)
+@FFails(ffails)
 @XFails(xfails)
 @Requirements(
     RQ_SRS_Plugin("1.0"),

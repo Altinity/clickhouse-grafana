@@ -233,7 +233,7 @@ def check_red_into_green_alert(self):
             panel.click_run_query_button()
 
     with When("I setup legacy alerts"):
-        actions.setup_legacy_alerts(param_value='10', new=False)
+        actions.setup_legacy_alerts(param_value='0')
 
     with And("I save dashboard"):
         with delay():
@@ -254,7 +254,7 @@ def check_red_into_green_alert(self):
             dashboard.open_panel(panel_name="Panel Title")
 
     with When("I setup legacy alerts"):
-        actions.setup_legacy_alerts(param_value='0')
+        actions.setup_legacy_alerts(param_value='10', new=False)
 
     with And("I save dashboard"):
         with delay():

@@ -101,6 +101,7 @@ def regression(self, before, after):
         with Given("I login in grafana"):
             login.login()
 
+    self.context.grafana_version = None
     Feature(run=load("testflows.tests.automated.sql_editor", "feature"))
     Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
     Feature(run=load("testflows.tests.automated.e2e", "feature"))

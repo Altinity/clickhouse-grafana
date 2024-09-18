@@ -9,6 +9,7 @@ import steps.dashboard.view as dashboard
 import steps.dashboards.view as dashboards
 import steps.panel.sql_editor.view as sql_editor
 import steps.connections.datasources.view as datasources
+import steps.connections.datasources.new.view as datasources_new
 import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
 
 from requirements.requirements import *
@@ -24,7 +25,7 @@ def gh_api_check(self):
     for attempt in retries(delay=5, timeout=50):
         with attempt:
             with delay():
-                with Then("I take screenshot of Repeated postgresql panel"):
+                with Then("I take screenshot of Pull request events for grafana/grafana panel"):
                     dashboard.take_screenshot_for_panel(panel_name="Pull request events for grafana/grafana", screenshot_name="gh-api_panel")
 
             with delay():
@@ -127,6 +128,43 @@ def mixed_data_sources(self):
                 panel.click_discard_button()
             with delay():
                 dashboard.saving_dashboard()
+
+
+@TestScenario
+def default_values_not_affect_url_textfield(self):
+    """Check that default values not affect to url textfield in datasource setup."""
+
+    with When("I open create new datasource view"):
+        with delay():
+            datasources_new.open_add_new_datasource_endpoint()
+
+    with And("I click new altinity grafana plugin"):
+        with delay():
+            datasources_new.click_new_altinity_plugin_datasource()
+
+    with And("I enter url"):
+        with delay():
+            datasources_altinity_edit.enter_url_into_url_field(url="http://clickhouse:8123")
+
+    with And("I enter datasource name"):
+        with delay():
+            datasources_altinity_edit.enter_name_into_name_field(datasource_name="default_values_not_affect_url_textfield")
+
+    with And("I click save and test button"):
+        with delay():
+            datasources_altinity_edit.click_save_and_test_button()
+
+    with And("I click `Use default values toggle`"):
+        with delay():
+            datasources_altinity_edit.click_use_default_values_toggle()
+
+    with And("I click use post method toggle"):
+        with delay():
+            datasources_altinity_edit.click_use_post_method_toggle()
+
+    with Then("I check that url textfield is not change after clicking on the toggle"):
+        with delay():
+            assert datasources_altinity_edit.get_url_textfield_text() == "http://clickhouse:8123", error()
 
 
 @TestFeature

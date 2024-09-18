@@ -203,7 +203,7 @@ CREATE TABLE test.map_table
 (
     `time` DateTime,
     `id` String,
-    `attributes` Map(String, String)
+    `attributes` Map(LowCardinality(String), String)
 )
 ENGINE = MergeTree
 PARTITION BY toYYYYMM(time)

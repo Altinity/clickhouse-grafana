@@ -326,10 +326,10 @@ def check_green_alert_for_panel(self):
     """Check that panel title contains green alert."""
     with By("checking green alert exists"):
         try:
-            locators.green_alert_for_panel
+            assert 'path d="M12 20.86a2.75' in locators.alert_for_panel.get_attribute('innerHTML')
             return True
 
-        except NoSuchElementException:
+        except:
             return False
 
 

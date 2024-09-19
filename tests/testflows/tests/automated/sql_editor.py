@@ -389,6 +389,28 @@ def double_dash_comment(self):
     skip_comments_toggle(query=query)
 
 
+@TestScenario
+def hash_comment(self):
+    """Check that grafana plugin supports Skip Comments toggle with multiline comments."""
+
+    with Given("I define a query that contains a comment"):
+        query = define("query",
+                       "SELECT now() - number * 1000, number FROM numbers(10) #COMMENT")
+
+    skip_comments_toggle(query=query)
+
+
+@TestScenario
+def hash_exclamation_comment(self):
+    """Check that grafana plugin supports Skip Comments toggle with multiline comments."""
+
+    with Given("I define a query that contains a comment"):
+        query = define("query",
+                       "SELECT now() - number * 1000, number FROM numbers(10) #!COMMENT")
+
+    skip_comments_toggle(query=query)
+
+
 @TestFeature
 @Requirements(RQ_SRS_Plugin_RawSQLEditorInterface("1.0"),
               RQ_SRS_Plugin_RawSQLEditorInterface_ShowGeneratedSQL("1.0"),

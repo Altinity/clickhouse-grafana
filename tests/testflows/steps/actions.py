@@ -8,11 +8,13 @@ from testflows.core import *
 from steps.delay import delay
 from testflows.asserts import error
 
+import steps.panel.view as panel
 import steps.dashboard.view as dashboard
 import steps.dashboards.view as dashboards
 import steps.connections.datasources.view as datasources
 import steps.panel.query_settings.view as query_settings
 import steps.connections.datasources.new.view as datasources_new
+import steps.alerting.alert_rules_legacy.new.view as alert_rules_legacy
 import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
 
 
@@ -139,6 +141,12 @@ def create_new_altinity_datasource(
         add_cors_flag=False,
         use_post_method=False,
         use_compression=False,
+  use_default_values=False,
+  default_column_timestamp_type=None,
+  default_datetime_field=None,
+  default_timestamp_field=None,
+  default_datetime64_field=None,
+  default_date_field=None,
 ):
     """Create new datasource.
 
@@ -268,6 +276,11 @@ def create_new_altinity_datasource(
                 with By("clicking save and test button"):
                     datasources_altinity_edit.click_save_and_test_button()
 
+            if use_default_values:
+              with delay():
+                with By("clicking "):
+                  pass
+
             if successful_connection:
                 with And("checking save and test button returns green alert"):
                     assert datasources_altinity_edit.check_alert_success() is True, error()
@@ -289,6 +302,41 @@ def create_new_altinity_datasource(
             with delay():
                 with And("clicking delete button in confirmation modal dialog"):
                     datasources_altinity_edit.click_confirm_delete_datasource()
+
+
+@TestStep(When)
+def setup_legacy_alerts(
+  self,
+  alert_name="test_alert",
+  evaluate_every='10s',
+  evaluate_for='10s',
+  param_value='0',
+  new=True,
+):
+  with When("I go to alerts tab"):
+    with delay():
+      panel.click_alert_tab()
+
+  if new:
+    with And("I click `Create Alert`"):
+      with delay():
+        alert_rules_legacy.click_create_alert_button()
+
+  with And("I enter alert name"):
+    with delay():
+      alert_rules_legacy.enter_name(alert_name=alert_name)
+
+  with And("I enter `Evaluate every`"):
+    with delay():
+      alert_rules_legacy.enter_evaluate_every(evaluate_every=evaluate_every)
+
+  with And("I enter `For`"):
+    with delay():
+      alert_rules_legacy.enter_for(evaluate_for=evaluate_for)
+
+  with And("I enter input param for alert"):
+    with delay():
+      alert_rules_legacy.enter_input(param_number=0, param_value=param_value)
 
 
 @TestStep(When)

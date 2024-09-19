@@ -30,17 +30,32 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']")
 
-    def sql_editor_toggle(self, query_name):
+    def sql_editor_toggle(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//*[contains(@data-rfd-draggable-id, '{query_name}')]//*[contains(@id, 'option-sql')]")
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
 
-    def sql_editor_input(self, query_name):
-        driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//*[contains(@data-rfd-draggable-id, '{query_name}')]//*[@class='view-lines monaco-mouse-cursor-text']")
+        return driver.find_element(SelectBy.XPATH, f"//*[contains(@{search_class}, '{query_name}')]//*[contains(@id, 'option-sql')]")
 
-    def input_in_sql_editor(self, query_name='A'):
+    def sql_editor_input(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//*[contains(@data-rfd-draggable-id, '{query_name}')]//*[@class='inputarea monaco-mouse-cursor-text']")
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f"//*[contains(@{search_class}, '{query_name}')]//*[@class='view-lines monaco-mouse-cursor-text']")
+
+    def input_in_sql_editor(self, query_name='A', grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f"//*[contains(@{search_class}, '{query_name}')]//*[@class='inputarea monaco-mouse-cursor-text']")
 
     @property
     def panel_title_textfield(self):
@@ -90,55 +105,112 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='query-tab-add-expression']")
 
-    def query_name_field(self, query_name):
+    def query_name_field(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{query_name}")]//button[@data-testid="query-name-div"]')
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@{search_class}, "{query_name}")]//button[@data-testid="query-name-div"]')
 
-    def query_name_textfield(self, query_name):
+    def query_name_textfield(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{query_name}")]//button[@data-testid="query-name-div"]//input')
-
-    def duplicate_query_button(self, query_name):
-        driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{query_name}")]//button[@data-testid="data-testid Duplicate query"]')
-
-    def hide_response_query_button(self, query_name):
-        driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{query_name}")]//button[@data-testid="data-testid Hide response"]')
-
-    def delete_query_button(self, query_name):
-        driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{query_name}")]//button[@data-testid="data-testid Remove query"]')
-
-    def expression_name_field(self, expression_name):
-        driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{expression_name}")]//button[@data-testid="query-name-div"]')
-
-    def expression_name_textfield(self, expression_name):
-        driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{expression_name}")]//button[@data-testid="query-name-div"]//input')
-
-    def expression_query_button(self, expression_name):
-        driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{expression_name}")]//button[@data-testid="data-testid Duplicate query"]')
-
-    def hide_response_expression_button(self, expression_name):
-        driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{expression_name}")]//button[@data-testid="data-testid Hide response"]')
-
-    def delete_expression_button(self, expression_name):
-        driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{expression_name}")]//button[@data-testid="data-testid Remove query"]')
-
-    def expression_operation_dropdown(self, expression_name):
-        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[contains(@data-rfd-draggable-id, "{expression_name}")]//div[contains(@class, "grafana-select-value-container")]')
+                                   f'//*[contains(@{search_class}, "{query_name}")]//button[@data-testid="query-name-div"]//input')
 
-    def expression_textfield(self, expression_name):
+    def duplicate_query_button(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[contains(@data-rfd-draggable-id, "{expression_name}")]//div[contains(@class, "grafana-select-value-container")]')
+                                   f'//*[contains(@{search_class}, "{query_name}")]//button[@data-testid="data-testid Duplicate query"]')
+
+    def hide_response_query_button(self, query_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{query_name}")]//button[@data-testid="data-testid Hide response"]')
+
+    def delete_query_button(self, query_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{query_name}")]//button[@data-testid="data-testid Remove query"]')
+
+    def expression_name_field(self, expression_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{expression_name}")]//button[@data-testid="query-name-div"]')
+
+    def expression_name_textfield(self, expression_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{expression_name}")]//button[@data-testid="query-name-div"]//input')
+
+    def expression_query_button(self, expression_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{expression_name}")]//button[@data-testid="data-testid Duplicate query"]')
+
+    def hide_response_expression_button(self, expression_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{expression_name}")]//button[@data-testid="data-testid Hide response"]')
+
+    def delete_expression_button(self, expression_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{expression_name}")]//button[@data-testid="data-testid Remove query"]')
+
+    def expression_operation_dropdown(self, expression_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{expression_name}")]//div[contains(@class, "grafana-select-value-container")]')
+
+    def expression_textfield(self, expression_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{expression_name}")]//div[contains(@class, "grafana-select-value-container")]')
 
     @property
     def time_picker_button(self):
@@ -160,14 +232,29 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid TimePicker submit button"]')
 
-    def data_source_picker(self, query_name):
+    def data_source_picker(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[contains(@data-rfd-draggable-id, "{query_name}")]//input[@data-testid="data-testid Select a data source"]')
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+          search_class = "data-rbd-draggable-id"
+        else:
+          search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{query_name}")]//input[@data-testid="data-testid Select a data source"]')
 
     @property
     def apply_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Apply changes and go back to dashboard"]')
+
+    @property
+    def save_button(self):
+      driver: WebDriver = current().context.driver
+      return driver.find_element(SelectBy.CSS_SELECTOR, f'[title="Apply changes and save dashboard"]')
+
+    @property
+    def save_confirmations_button(self):
+      driver: WebDriver = current().context.driver
+      return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Dashboard settings Save Dashboard Modal Save button"]')
 
     @property
     def discard_button(self):
@@ -197,6 +284,15 @@ class Locators:
     def table_column_name(self, column_name):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, f'//*[text()="{column_name}"]')
+
+    def column_row(self, time):
+      driver: WebDriver = current().context.driver
+      return driver.find_element(SelectBy.XPATH, f'//*[text()="{time}"]/../[1]')
+
+    @property
+    def alert_tab(self):
+      driver: WebDriver = current().context.driver
+      return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Tab Alert"]')
 
 
 locators = Locators()

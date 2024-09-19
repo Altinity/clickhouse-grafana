@@ -112,5 +112,20 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[class='css-kuoxoh-panel-content']")
 
+    @property
+    def green_alert_for_panel(self):
+      driver: WebDriver = current().context.driver
+      return driver.find_element(SelectBy.XPATH, f"//path[contains(@d,'M12')]")
+
+    @property
+    def red_alert_for_panel(self):
+      driver: WebDriver = current().context.driver
+      return driver.find_element(SelectBy.XPATH, f"//path[contains(@d,'M18.17')]")
+
+    @property
+    def alert_for_panel(self):
+      driver: WebDriver = current().context.driver
+      return driver.find_element(SelectBy.XPATH, f"//span[contains(@class,'panel-header-item')]")
+
 
 locators = Locators()

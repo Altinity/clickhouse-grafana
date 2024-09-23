@@ -1,6 +1,6 @@
 // @ts-nocheck
 import {parseValue} from "./parser";
-import {logger} from "../../../../grafana-plugin-sdk-typescript3";
+import {logger} from '@grafana/ts-backend';
 
 const complexTypeRE = /Array|Tuple|Map/;
 const labelTypeRE = /String|UUID|Enum|IPv4|IPv6/;

@@ -1,6 +1,6 @@
 import {Alert, InlineField, InlineLabel, InlineSwitch, Select} from "@grafana/ui";
 import React, {useEffect, useState} from "react";
-import {getOptions} from "./DefaultValues.api";
+import {getOptions, getSettings} from "./DefaultValues.api";
 import {TimestampFormat} from "../../../../types/types";
 const TABLES_QUERY = "SELECT name,database,table,type FROM system.columns WHERE type LIKE 'Date32%'  OR type LIKE 'DateTime64%' OR type = 'UInt32' OR match(type,'^DateTime$|^DateTime\\\\([^)]+\\\\)$')  OR match(type,'^Date$|^Date\\([^)]+\\)$') ORDER BY type,name FORMAT JSON";
 
@@ -24,28 +24,69 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
       }
 
       try {
-        const data = await getOptions(TABLES_QUERY, jsonData.dataSourceUrl, newOptions)
+        // Ensure newOptions and newOptions.uid are defined
+        if (!newOptions || !newOptions.uid) {
+          return;
+        }
+        const dashboardUID = newOptions.uid;
 
-        const groupedByType = data?.data?.reduce((acc, item) => {
-          // If the type is not yet a key in the accumulator, add it
-          if (!acc[item.type]) {
-            acc[item.type] = [];
+        // Fetch settings
+        const response = await getSettings();
+        if (!response || !response.datasources) {
+          return;
+        }
+
+        // Find the current datasource
+        const currentDatasource: { basicAuth: String } = Object.values(response.datasources).find(
+          (datasource: any) => datasource?.uid === dashboardUID
+        ) as { basicAuth: String };
+
+        if (!currentDatasource) {
+          return;
+        }
+
+        // Set basicAuth if applicable
+        const basicAuth = currentDatasource.basicAuth;
+        newOptions.basicAuth = newOptions.basicAuth ? basicAuth : newOptions.basicAuth;
+
+        // Fetch options data
+        const data = await getOptions(TABLES_QUERY, jsonData.dataSourceUrl, newOptions);
+        if (!data || !Array.isArray(data.data)) {
+          return;
+        }
+
+        // Group data by type
+        const groupedByType = data.data.reduce((acc, item) => {
+          if (!item || !item.type || !item.name) {
+            return acc;
           }
-          // Append the current item to the array for its type
-          // Save only name because we already know type
+          acc[item.type] = acc[item.type] || [];
           acc[item.type].push(item.name);
           return acc;
         }, {});
 
-        const transformDataToOptions = (data: any): any[] => {
-          const dataSetList = Array.from(new Set(data));
-          return dataSetList.map((item: any) => ({label: item, value: item}));
-        }
+        // Function to transform data into options
+        const transformDataToOptions = (dataArray) => {
+          if (!Array.isArray(dataArray)) {
+            return [];
+          }
+          const uniqueItems = [...new Set(dataArray)];
+          return uniqueItems.map((item) => ({ label: item, value: item }));
+        };
 
-        setDefaultDateTime64Options(transformDataToOptions(groupedByType['DateTime64']));
-        setDefaultDateDate32Options(transformDataToOptions(groupedByType['Date']));
-        setDefaultUint32Options(transformDataToOptions(groupedByType['UInt32']));
-        setDefaultDateTimeOptions(transformDataToOptions(groupedByType['DateTime']));
+        // Set default options, ensuring the grouped data exists
+        setDefaultDateTime64Options(
+          transformDataToOptions(groupedByType['DateTime64(6)'] || [])
+        );
+        setDefaultDateDate32Options(
+          transformDataToOptions(groupedByType['Date'] || [])
+        );
+        setDefaultUint32Options(
+          transformDataToOptions(groupedByType['UInt32'] || [])
+        );
+        setDefaultDateTimeOptions(
+          transformDataToOptions(groupedByType['DateTime'] || [])
+        );
       } catch (e) {
         setDefaultUint32Options([])
         setDefaultDateTimeOptions([])

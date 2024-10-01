@@ -43,6 +43,9 @@ xfails = {
     "/Grafana Datasource Plugin For Clickhouse/e2e/mixed data sources/*": [
         (Fail, "https://github.com/Altinity/clickhouse-grafana/issues/604")
     ],
+    "/Grafana Datasource Plugin For Clickhouse/data source setup/check default values datetime64/": [
+        (Error, "https://github.com/Altinity/clickhouse-grafana/issues/630")
+    ]
 }
 
 grafana_version = ""

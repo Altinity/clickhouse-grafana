@@ -71,6 +71,25 @@ CREATE TABLE IF NOT EXISTS default.test_interval
 INSERT INTO default.test_interval(d,x) SELECT toDateTime(now()-(number*10)) AS d, rand() AS x FROM numbers(1000);
 
 
+DROP TABLE IF EXISTS default.test_interval_64;
+CREATE TABLE IF NOT EXISTS default.test_interval_64
+(
+  d64
+  DateTime64,
+  x
+  UInt32
+) ENGINE = MergeTree
+(
+) ORDER BY
+(
+  d64
+);
+
+INSERT INTO default.test_interval_64(d64, x)
+SELECT toDateTime(now() - (number * 10)) AS d64, rand() AS x
+FROM numbers(1000);
+
+
 DROP TABLE IF EXISTS default.test_array_join_nested;
 CREATE TABLE IF NOT EXISTS default.test_array_join_nested(
     d DateTime,

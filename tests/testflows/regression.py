@@ -30,7 +30,6 @@ def argparser(parser):
         default=0
     )
 
-
 ffails = {
   "/Grafana Datasource Plugin For Clickhouse/sql editor/hash comment/":
     (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
@@ -41,9 +40,12 @@ ffails = {
 }
 
 xfails = {
-  # "/Grafana Datasource Plugin For Clickhouse/e2e/mixed data sources/*": [
-  #     (Fail, "https://github.com/Altinity/clickhouse-grafana/issues/604")
-  # ],
+  "/Grafana Datasource Plugin For Clickhouse/e2e/mixed data sources/*": [
+    (Fail, "https://github.com/Altinity/clickhouse-grafana/issues/604")
+  ],
+  "/Grafana Datasource Plugin For Clickhouse/data source setup/check default values datetime64/": [
+    (Error, "https://github.com/Altinity/clickhouse-grafana/issues/630")
+  ]
 }
 
 grafana_version = ""

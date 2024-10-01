@@ -278,8 +278,41 @@ def create_new_altinity_datasource(
 
             if use_default_values:
               with delay():
-                with By("clicking "):
-                  pass
+                with By("clicking use default values toggle"):
+                  datasources_altinity_edit.click_use_default_values_toggle()
+
+              with delay():
+                if not (default_column_timestamp_type is None):
+                  with By("setting up default timestamp type"):
+                    datasources_altinity_edit.enter_column_timestamp_type(column_timestamp_type=default_column_timestamp_type)
+
+              with delay():
+                if not (default_datetime_field is None):
+                  with By("setting up default datetime field"):
+                    datasources_altinity_edit.enter_datetime_field(
+                      datetime=default_datetime_field)
+
+              with delay():
+                if not (default_timestamp_field is None):
+                  with By("setting up default timestamp field"):
+                    datasources_altinity_edit.enter_timestamp_field(
+                      timestamp=default_timestamp_field)
+
+              with delay():
+                if not (default_datetime64_field is None):
+                  with By("setting up default datetime64 type"):
+                    datasources_altinity_edit.enter_datetime64_field(
+                      datetime64=default_datetime64_field)
+
+              with delay():
+                if not (default_date_field is None):
+                  with By("setting up default date field"):
+                    datasources_altinity_edit.enter_date_field(
+                      date=default_date_field)
+
+              with delay():
+                with By("clicking save and test button"):
+                  datasources_altinity_edit.click_save_and_test_button()
 
             if successful_connection:
                 with And("checking save and test button returns green alert"):

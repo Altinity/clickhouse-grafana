@@ -36,7 +36,7 @@ jobs:
           python3
           -u ./regression.py --before=0.1 --after=0.1
           --log raw.log
-          -o nice-new-fails
+          -o classic
 
       - name: Create reports
         if: always()

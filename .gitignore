@@ -50,5 +50,7 @@ e2e-results/
 
 # virtual environment
 venv/
+
+# testflows temporay output
 tests/testflows/tmp/target/
 tests/testflows/assets/

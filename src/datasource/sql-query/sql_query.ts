@@ -7,10 +7,10 @@ import {TimestampFormat} from "../../types/types";
 
 export default class SqlQuery {
   target: any;
-  templateSrv: TemplateSrv;
+  templateSrv: TemplateSrv | null;
   options: any;
 
-  constructor(target: any, templateSrv: TemplateSrv, options: any) {
+  constructor(target: any, templateSrv: TemplateSrv | null, options: any) {
     this.target = target;
     this.templateSrv = templateSrv;
     this.options = options;
@@ -31,14 +31,16 @@ export default class SqlQuery {
       query = Scanner.AddMetadata(query);
     }
 
-    query = this.templateSrv.replace(
+    query = this.templateSrv ? this.templateSrv.replace(
       SqlQueryHelper.conditionalTest(query, this.templateSrv),
       options.scopedVars,
       SqlQueryHelper.interpolateQueryExpr
-    );
+    ) : query;
+
     let scanner = new Scanner(query);
     let dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : TimestampFormat.DateTime;
-    let i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval;
+    let i = this.templateSrv && this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval;
+
     let interval = SqlQueryHelper.convertInterval(i, this.target.intervalFactor || 1);
     let intervalMs = SqlQueryHelper.convertInterval(i, this.target.intervalFactor || 1, true);
     let adhocCondition: any[] = [];

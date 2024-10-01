@@ -7,10 +7,7 @@ on:
       - master
       - main
   pull_request:
-    branches:
-      - master
-      - main
-      
+
 env:
   artifact_paths: |
     ./Reports/*
@@ -28,7 +25,9 @@ jobs:
         uses: actions/checkout@v4
         with:
           ref: ${{ inputs.ref }}
-
+      - name: Show machine IP
+        run: |
+          ip addr
       - name: Setup
         run: tests/testflows/infra/setup.sh
 
@@ -37,7 +36,7 @@ jobs:
           python3
           -u ./regression.py --before=0.1 --after=0.1
           --log raw.log
-          -o classic 
+          -o classic
 
       - name: Create reports
         if: always()

@@ -17,6 +17,8 @@
 * 5 [Adding New Data Source](#adding-new-data-source)
     * 5.1 [RQ.SRS.Plugin.DataSourceSetupView](#rqsrsplugindatasourcesetupview)
     * 5.2 [RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton](#rqsrsplugindatasourcesetupviewsaveandtestbutton)
+    * 5.3 [RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesToggle](#rqsrsplugindatasourcesetupviewdefaultvaluestoggle)
+    * 5.4 [RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesSetup](#rqsrsplugindatasourcesetupviewdefaultvaluessetup)
 * 6 [Specifying Data Source Name](#specifying-data-source-name)
     * 6.1 [RQ.SRS.Plugin.DataSourceSetupView.DataSourceName](#rqsrsplugindatasourcesetupviewdatasourcename)
 * 7 [Using Default Data Source](#using-default-data-source)
@@ -126,11 +128,11 @@
     * 38.1 [RQ.SRS.Plugin.Variables](#rqsrspluginvariables)
 * 39 [Annotations Setup](#annotations-setup)
     * 39.1 [RQ.SRS.Plugin.Annotations](#rqsrspluginannotations)
-* 40 [Setaping Alerts](#setaping-alerts)
+* 40 [Setting up Alerts](#setting-up-alerts)
     * 40.1 [RQ.SRS.Plugin.Alerts](#rqsrspluginalerts)
     * 40.2 [RQ.SRS.Plugin.Alerts.AlertSetupPage](#rqsrspluginalertsalertsetuppage)
-    * 40.3 [RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged](#rqsrspluginalertsruletypegrafanamanaged)
-    * 40.4 [RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged](#rqsrspluginalertsruletypedatasourcemanaged)
+    * 40.3 [RQ.SRS.Plugin.Alerts.UnifiedAlerts](#rqsrspluginalertsunifiedalerts)
+    * 40.4 [RQ.SRS.Plugin.Alerts.LegacyAlerts](#rqsrspluginalertslegacyalerts)
 * 41 [Functions](#functions)
     * 41.1 [RQ.SRS.Plugin.Functions](#rqsrspluginfunctions)
     * 41.2 [RQ.SRS.Plugin.Functions.Rate](#rqsrspluginfunctionsrate)
@@ -149,6 +151,7 @@
     * 42.2 [RQ.SRS.Plugin.SupportedDataTypes.LimitValues](#rqsrspluginsupporteddatatypeslimitvalues)
 * 43 [Versions Compatibility](#versions-compatibility)
     * 43.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrspluginversioncompatibility)
+
 
 
 ## Revision History
@@ -222,6 +225,7 @@ This view SHALL contain the following sections:
 * `Name`
 * `HTTP`
 * `Auth toggles`
+* `Use default values` toggle
 * `Custom HTTP Headers`
 * `Additional`
 
@@ -232,6 +236,24 @@ version: 1.0
 
 The [Plugin]'s data source setup view SHALL contain a `Save & test` button that SHALL save datasource and check if [ClickHouse]
 datasource is connected to [Grafana] correctly.
+
+### RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesToggle
+version: 1.0
+
+The [Plugin]'s data source setup view SHALL contain a `default values` toggle that SHALL open 
+default values setup menu with the following dropdowns:
+
+* `Column timestamp type`
+* `Datetime Field`
+* `Timestamp (Uint32) Field`
+* `Datetime64 Field`
+* `Date Field`
+
+### RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesSetup
+version: 1.0
+
+The [Plugin]'s data source setup view SHALL contain a default values setup menu 
+that SHALL specify default values for panels that uses this datasource.
 
 ## Specifying Data Source Name
 
@@ -246,7 +268,7 @@ The [Plugin] SHALL support specifying a data source name by using the `Name` tex
 version: 1.0
 
 The [Plugin] SHALL support specifying the data source as default by using the `Default` toggle in the data source setup view.
-The default data source SHALL be preselected in new pannels.
+The default data source SHALL be preselected in new panels.
 
 ## Specifying HTTP Connection
 
@@ -812,9 +834,9 @@ setuping variables in the `Variables` tab. The [Plugin] SHALL support the follow
 version: 1.0
 
 The [Plugin] SHALL support [Grafana] annotations setup for dashboards by clicking gear button and 
-setuping variables in the `Annotations` tab.
+setting up variables in the `Annotations` tab.
 
-## Setaping Alerts
+## Setting up Alerts
 
 ### RQ.SRS.Plugin.Alerts
 version: 1.0
@@ -827,18 +849,18 @@ version: 1.0
 
 The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in alert setup page.
 
-### RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged
+### RQ.SRS.Plugin.Alerts.UnifiedAlerts
 version: 1.0
 
-The [Plugin] SHALL support `Grafana-managed` rule type by choosing rule type in alert setup page. 
-This alert SHALL be captured by grafana.
+The [Plugin] SHALL support unified alerts defined in `Alerting > Alert rules` page.
 
 
-### RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged
+### RQ.SRS.Plugin.Alerts.LegacyAlerts
 version: 1.0
 
-The [Plugin] SHALL support `Data source-managed` rule type by choosing rule type in alert setup page. 
-This alert SHALL be captured by data source.
+The [Plugin] SHALL support legacy alerts for grafana version less or equal 10.
+This Alerts SHALL be defined in panel page for each individual panel.
+
 
 ## Functions
 

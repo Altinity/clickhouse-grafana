@@ -280,7 +280,8 @@ class Locators:
     @property
     def alert_tab(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Tab Alert"]')
+        # return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Tab Alert"]')
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Tab Alert"]')
 
 
 locators = Locators()

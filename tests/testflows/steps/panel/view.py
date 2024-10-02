@@ -1,6 +1,7 @@
 from testflows.core import *
 from testflows.asserts import error
 
+from regression import grafana_version
 from steps.delay import delay
 from steps.panel.locators import locators
 from selenium.webdriver import ActionChains
@@ -429,7 +430,7 @@ def click_table_view_toggle(self):
 def click_alert_tab(self):
     """Click alert tab."""
 
-    locators.alert_tab.click()
+    locators.alert_tab(grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(Then)

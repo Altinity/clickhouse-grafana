@@ -33,19 +33,22 @@ def create_dashboard(self, dashboard_name, open_it=True):
     try:
         for attempt in retries(delay=10, timeout=120):
             with attempt:
-                with delay():
-                    with When("I open new dashboard view"):
+                with When("I open new dashboard view"):
+                    with delay():
                         dashboard.open_new_dashboard_endpoint()
 
                 with And("I save new dashboard"):
-                    dashboard.saving_dashboard(dashboard_name=dashboard_name)
+                    with delay():
+                        dashboard.saving_dashboard(dashboard_name=dashboard_name)
 
                 with Then("I check dashboard created"):
-                    dashboards.check_dashboard_exists(dashboard_name=dashboard_name)
+                    with delay():
+                        dashboards.check_dashboard_exists(dashboard_name=dashboard_name)
 
                 if open_it:
                     with Then("I open dashboard"):
-                        dashboards.open_dashboard(dashboard_name=dashboard_name)
+                        with delay():
+                            dashboards.open_dashboard(dashboard_name=dashboard_name)
         yield
     finally:
         with Finally(f"I delete dashboard {dashboard_name}"):

@@ -272,6 +272,11 @@ def check_red_into_green_alert(self):
 
 
 @TestFeature
+@Requirements(
+    RQ_SRS_Plugin_Alerts("1.0"),
+    RQ_SRS_Plugin_Alerts_AlertSetupPage("1.0"),
+    RQ_SRS_Plugin_Alerts_LegacyAlerts("1.0"),
+)
 @Name("legacy alerts")
 def feature(self):
     """Check that grafana plugin supports legacy alerts."""

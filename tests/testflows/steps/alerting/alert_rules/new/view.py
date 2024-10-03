@@ -60,6 +60,14 @@ def enter_expression_param(self, expression_name, param_name, param_value):
 
 
 @TestStep(When)
+def enter_expression_textfield(self, expression_name, textfield_value):
+    """Enter textfield parameter for expression."""
+
+    locators.expression_textfield(expression_name=expression_name).clear()
+    locators.expression_textfield(expression_name=expression_name).send_keys(textfield_value)
+
+
+@TestStep(When)
 def click_add_expression_button(self):
     """Click add expression button."""
 
@@ -84,6 +92,7 @@ def click_new_folder_button(self):
 def enter_new_folder_name(self, folder_name):
     """Click new folder button."""
 
+    locators.new_folder_name_textfield.click()
     locators.new_folder_name_textfield.send_keys(folder_name)
 
 
@@ -119,6 +128,8 @@ def enter_new_evaluation_group_name_textfield(self, group_name):
 def enter_new_evaluation_group_interval_textfield(self, interval):
     """Enter new evaluation group interval textfield."""
 
+
+    locators.new_evaluation_group_interval_textfield.clear()
     locators.new_evaluation_group_interval_textfield.send_keys(interval)
 
 
@@ -133,5 +144,26 @@ def click_new_evaluation_group_create_button(self):
 def enter_contact_point_textfield(self, contact_point):
     """Enter contact point textfield."""
 
+    locators.contact_point_textfield.click()
     locators.contact_point_textfield.send_keys(contact_point)
+    locators.contact_point_textfield.send_keys(Keys.ENTER)
 
+@TestStep(When)
+def enter_pending_period_textfield(self, pending_period):
+    """Enter pending period."""
+
+    locators.pending_period_textfield.clear()
+    locators.pending_period_textfield.send_keys(pending_period)
+
+@TestStep(When)
+def click_save_rule_and_exit_button(self):
+    """Click `Save rule and exit` button."""
+
+    locators.save_rule_and_exit_button.click()
+
+@TestStep(When)
+def enter_alert_name(self, alert_name):
+    """Enter alert name textfield."""
+
+    locators.alert_name_textfield.clear()
+    locators.alert_name_textfield.send_keys(alert_name)

@@ -60,10 +60,12 @@ def open_dashboard_view(self, dashboard_name):
 def open_dashboards_view(self, wait_dashboard_name="clickhouse dashboard"):
     """Open dashboards view and wait it to be loaded."""
     with When("I go to dashboards endpoint"):
-        open_dashboards_endpoint()
+        with delay():
+            open_dashboards_endpoint()
 
     with And("I wait submit button to be clickable"):
-        wait_dashboard(dashboard_name=wait_dashboard_name)
+        with delay():
+            wait_dashboard(dashboard_name=wait_dashboard_name)
 
 
 @TestStep(When)

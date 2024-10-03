@@ -439,7 +439,7 @@ def check_default_values(
         default_column_timestamp_type="DateTime",
         default_datetime_field="EventTime",
         default_timestamp_field="level",
-        default_datetime64_field=None,
+        default_datetime64_field="d64",
         default_date_field="EventDate",
         check_reformatted_query="SELECT 'EventDate', 'EventTime'",
 ):
@@ -470,7 +470,7 @@ def check_default_values(
         with delay():
             panel.go_to_sql_editor()
 
-    with And("I enter query to SQL editor"):
+    with And("I enter query to SQL editor `SELECT '$dateCol', '$dateTimeCol'`"):
         panel.enter_sql_editor_input(query="SELECT '$dateCol', '$dateTimeCol'")
 
     with Then("I click Show generated SQL button",
@@ -530,9 +530,9 @@ def check_default_values_datetime64(self):
         default_column_timestamp_type="DateTime64",
         default_datetime_field=None,
         default_timestamp_field=None,
-        default_datetime64_field="d",
+        default_datetime64_field="d64",
         default_date_field="EventDate",
-        check_reformatted_query="SELECT 'EventDate', 'd'",
+        check_reformatted_query="SELECT 'EventDate', 'd64'",
     )
 
 

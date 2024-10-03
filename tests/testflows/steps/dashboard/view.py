@@ -263,10 +263,10 @@ def add_visualization(self):
     """Add visualization for dashboard."""
 
     with delay():
-        with By("Clicking add button"):
+        with By("clicking add button"):
             click_add_button()
 
-    with By("Clicking add visualization button"):
+    with By("clicking add visualization button"):
         click_add_visualization_button()
 
 

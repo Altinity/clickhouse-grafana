@@ -60,8 +60,15 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
           if (!item || !item.type || !item.name) {
             return acc;
           }
-          acc[item.type] = acc[item.type] || [];
-          acc[item.type].push(item.name);
+          let typeKey: string = item.type;
+          if (typeKey.startsWith('DateTime64(')) {
+            typeKey = 'DateTime64';
+          }
+          if (typeKey.startsWith('DateTime(')) {
+            typeKey = 'DateTime';
+          }
+          acc[typeKey] = acc[typeKey] || [];
+          acc[typeKey].push(item.name);
           return acc;
         }, {});
 
@@ -75,9 +82,7 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
         };
 
         // Set default options, ensuring the grouped data exists
-        setDefaultDateTime64Options(
-          transformDataToOptions(groupedByType['DateTime64(6)'] || [])
-        );
+        setDefaultDateTime64Options(transformDataToOptions(groupedByType['DateTime64'] || []));
         setDefaultDateDate32Options(
           transformDataToOptions(groupedByType['Date'] || [])
         );

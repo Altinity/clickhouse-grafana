@@ -97,14 +97,16 @@ def delete_dashboard(self, dashboard_name):
         open_dashboards_view()
 
     with By("selecting dashboard"):
-        click_dashboard_checkmark(dashboard_name=dashboard_name)
+        with delay():
+            click_dashboard_checkmark(dashboard_name=dashboard_name)
 
-    with delay():
-        with By("clicking delete button"):
+    with By("clicking delete button"):
+        with delay():
             click_delete_button()
 
     with By("entering confirmation"):
-        enter_delete_conformation()
+        with delay():
+            enter_delete_conformation()
 
     with By("clicking delete button in confirmation window"):
         click_delete_confirmation_button()

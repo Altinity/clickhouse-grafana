@@ -483,6 +483,10 @@ def check_default_values(
 
 
 @TestScenario
+@Requirements(
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup("1.0")
+)
 def check_default_values_datetime(self):
     """Check that plugin supports setting up default values with DateTime timestamp type."""
 
@@ -497,6 +501,10 @@ def check_default_values_datetime(self):
 
 
 @TestScenario
+@Requirements(
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup("1.0")
+)
 def check_default_values_timestamp(self):
     """Check that plugin supports setting up default values with timestamp default timestamp type."""
 
@@ -511,6 +519,10 @@ def check_default_values_timestamp(self):
 
 
 @TestScenario
+@Requirements(
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup("1.0")
+)
 def check_default_values_datetime64(self):
     """Check that plugin supports setting up default values with DateTime64 timestamp type."""
 

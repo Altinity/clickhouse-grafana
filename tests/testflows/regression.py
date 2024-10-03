@@ -110,6 +110,7 @@ def regression(self, before, after):
     Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
     Feature(run=load("testflows.tests.automated.e2e", "feature"))
     Feature(run=load("testflows.tests.automated.query_settings", "feature"))
+    Feature(run=load("testflows.tests.automated.unified_alerts", "feature"))
 
     self.context.grafana_version = "10.4.3"
     with Given("I define endpoint with grafana version that contains legacy alerts"):

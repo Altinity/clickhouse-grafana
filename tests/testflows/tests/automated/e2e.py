@@ -131,6 +131,7 @@ def mixed_data_sources(self):
 
 
 @TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),)
 def default_values_not_affect_url_textfield(self):
     """Check that default values not affect to url textfield in datasource setup."""
 

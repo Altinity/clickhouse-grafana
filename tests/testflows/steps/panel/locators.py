@@ -277,10 +277,12 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, f'//*[text()="{time}"]/../[1]')
 
-    @property
-    def alert_tab(self):
+    def alert_tab(self, grafana_version=None):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Tab Alert"]')
+        if not(grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+            return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Tab Alert"]')
+        else:
+            return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Tab Alert"]')
 
 
 locators = Locators()

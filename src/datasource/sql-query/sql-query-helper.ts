@@ -288,11 +288,11 @@ export class SqlQueryHelper {
   }
 
   static escapeTableIdentifier(identifier: string): string {
-    return /^[a-zA-Z][0-9a-zA-Z_]+$/.test(identifier) ? identifier : `\`${identifier.replace(/`/g, '\\`')}\``;
+    return /^[a-zA-Z][0-9a-zA-Z_]*$/.test(identifier) ? identifier : `\`${identifier.replace(/`/g, '\\`')}\``;
   }
 
   static escapeIdentifier(identifier: string): string {
-    return /^[a-zA-Z][0-9a-zA-Z_]+$/.test(identifier) || /\(.*\)/.test(identifier) || /[\/*+\-]/.test(identifier)
+    return /^[a-zA-Z][0-9a-zA-Z_]*$/.test(identifier) || /\(.*\)/.test(identifier) || /[\/*+\-]/.test(identifier)
       ? identifier
       : `"${identifier.replace(/"/g, '\\"')}"`;
   }

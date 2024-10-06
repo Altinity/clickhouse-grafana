@@ -225,3 +225,17 @@ SETTINGS index_granularity = 8192, ttl_only_drop_parts = 1;
 INSERT INTO test.map_table values (now(), 'id1', {'key1': 'value1', 'key2':'value2'});
 INSERT INTO test.map_table values (now(), 'id2', {'key1': 'value1', 'key2':'value2'});
 INSERT INTO test.map_table values (now(), 'id2', {'key1': 'value1', 'key2':'value2'});
+
+CREATE TABLE test.test_timezone
+(
+  dt   Date,
+  tm   DateTime('Europe/Moscow'),
+  tm64 DateTime64(3, 'Europe/Moscow'),
+  v    UInt64
+) ENGINE=MergeTree
+PARTITION BY toYYYYMM(dt)
+ORDER BY (dt, tm);
+
+INSERT INTO test.test_timezone
+SELECT today() AS dt, toDateTime(dt + INTERVAL number SECOND), toDateTime(dt + INTERVAL number SECOND), rand()
+FROM numbers(86400);

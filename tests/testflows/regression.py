@@ -52,7 +52,6 @@ grafana_version = ""
 
 
 @TestModule
-@Repeat(10)
 @Name("Grafana Datasource Plugin For Clickhouse")
 @ArgumentParser(argparser)
 @Specifications(QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse)
@@ -63,6 +62,7 @@ grafana_version = ""
     RQ_SRS_Plugin_DockerComposeEnvironment("1.0"),
     RQ_SRS_Plugin_VersionCompatibility("1.0")
 )
+@Repeat(10)
 def regression(self, before, after):
     self.context.browser = "chrome"
     self.context.local = False

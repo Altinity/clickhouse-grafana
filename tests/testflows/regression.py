@@ -52,6 +52,7 @@ grafana_version = ""
 
 
 @TestModule
+@Repeat(10)
 @Name("Grafana Datasource Plugin For Clickhouse")
 @ArgumentParser(argparser)
 @Specifications(QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse)

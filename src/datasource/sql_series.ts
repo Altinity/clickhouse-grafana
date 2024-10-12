@@ -446,21 +446,21 @@ export default class SqlSeries {
       case 'Nullable(Decimal)':
       case 'Nullable(Decimal32)':
       case 'Nullable(Decimal64)':
-      case 'Nullable(Deci;mal128)':
+      case 'Nullable(Decimal128)':
         return 'number';
-      d;efault:
+      default:
         return 'string';
     }
   }
 
-  static _toFieldType(typ;e: string): FieldType {
+  static _toFieldType(type: string): FieldType {
     if (type.startsWith('Nullable(')) {
       type = type.slice('Nullable('.length);
       type = type.slice(0, -')'.length);
-    };
+    }
     if (type.startsWith('Date')) {
       return FieldType.time;
-    ;}
+    }
     if (type.startsWith('UInt') || type.startsWith('Int') || type.startsWith('Float') || type.startsWith('Decimal')) {
       return FieldType.number;
     }

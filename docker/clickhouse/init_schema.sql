@@ -238,5 +238,6 @@ PARTITION BY toYYYYMM(dt)
 ORDER BY (dt, tm);
 
 INSERT INTO test.test_timezone
-SELECT today() AS dt, toDateTime(dt + INTERVAL number SECOND), toDateTime64(dt + INTERVAL number SECOND), rand(), 'line ' || number
+SELECT today() AS dt,
+       dt + INTERVAL number SECOND, dt + INTERVAL number SECOND + INTERVAL number % 100 MILLISECOND, rand(), 'line ' || number
 FROM numbers(86400);

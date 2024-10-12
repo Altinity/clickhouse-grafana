@@ -231,11 +231,12 @@ CREATE TABLE test.test_timezone
   dt   Date,
   tm   DateTime('Europe/Moscow'),
   tm64 DateTime64(3, 'Europe/Moscow'),
-  v    UInt64
+  v   UInt64,
+  log String
 ) ENGINE=MergeTree
 PARTITION BY toYYYYMM(dt)
 ORDER BY (dt, tm);
 
 INSERT INTO test.test_timezone
-SELECT today() AS dt, toDateTime(dt + INTERVAL number SECOND), toDateTime(dt + INTERVAL number SECOND), rand()
+SELECT today() AS dt, toDateTime(dt + INTERVAL number SECOND), toDateTime64(dt + INTERVAL number SECOND), rand(), 'line ' || number
 FROM numbers(86400);

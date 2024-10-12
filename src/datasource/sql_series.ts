@@ -46,7 +46,6 @@ export default class SqlSeries {
   }
 
   toTraces(): TraceData[] {
-
     let series: Trace[] = this.series; // Ensure 'this.series' is defined in the context where toTraces is called.
 
     function transformTraceData(inputData: Trace[]): TraceData[] {
@@ -62,7 +61,7 @@ export default class SqlSeries {
         serviceTags: { name: 'serviceTags', type: 'number', values: [], config: {} },
       };
 
-      inputData.forEach(span => {
+      inputData.forEach((span) => {
         fields.traceID.values.push(span.traceID);
         fields.spanID.values.push(span.spanID);
         fields.operationName.values.push(span.operationName);
@@ -70,22 +69,26 @@ export default class SqlSeries {
         fields.serviceName.values.push(span.serviceName);
         fields.startTime.values.push(parseInt(span.startTime.toString(), 10));
         fields.duration.values.push(parseInt(span.duration.toString(), 10));
-        fields.tags.values.push(Object.entries(span.tags).map(([key, value]) => ({key: key, value: value})));
-        fields.serviceTags.values.push(Object.entries(span.serviceTags).map(([key, value]) => ({key: key, value: value})));
+        fields.tags.values.push(Object.entries(span.tags).map(([key, value]) => ({ key: key, value: value })));
+        fields.serviceTags.values.push(
+          Object.entries(span.serviceTags).map(([key, value]) => ({ key: key, value: value }))
+        );
         // Handle other fields if required
       });
 
-      return [{
-        fields: Object.values(fields),
-        length: inputData.length
-      }];
+      return [
+        {
+          fields: Object.values(fields),
+          length: inputData.length,
+        },
+      ];
     }
 
     return transformTraceData(series);
   }
 
   toAnnotation(input): any[] {
-    let series: any[] = input
+    let series: any[] = input;
 
     function transformAnnotationData(inputData: any): any[] {
       const fields: { [key: string]: Field } = {
@@ -96,7 +99,7 @@ export default class SqlSeries {
         tags: { name: 'tags', type: 'array', values: [], config: {} },
       };
 
-      inputData.forEach(annotation => {
+      inputData.forEach((annotation) => {
         fields.time.values.push(parseInt(annotation.time, 10));
         fields.timeEnd.values.push(parseInt(annotation.time_end, 10));
         fields.title.values.push(annotation.title);
@@ -104,10 +107,12 @@ export default class SqlSeries {
         fields.tags.values.push(annotation.tags.split(',')); // Split tags into an array
       });
 
-      return [{
-        fields: Object.values(fields),
-        length: inputData.length // Using the provided rows count
-      }];
+      return [
+        {
+          fields: Object.values(fields),
+          length: inputData.length, // Using the provided rows count
+        },
+      ];
     }
 
     return transformAnnotationData(series);
@@ -132,21 +137,25 @@ export default class SqlSeries {
       const series: FlamegraphData[] = this.series;
       return transformTraceData(series);
     } catch (error: any) {
-      return [{
-        fields: [{
-          name: 'error',
-          type: 'string',
-          values: [error?.message],
-          config: {}
-        }],
-        length: 1
-      }];
+      return [
+        {
+          fields: [
+            {
+              name: 'error',
+              type: 'string',
+              values: [error?.message],
+              config: {},
+            },
+          ],
+          length: 1,
+        },
+      ];
     }
 
     function transformTraceData(inputData: FlamegraphData[]): any {
-      const sortedData = inputData.filter(item => {
-        return !(Number(item.level) === 0)
-      })
+      const sortedData = inputData.filter((item) => {
+        return !(Number(item.level) === 0);
+      });
 
       const fields: { [key: string]: Field } = {
         label: { name: 'label', type: 'string', values: ['all'], config: {} },
@@ -155,23 +164,25 @@ export default class SqlSeries {
         self: { name: 'self', type: 'number', values: [0], config: {} },
       };
 
-      const totalValue = inputData.filter(item => Number(item.level) === 1).reduce((acc, item) => {
-        return acc + Number(item.value);
-      }, 0);
+      fields.value.values[0] = inputData
+        .filter((item) => Number(item.level) === 1)
+        .reduce((acc, item) => {
+          return acc + Number(item.value);
+        }, 0);
 
-      fields.value.values[0] = totalValue;
-
-      sortedData.forEach(item => {
+      sortedData.forEach((item) => {
         fields.label.values.push(item.label);
         fields.level.values.push(Number(item.level));
         fields.value.values.push(Number(item.value));
         fields.self.values.push(item.self);
       });
 
-      return [{
-        fields: Object.values(fields),
-        length: inputData.length
-      }];
+      return [
+        {
+          fields: Object.values(fields),
+          length: inputData.length,
+        },
+      ];
     }
   }
 
@@ -184,14 +195,14 @@ export default class SqlSeries {
 
     let columns: any[] = [];
     each(self.meta, function (col) {
-      columns.push({ text: col.name, type: SqlSeries._toJSType(col.type) });
+      columns.push({ text: col.name, type: SqlSeries._toJSTypeInTable(col.type) });
     });
 
     let rows: any[] = [];
     each(self.series, function (ser) {
       let r: any[] = [];
       each(columns, function (col, index) {
-        r.push(SqlSeries._formatValueByType(ser[col.text], SqlSeries._toJSType(self.meta[index].type)));
+        r.push(SqlSeries._formatValueByType(ser[col.text], SqlSeries._toJSTypeInTable(self.meta[index].type)));
       });
       rows.push(r);
     });
@@ -232,7 +243,7 @@ export default class SqlSeries {
       let type = SqlSeries._toFieldType(col.type);
       // Assuming that fist column is time
       // That's special case for 'Column:TimeStamp'
-      if (index === 0 && col.type === 'UInt64') {
+      if (index === 0 && col.type.startsWith('UInt')) {
         type = FieldType.time;
       }
       if (type === FieldType.string && col.name !== messageField && !reservedFields.includes(col.name)) {
@@ -291,19 +302,21 @@ export default class SqlSeries {
       let metricKey: any = null;
 
       if (keyColumns.length > 0) {
-        metricKey = keyColumns.map((name: string) => {
-          const value = row[name];
+        metricKey = keyColumns
+          .map((name: string) => {
+            const value = row[name];
 
-          if (typeof value === 'undefined') {
-            return undefined;
-          }
+            if (typeof value === 'undefined') {
+              return undefined;
+            }
 
-          if (typeof value === 'object') {
-            return JSON.stringify(value);
-          } else {
-            return String(value);
-          }
-        }).join(', ');
+            if (typeof value === 'object') {
+              return JSON.stringify(value);
+            } else {
+              return String(value);
+            }
+          })
+          .join(', ');
       }
 
       /* Make sure all series end with a value or nil for current timestamp
@@ -404,7 +417,7 @@ export default class SqlSeries {
     metrics[key].push([SqlSeries._formatValue(value), timestamp]);
   }
 
-  static _toJSType(type: any): string {
+  static _toJSTypeInTable(type: any): string {
     switch (type) {
       case 'UInt8':
       case 'UInt16':
@@ -433,63 +446,28 @@ export default class SqlSeries {
       case 'Nullable(Decimal)':
       case 'Nullable(Decimal32)':
       case 'Nullable(Decimal64)':
-      case 'Nullable(Decimal128)':
+      case 'Nullable(Deci;mal128)':
         return 'number';
-      default:
+      d;efault:
         return 'string';
     }
   }
 
-  static _toFieldType(type: string): FieldType {
-    switch (type) {
-      case 'UInt8':
-      case 'UInt16':
-      case 'UInt32':
-      case 'UInt64':
-      case 'Int8':
-      case 'Int16':
-      case 'Int32':
-      case 'Int64':
-      case 'Float32':
-      case 'Float64':
-      case 'Decimal':
-      case 'Decimal32':
-      case 'Decimal64':
-      case 'Decimal128':
-      case 'Nullable(UInt8)':
-      case 'Nullable(UInt16)':
-      case 'Nullable(UInt32)':
-      case 'Nullable(UInt64)':
-      case 'Nullable(Int8)':
-      case 'Nullable(Int16)':
-      case 'Nullable(Int32)':
-      case 'Nullable(Int64)':
-      case 'Nullable(Float32)':
-      case 'Nullable(Float64)':
-      case 'Nullable(Decimal)':
-      case 'Nullable(Decimal32)':
-      case 'Nullable(Decimal64)':
-      case 'Nullable(Decimal128)':
-        return FieldType.number;
-      case 'Date':
-      case 'DateTime':
-      case 'DateTime64':
-      case 'DateTime64(3)':
-      case 'DateTime64(6)':
-      case 'Nullable(Date)':
-      case 'Nullable(DateTime)':
-      case 'Nullable(DateTime64)':
-      case 'Nullable(DateTime64(3))':
-      case 'Nullable(DateTime64(6))':
-        return FieldType.time;
-      case 'IPv6':
-      case 'IPv4':
-      case 'Nullable(IPv6)':
-      case 'Nullable(IPv4)':
-        return FieldType.other;
-      default:
-        return FieldType.string;
+  static _toFieldType(typ;e: string): FieldType {
+    if (type.startsWith('Nullable(')) {
+      type = type.slice('Nullable('.length);
+      type = type.slice(0, -')'.length);
+    };
+    if (type.startsWith('Date')) {
+      return FieldType.time;
+    ;}
+    if (type.startsWith('UInt') || type.startsWith('Int') || type.startsWith('Float') || type.startsWith('Decimal')) {
+      return FieldType.number;
     }
+    if (type.startsWith('IPv')) {
+      return FieldType.other;
+    }
+    return FieldType.string;
   }
 
   static _formatValue(value: any) {

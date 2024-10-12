@@ -19,7 +19,6 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 42,
   "links": [],
   "panels": [
     {
@@ -131,6 +130,58 @@
       ],
       "title": "Time Zone DateTime - tm ",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": false,
+        "prettifyLogMessage": false,
+        "showCommonLabels": true,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Ascending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "test",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "dt",
+          "dateTimeColDataType": "tm64",
+          "dateTimeType": "DATETIME64",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "logs",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT tm64 AS timestamp, log AS message FROM $table WHERE $timeFilter",
+          "rawQuery": "/* grafana dashboard=test timezone, user=0 */\nSELECT t64 AS timestamp, log AS message FROM test.test_timezone WHERE dt >= toDate(1728624977) AND dt <= toDate(1728711377) AND tm64 >= toDateTime64(1728624977, 3) AND tm64 <= toDateTime64(1728711377, 3)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_timezone"
+        }
+      ],
+      "title": "Test Log with DateTime64 Time zone",
+      "type": "logs"
     }
   ],
   "schemaVersion": 39,
@@ -146,6 +197,6 @@
   "timezone": "browser",
   "title": "test timezone",
   "uid": "cdzs6vt6boni8d",
-  "version": 2,
+  "version": 20241012,
   "weekStart": ""
 }

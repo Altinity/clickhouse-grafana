@@ -21,11 +21,14 @@ const _toFieldType = (type: string, index?: number): FieldType | Object => {
     type = type.slice(0, -')'.length);
   }
 
-  // Regex to match DateTime64 with timezone
-  const dateTime64WithTZRegex = /^DateTime64\(\d+,\s*'([^']+)'\)$/i;
-  const dateTime64WithTZMatch = type.match(dateTime64WithTZRegex);
-  if (dateTime64WithTZMatch) {
-    const timezone = dateTime64WithTZMatch[1];
+  // Regex patterns
+  const dateTimeCombinedRegexTrimmed = /^\s*DateTime(?:64)?\s*\(\s*(?:\d+\s*,\s*)?['"]([^'"]+)['"]\s*\)\s*$/i;
+
+  const dateTimeWithTZMatch = type.match(dateTimeCombinedRegexTrimmed);
+
+  let timezone;
+  if (dateTimeWithTZMatch) {
+    timezone = dateTimeWithTZMatch[1];
     return { fieldType: FieldType.time, timezone };
   }
 
@@ -79,7 +82,7 @@ export const toLogs = (self: any): DataFrame[] => {
     types[col.name] = type;
   });
 
-  each(self.series, function (ser: any) {
+  each(self.series.slice(0,1000), function (ser: any) {
     const frame = new MutableDataFrame({
       refId: self.refId,
       meta: {
@@ -122,5 +125,6 @@ export const toLogs = (self: any): DataFrame[] => {
     dataFrame.push(frame);
   });
 
+  console.log(dataFrame)
   return dataFrame;
 }

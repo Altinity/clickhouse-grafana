@@ -364,6 +364,7 @@ export default class SqlSeries {
       averageDurationBetweenSamples = sampledInterval / (datapoints.length - 1);
 
     let diff;
+    let extrapolatedBound;
     // close to left border and value is 0 because of runningDifference function
     if (durationToStart < averageDurationBetweenSamples && datapoints[0][0] === 0) {
       diff = ((datapoints[1][0] - datapoints[2][0]) / datapoints[1][0]) * 0.1;
@@ -371,7 +372,10 @@ export default class SqlSeries {
       if (isNaN(diff)) {
         diff = 0;
       }
-      datapoints[0][0] = datapoints[1][0] * (1 + diff);
+      extrapolatedBound = datapoints[1][0] * (1 + diff);
+      if (!(isNaN(extrapolatedBound))) {
+          datapoints[0][0] = extrapolatedBound
+      }
     }
 
     if (durationToEnd < averageDurationBetweenSamples) {
@@ -381,7 +385,10 @@ export default class SqlSeries {
       if (isNaN(diff)) {
         diff = 0;
       }
-      datapoints[l - 1][0] = datapoints[l - 2][0] * (1 + diff);
+      extrapolatedBound = datapoints[l - 2][0] * (1 + diff);
+      if (!(isNaN(extrapolatedBound))) {
+          datapoints[l - 1][0] = extrapolatedBound
+      }
     }
 
     return datapoints;

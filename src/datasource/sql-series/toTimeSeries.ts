@@ -1,4 +1,6 @@
 import {each, isArray} from "lodash";
+import {_toFieldType, convertTimezonedDateToUTC} from "./sql_series";
+import {FieldType} from "@grafana/data";
 
 
 const _formatValue = (value: any) => {
@@ -83,6 +85,8 @@ export const toTimeSeries = (extrapolate = true, self): any =>  {
   let metrics: { [key: string]: any[] } = {};
   // timeCol have to be the first column always
   let timeCol = self.meta[0];
+  let timeColType = _toFieldType(timeCol.type || '')
+
   let lastTimeStamp = self.series[0][timeCol.name];
   let keyColumns = self.keys.filter((name: string) => {
     return name !== timeCol.name;
@@ -131,6 +135,10 @@ export const toTimeSeries = (extrapolate = true, self): any =>  {
       if (metricKey) {
         key = metricKey;
       }
+      if (timeColType?.fieldType === FieldType.time) {
+        t = convertTimezonedDateToUTC(t, timeColType.timezone)
+      }
+
       if (isArray(val)) {
         /* Expand groupArray into multiple timeseries */
         each(val, function (arr) {

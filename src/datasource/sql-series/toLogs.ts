@@ -1,18 +1,8 @@
 import {DataFrame, FieldType, MutableDataFrame} from "@grafana/data";
 import {each, find, omitBy, pickBy} from "lodash";
-import { DateTime } from 'luxon';
+import {convertTimezonedDateToUTC} from "./sql_series";
 
 
-
-const convertTimezonedDateToUTC = (localDateTime, timeZone) => {
-  // Parse the datetime string in the specified timezone
-  const dt = DateTime.fromFormat(localDateTime, "yyyy-MM-dd HH:mm:ss.SSS", { zone: timeZone });
-
-  // Convert to UTC
-  const utcDateTime = dt.toUTC().toISO();
-
-  return utcDateTime;
-}
 
 
 const _toFieldType = (type: string, index?: number): FieldType | Object => {

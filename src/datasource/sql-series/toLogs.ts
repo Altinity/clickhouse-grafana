@@ -26,7 +26,6 @@ const _toFieldType = (type: string, index?: number): FieldType | Object => {
   const dateTime64WithTZMatch = type.match(dateTime64WithTZRegex);
   if (dateTime64WithTZMatch) {
     const timezone = dateTime64WithTZMatch[1];
-    console.log('Matched', { fieldType: FieldType.time, timezone })
     return { fieldType: FieldType.time, timezone };
   }
 

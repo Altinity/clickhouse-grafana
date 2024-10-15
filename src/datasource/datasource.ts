@@ -1,5 +1,5 @@
 import _, { curry, each } from 'lodash';
-import SqlSeries from './sql_series';
+import SqlSeries from './sql-series/sql_series';
 import SqlQuery from './sql-query/sql_query';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';

@@ -1,7 +1,7 @@
 import {DataFrame, FieldType, MutableDataFrame} from "@grafana/data";
 import {each, find, omitBy, pickBy} from "lodash";
 
-const _toFieldType = (type: string): FieldType => {
+const _toFieldType = (type: string, index?: number): FieldType => {
   if (type.startsWith('Nullable(')) {
     type = type.slice('Nullable('.length);
     type = type.slice(0, -')'.length);
@@ -9,6 +9,12 @@ const _toFieldType = (type: string): FieldType => {
   if (type.startsWith('Date')) {
     return FieldType.time;
   }
+  // Assuming that fist column is time
+  // That's special case for 'Column:TimeStamp'
+  if (index === 0 && type.startsWith('UInt')) {
+    return FieldType.time;
+  }
+
   if (type.startsWith('UInt') || type.startsWith('Int') || type.startsWith('Float') || type.startsWith('Decimal')) {
     return FieldType.number;
   }
@@ -41,12 +47,8 @@ export const toLogs = (self: any): DataFrame[] => {
   }
 
   each(self.meta, function (col: any, index: number) {
-    let type = _toFieldType(col.type);
-    // Assuming that fist column is time
-    // That's special case for 'Column:TimeStamp'
-    if (index === 0 && col.type.startsWith('UInt')) {
-      type = FieldType.time;
-    }
+    let type = _toFieldType(col.type, index);
+
     if (type === FieldType.string && col.name !== messageField && !reservedFields.includes(col.name)) {
       labelFields.push(col.name);
     }

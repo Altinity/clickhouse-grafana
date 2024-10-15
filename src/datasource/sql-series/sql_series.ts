@@ -120,6 +120,6 @@ export default class SqlSeries {
   }
 
   toTraces = (): any => {
-    return toTraces(this.series);
+    return toTraces(this.series, this.meta);
   }
 }

@@ -1,4 +1,5 @@
-import {Field} from "./sql_series";
+import {_toFieldType, convertTimezonedDateToUTC, Field} from "./sql_series";
+import {FieldType} from "@grafana/data";
 
 interface TraceData {
   fields: Field[];
@@ -17,8 +18,11 @@ interface Trace {
   serviceTags: object[];
 }
 
-export const toTraces = (series: Trace[]): TraceData[] => {
+export const toTraces = (series: Trace[], meta: any): TraceData[] => {
   function transformTraceData(inputData: Trace[]): TraceData[] {
+    let timeCol = meta.find(item => item.name === 'startTime');
+    let timeColType = _toFieldType(timeCol.type || '')
+
     const fields: { [key: string]: Field } = {
       traceID: { name: 'traceID', type: 'string', values: [], config: {} },
       spanID: { name: 'spanID', type: 'string', values: [], config: {} },
@@ -32,12 +36,19 @@ export const toTraces = (series: Trace[]): TraceData[] => {
     };
 
     inputData.forEach((span) => {
+      const isTimeWithTimezone = timeColType?.fieldType === FieldType.time
+
+      let startTimeProcessed;
+      if (isTimeWithTimezone) {
+        startTimeProcessed = convertTimezonedDateToUTC(span.startTime, timeColType.timezone)
+      }
+
       fields.traceID.values.push(span.traceID);
       fields.spanID.values.push(span.spanID);
       fields.operationName.values.push(span.operationName);
       fields.parentSpanID.values.push(span.parentSpanID || null); // Assuming null if undefined
       fields.serviceName.values.push(span.serviceName);
-      fields.startTime.values.push(parseInt(span.startTime.toString(), 10));
+      fields.startTime.values.push(isTimeWithTimezone ? startTimeProcessed : parseInt(span.startTime.toString(), 10));
       fields.duration.values.push(parseInt(span.duration.toString(), 10));
       fields.tags.values.push(Object.entries(span.tags).map(([key, value]) => ({ key: key, value: value })));
       fields.serviceTags.values.push(

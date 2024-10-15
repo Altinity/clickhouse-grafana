@@ -1,11 +1,35 @@
 import {DataFrame, FieldType, MutableDataFrame} from "@grafana/data";
 import {each, find, omitBy, pickBy} from "lodash";
+import { DateTime } from 'luxon';
 
-const _toFieldType = (type: string, index?: number): FieldType => {
+
+
+const convertTimezonedDateToUTC = (localDateTime, timeZone) => {
+  // Parse the datetime string in the specified timezone
+  const dt = DateTime.fromFormat(localDateTime, "yyyy-MM-dd HH:mm:ss.SSS", { zone: timeZone });
+
+  // Convert to UTC
+  const utcDateTime = dt.toUTC().toISO();
+
+  return utcDateTime;
+}
+
+
+const _toFieldType = (type: string, index?: number): FieldType | Object => {
   if (type.startsWith('Nullable(')) {
     type = type.slice('Nullable('.length);
     type = type.slice(0, -')'.length);
   }
+
+  // Regex to match DateTime64 with timezone
+  const dateTime64WithTZRegex = /^DateTime64\(\d+,\s*'([^']+)'\)$/i;
+  const dateTime64WithTZMatch = type.match(dateTime64WithTZRegex);
+  if (dateTime64WithTZMatch) {
+    const timezone = dateTime64WithTZMatch[1];
+    console.log('Matched', { fieldType: FieldType.time, timezone })
+    return { fieldType: FieldType.time, timezone };
+  }
+
   if (type.startsWith('Date')) {
     return FieldType.time;
   }
@@ -71,14 +95,31 @@ export const toLogs = (self: any): DataFrame[] => {
       if (!(key in types)) {
         return;
       }
+
       if (key === messageField) {
         frame.addField({ name: key, type: types[key], labels: labels });
+      } else if (!labelFields.includes(key) && types[key].fieldType === FieldType.time) {
+        frame.addField({ name: key, type: FieldType.time });
       } else if (!labelFields.includes(key)) {
         frame.addField({ name: key, type: types[key] });
       }
     });
 
-    frame.add(omitBy(ser, (_value: any, key: string) => labelFields.includes(key)));
+    const data = omitBy(ser, (_value: any, key: string) => {
+      labelFields.includes(key)
+    });
+
+    const frameData = Object.entries(data).reduce((acc, [key, value]) => {
+      if (types[key].fieldType === FieldType.time) {
+        acc[key] = convertTimezonedDateToUTC(value, types[key].timezone);
+      } else {
+        acc[key] = value;
+      }
+
+      return acc
+    }, {});
+
+    frame.add(frameData);
     dataFrame.push(frame);
   });
 

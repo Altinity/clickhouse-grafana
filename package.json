@@ -30,6 +30,7 @@
     "@testing-library/react": "^12.1.4",
     "@types/jest": "^29.5.0",
     "@types/lodash": "^4.14.194",
+    "@types/luxon": "^3.4.2",
     "@types/node": "^18.15.11",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
@@ -62,6 +63,7 @@
     "@grafana/ui": "10.2.3",
     "jest-resolve": "^29.7.0",
     "lodash-es": "^4.17.21",
+    "luxon": "^3.5.0",
     "react": "17.0.2",
     "react-dom": "17.0.2",
     "tslib": "2.5.3"

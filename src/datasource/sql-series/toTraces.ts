@@ -1,4 +1,4 @@
-import {_toFieldType, convertTimezonedDateToUTC, Field} from "./sql_series";
+import {_toFieldType, convertTimezonedDateToUnixTimestamp, Field} from "./sql_series";
 import {FieldType} from "@grafana/data";
 
 interface TraceData {
@@ -40,7 +40,7 @@ export const toTraces = (series: Trace[], meta: any): TraceData[] => {
 
       let startTimeProcessed;
       if (isTimeWithTimezone) {
-        startTimeProcessed = convertTimezonedDateToUTC(span.startTime, timeColType.timezone)
+        startTimeProcessed = convertTimezonedDateToUnixTimestamp(span.startTime, timeColType.timezone)
       }
 
       fields.traceID.values.push(span.traceID);

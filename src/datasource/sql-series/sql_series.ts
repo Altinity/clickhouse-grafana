@@ -39,9 +39,36 @@ export const convertTimezonedDateToUTC = (localDateTime, timeZone) => {
   }
 
   // Parse the datetime string in the specified timezone
-  return parsedDateTime.toUTC().toISO();
+  return parsedDateTime.toUTC().toISO()
 }
 
+export const convertTimezonedDateToUnixTimestamp = (localDateTime, timeZone) => {
+  // Define supported datetime formats
+  const formats = [
+    "yyyy-MM-dd HH:mm:ss.SSS",
+    "yyyy-MM-dd HH:mm:ss.SSSSSS",
+    "yyyy-MM-dd HH:mm:ss.SSSSSSSSS",
+    "yyyy-MM-dd HH:mm:ss",
+    "MM/dd/yyyy HH:mm",
+    "dd-MM-yyyy HH:mm:ss",
+    "yyyy/MM/dd HH:mm:ss",
+    "MMM dd, yyyy HH:mm:ss",
+    // Add more formats as needed
+  ];
+
+  // Attempt to parse using the supported formats
+  const parsedDateTime = formats
+    .map(format => DateTime.fromFormat(localDateTime, format, { zone: timeZone }))
+    .find(dt => dt.isValid) || DateTime.fromISO(localDateTime, { zone: timeZone });
+
+  // Validate the parsing result
+  if (!parsedDateTime.isValid) {
+    throw new Error(`Invalid datetime format: "${localDateTime}"`);
+  }
+
+  // Parse the datetime string in the specified timezone
+  return parsedDateTime.toUTC().toMillis()
+}
 
 export const _toFieldType = (type: string, index?: number): FieldType | any => {
   if (type.startsWith('Nullable(')) {

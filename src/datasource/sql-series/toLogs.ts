@@ -82,7 +82,7 @@ export const toLogs = (self: any): DataFrame[] => {
     types[col.name] = type;
   });
 
-  each(self.series.slice(0,1000), function (ser: any) {
+  each(self.series, function (ser: any) {
     const frame = new MutableDataFrame({
       refId: self.refId,
       meta: {

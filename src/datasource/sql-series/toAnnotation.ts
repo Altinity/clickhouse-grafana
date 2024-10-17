@@ -17,7 +17,7 @@ export const toAnnotation = (input: any): any[] => {
       fields.timeEnd.values.push(parseInt(annotation.time_end, 10));
       fields.title.values.push(annotation.title);
       fields.text.values.push(annotation.text);
-      fields.tags.values.push(annotation.tags.split(',')); // Split tags into an array
+      fields.tags.values.push(annotation.tags ? annotation.tags.split(',') : []); // Split tags into an array
     });
 
     return [

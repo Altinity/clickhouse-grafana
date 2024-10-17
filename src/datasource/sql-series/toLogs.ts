@@ -100,9 +100,13 @@ export const toLogs = (self: any): DataFrame[] => {
     const data = omitBy(ser, (_value: any, key: string) => {
       labelFields.includes(key)
     });
-
     const frameData = Object.entries(data).reduce((acc, [key, value]) => {
-      if (types[key].fieldType === FieldType.time) {
+      if (
+        types[key] &&
+        types[key] instanceof Object &&
+        'fieldType' in types[key] &&
+        types[key].fieldType === FieldType.time
+      ) {
         acc[key] = convertTimezonedDateToUTC(value, types[key].timezone);
       } else {
         acc[key] = value;
@@ -115,6 +119,5 @@ export const toLogs = (self: any): DataFrame[] => {
     dataFrame.push(frame);
   });
 
-  console.log(dataFrame)
   return dataFrame;
 }

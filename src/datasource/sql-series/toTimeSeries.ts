@@ -86,7 +86,6 @@ export const toTimeSeries = (extrapolate = true, self): any =>  {
   // timeCol have to be the first column always
   let timeCol = self.meta[0];
   let timeColType = _toFieldType(timeCol.type || '')
-
   let lastTimeStamp = self.series[0][timeCol.name];
   let keyColumns = self.keys.filter((name: string) => {
     return name !== timeCol.name;

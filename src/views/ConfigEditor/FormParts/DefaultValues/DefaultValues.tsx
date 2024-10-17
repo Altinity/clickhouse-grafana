@@ -2,7 +2,9 @@ import {Alert, InlineField, InlineLabel, InlineSwitch, Select} from "@grafana/ui
 import React, {useEffect, useState} from "react";
 import {getOptions, getSettings} from "./DefaultValues.api";
 import {TimestampFormat} from "../../../../types/types";
-const TABLES_QUERY = "SELECT name,database,table,type FROM system.columns WHERE type LIKE 'Date32%'  OR type LIKE 'DateTime64%' OR type = 'UInt32' OR match(type,'^DateTime$|^DateTime\\\\([^)]+\\\\)$')  OR match(type,'^Date$|^Date\\([^)]+\\)$') ORDER BY type,name FORMAT JSON";
+
+const TIME_RELATED_COLUMNS_QUERY =
+  "SELECT name,database,table,type FROM system.columns WHERE type LIKE '%Date%' OR type LIKE '%DateTime%' OR type = 'UInt32' ORDER BY type,name FORMAT JSON";
 
 export const DefaultValues = ({
 jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
@@ -49,18 +51,22 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
         const basicAuth = currentDatasource.basicAuth;
         newOptions.basicAuth = newOptions.basicAuth ? basicAuth : newOptions.basicAuth;
 
-        // Fetch options data
-        const data = await getOptions(TABLES_QUERY, jsonData.dataSourceUrl, newOptions);
-        if (!data || !Array.isArray(data.data)) {
+        // Fetch options columns
+        const columns = await getOptions(TIME_RELATED_COLUMNS_QUERY, jsonData.dataSourceUrl, newOptions);
+        if (!columns || !Array.isArray(columns.data)) {
           return;
         }
 
-        // Group data by type
-        const groupedByType = data.data.reduce((acc, item) => {
+        // Group columns by type
+        const groupedByType = columns.data.reduce((acc, item) => {
           if (!item || !item.type || !item.name) {
             return acc;
           }
           let typeKey: string = item.type;
+          if (typeKey.startsWith('Nullable(')) {
+            typeKey = typeKey.slice('Nullable('.length);
+            typeKey = typeKey.slice(0, -')'.length);
+          }
           if (typeKey.startsWith('DateTime64(')) {
             typeKey = 'DateTime64';
           }
@@ -72,7 +78,7 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
           return acc;
         }, {});
 
-        // Function to transform data into options
+        // Function to transform columns into options
         const transformDataToOptions = (dataArray) => {
           if (!Array.isArray(dataArray)) {
             return [];
@@ -81,17 +87,11 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
           return uniqueItems.map((item) => ({ label: item, value: item }));
         };
 
-        // Set default options, ensuring the grouped data exists
+        // Set default options, ensuring the grouped columns exists
         setDefaultDateTime64Options(transformDataToOptions(groupedByType['DateTime64'] || []));
-        setDefaultDateDate32Options(
-          transformDataToOptions(groupedByType['Date'] || [])
-        );
-        setDefaultUint32Options(
-          transformDataToOptions(groupedByType['UInt32'] || [])
-        );
-        setDefaultDateTimeOptions(
-          transformDataToOptions(groupedByType['DateTime'] || [])
-        );
+        setDefaultDateDate32Options(transformDataToOptions(groupedByType['Date'] || []));
+        setDefaultUint32Options(transformDataToOptions(groupedByType['UInt32'] || []));
+        setDefaultDateTimeOptions(transformDataToOptions(groupedByType['DateTime'] || []));
       } catch (e) {
         setDefaultUint32Options([])
         setDefaultDateTimeOptions([])

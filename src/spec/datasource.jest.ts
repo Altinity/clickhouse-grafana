@@ -1,5 +1,5 @@
 import { size } from 'lodash';
-import SqlSeries from '../datasource/sql_series';
+import SqlSeries from '../datasource/sql-series/sql_series';
 import AdhocCtrl from '../datasource/adhoc';
 import ResponseParser from '../datasource/response_parser';
 import { FieldType, MutableDataFrame } from '@grafana/data';

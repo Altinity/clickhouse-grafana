@@ -19,9 +19,61 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 42,
+  "id": 20,
   "links": [],
   "panels": [
+    {
+      "datasource": {
+        "default": false,
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "reproduce https://github.com/Altinity/clickhouse-grafana/issues/625",
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "links": [
+        {
+          "targetBlank": true,
+          "title": "Trace Visualizations",
+          "url": "https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/traces/"
+        }
+      ],
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "finish_date",
+          "dateTimeColDataType": "intDiv(finish_time_us,1000000)",
+          "dateTimeType": "TIMESTAMP",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "traces",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    'clickhouse' AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    toDateTime64(start_time_us/1000000,3,'Europe/Moscow') AS startTime,\r\n    attribute AS tags,\r\n    map('hostName',hostname) AS serviceTags\r\nFROM\r\n   $table\r\nWHERE $timeFilter\r\nORDER BY traceID, startTime",
+          "rawQuery": "/* grafana dashboard=test timezone, user=0 */\nSELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    'clickhouse' AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    toDateTime64(start_time_us/1000000,3,'Europe/Moscow) AS startTime,\r\n    attribute AS tags,\r\n    map('hostName',hostname) AS serviceTags\r\nFROM\r\n   system.opentelemetry_span_log\r\nWHERE finish_date >= toDate(1729083528) AND finish_date <= toDate(1729084428) AND intDiv(finish_time_us,1000000) >= 1729083528 AND intDiv(finish_time_us,1000000) <= 1729084428\r\nORDER BY traceID, startTime",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": false,
+          "showHelp": false,
+          "skip_comments": false,
+          "step": "",
+          "table": "opentelemetry_span_log"
+        }
+      ],
+      "title": "Traces with TimeZone",
+      "type": "traces"
+    },
     {
       "datasource": {
         "default": false,
@@ -88,7 +140,7 @@
         "h": 8,
         "w": 12,
         "x": 0,
-        "y": 0
+        "y": 8
       },
       "id": 1,
       "options": {
@@ -120,8 +172,8 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "",
           "intervalFactor": 1,
-          "query": "SELECT $timeSeries as t, sum(v) FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
-          "rawQuery": "/* grafana dashboard=New dashboard, user=0 */\nSELECT (intDiv(toUInt32(tm), 60) * 60) * 1000 as t, count() FROM test.test_timezone WHERE dt >= toDate(1727893766) AND dt <= toDate(1727980166) AND tm >= toDateTime(1727893766) AND tm <= toDateTime(1727980166) GROUP BY t ORDER BY t",
+          "query": "SELECT toStartOfMinute(tm) as t, sum(v) FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "rawQuery": "/* grafana dashboard=test timezone, user=0 */\nSELECT (intDiv(toUInt32(tm), 60) * 60) * 1000 as t, sum(v) FROM test.test_timezone WHERE dt >= toDate(1728922254) AND dt <= toDate(1729008654) AND tm >= toDateTime(1728922254) AND tm <= toDateTime(1729008654) GROUP BY t ORDER BY t",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
@@ -131,6 +183,58 @@
       ],
       "title": "Time Zone DateTime - tm ",
       "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "default": false,
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 2,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": false,
+        "prettifyLogMessage": false,
+        "showCommonLabels": true,
+        "showLabels": false,
+        "showTime": true,
+        "sortOrder": "Ascending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "test",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "dt",
+          "dateTimeColDataType": "tm64",
+          "dateTimeType": "DATETIME64",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "logs",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT tm64 AS timestamp, log AS message FROM $table WHERE $timeFilter",
+          "rawQuery": "/* grafana dashboard=test timezone, user=0 */\nSELECT t64 AS timestamp, log AS message FROM test.test_timezone WHERE dt >= toDate(1728624977) AND dt <= toDate(1728711377) AND tm64 >= toDateTime64(1728624977, 3) AND tm64 <= toDateTime64(1728711377, 3)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_timezone"
+        }
+      ],
+      "title": "Test Log with DateTime64 Time zone",
+      "type": "logs"
     }
   ],
   "schemaVersion": 39,
@@ -139,13 +243,13 @@
     "list": []
   },
   "time": {
-    "from": "now-24h",
+    "from": "now-15m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "browser",
   "title": "test timezone",
   "uid": "cdzs6vt6boni8d",
-  "version": 2,
+  "version": 20241016,
   "weekStart": ""
 }

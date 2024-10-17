@@ -11,7 +11,7 @@ interface Trace {
   spanID: string;
   parentSpanID?: string | null;
   serviceName: string;
-  startTime: number;
+  startTime: number | string;
   duration: number;
   operationName: string;
   tags: object[];

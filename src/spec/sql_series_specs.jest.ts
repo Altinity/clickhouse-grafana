@@ -490,8 +490,9 @@ describe('sql-series. toTimeSeries unit tests', () => {
     let expectedDataPoints: number[][] = [];
     selfMock.series = [];
     for (let i = 1; i <= 10; i++) {
-      selfMock.series[i - 1] = { time: Date.now() - i * 15 * 1000, value: i * 2 + 30 };
-      expectedDataPoints[i - 1] = [i * 2 + 30, Date.now() - i * 15 * 1000];
+      const t = Date.now();
+      selfMock.series[i - 1] = { time: t - i * 15 * 1000, value: i * 2 + 30 };
+      expectedDataPoints[i - 1] = [i * 2 + 30, t - i * 15 * 1000];
     }
 
     expectedDataPoints[9][0] = 48.2; // extrapolated value
@@ -572,7 +573,7 @@ describe('sql-series. toTimeSeries unit tests', () => {
 });
 
 describe('sql-series. toTraces unit tests', () => {
-  const meta = [{ name: 'startTime', type: 'time' }];
+  const meta = [{ name: 'startTime', type: 'UInt32' }];
 
   it('should transform trace data correctly', () => {
     const inputData = [
@@ -637,7 +638,7 @@ describe('sql-series. toTraces unit tests', () => {
   });
 
   it('should convert time with timezone correctly', () => {
-    const timezoneMeta = [{ name: 'startTime', type: 'time', timezone: 'UTC' }];
+    const timezoneMeta = [{ name: 'startTime', type: "DateTime64(3,'UTC')" }];
 
     const inputData = [
       {
@@ -645,7 +646,7 @@ describe('sql-series. toTraces unit tests', () => {
         spanID: '4-1',
         parentSpanID: null,
         serviceName: 'serviceD',
-        startTime: 1633072980000, // Example timestamp
+        startTime: '2024-10-17 20:28:00.999', // Example timestamp
         duration: 250,
         operationName: 'operationD',
         tags: [],
@@ -656,6 +657,6 @@ describe('sql-series. toTraces unit tests', () => {
     const result = toTraces(inputData, timezoneMeta);
 
     const startTimeField = result[0].fields.find((field) => field.name === 'startTime');
-    expect(startTimeField?.values).toEqual([1633072980000]); // Adjust based on actual conversion logic
+    expect(startTimeField?.values).toEqual([1729196880999]); // Adjust based on actual conversion logic
   });
 });

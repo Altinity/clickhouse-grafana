@@ -124,8 +124,8 @@ export default class SqlQuery {
     }
 
     let myround = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1);
-    let from = this.options.range?.from ? SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.from, myround)) : '';
-    let to = this.options.range?.to ? SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.to, myround)) : '';
+    let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.from, myround));
+    let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.to, myround));
 
     // TODO: replace
     this.target.rawQuery = query

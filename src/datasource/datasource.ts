@@ -150,8 +150,8 @@ export
   }
 
   async getLogRowContext(row: LogRowModel, options?: LogRowContextOptions | undefined, query?: CHQuery | undefined): Promise<{data: Array<any>}> {
-    console.log(row, options, query)
     let traceId;
+    const requestOptions = {...options, range: this.options.range}
 
     const generateQueryForTraceID = (traceId) => {
       return `SELECT * FROM $table WHERE $timeFilter AND trace_id=${traceId}`
@@ -176,7 +176,7 @@ export
     if (options?.direction === LogRowContextQueryDirection.Backward || options?.direction === LogRowContextQueryDirection.Forward) {
       if (traceId) {
         const queryForTraceID = generateQueryForTraceID(traceId)
-        const {stmt, requestId} = this.createQuery(options, {...query, query: queryForTraceID})
+        const {stmt, requestId} = this.createQuery(requestOptions, {...query, query: queryForTraceID})
 
         const response: any = await this._seriesQuery(stmt, requestId);
 
@@ -200,7 +200,7 @@ export
           const {
             stmt,
             requestId
-          } = this.createQuery(options, {...query, query: boundariesRequest})
+          } = this.createQuery(requestOptions, {...query, query: boundariesRequest})
 
           const result: any = await this._seriesQuery(stmt, requestId);
 
@@ -214,7 +214,7 @@ export
           const {
             stmt,
             requestId
-          } = this.createQuery(options, {...query, query: contextDataRequest})
+          } = this.createQuery(requestOptions, {...query, query: contextDataRequest})
 
           return this._seriesQuery(stmt, requestId);
         }

@@ -9,7 +9,7 @@ import {
   AnnotationEvent,
   DataQueryRequest,
   DataSourceApi,
-  DataSourceInstanceSettings,
+  DataSourceInstanceSettings, DataSourceWithLogsContextSupport, LogRowContextOptions, LogRowContextQueryDirection, LogRowModel,
   TypedVariableModel
 } from '@grafana/data';
 import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
@@ -21,7 +21,11 @@ import { QueryEditor } from "../views/QueryEditor/QueryEditor";
 
 const adhocFilterVariable = 'adhoc_query_filter';
 
-export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
+export
+  class CHDataSource
+  extends DataSourceApi<CHQuery, CHDataSourceOptions>
+  implements DataSourceWithLogsContextSupport<CHQuery>
+{
   backendSrv: BackendSrv;
   templateSrv: TemplateSrv;
   adHocFilter: AdHocFilter;
@@ -144,6 +148,95 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
 
     return dataRequest
   }
+
+  async getLogRowContext(row: LogRowModel, options?: LogRowContextOptions | undefined, query?: CHQuery | undefined): Promise<{data: Array<any>}> {
+    console.log(row, options, query)
+    let traceId;
+
+    const generateQueryForTraceID = (traceId) => {
+      return `SELECT * FROM $table WHERE $timeFilter AND trace_id=${traceId}`
+    }
+
+    const generateQueryForTimestamp = (inputTimestampColumn, inputTimestampValue) => {
+      return `SELECT min_timestamp, max_timestamp FROM (
+          SELECT
+            ${inputTimestampColumn},
+            FIRST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN 10 PRECEDING AND CURRENT ROW) AS min_timestamp,
+            LAST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN CURRENT ROW AND 10 FOLLOWING) AS max_timestamp
+          FROM $table
+          ORDER BY ${inputTimestampColumn}
+        ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`
+    }
+
+    const generateRequestForBothTimestamps = (timestampField, minTimestamp, maxTimestamp) => {
+      return `SELECT * FROM $table WHERE ${timestampField} BETWEEN '${minTimestamp}' AND '${maxTimestamp}'`
+    }
+
+
+    if (options?.direction === LogRowContextQueryDirection.Backward || options?.direction === LogRowContextQueryDirection.Forward) {
+      if (traceId) {
+        const queryForTraceID = generateQueryForTraceID(traceId)
+        const {stmt, requestId} = this.createQuery(options, {...query, query: queryForTraceID})
+
+        const response: any = await this._seriesQuery(stmt, requestId);
+
+        if (!response || !response.rows) {
+          return {data: []}
+        }
+
+        let sqlSeries = new SqlSeries({
+          refId: 'FORWARD',
+          series: response.data,
+          meta: response.meta,
+        });
+
+        return {data: sqlSeries.toLogs()}
+      } else {
+        const timestampColumn = query?.dateTimeColDataType
+
+        const getLogsTimeBoundaries = async () => {
+          const boundariesRequest = generateQueryForTimestamp(timestampColumn, row.timeUtc)
+
+          const {
+            stmt,
+            requestId
+          } = this.createQuery(options, {...query, query: boundariesRequest})
+
+          const result: any = await this._seriesQuery(stmt, requestId);
+
+          return result.data[0]
+        }
+
+        const {min_timestamp, max_timestamp} = await getLogsTimeBoundaries()
+
+        const getLogContext = async () => {
+          const contextDataRequest = generateRequestForBothTimestamps(timestampColumn, min_timestamp, max_timestamp)
+          const {
+            stmt,
+            requestId
+          } = this.createQuery(options, {...query, query: contextDataRequest})
+
+          return this._seriesQuery(stmt, requestId);
+        }
+
+        const response: any = await getLogContext()
+        if (!response || !response.rows) {
+          return {data: []};
+        }
+
+        let sqlSeries = new SqlSeries({
+          refId: options?.direction,
+          series: response.data,
+          meta: response.meta,
+        });
+
+        return {data: sqlSeries.toLogs()}
+      }
+    }
+
+    return {data: []}
+  }
+
 
   query(options: DataQueryRequest<CHQuery>) {
     this.options = options;

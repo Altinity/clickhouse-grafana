@@ -20,7 +20,7 @@ import SqlQueryMacros from './sql-query/sql-query-macros';
 import { QueryEditor } from "../views/QueryEditor/QueryEditor";
 
 const adhocFilterVariable = 'adhoc_query_filter';
-
+let recentRequest;
 export
   class CHDataSource
   extends DataSourceApi<CHQuery, CHDataSourceOptions>
@@ -150,11 +150,20 @@ export
   }
 
   async getLogRowContext(row: LogRowModel, options?: LogRowContextOptions | undefined, query?: CHQuery | undefined): Promise<{data: Array<any>}> {
+
     let traceId;
     const requestOptions = {...options, range: this.options.range}
 
-    const generateQueryForTraceID = (traceId) => {
-      return `SELECT * FROM $table WHERE $timeFilter AND trace_id=${traceId}`
+    const originalQuery = this.createQuery(requestOptions, query)
+
+    let scanner = new Scanner(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '));
+    let {
+      select
+    } = scanner.toAST();
+
+
+    const generateQueryForTraceID = (traceId, select) => {
+      return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`
     }
 
     const generateQueryForTimestamp = (inputTimestampColumn, inputTimestampValue) => {
@@ -168,14 +177,14 @@ export
         ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`
     }
 
-    const generateRequestForBothTimestamps = (timestampField, minTimestamp, maxTimestamp) => {
-      return `SELECT * FROM $table WHERE ${timestampField} BETWEEN '${minTimestamp}' AND '${maxTimestamp}'`
+    const generateRequestForBothTimestamps = (timestampField, minTimestamp, maxTimestamp, select) => {
+      return `SELECT ${select.join(',')} FROM $table WHERE ${timestampField} BETWEEN '${minTimestamp}' AND '${maxTimestamp}'`
     }
 
 
     if (options?.direction === LogRowContextQueryDirection.Backward || options?.direction === LogRowContextQueryDirection.Forward) {
       if (traceId) {
-        const queryForTraceID = generateQueryForTraceID(traceId)
+        const queryForTraceID = generateQueryForTraceID(traceId, select);
         const {stmt, requestId} = this.createQuery(requestOptions, {...query, query: queryForTraceID})
 
         const response: any = await this._seriesQuery(stmt, requestId);
@@ -210,7 +219,7 @@ export
         const {min_timestamp, max_timestamp} = await getLogsTimeBoundaries()
 
         const getLogContext = async () => {
-          const contextDataRequest = generateRequestForBothTimestamps(timestampColumn, min_timestamp, max_timestamp)
+          const contextDataRequest = generateRequestForBothTimestamps(timestampColumn, min_timestamp, max_timestamp, select)
           const {
             stmt,
             requestId

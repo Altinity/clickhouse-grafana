@@ -20,7 +20,6 @@ import SqlQueryMacros from './sql-query/sql-query-macros';
 import { QueryEditor } from "../views/QueryEditor/QueryEditor";
 
 const adhocFilterVariable = 'adhoc_query_filter';
-let recentRequest;
 export
   class CHDataSource
   extends DataSourceApi<CHQuery, CHDataSourceOptions>
@@ -149,7 +148,7 @@ export
     return dataRequest
   }
 
-  async getLogRowContext(row: LogRowModel, options?: LogRowContextOptions | undefined, query?: CHQuery | undefined): Promise<{data: Array<any>}> {
+  async getLogRowContext(row: LogRowModel, options?: LogRowContextOptions | undefined, query?: CHQuery | undefined): Promise<{data: any[]}> {
 
     let traceId;
     const requestOptions = {...options, range: this.options.range}
@@ -157,9 +156,7 @@ export
     const originalQuery = this.createQuery(requestOptions, query)
 
     let scanner = new Scanner(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '));
-    let {
-      select
-    } = scanner.toAST();
+    let { select } = scanner.toAST();
 
 
     const generateQueryForTraceID = (traceId, select) => {

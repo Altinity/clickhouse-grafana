@@ -4,7 +4,7 @@ import {getOptions, getSettings} from "./DefaultValues.api";
 import {TimestampFormat} from "../../../../types/types";
 
 const TIME_RELATED_COLUMNS_QUERY =
-  "SELECT name,database,table,type FROM system.columns WHERE type LIKE '%Date%' OR type LIKE '%DateTime%' OR type = 'UInt32' ORDER BY type,name FORMAT JSON";
+  "SELECT name,database,table,type FROM system.columns WHERE substring(type,1,4) = 'Date' OR substring(type,10,4) = 'Date' OR type = 'UInt32' ORDER BY type,name FORMAT JSON";
 
 export const DefaultValues = ({
 jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps

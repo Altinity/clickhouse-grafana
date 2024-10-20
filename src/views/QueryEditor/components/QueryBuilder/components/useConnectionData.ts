@@ -22,31 +22,47 @@ export const useConnectionData = (query, datasource) => {
           'ORDER BY name';
         break;
       case 'DATE':
-        query = 'SELECT name ' +
+        query =
+          'SELECT name ' +
           'FROM system.columns ' +
-          'WHERE database = \'' + selectedDatabase + '\' AND ' +
-          'table = \'' + selectedTable + '\' AND ' +
-          'match(type,\'^Date$|^Date\\([^)]+\\)$\') ' +
+          "WHERE database = '" +
+          selectedDatabase +
+          "' AND " +
+          "table = '" +
+          selectedTable +
+          "' AND " +
+          "type IN ('Date','Date32','Nullable(Date)','Nullable(Date32)') " +
           'ORDER BY name ' +
-          'UNION ALL SELECT \' \' AS name';
+          "UNION ALL SELECT ' ' AS name";
         break;
       case TimestampFormat.DateTime:
-        query = 'SELECT name ' +
+        query =
+          'SELECT name ' +
           'FROM system.columns ' +
-          'WHERE database = \'' + selectedDatabase + '\' AND ' +
-          'table = \'' + selectedTable + '\' AND ' +
-          'match(type,\'^DateTime$|^DateTime\\([^)]+\\)$\') ' +
+          "WHERE database = '" +
+          selectedDatabase +
+          "' AND " +
+          "table = '" +
+          selectedTable +
+          "' AND " +
+          "(substring(type,1,8) = 'DateTime' OR substring(type,10,8) = 'DateTime') AND " +
+          "(substring(type,1,10) != 'DateTime64' OR substring(type,10,10) != 'DateTime64')" +
           'ORDER BY name';
         break;
       case TimestampFormat.DateTime64:
-        query = 'SELECT name ' +
+        query =
+          'SELECT name ' +
           'FROM system.columns ' +
-          'WHERE database = \'' + selectedDatabase + '\' AND ' +
-          'table = \'' + selectedTable + '\' AND ' +
-          'type LIKE \'DateTime64%\' ' +
+          "WHERE database = '" +
+          selectedDatabase +
+          "' AND " +
+          "table = '" +
+          selectedTable +
+          "' AND " +
+          "(substring(type,1,10) = 'DateTime64' OR substring(type,10,10) = 'DateTime64')" +
           'ORDER BY name';
         break;
-      case 'TIMESTAMP':
+      case TimestampFormat.TimeStamp:
         query = 'SELECT name ' +
           'FROM system.columns ' +
           'WHERE database = \'' + selectedDatabase + '\' AND ' +

@@ -184,7 +184,7 @@ export
         const queryForTraceID = generateQueryForTraceID(traceId, select);
         const {stmt, requestId} = this.createQuery(requestOptions, {...query, query: queryForTraceID})
 
-        const response: any = await this._seriesQuery(stmt, requestId);
+        const response: any = await this._seriesQuery(stmt, requestId + options.direction);
 
         if (!response || !response.rows) {
           return {data: []}
@@ -208,7 +208,7 @@ export
             requestId
           } = this.createQuery(requestOptions, {...query, query: boundariesRequest})
 
-          const result: any = await this._seriesQuery(stmt, requestId);
+          const result: any = await this._seriesQuery(stmt, requestId + options.direction);
 
           return result.data[0]
         }
@@ -222,7 +222,7 @@ export
             requestId
           } = this.createQuery(requestOptions, {...query, query: contextDataRequest})
 
-          return this._seriesQuery(stmt, requestId);
+          return this._seriesQuery(stmt, requestId + options.direction);
         }
 
         const response: any = await getLogContext()

@@ -58,10 +58,12 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
+      - ./cover/:/var/lib/grafana/cover
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
+      GOCOVERDIR: "/var/lib/grafana/cover"
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
@@ -154,10 +156,25 @@ services:
       bash -xec "
         git config --global --add safe.directory /go/src/grafana-clickhouse &&
         (command -v mage || go install -v github.com/magefile/mage@latest) &&
-        go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ &&
-        mage -v && 
-        chmod +x ./dist/altinity-clickhouse-plugin*
+        go "build" "-cover" "-o" "dist/altinity-clickhouse-plugin_linux_arm64" "-ldflags" "-w" "./pkg" &&
+        go "build" "-cover" "-o" "dist/altinity-clickhouse-plugin_linux_amd64" "-ldflags" "-w" "./pkg" &&
+        go "build" "-cover" "-o" "dist/altinity-clickhouse-plugin_darwin_amd64" "-ldflags" "-w" "./pkg" &&
+        go "build" "-cover" "-o" "dist/altinity-clickhouse-plugin_linux_arm" "-ldflags" "-w" "./pkg" &&
+        go "build" "-cover" "-o" "dist/altinity-clickhouse-plugin_windows_amd64.exe" "-ldflags" "-w" "./pkg" &&
+        go "build" "-cover" "-o" "dist/altinity-clickhouse-plugin_darwin_arm64" "-ldflags" "-w" "./pkg" &&
+        chmod +x dist/altinity-clickhouse-plugin*
       "
+  backend_coverage:
+    image: golang:1.22
+    working_dir: /go/src/grafana-clickhouse
+    volumes:
+      - ./:/go/src/grafana-clickhouse
+    command: |
+      bash -xec "
+        go tool covdata textfmt -i=cover -o=cover/cover.txt &&
+        go tool cover -html=cover/cover.txt -o=cover/cover.html
+      "
+    
 
   plugin_signer:
     image: node:lts

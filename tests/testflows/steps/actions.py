@@ -8,11 +8,14 @@ from testflows.core import *
 from steps.delay import delay
 from testflows.asserts import error
 
+import steps.panel.view as panel
 import steps.dashboard.view as dashboard
 import steps.dashboards.view as dashboards
 import steps.connections.datasources.view as datasources
 import steps.panel.query_settings.view as query_settings
 import steps.connections.datasources.new.view as datasources_new
+import steps.alerting.alert_rules.new.view as alert_rules
+import steps.alerting.alert_rules_legacy.new.view as alert_rules_legacy
 import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
 
 
@@ -30,19 +33,22 @@ def create_dashboard(self, dashboard_name, open_it=True):
     try:
         for attempt in retries(delay=10, timeout=120):
             with attempt:
-                with delay():
-                    with When("I open new dashboard view"):
+                with When("I open new dashboard view"):
+                    with delay():
                         dashboard.open_new_dashboard_endpoint()
 
                 with And("I save new dashboard"):
-                    dashboard.saving_dashboard(dashboard_name=dashboard_name)
+                    with delay():
+                        dashboard.saving_dashboard(dashboard_name=dashboard_name)
 
                 with Then("I check dashboard created"):
-                    dashboards.check_dashboard_exists(dashboard_name=dashboard_name)
+                    with delay():
+                        dashboards.check_dashboard_exists(dashboard_name=dashboard_name)
 
                 if open_it:
                     with Then("I open dashboard"):
-                        dashboards.open_dashboard(dashboard_name=dashboard_name)
+                        with delay():
+                            dashboards.open_dashboard(dashboard_name=dashboard_name)
         yield
     finally:
         with Finally(f"I delete dashboard {dashboard_name}"):
@@ -139,6 +145,12 @@ def create_new_altinity_datasource(
         add_cors_flag=False,
         use_post_method=False,
         use_compression=False,
+        use_default_values=False,
+        default_column_timestamp_type=None,
+        default_datetime_field=None,
+        default_timestamp_field=None,
+        default_datetime64_field=None,
+        default_date_field=None,
 ):
     """Create new datasource.
 
@@ -260,13 +272,51 @@ def create_new_altinity_datasource(
                     with By("enter compression type"):
                         datasources_altinity_edit.enter_compression_type(compression_type='gzip')
 
-            with delay():
+            with delay(before=0.5):
                 with And("entering datasource name"):
                     datasources_altinity_edit.enter_name_into_name_field(datasource_name=datasource_name)
 
             with delay():
                 with By("clicking save and test button"):
                     datasources_altinity_edit.click_save_and_test_button()
+
+            if use_default_values:
+                with delay():
+                    with By("clicking use default values toggle"):
+                        datasources_altinity_edit.click_use_default_values_toggle()
+
+                with delay():
+                    if not(default_column_timestamp_type is None):
+                        with By("setting up default timestamp type"):
+                            datasources_altinity_edit.enter_column_timestamp_type(column_timestamp_type=default_column_timestamp_type)
+
+                with delay():
+                    if not (default_datetime_field is None):
+                        with By("setting up default datetime field"):
+                            datasources_altinity_edit.enter_datetime_field(
+                                datetime=default_datetime_field)
+
+                with delay():
+                    if not (default_timestamp_field is None):
+                        with By("setting up default timestamp field"):
+                            datasources_altinity_edit.enter_timestamp_field(
+                                timestamp=default_timestamp_field)
+
+                with delay():
+                    if not (default_datetime64_field is None):
+                        with By("setting up default datetime64 type"):
+                            datasources_altinity_edit.enter_datetime64_field(
+                                datetime64=default_datetime64_field)
+
+                with delay():
+                    if not (default_date_field is None):
+                        with By("setting up default date field"):
+                            datasources_altinity_edit.enter_date_field(
+                                date=default_date_field)
+
+                with delay():
+                    with By("clicking save and test button"):
+                        datasources_altinity_edit.click_save_and_test_button()
 
             if successful_connection:
                 with And("checking save and test button returns green alert"):
@@ -289,6 +339,116 @@ def create_new_altinity_datasource(
             with delay():
                 with And("clicking delete button in confirmation modal dialog"):
                     datasources_altinity_edit.click_confirm_delete_datasource()
+
+
+@TestStep(When)
+def setup_legacy_alerts(
+        self,
+        alert_name="test_alert",
+        evaluate_every='10s',
+        evaluate_for='10s',
+        param_value='0',
+        new=True,
+):
+    with When("I go to alerts tab"):
+        with delay():
+            panel.click_alert_tab()
+
+    if new:
+        with And("I click `Create Alert`"):
+            with delay():
+                alert_rules_legacy.click_create_alert_button()
+
+    with And("I enter alert name"):
+        with delay():
+            alert_rules_legacy.enter_name(alert_name=alert_name)
+
+    with And("I enter `Evaluate every`"):
+        with delay():
+            alert_rules_legacy.enter_evaluate_every(evaluate_every=evaluate_every)
+
+    with And("I enter `For`"):
+        with delay():
+            alert_rules_legacy.enter_for(evaluate_for=evaluate_for)
+
+    with And("I enter input param for alert"):
+        with delay():
+            alert_rules_legacy.enter_input(param_number=0, param_value=param_value)
+
+
+@TestStep(When)
+def setup_unified_alerts(
+        self,
+        alert_folder_name="test_alert_folder",
+        alert_group_name="test_alert_group",
+        alert_name="test_alert",
+        pending_period="10s",
+        alert_interval="10s",
+        threshold_value='0',
+        new=True,
+):
+    with When("I go to alerts tab"):
+        with delay():
+            panel.click_alert_tab()
+
+    if new:
+        with And("I click `New alert rule`"):
+            with delay():
+                alert_rules.click_new_alert_rule_button()
+
+    with And("I enter alert name"):
+        with delay():
+            alert_rules.enter_alert_name(alert_name=alert_name)
+
+    with And("I enter `Threshold` value"):
+        with delay():
+            alert_rules.enter_expression_textfield(expression_name="C", textfield_value=threshold_value)
+
+    with And("I click preview button"):
+        with delay():
+            alert_rules.click_preview_button()
+
+    with And("I add folder for rule"):
+        with By("clicking new folder button"):
+            with delay():
+                alert_rules.click_new_folder_button()
+
+        with By("entering new folder name"):
+            with delay():
+                alert_rules.enter_new_folder_name(folder_name=alert_folder_name)
+
+        with By("clicking create button"):
+            with delay():
+                alert_rules.click_new_folder_create_button()
+
+    with And("I create new evaluation group"):
+        with By("clicking new evaluation group button"):
+            with delay():
+                alert_rules.click_new_evaluation_group_button()
+
+        with By("entering new evaluation group name"):
+            with delay():
+                alert_rules.enter_new_evaluation_group_name_textfield(group_name=alert_group_name)
+
+        with By("entering new evaluation group interval"):
+            with delay():
+                alert_rules.enter_new_evaluation_group_interval_textfield(interval=alert_interval)
+
+        with By("clicking create button"):
+            with delay():
+                alert_rules.click_new_evaluation_group_create_button()
+
+    with And("I set up pending period"):
+        with delay():
+            alert_rules.enter_pending_period_textfield(pending_period=pending_period)
+
+    with And("I enter contact point"):
+        with delay():
+            alert_rules.enter_contact_point_textfield(contact_point="grafana-default-email")
+
+    with And("I click save rule and exit button"):
+        with delay():
+            alert_rules.click_save_rule_and_exit_button()
 
 
 @TestStep(When)

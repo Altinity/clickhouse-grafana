@@ -52,6 +52,13 @@ def enter_url_into_url_field(self, url):
 
 
 @TestStep(When)
+def get_url_textfield_text(self):
+    """Get url from url textfield."""
+
+    return locators.url_field.get_attribute('value')
+
+
+@TestStep(When)
 def click_save_and_test_button(self):
     """Click submit button."""
 
@@ -152,6 +159,13 @@ def click_use_post_method_toggle(self):
 
 
 @TestStep(When)
+def click_use_default_values_toggle(self):
+    """Click `Use default values toggle`."""
+
+    locators.use_default_values_toggle.click()
+
+
+@TestStep(When)
 def click_add_cors_flag_to_request_toggle(self):
     """Click add CORS flag to request toggle."""
 
@@ -242,3 +256,118 @@ def enter_server_name(self, server_name=None):
         server_name = self.context.server_name
 
     locators.server_name_textfield.send_keys(server_name)
+
+
+@TestStep(When)
+def enter_column_timestamp_type(self, column_timestamp_type):
+    """Enter column timestamp type."""
+
+    locators.column_timestamp_type_field.click()
+    locators.column_timestamp_type_field.send_keys(column_timestamp_type)
+    locators.column_timestamp_type_field.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_datetime_field(self, datetime):
+    """Enter datetime field."""
+
+    locators.datetime_field.click()
+    locators.datetime_field.send_keys(datetime)
+    locators.datetime_field.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_timestamp_field(self, timestamp):
+    """Enter timestamp field."""
+
+    locators.timestamp_field.click()
+    locators.timestamp_field.send_keys(timestamp)
+    locators.timestamp_field.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_datetime64_field(self, datetime64):
+    """Enter datetime64 field."""
+
+    locators.datetime64_field.click()
+    locators.datetime64_field.send_keys(datetime64)
+    locators.datetime64_field.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_date_field(self, date):
+    """Enter datetime64 field."""
+
+    locators.date_field.click()
+    locators.date_field.send_keys(date)
+    locators.date_field.send_keys(Keys.ENTER)
+
+
+@TestStep(Then)
+def get_column_timestamp_type(self):
+    """Get column timestamp type value."""
+
+    return locators.column_timestamp_type_field.get_attribute('value')
+
+
+@TestStep(Then)
+def get_datetime_field(self):
+    """Get datetime field value."""
+
+    return locators.datetime_field.get_attribute('value')
+
+
+@TestStep(Then)
+def get_timestamp_field(self):
+    """Get timestamp field value."""
+
+    return locators.timestamp_field.get_attribute('value')
+
+
+@TestStep(Then)
+def get_datetime64_field(self):
+    """Get datetime64 field value."""
+
+    return locators.datetime64_field.get_attribute('value')
+
+
+@TestStep(Then)
+def get_date_field(self):
+    """Get date field value."""
+
+    return locators.date_field.get_attribute('value')
+
+
+@TestStep(Then)
+def get_column_timestamp_type_placeholder(self):
+    """Get column timestamp type value."""
+
+    return locators.column_timestamp_type_field.get_attribute('placeholder')
+
+
+@TestStep(Then)
+def get_datetime_field_placeholder(self):
+    """Get datetime field value."""
+
+    return locators.datetime_field.get_attribute('placeholder')
+
+
+@TestStep(Then)
+def get_timestamp_field_placeholder(self):
+    """Get timestamp field value."""
+
+    return locators.timestamp_field.get_attribute('placeholder')
+
+
+@TestStep(Then)
+def get_datetime64_field_placeholder(self):
+    """Get datetime64 field value."""
+
+    return locators.datetime64_field.get_attribute('placeholder')
+
+
+@TestStep(Then)
+def get_date_field_placeholder(self):
+    """Get date field value."""
+
+    return locators.date_field.get_attribute('placeholder')

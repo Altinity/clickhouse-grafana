@@ -132,9 +132,25 @@ def click_add_condition_button(self):
 
     locators.add_condition_button.click()
 
+
 @TestStep(When)
 def click_remove_condition_button(self, condition_number):
     """Click add condition button"""
 
     locators.remove_condition_button(condition_number=condition_number).click()
 
+
+@TestStep(When)
+def enter_condition_query(self, query):
+    """Enter condition query."""
+
+    locators.add_condition_query.click()
+    locators.add_condition_query.send_keys(query)
+    locators.add_condition_query.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def click_no_data_dropdown(self):
+    """Click no data dropdown."""
+
+    locators.no_data_dropdown.click()

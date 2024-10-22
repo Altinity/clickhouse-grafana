@@ -24,3 +24,16 @@ export const getOptions = async (query: string, url: string, datasourceOptions: 
     })
   })
 }
+
+export const getSettings = async (): Promise<any> => {
+  const backendSrv = getBackendSrv();
+
+  return new Promise((resolve, reject) => {
+    backendSrv.fetch({url: '/api/frontend/settings'})
+      .subscribe((response) => {
+      resolve(response.data)
+    },(e) => {
+      reject(e)
+    })
+  })
+}

@@ -154,6 +154,42 @@ class Locators:
         return driver.find_element(SelectBy.CSS_SELECTOR,
                                    "[data-testid='data-testid Confirm Modal Danger Button']")
 
+    @property
+    def use_default_values_toggle(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR,
+                                   "[for='useDefaultConfiguration']")
+
+    @property
+    def column_timestamp_type_field(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[./text()="Column timestamp type"]/..//input[contains(@id, "react-select")]')
+
+    @property
+    def datetime_field(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[./text()="Datetime Field"]/..//input[contains(@id, "react-select")]')
+
+    @property
+    def timestamp_field(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[./text()="Timestamp (Uint32) Field"]/..//input[contains(@id, "react-select")]')
+
+    @property
+    def datetime64_field(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[./text()="Datetime64 Field"]/..//input[contains(@id, "react-select")]')
+
+    @property
+    def date_field(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[./text()="Date Field"]/..//input[contains(@id, "react-select")]')
+
 
 
 locators = Locators()

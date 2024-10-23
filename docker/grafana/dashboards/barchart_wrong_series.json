@@ -1,0 +1,96 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "panels": [
+    {
+      "datasource": "clickhouse-x-auth",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "bars",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "graphStyle": "bar"
+      },
+      "targets": [
+        {
+          "query": "WITH\n  --splitByChar('(', user_metadata_map['rp_prescreenStep'])[1] as prescreen,\n  user_metadata_map['rocketStage'] AS stage,\n  stage AS keys\nSELECT\n  (intDiv(toUInt32(_time), 3600) * 3600) * 1000 as t,\n  keys,\n  sum(alloc_cost) as cost\nFROM default.test_barchart\nWHERE\n  cluster NOT LIKE '%-sleep'\n  AND cluster NOT LIKE '%_test'\n  AND hpcod_resource_name != 'INTERACTIVE'\nGROUP BY keys, t\nORDER BY keys, t",
+          "rawQuery": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Time Series Panel",
+      "type": "timeseries"
+    }
+  ],
+  "schemaVersion": 30,
+  "style": "dark",
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1d",
+    "to": "now"
+  },
+  "title": "barchart debug dashboard",
+  "version": 20241023
+}

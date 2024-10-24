@@ -9,7 +9,11 @@ import {
   AnnotationEvent,
   DataQueryRequest,
   DataSourceApi,
-  DataSourceInstanceSettings, DataSourceWithLogsContextSupport, LogRowContextOptions, LogRowContextQueryDirection, LogRowModel,
+  DataSourceInstanceSettings,
+  DataSourceWithLogsContextSupport,
+  LogRowContextOptions,
+  LogRowContextQueryDirection,
+  LogRowModel,
   TypedVariableModel
 } from '@grafana/data';
 import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
@@ -148,6 +152,7 @@ export
     return dataRequest
   }
 
+
   async getLogRowContext(row: LogRowModel, options?: LogRowContextOptions | undefined, query?: CHQuery | undefined): Promise<{data: any[]}> {
 
     let traceId;
@@ -163,84 +168,102 @@ export
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`
     }
 
-    const generateQueryForTimestamp = (inputTimestampColumn, inputTimestampValue) => {
-      return `SELECT min_timestamp, max_timestamp FROM (
+    const generateQueryForTimestampBackward = (inputTimestampColumn, inputTimestampValue) => {
+      return `SELECT timestamp FROM (
           SELECT
             ${inputTimestampColumn},
-            FIRST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN 10 PRECEDING AND CURRENT ROW) AS min_timestamp,
-            LAST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN CURRENT ROW AND 10 FOLLOWING) AS max_timestamp
+            FIRST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN 10 PRECEDING AND CURRENT ROW) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
         ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`
     }
 
-    const generateRequestForBothTimestamps = (timestampField, minTimestamp, maxTimestamp, select) => {
-      return `SELECT ${select.join(',')} FROM $table WHERE ${timestampField} BETWEEN '${minTimestamp}' AND '${maxTimestamp}'`
+    const generateQueryForTimestampForward = (inputTimestampColumn, inputTimestampValue) => {
+      return `SELECT timestamp FROM (
+          SELECT
+            ${inputTimestampColumn},
+            LAST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN CURRENT ROW AND 10 FOLLOWING) AS timestamp
+          FROM $table
+          ORDER BY ${inputTimestampColumn}
+        ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`
+    }
+
+    const generateRequestForTimestampForward = (timestampField, timestamp, currentRowTimestamp, select) => {
+      return `SELECT ${select.join(',')} FROM $table WHERE ${timestampField} <'${timestamp}' AND ${timestampField} > '${currentRowTimestamp}'`
+    }
+
+    const generateRequestForTimestampBackward = (timestampField, timestamp, currentRowTimestamp, select) => {
+      return `SELECT ${select.join(',')} FROM $table WHERE ${timestampField} > '${timestamp}' AND ${timestampField} < '${currentRowTimestamp}'`
     }
 
 
-    if (options?.direction === LogRowContextQueryDirection.Backward || options?.direction === LogRowContextQueryDirection.Forward) {
-      if (traceId) {
-        const queryForTraceID = generateQueryForTraceID(traceId, select);
-        const {stmt, requestId} = this.createQuery(requestOptions, {...query, query: queryForTraceID})
+    if (traceId) {
+      const queryForTraceID = generateQueryForTraceID(traceId, select);
+      const {stmt, requestId} = this.createQuery(requestOptions, {...query, query: queryForTraceID})
 
-        const response: any = await this._seriesQuery(stmt, requestId + options.direction);
+      const response: any = await this._seriesQuery(stmt, requestId + options?.direction);
 
-        if (!response || !response.rows) {
-          return {data: []}
-        }
-
-        let sqlSeries = new SqlSeries({
-          refId: 'FORWARD',
-          series: response.data,
-          meta: response.meta,
-        });
-
-        return {data: sqlSeries.toLogs()}
-      } else {
-        const timestampColumn = query?.dateTimeColDataType
-
-        const getLogsTimeBoundaries = async () => {
-          const boundariesRequest = generateQueryForTimestamp(timestampColumn, row.timeUtc)
-
-          const {
-            stmt,
-            requestId
-          } = this.createQuery(requestOptions, {...query, query: boundariesRequest})
-
-          const result: any = await this._seriesQuery(stmt, requestId + options.direction);
-
-          return result.data[0]
-        }
-
-        const {min_timestamp, max_timestamp} = await getLogsTimeBoundaries()
-
-        const getLogContext = async () => {
-          const contextDataRequest = generateRequestForBothTimestamps(timestampColumn, min_timestamp, max_timestamp, select)
-          const {
-            stmt,
-            requestId
-          } = this.createQuery(requestOptions, {...query, query: contextDataRequest})
-
-          return this._seriesQuery(stmt, requestId + options.direction);
-        }
-
-        const response: any = await getLogContext()
-        if (!response || !response.rows) {
-          return {data: []};
-        }
-
-        let sqlSeries = new SqlSeries({
-          refId: options?.direction,
-          series: response.data,
-          meta: response.meta,
-        });
-
-        return {data: sqlSeries.toLogs()}
+      if (!response || !response.rows) {
+        return {data: []}
       }
+
+      let sqlSeries = new SqlSeries({
+        refId: 'FORWARD',
+        series: response.data,
+        meta: response.meta,
+      });
+
+      return {data: sqlSeries.toLogs()}
+    } else {
+      const timestampColumn = query?.dateTimeColDataType
+
+      const getLogsTimeBoundaries = async () => {
+
+        const boundariesRequest =
+          options?.direction === LogRowContextQueryDirection.Backward ?
+            generateQueryForTimestampBackward(timestampColumn, row.timeUtc):
+            generateQueryForTimestampForward(timestampColumn, row.timeUtc)
+
+        const {
+          stmt,
+          requestId
+        } = this.createQuery(requestOptions, {...query, query: boundariesRequest})
+
+        const result: any = await this._seriesQuery(stmt, requestId + options?.direction);
+        return result.data[0]
+      }
+
+      const {timestamp} = await getLogsTimeBoundaries()
+
+      const getLogContext = async () => {
+        const contextDataRequest =
+          options?.direction === LogRowContextQueryDirection.Backward ?
+            generateRequestForTimestampBackward(timestampColumn, timestamp, row.timeUtc, select):
+            generateRequestForTimestampForward(timestampColumn, timestamp, row.timeUtc, select)
+
+        const {
+          stmt,
+          requestId
+        } = this.createQuery(requestOptions, {...query, query: contextDataRequest})
+
+        return this._seriesQuery(stmt, requestId + options?.direction);
+      }
+
+      const response: any = await getLogContext()
+
+      if (!response || !response.rows) {
+        return {data: []};
+      }
+
+      let sqlSeries = new SqlSeries({
+        refId: options?.direction,
+        series: response.data,
+        meta: response.meta,
+      });
+
+      return {data: sqlSeries.toLogs()}
     }
 
-    return {data: []}
   }
 
 

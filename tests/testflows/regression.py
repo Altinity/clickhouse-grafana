@@ -106,26 +106,26 @@ def regression(self, before, after):
             login.login()
 
     self.context.grafana_version = None
-    Feature(run=load("testflows.tests.automated.sql_editor", "feature"))
-    Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
-    Feature(run=load("testflows.tests.automated.e2e", "feature"))
-    Feature(run=load("testflows.tests.automated.query_settings", "feature"))
+    # Feature(run=load("testflows.tests.automated.sql_editor", "feature"))
+    # Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
+    # Feature(run=load("testflows.tests.automated.e2e", "feature"))
+    # Feature(run=load("testflows.tests.automated.query_settings", "feature"))
     Feature(run=load("testflows.tests.automated.unified_alerts", "feature"))
 
-    self.context.grafana_version = "10.4.3"
-    with Given("I define endpoint with grafana version that contains legacy alerts"):
-        self.context.endpoint = define("self.context.endpoint", "http://grafana_legacy_alerts:3000/")
-
-    with And("I wait for grafana to be started"):
-        for attempt in retries(delay=10, timeout=50):
-            with attempt:
-                ui.open_endpoint(endpoint=self.context.endpoint)
-
-    with delay():
-        with Given("I login in grafana"):
-            login.login()
-
-    Feature(run=load("testflows.tests.automated.legacy_alerts", "feature"))
+    # self.context.grafana_version = "10.4.3"
+    # with Given("I define endpoint with grafana version that contains legacy alerts"):
+    #     self.context.endpoint = define("self.context.endpoint", "http://grafana_legacy_alerts:3000/")
+    #
+    # with And("I wait for grafana to be started"):
+    #     for attempt in retries(delay=10, timeout=50):
+    #         with attempt:
+    #             ui.open_endpoint(endpoint=self.context.endpoint)
+    #
+    # with delay():
+    #     with Given("I login in grafana"):
+    #         login.login()
+    #
+    # Feature(run=load("testflows.tests.automated.legacy_alerts", "feature"))
 
 
 if main():

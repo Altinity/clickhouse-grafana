@@ -1,7 +1,7 @@
 import os
 import json
 import time
-
+import datetime
 from testflows.core import *
 
 from selenium import webdriver as selenium_webdriver
@@ -159,6 +159,11 @@ def webdriver(
         yield driver
 
     finally:
+        with Finally("I collect coverage info"):
+            coverage_info = driver.execute_script('return JSON.stringify(window.__coverage__);')
+            file = open("coverage/coverage.json", 'w')
+            file.write(coverage_info)
+            file.close()
         if not local:
             with Finally("append the session tags to the session.json"):
                 append_session(suite_name=suite, session_id=driver.session_id)

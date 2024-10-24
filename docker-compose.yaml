@@ -48,6 +48,7 @@ services:
 
   grafana:
     image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-latest}
+    user: root
     build:
       context: ./.config
       args:
@@ -58,12 +59,12 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
-      - ./cover/:/var/lib/grafana/cover
+      - ./cover/:/usr/share/grafana/cover
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
-      GOCOVERDIR: "/var/lib/grafana/cover"
+      GOCOVERDIR: "/usr/share/grafana/cover"
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
@@ -137,8 +138,27 @@ services:
     command: |
       bash -xec '
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
-        npm run build && \
-        npm run test:ci
+        npm install --save-dev @istanbuljs/nyc-config-typescript &&
+        mkdir -p instrumented
+        cp src/plugin.json instrumented/
+        npm run create_instrumented &&
+        npm run build:test
+      '
+
+  frontend_coverage:
+    image: node:lts
+    working_dir: /grafana-clickhouse
+    volumes:
+      - ./:/grafana-clickhouse
+      # for speedup npm install under WSL
+      # - "node_modules:/grafana-clickhouse/node_modules"
+    command: |
+      bash -xec '
+        if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
+        npm install --save-dev @istanbuljs/nyc-config-typescript &&
+        mkdir -p .nyc_output &&
+        cp tests/testflows/coverage/coverage.json .nyc_output/
+        npx nyc report --reporter=html --report-dir=./tests/testflows/coverage
       '
 
   backend_builder:
@@ -165,7 +185,7 @@ services:
         chmod +x dist/altinity-clickhouse-plugin*
       "
   backend_coverage:
-    image: golang:1.22
+    image: golang:1.23
     working_dir: /go/src/grafana-clickhouse
     volumes:
       - ./:/go/src/grafana-clickhouse

@@ -9,8 +9,8 @@
     "noImplicitAny": false,
     "alwaysStrict": true,
     "declaration": false,
-    "rootDir": "../src",
-    "baseUrl": "../src",
+    "rootDir": "../instrumented",
+    "baseUrl": "../instrumented",
     "typeRoots": ["../node_modules/@types"],
     "resolveJsonModule": true
   },
@@ -22,6 +22,6 @@
     },
     "transpileOnly": true
   },
-  "include": ["../src", "./types"],
+  "include": ["../instrumented", "./types"],
   "extends": "@grafana/tsconfig"
 }

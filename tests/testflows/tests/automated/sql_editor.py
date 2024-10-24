@@ -308,28 +308,29 @@ def extrapolation_toggle(self):
             with delay():
                 panel.click_run_query_button()
 
-        for attempt in retries(delay=10, count=6):
-            with attempt:
-                with When("I click on run query button to see results with turned on extrapolation"):
-                    panel.click_run_query_button()
+        with Then("I check extrapolation toggle works correctly"):
+            for attempt in retries(delay=10, count=6):
+                with attempt:
+                    with When("I click on run query button to see results with turned on extrapolation"):
+                        panel.click_run_query_button()
 
-                with When("I take screenshot with extrapolation"):
-                    panel.take_screenshot_for_visualization(screenshot_name='extrapolation_toggle_on')
+                    with When("I take screenshot with extrapolation"):
+                        panel.take_screenshot_for_visualization(screenshot_name='extrapolation_toggle_on')
 
-                with When("I click on the extrapolation toggle to turn extrapolation off"):
-                    sql_editor.click_extrapolation_toggle(query_name='A')
+                    with When("I click on the extrapolation toggle to turn extrapolation off"):
+                        sql_editor.click_extrapolation_toggle(query_name='A')
 
-                with When("I click on run query button to see results with turned off extrapolation"):
-                    panel.click_run_query_button()
+                    with When("I click on run query button to see results with turned off extrapolation"):
+                        panel.click_run_query_button()
 
-                with When("I take screenshot without extrapolation"):
-                    panel.take_screenshot_for_visualization(screenshot_name='extrapolation_toggle_off')
+                    with When("I take screenshot without extrapolation"):
+                        panel.take_screenshot_for_visualization(screenshot_name='extrapolation_toggle_off')
 
-                with When("I click on the extrapolation toggle to turn extrapolation on"):
-                    sql_editor.click_extrapolation_toggle(query_name='A')
+                    with When("I click on the extrapolation toggle to turn extrapolation on"):
+                        sql_editor.click_extrapolation_toggle(query_name='A')
 
-                with Then("I check screenshots are different"):
-                    assert not(actions.compare_screenshots(screenshot_name_1='extrapolation_toggle_on', screenshot_name_2='extrapolation_toggle_off'))
+                    with Then("I check screenshots are different"):
+                        assert not(actions.compare_screenshots(screenshot_name_1='extrapolation_toggle_on', screenshot_name_2='extrapolation_toggle_off'))
 
     finally:
         with Finally("I return Step textfield and Resolution dropdown values back"):

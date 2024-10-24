@@ -22,15 +22,16 @@ def gh_api_check(self):
     with When("I go to clickhouse dashboard"):
         dashboards.open_dashboard(dashboard_name="gh-api")
 
-    for attempt in retries(delay=5, timeout=50):
-        with attempt:
-            with delay():
-                with Then("I take screenshot of Pull request events for grafana/grafana panel"):
-                    dashboard.take_screenshot_for_panel(panel_name="Pull request events for grafana/grafana", screenshot_name="gh-api_panel")
+    with Then("I check gh-api datasource works correctly"):
+        for attempt in retries(delay=5, timeout=50):
+            with attempt:
+                with delay():
+                    with Then("I take screenshot of Pull request events for grafana/grafana panel"):
+                        dashboard.take_screenshot_for_panel(panel_name="Pull request events for grafana/grafana", screenshot_name="gh-api_panel")
 
-            with delay():
-                with Then("I check graph contains data"):
-                    assert actions.check_screenshot_contains_green(screenshot_name="gh-api_panel") is True, error()
+                with delay():
+                    with Then("I check graph contains data"):
+                        assert actions.check_screenshot_contains_green(screenshot_name="gh-api_panel") is True, error()
 
 
 @TestCheck

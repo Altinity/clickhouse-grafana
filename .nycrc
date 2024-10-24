@@ -1,0 +1,16 @@
+{
+  "extends": "@istanbuljs/nyc-config-typescript",
+  "all": true,
+  "extension": [".ts", ".tsx"],
+  "report-dir": "api_coverage",
+  "reporter": [
+    "html",
+    "lcov",
+    "text",
+    "text-summary"
+  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**.json"],
+  "exclude": [
+    "src/**/*jest.*"
+  ]
+}

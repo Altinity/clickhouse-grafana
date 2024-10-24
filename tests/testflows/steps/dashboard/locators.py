@@ -24,18 +24,23 @@ class Locators:
     @property
     def save_dashboard(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Save dashboard']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Save dashboard button']")
 
     @property
     def save_dashboard_title(self):
 
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[class ='css-8tk2dk-input-input']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='Save dashboard title field']")
 
     @property
     def save_dashboard_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[class ='css-td06pi-button']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Save dashboard drawer button']")
+
+    @property
+    def edit_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Edit dashboard button']")
 
     @property
     def add_button(self):

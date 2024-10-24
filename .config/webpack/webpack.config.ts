@@ -82,7 +82,7 @@ const config = async (env): Promise<Configuration> => {
             loader: 'swc-loader',
             options: {
               jsc: {
-                baseUrl: './src',
+                baseUrl: './instrumented',
                 target: 'es2015',
                 loose: false,
                 parser: {
@@ -194,7 +194,7 @@ const config = async (env): Promise<Configuration> => {
     resolve: {
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
       // handle resolving "rootDir" paths
-      modules: [path.resolve(process.cwd(), 'src'), 'node_modules'],
+      modules: [path.resolve(process.cwd(), 'instrumented'), 'node_modules'],
       unsafeCache: true,
     },
   }

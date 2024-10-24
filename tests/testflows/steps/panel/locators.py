@@ -237,12 +237,12 @@ class Locators:
     @property
     def save_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[title="Apply changes and save dashboard"]')
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Save dashboard button"]')
 
     @property
     def save_confirmations_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Dashboard settings Save Dashboard Modal Save button"]')
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Save dashboard drawer button"]')
 
     @property
     def discard_button(self):

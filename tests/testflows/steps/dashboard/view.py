@@ -42,7 +42,7 @@ def wait_edit_button_in_panel_menu(self):
 
 
 @TestStep(When)
-def click_edit_button(self):
+def click_edit_button_for_panel(self):
     """Click edit button in dropdown menu for panel."""
 
     locators.edit_button_for_panel().click()
@@ -82,7 +82,7 @@ def edit_panel(self, panel_name):
         wait_edit_button_in_panel_menu()
 
     with By("clicking edit button"):
-        click_edit_button()
+        click_edit_button_for_panel()
 
 
 @TestStep(When)
@@ -194,6 +194,11 @@ def click_apply_variable(self):
     """Click apply button in variable settings."""
     locators.apply_variable_button.click()
 
+@TestStep(When)
+def click_edit_button(self):
+    """Click edit button."""
+
+    locators.edit_button.click()
 
 @TestStep(When)
 def create_new_variable(self, query, datasource_name):
@@ -261,6 +266,10 @@ def open_new_dashboard_endpoint(self, endpoint=None):
 @TestStep(When)
 def add_visualization(self):
     """Add visualization for dashboard."""
+
+    with delay():
+        with By("clicking edit button"):
+            click_edit_button()
 
     with delay():
         with By("clicking add button"):

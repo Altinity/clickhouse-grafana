@@ -163,7 +163,6 @@ export
     let scanner = new Scanner(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '));
     let { select } = scanner.toAST();
 
-
     const generateQueryForTraceID = (traceId, select) => {
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`
     }
@@ -203,8 +202,10 @@ export
 
       const response: any = await this._seriesQuery(stmt, requestId + options?.direction);
 
-      if (!response || !response.rows) {
+      if (response && !response.rows) {
         return {data: []}
+      } else if (!response) {
+        throw new Error('No response for traceId log context query')
       }
 
       let sqlSeries = new SqlSeries({
@@ -251,8 +252,10 @@ export
 
       const response: any = await getLogContext()
 
-      if (!response || !response.rows) {
-        return {data: []};
+      if (response && !response.rows) {
+        return {data: []}
+      } else if (!response) {
+        throw new Error('No response for log context query')
       }
 
       let sqlSeries = new SqlSeries({

@@ -241,3 +241,18 @@ INSERT INTO test.test_timezone
 SELECT today() AS dt,
        dt + INTERVAL number SECOND, dt + INTERVAL number SECOND + INTERVAL number % 100 MILLISECOND, rand(), 'line ' || number
 FROM numbers(86400);
+
+DROP TABLE IF EXISTS default.test_barchart SYNC;
+CREATE TABLE default.test_barchart
+(
+  _time DateTime,
+  user_metadata_map   Map(String, String),
+  alloc_cost          Float64,
+  cluster             String,
+  hpcod_resource_name String
+) ENGINE = MergeTree()
+ORDER BY _time;
+
+INSERT INTO default.test_barchart
+SELECT now() - INTERVAL number HOUR AS _time, map ('rocketStage', concat('stage', toString(number % 4)), 'rp_prescreenStep', '(prescreen)') AS user_metadata_map, rand() % 100 AS alloc_cost, concat('cluster', toString(number%4)) AS cluster, multiIf(cluster='cluster2', 'RESOURCE_SLEEP', cluster='cluster3', 'INTERACTIVE', concat('RESOURCE', rand() % 4)) AS hpcod_resource_name
+FROM numbers(24);

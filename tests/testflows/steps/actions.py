@@ -53,7 +53,7 @@ def create_dashboard(self, dashboard_name, open_it=True, finally_save_dashboard=
     finally:
         if finally_save_dashboard:
             with Finally("I save changes for dashboard"):
-                with delay():
+                with delay(after=0.5):
                     panel.save_dashboard()
 
         with Finally(f"I delete dashboard {dashboard_name}"):

@@ -66,7 +66,7 @@ def create_local_chrome_driver(self, browser, local_webdriver_path, common_optio
             chrome_options.add_argument("--no-sandbox")
         if is_headless:
             chrome_options.add_argument("--headless")
-            chrome_options.add_argument("window-size=1560,1160")
+            chrome_options.add_argument("window-size=2000,1200")
             chrome_options.add_argument('--enable-logging')
             chrome_options.add_argument('--v=1')
 
@@ -89,12 +89,13 @@ def create_remote_chrome_driver(self, browser, hub_url, common_options, timeout,
             "credentials_enable_service": False,
             "profile.password_manager_enabled": False,
         }
+        remote_chrome_options.add_argument("--disable-notifications")
         remote_chrome_options.add_experimental_option("prefs", remote_chrome_prefs)
         remote_chrome_options.set_capability("browserName", browser)
         remote_chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
         remote_chrome_options.add_experimental_option("useAutomationExtension", False)
         remote_chrome_options.set_capability("se:recordVideo", "true")
-        remote_chrome_options.set_capability("se:screenResolution", "1920x1080")
+        remote_chrome_options.set_capability("se:screenResolution", "2000x1200")
 
         start_time = time.time()
 

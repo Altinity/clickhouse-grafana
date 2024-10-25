@@ -7,35 +7,45 @@ class Locators:
     # Locators for dashboard page
 
     def panel(self, panel_name):
-
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Panel header {panel_name}']")
 
     def menu_button_for_panel(self, panel_name):
-
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Panel menu {panel_name}']")
 
     def edit_button_for_panel(self):
-
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Panel menu item Edit']")
 
-    @property
-    def save_dashboard(self):
+
+
+    def save_dashboard(self, grafana_version):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Save dashboard']")
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+            return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Save dashboard']")
+        else:
+            return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Save dashboard button']")
+
+    def save_dashboard_title(self, grafana_version):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+            return driver.find_element(SelectBy.CSS_SELECTOR, f"[class ='css-8tk2dk-input-input']")
+        else:
+            return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='Save dashboard title field']")
+
+    def save_dashboard_button(self, grafana_version):
+        driver: WebDriver = current().context.driver
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+            return driver.find_element(SelectBy.CSS_SELECTOR, f"[class ='css-td06pi-button']")
+        else:
+            return driver.find_element(SelectBy.CSS_SELECTOR,
+                                       f"[data-testid='data-testid Save dashboard drawer button']")
 
     @property
-    def save_dashboard_title(self):
-
+    def edit_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[class ='css-8tk2dk-input-input']")
-
-    @property
-    def save_dashboard_button(self):
-        driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[class ='css-td06pi-button']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Edit dashboard button']")
 
     @property
     def add_button(self):

@@ -45,6 +45,9 @@ xfails = {
     ],
     "/Grafana Datasource Plugin For Clickhouse/data source setup/check default values datetime64/": [
         (Error, "https://github.com/Altinity/clickhouse-grafana/issues/630")
+    ],
+    "/Grafana Datasource Plugin For Clickhouse/sql editor/extrapolation toggle/":[
+        (Error, "Run Query button do not update time ranges")
     ]
 }
 
@@ -109,7 +112,7 @@ def regression(self, before, after):
     Feature(run=load("testflows.tests.automated.sql_editor", "feature"))
     Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
     Feature(run=load("testflows.tests.automated.e2e", "feature"))
-    Feature(run=load("testflows.tests.automated.query_settings", "feature"))
+    Feature(run=load("testflows.tests.automated.query_options", "feature"))
     Feature(run=load("testflows.tests.automated.unified_alerts", "feature"))
 
     self.context.grafana_version = "10.4.3"

@@ -139,7 +139,7 @@ def saving_dashboard(self, dashboard_name=None):
                 change_title_for_dashboard(dashboard_name=dashboard_name)
 
     with By("clicking save button"):
-        with delay():
+        with delay(before=0.5):
             click_save_dashboard_button()
 
 

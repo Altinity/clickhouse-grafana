@@ -47,7 +47,7 @@ xfails = {
         (Error, "https://github.com/Altinity/clickhouse-grafana/issues/630")
     ],
     "/Grafana Datasource Plugin For Clickhouse/sql editor/extrapolation toggle/":[
-        (Error, "Run Query button do not update time ranges")
+        (Fail, "Run Query button do not update time ranges")
     ]
 }
 

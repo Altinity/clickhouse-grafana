@@ -529,5 +529,5 @@ def save_dashboard(self):
             click_save_button()
 
     with And("clicking save confirmation button"):
-        with delay():
+        with delay(before=0.5):
             click_save_confirmation_button()

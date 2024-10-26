@@ -1,0 +1,250 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 33,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/648",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "graphStyle": "bar",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "add_metadata": true,
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "WITH\n  /* splitByChar('(', user_metadata_map['rp_prescreenStep'])[1] as prescreen, */\n  user_metadata_map['rocketStage'] AS stage,\n  stage AS keys\nSELECT\n  (intDiv(toUInt32(_time), 3600) * 3600) * 1000 as t,\n  keys,\n  sum(alloc_cost) as cost\nFROM default.test_barchart\nWHERE\n  cluster NOT LIKE '%-sleep'\n  AND cluster NOT LIKE '%_test'\n  AND hpcod_resource_name != 'INTERACTIVE'\nGROUP BY keys, t\nORDER BY keys, t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "WITH\n  splitByChar('(', user_metadata_map['rp_prescreenStep'])[1] as prescreen,\n  user_metadata_map['rocketStage'] AS stage,\n  stage AS keys\nSELECT\n  (intDiv(toUInt32(_time), 3600) * 3600) * 1000 as t,\n  keys,\n  sum(alloc_cost) as cost\nFROM default.test_barchart\nWHERE\n  cluster NOT LIKE '%-sleep'\n  AND cluster NOT LIKE '%_test'\n  AND hpcod_resource_name != 'INTERACTIVE'\nGROUP BY keys, t\nORDER BY keys, t",
+          "rawQuery": "/* grafana dashboard=barchart debug dashboard, user=0 */\nWITH\n  splitByChar('(', user_metadata_map['rp_prescreenStep'])[1] as prescreen, */\n  user_metadata_map['rocketStage'] AS stage,\n  stage AS keys\nSELECT\n  (intDiv(toUInt32(_time), 3600) * 3600) * 1000 as t,\n  keys,\n  sum(alloc_cost) as cost\nFROM default.test_barchart\nWHERE\n  cluster NOT LIKE '%-sleep'\n  AND cluster NOT LIKE '%_test'\n  AND hpcod_resource_name != 'INTERACTIVE'\nGROUP BY keys, t\nORDER BY keys, t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "reproduce AST parsing corner case",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "bars",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 9
+      },
+      "id": 3,
+      "options": {
+        "graphStyle": "bar",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.3.0",
+      "targets": [
+        {
+          "add_metadata": true,
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "WITH\n  /* splitByChar('(', user_metadata_map['rp_prescreenStep'])[1] as prescreen, */\n  user_metadata_map['rocketStage'] AS stage,\n  stage AS keys\nSELECT\n  (intDiv(toUInt32(_time), 3600) * 3600) * 1000 as t,\n  keys,\n  sum(alloc_cost) as cost\nFROM default.test_barchart\nWHERE\n  cluster NOT LIKE '%-sleep'\n  AND cluster NOT LIKE '%_test'\n  AND hpcod_resource_name != 'INTERACTIVE'\nGROUP BY keys, t\nORDER BY keys, t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "WITH\n  /* splitByChar('|', user_metadata_map['rp_prescreenStep'])[1] as prescreen, */\n  user_metadata_map['rocketStage'] AS stage,\n  stage AS keys\nSELECT\n  (intDiv(toUInt32(_time), 3600) * 3600) * 1000 as t,\n  keys,\n  sum(alloc_cost) as cost\nFROM default.test_barchart\nWHERE\n  cluster NOT LIKE '%-sleep'\n  AND cluster NOT LIKE '%_test'\n  AND hpcod_resource_name != 'INTERACTIVE'\nGROUP BY keys, t\nORDER BY keys, t",
+          "rawQuery": "/* grafana dashboard=barchart debug dashboard, user=0 */\nWITH\n  \n  user_metadata_map['rocketStage'] AS stage,\n  stage AS keys\nSELECT\n  (intDiv(toUInt32(_time), 3600) * 3600) * 1000 as t,\n  keys,\n  sum(alloc_cost) as cost\nFROM default.test_barchart\nWHERE\n  cluster NOT LIKE '%-sleep'\n  AND cluster NOT LIKE '%_test'\n  AND hpcod_resource_name != 'INTERACTIVE'\nGROUP BY keys, t\nORDER BY keys, t",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "workaround with ( replacing",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "barchart debug dashboard",
+  "uid": "barchart-debug-dashboard",
+  "version": 20241024,
+  "weekStart": ""
+}

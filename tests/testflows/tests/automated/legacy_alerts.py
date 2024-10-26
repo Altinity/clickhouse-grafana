@@ -25,14 +25,14 @@ def check_red_alert(self):
         dashboard_name = define("dashboard_name", "a_red_alert")
 
     with Given("I create new dashboard"):
-        actions.create_dashboard(dashboard_name=dashboard_name)
+        actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()
 
     with When("I select datasource"):
         with delay():
-            panel.select_datasource_in_panel_view(datasource_name='test_alerts_legacy')
+            panel.select_datasource_in_panel_view(datasource_name='a_test_alerts_legacy')
 
     with When("I setup query settings for queries"):
         with delay():
@@ -78,14 +78,14 @@ def check_green_alert(self):
         dashboard_name = define("dashboard_name", "a_green_alert")
 
     with Given("I create new dashboard"):
-        actions.create_dashboard(dashboard_name=dashboard_name)
+        actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()
 
     with When("I select datasource"):
         with delay():
-            panel.select_datasource_in_panel_view(datasource_name='test_alerts_legacy')
+            panel.select_datasource_in_panel_view(datasource_name='a_test_alerts_legacy')
 
     with When("I setup query settings for queries"):
         with delay():
@@ -131,14 +131,14 @@ def check_green_into_red_alert(self):
         dashboard_name = define("dashboard_name", "a_green_into_red_alert")
 
     with Given("I create new dashboard"):
-        actions.create_dashboard(dashboard_name=dashboard_name)
+        actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()
 
     with When("I select datasource"):
         with delay():
-            panel.select_datasource_in_panel_view(datasource_name='test_alerts_legacy')
+            panel.select_datasource_in_panel_view(datasource_name='a_test_alerts_legacy')
 
     with When("I setup query settings for queries"):
         with delay():
@@ -205,14 +205,14 @@ def check_red_into_green_alert(self):
         dashboard_name = define("dashboard_name", "a_red_into_green_alert")
 
     with Given("I create new dashboard"):
-        actions.create_dashboard(dashboard_name=dashboard_name)
+        actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()
 
     with When("I select datasource"):
         with delay():
-            panel.select_datasource_in_panel_view(datasource_name='test_alerts_legacy')
+            panel.select_datasource_in_panel_view(datasource_name='a_test_alerts_legacy')
 
     with When("I setup query settings for queries"):
         with delay():
@@ -282,7 +282,7 @@ def feature(self):
     """Check that grafana plugin supports legacy alerts."""
 
     with When("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='test_alerts_legacy', url="http://clickhouse:8123",)
+        actions.create_new_altinity_datasource(datasource_name='a_test_alerts_legacy', url="http://clickhouse:8123",)
 
     for scenario in loads(current_module(), Scenario):
         scenario()

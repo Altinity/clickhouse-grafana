@@ -272,6 +272,11 @@ def get_query_inspector_url_text(self):
     with By("getting url from query inspector"):
         return locators.query_inspector_url.text
 
+@TestStep(When)
+def click_query_inspector_close_button(self):
+    """Click query inspector close button."""
+
+    locators.query_inspector_close_button.click()
 
 @TestStep(Then)
 def check_query_inspector_request(self, url_parts):
@@ -285,10 +290,15 @@ def check_query_inspector_request(self, url_parts):
         with delay():
             click_inspect_query_refresh_button()
 
-    with By("checking url contains necessary parts"):
-        for url_part in url_parts:
-            with By(f"checking url contains {url_part}"):
-                assert url_part in get_query_inspector_url_text(), error()
+    try:
+        with By("checking url contains necessary parts"):
+            for url_part in url_parts:
+                with By(f"checking url contains {url_part}"):
+                    assert url_part in get_query_inspector_url_text(), error()
+    finally:
+        with Finally("I close query inspector window"):
+            with By("clicking query inspector close button"):
+                click_query_inspector_close_button()
 
 
 @TestStep(When)
@@ -407,9 +417,9 @@ def click_apply_button(self):
 
 @TestStep(When)
 def click_discard_button(self):
-    """Click apply button for panel."""
+    """Click discard button for panel."""
 
-    locators.discard_button.click()
+    locators.discard_button(grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
@@ -501,14 +511,14 @@ def get_value_from_table(self, time):
 def click_save_button(self):
     """Click save button."""
 
-    locators.save_button.click()
+    locators.save_button(grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
 def click_save_confirmation_button(self):
     """Click save confirmation button."""
 
-    locators.save_confirmations_button.click()
+    locators.save_confirmations_button(grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
@@ -519,5 +529,5 @@ def save_dashboard(self):
             click_save_button()
 
     with And("clicking save confirmation button"):
-        with delay():
+        with delay(before=0.5):
             click_save_confirmation_button()

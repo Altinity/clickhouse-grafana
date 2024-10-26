@@ -234,20 +234,26 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Apply changes and go back to dashboard"]')
 
-    @property
-    def save_button(self):
+    def save_button(self, grafana_version):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[title="Apply changes and save dashboard"]')
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+            return driver.find_element(SelectBy.CSS_SELECTOR, f'[title="Apply changes and save dashboard"]')
+        else:
+            return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Save dashboard button"]')
 
-    @property
-    def save_confirmations_button(self):
+    def save_confirmations_button(self, grafana_version):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Dashboard settings Save Dashboard Modal Save button"]')
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+            return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Dashboard settings Save Dashboard Modal Save button"]')
+        else:
+            return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Save dashboard drawer button"]')
 
-    @property
-    def discard_button(self):
+    def discard_button(self, grafana_version):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[title="Undo all changes"]')
+        if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+            return driver.find_element(SelectBy.CSS_SELECTOR, f'[title="Undo all changes"]')
+        else:
+            return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Discard changes button"]')
 
     @property
     def run_query_button(self):
@@ -283,6 +289,11 @@ class Locators:
             return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Tab Alert"]')
         else:
             return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Tab Alert"]')
+
+    @property
+    def query_inspector_close_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Drawer close"]')
 
 
 locators = Locators()

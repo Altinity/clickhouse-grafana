@@ -94,7 +94,8 @@ def create_new_dashboard(self):
 def delete_dashboard(self, dashboard_name):
     """Delete dashboard."""
     with By("opening dashboards view"):
-        open_dashboards_view()
+        with delay():
+            open_dashboards_view()
 
     with By("selecting dashboard"):
         with delay():
@@ -109,7 +110,8 @@ def delete_dashboard(self, dashboard_name):
             enter_delete_conformation()
 
     with By("clicking delete button in confirmation window"):
-        click_delete_confirmation_button()
+        with delay():
+            click_delete_confirmation_button()
 
 
 @TestStep(When)

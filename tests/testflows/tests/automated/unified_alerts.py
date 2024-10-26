@@ -25,7 +25,7 @@ def check_red_alert(self):
         dashboard_name = define("dashboard_name", "a_red_alert")
 
     with Given("I create new dashboard"):
-        actions.create_dashboard(dashboard_name=dashboard_name)
+        actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()
@@ -83,7 +83,7 @@ def check_green_alert(self):
         dashboard_name = define("dashboard_name", "a_green_alert")
 
     with Given("I create new dashboard"):
-        actions.create_dashboard(dashboard_name=dashboard_name)
+        actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()

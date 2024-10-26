@@ -44,7 +44,7 @@ class Locators:
     def hide_time_info_toggle(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[@class="gf-form-inline align-items-center" and .//text()="Hide time info"]//label[@aria-label="Toggle switch"]')
+                                   f'//*[contains(@class,"InlineFieldRow") and .//text()="Hide time info"]//label[@aria-label="Toggle switch"]')
 
     @property
     def relative_time_info(self):

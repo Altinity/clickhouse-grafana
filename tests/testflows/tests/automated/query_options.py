@@ -30,7 +30,7 @@ def max_data_points(self):
 
     with Then("I check default interval"):
         with delay():
-            assert query_options.get_interval_value() == '20s', error()
+            assert query_options.get_interval_value() == '30s', error()
 
     try:
         with Then("I enter 'Max data points'"):
@@ -72,7 +72,7 @@ def min_interval(self):
 
     with Then("I check default interval"):
         with delay():
-            assert query_options.get_interval_value() == '20s', error()
+            assert query_options.get_interval_value() == '30s', error()
 
     try:
         with Then("I enter 'Min interval'"):
@@ -257,10 +257,10 @@ def feature(self):
     """Check that grafana plugin supports query options."""
 
     with Given("I define dashboard name for tests"):
-        dashboard_name = define("dashboard_name", "a_query_settings")
+        dashboard_name = define("dashboard_name", "a_query_options")
 
     with When("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='query_editor', url="http://clickhouse:8123",)
+        actions.create_new_altinity_datasource(datasource_name='query_options', url="http://clickhouse:8123",)
 
     with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name=dashboard_name)
@@ -270,7 +270,7 @@ def feature(self):
 
     with When("I select datasource"):
         with delay():
-            panel.select_datasource_in_panel_view(datasource_name='query_editor')
+            panel.select_datasource_in_panel_view(datasource_name='query_options')
 
     with When("I setup query settings for queries"):
         with delay():

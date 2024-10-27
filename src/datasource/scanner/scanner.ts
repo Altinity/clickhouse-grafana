@@ -133,7 +133,7 @@ const tokenRe = [
 const tabSize = '    '; // 4 spaces
 const newLine = '\n';
 
-export default class Scanner {
+class Scanner {
   tree: any;
   rootToken: any;
   token: any;
@@ -173,7 +173,6 @@ export default class Scanner {
   }
 
   _next() {
-
     if (this._s.length === 0) {
       return false;
     }
@@ -219,7 +218,7 @@ export default class Scanner {
   isExpectedNext(): boolean {
     let v = this.expectedNext;
     this.expectedNext = false;
-    return v as boolean
+    return v as boolean;
   }
 
   appendToken(argument): string {
@@ -242,7 +241,7 @@ export default class Scanner {
           argument += this.appendToken(argument);
           continue;
         }
-        if (!isClosured(argument)) {
+        if (!Scanner.isClosured(argument)) {
           argument += this.appendToken(argument);
           continue;
         }
@@ -254,7 +253,7 @@ export default class Scanner {
         continue;
       }
 
-      if (this.token === ',' && isClosured(argument)) {
+      if (this.token === ',' && Scanner.isClosured(argument)) {
         this.push(argument);
         argument = '';
         if (this.rootToken === 'where') {
@@ -299,7 +298,7 @@ export default class Scanner {
       }
 
       if (isIn(this.token)) {
-        argument += ' ' +this.token;
+        argument += ' ' + this.token;
         if (!this.next()) {
           throw 'wrong in signature for `' + argument + '` at [' + this._s + ']';
         }
@@ -329,7 +328,7 @@ export default class Scanner {
       }
 
       if (isCond(this.token) && (this.rootToken === 'where' || this.rootToken === 'prewhere')) {
-        if (isClosured(argument)) {
+        if (Scanner.isClosured(argument)) {
           this.push(argument);
           argument = this.token;
         } else {
@@ -377,7 +376,6 @@ export default class Scanner {
       }
 
       argument += this.appendToken(argument);
-
     }
 
     if (argument !== '') {
@@ -488,9 +486,59 @@ export default class Scanner {
   }
 
   static AddMetadata(query) {
-    return "/* grafana dashboard=$__dashboard, user=$__user */\n" + query
+    return '/* grafana dashboard=$__dashboard, user=$__user */\n' + query;
   }
 
+  static isClosured(str) {
+    const stack: string[] = [];
+    let isInQuote = false;
+    let quoteType = null;
+
+    const openBrackets = {
+      '(': ')',
+      '[': ']',
+      '{': '}',
+    };
+
+    const closeBrackets = {
+      ')': '(',
+      ']': '[',
+      '}': '{',
+    };
+
+    for (let i = 0; i < str.length; i++) {
+      const char = str[i];
+
+      // Handle quotes
+      if ((char === "'" || char === '"' || char === '`') && (i === 0 || str[i - 1] !== '\\')) {
+        if (!isInQuote) {
+          isInQuote = true;
+          quoteType = char;
+        } else if (char === quoteType) {
+          isInQuote = false;
+          quoteType = null;
+        }
+        continue;
+      }
+
+      // Skip characters inside quotes
+      if (isInQuote) {
+        continue;
+      }
+
+      // Handle brackets
+      if (char in openBrackets) {
+        stack.push(char);
+      } else if (char in closeBrackets) {
+        const lastOpen = stack.pop();
+        if (lastOpen !== closeBrackets[char]) {
+          return false;
+        }
+      }
+    }
+
+    return stack.length === 0;
+  }
 }
 const isSkipSpace = (token: string) => skipSpaceOnlyRe.test(token);
 const isCond = (token: string) => condOnlyRe.test(token);
@@ -537,9 +585,6 @@ function isSet(obj, prop) {
   return obj.hasOwnProperty(prop) && !isEmpty(obj[prop]);
 }
 
-function isClosured(argument) {
-  return (argument.match(/\(/g) || []).length === (argument.match(/\)/g) || []).length;
-}
 
 function betweenBraces(query) {
   let openBraces = 1,
@@ -713,4 +758,4 @@ function print(AST, tab = '') {
 }
 
 
-
+export default Scanner;

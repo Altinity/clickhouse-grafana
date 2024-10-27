@@ -1,6 +1,6 @@
 import Scanner from '../datasource/scanner/scanner';
 
-describe('scanner:', () => {
+describe('Scanner:', () => {
   describe('AST case 1', () => {
     let query =
         'SELECT EventDate, col1, col2, toUInt32(col1 > 0 ? col2/col1*10000 : 0)/100 AS percent ' +
@@ -705,7 +705,7 @@ describe('scanner:', () => {
       expect(scanner.toAST()).toEqual(expectedAST);
     });
   });
-  
+
   /* https://github.com/Altinity/clickhouse-grafana/issues/386 */
   describe('AST case 26 $increaseColumnsAggregated', () => {
     let query =
@@ -781,4 +781,47 @@ describe('scanner:', () => {
     });
   });
 
+});
+
+// https://github.com/Altinity/clickhouse-grafana/issues/648
+describe('Scanner.isClosured: ', () => {
+  test('handles simple brackets', () => {
+    expect(Scanner.isClosured('(test)')).toBe(true);
+    expect(Scanner.isClosured('[test]')).toBe(true);
+    expect(Scanner.isClosured('{test}')).toBe(true);
+  });
+
+  test('handles nested brackets', () => {
+    expect(Scanner.isClosured('({[test]})')).toBe(true);
+    expect(Scanner.isClosured('({[test}])')).toBe(false);
+  });
+
+  test('handles quotes correctly', () => {
+    expect(Scanner.isClosured("'(not a bracket)'")); // Ignores brackets in quotes
+    expect(Scanner.isClosured('"[also not a bracket]"')).toBe(true);
+    expect(Scanner.isClosured('`{template literal}`')).toBe(true);
+  });
+
+  test('handles escaped quotes', () => {
+    expect(Scanner.isClosured("''(this is a real bracket)'")).toBe(true);
+    expect(Scanner.isClosured('\\\'(this is a bracket after escaped quotes)')).toBe(true);
+  });
+
+  test('handles provided test cases', () => {
+    expect(Scanner.isClosured('(\'(\'+test)')).toBe(true);
+    expect(Scanner.isClosured('["("+test+"]]"] ')).toBe(true);
+    expect(Scanner.isClosured("('('+test+']]')")).toBe(true);
+    expect(Scanner.isClosured("'('+test ]")).toBe(false);
+    expect(Scanner.isClosured("]['('+test]")).toBe(false);
+  });
+
+  test('handles empty input', () => {
+    expect(Scanner.isClosured('')).toBe(true);
+  });
+
+  test('handles unmatched brackets', () => {
+    expect(Scanner.isClosured('(((')).toBe(false);
+    expect(Scanner.isClosured(')))')).toBe(false);
+    expect(Scanner.isClosured('((())')).toBe(false);
+  });
 });

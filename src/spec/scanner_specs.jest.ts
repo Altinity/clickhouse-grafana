@@ -662,19 +662,13 @@ describe('Scanner:', () => {
   describe('AST case 24 $rateColumnsAggregated', () => {
     let query =
         '/* comment */ $rateColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) ' +
-        " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
-      scanner = new Scanner(query);
+        " FROM traffic WHERE dat' FROM traffic WHERE datacenter = \'dc1\' HAVING rx_bytes > $interval'anner(query);
 
     let expectedAST = {
-      root: ['/* comment */\n'],
-      $rateColumnsAggregated: [
-        'datacenter',
-        'concat(datacenter, interface) AS dc_interface',
-        'sum',
-        'tx_bytes * 1024 AS tx_kbytes',
-        'sum',
-        'max(rx_bytes) AS rx_bytes',
+      root: [
+        '/* comment */\n',
       ],
+      $rateColumnsAggregated: ['datacenter', 'concat(datacenter, interface) AS dc_interface', 'sum', 'tx_bytes * 1024 AS tx_kbytes', 'sum', 'max(rx_bytes) AS rx_bytes'],
       select: [],
       from: ['traffic'],
       where: ["datacenter = 'dc1'"],
@@ -694,15 +688,10 @@ describe('Scanner:', () => {
       scanner = new Scanner(query);
 
     let expectedAST = {
-      root: ['/* comment */\n'],
-      $perSecondColumnsAggregated: [
-        'datacenter',
-        'concat(datacenter, interface) AS dc_interface',
-        'sum',
-        'tx_bytes * 1024 AS tx_kbytes',
-        'sum',
-        'max(rx_bytes) AS rx_bytes',
+      root: [
+        '/* comment */\n',
       ],
+      $perSecondColumnsAggregated: ['datacenter', 'concat(datacenter, interface) AS dc_interface', 'sum', 'tx_bytes * 1024 AS tx_kbytes', 'sum', 'max(rx_bytes) AS rx_bytes'],
       select: [],
       from: ['traffic'],
       where: ["datacenter = 'dc1'"],
@@ -722,15 +711,10 @@ describe('Scanner:', () => {
       scanner = new Scanner(query);
 
     let expectedAST = {
-      root: ['/* comment */\n'],
-      $increaseColumnsAggregated: [
-        'datacenter',
-        'concat(datacenter, interface) AS dc_interface',
-        'sum',
-        'tx_bytes * 1024 AS tx_kbytes',
-        'sum',
-        'max(rx_bytes) AS rx_bytes',
+      root: [
+        '/* comment */\n',
       ],
+      $increaseColumnsAggregated: ['datacenter', 'concat(datacenter, interface) AS dc_interface', 'sum', 'tx_bytes * 1024 AS tx_kbytes', 'sum', 'max(rx_bytes) AS rx_bytes'],
       select: [],
       from: ['traffic'],
       where: ["datacenter = 'dc1'"],
@@ -750,15 +734,10 @@ describe('Scanner:', () => {
       scanner = new Scanner(query);
 
     let expectedAST = {
-      root: ['/* comment */\n'],
-      $deltaColumnsAggregated: [
-        'datacenter',
-        'concat(datacenter, interface) AS dc_interface',
-        'sum',
-        'tx_bytes * 1024 AS tx_kbytes',
-        'sum',
-        'max(rx_bytes) AS rx_bytes',
+      root: [
+        '/* comment */\n',
       ],
+      $deltaColumnsAggregated: ['datacenter', 'concat(datacenter, interface) AS dc_interface', 'sum', 'tx_bytes * 1024 AS tx_kbytes', 'sum', 'max(rx_bytes) AS rx_bytes'],
       select: [],
       from: ['traffic'],
       where: ["datacenter = 'dc1'"],
@@ -772,13 +751,12 @@ describe('Scanner:', () => {
 
   /* https://github.com/Altinity/clickhouse-grafana/issues/409 */
   describe('AST case 28 $columns + ORDER BY WITH FILL', () => {
-    let query =
-        '$columns(\n' +
+    let query = '$columns(\n' +
         '  service_name,   \n' +
         '  sum(agg_value) as value\n' +
         ')\n' +
         'FROM $table\n' +
-        "WHERE service_name='mysql'\n" +
+        'WHERE service_name=\'mysql\'\n' +
         'GROUP BY t, service_name\n' +
         'HAVING value>100\n' +
         'ORDER BY t, service_name WITH FILL 60000',
@@ -799,6 +777,7 @@ describe('Scanner:', () => {
       expect(scanner.toAST()).toEqual(expectedAST);
     });
   });
+
 });
 
 // https://github.com/Altinity/clickhouse-grafana/issues/648
@@ -810,18 +789,24 @@ describe('Scanner.isClosured: ', () => {
   });
 
   test('handles nested brackets', () => {
-    expect(Scanner.isClosure'\'(not a bracket)\''Be(true);
+    expect(Scanner.isClosured('({[test]})')).toBe(true);
     expect(Scanner.isClosured('({[test}])')).toBe(false);
   });
 
   test('handles quotes correctly', () => {
     expect(Scanner.isClosured("'(not a bracket)'")); // Ignores brackets in quotes
-    expect(Scanner.isClosured('"[also not a bra'\'\'(this is a real bracket)\''ect(Scanner.isClosured('`{template literal}`''\\\'(this is a bracket after escaped quotes)' quotes', () => {
-    expect(Scanner.isClosured("''(this is a real bracket)'")).toBe(true);
-    ex'(\'(\'+test)'.isClosured("\\'(this is a bracket after escaped quotes)")).toBe(true);
+    expect(Scanner.isClosured('"[also not a bracket]"')).toBe(true);
+    expect(Scanner.isClosured('`{template literal}`')).toBe(true);
   });
 
-  test('handles provided test'(\'(\'+test+\']]\')'    expect(Scanner.isClosured("('('+test)")).'\'(\'+test ]'    expect(Scanner.isClosured('["("+test+"]]"]'][\'(\'+test]'e);
+  test('handles escaped quotes', () => {
+    expect(Scanner.isClosured("''(this is a real bracket)'")).toBe(true);
+    expect(Scanner.isClosured('\\\'(this is a bracket after escaped quotes)')).toBe(true);
+  });
+
+  test('handles provided test cases', () => {
+    expect(Scanner.isClosured('(\'(\'+test)')).toBe(true);
+    expect(Scanner.isClosured('["("+test+"]]"] ')).toBe(true);
     expect(Scanner.isClosured("('('+test+']]')")).toBe(true);
     expect(Scanner.isClosured("'('+test ]")).toBe(false);
     expect(Scanner.isClosured("]['('+test]")).toBe(false);

@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { InlineField, InlineFieldRow, InlineLabel, InlineSwitch, Input, Select, ToolbarButton } from '@grafana/ui';
+import {InlineField, InlineFieldRow, InlineLabel, InlineSwitch, Input, Select, TagList, TagsInput, ToolbarButton} from '@grafana/ui';
 import ReformattedQuery from './ReformattedQuery';
 import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
@@ -23,7 +23,7 @@ const FORMAT_OPTIONS = [
 ];
 
 export const QueryTextEditor = ({
- query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource, isAnnotationView 
+ query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource, isAnnotationView, adhocFilters,
 }: any) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
   const [fieldValues, setFieldValues] = useState(query);
@@ -64,7 +64,14 @@ export const QueryTextEditor = ({
   return (
     <>
       <SQLCodeEditor datasource={datasource} height={height} onSqlChange={onSqlChange} query={query} onEditorMount={onEditorMount} onRunQuery={onRunQuery} />
-      <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
+      <div style={{margin: '5px', display: 'flex'}}>
+        <p>Used Filters:</p>
+        <TagList tags={adhocFilters.map((filter: any, index: number) => (`${filter.key}${filter.operator}${filter.value}`))}
+        icon={'minus'}
+        onClick={() => {
+          console.log('remove')}}/>
+      </div>
+      <div className="gf-form" style={{display: 'flex', flexDirection: 'column', marginTop: '10px'}}>
         <InlineFieldRow>
           <InlineField
             label={<InlineLabel width={18} tooltip="Turn on if you don't like when last data point in time series much lower then previous">Extrapolation</InlineLabel>}

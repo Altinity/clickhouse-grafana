@@ -27,8 +27,8 @@ function useFormattedData(query: CHQuery, datasource: CHDataSource): [string, st
       if (datasource.options && datasource.templateSrv) {
         const queryModel = new SqlQuery(query, datasource.templateSrv, datasource.options);
         // @ts-ignore
-        const adhocFilters = datasource.templateSrv.getAdhocFilters(datasource.name);
-        const replaced = queryModel.replace(datasource.options, adhocFilters);
+        const adHocFilters = datasource.templateSrv.getAdhocFilters(datasource.name);
+        const replaced = queryModel.replace(datasource.options, adHocFilters);
         setFormattedData(replaced);
         setError(null);
       }
@@ -104,6 +104,15 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   const onTriggerQuery = () => onRunQuery()
 
+  // @ts-ignore
+  const adHocFilters = datasource.templateSrv.getAdhocFilters(datasource.name);
+
+  useEffect(() => {
+    if (adHocFilters.length > 0) {
+      onChange({...query, adHocFilters: adHocFilters })
+    }
+  }, [adHocFilters.length]);
+
   return (
     <>
       <QueryHeader
@@ -122,6 +131,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       {editorMode === EditorMode.SQL && (
         <>
           <QueryTextEditor
+            adhocFilters={initializedQuery.adHocFilters}
             query={initializedQuery}
             height={200}
             onSqlChange={onSqlChange}
@@ -148,6 +158,7 @@ function initializeQueryDefaults(query: CHQuery, isAnnotationView: boolean, data
     round: query.round || DEFAULT_ROUND,
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,
     interval: query.interval || '',
+    adHocFilters: query.adHocFilters || [],
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
     editorMode: (query.database && query.table) ? EditorMode.SQL : EditorMode.Builder,

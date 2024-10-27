@@ -45,6 +45,7 @@ export default class SqlQuery {
 
     // @ts-ignore
     // adhocFilters = this.templateSrv.getAdhocFilters('clickhouse')
+    adhocFilters = this.target.adHocFilters;
     try {
       let ast = scanner.toAST();
       let topQueryAST = ast;

@@ -1850,3 +1850,128 @@ func TestTableMacroProperlyEscaping(t *testing.T) {
 
 	r.Equal(expQuery, actualQuery, description+" unexpected result")
 }
+
+// https://github.com/Altinity/clickhouse-grafana/issues/648
+func TestIsClosured(t *testing.T) {
+	// Simple brackets test cases
+	t.Run("handles simple brackets", func(t *testing.T) {
+		testCases := []struct {
+			input    string
+			expected bool
+		}{
+			{"(test)", true},
+			{"[test]", true},
+			{"{test}", true},
+		}
+
+		for _, tc := range testCases {
+			result := isClosured(tc.input)
+			if result != tc.expected {
+				t.Errorf("isClosured(%q) = %v; want %v", tc.input, result, tc.expected)
+			}
+		}
+	})
+
+	// Nested brackets test cases
+	t.Run("handles nested brackets", func(t *testing.T) {
+		testCases := []struct {
+			input    string
+			expected bool
+		}{
+			{"({[test]})", true},
+			{"({[test}])", false},
+		}
+
+		for _, tc := range testCases {
+			result := isClosured(tc.input)
+			if result != tc.expected {
+				t.Errorf("isClosured(%q) = %v; want %v", tc.input, result, tc.expected)
+			}
+		}
+	})
+
+	// Quotes test cases
+	t.Run("handles quotes correctly", func(t *testing.T) {
+		testCases := []struct {
+			input    string
+			expected bool
+		}{
+			{"'(not a bracket)'", true},
+			{"\"[also not a bracket]\"", true},
+			{"`{template literal}`", true},
+		}
+
+		for _, tc := range testCases {
+			result := isClosured(tc.input)
+			if result != tc.expected {
+				t.Errorf("isClosured(%q) = %v; want %v", tc.input, result, tc.expected)
+			}
+		}
+	})
+
+	// Escaped quotes test cases
+	t.Run("handles escaped quotes", func(t *testing.T) {
+		testCases := []struct {
+			input    string
+			expected bool
+		}{
+			{"''(this is a real bracket)'", true},
+			{"\\'(this is a bracket after escaped quotes)", true},
+		}
+
+		for _, tc := range testCases {
+			result := isClosured(tc.input)
+			if result != tc.expected {
+				t.Errorf("isClosured(%q) = %v; want %v", tc.input, result, tc.expected)
+			}
+		}
+	})
+
+	// Provided test cases
+	t.Run("handles provided test cases", func(t *testing.T) {
+		testCases := []struct {
+			input    string
+			expected bool
+		}{
+			{"('('+test)", true},
+			{"[\"(\"+test+\"]]\"] ", true},
+			{"('('+test+']]')", true},
+			{"'('+test ]", false},
+			{"]['('+test]", false},
+		}
+
+		for _, tc := range testCases {
+			result := isClosured(tc.input)
+			if result != tc.expected {
+				t.Errorf("isClosured(%q) = %v; want %v", tc.input, result, tc.expected)
+			}
+		}
+	})
+
+	// Empty input test case
+	t.Run("handles empty input", func(t *testing.T) {
+		result := isClosured("")
+		if !result {
+			t.Error("isClosured(\"\") = false; want true")
+		}
+	})
+
+	// Unmatched brackets test cases
+	t.Run("handles unmatched brackets", func(t *testing.T) {
+		testCases := []struct {
+			input    string
+			expected bool
+		}{
+			{"(((", false},
+			{")))", false},
+			{"((())", false},
+		}
+
+		for _, tc := range testCases {
+			result := isClosured(tc.input)
+			if result != tc.expected {
+				t.Errorf("isClosured(%q) = %v; want %v", tc.input, result, tc.expected)
+			}
+		}
+	})
+}

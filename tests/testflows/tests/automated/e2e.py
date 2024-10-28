@@ -22,6 +22,7 @@ def gh_api_check(self):
     with When("I go to clickhouse dashboard"):
         dashboards.open_dashboard(dashboard_name="gh-api")
 
+
     with Then("I check gh-api datasource works correctly"):
         for attempt in retries(delay=5, timeout=50):
             with attempt:
@@ -67,68 +68,65 @@ def mixed_data_sources(self):
     with When("I add visualization for panel"):
         dashboard.add_visualization()
 
-    try:
-        with When("I select datasource"):
-            with delay():
-                panel.select_datasource_in_panel_view(datasource_name='-- Mixed --')
 
-        with When("I add query"):
-            with delay():
-                panel.click_add_query_button()
+    with When("I select datasource"):
+        with delay():
+            panel.select_datasource_in_panel_view(datasource_name='-- Mixed --')
 
-        with When("I change datasource for the first query"):
-            with delay():
-                panel.enter_data_source_for_query(query_name='A', datasource_name='mixed_1')
+    with When("I add query"):
+        with delay():
+            panel.click_add_query_button()
 
-        with When("I change datasource for the second query"):
-            with delay():
-                panel.enter_data_source_for_query(query_name='B', datasource_name='mixed_2')
+    with When("I change datasource for the first query"):
+        with delay():
+            panel.enter_data_source_for_query(query_name='A', datasource_name='mixed_1')
 
-        with When("I open SQL editor"):
-            with delay():
-                panel.go_to_sql_editor(query_name='A')
-                panel.go_to_sql_editor(query_name='B')
+    with When("I change datasource for the second query"):
+        with delay():
+            panel.enter_data_source_for_query(query_name='B', datasource_name='mixed_2')
 
-        with Then("I enter the first query"):
-            with delay():
-                panel.enter_sql_editor_input(query_name='A', query='SELECT now(), 1')
+    with When("I open SQL editor"):
+        with delay():
+            panel.go_to_sql_editor(query_name='A')
+            panel.go_to_sql_editor(query_name='B')
 
-        with Then("I enter the second query"):
-            with delay():
-                panel.enter_sql_editor_input(query_name='B', query='SELECT now(), 1')
+    with Then("I enter the first query"):
+        with delay():
+            panel.enter_sql_editor_input(query_name='A', query='SELECT now(), 1')
 
-        with When("I click on the visualization to see the result"):
-            with delay():
-                panel.click_on_the_visualization()
+    with Then("I enter the second query"):
+        with delay():
+            panel.enter_sql_editor_input(query_name='B', query='SELECT now(), 1')
 
-        with Then("I click apply button"):
-            with delay():
-                panel.click_apply_button()
+    with When("I click on the visualization to see the result"):
+        with delay():
+            panel.click_on_the_visualization()
 
-        with Then("I go to panel edit the first time"):
-            with delay():
-                dashboard.open_panel(panel_name='Panel Title')
+    with Then("I click save button"):
+        with delay():
+            panel.save_dashboard()
 
-        with Then("I check queries the first time"):
-            check_queries()
+    with Then("I open dashboard view"):
+        with delay():
+            dashboards.open_dashboard(dashboard_name="a_mixed")
 
-        with Then("I click discard button"):
-            with delay():
-                panel.click_discard_button()
+    with Then("I go to panel edit the first time"):
+        with delay():
+            dashboard.open_panel(panel_name='Panel Title')
 
-        with Then("I go to panel edit the second time"):
-            with delay():
-                dashboard.open_panel(panel_name='Panel Title')
+    with Then("I check queries the first time"):
+        check_queries()
 
-        with Then("I check queries the second time"):
-            check_queries()
+    with Then("I click discard button"):
+        with delay():
+            panel.click_discard_button()
 
-    finally:
-        with Finally("I click discard button"):
-            with delay():
-                panel.click_discard_button()
-            with delay():
-                dashboard.saving_dashboard()
+    with Then("I go to panel edit the second time"):
+        with delay():
+            dashboard.open_panel(panel_name='Panel Title')
+
+    with Then("I check queries the second time"):
+        check_queries()
 
 
 @TestScenario

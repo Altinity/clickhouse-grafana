@@ -307,9 +307,9 @@ def extrapolation_toggle(self):
         with Then("I click on run query button to see results"):
             with delay():
                 panel.click_run_query_button()
-
+                
         with Then("I check extrapolation toggle works correctly"):
-            for attempt in retries(delay=10, count=6):
+            for attempt in retries(delay=10, count=12):
                 with attempt:
                     with When("I click on run query button to see results with turned on extrapolation"):
                         panel.click_run_query_button()

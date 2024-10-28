@@ -29,6 +29,7 @@ export interface CHQuery extends DataQuery {
   database?: string;
   table?: string;
   initialized?: boolean;
+  adHocFilters: any[];
 
   dateTimeType?: string;
   dateColDataType?: string;
@@ -75,4 +76,5 @@ export const DEFAULT_QUERY: CHQuery = {
   extrapolate: false,
   rawQuery: '',
   editorMode: EditorMode.SQL,
+  adHocFilters: [],
 };

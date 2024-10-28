@@ -22,7 +22,7 @@ jobs:
     env:
       GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
 
-    timeout-minutes: 3000
+    timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
           python3
           -u ./regression.py --before=0.1 --after=0.1
           --log raw.log
-          -o classic 
+          -o classic
 
       - name: Create reports
         if: always()

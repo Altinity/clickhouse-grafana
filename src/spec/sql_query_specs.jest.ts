@@ -86,9 +86,9 @@ describe('Query SELECT with $timeSeries $timeFilter and DATETIME64', () => {
     'GROUP BY t\n' +
     'ORDER BY t';
   const expQuery =
-    'SELECT (intDiv(toFloat64("d") * 1000, (15 * 1000)) * (15 * 1000)) as t, sum(x) AS metric\n' +
+    'SELECT (intDiv(toFloat64(d) * 1000, (15 * 1000)) * (15 * 1000)) as t, sum(x) AS metric\n' +
     'FROM default.test_datetime64\n' +
-    'WHERE "d" >= toDateTime64(1545613320, 3) AND "d" <= toDateTime64(1546300740, 3)\n' +
+    'WHERE d >= toDateTime64(1545613320, 3) AND d <= toDateTime64(1546300740, 3)\n' +
     'GROUP BY t\n' +
     'ORDER BY t';
   let templateSrv = new TemplateSrvStub();
@@ -292,6 +292,7 @@ describe('$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adho
     dateTimeColDataType: 'event_time',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -421,6 +422,7 @@ describe('$rateColumnsAggregated and subquery + $conditionalTest + SqlQuery.repl
     dateTimeColDataType: 'event_time',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -552,6 +554,7 @@ describe('$perSecondColumnsAggregated and subquery + $conditionalTest + SqlQuery
     dateTimeColDataType: 'event_time',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -683,6 +686,7 @@ describe('$increaseColumnsAggregated and subquery + $conditionalTest + SqlQuery.
     dateTimeColDataType: 'event_time',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -814,6 +818,7 @@ describe('$deltaColumnsAggregated and subquery + $conditionalTest + SqlQuery.rep
     dateTimeColDataType: 'event_time',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -893,6 +898,13 @@ describe('check replace with $adhoc macros', () => {
     dateTimeColDataType: 'TimeFlowStart',
     round: '1m',
     rawQuery: '',
+    adHocFilters: [
+      {
+        key: 'default.flows_raw.SrcAS',
+        operator: '=',
+        value: '1299',
+      },
+    ]
   };
   const options = {
     rangeRaw: {
@@ -955,6 +967,7 @@ describe('check replace with $columns and concat and ARRAY JOIN', () => {
     dateTimeColDataType: 'dateTimeColumn',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -1096,9 +1109,9 @@ describe('Query SELECT with $timeSeriesMs $timeFilterMs and DATETIME64', () => {
     'GROUP BY t\n' +
     'ORDER BY t';
   const expQuery =
-    'SELECT (intDiv(toFloat64("d") * 1000, 100) * 100) as t, sum(x) AS metric\n' +
+    'SELECT (intDiv(toFloat64(d) * 1000, 100) * 100) as t, sum(x) AS metric\n' +
     'FROM default.test_datetime64\n' +
-    'WHERE "d" >= toDateTime64(1545613323200/1000, 3) AND "d" <= toDateTime64(1546300799200/1000, 3)\n' +
+    'WHERE d >= toDateTime64(1545613323200/1000, 3) AND d <= toDateTime64(1546300799200/1000, 3)\n' +
     'GROUP BY t\n' +
     'ORDER BY t';
   let templateSrv = new TemplateSrvStub();
@@ -1146,7 +1159,7 @@ describe('Query SELECT with $timeSeriesMs $timeFilterMs and DATETIME64', () => {
 describe('Query SELECT with special character in table', () => {
   const query = 'SELECT $timeSeries as t, sum(x) AS metric\n' + 'FROM $table\n' + 'GROUP BY t\n' + 'ORDER BY t';
   const expQuery =
-    'SELECT (intDiv(toFloat64("d") * 1000, (1 * 1000)) * (1 * 1000)) as t, sum(x) AS metric\n' +
+    'SELECT (intDiv(toFloat64(d) * 1000, (1 * 1000)) * (1 * 1000)) as t, sum(x) AS metric\n' +
     'FROM default.`test-table-escaping`\n' +
     'GROUP BY t\n' +
     'ORDER BY t';

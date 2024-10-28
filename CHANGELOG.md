@@ -1,3 +1,23 @@
+# 3.2.4 (2024-10-12)
+
+## Enhancements:
+
+* improve support
+* switch to go 1.23
+* add more e2e test for unified and legacy alerts
+* made e2e tests more stable
+
+## Fixes:
+
+* fix bug in connection settings, when turn on `default values`, then Default field values drop down selectors do not work with BasicAuth,
+  fix https://github.com/Altinity/clickhouse-grafana/issues/624, https://github.com/Altinity/clickhouse-grafana/issues/632
+* fix bug in connection settings, when turn on `default values`, then Default field values drop down doesn't show DateTime64 fields,
+  fix https://github.com/Altinity/clickhouse-grafana/issues/630
+
+# 3.2.3 (2024-09-03)
+## Fixes:
+* fix default values in connection editor behavior when changing fields, also change URL, fix https://github.com/Altinity/clickhouse-grafana/issues/615
+
 # 3.2.2 (2024-08-11)
 ## Enhancements:
 * improve e2e tests, more scenarios covered

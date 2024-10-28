@@ -71,6 +71,16 @@ CREATE TABLE IF NOT EXISTS default.test_interval
 INSERT INTO default.test_interval(d,x) SELECT toDateTime(now()-(number*10)) AS d, rand() AS x FROM numbers(1000);
 
 
+DROP TABLE IF EXISTS default.test_interval_64;
+CREATE TABLE IF NOT EXISTS default.test_interval_64
+(
+    d64 DateTime64,
+    x UInt32
+) ENGINE = MergeTree() ORDER BY (d64);
+
+INSERT INTO default.test_interval_64(d64,x) SELECT toDateTime(now()-(number*10)) AS d64, rand() AS x FROM numbers(1000);
+
+
 DROP TABLE IF EXISTS default.test_array_join_nested;
 CREATE TABLE IF NOT EXISTS default.test_array_join_nested(
     d DateTime,
@@ -203,7 +213,7 @@ CREATE TABLE test.map_table
 (
     `time` DateTime,
     `id` String,
-    `attributes` Map(String, String)
+    `attributes` Map(LowCardinality(String), String)
 )
 ENGINE = MergeTree
 PARTITION BY toYYYYMM(time)
@@ -215,3 +225,34 @@ SETTINGS index_granularity = 8192, ttl_only_drop_parts = 1;
 INSERT INTO test.map_table values (now(), 'id1', {'key1': 'value1', 'key2':'value2'});
 INSERT INTO test.map_table values (now(), 'id2', {'key1': 'value1', 'key2':'value2'});
 INSERT INTO test.map_table values (now(), 'id2', {'key1': 'value1', 'key2':'value2'});
+
+CREATE TABLE test.test_timezone
+(
+  dt   Date,
+  tm   DateTime('Europe/Moscow'),
+  tm64 DateTime64(3, 'Europe/Moscow'),
+  v   UInt64,
+  log String
+) ENGINE=MergeTree
+PARTITION BY toYYYYMM(dt)
+ORDER BY (dt, tm);
+
+INSERT INTO test.test_timezone
+SELECT today() AS dt,
+       dt + INTERVAL number SECOND, dt + INTERVAL number SECOND + INTERVAL number % 100 MILLISECOND, rand(), 'line ' || number
+FROM numbers(86400);
+
+DROP TABLE IF EXISTS default.test_barchart SYNC;
+CREATE TABLE default.test_barchart
+(
+  _time DateTime,
+  user_metadata_map   Map(String, String),
+  alloc_cost          Float64,
+  cluster             String,
+  hpcod_resource_name String
+) ENGINE = MergeTree()
+ORDER BY _time;
+
+INSERT INTO default.test_barchart
+SELECT now() - INTERVAL number HOUR AS _time, map ('rocketStage', concat('stage', toString(number % 4)), 'rp_prescreenStep', '(prescreen)') AS user_metadata_map, rand() % 100 AS alloc_cost, concat('cluster', toString(number%4)) AS cluster, multiIf(cluster='cluster2', 'RESOURCE_SLEEP', cluster='cluster3', 'INTERACTIVE', concat('RESOURCE', rand() % 4)) AS hpcod_resource_name
+FROM numbers(24);

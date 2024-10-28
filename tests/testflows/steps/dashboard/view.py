@@ -42,7 +42,7 @@ def wait_edit_button_in_panel_menu(self):
 
 
 @TestStep(When)
-def click_edit_button(self):
+def click_edit_button_for_panel(self):
     """Click edit button in dropdown menu for panel."""
 
     locators.edit_button_for_panel().click()
@@ -82,7 +82,7 @@ def edit_panel(self, panel_name):
         wait_edit_button_in_panel_menu()
 
     with By("clicking edit button"):
-        click_edit_button()
+        click_edit_button_for_panel()
 
 
 @TestStep(When)
@@ -102,21 +102,28 @@ def take_panel_screenshot(self, panel_name, screenshot_name):
 @TestStep(When)
 def click_save_button(self):
     """Open saving menu for dashboard."""
-    locators.save_dashboard.click()
+    locators.save_dashboard(grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
 def change_title_for_dashboard(self, dashboard_name):
     """Change title for dashboard in saving menu."""
-    locators.save_dashboard_title.clear()
+    locators.save_dashboard_title(grafana_version=self.context.grafana_version).clear()
 
-    locators.save_dashboard_title.send_keys(dashboard_name)
+    locators.save_dashboard_title(grafana_version=self.context.grafana_version).send_keys(dashboard_name)
 
 
 @TestStep(When)
 def click_save_dashboard_button(self):
     """Save dashboard."""
-    locators.save_dashboard_button.click()
+    locators.save_dashboard_button(grafana_version=self.context.grafana_version).click()
+
+
+@TestStep(When)
+def click_edit_button(self):
+    """Click edit button."""
+
+    locators.edit_button.click()
 
 
 @TestStep(When)
@@ -132,7 +139,7 @@ def saving_dashboard(self, dashboard_name=None):
                 change_title_for_dashboard(dashboard_name=dashboard_name)
 
     with By("clicking save button"):
-        with delay():
+        with delay(before=0.5):
             click_save_dashboard_button()
 
 
@@ -262,11 +269,16 @@ def open_new_dashboard_endpoint(self, endpoint=None):
 def add_visualization(self):
     """Add visualization for dashboard."""
 
+    if (self.context.grafana_version is None) or (int(self.context.grafana_version.split(".")[0]) > 10):
+        with delay():
+            with By("clicking edit button"):
+                click_edit_button()
+
     with delay():
-        with By("Clicking add button"):
+        with By("clicking add button"):
             click_add_button()
 
-    with By("Clicking add visualization button"):
+    with By("clicking add visualization button"):
         click_add_visualization_button()
 
 
@@ -319,3 +331,27 @@ def double_click_on_panel(self):
     """Double-click on panel to change time range"""
 
     ActionChains(self.context.driver).double_click(locators.visualization).click(locators.visualization).perform()
+
+
+@TestStep(When)
+def check_green_alert_for_panel(self):
+    """Check that panel title contains green alert."""
+    with By("checking green alert exists"):
+        try:
+            assert 'path d="M12 20.86a2.75' in locators.alert_for_panel.get_attribute('innerHTML')
+            return True
+
+        except:
+            return False
+
+
+@TestStep(When)
+def check_red_alert_for_panel(self):
+    """Check that panel title contains red alert."""
+    with By("checking reg alert exists"):
+        try:
+            assert 'path d="M18.17' in locators.alert_for_panel.get_attribute('innerHTML')
+            return True
+
+        except:
+            return False

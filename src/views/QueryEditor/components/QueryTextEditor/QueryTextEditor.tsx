@@ -1,6 +1,14 @@
 import React, { useEffect, useState } from 'react';
-import { InlineField, InlineFieldRow, InlineLabel, InlineSwitch, Input, Select, ToolbarButton } from '@grafana/ui';
-import ReformattedQuery from './ReformattedQuery';
+import {
+  InlineField,
+  InlineFieldRow,
+  InlineLabel,
+  InlineSwitch,
+  Input,
+  Select,
+  TagsInput,
+  ToolbarButton,
+} from '@grafana/ui';
 import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
 import Scanner from '../../../../datasource/scanner/scanner';
@@ -23,10 +31,19 @@ const FORMAT_OPTIONS = [
 ];
 
 export const QueryTextEditor = ({
- query, height, onEditorMount, onSqlChange, onFieldChange, formattedData, onRunQuery, datasource, isAnnotationView 
+  query,
+  height,
+  onEditorMount,
+  onSqlChange,
+  onFieldChange,
+  formattedData,
+  onRunQuery,
+  datasource,
+  isAnnotationView,
+  adhocFilters,
+  areAdHocFiltersAvailable,
 }: any) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
-  const [fieldValues, setFieldValues] = useState(query);
 
   useEffect(() => {
     const scanner = new Scanner(formattedData);
@@ -36,84 +53,167 @@ export const QueryTextEditor = ({
 
   const handleStepChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    setFieldValues({ ...fieldValues, query: query.query, interval: value });
-    onFieldChange({ ...fieldValues, query: query.query, interval: value });
+    onFieldChange({ fieldName: 'interval', value: value });
   };
 
   const handleResolutionChange = (value: number) => {
-    setFieldValues({ ...fieldValues, query: query.query, intervalFactor: value });
-    onFieldChange({ ...fieldValues, query: query.query, intervalFactor: value });
+    onFieldChange({ fieldName: 'intervalFactor', value: value });
   };
 
   const handleRoundChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const { value } = event.target;
-    setFieldValues({ ...fieldValues, query: query.query, round: value });
-    onFieldChange({ ...fieldValues, query: query.query, round: value });
+    onFieldChange({ fieldName: 'round', value: value });
   };
 
   const handleFormatChange = (value: string | undefined) => {
-    setFieldValues({ ...fieldValues, query: query.query, format: value || '' });
-    onFieldChange({ ...fieldValues, query: query.query, format: value });
+    onFieldChange({ fieldName: 'format', value: value });
   };
 
   const handleToggleField = (fieldName: string) => {
-    setFieldValues({ ...fieldValues, query: query.query, [fieldName]: !fieldValues[fieldName] });
-    onFieldChange({ ...fieldValues, query: query.query, [fieldName]: !fieldValues[fieldName] });
+    onFieldChange({ fieldName: fieldName, value: !query[fieldName] });
   };
 
   return (
     <>
-      <SQLCodeEditor datasource={datasource} height={height} onSqlChange={onSqlChange} query={query} onEditorMount={onEditorMount} onRunQuery={onRunQuery} />
+      <SQLCodeEditor
+        datasource={datasource}
+        height={height}
+        onSqlChange={onSqlChange}
+        query={query}
+        onEditorMount={onEditorMount}
+        onRunQuery={onRunQuery}
+      />
+      {!areAdHocFiltersAvailable && <TagsInput
+        className={'adhoc-filters-tags'}
+        tags={adhocFilters.map((filter: any, index: number) => `${filter.key} ${filter.operator} ${filter.value}`)}
+        onChange={(tagsList) => {
+          onFieldChange({
+            fieldName: 'adHocFilters',
+            value: tagsList.map((item: string) => {
+              const [
+                key,
+                operator,
+                value
+              ] = item.split(' ');
+
+              return { key, operator, value };
+            }),
+          });
+        }}
+      />}
       <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
         <InlineFieldRow>
           <InlineField
-            label={<InlineLabel width={18} tooltip="Turn on if you don't like when last data point in time series much lower then previous">Extrapolation</InlineLabel>}
+            label={
+              <InlineLabel
+                width={18}
+                tooltip="Turn on if you don't like when last data point in time series much lower then previous"
+              >
+                Extrapolation
+              </InlineLabel>
+            }
           >
-            <InlineSwitch transparent data-testid="extrapolate-switch" value={fieldValues.extrapolate} onChange={() => handleToggleField('extrapolate')} />
+            <InlineSwitch
+              transparent
+              data-testid="extrapolate-switch"
+              value={query.extrapolate}
+              onChange={() => handleToggleField('extrapolate')}
+            />
           </InlineField>
           <InlineField
-            label={<InlineLabel width={10} tooltip="Leave blank for auto handling based on time range and panel width">Step</InlineLabel>}
+            label={
+              <InlineLabel width={10} tooltip="Leave blank for auto handling based on time range and panel width">
+                Step
+              </InlineLabel>
+            }
           >
-            <Input placeholder="" onChange={handleStepChange} data-testid="interval-input" value={fieldValues.interval} />
+            <Input placeholder="" onChange={handleStepChange} data-testid="interval-input" value={query.interval} />
           </InlineField>
-          <InlineField
-            label={<InlineLabel width={'auto'}>Resolution</InlineLabel>}
-          >
-            <Select width={'auto'} data-testid="resolution-select" onChange={(e) => handleResolutionChange(Number(e.value))} options={RESOLUTION_OPTIONS} value={fieldValues.intervalFactor} />
+          <InlineField label={<InlineLabel width={'auto'}>Resolution</InlineLabel>}>
+            <Select
+              width={'auto'}
+              data-testid="resolution-select"
+              onChange={(e) => handleResolutionChange(Number(e.value))}
+              options={RESOLUTION_OPTIONS}
+              value={query.intervalFactor}
+            />
           </InlineField>
-          { !isAnnotationView && <InlineField
-            label={<InlineLabel width={'auto'}>Format As</InlineLabel>}
-          >
-            <Select width={'auto'} data-testid="format-as-select" onChange={(e) => handleFormatChange(e.value)} options={FORMAT_OPTIONS} value={fieldValues.format} />
-          </InlineField> }
+          {!isAnnotationView && (
+            <InlineField label={<InlineLabel width={'auto'}>Format As</InlineLabel>}>
+              <Select
+                width={'auto'}
+                data-testid="format-as-select"
+                onChange={(e) => handleFormatChange(e.value)}
+                options={FORMAT_OPTIONS}
+                value={query.format}
+              />
+            </InlineField>
+          )}
         </InlineFieldRow>
         <InlineFieldRow>
           <InlineField
-            label={<InlineLabel width={18} tooltip="Add /* $__dashboard $__user */ to query">Add metadata</InlineLabel>}
+            label={
+              <InlineLabel width={18} tooltip="Add /* $__dashboard $__user */ to query">
+                Add metadata
+              </InlineLabel>
+            }
             style={{ height: '100%' }}
           >
-            <InlineSwitch data-testid="metadata-switch" width="auto" value={fieldValues.add_metadata} onChange={() => handleToggleField('add_metadata')} transparent />
+            <InlineSwitch
+              data-testid="metadata-switch"
+              width="auto"
+              value={query.add_metadata}
+              onChange={() => handleToggleField('add_metadata')}
+              transparent
+            />
           </InlineField>
           <InlineField
-            label={<InlineLabel width={18} tooltip="Turn off if you would like pass comments in SQL query to server">Skip Comments</InlineLabel>}
+            label={
+              <InlineLabel width={18} tooltip="Turn off if you would like pass comments in SQL query to server">
+                Skip Comments
+              </InlineLabel>
+            }
             style={{ height: '100%' }}
           >
-            <InlineSwitch data-testid="skip-comments-switch" width="auto" value={fieldValues.skip_comments} onChange={() => handleToggleField('skip_comments')} transparent />
+            <InlineSwitch
+              data-testid="skip-comments-switch"
+              width="auto"
+              value={query.skip_comments}
+              onChange={() => handleToggleField('skip_comments')}
+              transparent
+            />
           </InlineField>
           <InlineField
-            label={<InlineLabel width={10} tooltip="Set rounding for $from and $to timestamps...">Round</InlineLabel>}
+            label={
+              <InlineLabel width={10} tooltip="Set rounding for $from and $to timestamps...">
+                Round
+              </InlineLabel>
+            }
           >
-            <Input data-testid="round-input" placeholder="" onChange={handleRoundChange} value={fieldValues.round} />
+            <Input data-testid="round-input" placeholder="" onChange={handleRoundChange} value={query.round} />
           </InlineField>
           <InlineField>
-            <ToolbarButton variant={'primary'} onClick={() => handleToggleField('showHelp')} isOpen={fieldValues.showHelp}>Show help</ToolbarButton>
+            <ToolbarButton variant={'primary'} onClick={() => handleToggleField('showHelp')} isOpen={query.showHelp}>
+              Show help
+            </ToolbarButton>
           </InlineField>
           <InlineField>
-            <ToolbarButton variant={'primary'} onClick={() => handleToggleField('showFormattedSQL')} isOpen={fieldValues.showFormattedSQL}>Show generated SQL</ToolbarButton>
+            <ToolbarButton
+              variant={'primary'}
+              onClick={() => handleToggleField('showFormattedSQL')}
+              isOpen={query.showFormattedSQL}
+            >
+              Show generated SQL
+            </ToolbarButton>
           </InlineField>
         </InlineFieldRow>
-        {fieldValues.showFormattedSQL && <ReformattedQuery data={sqlFormattedData} />}
-        {fieldValues.showHelp && <QueryMacrosInfo />}
+        {query.showFormattedSQL && (
+          <div style={{ width: '100%' }}>
+            <h5>Reformatted Query</h5>
+            <pre>{sqlFormattedData}</pre>
+          </div>
+        )}
+        {query.showHelp && <QueryMacrosInfo />}
       </div>
     </>
   );

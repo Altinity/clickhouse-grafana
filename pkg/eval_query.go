@@ -1105,7 +1105,7 @@ func newEvalAST(isObj bool) *EvalAST {
 	var obj map[string]interface{}
 	var arr []interface{}
 	if isObj {
-		obj = make(map[string]interface{}, 0)
+		obj = make(map[string]interface{})
 	} else {
 		arr = make([]interface{}, 0)
 	}
@@ -1826,21 +1826,62 @@ func toAST(s string) (*EvalAST, error) {
 	return scanner.toAST()
 }
 
-func isClosured(argument string) bool {
-	var bracketsQueue []rune
-	for _, v := range argument {
-		switch v {
-		case '(':
-			bracketsQueue = append(bracketsQueue, v)
-		case ')':
-			if 0 < len(bracketsQueue) && bracketsQueue[len(bracketsQueue)-1] == '(' {
-				bracketsQueue = bracketsQueue[:len(bracketsQueue)-1]
-			} else {
+// isClosured checks if a string has properly balanced brackets while ignoring brackets within quotes
+// https://github.com/Altinity/clickhouse-grafana/issues/648
+func isClosured(str string) bool {
+	stack := make([]rune, 0)
+	isInQuote := false
+	var quoteType rune
+
+	openBrackets := map[rune]rune{
+		'(': ')',
+		'[': ']',
+		'{': '}',
+	}
+
+	closeBrackets := map[rune]rune{
+		')': '(',
+		']': '[',
+		'}': '{',
+	}
+
+	runes := []rune(str)
+	for i := 0; i < len(runes); i++ {
+		char := runes[i]
+
+		// Handle quotes
+		if (char == '\'' || char == '"' || char == '`') && (i == 0 || runes[i-1] != '\\') {
+			if !isInQuote {
+				isInQuote = true
+				quoteType = char
+			} else if char == quoteType {
+				isInQuote = false
+				quoteType = 0
+			}
+			continue
+		}
+
+		// Skip characters inside quotes
+		if isInQuote {
+			continue
+		}
+
+		// Handle brackets
+		if _, ok := openBrackets[char]; ok {
+			stack = append(stack, char)
+		} else if closingPair, ok := closeBrackets[char]; ok {
+			if len(stack) == 0 {
+				return false
+			}
+			lastOpen := stack[len(stack)-1]
+			stack = stack[:len(stack)-1] // pop
+			if lastOpen != closingPair {
 				return false
 			}
 		}
 	}
-	return len(bracketsQueue) == 0
+
+	return len(stack) == 0
 }
 
 func betweenBraces(query string) string {

@@ -1,5 +1,5 @@
 import _, { curry, each } from 'lodash';
-import SqlSeries from './sql_series';
+import SqlSeries from './sql-series/sql_series';
 import SqlQuery from './sql-query/sql_query';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
@@ -10,6 +10,10 @@ import {
   DataQueryRequest,
   DataSourceApi,
   DataSourceInstanceSettings,
+  DataSourceWithLogsContextSupport, DataSourceWithToggleableQueryFiltersSupport,
+  LogRowContextOptions,
+  LogRowContextQueryDirection,
+  LogRowModel, QueryFilterOptions,
   TypedVariableModel
 } from '@grafana/data';
 import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
@@ -20,8 +24,11 @@ import SqlQueryMacros from './sql-query/sql-query-macros';
 import { QueryEditor } from "../views/QueryEditor/QueryEditor";
 
 const adhocFilterVariable = 'adhoc_query_filter';
-
-export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
+export
+  class CHDataSource
+  extends DataSourceApi<CHQuery, CHDataSourceOptions>
+  implements DataSourceWithLogsContextSupport<CHQuery>, DataSourceWithToggleableQueryFiltersSupport<CHQuery>
+{
   backendSrv: BackendSrv;
   templateSrv: TemplateSrv;
   adHocFilter: AdHocFilter;
@@ -143,6 +150,162 @@ export class CHDataSource extends DataSourceApi<CHQuery, CHDataSourceOptions> {
     })
 
     return dataRequest
+  }
+
+
+  async getLogRowContext(row: LogRowModel, options?: LogRowContextOptions | undefined, query?: CHQuery | undefined): Promise<{data: any[]}> {
+
+    let traceId;
+    const requestOptions = {...options, range: this.options.range}
+
+    const originalQuery = this.createQuery(requestOptions, query)
+
+    let scanner = new Scanner(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '));
+    let { select } = scanner.toAST();
+
+    const generateQueryForTraceID = (traceId, select) => {
+      return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`
+    }
+
+    const generateQueryForTimestampBackward = (inputTimestampColumn, inputTimestampValue) => {
+      return `SELECT timestamp FROM (
+          SELECT
+            ${inputTimestampColumn},
+            FIRST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN 10 PRECEDING AND CURRENT ROW) AS timestamp
+          FROM $table
+          ORDER BY ${inputTimestampColumn}
+        ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`
+    }
+
+    const generateQueryForTimestampForward = (inputTimestampColumn, inputTimestampValue) => {
+      return `SELECT timestamp FROM (
+          SELECT
+            ${inputTimestampColumn},
+            LAST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN CURRENT ROW AND 10 FOLLOWING) AS timestamp
+          FROM $table
+          ORDER BY ${inputTimestampColumn}
+        ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`
+    }
+
+    const generateRequestForTimestampForward = (timestampField, timestamp, currentRowTimestamp, select) => {
+      return `SELECT ${select.join(',')} FROM $table WHERE ${timestampField} <'${timestamp}' AND ${timestampField} > '${currentRowTimestamp}'`
+    }
+
+    const generateRequestForTimestampBackward = (timestampField, timestamp, currentRowTimestamp, select) => {
+      return `SELECT ${select.join(',')} FROM $table WHERE ${timestampField} > '${timestamp}' AND ${timestampField} < '${currentRowTimestamp}'`
+    }
+
+
+    if (traceId) {
+      const queryForTraceID = generateQueryForTraceID(traceId, select);
+      const {stmt, requestId} = this.createQuery(requestOptions, {...query, query: queryForTraceID})
+
+      const response: any = await this._seriesQuery(stmt, requestId + options?.direction);
+
+      if (response && !response.rows) {
+        return {data: []}
+      } else if (!response) {
+        throw new Error('No response for traceId log context query')
+      }
+
+      let sqlSeries = new SqlSeries({
+        refId: 'FORWARD',
+        series: response.data,
+        meta: response.meta,
+      });
+
+      return {data: sqlSeries.toLogs()}
+    } else {
+      const timestampColumn = query?.dateTimeColDataType
+
+      const getLogsTimeBoundaries = async () => {
+
+        const boundariesRequest =
+          options?.direction === LogRowContextQueryDirection.Backward ?
+            generateQueryForTimestampBackward(timestampColumn, row.timeUtc):
+            generateQueryForTimestampForward(timestampColumn, row.timeUtc)
+
+        const {
+          stmt,
+          requestId
+        } = this.createQuery(requestOptions, {...query, query: boundariesRequest})
+
+        const result: any = await this._seriesQuery(stmt, requestId + options?.direction);
+        return result.data[0]
+      }
+
+      const {timestamp} = await getLogsTimeBoundaries()
+
+      const getLogContext = async () => {
+        const contextDataRequest =
+          options?.direction === LogRowContextQueryDirection.Backward ?
+            generateRequestForTimestampBackward(timestampColumn, timestamp, row.timeUtc, select):
+            generateRequestForTimestampForward(timestampColumn, timestamp, row.timeUtc, select)
+
+        const {
+          stmt,
+          requestId
+        } = this.createQuery(requestOptions, {...query, query: contextDataRequest})
+
+        return this._seriesQuery(stmt, requestId + options?.direction);
+      }
+
+      const response: any = await getLogContext()
+
+      if (response && !response.rows) {
+        return {data: []}
+      } else if (!response) {
+        throw new Error('No response for log context query')
+      }
+
+      let sqlSeries = new SqlSeries({
+        refId: options?.direction,
+        series: response.data,
+        meta: response.meta,
+      });
+
+      return {data: sqlSeries.toLogs()}
+    }
+
+  }
+
+  toggleQueryFilter(query: CHQuery, filter: any): any {
+    let filters = [...query.adHocFilters];
+    let isFilterAdded = query.adHocFilters.filter((f) => f.key === filter.options.key && f.value === filter.options.value).length
+    if (filter.type === 'FILTER_FOR') {
+      if (isFilterAdded) {
+        filters = filters.filter((f) => f.key !== filter.options.key && f.value !== filter.options.value && f.operator !== filter.options.operator)
+      } else {
+        filters.push(
+            {
+              "value": filter.options.value,
+              "key": filter.options.key,
+              "operator": "="
+            }
+        )
+      }
+    } else if (filter.type === 'FILTER_OUT') {
+      if (isFilterAdded) {
+        filters = filters.filter((f) => f.key !== filter.options.key && f.value !== filter.options.value && f.operator !== filter.options.operator)
+      } else {
+        filters.push(
+          {
+            "value": filter.options.value,
+            "key": filter.options.key,
+            "operator": "!="
+          }
+        )
+      }
+    }
+
+    return {
+      ...query,
+      adHocFilters: filters,
+    }
+  }
+
+  queryHasFilter(query: CHQuery, filter: QueryFilterOptions): boolean {
+    return query.adHocFilters.some((f) => f.key === filter.key && f.value === filter.value)
   }
 
   query(options: DataQueryRequest<CHQuery>) {

@@ -9,6 +9,7 @@ import steps.dashboard.view as dashboard
 import steps.dashboards.view as dashboards
 import steps.panel.sql_editor.view as sql_editor
 import steps.connections.datasources.view as datasources
+import steps.connections.datasources.new.view as datasources_new
 import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
 
 from requirements.requirements import *
@@ -21,15 +22,17 @@ def gh_api_check(self):
     with When("I go to clickhouse dashboard"):
         dashboards.open_dashboard(dashboard_name="gh-api")
 
-    for attempt in retries(delay=5, timeout=50):
-        with attempt:
-            with delay():
-                with Then("I take screenshot of Repeated postgresql panel"):
-                    dashboard.take_screenshot_for_panel(panel_name="Pull request events for grafana/grafana", screenshot_name="gh-api_panel")
 
-            with delay():
-                with Then("I check graph contains data"):
-                    assert actions.check_screenshot_contains_green(screenshot_name="gh-api_panel") is True, error()
+    with Then("I check gh-api datasource works correctly"):
+        for attempt in retries(delay=5, timeout=50):
+            with attempt:
+                with delay():
+                    with Then("I take screenshot of Pull request events for grafana/grafana panel"):
+                        dashboard.take_screenshot_for_panel(panel_name="Pull request events for grafana/grafana", screenshot_name="gh-api_panel")
+
+                with delay():
+                    with Then("I check graph contains data"):
+                        assert actions.check_screenshot_contains_green(screenshot_name="gh-api_panel") is True, error()
 
 
 @TestCheck
@@ -65,68 +68,103 @@ def mixed_data_sources(self):
     with When("I add visualization for panel"):
         dashboard.add_visualization()
 
-    try:
-        with When("I select datasource"):
-            with delay():
-                panel.select_datasource_in_panel_view(datasource_name='-- Mixed --')
 
-        with When("I add query"):
-            with delay():
-                panel.click_add_query_button()
+    with When("I select datasource"):
+        with delay():
+            panel.select_datasource_in_panel_view(datasource_name='-- Mixed --')
 
-        with When("I change datasource for the first query"):
-            with delay():
-                panel.enter_data_source_for_query(query_name='A', datasource_name='mixed_1')
+    with When("I add query"):
+        with delay():
+            panel.click_add_query_button()
 
-        with When("I change datasource for the second query"):
-            with delay():
-                panel.enter_data_source_for_query(query_name='B', datasource_name='mixed_2')
+    with When("I change datasource for the first query"):
+        with delay():
+            panel.enter_data_source_for_query(query_name='A', datasource_name='mixed_1')
 
-        with When("I open SQL editor"):
-            with delay():
-                panel.go_to_sql_editor(query_name='A')
-                panel.go_to_sql_editor(query_name='B')
+    with When("I change datasource for the second query"):
+        with delay():
+            panel.enter_data_source_for_query(query_name='B', datasource_name='mixed_2')
 
-        with Then("I enter the first query"):
-            with delay():
-                panel.enter_sql_editor_input(query_name='A', query='SELECT now(), 1')
+    with When("I open SQL editor"):
+        with delay():
+            panel.go_to_sql_editor(query_name='A')
+            panel.go_to_sql_editor(query_name='B')
 
-        with Then("I enter the second query"):
-            with delay():
-                panel.enter_sql_editor_input(query_name='B', query='SELECT now(), 1')
+    with Then("I enter the first query"):
+        with delay():
+            panel.enter_sql_editor_input(query_name='A', query='SELECT now(), 1')
 
-        with When("I click on the visualization to see the result"):
-            with delay():
-                panel.click_on_the_visualization()
+    with Then("I enter the second query"):
+        with delay():
+            panel.enter_sql_editor_input(query_name='B', query='SELECT now(), 1')
 
-        with Then("I click apply button"):
-            with delay():
-                panel.click_apply_button()
+    with When("I click on the visualization to see the result"):
+        with delay():
+            panel.click_on_the_visualization()
 
-        with Then("I go to panel edit the first time"):
-            with delay():
-                dashboard.open_panel(panel_name='Panel Title')
+    with Then("I click save button"):
+        with delay():
+            panel.save_dashboard()
 
-        with Then("I check queries the first time"):
-            check_queries()
+    with Then("I open dashboard view"):
+        with delay():
+            dashboards.open_dashboard(dashboard_name="a_mixed")
 
-        with Then("I click discard button"):
-            with delay():
-                panel.click_discard_button()
+    with Then("I go to panel edit the first time"):
+        with delay():
+            dashboard.open_panel(panel_name='Panel Title')
 
-        with Then("I go to panel edit the second time"):
-            with delay():
-                dashboard.open_panel(panel_name='Panel Title')
+    with Then("I check queries the first time"):
+        check_queries()
 
-        with Then("I check queries the second time"):
-            check_queries()
+    with Then("I click discard button"):
+        with delay():
+            panel.click_discard_button()
 
-    finally:
-        with Finally("I click discard button"):
-            with delay():
-                panel.click_discard_button()
-            with delay():
-                dashboard.saving_dashboard()
+    with Then("I go to panel edit the second time"):
+        with delay():
+            dashboard.open_panel(panel_name='Panel Title')
+
+    with Then("I check queries the second time"):
+        check_queries()
+
+
+@TestScenario
+@Requirements(RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),)
+def default_values_not_affect_url_textfield(self):
+    """Check that default values not affect to url textfield in datasource setup."""
+
+    with When("I open create new datasource view"):
+        with delay():
+            datasources_new.open_add_new_datasource_endpoint()
+
+    with And("I click new altinity grafana plugin"):
+        with delay():
+            datasources_new.click_new_altinity_plugin_datasource()
+
+    with And("I enter url"):
+        with delay():
+            datasources_altinity_edit.enter_url_into_url_field(url="http://clickhouse:8123")
+
+    with And("I enter datasource name"):
+        with delay():
+            datasources_altinity_edit.enter_name_into_name_field(datasource_name="default_values_not_affect_url_textfield")
+
+    with And("I click save and test button"):
+        with delay():
+            datasources_altinity_edit.click_save_and_test_button()
+
+    with And("I click `Use default values toggle`"):
+        with delay():
+            datasources_altinity_edit.click_use_default_values_toggle()
+
+    with And("I click use post method toggle"):
+        with delay():
+            datasources_altinity_edit.click_use_post_method_toggle()
+
+    with Then("I check that url textfield is not change after clicking on the toggle"):
+        with delay():
+            assert datasources_altinity_edit.get_url_textfield_text() == "http://clickhouse:8123", error()
 
 
 @TestFeature

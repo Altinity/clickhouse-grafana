@@ -60,10 +60,12 @@ def open_dashboard_view(self, dashboard_name):
 def open_dashboards_view(self, wait_dashboard_name="clickhouse dashboard"):
     """Open dashboards view and wait it to be loaded."""
     with When("I go to dashboards endpoint"):
-        open_dashboards_endpoint()
+        with delay():
+            open_dashboards_endpoint()
 
     with And("I wait submit button to be clickable"):
-        wait_dashboard(dashboard_name=wait_dashboard_name)
+        with delay():
+            wait_dashboard(dashboard_name=wait_dashboard_name)
 
 
 @TestStep(When)
@@ -92,20 +94,24 @@ def create_new_dashboard(self):
 def delete_dashboard(self, dashboard_name):
     """Delete dashboard."""
     with By("opening dashboards view"):
-        open_dashboards_view()
+        with delay():
+            open_dashboards_view()
 
     with By("selecting dashboard"):
-        click_dashboard_checkmark(dashboard_name=dashboard_name)
+        with delay():
+            click_dashboard_checkmark(dashboard_name=dashboard_name)
 
-    with delay():
-        with By("clicking delete button"):
+    with By("clicking delete button"):
+        with delay():
             click_delete_button()
 
     with By("entering confirmation"):
-        enter_delete_conformation()
+        with delay():
+            enter_delete_conformation()
 
     with By("clicking delete button in confirmation window"):
-        click_delete_confirmation_button()
+        with delay():
+            click_delete_confirmation_button()
 
 
 @TestStep(When)

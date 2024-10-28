@@ -1,6 +1,7 @@
 from testflows.core import *
 from testflows.asserts import error
 
+from regression import grafana_version
 from steps.delay import delay
 from steps.panel.locators import locators
 from selenium.webdriver import ActionChains
@@ -50,7 +51,7 @@ def click_datasource_in_select_datasource_dropdown(self, datasource_name):
 @TestStep(When)
 def click_sql_editor_toggle(self, query_name):
     """Click SQL editor toggle."""
-    locators.sql_editor_toggle(query_name).click()
+    locators.sql_editor_toggle(query_name, grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
@@ -108,7 +109,7 @@ def wait_sql_editor_input(self):
 def select_input_query(self, query_name):
     """Select input query using triple click on textarea."""
 
-    ActionChains(self.context.driver).double_click(locators.sql_editor_input(query_name=query_name)).click(locators.sql_editor_input(query_name=query_name)).perform()
+    ActionChains(self.context.driver).double_click(locators.sql_editor_input(query_name=query_name, grafana_version=self.context.grafana_version)).click(locators.sql_editor_input(query_name=query_name, grafana_version=self.context.grafana_version)).perform()
 
 
 @TestStep(When)
@@ -151,14 +152,14 @@ def enter_sql_editor_input(self, query, query_name='A'):
         select_input_query(query_name=query_name)
 
     with By("entering request"):
-        locators.input_in_sql_editor(query_name=query_name).send_keys(query)
+        locators.input_in_sql_editor(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(query)
 
 
 @TestStep(When)
 def get_input_query(self, query_name='A'):
     """Get SQL query."""
 
-    return locators.input_in_sql_editor(query_name=query_name).text
+    return locators.input_in_sql_editor(query_name=query_name, grafana_version=self.context.grafana_version).text
 
 
 @TestStep(When)
@@ -271,6 +272,11 @@ def get_query_inspector_url_text(self):
     with By("getting url from query inspector"):
         return locators.query_inspector_url.text
 
+@TestStep(When)
+def click_query_inspector_close_button(self):
+    """Click query inspector close button."""
+
+    locators.query_inspector_close_button.click()
 
 @TestStep(Then)
 def check_query_inspector_request(self, url_parts):
@@ -284,28 +290,33 @@ def check_query_inspector_request(self, url_parts):
         with delay():
             click_inspect_query_refresh_button()
 
-    with By("checking url contains necessary parts"):
-        for url_part in url_parts:
-            with By(f"checking url contains {url_part}"):
-                assert url_part in get_query_inspector_url_text(), error()
+    try:
+        with By("checking url contains necessary parts"):
+            for url_part in url_parts:
+                with By(f"checking url contains {url_part}"):
+                    assert url_part in get_query_inspector_url_text(), error()
+    finally:
+        with Finally("I close query inspector window"):
+            with By("clicking query inspector close button"):
+                click_query_inspector_close_button()
 
 
 @TestStep(When)
 def change_query_name(self, query_name, new_query_name):
     """Change query name."""
 
-    locators.query_name_field(query_name=query_name).click()
-    locators.query_name_textfield(query_name=query_name).send_keys(new_query_name)
-    locators.query_name_textfield(query_name=query_name).send_keys(Keys.ENTER)
+    locators.query_name_field(query_name=query_name, grafana_version=self.context.grafana_version).click()
+    locators.query_name_textfield(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(new_query_name)
+    locators.query_name_textfield(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(Keys.ENTER)
 
 
 @TestStep(When)
 def change_expression_name(self, expression_name, new_expression_name):
     """Change expression name."""
 
-    locators.expression_name_field(expression_name=expression_name).click()
-    locators.expression_name_textfield(expression_name=expression_name).send_keys(new_expression_name)
-    locators.expression_name_textfield(expression_name=expression_name).send_keys(Keys.ENTER)
+    locators.expression_name_field(expression_name=expression_name, grafana_version=self.context.grafana_version).click()
+    locators.expression_name_textfield(expression_name=expression_name, grafana_version=self.context.grafana_version).send_keys(new_expression_name)
+    locators.expression_name_textfield(expression_name=expression_name, grafana_version=self.context.grafana_version).send_keys(Keys.ENTER)
 
 
 @TestStep(When)
@@ -319,51 +330,51 @@ def click_duplicate_query(self, query_name):
 def click_duplicate_expression(self, expression_name):
     """Click duplicate expression."""
 
-    locators.duplicate_expression_button(expression_name=expression_name).click()
+    locators.duplicate_expression_button(expression_name=expression_name, grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
 def click_hide_response_query(self, query_name):
     """Click hide response query button."""
 
-    locators.hide_response_query_button(query_name=query_name).click()
+    locators.hide_response_query_button(query_name=query_name, grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
 def click_hide_response_expression(self, expression_name):
     """Click hide response expression button."""
 
-    locators.hide_response_expression_button(expression_name=expression_name).click()
+    locators.hide_response_expression_button(expression_name=expression_name, grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
 def click_delete_query(self, query_name):
     """Click delete query button."""
 
-    locators.delete_query_button(query_name=query_name).click()
+    locators.delete_query_button(query_name=query_name, grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
 def click_hide_response_expression(self, expression_name):
     """Click delete expression button."""
 
-    locators.delete_expression_button(expression_name=expression_name).click()
+    locators.delete_expression_button(expression_name=expression_name, grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
 def enter_expression_operation(self, expression_name, operation_type):
     """Enter expression operation type."""
 
-    locators.expression_operation_dropdown(expression_name=expression_name).send_keys(operation_type)
-    locators.expression_operation_dropdown(expression_name=expression_name).send_keys(Keys.ENTER)
+    locators.expression_operation_dropdown(expression_name=expression_name, grafana_version=self.context.grafana_version).send_keys(operation_type)
+    locators.expression_operation_dropdown(expression_name=expression_name, grafana_version=self.context.grafana_version).send_keys(Keys.ENTER)
 
 
 @TestStep(When)
 def enter_expression(self, expression_name, expression):
     """Enter expression."""
 
-    locators.expression_textfield(expression_name=expression_name).send_keys(expression)
-    locators.expression_textfield(expression_name=expression_name).send_keys(Keys.ENTER)
+    locators.expression_textfield(expression_name=expression_name, grafana_version=self.context.grafana_version).send_keys(expression)
+    locators.expression_textfield(expression_name=expression_name, grafana_version=self.context.grafana_version).send_keys(Keys.ENTER)
 
 
 @TestStep(When)
@@ -393,8 +404,8 @@ def enter_time(self, time_from, time_to):
 def enter_data_source_for_query(self, query_name, datasource_name):
     """Enter data source for query."""
 
-    locators.data_source_picker(query_name=query_name).send_keys(datasource_name)
-    locators.data_source_picker(query_name=query_name).send_keys(Keys.ENTER)
+    locators.data_source_picker(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(datasource_name)
+    locators.data_source_picker(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(Keys.ENTER)
 
 
 @TestStep(When)
@@ -406,9 +417,9 @@ def click_apply_button(self):
 
 @TestStep(When)
 def click_discard_button(self):
-    """Click apply button for panel."""
+    """Click discard button for panel."""
 
-    locators.discard_button.click()
+    locators.discard_button(grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(When)
@@ -423,6 +434,13 @@ def click_table_view_toggle(self):
     """Click table view toggle."""
 
     locators.table_view_toggle.click()
+
+
+@TestStep(When)
+def click_alert_tab(self):
+    """Click alert tab."""
+
+    locators.alert_tab(grafana_version=self.context.grafana_version).click()
 
 
 @TestStep(Then)
@@ -481,3 +499,35 @@ def check_error_for_table_view(self):
         except:
             return False
 
+
+@TestStep(Then)
+def get_value_from_table(self, time):
+    """Get value from table."""
+
+    return locators.column_row(time=time).text
+
+
+@TestStep(When)
+def click_save_button(self):
+    """Click save button."""
+
+    locators.save_button(grafana_version=self.context.grafana_version).click()
+
+
+@TestStep(When)
+def click_save_confirmation_button(self):
+    """Click save confirmation button."""
+
+    locators.save_confirmations_button(grafana_version=self.context.grafana_version).click()
+
+
+@TestStep(When)
+def save_dashboard(self):
+    """Save dashboard from panel view."""
+    with By("clicking save button"):
+        with delay():
+            click_save_button()
+
+    with And("clicking save confirmation button"):
+        with delay(before=0.5):
+            click_save_confirmation_button()

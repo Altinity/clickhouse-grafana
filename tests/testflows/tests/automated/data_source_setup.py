@@ -6,6 +6,7 @@ from testflows.asserts import error
 import steps.actions as actions
 import steps.panel.view as panel
 import steps.dashboard.view as dashboard
+import steps.panel.sql_editor.view as sql_editor
 import steps.connections.datasources.view as datasources
 import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
 
@@ -429,6 +430,109 @@ def check_success_browser_access(self):
         access_type='Browser',
         check_url_in_query_inspector=True,
         url_parts=["clickhouse:8123"]
+    )
+
+
+@TestOutline
+def check_default_values(
+        self,
+        default_column_timestamp_type="DateTime",
+        default_datetime_field="EventTime",
+        default_timestamp_field="level",
+        default_datetime64_field="d64",
+        default_date_field="EventDate",
+        check_reformatted_query="SELECT 'EventDate', 'EventTime'",
+):
+    """Check that plugin supports setting up default values."""
+    with Given("I create new altinity datasource"):
+        actions.create_new_altinity_datasource(
+            datasource_name="default_values",
+            url="http://clickhouse:8123",
+            use_default_values=True,
+            default_column_timestamp_type=default_column_timestamp_type,
+            default_datetime_field=default_datetime_field,
+            default_timestamp_field=default_timestamp_field,
+            default_datetime64_field=default_datetime64_field,
+            default_date_field=default_date_field,
+        )
+
+    with And("I create new dashboard"):
+        actions.create_dashboard(dashboard_name="default_values")
+
+    with When("I add visualization for panel"):
+        dashboard.add_visualization()
+
+    with And("I select datasource"):
+        with delay():
+            panel.select_datasource_in_panel_view(datasource_name="default_values")
+
+    with And("I open SQL editor"):
+        with delay():
+            panel.go_to_sql_editor()
+
+    with And("I enter query to SQL editor `SELECT '$dateCol', '$dateTimeCol'`"):
+        panel.enter_sql_editor_input(query="SELECT '$dateCol', '$dateTimeCol'")
+
+    with Then("I click Show generated SQL button",
+              description="opened to check reformatted queries in scenarios"):
+        with delay():
+            sql_editor.click_show_generated_sql_button(query_name='A')
+
+    with And("I check reformatted query"):
+        assert check_reformatted_query in sql_editor.get_reformatted_query(query_name='A'), error()
+
+
+@TestScenario
+@Requirements(
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup("1.0")
+)
+def check_default_values_datetime(self):
+    """Check that plugin supports setting up default values with DateTime timestamp type."""
+
+    check_default_values(
+        default_column_timestamp_type="DateTime",
+        default_datetime_field="EventTime",
+        default_timestamp_field=None,
+        default_datetime64_field=None,
+        default_date_field="EventDate",
+        check_reformatted_query="SELECT 'EventDate', 'EventTime'",
+    )
+
+
+@TestScenario
+@Requirements(
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup("1.0")
+)
+def check_default_values_timestamp(self):
+    """Check that plugin supports setting up default values with timestamp default timestamp type."""
+
+    check_default_values(
+        default_column_timestamp_type="timestamp",
+        default_datetime_field=None,
+        default_timestamp_field="level",
+        default_datetime64_field=None,
+        default_date_field="EventDate",
+        check_reformatted_query="SELECT 'EventDate', 'level'",
+    )
+
+
+@TestScenario
+@Requirements(
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup("1.0")
+)
+def check_default_values_datetime64(self):
+    """Check that plugin supports setting up default values with DateTime64 timestamp type."""
+
+    check_default_values(
+        default_column_timestamp_type="DateTime64",
+        default_datetime_field=None,
+        default_timestamp_field=None,
+        default_datetime64_field="d64",
+        default_date_field="EventDate",
+        check_reformatted_query="SELECT 'EventDate', 'd64'",
     )
 
 

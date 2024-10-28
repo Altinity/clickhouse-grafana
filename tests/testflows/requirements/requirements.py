@@ -105,6 +105,7 @@ RQ_SRS_Plugin_DataSourceSetupView = Requirement(
         '* `Name`\n'
         '* `HTTP`\n'
         '* `Auth toggles`\n'
+        '* `Use default values` toggle\n'
         '* `Custom HTTP Headers`\n'
         '* `Additional`\n'
         '\n'
@@ -133,6 +134,46 @@ RQ_SRS_Plugin_DataSourceSetupView_SaveAndTestButton = Requirement(
     num='5.2'
 )
 
+RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle = Requirement(
+    name='RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesToggle',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        "The [Plugin]'s data source setup view SHALL contain a `default values` toggle that SHALL open \n"
+        'default values setup menu with the following dropdowns:\n'
+        '\n'
+        '* `Column timestamp type`\n'
+        '* `Datetime Field`\n'
+        '* `Timestamp (Uint32) Field`\n'
+        '* `Datetime64 Field`\n'
+        '* `Date Field`\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='5.3'
+)
+
+RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup = Requirement(
+    name='RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesSetup',
+    version='1.0',
+    priority=None,
+    group=None,
+    type=None,
+    uid=None,
+    description=(
+        "The [Plugin]'s data source setup view SHALL contain a default values setup menu \n"
+        'that SHALL specify default values for panels that uses this datasource.\n'
+        '\n'
+    ),
+    link=None,
+    level=2,
+    num='5.4'
+)
+
 RQ_SRS_Plugin_DataSourceSetupView_DataSourceName = Requirement(
     name='RQ.SRS.Plugin.DataSourceSetupView.DataSourceName',
     version='1.0',
@@ -158,7 +199,7 @@ RQ_SRS_Plugin_DataSourceSetupView_DefaultDataSource = Requirement(
     uid=None,
     description=(
         'The [Plugin] SHALL support specifying the data source as default by using the `Default` toggle in the data source setup view.\n'
-        'The default data source SHALL be preselected in new pannels.\n'
+        'The default data source SHALL be preselected in new panels.\n'
         '\n'
     ),
     link=None,
@@ -1422,7 +1463,7 @@ RQ_SRS_Plugin_Annotations = Requirement(
     uid=None,
     description=(
         'The [Plugin] SHALL support [Grafana] annotations setup for dashboards by clicking gear button and \n'
-        'setuping variables in the `Annotations` tab.\n'
+        'setting up variables in the `Annotations` tab.\n'
         '\n'
     ),
     link=None,
@@ -1463,16 +1504,15 @@ RQ_SRS_Plugin_Alerts_AlertSetupPage = Requirement(
     num='40.2'
 )
 
-RQ_SRS_Plugin_Alerts_RuleType_GrafanaManaged = Requirement(
-    name='RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged',
+RQ_SRS_Plugin_Alerts_UnifiedAlerts = Requirement(
+    name='RQ.SRS.Plugin.Alerts.UnifiedAlerts',
     version='1.0',
     priority=None,
     group=None,
     type=None,
     uid=None,
     description=(
-        'The [Plugin] SHALL support `Grafana-managed` rule type by choosing rule type in alert setup page. \n'
-        'This alert SHALL be captured by grafana.\n'
+        'The [Plugin] SHALL support unified alerts defined in `Alerting > Alert rules` page.\n'
         '\n'
         '\n'
     ),
@@ -1481,16 +1521,17 @@ RQ_SRS_Plugin_Alerts_RuleType_GrafanaManaged = Requirement(
     num='40.3'
 )
 
-RQ_SRS_Plugin_Alerts_RuleType_DataSourceManaged = Requirement(
-    name='RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged',
+RQ_SRS_Plugin_Alerts_LegacyAlerts = Requirement(
+    name='RQ.SRS.Plugin.Alerts.LegacyAlerts',
     version='1.0',
     priority=None,
     group=None,
     type=None,
     uid=None,
     description=(
-        'The [Plugin] SHALL support `Data source-managed` rule type by choosing rule type in alert setup page. \n'
-        'This alert SHALL be captured by data source.\n'
+        'The [Plugin] SHALL support legacy alerts for grafana version less or equal 10.\n'
+        'This Alerts SHALL be defined in panel page for each individual panel.\n'
+        '\n'
         '\n'
     ),
     link=None,
@@ -1854,6 +1895,8 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         Heading(name='Adding New Data Source', level=1, num='5'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView', level=2, num='5.1'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton', level=2, num='5.2'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesToggle', level=2, num='5.3'),
+        Heading(name='RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesSetup', level=2, num='5.4'),
         Heading(name='Specifying Data Source Name', level=1, num='6'),
         Heading(name='RQ.SRS.Plugin.DataSourceSetupView.DataSourceName', level=2, num='6.1'),
         Heading(name='Using Default Data Source', level=1, num='7'),
@@ -1963,11 +2006,11 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         Heading(name='RQ.SRS.Plugin.Variables', level=2, num='38.1'),
         Heading(name='Annotations Setup', level=1, num='39'),
         Heading(name='RQ.SRS.Plugin.Annotations', level=2, num='39.1'),
-        Heading(name='Setaping Alerts', level=1, num='40'),
+        Heading(name='Setting up Alerts', level=1, num='40'),
         Heading(name='RQ.SRS.Plugin.Alerts', level=2, num='40.1'),
         Heading(name='RQ.SRS.Plugin.Alerts.AlertSetupPage', level=2, num='40.2'),
-        Heading(name='RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged', level=2, num='40.3'),
-        Heading(name='RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged', level=2, num='40.4'),
+        Heading(name='RQ.SRS.Plugin.Alerts.UnifiedAlerts', level=2, num='40.3'),
+        Heading(name='RQ.SRS.Plugin.Alerts.LegacyAlerts', level=2, num='40.4'),
         Heading(name='Functions', level=1, num='41'),
         Heading(name='RQ.SRS.Plugin.Functions', level=2, num='41.1'),
         Heading(name='RQ.SRS.Plugin.Functions.Rate', level=2, num='41.2'),
@@ -1994,6 +2037,8 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         RQ_SRS_Plugin,
         RQ_SRS_Plugin_DataSourceSetupView,
         RQ_SRS_Plugin_DataSourceSetupView_SaveAndTestButton,
+        RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle,
+        RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup,
         RQ_SRS_Plugin_DataSourceSetupView_DataSourceName,
         RQ_SRS_Plugin_DataSourceSetupView_DefaultDataSource,
         RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection,
@@ -2068,8 +2113,8 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
         RQ_SRS_Plugin_Annotations,
         RQ_SRS_Plugin_Alerts,
         RQ_SRS_Plugin_Alerts_AlertSetupPage,
-        RQ_SRS_Plugin_Alerts_RuleType_GrafanaManaged,
-        RQ_SRS_Plugin_Alerts_RuleType_DataSourceManaged,
+        RQ_SRS_Plugin_Alerts_UnifiedAlerts,
+        RQ_SRS_Plugin_Alerts_LegacyAlerts,
         RQ_SRS_Plugin_Functions,
         RQ_SRS_Plugin_Functions_Rate,
         RQ_SRS_Plugin_Functions_Columns,
@@ -2106,6 +2151,8 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
 * 5 [Adding New Data Source](#adding-new-data-source)
     * 5.1 [RQ.SRS.Plugin.DataSourceSetupView](#rqsrsplugindatasourcesetupview)
     * 5.2 [RQ.SRS.Plugin.DataSourceSetupView.SaveAndTestButton](#rqsrsplugindatasourcesetupviewsaveandtestbutton)
+    * 5.3 [RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesToggle](#rqsrsplugindatasourcesetupviewdefaultvaluestoggle)
+    * 5.4 [RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesSetup](#rqsrsplugindatasourcesetupviewdefaultvaluessetup)
 * 6 [Specifying Data Source Name](#specifying-data-source-name)
     * 6.1 [RQ.SRS.Plugin.DataSourceSetupView.DataSourceName](#rqsrsplugindatasourcesetupviewdatasourcename)
 * 7 [Using Default Data Source](#using-default-data-source)
@@ -2215,11 +2262,11 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
     * 38.1 [RQ.SRS.Plugin.Variables](#rqsrspluginvariables)
 * 39 [Annotations Setup](#annotations-setup)
     * 39.1 [RQ.SRS.Plugin.Annotations](#rqsrspluginannotations)
-* 40 [Setaping Alerts](#setaping-alerts)
+* 40 [Setting up Alerts](#setting-up-alerts)
     * 40.1 [RQ.SRS.Plugin.Alerts](#rqsrspluginalerts)
     * 40.2 [RQ.SRS.Plugin.Alerts.AlertSetupPage](#rqsrspluginalertsalertsetuppage)
-    * 40.3 [RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged](#rqsrspluginalertsruletypegrafanamanaged)
-    * 40.4 [RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged](#rqsrspluginalertsruletypedatasourcemanaged)
+    * 40.3 [RQ.SRS.Plugin.Alerts.UnifiedAlerts](#rqsrspluginalertsunifiedalerts)
+    * 40.4 [RQ.SRS.Plugin.Alerts.LegacyAlerts](#rqsrspluginalertslegacyalerts)
 * 41 [Functions](#functions)
     * 41.1 [RQ.SRS.Plugin.Functions](#rqsrspluginfunctions)
     * 41.2 [RQ.SRS.Plugin.Functions.Rate](#rqsrspluginfunctionsrate)
@@ -2238,6 +2285,7 @@ QA_SRS_Altinity_Grafana_Datasource_Plugin_For_ClickHouse = Specification(
     * 42.2 [RQ.SRS.Plugin.SupportedDataTypes.LimitValues](#rqsrspluginsupporteddatatypeslimitvalues)
 * 43 [Versions Compatibility](#versions-compatibility)
     * 43.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrspluginversioncompatibility)
+
 
 
 ## Revision History
@@ -2311,6 +2359,7 @@ This view SHALL contain the following sections:
 * `Name`
 * `HTTP`
 * `Auth toggles`
+* `Use default values` toggle
 * `Custom HTTP Headers`
 * `Additional`
 
@@ -2321,6 +2370,24 @@ version: 1.0
 
 The [Plugin]'s data source setup view SHALL contain a `Save & test` button that SHALL save datasource and check if [ClickHouse]
 datasource is connected to [Grafana] correctly.
+
+### RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesToggle
+version: 1.0
+
+The [Plugin]'s data source setup view SHALL contain a `default values` toggle that SHALL open 
+default values setup menu with the following dropdowns:
+
+* `Column timestamp type`
+* `Datetime Field`
+* `Timestamp (Uint32) Field`
+* `Datetime64 Field`
+* `Date Field`
+
+### RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesSetup
+version: 1.0
+
+The [Plugin]'s data source setup view SHALL contain a default values setup menu 
+that SHALL specify default values for panels that uses this datasource.
 
 ## Specifying Data Source Name
 
@@ -2335,7 +2402,7 @@ The [Plugin] SHALL support specifying a data source name by using the `Name` tex
 version: 1.0
 
 The [Plugin] SHALL support specifying the data source as default by using the `Default` toggle in the data source setup view.
-The default data source SHALL be preselected in new pannels.
+The default data source SHALL be preselected in new panels.
 
 ## Specifying HTTP Connection
 
@@ -2901,9 +2968,9 @@ setuping variables in the `Variables` tab. The [Plugin] SHALL support the follow
 version: 1.0
 
 The [Plugin] SHALL support [Grafana] annotations setup for dashboards by clicking gear button and 
-setuping variables in the `Annotations` tab.
+setting up variables in the `Annotations` tab.
 
-## Setaping Alerts
+## Setting up Alerts
 
 ### RQ.SRS.Plugin.Alerts
 version: 1.0
@@ -2916,18 +2983,18 @@ version: 1.0
 
 The [Plugin] SHALL allow defining query and alert condition by using query setup interface and raw SQL editor in alert setup page.
 
-### RQ.SRS.Plugin.Alerts.RuleType.GrafanaManaged
+### RQ.SRS.Plugin.Alerts.UnifiedAlerts
 version: 1.0
 
-The [Plugin] SHALL support `Grafana-managed` rule type by choosing rule type in alert setup page. 
-This alert SHALL be captured by grafana.
+The [Plugin] SHALL support unified alerts defined in `Alerting > Alert rules` page.
 
 
-### RQ.SRS.Plugin.Alerts.RuleType.DataSourceManaged
+### RQ.SRS.Plugin.Alerts.LegacyAlerts
 version: 1.0
 
-The [Plugin] SHALL support `Data source-managed` rule type by choosing rule type in alert setup page. 
-This alert SHALL be captured by data source.
+The [Plugin] SHALL support legacy alerts for grafana version less or equal 10.
+This Alerts SHALL be defined in panel page for each individual panel.
+
 
 ## Functions
 

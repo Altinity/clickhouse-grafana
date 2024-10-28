@@ -1,14 +1,24 @@
-import {Alert, InlineField, InlineLabel, InlineSwitch, Select} from "@grafana/ui";
-import React, {useEffect, useState} from "react";
-import {getOptions, getSettings} from "./DefaultValues.api";
-import {TimestampFormat} from "../../../../types/types";
+import { Alert, InlineField, InlineLabel, InlineSwitch, Select } from '@grafana/ui';
+import React, { useEffect, useState } from 'react';
+import { getOptions, getSettings } from './DefaultValues.api';
+import { TimestampFormat } from '../../../../types/types';
 
 const TIME_RELATED_COLUMNS_QUERY =
   "SELECT name,database,table,type FROM system.columns WHERE substring(type,1,4) = 'Date' OR substring(type,10,4) = 'Date' OR type = 'UInt32' ORDER BY type,name FORMAT JSON";
 
 export const DefaultValues = ({
-jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
-}: {jsonData: any, onSwitchToggle: any, newOptions: any, onFieldChange: any, externalProps: any}) => {
+  jsonData,
+  newOptions,
+  onSwitchToggle,
+  onFieldChange,
+  externalProps,
+}: {
+  jsonData: any;
+  onSwitchToggle: any;
+  newOptions: any;
+  onFieldChange: any;
+  externalProps: any;
+}) => {
   const [defaultDateTime64Options, setDefaultDateTime64Options] = useState<any[]>([]);
   const [defaultDateTimeOptions, setDefaultDateTimeOptions] = useState<any[]>([]);
   const [defaultUint32Options, setDefaultUint32Options] = useState<any[]>([]);
@@ -19,10 +29,9 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
       if (
         newOptions.version === 1 ||
         !jsonData.useDefaultConfiguration ||
-        (!jsonData.dataSourceUrl.startsWith('http://') &&
-        !jsonData.dataSourceUrl.startsWith('https://'))
+        (!jsonData.dataSourceUrl.startsWith('http://') && !jsonData.dataSourceUrl.startsWith('https://'))
       ) {
-       return;
+        return;
       }
 
       try {
@@ -93,14 +102,14 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
         setDefaultUint32Options(transformDataToOptions(groupedByType['UInt32'] || []));
         setDefaultDateTimeOptions(transformDataToOptions(groupedByType['DateTime'] || []));
       } catch (e) {
-        setDefaultUint32Options([])
-        setDefaultDateTimeOptions([])
-        setDefaultDateTime64Options([])
-        setDefaultDateDate32Options([])
+        setDefaultUint32Options([]);
+        setDefaultDateTimeOptions([]);
+        setDefaultDateTime64Options([]);
+        setDefaultDateDate32Options([]);
       }
-    }
+    };
 
-    doRequest()
+    doRequest();
   }, [jsonData.dataSourceUrl, jsonData.useDefaultConfiguration, newOptions]);
 
   return (
@@ -237,4 +246,4 @@ jsonData, newOptions, onSwitchToggle, onFieldChange, externalProps
       )}
     </div>
   );
-}
+};

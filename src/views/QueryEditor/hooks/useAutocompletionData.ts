@@ -1,7 +1,7 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState } from 'react';
 
 // SQL query for autocompletion data
-const autocompleteQuery = `
+const AUTOCOMPLETION_QUERY = `
 SELECT DISTINCT arrayJoin(extractAll(name, '[\\\\w_]{2,}')) AS completion, color 
 FROM (
   SELECT name, 'identifier' AS color FROM system.functions 
@@ -38,7 +38,7 @@ FROM (
 `;
 
 export const useAutocompleteData = (datasource) => {
-  const [data, setData] = useState<null|any[]>(null);
+  const [data, setData] = useState<null | any[]>(null);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -55,7 +55,7 @@ export const useAutocompleteData = (datasource) => {
       }
 
       try {
-        const result = await datasource.metricFindQuery(autocompleteQuery);
+        const result = await datasource.metricFindQuery(AUTOCOMPLETION_QUERY);
         const expiry = now.getTime() + 10 * 60 * 1000; // 10 minutes in milliseconds
 
         const groupByColor = (data) => {
@@ -70,14 +70,14 @@ export const useAutocompleteData = (datasource) => {
           return groupedData;
         };
 
-        const groupedResult = groupByColor(result)
+        const groupedResult = groupByColor(result);
         localStorage.setItem(storageKey, JSON.stringify({ expiry, result: groupedResult }));
 
         // @ts-ignore
         setData(groupedResult);
       } catch (error) {
         setData([]);
-        console.error("Failed to fetch autocomplete data:", error);
+        console.error('Failed to fetch autocomplete data:', error);
       }
     };
 

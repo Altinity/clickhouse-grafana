@@ -10,10 +10,10 @@ import {
   DataQueryRequest,
   DataSourceApi,
   DataSourceInstanceSettings,
-  DataSourceWithLogsContextSupport,
+  DataSourceWithLogsContextSupport, DataSourceWithToggleableQueryFiltersSupport,
   LogRowContextOptions,
   LogRowContextQueryDirection,
-  LogRowModel,
+  LogRowModel, QueryFilterOptions,
   TypedVariableModel
 } from '@grafana/data';
 import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
@@ -27,7 +27,7 @@ const adhocFilterVariable = 'adhoc_query_filter';
 export
   class CHDataSource
   extends DataSourceApi<CHQuery, CHDataSourceOptions>
-  implements DataSourceWithLogsContextSupport<CHQuery>
+  implements DataSourceWithLogsContextSupport<CHQuery>, DataSourceWithToggleableQueryFiltersSupport<CHQuery>
 {
   backendSrv: BackendSrv;
   templateSrv: TemplateSrv;
@@ -269,6 +269,44 @@ export
 
   }
 
+  toggleQueryFilter(query: CHQuery, filter: any): any {
+    let filters = [...query.adHocFilters];
+    let isFilterAdded = query.adHocFilters.filter((f) => f.key === filter.options.key && f.value === filter.options.value).length
+    if (filter.type === 'FILTER_FOR') {
+      if (isFilterAdded) {
+        filters = filters.filter((f) => f.key !== filter.options.key && f.value !== filter.options.value && f.operator !== filter.options.operator)
+      } else {
+        filters.push(
+            {
+              "value": filter.options.value,
+              "key": filter.options.key,
+              "operator": "="
+            }
+        )
+      }
+    } else if (filter.type === 'FILTER_OUT') {
+      if (isFilterAdded) {
+        filters = filters.filter((f) => f.key !== filter.options.key && f.value !== filter.options.value && f.operator !== filter.options.operator)
+      } else {
+        filters.push(
+          {
+            "value": filter.options.value,
+            "key": filter.options.key,
+            "operator": "!="
+          }
+        )
+      }
+    }
+
+    return {
+      ...query,
+      adHocFilters: filters,
+    }
+  }
+
+  queryHasFilter(query: CHQuery, filter: QueryFilterOptions): boolean {
+    return query.adHocFilters.some((f) => f.key === filter.key && f.value === filter.value)
+  }
 
   query(options: DataQueryRequest<CHQuery>) {
     this.options = options;

@@ -1,0 +1,7 @@
+.adhoc-filters-tags {
+  margin: 5px 0;
+}
+
+.adhoc-filters-tags > div {
+  display: none;
+}

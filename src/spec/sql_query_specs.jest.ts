@@ -292,6 +292,7 @@ describe('$rateColumns and subquery + $conditionalTest + SqlQuery.replace + adho
     dateTimeColDataType: 'event_time',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -421,6 +422,7 @@ describe('$rateColumnsAggregated and subquery + $conditionalTest + SqlQuery.repl
     dateTimeColDataType: 'event_time',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -552,6 +554,7 @@ describe('$perSecondColumnsAggregated and subquery + $conditionalTest + SqlQuery
     dateTimeColDataType: 'event_time',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -683,6 +686,7 @@ describe('$increaseColumnsAggregated and subquery + $conditionalTest + SqlQuery.
     dateTimeColDataType: 'event_time',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -814,6 +818,7 @@ describe('$deltaColumnsAggregated and subquery + $conditionalTest + SqlQuery.rep
     dateTimeColDataType: 'event_time',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {
@@ -893,6 +898,13 @@ describe('check replace with $adhoc macros', () => {
     dateTimeColDataType: 'TimeFlowStart',
     round: '1m',
     rawQuery: '',
+    adHocFilters: [
+      {
+        key: 'default.flows_raw.SrcAS',
+        operator: '=',
+        value: '1299',
+      },
+    ]
   };
   const options = {
     rangeRaw: {
@@ -955,6 +967,7 @@ describe('check replace with $columns and concat and ARRAY JOIN', () => {
     dateTimeColDataType: 'dateTimeColumn',
     round: '1m',
     rawQuery: '',
+    adHocFilters: adhocFilters,
   };
   const options = {
     rangeRaw: {

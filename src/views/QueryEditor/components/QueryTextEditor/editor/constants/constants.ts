@@ -1,8 +1,1 @@
-export default [
-    "true",
-    "false",
-    "NULL",
-    "null",
-    "inf",
-    "nan",
-];
+export default ['true', 'false', 'NULL', 'null', 'inf', 'nan'];

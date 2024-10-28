@@ -6,7 +6,7 @@ import {
   InlineSwitch,
   Input,
   Select,
-  TagList,
+  TagsInput,
   ToolbarButton,
 } from '@grafana/ui';
 import QueryMacrosInfo from './QueryMacrosInfo';
@@ -41,6 +41,7 @@ export const QueryTextEditor = ({
   datasource,
   isAnnotationView,
   adhocFilters,
+  areAdHocFiltersAvailable,
 }: any) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
 
@@ -82,16 +83,24 @@ export const QueryTextEditor = ({
         onEditorMount={onEditorMount}
         onRunQuery={onRunQuery}
       />
-      <div style={{ margin: '5px', display: 'flex' }}>
-        <p>Used Filters:</p>
-        <TagList
-          tags={adhocFilters.map((filter: any, index: number) => `${filter.key}${filter.operator}${filter.value}`)}
-          icon={'minus'}
-          onClick={() => {
-            console.log('remove');
-          }}
-        />
-      </div>
+      {!areAdHocFiltersAvailable && <TagsInput
+        className={'adhoc-filters-tags'}
+        tags={adhocFilters.map((filter: any, index: number) => `${filter.key} ${filter.operator} ${filter.value}`)}
+        onChange={(tagsList) => {
+          onFieldChange({
+            fieldName: 'adHocFilters',
+            value: tagsList.map((item: string) => {
+              const [
+                key,
+                operator,
+                value
+              ] = item.split(' ');
+
+              return { key, operator, value };
+            }),
+          });
+        }}
+      />}
       <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
         <InlineFieldRow>
           <InlineField

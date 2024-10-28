@@ -9,6 +9,7 @@ import { Alert } from '@grafana/ui';
 import { useQueryState } from './hooks/useQueryState';
 import { useFormattedData } from './hooks/useFormattedData';
 import { initializeQueryDefaults } from './helpers/initializeQueryDefaults';
+import './QueryEditor.css';
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const {
@@ -30,6 +31,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   // @ts-ignore
   const adHocFilters = datasource.templateSrv.getAdhocFilters(datasource.name);
+  const areAdHocFiltersAvailable = !!adHocFilters.length
 
   if (adHocFilters?.length) {
     // eslint-disable-next-line
@@ -65,6 +67,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       {editorMode === EditorMode.SQL && (
         <QueryTextEditor
           adhocFilters={initializedQuery.adHocFilters}
+          areAdHocFiltersAvailable={areAdHocFiltersAvailable}
           query={initializedQuery}
           height={200}
           onSqlChange={onSqlChange}

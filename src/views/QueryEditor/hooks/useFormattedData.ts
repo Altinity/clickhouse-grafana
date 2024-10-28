@@ -1,7 +1,7 @@
 import {CHQuery} from "../../../types/types";
 import {CHDataSource} from "../../../datasource/datasource";
-import {useSystemDatabases} from "../../hooks/useSystemDatabases";
-import {useAutocompleteData} from "../../hooks/useAutocompletionData";
+import {useSystemDatabases} from "./useSystemDatabases";
+import {useAutocompleteData} from "./useAutocompletionData";
 import {useEffect, useState} from "react";
 import SqlQuery from "../../../datasource/sql-query/sql_query";
 

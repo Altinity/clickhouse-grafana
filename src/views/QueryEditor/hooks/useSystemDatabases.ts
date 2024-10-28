@@ -1,12 +1,13 @@
 import {useEffect, useState} from "react";
 
-const databasesQuery = 'SELECT name FROM system.tables\n' +
-  'WHERE database=\'system\' AND name IN (\n' +
-  '\'functions\',\'table_engines\',\'formats\',\n' +
-  '\'table_functions\',\'data_type_families\',\'merge_tree_settings\',\n' +
-  '\'settings\',\'clusters\',\'macros\',\'storage_policies\',\'aggregate_function_combinators\',\n' +
-  '\'database\',\'tables\',\'dictionaries\',\'columns\'\n' +
-  ')'
+const databasesQuery =
+  'SELECT name FROM system.tables\n' +
+  "WHERE database='system' AND name IN (\n" +
+  "'functions','table_engines','formats',\n" +
+  "'table_functions','data_type_families','merge_tree_settings',\n" +
+  "'settings','clusters','macros','storage_policies','aggregate_function_combinators',\n" +
+  "'database','tables','dictionaries','columns'\n" +
+  ')';
 
 export const useSystemDatabases = (datasource) => {
   const [data, setData] = useState<null | any[]>(null);

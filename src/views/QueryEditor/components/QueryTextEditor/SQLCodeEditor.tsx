@@ -1,8 +1,8 @@
 import React, {useEffect, useState} from 'react';
 import {initiateEditor, LANGUAGE_ID, THEME_NAME} from "./editor/initiateEditor";
 import {CodeEditor} from "@grafana/ui";
-import {useSystemDatabases} from "../../../hooks/useSystemDatabases";
-import {useAutocompleteData} from "../../../hooks/useAutocompletionData";
+import {useSystemDatabases} from "../../hooks/useSystemDatabases";
+import {useAutocompleteData} from "../../hooks/useAutocompletionData";
 
 export const SQLCodeEditor = ({
  query, onSqlChange, onRunQuery, datasource 

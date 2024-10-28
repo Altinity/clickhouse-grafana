@@ -17,6 +17,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
     onChange,
     onRunQuery
   } = props;
+
   const isAnnotationView = !props.app;
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);

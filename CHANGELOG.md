@@ -1,14 +1,17 @@
-# 3.2.4 (2024-10-12)
+# 3.2.4 (2024-10-28)
 
 ## Enhancements:
 
-* improve support
+* implements support custom http headers in alerts, fix https://github.com/Altinity/clickhouse-grafana/issues/483, thanks @addshore
+* improve Logs support add Log Context and Log adhoc filters, fix https://github.com/Altinity/clickhouse-grafana/issues/646
+* improve support DateTime(timezone) more consistent, fix https://github.com/Altinity/clickhouse-grafana/issues/625
 * switch to go 1.23
 * add more e2e test for unified and legacy alerts
 * made e2e tests more stable
 
 ## Fixes:
 
+* fix corner case in AST parsing to properly count open and close brackets, fix https://github.com/Altinity/clickhouse-grafana/issues/648
 * fix bug in connection settings, when turn on `default values`, then Default field values drop down selectors do not work with BasicAuth,
   fix https://github.com/Altinity/clickhouse-grafana/issues/624, https://github.com/Altinity/clickhouse-grafana/issues/632
 * fix bug in connection settings, when turn on `default values`, then Default field values drop down doesn't show DateTime64 fields,

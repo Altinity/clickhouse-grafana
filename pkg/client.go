@@ -16,6 +16,7 @@ import (
 
 	"compress/flate"
 	"compress/gzip"
+
 	"github.com/andybalholm/brotli"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/klauspost/compress/zstd"
@@ -74,6 +75,11 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 		}
 		if password, isSecured := client.settings.Instance.DecryptedSecureJSONData["xHeaderKey"]; isSecured {
 			req.Header.Set("X-ClickHouse-Key", password)
+		}
+	}
+	if client.settings.CustomHeaders != nil {
+		for k, v := range client.settings.CustomHeaders {
+			req.Header.Set(k, v)
 		}
 	}
 

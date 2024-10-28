@@ -274,10 +274,10 @@ def open_new_dashboard_endpoint(self, endpoint=None):
 def add_visualization(self):
     """Add visualization for dashboard."""
 
-    if (self.context.grafana_version is None) or (int(self.context.grafana_version.split(".")[0]) > 10):
-        with delay():
-            with By("clicking edit button"):
-                click_edit_button()
+    # if (self.context.grafana_version is None) or (int(self.context.grafana_version.split(".")[0]) > 10):
+    #     with delay():
+    #         with By("clicking edit button"):
+    #             click_edit_button()
 
     with delay():
         with By("clicking edit button"):

@@ -4,10 +4,10 @@
     "target": "es6",
     "module": "commonjs",
     "outDir": "./dist",
-    "rootDir": "./instrumented",
+    "rootDir": "../instrumented",
+    "baseUrl": "../instrumented",
     "esModuleInterop": true,
     "strict": true
   },
-  "include": ["instrumented/**/*"],
-  "exclude": ["node_modules"]
+  "include": ["../instrumented", "./types"]
 }

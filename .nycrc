@@ -9,7 +9,7 @@
     "text",
     "text-summary"
   ],
-  "include": ["src/**/*.ts", "src/**/*.tsx", "src/**.json"],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
   "exclude": [
     "src/**/*jest.*"
   ]

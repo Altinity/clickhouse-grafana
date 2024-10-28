@@ -1,7 +1,6 @@
-import {each, isArray} from "lodash";
-import {_toFieldType, convertTimezonedDateToUTC} from "./sql_series";
-import {FieldType} from "@grafana/data";
-
+import { each, isArray } from 'lodash';
+import { _toFieldType, convertTimezonedDateToUTC } from './sql_series';
+import { FieldType } from '@grafana/data';
 
 const _formatValue = (value: any) => {
   if (value === null) {
@@ -18,7 +17,7 @@ const _formatValue = (value: any) => {
   } else {
     return numeric;
   }
-}
+};
 
 const extrapolateDataPoints = (datapoints: any, self) => {
   if (datapoints.length < 10 || (!self.tillNow && datapoints[0][0] !== 0)) {
@@ -26,37 +25,48 @@ const extrapolateDataPoints = (datapoints: any, self) => {
   }
 
   // Duration between first/last samples and boundary of range.
-  let durationToStart = datapoints[0][1] / 1000 - self.from,
-    durationToEnd = self.to - datapoints[datapoints.length - 1][1] / 1000;
+  const durationToStart = datapoints[0][1] / 1000 - self.from;
+  const durationToEnd = self.to - datapoints[datapoints.length - 1][1] / 1000;
 
   // If the first/last samples are close to the boundaries of the range,
   // extrapolate the result.
-  let sampledInterval = (datapoints[datapoints.length - 1][1] - datapoints[0][1]) / 1000,
-    averageDurationBetweenSamples = sampledInterval / (datapoints.length - 1);
+  const sampledInterval = (datapoints[datapoints.length - 1][1] - datapoints[0][1]) / 1000;
+  const averageDurationBetweenSamples = sampledInterval / (datapoints.length - 1);
 
   let diff;
   // close to left border and value is 0 because of runningDifference function
   if (durationToStart < averageDurationBetweenSamples && datapoints[0][0] === 0) {
     diff = ((datapoints[1][0] - datapoints[2][0]) / datapoints[1][0]) * 0.1;
     diff %= 1;
+
     if (isNaN(diff)) {
       diff = 0;
     }
-    datapoints[0][0] = datapoints[1][0] * (1 + diff);
+
+    const newDatapointValue = datapoints[1][0] * (1 + diff);
+    if (!isNaN(newDatapointValue)) {
+      datapoints[0][0] = newDatapointValue;
+    }
   }
 
   if (durationToEnd < averageDurationBetweenSamples) {
     let l = datapoints.length;
     diff = ((datapoints[l - 2][0] - datapoints[l - 3][0]) / datapoints[l - 2][0]) * 0.1;
     diff %= 1;
+
     if (isNaN(diff)) {
       diff = 0;
     }
-    datapoints[l - 1][0] = datapoints[l - 2][0] * (1 + diff);
+
+    const newDatapointValue = datapoints[l - 2][0] * (1 + diff);
+
+    if (!isNaN(newDatapointValue)) {
+      datapoints[l - 1][0] = newDatapointValue;
+    }
   }
 
   return datapoints;
-}
+};
 
 const _pushDatapoint = (metrics: any, timestamp: number, key: string, value: number) => {
   if (!metrics[key]) {
@@ -73,10 +83,9 @@ const _pushDatapoint = (metrics: any, timestamp: number, key: string, value: num
   }
 
   metrics[key].push([_formatValue(value), timestamp]);
-}
+};
 
-
-export const toTimeSeries = (extrapolate = true, self): any =>  {
+export const toTimeSeries = (extrapolate = true, self): any => {
   let timeSeries: any[] = [];
   if (self.series.length === 0) {
     return timeSeries;
@@ -85,7 +94,7 @@ export const toTimeSeries = (extrapolate = true, self): any =>  {
   let metrics: { [key: string]: any[] } = {};
   // timeCol have to be the first column always
   let timeCol = self.meta[0];
-  let timeColType = _toFieldType(timeCol.type || '')
+  let timeColType = _toFieldType(timeCol.type || '');
   let lastTimeStamp = self.series[0][timeCol.name];
   let keyColumns = self.keys.filter((name: string) => {
     return name !== timeCol.name;
@@ -135,7 +144,7 @@ export const toTimeSeries = (extrapolate = true, self): any =>  {
         key = metricKey;
       }
       if (timeColType?.fieldType === FieldType.time) {
-        t = convertTimezonedDateToUTC(t, timeColType.timezone)
+        t = convertTimezonedDateToUTC(t, timeColType.timezone);
       }
 
       if (isArray(val)) {
@@ -158,4 +167,4 @@ export const toTimeSeries = (extrapolate = true, self): any =>  {
   });
 
   return timeSeries;
-}
+};

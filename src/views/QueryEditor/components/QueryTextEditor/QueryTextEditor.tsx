@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import {InlineField, InlineFieldRow, InlineLabel, InlineSwitch, Input, Select, TagList, TagsInput, ToolbarButton} from '@grafana/ui';
+import {InlineField, InlineFieldRow, InlineLabel, InlineSwitch, Input, Select, TagList, ToolbarButton} from '@grafana/ui';
 import ReformattedQuery from './ReformattedQuery';
 import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';

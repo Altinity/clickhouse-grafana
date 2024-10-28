@@ -46,7 +46,6 @@ export
   useYandexCloudAuthorization: boolean;
   useCompression: boolean;
   compressionType: string;
-  private instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
@@ -71,7 +70,6 @@ export
         defaultDateTimeType: instanceSettings.jsonData.defaultDateTimeType,
       };
     }
-    this.instanceSettings = instanceSettings;
 
     this.backendSrv = getBackendSrv();
     this.templateSrv = getTemplateSrv();
@@ -272,33 +270,12 @@ export
   }
 
   toggleQueryFilter(query: CHQuery, filter: any): any {
-    // [
-    //   {
-    //     "key": "default.test_logs.level",
-    //     "operator": "=",
-    //     "value": "Info"
-    //   },
-    //   {
-    //     "value": "cba",
-    //     "key": "label",
-    //     "operator": "="
-    //   }
-    // ]
-    // {
-    //   "type": "FILTER_FOR",
-    //   "options": {
-    //   "key": "label",
-    //     "value": "cba"
-    // }
     let filters = [...query.adHocFilters];
-    console.log(query, filter)
     let isFilterAdded = query.adHocFilters.filter((f) => f.key === filter.options.key && f.value === filter.options.value).length
-    console.log('isFilterAdded', isFilterAdded)
     if (filter.type === 'FILTER_FOR') {
       if (isFilterAdded) {
         filters = filters.filter((f) => f.key !== filter.options.key && f.value !== filter.options.value && f.operator !== filter.options.operator)
       } else {
-        console.log('FOR', filter)
         filters.push(
             {
               "value": filter.options.value,

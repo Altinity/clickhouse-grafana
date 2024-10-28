@@ -1,7 +1,7 @@
 ﻿apiVersion: 1
 
 datasources:
-  - name: clickhouse-x-auth
+  - name: clickhouse-x-auth-http
     type: vertamedia-clickhouse-datasource
     access: proxy
     url: http://clickhouse:8123
@@ -10,12 +10,12 @@ datasources:
     jsonData:
       addCorsHeader: true
       serverName: "clickhouse"
-      tlsAuth: true
-      tlsAuthWithCACert: true
       usePOST: true
       useYandexCloudAuthorization: true
       xHeaderUser: "demo"
       # @todo remove workaround after merge https://github.com/grafana/grafana/pull/80858
-      dataSourceUrl: "https://clickhouse:8443"
+      dataSourceUrl: "http://clickhouse:8123"
+      httpHeaderName1: "test-header"
     secureJsonData:
       xHeaderKey: "demo"
+      httpHeaderValue1: "test-value"

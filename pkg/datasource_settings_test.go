@@ -52,8 +52,6 @@ func TestNewDatasourceSettings(t *testing.T) {
 	require.Equal(t, true, dsSettings.UseCompression)
 	require.Equal(t, "gzip", dsSettings.CompressionType)
 	require.Equal(t, false, dsSettings.TLSSkipVerify)
-	require.Equal(t, "header1", dsSettings.HttpHeaderName1)
 	require.Equal(t, "value1", dsSettings.CustomHeaders["header1"])
-	require.Equal(t, "header2", dsSettings.HttpHeaderName2)
 	require.Equal(t, "value2", dsSettings.CustomHeaders["header2"])
 }

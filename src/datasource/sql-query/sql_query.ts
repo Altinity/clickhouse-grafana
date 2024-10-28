@@ -43,13 +43,11 @@ export default class SqlQuery {
     let intervalMs = SqlQueryHelper.convertInterval(i, this.target.intervalFactor || 1, true);
     let adhocCondition: any[] = [];
 
-    // @ts-ignore
-    // adhocFilters = this.templateSrv.getAdhocFilters('clickhouse')
     adhocFilters = this.target.adHocFilters;
     try {
       let ast = scanner.toAST();
       let topQueryAST = ast;
-      if (adhocFilters.length > 0) {
+      if (adhocFilters && adhocFilters.length > 0) {
         /* Check sub queries for ad-hoc filters */
         while (ast.hasOwnProperty('from') && !isArray(ast.from)) {
           ast = ast.from;

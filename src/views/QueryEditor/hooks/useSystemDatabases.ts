@@ -1,6 +1,6 @@
 import {useEffect, useState} from "react";
 
-const databasesQuery =
+const GET_DATABASES_QUERY =
   'SELECT name FROM system.tables\n' +
   "WHERE database='system' AND name IN (\n" +
   "'functions','table_engines','formats',\n" +
@@ -26,7 +26,7 @@ export const useSystemDatabases = (datasource) => {
       }
 
       try {
-        const result = await datasource.metricFindQuery(databasesQuery);
+        const result = await datasource.metricFindQuery(GET_DATABASES_QUERY);
         const expiry = now.getTime() + 10 * 60 * 1000;
         localStorage.setItem(storageKey, JSON.stringify({ expiry, result: result.map(item => item.text) }));
         setData( result.map(item => item.text));

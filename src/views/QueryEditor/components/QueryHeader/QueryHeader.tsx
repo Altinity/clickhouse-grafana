@@ -83,7 +83,7 @@ function findDifferences(query: CHQuery, datasource: CHDataSource) {
   return differences;
 }
 
-export const Components = {
+const Components = {
   QueryEditor: {
     EditorMode: {
       options: {
@@ -94,7 +94,7 @@ export const Components = {
   },
 };
 
-export const selectors: { components: E2ESelectors<typeof Components> } = {
+const selectors: { components: E2ESelectors<typeof Components> } = {
   components: Components,
 };
 

@@ -1,10 +1,9 @@
-import React, {useEffect} from 'react';
-import {InlineField, InlineFieldRow, InlineLabel, Select} from '@grafana/ui';
-import {SelectableValue} from '@grafana/data';
-import {UniversalSelectField} from './components/UniversalSelectComponent';
-import {TimestampFormat} from "../../../../types/types";
-import { useConnectionData } from "./components/useConnectionData";
-
+import React, { useEffect } from 'react';
+import { InlineField, InlineFieldRow, InlineLabel, Select } from '@grafana/ui';
+import { SelectableValue } from '@grafana/data';
+import { UniversalSelectField } from './components/UniversalSelectComponent';
+import { TimestampFormat } from '../../../../types/types';
+import { useConnectionData } from './components/useConnectionData';
 
 const options = [
   { label: 'DateTime', value: TimestampFormat.DateTime },
@@ -12,24 +11,24 @@ const options = [
   { label: 'TimeStamp', value: TimestampFormat.TimeStamp },
 ];
 
-export const QueryBuilder = ({
- query, onChange, datasource 
-}: any) => {
-  const [databases,
-          tables,
-          dateColumns,
-          timestampColumns,
-          selectedColumnTimestampType,
-          selectedColumnDateType,
-          setSelectedDatabase,
-          setSelectedTable,
-          setSelectedColumnTimestampType,
-          setSelectedColumnDateType,
-          setSelectedDateTimeType,
-          selectedTable,
-          selectedDatabase,
-          selectedDateTimeType] =  useConnectionData(query, datasource)
-
+// eslint-disable-next-line
+export const QueryBuilder = ({ query, onChange, datasource }: any) => {
+  const [
+    databases,
+    tables,
+    dateColumns,
+    timestampColumns,
+    selectedColumnTimestampType,
+    selectedColumnDateType,
+    setSelectedDatabase,
+    setSelectedTable,
+    setSelectedColumnTimestampType,
+    setSelectedColumnDateType,
+    setSelectedDateTimeType,
+    selectedTable,
+    selectedDatabase,
+    selectedDateTimeType,
+  ] = useConnectionData(query, datasource);
 
   useEffect(() => {
     setSelectedDatabase(query.database);
@@ -37,34 +36,45 @@ export const QueryBuilder = ({
     setSelectedColumnTimestampType(query.dateTimeColDataType);
     setSelectedColumnDateType(query.dateColDataType);
     setSelectedDateTimeType(query.dateTimeType);
-  }, [query.database, query.dateColDataType, query.dateTimeColDataType, query.dateTimeType, query.table, setSelectedColumnDateType, setSelectedColumnTimestampType, setSelectedDatabase, setSelectedDateTimeType, setSelectedTable]);
+  }, [
+    query.database,
+    query.dateColDataType,
+    query.dateTimeColDataType,
+    query.dateTimeType,
+    query.table,
+    setSelectedColumnDateType,
+    setSelectedColumnTimestampType,
+    setSelectedDatabase,
+    setSelectedDateTimeType,
+    setSelectedTable,
+  ]);
 
   const onDateTimeTypeChanged = (dateTimeType: SelectableValue) => {
     const value = dateTimeType?.value ? dateTimeType.value : undefined;
     setSelectedDateTimeType(value);
-    onChange({...query, dateTimeType: value});
+    onChange({ ...query, dateTimeType: value });
   };
 
   const onDatabaseChange = (database?: string) => {
     setSelectedDatabase(database);
-    onChange({...query, database});
+    onChange({ ...query, database });
   };
 
   const onTableChange = (table?: string) => {
     setSelectedTable(table);
-    onChange({...query, table});
+    onChange({ ...query, table });
   };
 
   const onDateColDataTypeChange = (dateColDataType?: string) => {
     // @ts-ignore
     setSelectedColumnDateType((dateColDataType || '').trim());
-    onChange({...query, dateColDataType});
+    onChange({ ...query, dateColDataType });
   };
 
   const onDateTimeColDataTypeChange = (dateTimeColDataType?: string) => {
     // @ts-ignore
     setSelectedColumnTimestampType((dateTimeColDataType || '').trim());
-    onChange({...query, dateTimeColDataType});
+    onChange({ ...query, dateTimeColDataType });
   };
 
   return (
@@ -72,9 +82,11 @@ export const QueryBuilder = ({
       <InlineFieldRow>
         <UniversalSelectField
           width={24}
-          label={<InlineLabel width={24} >
-            <span style={{ color: '#6e9fff' }}>FROM</span>
-          </InlineLabel>}
+          label={
+            <InlineLabel width={24}>
+              <span style={{ color: '#6e9fff' }}>FROM</span>
+            </InlineLabel>
+          }
           placeholder="Database"
           value={selectedDatabase}
           onChange={(item: SelectableValue<string>) => onDatabaseChange(item.value)}
@@ -125,12 +137,10 @@ export const QueryBuilder = ({
                   column for binding with Grafana range selector
                 </div>
               }
-              
             >
               Column timestamp type
             </InlineLabel>
           }
-          
         >
           <Select
             width={24}

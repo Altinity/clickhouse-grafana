@@ -23,18 +23,24 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
   useQueryState(query, onChange, datasource);
+
   const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });
-  const onFieldChange = (value: any) => onChange({ ...query, ...value });
+  const onFieldChange = (field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value })
   const onTriggerQuery = () => onRunQuery();
 
   // @ts-ignore
   const adHocFilters = datasource.templateSrv.getAdhocFilters(datasource.name);
 
-  useEffect(() => {
-    if (adHocFilters.length > 0) {
-      onChange({ ...query, adHocFilters: adHocFilters });
-    }
-  }, [adHocFilters.length]);
+  if (adHocFilters?.length) {
+    // eslint-disable-next-line
+    useEffect(() => {
+      if (adHocFilters.length > 0) {
+        onChange({ ...initializedQuery, adHocFilters: adHocFilters });
+      }
+
+      // eslint-disable-next-line
+    }, [adHocFilters.length]);
+  }
 
   return (
     <>
@@ -57,19 +63,17 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
         />
       )}
       {editorMode === EditorMode.SQL && (
-        <>
-          <QueryTextEditor
-            adhocFilters={initializedQuery.adHocFilters}
-            query={initializedQuery}
-            height={200}
-            onSqlChange={onSqlChange}
-            onRunQuery={onTriggerQuery}
-            onFieldChange={onFieldChange}
-            formattedData={formattedData}
-            datasource={datasource}
-            isAnnotationView={isAnnotationView}
-          />
-        </>
+        <QueryTextEditor
+          adhocFilters={initializedQuery.adHocFilters}
+          query={initializedQuery}
+          height={200}
+          onSqlChange={onSqlChange}
+          onRunQuery={onTriggerQuery}
+          onFieldChange={onFieldChange}
+          formattedData={formattedData}
+          datasource={datasource}
+          isAnnotationView={isAnnotationView}
+        />
       )}
     </>
   );

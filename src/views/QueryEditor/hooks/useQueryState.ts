@@ -1,8 +1,14 @@
-import {useEffect, useState} from "react";
-import {EditorMode} from "../../../types/types";
-import {DEFAULT_DATE_TIME_TYPE, DEFAULT_FORMAT, DEFAULT_INTERVAL_FACTOR, DEFAULT_ROUND, defaultQuery} from "../constants";
+import { useEffect, useState } from 'react';
+import { EditorMode } from '../../../types/types';
+import {
+  DEFAULT_DATE_TIME_TYPE,
+  DEFAULT_FORMAT,
+  DEFAULT_INTERVAL_FACTOR,
+  DEFAULT_ROUND,
+  defaultQuery,
+} from '../constants';
 
-export const useQueryState =(query, onChange, datasource) => {
+export const useQueryState = (query, onChange, datasource) => {
   const [datasourceName] = useState(datasource.name);
   const [datasourceUid] = useState(datasource.uid);
   const [refId] = useState(query.refId);
@@ -46,10 +52,10 @@ export const useQueryState =(query, onChange, datasource) => {
     return () => {
       const dataToStore = {
         name: accessKey,
-        timestamp: new Date().getTime()
+        timestamp: new Date().getTime(),
       };
       localStorage.setItem(accessKey, JSON.stringify(dataToStore));
     };
     // eslint-disable-next-line
   }, []);
-}
+};

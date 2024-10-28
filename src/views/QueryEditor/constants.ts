@@ -1,4 +1,4 @@
-import {TimestampFormat} from "../../types/types";
+import { TimestampFormat } from '../../types/types';
 
 export const defaultQuery = 'SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t';
 export const DEFAULT_FORMAT = 'time_series';

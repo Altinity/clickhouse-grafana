@@ -190,7 +190,7 @@ services:
       bash -xec '
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
         mkdir -p .nyc_output &&
-        cp tests/testflows/coverage/coverage.json .nyc_output/
+        cp tests/testflows/coverage/raw/* .nyc_output/
         npx nyc report --reporter=html --report-dir=./tests/testflows/coverage
       '
 

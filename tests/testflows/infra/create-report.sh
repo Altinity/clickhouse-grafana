@@ -16,4 +16,4 @@ mkdir Code_coverage
 mkdir Code_coverage/backend
 mkdir Code_coverage/frontend
 cp -rfv cover/* Code_coverage/backend
-cp -rfv tests/testflows/coverage* Code_coverage/frontend
+cp -rfv tests/testflows/coverage/* Code_coverage/frontend

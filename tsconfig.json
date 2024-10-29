@@ -1,13 +1,3 @@
 {
-  "extends": "./.config/tsconfig.json",
-  "compilerOptions": {
-    "target": "es6",
-    "module": "commonjs",
-    "outDir": "./dist",
-    "rootDir": "../instrumented",
-    "baseUrl": "../instrumented",
-    "esModuleInterop": true,
-    "strict": true
-  },
-  "include": ["../instrumented", "./types"]
+  "extends": "./.config/tsconfig.json"
 }

@@ -15,7 +15,7 @@ env:
   artifact_paths: |
     ./Reports/*
     ./Assets/*
-
+    ./Code_coverage/*
 jobs:
   tests:
     runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-system-ubuntu-22.04 ]
@@ -38,6 +38,12 @@ jobs:
           -u ./regression.py --before=0.2 --after=0.2
           --log raw.log
           -o classic
+
+      - name: Create code coverage for backend
+        run: docker compose run --rm backend_coverage_generate
+
+      - name: Create code coverage for frontend
+        run: docker compose run --rm frontend_coverage_generate
 
       - name: Create reports
         if: always()

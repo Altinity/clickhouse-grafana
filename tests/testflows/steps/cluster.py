@@ -210,7 +210,12 @@ class Cluster(object):
                                 f"""set -o pipefail && mkdir -p "{os.path.join(current_dir(), '..', '..', '..')}/node_modules" 2>&1 | tee""",
                                 timeout=timeout,
                             )
-
+                        with By("executing mkdir tests/testflows/coverage"):
+                            cmd = self.command(
+                                None,
+                                f"""set -o pipefail && mkdir -p "{os.path.join(current_dir(), '..')}/coverage" 2>&1 | tee""",
+                                timeout=timeout,
+                            )
                         with By("executing docker compose run frontend builder"):
                             cmd = self.command(
                                 None,

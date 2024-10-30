@@ -12,10 +12,13 @@ on:
       - main
       
 env:
-  artifact_paths: |
+  testflows_logs: |
     ./Reports/*
-    ./Assets/*
+  code_coverage: |
     ./Code_coverage/*
+  selenium_logs: |
+    ./Assets/*
+
 jobs:
   tests:
     runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-system-ubuntu-22.04 ]
@@ -52,5 +55,17 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: tests-logs
-          path: ${{ env.artifact_paths}}
+          name: testflows-logs
+          path: ${{ env.testflows_report}}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: code-coverage
+          path: ${{ env.code_coverage}}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selenium-logs
+          path: ${{ env.selenium_logs}}

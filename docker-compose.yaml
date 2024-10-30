@@ -59,7 +59,7 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
-      - ./cover/:/usr/share/grafana/cover
+      - ./cover/raw/:/usr/share/grafana/cover
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
@@ -212,6 +212,7 @@ services:
         GOOS=linux GOARCH=amd64 go build -cover -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ &&
         chmod +x dist/altinity-clickhouse-plugin*
       "
+
   backend_coverage_generate:
     image: golang:1.23
     working_dir: /go/src/grafana-clickhouse
@@ -219,7 +220,7 @@ services:
       - ./:/go/src/grafana-clickhouse
     command: |
       bash -xec "
-        go tool covdata textfmt -i=cover -o=cover/cover.txt &&
+        go tool covdata textfmt -i=cover/raw -o=cover/cover.txt &&
         go tool cover -html=cover/cover.txt -o=cover/cover.html
       "
     

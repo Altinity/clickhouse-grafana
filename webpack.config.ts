@@ -37,6 +37,9 @@ async function getEntries(): Promise<Record<string, string>> {
 }
 
 const config = async (env: any): Promise<Configuration> => {
+  if (env.test) {
+    env.production = true
+  }
   const baseConfig = await grafanaConfig(env);
   const customConfig = {
     entry: await getEntries(),

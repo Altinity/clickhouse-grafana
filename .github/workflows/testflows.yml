@@ -13,11 +13,11 @@ on:
       
 env:
   testflows_logs: |
-    ./Reports/*
+    ./testflows_logs/*
   code_coverage: |
-    ./Code_coverage/*
+    ./code_coverage/*
   selenium_logs: |
-    ./Assets/*
+    ./selenium_logs/*
 
 jobs:
   tests:

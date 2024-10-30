@@ -78,6 +78,7 @@ services:
   grafana_legacy_alerts:
     profiles: [test]
     image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-10.4.3}
+    user: root
     build:
       context: ./.config
       args:
@@ -88,10 +89,12 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
+      - ./cover/raw/:/usr/share/grafana/cover
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
+      GOCOVERDIR: "/usr/share/grafana/cover"
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}

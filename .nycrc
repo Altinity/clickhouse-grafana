@@ -1,4 +1,5 @@
 {
+  "_comment": "this is file for create instrumented version of module.js to allow get coverage",
   "extends": "@istanbuljs/nyc-config-typescript",
   "all": true,
   "extension": [".ts", ".tsx"],

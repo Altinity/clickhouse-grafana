@@ -287,7 +287,7 @@ def check_query_inspector_request(self, url_parts):
             click_inspect_query_button()
 
     with By("clicking refresh button in query inspector"):
-        with delay():
+        with delay(after=0.5):
             click_inspect_query_refresh_button()
 
     try:

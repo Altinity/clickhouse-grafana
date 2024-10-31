@@ -1,0 +1,17 @@
+{
+  "_comment": "this is file for create instrumented version of module.js to allow get coverage",
+  "extends": "@istanbuljs/nyc-config-typescript",
+  "all": true,
+  "extension": [".ts", ".tsx"],
+  "report-dir": "api_coverage",
+  "reporter": [
+    "html",
+    "lcov",
+    "text",
+    "text-summary"
+  ],
+  "include": ["src/**/*.ts", "src/**/*.tsx"],
+  "exclude": [
+    "src/**/*jest.*"
+  ]
+}

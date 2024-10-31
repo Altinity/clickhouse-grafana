@@ -1,7 +1,7 @@
 import os
 import json
 import time
-
+import datetime
 from testflows.core import *
 
 from selenium import webdriver as selenium_webdriver
@@ -160,6 +160,9 @@ def webdriver(
         yield driver
 
     finally:
+        with Finally("I collect coverage info"):
+            save_coverage()
+
         if not local:
             with Finally("append the session tags to the session.json"):
                 append_session(suite_name=suite, session_id=driver.session_id)
@@ -232,8 +235,25 @@ def wait_for_element_to_be_present(self, select_type=None, element=None):
 
 
 @TestStep(When)
+def save_coverage(self):
+    """Save coverage before refreshing the page."""
+    driver = self.context.driver
+    with By("executing 'return JSON.stringify(window.__coverage__);' in chrome console"):
+        coverage_info = driver.execute_script('return JSON.stringify(window.__coverage__);')
+
+    if not(coverage_info is None):
+        with By("saving coverage into the file"):
+            timestamp = datetime.datetime.timestamp(datetime.datetime.now())
+            file = open(f"coverage/raw/coverage{timestamp}.json", 'w')
+            file.write(coverage_info)
+            file.close()
+
+@TestStep(When)
 def open_endpoint(self, endpoint):
     """Open the given endpoint."""
 
-    driver = self.context.driver
-    driver.get(endpoint)
+    with By("saving coverage"):
+        save_coverage()
+    with By("opening endpoint"):
+        driver = self.context.driver
+        driver.get(endpoint)

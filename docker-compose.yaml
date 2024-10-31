@@ -59,12 +59,12 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
-      - ./cover/raw/:/usr/share/grafana/cover
+      - ./coverage/raw/:/usr/share/grafana/coverage
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
-      GOCOVERDIR: "/usr/share/grafana/cover"
+      GOCOVERDIR: "/usr/share/grafana/coverage"
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
@@ -89,12 +89,12 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
-      - ./cover/raw/:/usr/share/grafana/cover
+      - ./coverage/raw/:/usr/share/grafana/coverage
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
-      GOCOVERDIR: "/usr/share/grafana/cover"
+      GOCOVERDIR: "/usr/share/grafana/coverage"
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
@@ -172,7 +172,7 @@ services:
     volumes:
       - ./:/grafana-clickhouse
       # for speedup npm install under WSL
-      # - "node_modules:/grafana-clickhouse/node_modules"
+      - "node_modules:/grafana-clickhouse/node_modules"
     command: |
       bash -xec '
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
@@ -188,7 +188,7 @@ services:
     volumes:
       - ./:/grafana-clickhouse
       # for speedup npm install under WSL
-      # - "node_modules:/grafana-clickhouse/node_modules"
+      - "node_modules:/grafana-clickhouse/node_modules"
     command: |
       bash -xec '
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
@@ -223,8 +223,8 @@ services:
       - ./:/go/src/grafana-clickhouse
     command: |
       bash -xec "
-        go tool covdata textfmt -i=cover/raw -o=cover/cover.txt &&
-        go tool cover -html=cover/cover.txt -o=cover/cover.html
+        go tool covdata textfmt -i=coverage/raw -o=coverage/coverage.txt &&
+        go tool cover -html=coverage/coverage.txt -o=coverage/coverage.html
       "
     
 

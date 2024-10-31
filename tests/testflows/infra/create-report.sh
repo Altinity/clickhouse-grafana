@@ -15,5 +15,5 @@ tfs --debug --no-colors report coverage - ./testflows_logs/raw.log -  --confiden
 mkdir code_coverage
 mkdir code_coverage/backend
 mkdir code_coverage/frontend
-cp -rfv cover/* code_coverage/backend
+cp -rfv coverage/* code_coverage/backend
 cp -rfv tests/testflows/coverage/* code_coverage/frontend

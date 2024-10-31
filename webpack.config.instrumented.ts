@@ -101,7 +101,7 @@ const config = async (env: any): Promise<Configuration> => {
         issue: {
           include: [{ file: '**/*.{ts,tsx}' }],
         },
-        typescript: { configFile: path.join(process.cwd(), 'tsconfig_tests.json') },
+        typescript: { configFile: path.join(process.cwd(), 'tsconfig.instrumented.json') },
       }),
       new ESLintPlugin({
         extensions: ['.ts', '.tsx'],

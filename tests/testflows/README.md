@@ -37,14 +37,14 @@ To collect code coverage for Golang code, follow these steps:
   This command runs the `go build` command with the `-cover` option.
 2. Run the program with the `GOCOVERDIR` environment variable.
   This variable will define the path to the coverage in `.json` format.
-  In tests, grafana containers use `GOCOVERDIR: "/usr/share/grafana/cover"`.
+  In tests, grafana containers use `GOCOVERDIR: "/usr/share/grafana/coverage"`.
 3. Generate coverage from `.json` files.
   `docker compose run --rm backend_coverage_generate`
   This command does the following:
   3.1 Transform coverage in `.txt` format.
-    `go tool covdata textfmt -i=cover/raw -o=cover/cover.txt`.
+    `go tool covdata textfmt -i=coverage/raw -o=coverage/coverage.txt`.
   3.2. Transform coverage in `.html` format.
-    `go tool cover -html=cover/cover.txt -o=cover/cover.html`.
+    `go tool cover -html=coverage/coverage.txt -o=coverage/coverage.html`.
 
 ## Collecting code coverage for TypeScript part
 

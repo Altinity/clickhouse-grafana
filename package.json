@@ -15,7 +15,7 @@
     "server": "docker compose up --build -d grafana",
     "sign": "bash -xec \"source ./.release_env && npx --yes @grafana/sign-plugin@latest\"",
     "create_instrumented": "npx nyc instrument --source-map --nycrc-path .nycrc ./src ./instrumented",
-    "build:test": "webpack -c ./webpack.config.ts --env test"
+    "build:test": "webpack -c ./webpack.config.instrumented.ts --env test"
   },
   "author": "Altinity",
   "license": "MIT",

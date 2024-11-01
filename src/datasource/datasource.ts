@@ -159,7 +159,6 @@ export
     const requestOptions = {...options, range: this.options.range}
 
     const originalQuery = this.createQuery(requestOptions, query)
-
     let scanner = new Scanner(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '));
     let { select } = scanner.toAST();
 
@@ -167,21 +166,21 @@ export
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`
     }
 
-    const generateQueryForTimestampBackward = (inputTimestampColumn, inputTimestampValue) => {
+    const generateQueryForTimestampBackward = (inputTimestampColumn, inputTimestampValue, contextWindowSize) => {
       return `SELECT timestamp FROM (
           SELECT
             ${inputTimestampColumn},
-            FIRST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN 10 PRECEDING AND CURRENT ROW) AS timestamp
+            FIRST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN ${contextWindowSize || 10} PRECEDING AND CURRENT ROW) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
         ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`
     }
 
-    const generateQueryForTimestampForward = (inputTimestampColumn, inputTimestampValue) => {
+    const generateQueryForTimestampForward = (inputTimestampColumn, inputTimestampValue, contextWindowSize) => {
       return `SELECT timestamp FROM (
           SELECT
             ${inputTimestampColumn},
-            LAST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN CURRENT ROW AND 10 FOLLOWING) AS timestamp
+            LAST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN CURRENT ROW AND ${contextWindowSize || 10} FOLLOWING) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
         ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`
@@ -219,11 +218,10 @@ export
       const timestampColumn = query?.dateTimeColDataType
 
       const getLogsTimeBoundaries = async () => {
-
         const boundariesRequest =
           options?.direction === LogRowContextQueryDirection.Backward ?
-            generateQueryForTimestampBackward(timestampColumn, row.timeUtc):
-            generateQueryForTimestampForward(timestampColumn, row.timeUtc)
+            generateQueryForTimestampBackward(timestampColumn, row.timeUtc, query?.contextWindowSize):
+            generateQueryForTimestampForward(timestampColumn, row.timeUtc, query?.contextWindowSize)
 
         const {
           stmt,

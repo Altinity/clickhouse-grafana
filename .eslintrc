@@ -2,11 +2,10 @@
   "extends": "./.config/.eslintrc",
   "rules": {
     "array-element-newline": ["error", {
-      "ArrayExpression": "consistent",
       "ArrayPattern": { "minItems": 3 }
     }],
     "object-curly-newline": ["error", {
-      "ObjectPattern": { "multiline": true, "minProperties": 3 }
+      "ObjectPattern": { "multiline": true, "minProperties": 10 }
     }]
   }
 }

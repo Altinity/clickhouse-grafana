@@ -69,6 +69,10 @@ export const QueryTextEditor = ({
     onFieldChange({ fieldName: 'format', value: value });
   };
 
+  const handleContextWindowChange = (value: string | undefined) => {
+    onFieldChange({ fieldName: 'contextWindowSize', value: value });
+  };
+
   const handleToggleField = (fieldName: string) => {
     onFieldChange({ fieldName: fieldName, value: !query[fieldName] });
   };
@@ -83,24 +87,26 @@ export const QueryTextEditor = ({
         onEditorMount={onEditorMount}
         onRunQuery={onRunQuery}
       />
-      {!areAdHocFiltersAvailable && <TagsInput
-        className={'adhoc-filters-tags'}
-        tags={adhocFilters.map((filter: any, index: number) => `${filter.key} ${filter.operator} ${filter.value}`)}
-        onChange={(tagsList) => {
-          onFieldChange({
-            fieldName: 'adHocFilters',
-            value: tagsList.map((item: string) => {
-              const [
-                key,
-                operator,
-                value
-              ] = item.split(' ');
+      {!areAdHocFiltersAvailable && (
+        <TagsInput
+          className={'adhoc-filters-tags'}
+          tags={adhocFilters.map((filter: any, index: number) => `${filter.key} ${filter.operator} ${filter.value}`)}
+          onChange={(tagsList) => {
+            onFieldChange({
+              fieldName: 'adHocFilters',
+              value: tagsList.map((item: string) => {
+                const [
+                  key,
+                  operator,
+                  value
+                ] = item.split(' ');
 
-              return { key, operator, value };
-            }),
-          });
-        }}
-      />}
+                return { key, operator, value };
+              }),
+            });
+          }}
+        />
+      )}
       <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
         <InlineFieldRow>
           <InlineField
@@ -146,6 +152,17 @@ export const QueryTextEditor = ({
                 onChange={(e) => handleFormatChange(e.value)}
                 options={FORMAT_OPTIONS}
                 value={query.format}
+              />
+            </InlineField>
+          )}
+          {query.format === 'logs' && (
+            <InlineField label={<InlineLabel width={'auto'}>Context window</InlineLabel>}>
+              <Select
+                width={'auto'}
+                data-testid="context-window-size-select"
+                onChange={(e) => handleContextWindowChange(e.value)}
+                options={[10, 20, 50, 100].map((value) => ({ label: value + ' entries', value }))}
+                value={query.contextWindowSize}
               />
             </InlineField>
           )}

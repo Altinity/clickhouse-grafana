@@ -12,12 +12,7 @@ import { initializeQueryDefaults } from './helpers/initializeQueryDefaults';
 import './QueryEditor.css';
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
-  const {
-    datasource,
-    query,
-    onChange,
-    onRunQuery
-  } = props;
+  const { datasource, query, onChange, onRunQuery } = props;
 
   const isAnnotationView = !props.app;
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
@@ -26,12 +21,12 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   useQueryState(query, onChange, datasource);
 
   const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });
-  const onFieldChange = (field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value })
+  const onFieldChange = (field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value });
   const onTriggerQuery = () => onRunQuery();
 
   // @ts-ignore
   const adHocFilters = datasource.templateSrv.getAdhocFilters(datasource.name);
-  const areAdHocFiltersAvailable = !!adHocFilters.length
+  const areAdHocFiltersAvailable = !!adHocFilters.length;
 
   if (adHocFilters?.length) {
     // eslint-disable-next-line

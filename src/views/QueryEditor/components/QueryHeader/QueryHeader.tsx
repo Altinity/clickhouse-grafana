@@ -1,112 +1,9 @@
 import React, { useEffect, useState } from 'react';
 import { Button, Label, Modal, RadioButtonGroup } from '@grafana/ui';
-import { CHQuery, EditorMode, TimestampFormat } from '../../../../types/types';
-import { SelectableValue } from '@grafana/data';
-import { E2ESelectors } from '@grafana/e2e-selectors';
-import { CHDataSource } from '../../../../datasource/datasource';
-
-function findDifferences(query: CHQuery, datasource: CHDataSource) {
-  const { defaultValues } = datasource;
-
-  const differences: any[] = [];
-
-  function checkValue(value) {
-    if (value === undefined || value.trim() === '') {
-      return 'EMPTY';
-    } else {
-      return value.trim();
-    }
-  }
-
-  if (defaultValues) {
-    if (query.dateTimeType !== defaultValues.defaultDateTimeType) {
-      differences.push({
-        key: 'Timestamp type Column',
-        original: checkValue(query.dateTimeType),
-        updated: defaultValues.defaultDateTimeType,
-        fieldName: 'dateTimeType',
-      });
-    }
-
-    if (
-      defaultValues.defaultDateTimeType === 'TIMESTAMP' &&
-      defaultValues.dateTime.defaultUint32 &&
-      query.dateTimeColDataType !== defaultValues.dateTime.defaultUint32
-    ) {
-      differences.push({
-        key: 'Timestamp Column',
-        original: checkValue(query.dateTimeColDataType),
-        updated: defaultValues.dateTime.defaultUint32,
-        fieldName: 'dateTimeColDataType',
-      });
-    }
-
-    if (
-      defaultValues.defaultDateTimeType === TimestampFormat.DateTime64 &&
-      defaultValues.dateTime.defaultDateTime64 &&
-      query.dateTimeColDataType !== defaultValues.dateTime.defaultDateTime64
-    ) {
-      differences.push({
-        key: 'Timestamp Column',
-        original: checkValue(query.dateTimeColDataType),
-        updated: defaultValues.dateTime.defaultDateTime64,
-        fieldName: 'dateTimeColDataType',
-      });
-    }
-
-    if (
-      defaultValues.defaultDateTimeType === TimestampFormat.DateTime &&
-      defaultValues.dateTime.defaultDateTime &&
-      query.dateTimeColDataType !== defaultValues.dateTime.defaultDateTime
-    ) {
-      differences.push({
-        key: 'Timestamp Column',
-        original: checkValue(query.dateTimeColDataType),
-        updated: defaultValues.dateTime.defaultDateTime,
-        fieldName: 'dateTimeColDataType',
-      });
-    }
-
-    if (
-      defaultValues.dateTime.defaultDateDate32 &&
-      query.dateColDataType !== defaultValues.dateTime.defaultDateDate32
-    ) {
-      differences.push({
-        key: 'Date column',
-        original: checkValue(query.dateColDataType),
-        updated: defaultValues.dateTime.defaultDateDate32,
-        fieldName: 'dateColDataType',
-      });
-    }
-  }
-
-  return differences;
-}
-
-const Components = {
-  QueryEditor: {
-    EditorMode: {
-      options: {
-        QuerySettings: 'Query Settings',
-        SQLEditor: 'SQL Editor',
-      },
-    },
-  },
-};
-
-const selectors: { components: E2ESelectors<typeof Components> } = {
-  components: Components,
-};
-
-interface QueryHeaderProps {
-  isAnnotationView: boolean;
-  query: CHQuery;
-  editorMode: EditorMode;
-  setEditorMode: (mode: any) => void;
-  onTriggerQuery: () => void;
-  datasource: CHDataSource;
-  onChange: any;
-}
+import { EditorMode } from '../../../../types/types';
+import { QueryHeaderProps } from './QueryHeader.types';
+import { findDifferences } from './helpers/findDifferences';
+import { QueryHeaderTabs } from './QueryHeader.constants';
 
 export const QueryHeader = ({
   editorMode,
@@ -119,10 +16,6 @@ export const QueryHeader = ({
 }: QueryHeaderProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [differences, setDifferences] = useState<any[]>([]);
-  const options: Array<SelectableValue<EditorMode>> = [
-    { label: selectors.components.QueryEditor.EditorMode.options.QuerySettings, value: EditorMode.Builder },
-    { label: selectors.components.QueryEditor.EditorMode.options.SQLEditor, value: EditorMode.SQL },
-  ];
 
   const onEditorModeChange = (editorMode: EditorMode) => {
     setEditorMode(editorMode);
@@ -147,7 +40,7 @@ export const QueryHeader = ({
     <div style={{ display: 'flex', marginTop: '10px' }}>
       <RadioButtonGroup
         size="sm"
-        options={options}
+        options={QueryHeaderTabs}
         value={editorMode}
         onChange={(e: EditorMode) => onEditorModeChange(e!)}
       />

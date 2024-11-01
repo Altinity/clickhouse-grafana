@@ -1,8 +1,10 @@
+const DEFAULT_VALUES_QUERY = 'SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300';
 export default class AdHocFilter {
   tagKeys: any[];
   tagValues: { [key: string]: any } = {};
   datasource: any;
   query: string;
+  adHocValuesQuery: string;
 
   constructor(datasource: any) {
     const queryFilter = "database NOT IN ('system','INFORMATION_SCHEMA','information_schema')";
@@ -12,6 +14,7 @@ export default class AdHocFilter {
     this.tagKeys = [];
     this.tagValues = [];
     this.datasource = datasource;
+    this.adHocValuesQuery = datasource.adHocValuesQuery
     let filter = queryFilter;
     if (datasource.defaultDatabase.length > 0) {
       filter = "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
@@ -71,39 +74,70 @@ export default class AdHocFilter {
   // GetTagValues returns column values according to passed options
   // Values for fields with Enum type were already fetched in GetTagKeys func and stored in `tagValues`
   // Values for fields which not represented on `tagValues` get from ClickHouse and cached on `tagValues`
-  GetTagValues(options: any) {
-    const valuesQuery = 'SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300';
+  GetTagValues(options) {
+    // Determine which query to use initially
+    const initialQuery = this.adHocValuesQuery || DEFAULT_VALUES_QUERY;
 
-    let self = this;
-    if (this.tagValues.hasOwnProperty(options.key)) {
+    // If the tag values are already cached, return them immediately
+    if (Object.prototype.hasOwnProperty.call(this.tagValues, options.key)) {
       return Promise.resolve(this.tagValues[options.key]);
     }
-    let key_items = options.key.split('.');
+
+    // Split the key to extract database, table, and field
+    const keyItems = options.key.split('.');
     if (
-      key_items.length < 2 ||
-      (key_items.length === 2 && this.datasource.defaultDatabase.length === 0) ||
-      key_items.length > 3
+      keyItems.length < 2 ||
+      (keyItems.length === 2 && !this.datasource.defaultDatabase) ||
+      keyItems.length > 3
     ) {
       return Promise.resolve([]);
     }
-    let field, database, table;
-    if (key_items.length === 3) {
+
+    // Destructure key items based on their length
+    let database, table, field;
+    if (keyItems.length === 3) {
       [
         database,
         table,
-        field
-      ] = key_items;
+        field] = keyItems;
+    } else {
+      database = this.datasource.defaultDatabase;
+      [table, field] = keyItems;
     }
-    if (key_items.length === 2) {
-      database = self.datasource.defaultDatabase;
-      [table, field] = key_items;
-    }
-    let q = valuesQuery.replace('{field}', field).replace('{database}', database).replace('{table}', table);
 
-    return this.datasource.metricFindQuery(q).then(function (response: any) {
-      self.tagValues[options.key] = self.processTagValuesResponse(response);
-      return self.tagValues[options.key];
-    });
+    // Function to build the query
+    const buildQuery = (queryTemplate) =>
+      queryTemplate
+        .replace('{field}', field)
+        .replace('{database}', database)
+        .replace('{table}', table);
+
+    // Execute the initial query
+    return this.datasource.metricFindQuery(buildQuery(initialQuery))
+      .then((response: any) => {
+        // Process and cache the response
+        this.tagValues[options.key] = this.processTagValuesResponse(response);
+        return this.tagValues[options.key];
+      })
+      .catch((error: any) => {
+        // If the initial query wasn't the default, attempt the fallback
+        if (initialQuery !== DEFAULT_VALUES_QUERY) {
+          const fallbackQuery = buildQuery(DEFAULT_VALUES_QUERY);
+          return this.datasource.metricFindQuery(fallbackQuery)
+            .then((fallbackResponse: any) => {
+              // Process and cache the fallback response
+              this.tagValues[options.key] = this.processTagValuesResponse(fallbackResponse);
+              return this.tagValues[options.key];
+            })
+            .catch((fallbackError: any) => {
+              this.tagValues[options.key] = [];
+              return this.tagValues[options.key];
+            });
+        } else {
+          this.tagValues[options.key] = [];
+          return this.tagValues[options.key];
+        }
+      });
   }
 
   processTagValuesResponse(response: any) {

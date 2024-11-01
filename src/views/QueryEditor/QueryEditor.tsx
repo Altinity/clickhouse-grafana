@@ -64,7 +64,6 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
           adhocFilters={initializedQuery.adHocFilters}
           areAdHocFiltersAvailable={areAdHocFiltersAvailable}
           query={initializedQuery}
-          height={200}
           onSqlChange={onSqlChange}
           onRunQuery={onTriggerQuery}
           onFieldChange={onFieldChange}

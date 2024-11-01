@@ -43,6 +43,7 @@ export interface CHQuery extends DataQuery {
   interval?: string;
   formattedQuery?: string;
   contextWindowSize?: number;
+  adHocValuesQuery?: string;
 }
 
 /**
@@ -64,6 +65,7 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   defaultUint32?: string;
   defaultDateDate32?: string;
   defaultDateTimeType?: string;
+  adHocValuesQuery: string;
 }
 
 /**

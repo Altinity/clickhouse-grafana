@@ -46,6 +46,7 @@ export
   useYandexCloudAuthorization: boolean;
   useCompression: boolean;
   compressionType: string;
+  adHocValuesQuery: string;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
@@ -55,6 +56,7 @@ export
     this.addCorsHeader = instanceSettings.jsonData.addCorsHeader || false;
     this.usePOST = instanceSettings.jsonData.usePOST || false;
     this.useCompression = instanceSettings.jsonData.useCompression || false;
+    this.adHocValuesQuery = instanceSettings.jsonData.adHocValuesQuery || '';
     this.compressionType = instanceSettings.jsonData.compressionType || '';
     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';

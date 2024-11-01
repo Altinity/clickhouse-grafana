@@ -1,5 +1,5 @@
 import { CHQuery, EditorMode, TimestampFormat } from '../../../types/types';
-import { DEFAULT_FORMAT, DEFAULT_INTERVAL_FACTOR, DEFAULT_ROUND, defaultQuery } from '../constants';
+import { DEFAULT_FORMAT, DEFAULT_INTERVAL_FACTOR, DEFAULT_ROUND, defaultQuery } from '../../constants';
 
 export const initializeQueryDefaults = (
   query: CHQuery,
@@ -22,6 +22,7 @@ export const initializeQueryDefaults = (
     formattedQuery: query.formattedQuery || query.query,
     editorMode: query.database && query.table ? EditorMode.SQL : EditorMode.Builder,
     contextWindowSize: query.contextWindowSize || 10,
+    adHocValuesQuery: query.adHocValuesQuery || '',
   };
 
   if (datasource.defaultValues && !query.initialized) {

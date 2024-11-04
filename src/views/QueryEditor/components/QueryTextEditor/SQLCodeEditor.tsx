@@ -17,9 +17,7 @@ const MONACO_EDITOR_OPTIONS: any = {
   overviewRulerLanes: 0,
 };
 
-export const SQLCodeEditor = ({
-                                query, onSqlChange, onRunQuery, datasource
-}: any) => {
+export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: any) => {
   const [initialized, setInitialized] = useState(false);
   const [updatedSQLQuery, setUpdatedSQLQuery] = useState(query.query);
   const autocompletionData = useAutocompleteData(datasource);

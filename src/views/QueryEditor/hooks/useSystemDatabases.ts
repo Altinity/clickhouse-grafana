@@ -1,4 +1,4 @@
-import {useEffect, useState} from "react";
+import { useEffect, useState } from 'react';
 
 const GET_DATABASES_QUERY =
   'SELECT name FROM system.tables\n' +
@@ -28,11 +28,11 @@ export const useSystemDatabases = (datasource) => {
       try {
         const result = await datasource.metricFindQuery(GET_DATABASES_QUERY);
         const expiry = now.getTime() + 10 * 60 * 1000;
-        localStorage.setItem(storageKey, JSON.stringify({ expiry, result: result.map(item => item.text) }));
-        setData( result.map(item => item.text));
+        localStorage.setItem(storageKey, JSON.stringify({ expiry, result: result.map((item) => item.text) }));
+        setData(result.map((item) => item.text));
       } catch (error) {
         setData([]);
-        console.error("Failed to fetch data:", error)
+        console.error('Failed to fetch data:', error);
       }
     };
 
@@ -41,5 +41,3 @@ export const useSystemDatabases = (datasource) => {
 
   return data;
 };
-
-

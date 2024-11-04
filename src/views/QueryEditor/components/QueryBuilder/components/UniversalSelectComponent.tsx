@@ -1,5 +1,5 @@
 import { InlineField, Select } from '@grafana/ui';
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
 import { SelectableValue } from '@grafana/data';
 
 type UniversalSelectFieldProps = {

@@ -36,9 +36,7 @@ export const initiateEditor = (
   autocompletionData: any,
   systemDatabasesData: any
 ) => {
-  const {
-    Method, Variable, Constant, Keyword, TypeParameter, Text
-  } = monacoInstance.languages.CompletionItemKind;
+  const { Method, Variable, Constant, Keyword, TypeParameter, Text } = monacoInstance.languages.CompletionItemKind;
 
   let dynamicIdentifier: string[];
   let dynamicKeyword: string[];

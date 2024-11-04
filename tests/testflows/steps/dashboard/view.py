@@ -201,6 +201,11 @@ def click_apply_variable(self):
     """Click apply button in variable settings."""
     locators.apply_variable_button.click()
 
+@TestStep(When)
+def click_edit_button(self):
+    """Click edit button."""
+
+    locators.edit_button.click()
 
 @TestStep(When)
 def create_new_variable(self, query, datasource_name):

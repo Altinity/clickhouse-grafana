@@ -48,6 +48,7 @@ services:
 
   grafana:
     image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-latest}
+    user: root
     build:
       context: ./.config
       args:
@@ -58,10 +59,12 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
+      - ./coverage/raw/:/usr/share/grafana/coverage
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
+      GOCOVERDIR: "/usr/share/grafana/coverage"
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
@@ -75,6 +78,7 @@ services:
   grafana_legacy_alerts:
     profiles: [test]
     image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-10.4.3}
+    user: root
     build:
       context: ./.config
       args:
@@ -85,10 +89,12 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
+      - ./coverage/raw/:/usr/share/grafana/coverage
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
+      GOCOVERDIR: "/usr/share/grafana/coverage"
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
@@ -125,6 +131,7 @@ services:
     depends_on:
       - clickhouse
 
+
   frontend_builder:
     image: node:lts
     working_dir: /grafana-clickhouse
@@ -158,6 +165,68 @@ services:
         mage -v && 
         chmod +x ./dist/altinity-clickhouse-plugin*
       "
+
+  frontend_coverage_builder:
+    image: node:lts
+    working_dir: /grafana-clickhouse
+    volumes:
+      - ./:/grafana-clickhouse
+      # for speedup npm install under WSL
+      - "node_modules:/grafana-clickhouse/node_modules"
+    command: |
+      bash -xec '
+        if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
+        mkdir -p instrumented &&
+        npm run create_instrumented && 
+        cp -R -n src/* instrumented/ &&
+        npm run build:test
+      '
+
+  frontend_coverage_generate:
+    image: node:lts
+    working_dir: /grafana-clickhouse
+    volumes:
+      - ./:/grafana-clickhouse
+      # for speedup npm install under WSL
+      - "node_modules:/grafana-clickhouse/node_modules"
+    command: |
+      bash -xec '
+        if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
+        mkdir -p .nyc_output &&
+        cp tests/testflows/coverage/raw/* .nyc_output/
+        npx nyc report --reporter=html --report-dir=./tests/testflows/coverage
+      '
+
+  backend_coverage_builder:
+    image: golang:1.23
+    working_dir: /go/src/grafana-clickhouse
+    environment:
+      GOCACHE: "/go-cache"
+      RUN_TESTS: "${RUN_TESTS:-.+}"
+      CGO_ENABLED: "0"
+    volumes:
+      - ./:/go/src/grafana-clickhouse
+      - ./.go-cache:/go/pkg/mod
+      - ./.go-cache:/go-cache
+    command: |
+      bash -xec "
+        git config --global --add safe.directory /go/src/grafana-clickhouse &&
+        (command -v mage || go install -v github.com/magefile/mage@latest) &&
+        GOOS=linux GOARCH=amd64 go build -cover -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ &&
+        chmod +x dist/altinity-clickhouse-plugin*
+      "
+
+  backend_coverage_generate:
+    image: golang:1.23
+    working_dir: /go/src/grafana-clickhouse
+    volumes:
+      - ./:/go/src/grafana-clickhouse
+    command: |
+      bash -xec "
+        go tool covdata textfmt -i=coverage/raw -o=coverage/coverage.txt &&
+        go tool cover -html=coverage/coverage.txt -o=coverage/coverage.html
+      "
+    
 
   plugin_signer:
     image: node:lts

@@ -12,9 +12,12 @@ on:
       - main
       
 env:
-  artifact_paths: |
-    ./Reports/*
-    ./Assets/*
+  testflows_logs: |
+    ./testflows_logs/*
+  code_coverage: |
+    ./code_coverage/*
+  selenium_logs: |
+    ./selenium_logs/*
 
 jobs:
   tests:
@@ -39,6 +42,12 @@ jobs:
           --log raw.log
           -o classic
 
+      - name: Create code coverage for backend
+        run: docker compose run --rm backend_coverage_generate
+
+      - name: Create code coverage for frontend
+        run: docker compose run --rm frontend_coverage_generate
+
       - name: Create reports
         if: always()
         run: tests/testflows/infra/create-report.sh
@@ -46,5 +55,17 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: tests-logs
-          path: ${{ env.artifact_paths}}
+          name: testflows-logs
+          path: ${{ env.testflows_logs}}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: code-coverage
+          path: ${{ env.code_coverage}}
+
+      - uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: selenium-logs
+          path: ${{ env.selenium_logs}}

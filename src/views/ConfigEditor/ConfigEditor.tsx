@@ -203,7 +203,7 @@ export function ConfigEditor(props: Props) {
         >
           <div style={{ position: 'relative', minWidth: '600px' }}>
             <CodeEditor
-              height={Math.max(jsonData.adHocValuesQuery.split('\n').length * 18, 150)}
+              height={Math.max((jsonData.adHocValuesQuery || '').split('\n').length * 18, 150)}
               value={jsonData.adHocValuesQuery}
               language={LANGUAGE_ID}
               monacoOptions={MONACO_EDITOR_OPTIONS}

@@ -1,0 +1,2 @@
+$perSecondColumns(key, value) FROM table_name
+SELECT t, groupArray((perSecondColumns, max_0_PerSecond)) AS groupArr FROM ( SELECT t, perSecondColumns, if(runningDifference(max_0) < 0 OR neighbor(perSecondColumns,-1,perSecondColumns) != perSecondColumns, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key AS perSecondColumns, max(value) AS max_0 FROM table_name WHERE

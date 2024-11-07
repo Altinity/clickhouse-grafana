@@ -1,0 +1,2 @@
+$rateColumnsAggregated(key, subkey, fun1) from table_name
+$rateColumnsAggregated(key, subkey, fun1) from table_name

@@ -1,0 +1,2 @@
+$perSecondColumnsAggregated(key, value, fun1) from table_name
+$perSecondColumnsAggregated(key, value, fun1) from table_name

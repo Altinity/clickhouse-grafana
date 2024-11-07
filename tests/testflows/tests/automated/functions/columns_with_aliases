@@ -1,0 +1,2 @@
+$columns(key as k, value as v) from table_name
+SELECT t, groupArray((k, v)) AS groupArr FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, value as v from table_name WHERE

@@ -1,0 +1,2 @@
+$increase(first_variable, second_variable) from table_name
+SELECT t, if(runningDifference(max_0) < 0, 0, runningDifference(max_0)) AS max_0_Increase, if(runningDifference(max_1) < 0, 0, runningDifference(max_1)) AS max_1_Increase FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, max(first_variable) AS max_0, max(second_variable) AS max_1 from table_name WHERE

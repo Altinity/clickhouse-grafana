@@ -23,13 +23,13 @@ def adhoc_macro_outline(self, dashboard_name, adhoc_value):
         with When("I add visualization for panel"):
             dashboard.add_visualization()
 
-        with When("I setup query settings for queries"):
-            with delay():
-                actions.setup_query_settings(table="test_grafana")
-
         with When("I select datasource"):
             with delay():
                 panel.select_datasource_in_panel_view(datasource_name='clickhouse')
+                
+        with When("I setup query settings for queries"):
+            with delay():
+                actions.setup_query_settings(table="test_grafana")
 
         with When("I open SQL editor"):
             with delay():

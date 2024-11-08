@@ -137,5 +137,14 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, f"//span[contains(@class,'panel-header-item')]")
 
+    @property
+    def exit_edit_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Exit edit mode button']")
+
+    @property
+    def discard_changes_confirmation_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Confirm Modal Danger Button']")
 
 locators = Locators()

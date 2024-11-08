@@ -36,7 +36,18 @@ def function_check(self, query, expected_reformatted_query):
 
 
 @TestFeature
-@Requirements(RQ_SRS_Plugin_Functions("1.0"))
+@Requirements(
+    RQ_SRS_Plugin_Functions("1.0"),
+    RQ_SRS_Plugin_Functions_Rate("1.0"),
+    RQ_SRS_Plugin_Functions_Columns("1.0"),
+    RQ_SRS_Plugin_Functions_RateColumns("1.0"),
+    RQ_SRS_Plugin_Functions_PerSecond("1.0"),
+    RQ_SRS_Plugin_Functions_PerSecondColumns("1.0"),
+    RQ_SRS_Plugin_Functions_Delta("1.0"),
+    RQ_SRS_Plugin_Functions_DeltaColumns("1.0"),
+    RQ_SRS_Plugin_Functions_Increase("1.0"),
+    RQ_SRS_Plugin_Functions_IncreaseColumns("1.0"),
+)
 @Name("functions")
 def feature(self):
     """Check that grafana plugin supports query options."""

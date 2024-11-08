@@ -314,6 +314,30 @@ def time_range_apply_field(self):
 
     locators.time_range_apply_field.click()
 
+@TestStep(When)
+def click_exit_edit_button(self):
+    """Click exit edit button."""
+
+    locators.exit_edit_button.click()
+
+
+@TestStep(When)
+def click_discard_changes_confirmation_button(self):
+    """Click discard changes confirmation button."""
+
+    locators.discard_changes_confirmation_button.click()
+
+@TestStep(When)
+def discard_changes_for_dashboard(self):
+    """Discard changes for panel."""
+
+    with By("clicking exit edit button"):
+        with delay():
+            click_exit_edit_button()
+
+    with By("clicking discard changes confirmation"):
+        with delay():
+            click_discard_changes_confirmation_button()
 
 @TestStep(When)
 def change_time_range_selector_for_dashboard(from_time, to_time):

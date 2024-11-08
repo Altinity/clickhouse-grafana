@@ -153,7 +153,6 @@
     * 43.1 [RQ.SRS.Plugin.VersionCompatibility](#rqsrspluginversioncompatibility)
 
 
-
 ## Revision History
 
 This document is stored in an electronic form using [Git] source control management software
@@ -614,7 +613,7 @@ The following types SHALL be supported: `Time series`, `Table`, `Logs`, `Trace`,
 ### RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp
 version: 1.0
 
-The [Plugin] SHALL allow user to get information about macroc and functions by clicking `Show help` button.
+The [Plugin] SHALL allow user to get information about macros and functions by clicking `Show help` button.
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL
 version: 1.0
@@ -754,33 +753,33 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#macros-support
 ### RQ.SRS.Plugin.QuerySettings.Macros.Table
 version: 1.0
 
-The [Plugin] SHALL support `$table` macro in SQL edior. `$table` macro SHALL be replaced with selected table name from query setup interface. 
+The [Plugin] SHALL support `$table` macro in SQL editor. `$table` macro SHALL be replaced with selected table name from query setup interface. 
 $table macro SHALL correctly escape any symbols that can be in [ClickHouse] table name.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.DateCol
 version: 1.0
 
-The [Plugin] SHALL support `$dateCol` macro in SQL edior. `$dateCol` macro SHALL be replaced with selected Column:Date from query setup interface.
+The [Plugin] SHALL support `$dateCol` macro in SQL editor. `$dateCol` macro SHALL be replaced with selected Column:Date from query setup interface.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.DateTimeCol
 version: 1.0
 
-The [Plugin] SHALL support `$dateTimeCol` macro in SQL edior. `$dateTimeCol` macro SHALL be replaced with Column:DateTime or Column:TimeStamp value from query setup interface.
+The [Plugin] SHALL support `$dateTimeCol` macro in SQL editor. `$dateTimeCol` macro SHALL be replaced with Column:DateTime or Column:TimeStamp value from query setup interface.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.From
 version: 1.0
 
-The [Plugin] SHALL support `$from` macro in SQL edior. `$from` macro SHALL be replaced with (timestamp with ms)/1000 value of UI selected `Time Range:From`.
+The [Plugin] SHALL support `$from` macro in SQL editor. `$from` macro SHALL be replaced with (timestamp with ms)/1000 value of UI selected `Time Range:From`.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.To
 version: 1.0
 
-The [Plugin] SHALL support `$to` macro in SQL edior. `$to` macro SHALL be replaced with (timestamp with ms)/1000 value of UI selected `Time Range:To`.
+The [Plugin] SHALL support `$to` macro in SQL editor. `$to` macro SHALL be replaced with (timestamp with ms)/1000 value of UI selected `Time Range:To`.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.Interval
 version: 1.0
 
-The [Plugin] SHALL support `$interval` macro in SQL edior. `$interval` macro SHALL be replaced with selected "Group by a time interval" value in seconds.
+The [Plugin] SHALL support `$interval` macro in SQL editor. `$interval` macro SHALL be replaced with selected "Group by a time interval" value in seconds.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.TimeFilterByColumn
 version: 1.0
@@ -791,26 +790,26 @@ selected `Time Range` for a column passed as $column argument. `$timeFilterByCol
 ### RQ.SRS.Plugin.QuerySettings.Macros.TimeSeries
 version: 1.0
 
-The [Plugin] SHALL support `$timeSeries` macro in SQL edior. `$timeSeries` macro SHALL be replaced with special [ClickHouse] construction 
+The [Plugin] SHALL support `$timeSeries` macro in SQL editor. `$timeSeries` macro SHALL be replaced with special [ClickHouse] construction 
 to convert results as time-series data.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.NaturalTimeSeries
 version: 1.0
 
-The [Plugin] SHALL support `$naturalTimeSeries` macro in SQL edior. `$naturalTimeSeries` macro SHALL be replaced with special [ClickHouse] 
+The [Plugin] SHALL support `$naturalTimeSeries` macro in SQL editor. `$naturalTimeSeries` macro SHALL be replaced with special [ClickHouse] 
 construction to convert results as time-series with in a logical/natural breakdown.
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.Unescape
 version: 1.0
 
-The [Plugin] SHALL support `$unescape($variable)` macro in SQL edior. `$unescape($variable)` macro SHALL be replaced with variable 
+The [Plugin] SHALL support `$unescape($variable)` macro in SQL editor. `$unescape($variable)` macro SHALL be replaced with variable 
 value without single quotes.
 
 
 ### RQ.SRS.Plugin.QuerySettings.Macros.Adhoc
 version: 1.0
 
-The [Plugin] SHALL support `$adhoc` macro in SQL edior. `$adhoc` macro SHALL be replaced with a rendered ad-hoc filter expression, 
+The [Plugin] SHALL support `$adhoc` macro in SQL editor. `$adhoc` macro SHALL be replaced with a rendered ad-hoc filter expression, 
 or "1" if no ad-hoc filters exist. Adhoc filter SHALL support evaluating varchar field with numeric value.
 
 ## Variables Setup
@@ -819,7 +818,7 @@ or "1" if no ad-hoc filters exist. Adhoc filter SHALL support evaluating varchar
 version: 1.0
 
 The [Plugin] SHALL support [Grafana] variables setup for dashboards by clicking gear button and 
-setuping variables in the `Variables` tab. The [Plugin] SHALL support the following variable types:
+setting up variables in the `Variables` tab. The [Plugin] SHALL support the following variable types:
 * `Query`
 * `Custom`
 * `Text box`
@@ -881,7 +880,11 @@ The [Plugin] SHALL support the following functions in SQL queries:
 * `$lttb`
 
 These functions are templates of SQL queries. The user SHALL be allowed to check queries in the expanded format in the raw SQL editor interface.
-Only one function per query is allowed.
+Only one function per query is allowed. 
+
+Each function argument parsed on full argument and reduced argument. If reduced argument is absent it replaced with full argument.
+Each function replaces `${function}` with construction with arguments in SQL query.
+Functions SHALL not be replaced if query contains `${function}` with wrong argument count, or it cannot be parsed as `${function}(arg1, arg2) FROM table`
 
 https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions
 
@@ -889,53 +892,96 @@ https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions
 version: 1.0
 
 The [Plugin] SHALL support the `$rate` function in SQL editor. This function SHALL convert query results as "change rate per interval".
+The [Plugin] SHALL replace `$rate(first_variable as a, second_variable as b) from table_name` with the following:
+```
+SELECT t, a/runningDifference(t/1000) aRate, b/runningDifference(t/1000) bRate FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, first_variable as a, second_variable as b from table_name WHERE {time_condition} GROUP BY t ORDER BY t
+```
 
 ### RQ.SRS.Plugin.Functions.Columns
 version: 1.0
 
 The [Plugin] SHALL support the `$columns(key, value)` function in SQL editor. This function SHALL query values as array of [key, value], 
 where key will be used as label. The [Plugin] SHALL support $columns function with fill option in query.
+The [Plugin] SHALL replace `$columns(key as k, value as v) from table_name` with the following:
+```
+SELECT t, groupArray((k, v)) AS groupArr FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, value as v from table_name WHERE {time_condition} GROUP BY t ORDER BY t
+```
+
 
 ### RQ.SRS.Plugin.Functions.RateColumns
 version: 1.0
 
 The [Plugin] SHALL support the `$rateColumns` function in SQL editor. This function SHALL be a combination of $columns and $rate functions.
+The [Plugin] SHALL replace `$rateColumns(key as k, value as v) FROM table_name` with the following:
+```
+SELECT t, arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr) FROM (SELECT t, groupArray((k, v)) AS groupArr FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, value as v FROM table_name WHERE {time_condition} GROUP BY t ORDER BY t
+```
+
 
 ### RQ.SRS.Plugin.Functions.PerSecond
 version: 1.0
 
 The [Plugin] SHALL support the `$perSecond` function in SQL editor. This function SHALL convert query results as "change rate per interval" 
 for Counter-like(growing only) metrics.
+The [Plugin] SHALL replace `$perSecond(first_variable as a, second_variable as b) FROM table_name` with the following:
+```
+SELECT t, if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond, if(runningDifference(max_1) < 0, nan, runningDifference(max_1) / runningDifference(t/1000)) AS max_1_PerSecond FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, max(first_variable as a) AS max_0, max(second_variable as b) AS max_1 FROM table_name WHERE {time_condition} GROUP BY t ORDER BY t
+```
+
 
 ### RQ.SRS.Plugin.Functions.PerSecondColumns
 version: 1.0
 
 The [Plugin] SHALL support the `$perSecondColumns` function in SQL editor. This function SHALL be a combination of $columns and $perSecond 
 functions for Counter-like metrics.
+The [Plugin] SHALL replace `$perSecondColumns(key as k, value as v) FROM table_name` with the following:
+```
+SELECT t, groupArray((k, max_0_PerSecond)) AS groupArr FROM ( SELECT t, k, if(runningDifference(max_0) < 0 OR neighbor(k,-1,k) != k, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, max(value as v) AS max_0 FROM table_name WHERE {time_condition} GROUP BY t ORDER BY t
+```
+
 
 ### RQ.SRS.Plugin.Functions.Delta
 version: 1.0
 
 The [Plugin] SHALL support the `$delta` function in SQL editor. This function SHALL convert query results as "delta value inside interval" 
 for Counter-like(growing only) metrics, will negative if counter reset.
+The [Plugin] SHALL replace `$delta(first_variable as a, second_variable as b) from table_name` with the following:
+```
+SELECT t, runningDifference(max_0) AS max_0_Delta, runningDifference(max_1) AS max_1_Delta FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, max(first_variable as a) AS max_0, max(second_variable as b) AS max_1 from table_name WHERE {time_condition} GROUP BY t ORDER BY t)
+```
+
 
 ### RQ.SRS.Plugin.Functions.DeltaColumns
 version: 1.0
 
 The [Plugin] SHALL support the `$deltaColumns` function in SQL editor. This function SHALL be a combination of $columns and $delta 
 functions for Counter-like metrics.
+The [Plugin] SHALL replace `$deltaColumns(key as k, value as v) FROM table_name` with the following:
+```
+SELECT t, groupArray((k, max_0_Delta)) AS groupArr FROM ( SELECT t, k, if(neighbor(k,-1,k) != k, 0, runningDifference(max_0)) AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, max(value as v) AS max_0 FROM table_name WHERE {time_condition} GROUP BY t, k ORDER BY k, t)) GROUP BY t ORDER BY t
+```
 
 ### RQ.SRS.Plugin.Functions.Increase
 version: 1.0
 
 The [Plugin] SHALL support the `$increase` function in SQL editor. This function SHALL convert query results as "non-negative delta value inside interval" 
 for Counter-like(growing only) metrics, will zero if counter reset and delta less zero.
+The [Plugin] SHALL replace `$increase(first_variable as a, second_variable as b) from table_name` with the following:
+```
+SELECT t, groupArray((k, v)) AS groupArr FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, value as v from table_name WHERE {time_condition} GROUP BY t ORDER BY t)
+```
+
 
 ### RQ.SRS.Plugin.Functions.IncreaseColumns
 version: 1.0
 
 The [Plugin] SHALL support the `$increaseColumns` function in SQL editor. This function SHALL be a combination of $columns and $increase 
 functions for Counter-like metrics.
+The [Plugin] SHALL replace `$columns(key as k, value as v) from table_name` with the following:
+```
+SELECT t, groupArray((a, max_0_Increase)) AS groupArr FROM ( SELECT t, a, if(runningDifference(max_0) < 0 OR neighbor(a,-1,a) != a, 0, runningDifference(max_0)) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, first_variable as a, max(second_variable as b) AS max_0 from table_name WHERE {time_condition} GROUP BY t, a ORDER BY a, t)) GROUP BY t ORDER BY t
+```
+
 
 ### RQ.SRS.Plugin.Functions.Lttb
 version: 1.0

@@ -1,0 +1,2 @@
+$perSecond(first_variable) FROM table_name
+SELECT t, if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, max(first_variable) AS max_0 FROM table_name WHERE

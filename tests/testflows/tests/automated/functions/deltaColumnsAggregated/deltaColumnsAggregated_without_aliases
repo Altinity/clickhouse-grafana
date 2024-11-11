@@ -1,0 +1,2 @@
+$deltaColumnsAggregated(key, value, fun1, val1) from table_name
+SELECT t, key, fun1(val1Delta) AS val1DeltaAgg FROM (  SELECT t, key, value, if(neighbor(value,-1,value) != value, 0, runningDifference(val1) / 1) AS val1Delta  FROM (   SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key, value, max(val1) AS val1   from table_name WHERE

@@ -1,0 +1,2 @@
+$rateColumns(key, value, value2) FROM table_name
+$rateColumns(key, value, value2) FROM table_name

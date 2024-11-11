@@ -1,0 +1,2 @@
+$increaseColumns(first_variable, second_variable) from table_name
+SELECT t, groupArray((increaseColumns, max_0_Increase)) AS groupArr FROM ( SELECT t, increaseColumns, if(runningDifference(max_0) < 0 OR neighbor(increaseColumns,-1,increaseColumns) != increaseColumns, 0, runningDifference(max_0)) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, first_variable AS increaseColumns, max(second_variable) AS max_0 from table_name WHERE

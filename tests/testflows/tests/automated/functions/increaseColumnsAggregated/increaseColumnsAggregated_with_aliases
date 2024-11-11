@@ -1,0 +1,2 @@
+$increaseColumnsAggregated(key as k, value as v, fun1 as f, val1 as v) from table_name
+SELECT t, k, fun1 as f(vIncrease) AS vIncreaseAgg FROM (  SELECT t, k, v, if(runningDifference(v) < 0 OR neighbor(v,-1,v) != v, nan, runningDifference(v) / 1) AS vIncrease  FROM (   SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, value as v, max(val1) AS v   from table_name WHERE

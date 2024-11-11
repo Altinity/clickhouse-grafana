@@ -1,0 +1,2 @@
+$deltaColumns(first_variable, second_variable, third_variable) from table_name
+$deltaColumns(first_variable, second_variable, third_variable) from table_name

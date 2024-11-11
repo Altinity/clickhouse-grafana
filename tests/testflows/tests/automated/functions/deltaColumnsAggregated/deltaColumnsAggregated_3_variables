@@ -1,0 +1,2 @@
+$deltaColumnsAggregated(key, value, fun1) from table_name
+$deltaColumnsAggregated(key, value, fun1) from table_name

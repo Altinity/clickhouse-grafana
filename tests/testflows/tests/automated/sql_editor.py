@@ -413,10 +413,10 @@ def hash_exclamation_comment(self):
 
 
 @TestFeature
-@Requirements(RQ_SRS_Plugin_RawSQLEditorInterface("1.0"),
-              RQ_SRS_Plugin_RawSQLEditorInterface_ShowGeneratedSQL("1.0"),
-              RQ_SRS_Plugin_RawSQLEditorInterface_ReformatQuery("1.0"),
-              )
+@Requirements(
+    RQ_SRS_Plugin_RawSQLEditorInterface("1.0"),
+    RQ_SRS_Plugin_RawSQLEditorInterface_ShowGeneratedSQL("1.0")
+)
 @Name("sql editor")
 def feature(self):
     """Check that grafana plugin supports SQL Editor options."""

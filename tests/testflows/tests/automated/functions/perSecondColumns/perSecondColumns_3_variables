@@ -1,0 +1,2 @@
+$perSecondColumns(key, value, value_2) FROM table_name
+$perSecondColumns(key, value, value_2) FROM table_name

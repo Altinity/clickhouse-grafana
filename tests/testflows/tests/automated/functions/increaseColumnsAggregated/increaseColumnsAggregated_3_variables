@@ -1,0 +1,2 @@
+$increaseColumnsAggregated(key, value, fun1) from table_name
+$increaseColumnsAggregated(key, value, fun1) from table_name

@@ -17,10 +17,10 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plu
   
   `pip install -r tests/testflows/requirements.txt`
 
-4. Stop applications that use the following ports:
+3. Stop applications that use the following ports:
    - 8123, 9000, 5432, 3306, 3000, 3001, 8480, 4444
-3. Go into tests/testflows directory
-4. Run regression.py
+4. Go into tests/testflows directory
+5. Run regression.py
   `./regression.py`
   
 ## ⚙️ Useful options

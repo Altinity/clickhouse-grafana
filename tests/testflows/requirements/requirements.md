@@ -73,31 +73,44 @@
     * 28.1 [RQ.SRS.Plugin.QuerySettings](#rqsrspluginquerysettings)
 * 29 [Query Options](#query-options)
     * 29.1 [RQ.SRS.Plugin.QueryOptions](#rqsrspluginqueryoptions)
-    * 29.2 [RQ.SRS.Plugin.QueryOptions.MaxDataPoints](#rqsrspluginqueryoptionsmaxdatapoints)
-    * 29.3 [RQ.SRS.Plugin.QueryOptions.MinInterval](#rqsrspluginqueryoptionsmininterval)
-    * 29.4 [RQ.SRS.Plugin.QueryOptions.Interval](#rqsrspluginqueryoptionsinterval)
-    * 29.5 [RQ.SRS.Plugin.QueryOptions.RelativeTime](#rqsrspluginqueryoptionsrelativetime)
-    * 29.6 [RQ.SRS.Plugin.QueryOptions.TimeShift](#rqsrspluginqueryoptionstimeshift)
-    * 29.7 [RQ.SRS.Plugin.QueryOptions.HideTimeInfo](#rqsrspluginqueryoptionshidetimeinfo)
+    * 29.2 [Specifying Max Data Points For Visualisation](#specifying-max-data-points-for-visualisation)
+        * 29.2.1 [RQ.SRS.Plugin.QueryOptions.MaxDataPoints](#rqsrspluginqueryoptionsmaxdatapoints)
+    * 29.3 [Specifying Min Interval For Visualisation](#specifying-min-interval-for-visualisation)
+        * 29.3.1 [RQ.SRS.Plugin.QueryOptions.MinInterval](#rqsrspluginqueryoptionsmininterval)
+    * 29.4 [Computing Interval](#computing-interval)
+        * 29.4.1 [RQ.SRS.Plugin.QueryOptions.Interval](#rqsrspluginqueryoptionsinterval)
+    * 29.5 [Specifying Relative Time](#specifying-relative-time)
+        * 29.5.1 [RQ.SRS.Plugin.QueryOptions.RelativeTime](#rqsrspluginqueryoptionsrelativetime)
+    * 29.6 [Specifying Time Shift](#specifying-time-shift)
+        * 29.6.1 [RQ.SRS.Plugin.QueryOptions.TimeShift](#rqsrspluginqueryoptionstimeshift)
+    * 29.7 [Show Time Info](#show-time-info)
+        * 29.7.1 [RQ.SRS.Plugin.QueryOptions.HideTimeInfo](#rqsrspluginqueryoptionshidetimeinfo)
 * 30 [Raw SQL Editor](#raw-sql-editor)
     * 30.1 [RQ.SRS.Plugin.RawSQLEditorInterface](#rqsrspluginrawsqleditorinterface)
     * 30.2 [RQ.SRS.Plugin.RawSQLEditorInterface.SQLEditor](#rqsrspluginrawsqleditorinterfacesqleditor)
-    * 30.3 [RQ.SRS.Plugin.RawSQLEditorInterface.AddMetadata](#rqsrspluginrawsqleditorinterfaceaddmetadata)
-    * 30.4 [RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation](#rqsrspluginrawsqleditorinterfaceextrapolation)
-    * 30.5 [RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments](#rqsrspluginrawsqleditorinterfaceskipcomments)
-    * 30.6 [RQ.SRS.Plugin.RawSQLEditorInterface.Step](#rqsrspluginrawsqleditorinterfacestep)
-    * 30.7 [RQ.SRS.Plugin.RawSQLEditorInterface.Round](#rqsrspluginrawsqleditorinterfaceround)
-    * 30.8 [RQ.SRS.Plugin.RawSQLEditorInterface.Resolution](#rqsrspluginrawsqleditorinterfaceresolution)
-    * 30.9 [RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs](#rqsrspluginrawsqleditorinterfaceformatas)
-    * 30.10 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp](#rqsrspluginrawsqleditorinterfaceshowhelp)
-    * 30.11 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL](#rqsrspluginrawsqleditorinterfaceshowgeneratedsql)
-    * 30.12 [RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery](#rqsrspluginrawsqleditorinterfacereformatquery)
+    * 30.3 [Show Metadata ](#show-metadata-)
+        * 30.3.1 [RQ.SRS.Plugin.RawSQLEditorInterface.AddMetadata](#rqsrspluginrawsqleditorinterfaceaddmetadata)
+    * 30.4 [Use Extrapolation](#use-extrapolation)
+        * 30.4.1 [RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation](#rqsrspluginrawsqleditorinterfaceextrapolation)
+    * 30.5 [Show Comments](#show-comments)
+        * 30.5.1 [RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments](#rqsrspluginrawsqleditorinterfaceskipcomments)
+    * 30.6 [Specifying Visualisation Step](#specifying-visualisation-step)
+        * 30.6.1 [RQ.SRS.Plugin.RawSQLEditorInterface.Step](#rqsrspluginrawsqleditorinterfacestep)
+    * 30.7 [Specifying Visualisation Rounding](#specifying-visualisation-rounding)
+    * 30.8 [RQ.SRS.Plugin.RawSQLEditorInterface.Round](#rqsrspluginrawsqleditorinterfaceround)
+    * 30.9 [Specifying Graph Resolution](#specifying-graph-resolution)
+        * 30.9.1 [RQ.SRS.Plugin.RawSQLEditorInterface.Resolution](#rqsrspluginrawsqleditorinterfaceresolution)
+    * 30.10 [Specifying Visualization Format](#specifying-visualization-format)
+        * 30.10.1 [RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs](#rqsrspluginrawsqleditorinterfaceformatas)
+    * 30.11 [Hints](#hints)
+        * 30.11.1 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp](#rqsrspluginrawsqleditorinterfaceshowhelp)
+        * 30.11.2 [RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL](#rqsrspluginrawsqleditorinterfaceshowgeneratedsql)
 * 31 [Auto-complete In Queries](#auto-complete-in-queries)
     * 31.1 [RQ.SRS.Plugin.AutoCompleteInQueries](#rqsrspluginautocompleteinqueries)
 * 32 [Time range selector](#time-range-selector)
     * 32.1 [RQ.SRS.Plugin.TimeRangeSelector](#rqsrsplugintimerangeselector)
     * 32.2 [RQ.SRS.Plugin.TimeRangeSelector.Zoom](#rqsrsplugintimerangeselectorzoom)
-* 33 [Сhanging The Size Of The Graph](#hanging-the-size-of-the-graph)
+* 33 [Changing The Size Of The Graph](#changing-the-size-of-the-graph)
     * 33.1 [RQ.SRS.Plugin.FillActual](#rqsrspluginfillactual)
 * 34 [Refresh Databoard](#refresh-databoard)
     * 34.1 [RQ.SRS.Plugin.RefreshDataboard](#rqsrspluginrefreshdataboard)
@@ -135,17 +148,25 @@
     * 40.4 [RQ.SRS.Plugin.Alerts.LegacyAlerts](#rqsrspluginalertslegacyalerts)
 * 41 [Functions](#functions)
     * 41.1 [RQ.SRS.Plugin.Functions](#rqsrspluginfunctions)
-    * 41.2 [RQ.SRS.Plugin.Functions.Rate](#rqsrspluginfunctionsrate)
-    * 41.3 [RQ.SRS.Plugin.Functions.Columns](#rqsrspluginfunctionscolumns)
-    * 41.4 [RQ.SRS.Plugin.Functions.RateColumns](#rqsrspluginfunctionsratecolumns)
-    * 41.5 [RQ.SRS.Plugin.Functions.PerSecond](#rqsrspluginfunctionspersecond)
-    * 41.6 [RQ.SRS.Plugin.Functions.PerSecondColumns](#rqsrspluginfunctionspersecondcolumns)
-    * 41.7 [RQ.SRS.Plugin.Functions.Delta](#rqsrspluginfunctionsdelta)
-    * 41.8 [RQ.SRS.Plugin.Functions.DeltaColumns](#rqsrspluginfunctionsdeltacolumns)
-    * 41.9 [RQ.SRS.Plugin.Functions.Increase](#rqsrspluginfunctionsincrease)
-    * 41.10 [RQ.SRS.Plugin.Functions.IncreaseColumns](#rqsrspluginfunctionsincreasecolumns)
-    * 41.11 [RQ.SRS.Plugin.Functions.Lttb](#rqsrspluginfunctionslttb)
-    * 41.12 [RQ.SRS.Plugin.Functions.SubQuery](#rqsrspluginfunctionssubquery)
+    * 41.2 [RQ.SRS.Plugin.Functions.Columns](#rqsrspluginfunctionscolumns)
+    * 41.3 [Functions For Rate Computing](#functions-for-rate-computing)
+        * 41.3.1 [RQ.SRS.Plugin.Functions.Rate](#rqsrspluginfunctionsrate)
+        * 41.3.2 [RQ.SRS.Plugin.Functions.RateColumns](#rqsrspluginfunctionsratecolumns)
+        * 41.3.3 [RQ.SRS.Plugin.Functions.RateColumnsAggregated](#rqsrspluginfunctionsratecolumnsaggregated)
+    * 41.4 [Functions For Rate Per Second Computing](#functions-for-rate-per-second-computing)
+        * 41.4.1 [RQ.SRS.Plugin.Functions.PerSecond](#rqsrspluginfunctionspersecond)
+        * 41.4.2 [RQ.SRS.Plugin.Functions.PerSecondColumns](#rqsrspluginfunctionspersecondcolumns)
+        * 41.4.3 [RQ.SRS.Plugin.Functions.PerSecondColumnsAggregated](#rqsrspluginfunctionspersecondcolumnsaggregated)
+    * 41.5 [Functions for Delta Value Computing](#functions-for-delta-value-computing)
+        * 41.5.1 [RQ.SRS.Plugin.Functions.Delta](#rqsrspluginfunctionsdelta)
+        * 41.5.2 [RQ.SRS.Plugin.Functions.DeltaColumns](#rqsrspluginfunctionsdeltacolumns)
+        * 41.5.3 [RQ.SRS.Plugin.Functions.DeltaColumnsAggregated](#rqsrspluginfunctionsdeltacolumnsaggregated)
+    * 41.6 [Functions For Non-Negative Delta Value Computing](#functions-for-non-negative-delta-value-computing)
+        * 41.6.1 [RQ.SRS.Plugin.Functions.Increase](#rqsrspluginfunctionsincrease)
+        * 41.6.2 [RQ.SRS.Plugin.Functions.IncreaseColumns](#rqsrspluginfunctionsincreasecolumns)
+        * 41.6.3 [RQ.SRS.Plugin.Functions.IncreaseColumnsAggregated](#rqsrspluginfunctionsincreasecolumnsaggregated)
+    * 41.7 [RQ.SRS.Plugin.Functions.Lttb](#rqsrspluginfunctionslttb)
+    * 41.8 [RQ.SRS.Plugin.Functions.SubQuery](#rqsrspluginfunctionssubquery)
 * 42 [Supported ClickHouse Datatypes](#supported-clickhouse-datatypes)
     * 42.1 [RQ.SRS.Plugin.SupportedDataTypes](#rqsrspluginsupporteddatatypes)
     * 42.2 [RQ.SRS.Plugin.SupportedDataTypes.LimitValues](#rqsrspluginsupporteddatatypeslimitvalues)
@@ -511,36 +532,48 @@ The [Plugin] SHALL support the following options for the query:
 
 ![query options](https://github.com/antip00/clickhouse-grafana/blob/master/tests/testflows/requirements/images/query%20options.png)
 
-### RQ.SRS.Plugin.QueryOptions.MaxDataPoints
+### Specifying Max Data Points For Visualisation
+
+#### RQ.SRS.Plugin.QueryOptions.MaxDataPoints
 version: 1.0
 
 The [Plugin] SHALL support specifying maximum data points per series using `Max data points` text field.
 
-### RQ.SRS.Plugin.QueryOptions.MinInterval
+### Specifying Min Interval For Visualisation
+
+#### RQ.SRS.Plugin.QueryOptions.MinInterval
 version: 1.0
 
 The [Plugin] SHALL support specifying lower limit for the interval using `Min interval` text field.
 
-### RQ.SRS.Plugin.QueryOptions.Interval
+### Computing Interval
+
+#### RQ.SRS.Plugin.QueryOptions.Interval
 version: 1.0
 
 The [Plugin] SHALL evaluate interval that is used in $__interval and $__interval_ms macro. 
 This interval SHALL be displayed in `Interval` text field.
 
-### RQ.SRS.Plugin.QueryOptions.RelativeTime
+### Specifying Relative Time
+
+#### RQ.SRS.Plugin.QueryOptions.RelativeTime
 version: 1.0
 
 The [Plugin] SHALL support specifying relative time using `Relative time` text field.
 This relative time SHALL override the relative time range for individual panel.
 
-### RQ.SRS.Plugin.QueryOptions.TimeShift
+### Specifying Time Shift
+
+#### RQ.SRS.Plugin.QueryOptions.TimeShift
 version: 1.0
 
 The [Plugin] SHALL support specifying time shift using `Time shift` text field.
 This relative time SHALL override the time range for individual panel 
 by shifting its start and end relative to the time picker.
 
-### RQ.SRS.Plugin.QueryOptions.HideTimeInfo
+### Show Time Info
+
+#### RQ.SRS.Plugin.QueryOptions.HideTimeInfo
 version: 1.0
 
 The [Plugin] SHALL support `Hide time info` toggle. 
@@ -573,58 +606,70 @@ version: 1.0
 
 The [Plugin] SHALL support specifying SQL query by using SQL Editor text field for SQL query.
 
-### RQ.SRS.Plugin.RawSQLEditorInterface.AddMetadata
+### Show Metadata 
+
+#### RQ.SRS.Plugin.RawSQLEditorInterface.AddMetadata
 version: 1.0
 
 The [Plugin] SHALL support turning on and off adding metadata for queries in reformatted query
 for visualizations using the `Add Metadata` toggle.
 
-### RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation
+### Use Extrapolation
+
+#### RQ.SRS.Plugin.RawSQLEditorInterface.Extrapolation
 version: 1.0
 
 The [Plugin] SHALL support turning on and off extrapolation for visualizations using the `Extrapolation` toggle.
 
-### RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments
+### Show Comments
+
+#### RQ.SRS.Plugin.RawSQLEditorInterface.SkipComments
 version: 1.0
 
 The [Plugin] SHALL support turning on and off sending comments to [ClickHouse] server by using the `Skip Comments` toggle.
 
-### RQ.SRS.Plugin.RawSQLEditorInterface.Step
+### Specifying Visualisation Step
+
+#### RQ.SRS.Plugin.RawSQLEditorInterface.Step
 version: 1.0
 
 The [Plugin] SHALL support specifying the grid step on the graphs by using the `Step` text field.
+
+### Specifying Visualisation Rounding
 
 ### RQ.SRS.Plugin.RawSQLEditorInterface.Round
 version: 1.0
 
 The [Plugin] SHALL support specifying rounding for the timestamps by using the `Round` text field.
 
-### RQ.SRS.Plugin.RawSQLEditorInterface.Resolution
+### Specifying Graph Resolution
+
+#### RQ.SRS.Plugin.RawSQLEditorInterface.Resolution
 version: 1.0
 
-The [Plugin] SHALL support specifying resolation for graphs by using the `Resolution` dropdown menu.
+The [Plugin] SHALL support specifying resolution for graphs by using the `Resolution` dropdown menu.
 
-### RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs
+### Specifying Visualization Format
+
+#### RQ.SRS.Plugin.RawSQLEditorInterface.FormatAs
 version: 1.0
 
 The [Plugin] SHALL support choosing the visualization type by using the `Format As` dropdown menu.
 The following types SHALL be supported: `Time series`, `Table`, `Logs`, `Trace`, `Flamegraph`.
 
-### RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp
+
+### Hints
+
+#### RQ.SRS.Plugin.RawSQLEditorInterface.ShowHelp
 version: 1.0
 
 The [Plugin] SHALL allow user to get information about macros and functions by clicking `Show help` button.
 
-### RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL
+#### RQ.SRS.Plugin.RawSQLEditorInterface.ShowGeneratedSQL
 version: 1.0
 
 The [Plugin] SHALL allow user to get generated SQL query in raw form without macros and functions by clicking `Show generated SQL` button.
 
-
-### RQ.SRS.Plugin.RawSQLEditorInterface.ReformatQuery
-version: 1.0
-
-The [Plugin] SHALL allow user to reformat query in SQL editor by clicking `Reformat Query` button.
 
 ## Auto-complete In Queries
 
@@ -645,7 +690,7 @@ version: 1.0
 
 The [Plugin] SHALL support zooming in by selecting an area on the graph and zooming out by double-clicking on the graph.
 
-## Сhanging The Size Of The Graph
+## Changing The Size Of The Graph
 
 ### RQ.SRS.Plugin.FillActual
 version: 1.0
@@ -888,14 +933,6 @@ Functions SHALL not be replaced if query contains `${function}` with wrong argum
 
 https://github.com/Altinity/clickhouse-grafana?tab=readme-ov-file#functions
 
-### RQ.SRS.Plugin.Functions.Rate
-version: 1.0
-
-The [Plugin] SHALL support the `$rate` function in SQL editor. This function SHALL convert query results as "change rate per interval".
-The [Plugin] SHALL replace `$rate(first_variable as a, second_variable as b) from table_name` with the following:
-```
-SELECT t, a/runningDifference(t/1000) aRate, b/runningDifference(t/1000) bRate FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, first_variable as a, second_variable as b from table_name WHERE {time_condition} GROUP BY t ORDER BY t
-```
 
 ### RQ.SRS.Plugin.Functions.Columns
 version: 1.0
@@ -907,8 +944,19 @@ The [Plugin] SHALL replace `$columns(key as k, value as v) from table_name` with
 SELECT t, groupArray((k, v)) AS groupArr FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, value as v from table_name WHERE {time_condition} GROUP BY t ORDER BY t
 ```
 
+### Functions For Rate Computing
 
-### RQ.SRS.Plugin.Functions.RateColumns
+#### RQ.SRS.Plugin.Functions.Rate
+version: 1.0
+
+The [Plugin] SHALL support the `$rate` function in SQL editor. This function SHALL convert query results as "change rate per interval".
+The [Plugin] SHALL replace `$rate(first_variable as a, second_variable as b) from table_name` with the following:
+```
+SELECT t, a/runningDifference(t/1000) aRate, b/runningDifference(t/1000) bRate FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, first_variable as a, second_variable as b from table_name WHERE {time_condition} GROUP BY t ORDER BY t
+```
+
+
+#### RQ.SRS.Plugin.Functions.RateColumns
 version: 1.0
 
 The [Plugin] SHALL support the `$rateColumns` function in SQL editor. This function SHALL be a combination of $columns and $rate functions.
@@ -918,7 +966,18 @@ SELECT t, arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr) FROM (
 ```
 
 
-### RQ.SRS.Plugin.Functions.PerSecond
+#### RQ.SRS.Plugin.Functions.RateColumnsAggregated
+version: 1.0
+
+The [Plugin] SHALL support the `$rateColumnsAggregated` function in SQL editor. This function SHALL calculate rate for higher cardinality dimension and then aggregate by lower cardinality dimension.
+The [Plugin] SHALL replace `$rateColumnsAggregated(key as k, subkey as s, fun1 as f, val1 as v) from table_name` with the following:
+```
+SELECT t, k, fun1 as f(vRate) AS vRateAgg FROM (  SELECT t, k, s, v / runningDifference(t / 1000) AS vRate  FROM (   SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, subkey as s, max(val1) AS v   from table_name WHERE {time_condition}   GROUP BY k, s, t    ORDER BY k, s, t  ) ) GROUP BY k, t ORDER BY k, t
+```
+
+### Functions For Rate Per Second Computing
+
+#### RQ.SRS.Plugin.Functions.PerSecond
 version: 1.0
 
 The [Plugin] SHALL support the `$perSecond` function in SQL editor. This function SHALL convert query results as "change rate per interval" 
@@ -929,7 +988,7 @@ SELECT t, if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runni
 ```
 
 
-### RQ.SRS.Plugin.Functions.PerSecondColumns
+#### RQ.SRS.Plugin.Functions.PerSecondColumns
 version: 1.0
 
 The [Plugin] SHALL support the `$perSecondColumns` function in SQL editor. This function SHALL be a combination of $columns and $perSecond 
@@ -940,7 +999,19 @@ SELECT t, groupArray((k, max_0_PerSecond)) AS groupArr FROM ( SELECT t, k, if(ru
 ```
 
 
-### RQ.SRS.Plugin.Functions.Delta
+#### RQ.SRS.Plugin.Functions.PerSecondColumnsAggregated
+version: 1.0
+
+The [Plugin] SHALL support the `$perSecondColumnsAggregated` function in SQL editor. This function SHALL calculate perSecond for higher cardinality dimension and then aggregate by lower cardinality dimension.
+The [Plugin] SHALL replace `$perSecondColumnsAggregated(key as k, value as v, fun1 as f, val1 as v) FROM table_name` with the following:
+```
+SELECT t, k, fun1 as f(vPerSecond) AS vPerSecondAgg FROM (  SELECT t, k, v, if(runningDifference(v) < 0 OR neighbor(v,-1,v) != v, nan, runningDifference(v) / runningDifference(t / 1000)) AS vPerSecond  FROM (   SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, value as v, max(val1) AS v   FROM table_name WHERE {time_condition}  GROUP BY k, v, t    ORDER BY k, v, t  ) ) GROUP BY k, t ORDER BY k, t
+```
+
+
+### Functions for Delta Value Computing
+
+#### RQ.SRS.Plugin.Functions.Delta
 version: 1.0
 
 The [Plugin] SHALL support the `$delta` function in SQL editor. This function SHALL convert query results as "delta value inside interval" 
@@ -951,7 +1022,7 @@ SELECT t, runningDifference(max_0) AS max_0_Delta, runningDifference(max_1) AS m
 ```
 
 
-### RQ.SRS.Plugin.Functions.DeltaColumns
+#### RQ.SRS.Plugin.Functions.DeltaColumns
 version: 1.0
 
 The [Plugin] SHALL support the `$deltaColumns` function in SQL editor. This function SHALL be a combination of $columns and $delta 
@@ -961,7 +1032,20 @@ The [Plugin] SHALL replace `$deltaColumns(key as k, value as v) FROM table_name`
 SELECT t, groupArray((k, max_0_Delta)) AS groupArr FROM ( SELECT t, k, if(neighbor(k,-1,k) != k, 0, runningDifference(max_0)) AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, max(value as v) AS max_0 FROM table_name WHERE {time_condition} GROUP BY t, k ORDER BY k, t)) GROUP BY t ORDER BY t
 ```
 
-### RQ.SRS.Plugin.Functions.Increase
+
+#### RQ.SRS.Plugin.Functions.DeltaColumnsAggregated
+version: 1.0
+
+The [Plugin] SHALL support the `$deltaColumnsAggregated` function in SQL editor. This function SHALL calculate delta for higher cardinality dimension and then aggregate by lower cardinality dimension.
+functions for Counter-like metrics.
+The [Plugin] SHALL replace `$deltaColumnsAggregated(key as k, value as v) FROM table_name` with the following:
+```
+SELECT t, k, fun1 as f(vDelta) AS vDeltaAgg FROM (  SELECT t, k, v, if(neighbor(v,-1,v) != v, 0, runningDifference(v) / 1) AS vDelta  FROM (   SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, value as v, max(val1) AS v   from table_name WHERE {time_condition}   GROUP BY k, v, t    ORDER BY k, v, t  ) ) GROUP BY k, t ORDER BY k, t
+```
+
+### Functions For Non-Negative Delta Value Computing
+
+#### RQ.SRS.Plugin.Functions.Increase
 version: 1.0
 
 The [Plugin] SHALL support the `$increase` function in SQL editor. This function SHALL convert query results as "non-negative delta value inside interval" 
@@ -972,14 +1056,24 @@ SELECT t, groupArray((k, v)) AS groupArr FROM ( SELECT (intDiv(toUInt32(undefine
 ```
 
 
-### RQ.SRS.Plugin.Functions.IncreaseColumns
+#### RQ.SRS.Plugin.Functions.IncreaseColumns
 version: 1.0
 
 The [Plugin] SHALL support the `$increaseColumns` function in SQL editor. This function SHALL be a combination of $columns and $increase 
 functions for Counter-like metrics.
-The [Plugin] SHALL replace `$columns(key as k, value as v) from table_name` with the following:
+The [Plugin] SHALL replace `$increaseColumns(key as k, value as v) from table_name` with the following:
 ```
 SELECT t, groupArray((a, max_0_Increase)) AS groupArr FROM ( SELECT t, a, if(runningDifference(max_0) < 0 OR neighbor(a,-1,a) != a, 0, runningDifference(max_0)) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, first_variable as a, max(second_variable as b) AS max_0 from table_name WHERE {time_condition} GROUP BY t, a ORDER BY a, t)) GROUP BY t ORDER BY t
+```
+
+
+#### RQ.SRS.Plugin.Functions.IncreaseColumnsAggregated
+version: 1.0
+
+The [Plugin] SHALL support the `$increaseColumnsAggregated` function in SQL editor. This function SHALL calculate delta for higher cardinality dimension and then aggregate by lower cardinality dimension.
+The [Plugin] SHALL replace `$increaseColumnsAggregated(key as k, value as v, fun1 as f, val1 as v) from table_name` with the following:
+```
+SELECT t, k, fun1 as f(vIncrease) AS vIncreaseAgg FROM (  SELECT t, k, v, if(runningDifference(v) < 0 OR neighbor(v,-1,v) != v, nan, runningDifference(v) / 1) AS vIncrease  FROM (   SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, value as v, max(val1) AS v   from table_name WHERE {time_condition}   GROUP BY k, v, t    ORDER BY k, v, t  ) ) GROUP BY k, t ORDER BY k, t
 ```
 
 

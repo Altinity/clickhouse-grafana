@@ -49,7 +49,7 @@ xfails = {
     "/Grafana Datasource Plugin For Clickhouse/sql editor/extrapolation toggle/":[
         (Fail, "Run Query button do not update time ranges")
     ],
-    "/Grafana Datasource Plugin For Clickhouse/functions/rate_space_in_variable/*": [
+    "/Grafana Datasource Plugin For Clickhouse/functions/rate function/rate_space_in_variable/*": [
         (Fail, "Functions do not support escaping")
     ]
 }

@@ -1,6 +1,10 @@
-# Running Altinity grafana plugin testflows tests locally
+<img align=right style="width: 5em;" src="https://github.com/user-attachments/assets/1e97270f-7925-4cc2-8791-8d0cc77fe512">
 
-## Steps to follow
+<br>
+
+# 🧪 Running Altinity grafana plugin testflows tests locally
+
+## 👣 Steps to follow
 
 1. Install docker compose.
 ```bash
@@ -17,18 +21,18 @@ sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plu
 4. Run regression.py
   `./regression.py`
   
-## Useful options
+## ⚙️ Useful options
   The following options can be useful:
     `--before=0.5 --after=0.5` - delay before and after steps.
 
-## Watching running tests
+## 👀 Watching running tests
   You can check running tests on `localhost:4444` password=secret
 
-# Collecting code coverage
+# 🧾 Collecting code coverage
 
 This tests collect code coverage for Golang and TypeScript parts.
 
-## Collecting code coverage for Golang part
+## 🔍 Collecting code coverage for Golang part
 
 To collect code coverage for Golang code, follow these steps:
 
@@ -46,7 +50,7 @@ To collect code coverage for Golang code, follow these steps:
   3.2. Transform coverage in `.html` format.
     `go tool cover -html=coverage/coverage.txt -o=coverage/coverage.html`.
 
-## Collecting code coverage for TypeScript part
+## 🔍 Collecting code coverage for TypeScript part
 
 To collect code coverage for TypeScript code, follow these steps:
 

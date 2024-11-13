@@ -1,4 +1,4 @@
-const DEFAULT_VALUES_QUERY = 'SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300';
+export const DEFAULT_VALUES_QUERY = 'SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300';
 export default class AdHocFilter {
   tagKeys: any[];
   tagValues: { [key: string]: any } = {};
@@ -120,23 +120,9 @@ export default class AdHocFilter {
         return this.tagValues[options.key];
       })
       .catch((error: any) => {
-        // If the initial query wasn't the default, attempt the fallback
-        if (initialQuery !== DEFAULT_VALUES_QUERY) {
-          const fallbackQuery = buildQuery(DEFAULT_VALUES_QUERY);
-          return this.datasource.metricFindQuery(fallbackQuery)
-            .then((fallbackResponse: any) => {
-              // Process and cache the fallback response
-              this.tagValues[options.key] = this.processTagValuesResponse(fallbackResponse);
-              return this.tagValues[options.key];
-            })
-            .catch((fallbackError: any) => {
-              this.tagValues[options.key] = [];
-              return this.tagValues[options.key];
-            });
-        } else {
-          this.tagValues[options.key] = [];
-          return this.tagValues[options.key];
-        }
+        this.tagValues[options.key] = [];
+        console.error(error);
+        return this.tagValues[options.key];
       });
   }
 

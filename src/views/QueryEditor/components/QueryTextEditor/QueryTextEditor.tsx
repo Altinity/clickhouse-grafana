@@ -83,7 +83,7 @@ export const QueryTextEditor = ({
         query={query}
         onRunQuery={onRunQuery}
       />
-      {!areAdHocFiltersAvailable && (
+      {!areAdHocFiltersAvailable && adhocFilters.length > 0 && (
         <TagsInput
           className={'adhoc-filters-tags'}
           tags={adhocFilters.map((filter: any, index: number) => `${filter.key} ${filter.operator} ${filter.value}`)}

@@ -28,16 +28,13 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const adHocFilters = datasource.templateSrv.getAdhocFilters(datasource.name);
   const areAdHocFiltersAvailable = !!adHocFilters.length;
 
-  if (adHocFilters?.length) {
-    // eslint-disable-next-line
-    useEffect(() => {
-      if (adHocFilters.length > 0) {
-        onChange({ ...initializedQuery, adHocFilters: adHocFilters });
-      }
+  useEffect(() => {
+    if (adHocFilters.length > 0 && initializedQuery.format === 'logs') {
+      onChange({ ...initializedQuery, adHocFilters: adHocFilters });
+    }
 
-      // eslint-disable-next-line
-    }, [adHocFilters.length]);
-  }
+    // eslint-disable-next-line
+  }, [adHocFilters.length, initializedQuery.format]);
 
   return (
     <>

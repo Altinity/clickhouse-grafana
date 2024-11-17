@@ -15,9 +15,7 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource): [str
     try {
       if (datasource.options && datasource.templateSrv) {
         const queryModel = new SqlQuery(query, datasource.templateSrv, datasource.options);
-        // @ts-ignore
-        const adHocFilters = datasource.templateSrv.getAdhocFilters(datasource.name);
-        const replaced = queryModel.replace(datasource.options, adHocFilters);
+        const replaced = queryModel.replace(datasource.options, query.adHocFilters);
         setFormattedData(replaced);
         setError(null);
       }

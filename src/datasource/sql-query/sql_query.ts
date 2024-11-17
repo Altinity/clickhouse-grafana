@@ -43,7 +43,6 @@ export default class SqlQuery {
     let intervalMs = SqlQueryHelper.convertInterval(i, this.target.intervalFactor || 1, true);
     let adhocCondition: any[] = [];
 
-    adhocFilters = this.target.adHocFilters
     try {
       let ast = scanner.toAST();
       let topQueryAST = ast;

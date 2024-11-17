@@ -29,12 +29,12 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const areAdHocFiltersAvailable = !!adHocFilters.length;
 
   useEffect(() => {
-    if (adHocFilters.length > 0 && initializedQuery.format === 'logs') {
+    if (props.app !== 'explore') {
       onChange({ ...initializedQuery, adHocFilters: adHocFilters });
     }
 
     // eslint-disable-next-line
-  }, [adHocFilters.length, initializedQuery.format]);
+  }, [props.app, adHocFilters.length]);
 
   return (
     <>

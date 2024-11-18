@@ -46,9 +46,8 @@ export default class AdHocFilter {
     response.forEach((item: any) => {
       const databasePrefix = this.datasource.defaultDatabase.length === 0 ? item.database + '.' : '';
       const text: string = databasePrefix + item.table + '.' + item.name;
-      const value = item.name;
 
-      this.tagKeys.push({ text, value });
+      this.tagKeys.push({ text: text, value: text });
 
       if (item.type.slice(0, 4) === 'Enum') {
         const regexEnum = /'(?:[^']+|'')+'/gim;
@@ -82,7 +81,6 @@ export default class AdHocFilter {
     if (Object.prototype.hasOwnProperty.call(this.tagValues, options.key)) {
       return Promise.resolve(this.tagValues[options.key]);
     }
-
     // Split the key to extract database, table, and field
     const keyItems = options.key.split('.');
     if (

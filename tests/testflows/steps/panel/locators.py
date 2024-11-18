@@ -295,5 +295,10 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Drawer close"]')
 
+    @property
+    def refresh_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid RefreshPicker run button"]')
+
 
 locators = Locators()

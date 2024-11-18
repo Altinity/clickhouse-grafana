@@ -541,8 +541,10 @@ def check_default_values_datetime64(self):
     RQ_SRS_Plugin_DataSourceSetupView("1.0"),
     RQ_SRS_Plugin_DataSourceSetupView_DataSourceName("1.0"),
     RQ_SRS_Plugin_DataSourceSetupView_SaveAndTestButton("1.0"),
+    RQ_SRS_Plugin_Dashboards("1.0"),
     RQ_SRS_Plugin_Panels("1.0"),
-    RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection_ServerAccess("1.0")
+    RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection_ServerAccess("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection("1.0"),
 )
 @Name("data source setup")
 def feature(self):

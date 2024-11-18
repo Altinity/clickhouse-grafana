@@ -180,6 +180,7 @@ services:
         npm run create_instrumented && 
         cp -R -n src/* instrumented/ &&
         npm run build:test
+        npm run test:coverage
       '
 
   frontend_coverage_generate:
@@ -193,7 +194,8 @@ services:
       bash -xec '
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
         mkdir -p .nyc_output &&
-        cp tests/testflows/coverage/raw/* .nyc_output/
+        cp tests/testflows/coverage/raw/* .nyc_output/ &&
+        cp coverage/coverage-final.json .nyc_output/ &&
         npx nyc report --reporter=html --report-dir=./tests/testflows/coverage
       '
 
@@ -212,6 +214,7 @@ services:
       bash -xec "
         git config --global --add safe.directory /go/src/grafana-clickhouse &&
         (command -v mage || go install -v github.com/magefile/mage@latest) &&
+        go test -timeout 1m -cover -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ -test.gocoverdir="/go/src/grafana-clickhouse/coverage/raw" &&
         GOOS=linux GOARCH=amd64 go build -cover -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ &&
         chmod +x dist/altinity-clickhouse-plugin*
       "

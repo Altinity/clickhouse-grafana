@@ -312,7 +312,7 @@ def extrapolation_toggle(self):
             for attempt in retries(delay=10, count=12):
                 with attempt:
                     with When("I click on run query button to see results with turned on extrapolation"):
-                        panel.click_run_query_button()
+                        panel.click_refresh_button()
 
                     with When("I take screenshot with extrapolation"):
                         panel.take_screenshot_for_visualization(screenshot_name='extrapolation_toggle_on')

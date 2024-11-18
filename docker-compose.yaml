@@ -20,6 +20,7 @@ services:
     volumes:
       - /var/log/clickhouse-server
       - ./docker/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
+      - ./docker/clickhouse/low_memory.xml:/etc/clickhouse-server/low_memory.xml
       - ./docker/clickhouse/postgres_dictionary.xml:/etc/clickhouse-server/postgres_dictionary.xml
       - ./docker/clickhouse/listen_ports.xml:/etc/clickhouse-server/config.d/listen_ports.xml
       - ./docker/clickhouse/ca-key.pem:/etc/clickhouse-server/ca-key.pem

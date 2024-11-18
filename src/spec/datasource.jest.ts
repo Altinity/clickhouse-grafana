@@ -183,13 +183,13 @@ describe('clickhouse sql series:', () => {
       let results = adhocCtrl.tagKeys;
       expect(results.length).toBe(6);
       expect(results[0].text).toBe('requests.Event');
-      expect(results[0].value).toBe('Event');
+      expect(results[0].value).toBe('requests.Event');
 
       expect(results[1].text).toBe('requests.UserID');
-      expect(results[1].value).toBe('UserID');
+      expect(results[1].value).toBe('requests.UserID');
 
       expect(results[2].text).toBe('requests.URL');
-      expect(results[2].value).toBe('URL');
+      expect(results[2].value).toBe('requests.URL');
 
       expect(results[3].text).toBe('Event');
       expect(results[3].value).toBe('Event');

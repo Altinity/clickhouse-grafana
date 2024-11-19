@@ -515,6 +515,96 @@ def click_save_button(self):
 
 
 @TestStep(When)
+def click_adhoc_dropdown(self, label, variable_number):
+    """Click adhoc dropdown."""
+
+    locators.adhoc_dropdown(label=label, variable_number=variable_number).click()
+
+
+@TestStep(When)
+def get_adhoc_dropdown_value(self, label, variable_number):
+    """Get adhoc dropdown html."""
+
+    return locators.adhoc_grafana_single_value(label=label, variable_number=variable_number).text
+
+@TestStep(When)
+def change_adhoc_value_order(self, label, variable_number, value_order):
+    """Change adhoc value."""
+
+    with By("clicking on adhoc dropdown"):
+        with delay():
+            click_adhoc_dropdown(label=label, variable_number=variable_number)
+
+    with By("choosing value from adhoc dropdown"):
+        with delay():
+            choose_value_from_adhoc_dropdown(label=label, variable_number=variable_number, value_order=value_order)
+
+
+@TestStep(When)
+def change_adhoc_value(self, label, variable_number, variable_value):
+    """Change adhoc value."""
+
+    with By("clicking on adhoc dropdown"):
+        with delay():
+            click_adhoc_dropdown(label=label, variable_number=variable_number)
+
+    with By("entering value into adhoc dropdown"):
+        with delay():
+            enter_value_adhoc_dropdown(label=label, variable_number=variable_number, variable_value=variable_value)
+
+
+@TestStep(When)
+def get_dropdown_values_set(self, label, variable_number):
+    """Get dropdown values set."""
+
+    values_set = set()
+    with When(f"I get 0 dropdown value"):
+        change_adhoc_value_order(label=label, variable_number=variable_number, value_order=0)
+        value = get_adhoc_dropdown_value(label=label, variable_number=variable_number)
+
+    order = 1
+    while not (value in values_set):
+        values_set.add(value)
+        with When(f"I get {order} dropdown value"):
+            change_adhoc_value_order(label=label, variable_number=variable_number, value_order=order)
+            value = get_adhoc_dropdown_value(label=label, variable_number=variable_number)
+        order+=1
+
+    return values_set
+
+
+@TestStep(When)
+def choose_value_from_adhoc_dropdown(self, label, variable_number, value_order):
+    """Choose value from adhoc dropdown value."""
+
+    for i in range(value_order):
+        locators.adhoc_dropdown(label=label, variable_number=variable_number).send_keys(Keys.ARROW_DOWN)
+
+    locators.adhoc_dropdown(label=label, variable_number=variable_number).send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_value_adhoc_dropdown(self, label, variable_number, variable_value):
+    """Enter value adhoc dropdown value."""
+
+    locators.adhoc_dropdown(label=label, variable_number=variable_number).send_keys(variable_value)
+    locators.adhoc_dropdown(label=label, variable_number=variable_number).send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def click_remove_adhoc_filter_button(self, adhoc_name):
+    """Click remove adhoc filter button."""
+
+    locators.remove_adhoc_button(adhoc_name=adhoc_name).click()
+
+
+@TestStep(When)
+def click_add_adhoc_filter_button(self):
+    """Click add adhoc filter button."""
+
+    locators.add_adhoc_filter_button.click()
+
+@TestStep(When)
 def click_save_confirmation_button(self):
     """Click save confirmation button."""
 

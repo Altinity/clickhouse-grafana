@@ -612,6 +612,12 @@ def click_save_confirmation_button(self):
 
 
 @TestStep(When)
+def click_refresh_button(self):
+    """Click refresh button."""
+
+    locators.refresh_button.click()
+
+@TestStep(When)
 def save_dashboard(self):
     """Save dashboard from panel view."""
     with By("clicking save button"):

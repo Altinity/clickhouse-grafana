@@ -312,5 +312,10 @@ class Locators:
     def remove_adhoc_button(self, adhoc_name):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="AdHocFilter-remove-{adhoc_name}"]')
+      
+    @property
+    def refresh_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid RefreshPicker run button"]')
 
 locators = Locators()

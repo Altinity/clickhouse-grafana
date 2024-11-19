@@ -312,7 +312,7 @@ def extrapolation_toggle(self):
             for attempt in retries(delay=10, count=12):
                 with attempt:
                     with When("I click on run query button to see results with turned on extrapolation"):
-                        panel.click_run_query_button()
+                        panel.click_refresh_button()
 
                     with When("I take screenshot with extrapolation"):
                         panel.take_screenshot_for_visualization(screenshot_name='extrapolation_toggle_on')
@@ -339,7 +339,6 @@ def extrapolation_toggle(self):
 
 
 @TestOutline
-@Requirements(RQ_SRS_Plugin_RawSQLEditorInterface_SkipComments("1.0"))
 def skip_comments_toggle(self, query):
     """Check that grafana plugin supports Skip Comments toggle."""
 
@@ -369,6 +368,7 @@ def skip_comments_toggle(self, query):
 
 
 @TestScenario
+@Requirements(RQ_SRS_Plugin_RawSQLEditorInterface_SkipComments("1.0"))
 def multiline_comment(self):
     """Check that grafana plugin supports Skip Comments toggle with multiline comments."""
 
@@ -380,6 +380,7 @@ def multiline_comment(self):
 
 
 @TestScenario
+@Requirements(RQ_SRS_Plugin_RawSQLEditorInterface_SkipComments("1.0"))
 def double_dash_comment(self):
     """Check that grafana plugin supports Skip Comments toggle with multiline comments."""
 
@@ -391,6 +392,7 @@ def double_dash_comment(self):
 
 
 @TestScenario
+@Requirements(RQ_SRS_Plugin_RawSQLEditorInterface_SkipComments("1.0"))
 def hash_comment(self):
     """Check that grafana plugin supports Skip Comments toggle with multiline comments."""
 
@@ -402,6 +404,7 @@ def hash_comment(self):
 
 
 @TestScenario
+@Requirements(RQ_SRS_Plugin_RawSQLEditorInterface_SkipComments("1.0"))
 def hash_exclamation_comment(self):
     """Check that grafana plugin supports Skip Comments toggle with multiline comments."""
 
@@ -415,7 +418,10 @@ def hash_exclamation_comment(self):
 @TestFeature
 @Requirements(
     RQ_SRS_Plugin_RawSQLEditorInterface("1.0"),
-    RQ_SRS_Plugin_RawSQLEditorInterface_ShowGeneratedSQL("1.0")
+    RQ_SRS_Plugin_RawSQLEditorInterface_ShowGeneratedSQL("1.0"),
+    RQ_SRS_Plugin_QuerySetup("1.0"),
+    RQ_SRS_Plugin_QuerySettings("1.0"),
+    RQ_SRS_Plugin_RawSQLEditorInterface_SQLEditor("1.0")
 )
 @Name("sql editor")
 def feature(self):

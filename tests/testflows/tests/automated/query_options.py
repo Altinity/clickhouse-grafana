@@ -56,7 +56,8 @@ def max_data_points(self):
 
 
 @TestScenario
-@Requirements(RQ_SRS_Plugin_QueryOptions_MinInterval("1.0"))
+@Requirements(RQ_SRS_Plugin_QueryOptions_MinInterval("1.0"),
+              RQ_SRS_Plugin_QueryOptions_Interval("1.0"))
 def min_interval(self):
     """Check that grafana plugin supports specifying 'Min interval' textfield."""
 

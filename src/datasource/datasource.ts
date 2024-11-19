@@ -416,7 +416,7 @@ export
   createQuery(options: any, target: any) {
     const queryModel = new SqlQuery(target, this.templateSrv, options);
     // @ts-ignore
-    const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name || 'clickhouse',this.uid )
+    const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name,this.uid )
     const stmt = queryModel.replace(options, adhocFilters);
 
     let keys = [];

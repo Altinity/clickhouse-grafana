@@ -196,6 +196,7 @@ services:
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
         mkdir -p .nyc_output &&
         cp tests/testflows/coverage/raw/* .nyc_output/ &&
+        npx nyc report --reporter=html --report-dir=./tests/testflows/frontend_coverage_testflows
         cp coverage/coverage-final.json .nyc_output/ &&
         npx nyc report --reporter=html --report-dir=./tests/testflows/coverage
       '
@@ -216,7 +217,7 @@ services:
         git config --global --add safe.directory /go/src/grafana-clickhouse &&
         (command -v mage || go install -v github.com/magefile/mage@latest) &&
         mkdir -p /go/src/grafana-clickhouse/coverage/raw &&
-        go test -timeout 1m -cover -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ -test.gocoverdir="/go/src/grafana-clickhouse/coverage/raw" &&
+        go test -timeout 1m -cover -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ -test.gocoverdir="/go/src/grafana-clickhouse/coverage" &&
         GOOS=linux GOARCH=amd64 go build -cover -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ &&
         chmod +x dist/altinity-clickhouse-plugin*
       "
@@ -228,6 +229,11 @@ services:
       - ./:/go/src/grafana-clickhouse
     command: |
       bash -xec "
+        go tool covdata textfmt -i=coverage/raw -o=coverage/coverage.txt &&
+        go tool cover -html=coverage/coverage.txt -o=coverage/coverage.html &&
+        mkdir -p ./tests/testflows/backend_coverage_testflows/
+        mv coverage/coverage.html ./tests/testflows/backend_coverage_testflows/ &&
+        mv coverage/covcounters* coverage/raw/ &&
         go tool covdata textfmt -i=coverage/raw -o=coverage/coverage.txt &&
         go tool cover -html=coverage/coverage.txt -o=coverage/coverage.html
       "

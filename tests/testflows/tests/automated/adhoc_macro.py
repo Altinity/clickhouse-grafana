@@ -13,7 +13,7 @@ from requirements.requirements import *
 
 
 @TestOutline(Scenario)
-def adhoc_macro_outline(self, dashboard_name, adhoc_value):
+def adhoc_macro_outline(self, dashboard_name, expected_adhoc_values, adhoc_label, adhoc_name):
     """Check that grafana plugin supports adhoc macro."""
 
     with Given(f"I open dashboard {dashboard_name}"):
@@ -23,65 +23,74 @@ def adhoc_macro_outline(self, dashboard_name, adhoc_value):
         with When("I add visualization for panel"):
             dashboard.add_visualization()
 
-        with When("I select datasource"):
+        with And("I select datasource"):
             with delay():
                 panel.select_datasource_in_panel_view(datasource_name='clickhouse')
                 
-        with When("I setup query settings for queries"):
+        with And("I setup query settings for queries"):
             with delay():
                 actions.setup_query_settings(table="test_grafana")
 
-        with When("I open SQL editor"):
+        with And("I open SQL editor"):
             with delay():
                 panel.go_to_sql_editor()
 
+        with And("I get default adhoc value"):
+            with delay():
+                default_adhoc_value = panel.get_adhoc_dropdown_value(label=adhoc_label, variable_number=3)
+
         with When("I get every adhoc value"):
             with delay():
-                adhoc_values = panel.get_dropdown_values_set(label="adhoc_variable", variable_number=3)
+                adhoc_values = panel.get_dropdown_values_set(label=adhoc_label, variable_number=3)
                 note(adhoc_values)
+                assert adhoc_values == expected_adhoc_values, error()
 
-        with When("I remove adhoc"):
+        with And("I remove adhoc"):
             with delay():
-                panel.click_remove_adhoc_filter_button(adhoc_name="default.test_grafana.country")
+                panel.click_remove_adhoc_filter_button(adhoc_name=adhoc_name)
 
-        with When("I add adhoc"):
+        with And("I add adhoc"):
             with delay():
                 panel.click_add_adhoc_filter_button()
 
-        with When("I enter adhoc label"):
+        with And("I enter adhoc name"):
             with delay():
-                panel.enter_value_adhoc_dropdown(label="adhoc_variable", variable_number=1, variable_value="default.test_grafana.country")
+                panel.enter_value_adhoc_dropdown(label=adhoc_label, variable_number=1, variable_value=adhoc_name)
 
-        with When("I enter adhoc label"):
+        with And("I enter default adhoc value"):
             with delay():
-                panel.change_adhoc_value(label="adhoc_variable", variable_number=3, variable_value="NL")
+                panel.change_adhoc_value(label=adhoc_label, variable_number=3, variable_value=default_adhoc_value)
 
-        with When("I get every adhoc value after deleting and adding adhoc"):
+        with And("I get every adhoc value after deleting and adding adhoc"):
             with delay():
-                adhoc_values_after_deleting_and_adding_adhoc = panel.get_dropdown_values_set(label="adhoc_variable", variable_number=3)
+                adhoc_values_after_deleting_and_adding_adhoc = panel.get_dropdown_values_set(label=adhoc_label, variable_number=3)
 
-
-        with Then("I check adhoc correctly displays values"):
+        with Then("I check adhoc correctly displays values after recreating adhoc"):
             assert adhoc_values_after_deleting_and_adding_adhoc == adhoc_values, error()
 
-        # with Then("I click Show generated SQL button",
-        #           description="opened to check reformatted queries in scenarios"):
-        #     with delay():
-        #         sql_editor.click_show_generated_sql_button(query_name='A')
-        #
-        # with Given("I define a query"):
-        #     query = define("query", "SELECT * from $table WHERE $adhoc")
-        #
-        # with When("I enter query to SQL editor"):
-        #     panel.enter_sql_editor_input(query=query)
-        #
-        # with Then("I click on the visualization to see results"):
-        #     with delay():
-        #         panel.click_on_the_visualization()
-        #
-        # with Then(f"I check reformatted query contains adhoc {adhoc_value}"):
-        #     with delay():
-        #         assert adhoc_value in sql_editor.get_reformatted_query(query_name='A'), error()
+        with And("I click Show generated SQL button",
+                  description="opened to check reformatted queries in scenarios"):
+            with delay():
+                sql_editor.click_show_generated_sql_button(query_name='A')
+
+        with When("I define a query"):
+            query = define("query", "SELECT * from $table WHERE $adhoc")
+
+        with When("I enter query to SQL editor"):
+            panel.enter_sql_editor_input(query=query)
+
+        with Then("I click on the visualization to see results"):
+            with delay():
+                panel.click_on_the_visualization()
+
+        for adhoc_value in adhoc_values:
+            with When(f"I define adhoc value as {adhoc_value}"):
+                with delay():
+                    panel.change_adhoc_value(label=adhoc_label, variable_number=3, variable_value=adhoc_value)
+
+            with Then(f"I check reformatted query contains adhoc {adhoc_value}"):
+                with delay():
+                    assert adhoc_value in sql_editor.get_reformatted_query(query_name='A'), error()
 
     finally:
         with Finally("I discard changes for panel"):
@@ -92,14 +101,16 @@ def adhoc_macro_outline(self, dashboard_name, adhoc_value):
             with delay():
                 dashboard.discard_changes_for_dashboard()
 
+
 @TestFeature
 @Requirements(RQ_SRS_Plugin_QuerySettings_Macros_Adhoc("1.0"))
 @Name("adhoc macro")
 def feature(self):
     """Check that grafana plugin supports adhoc macro."""
 
-    adhoc_dashboards_values = [('$adhoc + ${variable:text} formatting', "(country = 'NL')"),]
-                               # ('adhoc + ORDER BY WITH FILL', 'default.test_grafana.service_name = "mysql"')]
+    adhoc_dashboards_values = [('$adhoc + ${variable:text} formatting', {'US', 'CN', 'RU', 'FR', 'EU', 'AR', 'DE', 'UK', 'TK', 'NL'}, "adhoc_variable", "default.test_grafana.country"),
+                               ('adhoc + ORDER BY WITH FILL', {'mysql', 'postgresql'}, "adhoc", "default.test_grafana.service_name")]
 
-    for (dashboard_name, adhoc_value) in adhoc_dashboards_values:
-        adhoc_macro_outline(dashboard_name=dashboard_name, adhoc_value=adhoc_value)
+    for (dashboard_name, expected_adhoc_values, adhoc_label, adhoc_name) in adhoc_dashboards_values:
+        with Scenario(dashboard_name):
+            adhoc_macro_outline(dashboard_name=dashboard_name, expected_adhoc_values=expected_adhoc_values, adhoc_label=adhoc_label, adhoc_name=adhoc_name)

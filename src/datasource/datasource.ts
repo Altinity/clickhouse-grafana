@@ -22,6 +22,7 @@ import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
 import { SqlQueryHelper } from './sql-query/sql-query-helper';
 import SqlQueryMacros from './sql-query/sql-query-macros';
 import { QueryEditor } from "../views/QueryEditor/QueryEditor";
+import {getAdhocFilters} from "../views/QueryEditor/helpers/getAdHocFilters";
 
 const adhocFilterVariable = 'adhoc_query_filter';
 export
@@ -47,9 +48,11 @@ export
   useCompression: boolean;
   compressionType: string;
   adHocValuesQuery: string;
+  uid: string;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
+    this.uid = instanceSettings.uid;
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;
     this.withCredentials = instanceSettings.withCredentials;
@@ -413,7 +416,7 @@ export
   createQuery(options: any, target: any) {
     const queryModel = new SqlQuery(target, this.templateSrv, options);
     // @ts-ignore
-    const adhocFilters = this.templateSrv?.getAdhocFilters(this.adHocFilter?.datasource?.name || 'clickhouse') || []
+    const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name,this.uid )
     const stmt = queryModel.replace(options, adhocFilters);
 
     let keys = [];

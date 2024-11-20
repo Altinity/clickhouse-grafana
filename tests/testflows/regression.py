@@ -46,9 +46,6 @@ xfails = {
     "/Grafana Datasource Plugin For Clickhouse/data source setup/check default values datetime64/": [
         (Error, "https://github.com/Altinity/clickhouse-grafana/issues/630")
     ],
-    "/Grafana Datasource Plugin For Clickhouse/sql editor/extrapolation toggle/":[
-        (Fail, "Run Query button do not update time ranges")
-    ],
     "/Grafana Datasource Plugin For Clickhouse/functions/rate function/rate_space_in_variable/*": [
         (Fail, "Functions do not support escaping")
     ]

@@ -23,17 +23,20 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });
   const onFieldChange = (field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value });
   const onTriggerQuery = () => onRunQuery();
-
+  
   // @ts-ignore
   const adHocFilters = getAdhocFilters(datasource?.name, query.datasource?.uid)
+  // @ts-ignore
+  const adHocFiltersKey = adHocFilters.map(({key,operator,value }) => `${key}${operator}${value}`).join(',');
   const areAdHocFiltersAvailable = !!adHocFilters.length;
+
   useEffect(() => {
     if (props.app !== 'explore') {
       onChange({ ...initializedQuery, adHocFilters: adHocFilters });
     }
 
     // eslint-disable-next-line
-  }, [props.app, adHocFilters.length]);
+  }, [props.app, adHocFiltersKey]);
 
   return (
     <>

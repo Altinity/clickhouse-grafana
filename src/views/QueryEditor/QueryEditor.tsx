@@ -10,10 +10,10 @@ import { useQueryState } from './hooks/useQueryState';
 import { useFormattedData } from './hooks/useFormattedData';
 import { initializeQueryDefaults } from './helpers/initializeQueryDefaults';
 import './QueryEditor.css';
+import {getAdhocFilters} from "./helpers/getAdHocFilters";
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const { datasource, query, onChange, onRunQuery } = props;
-
   const isAnnotationView = !props.app;
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
@@ -23,21 +23,20 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });
   const onFieldChange = (field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value });
   const onTriggerQuery = () => onRunQuery();
-
+  
   // @ts-ignore
-  const adHocFilters = datasource.templateSrv.getAdhocFilters(datasource.name);
+  const adHocFilters = getAdhocFilters(datasource?.name, query.datasource?.uid)
+  // @ts-ignore
+  const adHocFiltersKey = adHocFilters.map(({key,operator,value }) => `${key}${operator}${value}`).join(',');
   const areAdHocFiltersAvailable = !!adHocFilters.length;
 
-  if (adHocFilters?.length) {
-    // eslint-disable-next-line
-    useEffect(() => {
-      if (adHocFilters.length > 0) {
-        onChange({ ...initializedQuery, adHocFilters: adHocFilters });
-      }
+  useEffect(() => {
+    if (props.app !== 'explore') {
+      onChange({ ...initializedQuery, adHocFilters: adHocFilters });
+    }
 
-      // eslint-disable-next-line
-    }, [adHocFilters.length]);
-  }
+    // eslint-disable-next-line
+  }, [props.app, adHocFiltersKey]);
 
   return (
     <>
@@ -64,7 +63,6 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
           adhocFilters={initializedQuery.adHocFilters}
           areAdHocFiltersAvailable={areAdHocFiltersAvailable}
           query={initializedQuery}
-          height={200}
           onSqlChange={onSqlChange}
           onRunQuery={onTriggerQuery}
           onFieldChange={onFieldChange}

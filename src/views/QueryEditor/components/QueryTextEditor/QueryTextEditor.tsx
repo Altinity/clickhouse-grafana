@@ -32,8 +32,6 @@ const FORMAT_OPTIONS = [
 
 export const QueryTextEditor = ({
   query,
-  height,
-  onEditorMount,
   onSqlChange,
   onFieldChange,
   formattedData,
@@ -81,13 +79,11 @@ export const QueryTextEditor = ({
     <>
       <SQLCodeEditor
         datasource={datasource}
-        height={height}
         onSqlChange={onSqlChange}
         query={query}
-        onEditorMount={onEditorMount}
         onRunQuery={onRunQuery}
       />
-      {!areAdHocFiltersAvailable && (
+      {!areAdHocFiltersAvailable && adhocFilters.length > 0 && (
         <TagsInput
           className={'adhoc-filters-tags'}
           tags={adhocFilters.map((filter: any, index: number) => `${filter.key} ${filter.operator} ${filter.value}`)}
@@ -95,11 +91,7 @@ export const QueryTextEditor = ({
             onFieldChange({
               fieldName: 'adHocFilters',
               value: tagsList.map((item: string) => {
-                const [
-                  key,
-                  operator,
-                  value
-                ] = item.split(' ');
+                const [key, operator, value] = item.split(' ');
 
                 return { key, operator, value };
               }),

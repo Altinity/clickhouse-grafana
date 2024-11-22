@@ -6,7 +6,7 @@ import {
   DEFAULT_INTERVAL_FACTOR,
   DEFAULT_ROUND,
   defaultQuery,
-} from '../constants';
+} from '../../constants';
 
 export const useQueryState = (query, onChange, datasource) => {
   const [datasourceName] = useState(datasource.name);

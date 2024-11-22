@@ -6,19 +6,19 @@ import { TimestampFormat } from '../../../../types/types';
 const TIME_RELATED_COLUMNS_QUERY =
   "SELECT name,database,table,type FROM system.columns WHERE substring(type,1,4) = 'Date' OR substring(type,10,4) = 'Date' OR type = 'UInt32' ORDER BY type,name FORMAT JSON";
 
+interface DefaultValuesInterface {
+  jsonData: any;
+  onSwitchToggle: any;
+  newOptions: any;
+  onFieldChange: any;
+}
+
 export const DefaultValues = ({
   jsonData,
   newOptions,
   onSwitchToggle,
   onFieldChange,
-  externalProps,
-}: {
-  jsonData: any;
-  onSwitchToggle: any;
-  newOptions: any;
-  onFieldChange: any;
-  externalProps: any;
-}) => {
+}: DefaultValuesInterface) => {
   const [defaultDateTime64Options, setDefaultDateTime64Options] = useState<any[]>([]);
   const [defaultDateTimeOptions, setDefaultDateTimeOptions] = useState<any[]>([]);
   const [defaultUint32Options, setDefaultUint32Options] = useState<any[]>([]);

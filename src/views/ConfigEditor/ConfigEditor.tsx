@@ -1,9 +1,13 @@
 import React, { FormEvent, useState } from 'react';
-import { DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput, Select } from '@grafana/ui';
+import { CodeEditor, DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput, Select } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, SelectableValue } from '@grafana/data';
 import { CHDataSourceOptions } from '../../types/types';
 import _ from 'lodash';
 import { DefaultValues } from './FormParts/DefaultValues/DefaultValues';
+import { LANGUAGE_ID } from '../QueryEditor/components/QueryTextEditor/editor/initiateEditor';
+import { MONACO_EDITOR_OPTIONS } from '../constants';
+import {COMPRESSION_TYPE_OPTIONS} from "./constants";
+import {DEFAULT_VALUES_QUERY} from "../../datasource/adhoc";
 
 export interface CHSecureJsonData {
   password?: string;
@@ -128,7 +132,6 @@ export function ConfigEditor(props: Props) {
         newOptions={newOptions}
         onSwitchToggle={onSwitchToggle}
         onFieldChange={onFieldChange}
-        externalProps={props}
       />
       <h3 className="page-heading">Additional</h3>
       <div className="gf-form-group">
@@ -191,13 +194,25 @@ export function ConfigEditor(props: Props) {
             width={24}
             value={selectedCompressionType}
             onChange={({ value }) => onCompressionTypeChange({ value })}
-            options={[
-              { label: 'gzip', value: 'gzip' },
-              { label: 'br', value: 'br' },
-              { label: 'deflate', value: 'deflate' },
-              { label: 'zstd', value: 'zstd' },
-            ]}
+            options={COMPRESSION_TYPE_OPTIONS}
           />
+        </InlineField>
+        <InlineField
+          label="Configure AdHoc Filters request"
+          labelWidth={32}
+          tooltip="To be able to configure request properfly please use macroses {field} {database} {table}"
+        >
+          <div style={{ position: 'relative', minWidth: '600px' }}>
+            <CodeEditor
+              height={Math.max((jsonData.adHocValuesQuery || '').split('\n').length * 18, 150)}
+              value={jsonData.adHocValuesQuery || DEFAULT_VALUES_QUERY}
+              language={LANGUAGE_ID}
+              monacoOptions={MONACO_EDITOR_OPTIONS}
+              onChange={(newValue) => {
+                onFieldChange({ value: newValue }, 'adHocValuesQuery');
+              }}
+            />
+          </div>
         </InlineField>
       </div>
     </>

@@ -3,19 +3,7 @@ import { initiateEditor, LANGUAGE_ID, THEME_NAME } from './editor/initiateEditor
 import { CodeEditor } from '@grafana/ui';
 import { useSystemDatabases } from '../../hooks/useSystemDatabases';
 import { useAutocompleteData } from '../../hooks/useAutocompletionData';
-
-const MONACO_EDITOR_OPTIONS: any = {
-  scrollBeyondLastLine: false,
-  wordWrap: 'on',
-  wrappingStrategy: 'advanced',
-  scrollbar: {
-    alwaysConsumeMouseWheel: false,
-  },
-  minimap: {
-    enabled: false,
-  },
-  overviewRulerLanes: 0,
-};
+import { MONACO_EDITOR_OPTIONS } from '../../../constants';
 
 export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: any) => {
   const [initialized, setInitialized] = useState(false);

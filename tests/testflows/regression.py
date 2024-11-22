@@ -48,7 +48,10 @@ xfails = {
     ],
     "/Grafana Datasource Plugin For Clickhouse/functions/rate function/rate_space_in_variable/*": [
         (Fail, "Functions do not support escaping")
-    ]
+    ],
+    # "/Grafana Datasource Plugin For Clickhouse/adhoc macro/*": [
+    #     (Fail, "https://github.com/Altinity/clickhouse-grafana/pull/655")
+    # ]
 }
 
 grafana_version = ""

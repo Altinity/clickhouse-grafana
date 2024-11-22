@@ -1,3 +1,4 @@
+from PIL.ImImagePlugin import number
 from testflows.core import *
 from selenium.webdriver.remote.webdriver import WebDriver
 from selenium.webdriver.common.by import By as SelectBy
@@ -295,6 +296,23 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Drawer close"]')
 
+    def adhoc_dropdown(self, label, variable_number):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//label[@data-testid="data-testid Dashboard template variables submenu Label {label}"]/../div/div[1]/div[{variable_number}]//input')
+
+    def adhoc_grafana_single_value(self, label, variable_number):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//label[@data-testid="data-testid Dashboard template variables submenu Label {label}"]/../div/div[1]/div[{variable_number}]//*[contains(@class, "singleValue")]')
+
+    @property
+    def add_adhoc_filter_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="AdHocFilter-add"]')
+
+    def remove_adhoc_button(self, adhoc_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="AdHocFilter-remove-{adhoc_name}"]')
+      
     @property
     def refresh_button(self):
         driver: WebDriver = current().context.driver

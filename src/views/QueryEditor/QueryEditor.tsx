@@ -25,7 +25,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const onTriggerQuery = () => onRunQuery();
 
   // @ts-ignore
-  const adHocFilters = getAdhocFilters(datasource.name, query.datasource.uid)
+  const adHocFilters = getAdhocFilters(datasource?.name, query.datasource?.uid)
   const areAdHocFiltersAvailable = !!adHocFilters.length;
   useEffect(() => {
     if (props.app !== 'explore') {

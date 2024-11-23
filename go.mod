@@ -5,7 +5,7 @@ go 1.23
 require (
 	github.com/andybalholm/brotli v1.1.1
 	github.com/dlclark/regexp2 v1.11.4
-	github.com/grafana/grafana-plugin-sdk-go v0.259.3
+	github.com/grafana/grafana-plugin-sdk-go v0.259.4
 	github.com/klauspost/compress v1.17.11
 	github.com/stretchr/testify v1.9.0
 	golang.org/x/sync v0.9.0
@@ -39,7 +39,7 @@ require (
 	github.com/grafana/pyroscope-go/godeltaprof v0.1.8 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/providers/prometheus v1.0.1 // indirect
 	github.com/grpc-ecosystem/go-grpc-middleware/v2 v2.1.0 // indirect
-	github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0 // indirect
+	github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0 // indirect
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/go-plugin v1.6.2 // indirect
 	github.com/hashicorp/yamux v0.1.2 // indirect

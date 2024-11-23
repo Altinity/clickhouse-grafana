@@ -100,6 +100,8 @@ github.com/grafana/grafana-plugin-sdk-go v0.258.0 h1:rWsaD+5wuGUSNr9fFnSwS6t/jcR
 github.com/grafana/grafana-plugin-sdk-go v0.258.0/go.mod h1:jN19FbzhAcPTLPIy31X5nvx38rR5eoD/1rASiip0GBY=
 github.com/grafana/grafana-plugin-sdk-go v0.259.3 h1:FKaSZoAadA1PSu9UyHpWgf46bJ9zUn8/yOxJ68gFUfE=
 github.com/grafana/grafana-plugin-sdk-go v0.259.3/go.mod h1:EykR7arIfOfihaQ49AxoLqD9789xCa4O22z856igKtQ=
+github.com/grafana/grafana-plugin-sdk-go v0.259.4 h1:Qt/Ic+7K7n7z4ncZs29q2OhOOPKWjE5+ms2ckeYlTo4=
+github.com/grafana/grafana-plugin-sdk-go v0.259.4/go.mod h1:BS2B+lEHC4KtOViiS4C5x9SsR1ihPHAzesGOpaPYeCs=
 github.com/grafana/otel-profiling-go v0.5.1 h1:stVPKAFZSa7eGiqbYuG25VcqYksR6iWvF3YH66t4qL8=
 github.com/grafana/otel-profiling-go v0.5.1/go.mod h1:ftN/t5A/4gQI19/8MoWurBEtC6gFw8Dns1sJZ9W4Tls=
 github.com/grafana/pyroscope-go/godeltaprof v0.1.8 h1:iwOtYXeeVSAeYefJNaxDytgjKtUuKQbJqgAIjlnicKg=
@@ -114,6 +116,8 @@ github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0 h1:asbCHRVmodnJTuQ3qamDwqVOIjw
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.22.0/go.mod h1:ggCgvZ2r7uOoQjOyu2Y1NhHmEPPzzuhWgcza5M1Ji1I=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0 h1:ad0vkEBuk23VJzZR9nkLVG0YAoN9coASF1GusYX6AlU=
 github.com/grpc-ecosystem/grpc-gateway/v2 v2.23.0/go.mod h1:igFoXX2ELCW06bol23DWPB5BEWfZISOzSP5K2sbLea0=
+github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0 h1:TmHmbvxPmaegwhDubVz0lICL0J5Ka2vwTzhoePEXsGE=
+github.com/grpc-ecosystem/grpc-gateway/v2 v2.24.0/go.mod h1:qztMSjm835F2bXf+5HKAPIS5qsmQDqZna/PgVt4rWtI=
 github.com/hashicorp/go-hclog v1.6.3 h1:Qr2kF+eVWjTiYmU7Y31tYlP1h0q/X3Nl3tPGdaB11/k=
 github.com/hashicorp/go-hclog v1.6.3/go.mod h1:W4Qnvbt70Wk/zYJryRzDRU/4r0kIg0PVHBcfoyhpF5M=
 github.com/hashicorp/go-plugin v1.6.1 h1:P7MR2UP6gNKGPp+y7EZw2kOiq4IR9WiqLvp0XOsVdwI=

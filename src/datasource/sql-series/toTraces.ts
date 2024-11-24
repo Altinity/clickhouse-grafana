@@ -1,5 +1,5 @@
-import {_toFieldType, convertTimezonedDateToUnixTimestamp, Field} from "./sql_series";
-import {FieldType} from "@grafana/data";
+import { _toFieldType, convertTimezonedDateToUnixTimestamp, Field } from './sql_series';
+import { FieldType } from '@grafana/data';
 
 interface TraceData {
   fields: Field[];
@@ -20,8 +20,8 @@ interface Trace {
 
 export const toTraces = (series: Trace[], meta: any): TraceData[] => {
   function transformTraceData(inputData: Trace[]): TraceData[] {
-    let timeCol = meta.find(item => item.name === 'startTime');
-    let timeColType = _toFieldType(timeCol.type || '')
+    let timeCol = meta.find((item) => item.name === 'startTime');
+    let timeColType = _toFieldType(timeCol.type || '');
 
     const fields: { [key: string]: Field } = {
       traceID: { name: 'traceID', type: 'string', values: [], config: {} },
@@ -36,11 +36,11 @@ export const toTraces = (series: Trace[], meta: any): TraceData[] => {
     };
 
     inputData.forEach((span) => {
-      const isTimeWithTimezone = timeColType?.fieldType === FieldType.time
+      const isTimeWithTimezone = timeColType?.fieldType === FieldType.time;
 
       let startTimeProcessed;
       if (isTimeWithTimezone) {
-        startTimeProcessed = convertTimezonedDateToUnixTimestamp(span.startTime, timeColType.timezone)
+        startTimeProcessed = convertTimezonedDateToUnixTimestamp(span.startTime, timeColType.timezone);
       }
 
       fields.traceID.values.push(span.traceID);
@@ -66,4 +66,4 @@ export const toTraces = (series: Trace[], meta: any): TraceData[] => {
   }
 
   return transformTraceData(series);
-}
+};

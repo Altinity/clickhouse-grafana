@@ -1212,6 +1212,7 @@ describe('Add float columns support', () => {
 
   beforeEach(() => {
     templateSrv = new TemplateSrvStub();
+    // eslint-disable-next-line
     adhocFilters: [] = [];
 
     target = {

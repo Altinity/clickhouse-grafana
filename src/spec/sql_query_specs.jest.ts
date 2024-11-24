@@ -1203,3 +1203,112 @@ describe('Query SELECT with special character in table', () => {
     expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
   });
 });
+
+describe('Add float columns support', () => {
+  let target;
+  let templateSrv;
+  let options;
+  let adhocFilters;
+
+  beforeEach(() => {
+    templateSrv = new TemplateSrvStub();
+    adhocFilters: [] = [];
+
+    target = {
+      interval: '100ms',
+      intervalFactor: 1,
+      skip_comments: false,
+      table: 'test_datetime64',
+      database: 'default',
+      dateTimeType: 'FLOAT',
+      dateColDataType: '',
+      dateTimeColDataType: 'd',
+      round: '100ms',
+      rawQuery: '',
+    };
+
+    options = {
+      rangeRaw: {
+        from: dayjs('2018-12-24 01:02:03.200Z'),
+        to: dayjs('2018-12-31 23:59:59.200Z'),
+      },
+      range: {
+        from: dayjs('2018-12-24 01:02:03.200Z'),
+        to: dayjs('2018-12-31 23:59:59.200Z'),
+      },
+      scopedVars: {
+        __interval: {
+          text: '100ms',
+          value: '100ms',
+        },
+        __interval_ms: {
+          text: '100',
+          value: 100,
+        },
+      },
+    };
+  })
+
+  it('applyMacros $timeSeries with $timeFilter with Float timestamp column type', () => {
+    const query =
+      'SELECT $timeSeries as t, sum(x) AS metric\n' +
+      'FROM $table\n' +
+      'WHERE $timeFilter\n' +
+      'GROUP BY t\n' +
+      'ORDER BY t';
+    const expQuery =
+      'SELECT round(d * 1000) as t, sum(x) AS metric\n' +
+      'FROM default.test_datetime64\n' +
+      'WHERE d >= 1545613323 AND d <= 1546300799\n' +
+      'GROUP BY t\n' +
+      'ORDER BY t';
+
+    target.query = query
+
+    let sql_query = new SqlQuery(target, templateSrv, options);
+
+    expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+  });
+
+  it('applyMacros $timeSeriesMs with $timeFilterMs with Float timestamp column type', () => {
+    const query =
+      'SELECT $timeSeriesMs as t, sum(x) AS metric\n' +
+      'FROM $table\n' +
+      'WHERE $timeFilterMs\n' +
+      'GROUP BY t\n' +
+      'ORDER BY t';
+    const expQuery =
+      'SELECT (intDiv(d * 1000, 100) * 100) as t, sum(x) AS metric\n' +
+      'FROM default.test_datetime64\n' +
+      'WHERE d >= toFloat64(1545613323200/1000) AND d <= toFloat64(1546300799200/1000)\n' +
+      'GROUP BY t\n' +
+      'ORDER BY t';
+
+    target.query = query
+
+    let sql_query = new SqlQuery(target, templateSrv, options);
+
+    expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+  });
+
+  it('applyMacros $from and $to with Float timestamp column type', () => {
+    const query =
+      'SELECT $timeSeries as t, sum(x) AS metric\n' +
+      'FROM $table\n' +
+      'WHERE $dateTimeCol >= $from AND $dateTimeCol <= $to\n' +
+      'GROUP BY t\n' +
+      'ORDER BY t';
+    const expQuery =
+      'SELECT round(d * 1000) as t, sum(x) AS metric\n' +
+      'FROM default.test_datetime64\n' +
+      'WHERE d >= 1545613323 AND d <= 1546300799\n' +
+      'GROUP BY t\n' +
+      'ORDER BY t';
+
+    target.query = query
+
+    let sql_query = new SqlQuery(target, templateSrv, options);
+
+    expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+  });
+});

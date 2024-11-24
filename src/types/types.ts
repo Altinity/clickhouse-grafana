@@ -18,6 +18,7 @@ export enum TimestampFormat {
   DateTime = 'DATETIME',
   DateTime64 = 'DATETIME64',
   TimeStamp = 'TIMESTAMP',
+  Float = 'FLOAT',
 }
 
 export interface CHQuery extends DataQuery {

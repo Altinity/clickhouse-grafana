@@ -22,7 +22,6 @@
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.21.4",
-    "@grafana/e2e": "^11.0.6",
     "@grafana/e2e-selectors": "^11.2.2",
     "@grafana/eslint-config": "^8.0.0",
     "@grafana/tsconfig": "^2.0.0",

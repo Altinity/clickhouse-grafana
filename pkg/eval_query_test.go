@@ -1989,7 +1989,7 @@ func TestEvalQueryFloatColumnsSupport(t *testing.T) {
 			"ORDER BY t"
 		const expQuery = "SELECT round(\"d\" * 1000) as t, sum(x) AS metric\n" +
 			"FROM default.test_timestamp_formats\n" +
-			"WHERE  \"d\" >= 1545613323 AND  \"d\" <= 1546300799\n" +
+			"WHERE \"d\" >= 1545613323 AND \"d\" <= 1546300799\n" +
 			"GROUP BY t\n" +
 			"ORDER BY t"
 
@@ -2027,7 +2027,7 @@ func TestEvalQueryFloatColumnsSupport(t *testing.T) {
 			"ORDER BY t"
 		const expQuery = "SELECT (intDiv(\"d\" * 1000, 100) * 100) as t, sum(x) AS metric\n" +
 			"FROM default.test_timestamp_formats\n" +
-			"WHERE  \"d\" >= toFloat64(1545613323200/1000) AND  \"d\" <= toFloat64(1546300799200/1000)\n" +
+			"WHERE \"d\" >= toFloat64(1545613323200/1000) AND \"d\" <= toFloat64(1546300799200/1000)\n" +
 			"GROUP BY t\n" +
 			"ORDER BY t"
 
@@ -2065,7 +2065,7 @@ func TestEvalQueryFloatColumnsSupport(t *testing.T) {
 			"ORDER BY t"
 		const expQuery = "SELECT round(\"d\" * 1000) as t, sum(x) AS metric\n" +
 			"FROM default.test_timestamp_formats\n" +
-			"WHERE \"d\" >= 1545613323 AND  \"d\" <= 1546300799\n" +
+			"WHERE \"d\" >= 1545613323 AND \"d\" <= 1546300799\n" +
 			"GROUP BY t\n" +
 			"ORDER BY t"
 

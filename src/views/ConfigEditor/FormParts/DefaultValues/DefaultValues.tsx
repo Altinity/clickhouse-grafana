@@ -184,6 +184,7 @@ export const DefaultValues = ({
                 { label: 'DateTime', value: TimestampFormat.DateTime },
                 { label: 'DateTime64', value: TimestampFormat.DateTime64 },
                 { label: 'TimeStamp', value: TimestampFormat.TimeStamp },
+                { label: 'Float', value: TimestampFormat.Float },
               ]}
               value={jsonData.defaultDateTimeType}
             />

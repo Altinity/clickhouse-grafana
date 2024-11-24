@@ -74,6 +74,19 @@ export const useConnectionData = (query, datasource) => {
             "type = 'UInt32' " +
             'ORDER BY name';
           break;
+        case TimestampFormat.Float:
+          query =
+            'SELECT name ' +
+            'FROM system.columns ' +
+            "WHERE database = '" +
+            selectedDatabase +
+            "' AND " +
+            "table = '" +
+            selectedTable +
+            "' AND " +
+            "type LIKE 'Float%' OR type LIKE 'Decimal%' " +
+            'ORDER BY name';
+          break;
         case 'DATABASES':
           query = 'SELECT name ' + 'FROM system.databases ' + 'ORDER BY name';
           break;

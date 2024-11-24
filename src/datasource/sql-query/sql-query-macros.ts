@@ -68,22 +68,26 @@ export default class SqlQueryMacros {
       if (dateTimeType === TimestampFormat.DateTime64) {
         return 'toDateTime64(' + t + ', 3)';
       }
+
+      if (dateTimeType === TimestampFormat.Float) {
+        return t;
+      }
+
       return t;
     };
     return '$dateTimeCol >= ' + convertFn('$from') + ' AND $dateTimeCol <= ' + convertFn('$to');
   }
 
   static getDateTimeFilterMs(dateTimeType: string) {
-    let convertFn = function (t: string): string {
-      if (dateTimeType === TimestampFormat.DateTime) {
-        return 'toDateTime(' + t + ')';
-      }
-      if (dateTimeType === TimestampFormat.DateTime64) {
-        return 'toDateTime64(' + t + ', 3)';
-      }
-      return '(' + t + ')';
-    };
-    return '$dateTimeCol >= ' + convertFn('$__from/1000') + ' AND $dateTimeCol <= ' + convertFn('$__to/1000');
+    if (dateTimeType === TimestampFormat.DateTime) {
+      return `$dateTimeCol >= toDateTime($__from/1000) AND $dateTimeCol <= toDateTime($__to/1000)`;
+    } else if (dateTimeType === TimestampFormat.DateTime64) {
+      return `$dateTimeCol >= toDateTime64($__from/1000, 3) AND $dateTimeCol <= toDateTime64($__to/1000, 3)`;
+    } else if (dateTimeType === TimestampFormat.Float) {
+      return `$dateTimeCol >= toFloat64($__from/1000) AND $dateTimeCol <= toFloat64($__to/1000)`;
+    } else {
+      return `$dateTimeCol >= ($__from/1000) AND $dateTimeCol <= ($__to/1000)`;
+    }
   }
 
   static getTimeSeries(dateTimeType: string): string {
@@ -93,6 +97,11 @@ export default class SqlQueryMacros {
     if (dateTimeType === TimestampFormat.DateTime64) {
       return '(intDiv(toFloat64($dateTimeCol) * 1000, ($interval * 1000)) * ($interval * 1000))';
     }
+
+    if (dateTimeType === TimestampFormat.Float) {
+      return 'round($dateTimeCol * 1000)';
+    }
+
     return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
   }
 
@@ -100,9 +109,15 @@ export default class SqlQueryMacros {
     if (dateTimeType === TimestampFormat.DateTime) {
       return '(intDiv(toUInt32($dateTimeCol) * 1000, $__interval_ms) * $__interval_ms)';
     }
+
     if (dateTimeType === TimestampFormat.DateTime64) {
       return '(intDiv(toFloat64($dateTimeCol) * 1000, $__interval_ms) * $__interval_ms)';
     }
+
+    if (dateTimeType === TimestampFormat.Float) {
+      return '(intDiv($dateTimeCol * 1000, $__interval_ms) * $__interval_ms)';
+    }
+
     return '(intDiv($dateTimeCol, $__interval_ms) * $__interval_ms)';
   }
 

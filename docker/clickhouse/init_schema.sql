@@ -256,3 +256,26 @@ ORDER BY _time;
 INSERT INTO default.test_barchart
 SELECT now() - INTERVAL number HOUR AS _time, map ('rocketStage', concat('stage', toString(number % 4)), 'rp_prescreenStep', '(prescreen)') AS user_metadata_map, rand() % 100 AS alloc_cost, concat('cluster', toString(number%4)) AS cluster, multiIf(cluster='cluster2', 'RESOURCE_SLEEP', cluster='cluster3', 'INTERACTIVE', concat('RESOURCE', rand() % 4)) AS hpcod_resource_name
 FROM numbers(24);
+
+-- Drop the table if it exists
+DROP TABLE IF EXISTS default.test_timestamp_formats SYNC;
+
+-- Create the table with correct syntax
+CREATE TABLE default.test_timestamp_formats (
+  t DateTime64(3),
+  tFloat Float64,
+  tDecimal Decimal64(3),
+  tUInt64 UInt64,
+  value UInt64
+) ENGINE = MergeTree()
+ORDER BY (t, tFloat, tDecimal, tUInt64);
+
+-- Insert data into the table
+INSERT INTO default.test_timestamp_formats
+SELECT
+   now64(3) + INTERVAL number SECOND AS t,
+   toFloat64(now() + INTERVAL number SECOND) + randUniform(0, 1) AS tFloat,
+   toDecimal64(toFloat64(now() + INTERVAL number SECOND) + randUniform(0, 1), 3) AS tDecimal,
+   toUInt64(now() + INTERVAL number SECOND) + toUInt64(randUniform(0, 1000)) AS tUInt64,
+   toUInt64(rand() * 100) AS value
+FROM numbers(86400);

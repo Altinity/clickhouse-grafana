@@ -985,6 +985,9 @@ func (q *EvalQuery) getTimeSeries(dateTimeType string) string {
 	if dateTimeType == "DATETIME64" {
 		return "(intDiv(toFloat64($dateTimeCol) * 1000, ($interval * 1000)) * ($interval * 1000))"
 	}
+	if dateTimeType == "FLOAT" {
+		return "round($dateTimeCol * 1000)"
+	}
 	return "(intDiv($dateTimeCol, $interval) * $interval) * 1000"
 }
 
@@ -994,6 +997,9 @@ func (q *EvalQuery) getTimeSeriesMs(dateTimeType string) string {
 	}
 	if dateTimeType == "DATETIME64" {
 		return "(intDiv(toFloat64($dateTimeCol) * 1000, $__interval_ms) * $__interval_ms)"
+	}
+	if dateTimeType == "FLOAT" {
+		return "(intDiv($dateTimeCol * 1000, $__interval_ms) * $__interval_ms)"
 	}
 	return "(intDiv($dateTimeCol, $__interval_ms) * $__interval_ms)"
 }
@@ -1010,6 +1016,9 @@ func (q *EvalQuery) getDateTimeFilter(dateTimeType string) string {
 		if dateTimeType == "DATETIME64" {
 			return "toDateTime64(" + t + ", 3)"
 		}
+		if dateTimeType == "FLOAT" {
+			return t
+		}
 		return t
 	}
 	return "$dateTimeCol >= " + convertFn("$from") + " AND $dateTimeCol <= " + convertFn("$to")
@@ -1022,6 +1031,9 @@ func (q *EvalQuery) getDateTimeFilterMs(dateTimeType string) string {
 		}
 		if dateTimeType == "DATETIME64" {
 			return "toDateTime64(" + t + ", 3)"
+		}
+		if dateTimeType == "FLOAT" {
+			return "toFloat64(" + t + ")"
 		}
 		return t
 	}

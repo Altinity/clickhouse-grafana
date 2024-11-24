@@ -1975,3 +1975,121 @@ func TestIsClosured(t *testing.T) {
 		}
 	})
 }
+
+func TestEvalQueryFloatColumnsSupport(t *testing.T) {
+	r := require.New(t)
+
+	// Test case 1: $timeSeries with $timeFilter and Float timestamp column type
+	t.Run("applyMacros $timeSeries with $timeFilter with Float timestamp column type", func(t *testing.T) {
+		const description = "applyMacros $timeSeries with $timeFilter and Float timestamp column type"
+		const query = "SELECT $timeSeries as t, sum(x) AS metric\n" +
+			"FROM $table\n" +
+			"WHERE $timeFilter\n" +
+			"GROUP BY t\n" +
+			"ORDER BY t"
+		const expQuery = "SELECT round(d * 1000) as t, sum(x) AS metric\n" +
+			"FROM default.test_timestamp_formats\n" +
+			"WHERE d >= 1545613323 AND d <= 1546300799\n" +
+			"GROUP BY t\n" +
+			"ORDER BY t"
+
+		from, err := time.Parse(time.RFC3339, "2018-12-24T01:02:03.200Z")
+		r.NoError(err)
+		to, err := time.Parse(time.RFC3339, "2018-12-31T23:59:59.200Z")
+		r.NoError(err)
+
+		q := EvalQuery{
+			Query:          query,
+			Interval:       "100ms",
+			IntervalFactor: 1,
+			SkipComments:   false,
+			Table:          "test_timestamp_formats",
+			Database:       "default",
+			DateTimeType:   "FLOAT",
+			DateCol:        "",
+			DateTimeCol:    "d",
+			Round:          "100ms",
+			From:           from,
+			To:             to,
+		}
+		actualQuery, err := q.replace(query)
+		r.NoError(err)
+		r.Equal(expQuery, actualQuery, description)
+	})
+
+	// Test case 2: $timeSeriesMs with $timeFilterMs and Float timestamp column type
+	t.Run("applyMacros $timeSeriesMs with $timeFilterMs with Float timestamp column type", func(t *testing.T) {
+		const description = "applyMacros $timeSeriesMs with $timeFilterMs and Float timestamp column type"
+		const query = "SELECT $timeSeriesMs as t, sum(x) AS metric\n" +
+			"FROM $table\n" +
+			"WHERE $timeFilterMs\n" +
+			"GROUP BY t\n" +
+			"ORDER BY t"
+		const expQuery = "SELECT (intDiv(d * 1000, 100) * 100) as t, sum(x) AS metric\n" +
+			"FROM default.test_timestamp_formats\n" +
+			"WHERE d >= toFloat64(1545613323200/1000) AND d <= toFloat64(1546300799200/1000)\n" +
+			"GROUP BY t\n" +
+			"ORDER BY t"
+
+		from, err := time.Parse(time.RFC3339, "2018-12-24T01:02:03.200Z")
+		r.NoError(err)
+		to, err := time.Parse(time.RFC3339, "2018-12-31T23:59:59.200Z")
+		r.NoError(err)
+
+		q := EvalQuery{
+			Query:          query,
+			Interval:       "100ms",
+			IntervalFactor: 1,
+			SkipComments:   false,
+			Table:          "test_timestamp_formats",
+			Database:       "default",
+			DateTimeType:   "FLOAT",
+			DateCol:        "",
+			DateTimeCol:    "d",
+			Round:          "100ms",
+			From:           from,
+			To:             to,
+		}
+		actualQuery, err := q.replace(query)
+		r.NoError(err)
+		r.Equal(expQuery, actualQuery, description)
+	})
+
+	// Test case 3: $from and $to with Float timestamp column type
+	t.Run("applyMacros $from and $to with Float timestamp column type", func(t *testing.T) {
+		const description = "applyMacros $from and $to with Float timestamp column type"
+		const query = "SELECT $timeSeries as t, sum(x) AS metric\n" +
+			"FROM $table\n" +
+			"WHERE $dateTimeCol >= $from AND $dateTimeCol <= $to\n" +
+			"GROUP BY t\n" +
+			"ORDER BY t"
+		const expQuery = "SELECT round(d * 1000) as t, sum(x) AS metric\n" +
+			"FROM default.test_timestamp_formats\n" +
+			"WHERE d >= 1545613323 AND d <= 1546300799\n" +
+			"GROUP BY t\n" +
+			"ORDER BY t"
+
+		from, err := time.Parse(time.RFC3339, "2018-12-24T01:02:03.200Z")
+		r.NoError(err)
+		to, err := time.Parse(time.RFC3339, "2018-12-31T23:59:59.200Z")
+		r.NoError(err)
+
+		q := EvalQuery{
+			Query:          query,
+			Interval:       "100ms",
+			IntervalFactor: 1,
+			SkipComments:   false,
+			Table:          "test_timestamp_formats",
+			Database:       "default",
+			DateTimeType:   "FLOAT",
+			DateCol:        "",
+			DateTimeCol:    "d",
+			Round:          "100ms",
+			From:           from,
+			To:             to,
+		}
+		actualQuery, err := q.replace(query)
+		r.NoError(err)
+		r.Equal(expQuery, actualQuery, description)
+	})
+}

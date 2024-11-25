@@ -1,11 +1,11 @@
-import {toAnnotation} from "./toAnnotation";
-import {toFlamegraph} from "./toFlamegraph";
-import {toLogs} from "./toLogs";
-import {toTable} from "./toTable";
-import {toTimeSeries} from "./toTimeSeries";
-import {toTraces} from "./toTraces";
-import {DateTime} from "luxon";
-import {FieldType} from "@grafana/data";
+import { toAnnotation } from './toAnnotation';
+import { toFlamegraph } from './toFlamegraph';
+import { toLogs } from './toLogs';
+import { toTable } from './toTable';
+import { toTimeSeries } from './toTimeSeries';
+import { toTraces } from './toTraces';
+import { DateTime } from 'luxon';
+import { FieldType } from '@grafana/data';
 
 export interface Field {
   name: string;
@@ -17,21 +17,21 @@ export interface Field {
 export const convertTimezonedDateToUTC = (localDateTime, timeZone) => {
   // Define supported datetime formats
   const formats = [
-    "yyyy-MM-dd HH:mm:ss.SSS",
-    "yyyy-MM-dd HH:mm:ss.SSSSSS",
-    "yyyy-MM-dd HH:mm:ss.SSSSSSSSS",
-    "yyyy-MM-dd HH:mm:ss",
-    "MM/dd/yyyy HH:mm",
-    "dd-MM-yyyy HH:mm:ss",
-    "yyyy/MM/dd HH:mm:ss",
-    "MMM dd, yyyy HH:mm:ss",
+    'yyyy-MM-dd HH:mm:ss.SSS',
+    'yyyy-MM-dd HH:mm:ss.SSSSSS',
+    'yyyy-MM-dd HH:mm:ss.SSSSSSSSS',
+    'yyyy-MM-dd HH:mm:ss',
+    'MM/dd/yyyy HH:mm',
+    'dd-MM-yyyy HH:mm:ss',
+    'yyyy/MM/dd HH:mm:ss',
+    'MMM dd, yyyy HH:mm:ss',
     // Add more formats as needed
   ];
 
   // Attempt to parse using the supported formats
-  const parsedDateTime = formats
-    .map(format => DateTime.fromFormat(localDateTime, format, { zone: timeZone }))
-    .find(dt => dt.isValid) || DateTime.fromISO(localDateTime, { zone: timeZone });
+  const parsedDateTime =
+    formats.map((format) => DateTime.fromFormat(localDateTime, format, { zone: timeZone })).find((dt) => dt.isValid) ||
+    DateTime.fromISO(localDateTime, { zone: timeZone });
 
   // Validate the parsing result
   if (!parsedDateTime.isValid) {
@@ -39,27 +39,27 @@ export const convertTimezonedDateToUTC = (localDateTime, timeZone) => {
   }
 
   // Parse the datetime string in the specified timezone
-  return parsedDateTime.toUTC().toISO()
-}
+  return parsedDateTime.toUTC().toISO();
+};
 
 export const convertTimezonedDateToUnixTimestamp = (localDateTime, timeZone) => {
   // Define supported datetime formats
   const formats = [
-    "yyyy-MM-dd HH:mm:ss.SSS",
-    "yyyy-MM-dd HH:mm:ss.SSSSSS",
-    "yyyy-MM-dd HH:mm:ss.SSSSSSSSS",
-    "yyyy-MM-dd HH:mm:ss",
-    "MM/dd/yyyy HH:mm",
-    "dd-MM-yyyy HH:mm:ss",
-    "yyyy/MM/dd HH:mm:ss",
-    "MMM dd, yyyy HH:mm:ss",
+    'yyyy-MM-dd HH:mm:ss.SSS',
+    'yyyy-MM-dd HH:mm:ss.SSSSSS',
+    'yyyy-MM-dd HH:mm:ss.SSSSSSSSS',
+    'yyyy-MM-dd HH:mm:ss',
+    'MM/dd/yyyy HH:mm',
+    'dd-MM-yyyy HH:mm:ss',
+    'yyyy/MM/dd HH:mm:ss',
+    'MMM dd, yyyy HH:mm:ss',
     // Add more formats as needed
   ];
 
   // Attempt to parse using the supported formats
-  const parsedDateTime = formats
-    .map(format => DateTime.fromFormat(localDateTime, format, { zone: timeZone }))
-    .find(dt => dt.isValid) || DateTime.fromISO(localDateTime, { zone: timeZone });
+  const parsedDateTime =
+    formats.map((format) => DateTime.fromFormat(localDateTime, format, { zone: timeZone })).find((dt) => dt.isValid) ||
+    DateTime.fromISO(localDateTime, { zone: timeZone });
 
   // Validate the parsing result
   if (!parsedDateTime.isValid) {
@@ -67,8 +67,8 @@ export const convertTimezonedDateToUnixTimestamp = (localDateTime, timeZone) => 
   }
 
   // Parse the datetime string in the specified timezone
-  return parsedDateTime.toUTC().toMillis()
-}
+  return parsedDateTime.toUTC().toMillis();
+};
 
 export const _toFieldType = (type: string, index?: number): FieldType | any => {
   if (type.startsWith('Nullable(')) {
@@ -103,7 +103,7 @@ export const _toFieldType = (type: string, index?: number): FieldType | any => {
     return FieldType.other;
   }
   return FieldType.string;
-}
+};
 
 export default class SqlSeries {
   refId: string;
@@ -127,28 +127,28 @@ export default class SqlSeries {
 
   toAnnotation = (input: any): any[] => {
     return toAnnotation(input);
-  }
+  };
 
   toFlamegraph = (): any => {
     return toFlamegraph(this.series);
-  }
+  };
 
   toLogs = (): any => {
     const self = this;
     return toLogs(self);
-  }
+  };
 
   toTable = (): any => {
     let self = this;
     return toTable(self);
-  }
+  };
 
   toTimeSeries = (extrapolate = true): any => {
     let self = this;
-    return toTimeSeries(extrapolate, self)
-  }
+    return toTimeSeries(extrapolate, self);
+  };
 
   toTraces = (): any => {
     return toTraces(this.series, this.meta);
-  }
+  };
 }

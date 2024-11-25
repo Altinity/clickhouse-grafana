@@ -1,4 +1,4 @@
-import {Field} from "./sql_series";
+import { Field } from './sql_series';
 
 export const toAnnotation = (input: any): any[] => {
   let series: any[] = input;
@@ -29,4 +29,4 @@ export const toAnnotation = (input: any): any[] => {
   }
 
   return transformAnnotationData(series);
-}
+};

@@ -14,7 +14,7 @@ export default class AdHocFilter {
     this.tagKeys = [];
     this.tagValues = [];
     this.datasource = datasource;
-    this.adHocValuesQuery = datasource.adHocValuesQuery
+    this.adHocValuesQuery = datasource.adHocValuesQuery;
     let filter = queryFilter;
     if (datasource.defaultDatabase.length > 0) {
       filter = "database = '" + datasource.defaultDatabase + "' AND " + queryFilter;
@@ -83,21 +83,14 @@ export default class AdHocFilter {
     }
     // Split the key to extract database, table, and field
     const keyItems = options.key.split('.');
-    if (
-      keyItems.length < 2 ||
-      (keyItems.length === 2 && !this.datasource.defaultDatabase) ||
-      keyItems.length > 3
-    ) {
+    if (keyItems.length < 2 || (keyItems.length === 2 && !this.datasource.defaultDatabase) || keyItems.length > 3) {
       return Promise.resolve([]);
     }
 
     // Destructure key items based on their length
     let database, table, field;
     if (keyItems.length === 3) {
-      [
-        database,
-        table,
-        field] = keyItems;
+      [database, table, field] = keyItems;
     } else {
       database = this.datasource.defaultDatabase;
       [table, field] = keyItems;
@@ -105,13 +98,11 @@ export default class AdHocFilter {
 
     // Function to build the query
     const buildQuery = (queryTemplate) =>
-      queryTemplate
-        .replace('{field}', field)
-        .replace('{database}', database)
-        .replace('{table}', table);
+      queryTemplate.replace('{field}', field).replace('{database}', database).replace('{table}', table);
 
     // Execute the initial query
-    return this.datasource.metricFindQuery(buildQuery(initialQuery))
+    return this.datasource
+      .metricFindQuery(buildQuery(initialQuery))
       .then((response: any) => {
         // Process and cache the response
         this.tagValues[options.key] = this.processTagValuesResponse(response);

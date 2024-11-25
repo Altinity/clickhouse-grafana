@@ -1,6 +1,6 @@
 import { each } from 'lodash';
 import { SqlQueryHelper } from './sql-query-helper';
-import {TimestampFormat} from "../../types/types";
+import { TimestampFormat } from '../../types/types';
 
 export interface RawTimeRange {
   from: any | string;
@@ -162,7 +162,7 @@ export default class SqlQueryMacros {
     }
     let args = ast['$delta'];
     if (args.length < 1) {
-      throw {message: 'Amount of arguments must be > 0 for $delta func. Parsed arguments are:  ' + args.join(', ')};
+      throw { message: 'Amount of arguments must be > 0 for $delta func. Parsed arguments are:  ' + args.join(', ') };
     }
 
     each(args, function (a, i) {
@@ -175,16 +175,22 @@ export default class SqlQueryMacros {
     });
 
     fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
-    return beforeMacrosQuery + 'SELECT ' +
+    return (
+      beforeMacrosQuery +
+      'SELECT ' +
       't,' +
-      ' ' + cols.join(', ') +
+      ' ' +
+      cols.join(', ') +
       ' FROM (' +
       ' SELECT $timeSeries AS t,' +
-      ' ' + args.join(', ') +
-      ' ' + fromQuery +
+      ' ' +
+      args.join(', ') +
+      ' ' +
+      fromQuery +
       ' GROUP BY t' +
       ' ORDER BY t' +
-      ')';
+      ')'
+    );
   }
 
   static _parseMacro(macro: string, query: string): string[] {
@@ -257,7 +263,9 @@ export default class SqlQueryMacros {
     }
     let args = ast['$increase'];
     if (args.length < 1) {
-      throw {message: 'Amount of arguments must be > 0 for $increase func. Parsed arguments are:  ' + args.join(', ')};
+      throw {
+        message: 'Amount of arguments must be > 0 for $increase func. Parsed arguments are:  ' + args.join(', '),
+      };
     }
 
     each(args, function (a, i) {
@@ -266,20 +274,28 @@ export default class SqlQueryMacros {
 
     let cols: string[] = [];
     each(args, function (a, i) {
-      cols.push('if(runningDifference(max_' + i + ') < 0, 0, runningDifference(max_' + i + ')) AS max_' + i + '_Increase');
+      cols.push(
+        'if(runningDifference(max_' + i + ') < 0, 0, runningDifference(max_' + i + ')) AS max_' + i + '_Increase'
+      );
     });
 
     fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
-    return beforeMacrosQuery + 'SELECT ' +
+    return (
+      beforeMacrosQuery +
+      'SELECT ' +
       't,' +
-      ' ' + cols.join(', ') +
+      ' ' +
+      cols.join(', ') +
       ' FROM (' +
       ' SELECT $timeSeries AS t,' +
-      ' ' + args.join(', ') +
-      ' ' + fromQuery +
+      ' ' +
+      args.join(', ') +
+      ' ' +
+      fromQuery +
       ' GROUP BY t' +
       ' ORDER BY t' +
-      ')';
+      ')'
+    );
   }
 
   static perSecond(query: string, ast: any): string {
@@ -289,7 +305,9 @@ export default class SqlQueryMacros {
     }
     let args = ast['$perSecond'];
     if (args.length < 1) {
-      throw {message: 'Amount of arguments must be > 0 for $perSecond func. Parsed arguments are:  ' + args.join(', ')};
+      throw {
+        message: 'Amount of arguments must be > 0 for $perSecond func. Parsed arguments are:  ' + args.join(', '),
+      };
     }
 
     each(args, function (a, i) {
@@ -298,22 +316,36 @@ export default class SqlQueryMacros {
 
     let cols: string[] = [];
     each(args, function (a, i) {
-      cols.push('if(runningDifference(max_' + i + ') < 0, nan, ' +
-        'runningDifference(max_' + i + ') / runningDifference(t/1000)) AS max_' + i + '_PerSecond');
+      cols.push(
+        'if(runningDifference(max_' +
+          i +
+          ') < 0, nan, ' +
+          'runningDifference(max_' +
+          i +
+          ') / runningDifference(t/1000)) AS max_' +
+          i +
+          '_PerSecond'
+      );
     });
 
     fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
 
-    return beforeMacrosQuery + 'SELECT ' +
+    return (
+      beforeMacrosQuery +
+      'SELECT ' +
       't,' +
-      ' ' + cols.join(', ') +
+      ' ' +
+      cols.join(', ') +
       ' FROM (' +
       ' SELECT $timeSeries AS t,' +
-      ' ' + args.join(', ') +
-      ' ' + fromQuery +
+      ' ' +
+      args.join(', ') +
+      ' ' +
+      fromQuery +
       ' GROUP BY t' +
       ' ORDER BY t' +
-      ')';
+      ')'
+    );
   }
 
   static rate(query: string, ast: any): string {
@@ -343,36 +375,31 @@ export default class SqlQueryMacros {
     let groupByQuery = ' GROUP BY t, ' + keyAlias;
     let havingQuery = '';
     let orderByQuery = ' ORDER BY t, ' + keyAlias;
-    const fromRe = /^\s*FROM\s*\(/mi;
+    const fromRe = /^\s*FROM\s*\(/im;
     if (!fromRe.test(fromQuery)) {
-
       function findKeywordOutsideBrackets(query, keyword) {
         // This regex will match the keyword only if it is not within brackets.
-        const regex = new RegExp(
-          `(?<!\\([^)]*)${keyword}(?![^(]*\\))`,
-          'gi'
-        );
+        const regex = new RegExp(`(?<!\\([^)]*)${keyword}(?![^(]*\\))`, 'gi');
 
         const match = regex.exec(query);
         return match ? match.index : -1;
       }
 
-      const groupByIndex = findKeywordOutsideBrackets(fromQuery, 'group by')
-      const havingIndex = findKeywordOutsideBrackets(fromQuery, 'having')
-      const orderByIndex = findKeywordOutsideBrackets(fromQuery, 'order by')
+      const groupByIndex = findKeywordOutsideBrackets(fromQuery, 'group by');
+      const havingIndex = findKeywordOutsideBrackets(fromQuery, 'having');
+      const orderByIndex = findKeywordOutsideBrackets(fromQuery, 'order by');
 
-      if (havingIndex >= 0 && orderByIndex >= 0 &&  havingIndex >= orderByIndex) {
-        throw {message: "ORDER BY clause shall be before HAVING"};
+      if (havingIndex >= 0 && orderByIndex >= 0 && havingIndex >= orderByIndex) {
+        throw { message: 'ORDER BY clause shall be before HAVING' };
       }
 
       if (groupByIndex >= 0 && orderByIndex >= 0 && groupByIndex >= orderByIndex) {
-        throw {message: "GROUP BY clause shall be before ORDER BY"};
+        throw { message: 'GROUP BY clause shall be before ORDER BY' };
       }
 
       if (groupByIndex >= 0 && havingIndex >= 0 && groupByIndex >= havingIndex) {
-        throw {message: "GROUP BY clause shall be before HAVING"};
+        throw { message: 'GROUP BY clause shall be before HAVING' };
       }
-
 
       if (orderByIndex !== -1) {
         orderByQuery = ' ' + fromQuery.slice(orderByIndex, fromQuery.length);
@@ -454,17 +481,25 @@ export default class SqlQueryMacros {
     );
   }
   /* https://github.com/Altinity/clickhouse-grafana/issues/386 */
-  private static _prepareColumnsAggregated(macroName: string, query: string, ast: any): [string, string, string, string, string, string, string, string[], string[], string[]] {
+  private static _prepareColumnsAggregated(
+    macroName: string,
+    query: string,
+    ast: any
+  ): [string, string, string, string, string, string, string, string[], string[], string[]] {
     let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro(macroName, query);
     if (fromQuery.length < 1) {
       throw {
-        message: 'Missing FROM section after '+macroName+' function. Query: ' + query,
+        message: 'Missing FROM section after ' + macroName + ' function. Query: ' + query,
       };
     }
     let args = ast[macroName];
     if (args.length < 4) {
       throw {
-        message: 'Expect 2 or more amount of arguments for '+macroName+' function. Parsed arguments are: ' + args.join(', '),
+        message:
+          'Expect 2 or more amount of arguments for ' +
+          macroName +
+          ' function. Parsed arguments are: ' +
+          args.join(', '),
       };
     }
     let havingIndex = fromQuery.toLowerCase().indexOf('having'),
@@ -483,70 +518,112 @@ export default class SqlQueryMacros {
 
     if (args.length % 2 !== 0) {
       throw {
-        message: 'Wrong arguments count, expect argument pairs aggregate function and value for $rateColumnsAggregated func. Parsed arguments are: ' + args.join(', '),
+        message:
+          'Wrong arguments count, expect argument pairs aggregate function and value for $rateColumnsAggregated func. Parsed arguments are: ' +
+          args.join(', '),
       };
     }
     const values: string[] = [];
     const aliases: string[] = [];
     const aggFuncs: string[] = [];
-    for (let i = 2; i < args.length; i+=2) {
+    for (let i = 2; i < args.length; i += 2) {
       aggFuncs.push(args[i]);
 
-      let value = args[i+1]
-      let aliasSplit = value.trim().split(' ')
-      let alias = aliasSplit.pop()
+      let value = args[i + 1];
+      let aliasSplit = value.trim().split(' ');
+      let alias = aliasSplit.pop();
       aliases.push(alias);
 
       if (aliasSplit.length > 1) {
-        value = aliasSplit.join(' ').replace(/ AS$/i,"")
+        value = aliasSplit.join(' ').replace(/ AS$/i, '');
       }
-      if (value.indexOf("(") === -1) {
-        value = 'max('+value+')'
+      if (value.indexOf('(') === -1) {
+        value = 'max(' + value + ')';
         values.push();
       }
-      values.push(value + " AS " + alias)
+      values.push(value + ' AS ' + alias);
     }
-    return [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs]
+    return [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs];
   }
 
-  private static _formatColumnsAggregated(beforeMacrosQuery: string, keyAlias: string, finalAggregatedValues: string[], subKeyAlias: string, finalValues: string[], key: string, subKey: string, values: string[], fromQuery: string, having: string) {
+  private static _formatColumnsAggregated(
+    beforeMacrosQuery: string,
+    keyAlias: string,
+    finalAggregatedValues: string[],
+    subKeyAlias: string,
+    finalValues: string[],
+    key: string,
+    subKey: string,
+    values: string[],
+    fromQuery: string,
+    having: string
+  ) {
     return (
       beforeMacrosQuery +
-      'SELECT t, ' + keyAlias + ', ' + finalAggregatedValues.join(', ') +
+      'SELECT t, ' +
+      keyAlias +
+      ', ' +
+      finalAggregatedValues.join(', ') +
       ' FROM (' +
-      '  SELECT t, ' + keyAlias + ', ' + subKeyAlias + ', ' + finalValues.join(', ') +
+      '  SELECT t, ' +
+      keyAlias +
+      ', ' +
+      subKeyAlias +
+      ', ' +
+      finalValues.join(', ') +
       '  FROM (' +
-      '   SELECT $timeSeries AS t, ' + key + ', ' + subKey + ', ' + values.join(', ') +
-      '   ' + fromQuery +
-      '   GROUP BY ' + keyAlias + ', ' + subKeyAlias + ', t ' + having +
-      '   ORDER BY ' + keyAlias + ', ' + subKeyAlias + ', t' +
+      '   SELECT $timeSeries AS t, ' +
+      key +
+      ', ' +
+      subKey +
+      ', ' +
+      values.join(', ') +
+      '   ' +
+      fromQuery +
+      '   GROUP BY ' +
+      keyAlias +
+      ', ' +
+      subKeyAlias +
+      ', t ' +
+      having +
+      '   ORDER BY ' +
+      keyAlias +
+      ', ' +
+      subKeyAlias +
+      ', t' +
       '  )' +
       ' ) ' +
-      'GROUP BY ' + keyAlias + ', t ORDER BY ' + keyAlias + ', t'
+      'GROUP BY ' +
+      keyAlias +
+      ', t ORDER BY ' +
+      keyAlias +
+      ', t'
     );
   }
 
   static rateColumnsAggregated(query: string, ast: any): string {
-    const [beforeMacrosQuery,
-            fromQuery,
-            having,
-            key,
-            keyAlias,
-            subKey,
-            subKeyAlias,
-            values,
-            aliases,
-            aggFuncs] = SqlQueryMacros._prepareColumnsAggregated('$rateColumnsAggregated', query, ast)
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] =
+      SqlQueryMacros._prepareColumnsAggregated('$rateColumnsAggregated', query, ast);
     const finalAggregatedValues: string[] = [];
     const finalValues: string[] = [];
     aliases.forEach((a, i) => {
-      finalAggregatedValues.push(aggFuncs[i]+"("+a + "Rate) AS " + a + "RateAgg");
-      finalValues.push(a+" / runningDifference(t / 1000) AS "+a+"Rate");
+      finalAggregatedValues.push(aggFuncs[i] + '(' + a + 'Rate) AS ' + a + 'RateAgg');
+      finalValues.push(a + ' / runningDifference(t / 1000) AS ' + a + 'Rate');
     });
 
-    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
+    return SqlQueryMacros._formatColumnsAggregated(
+      beforeMacrosQuery,
+      keyAlias,
+      finalAggregatedValues,
+      subKeyAlias,
+      finalValues,
+      key,
+      subKey,
+      values,
+      fromQuery,
+      having
+    );
   }
-
 
   static _detectAliasAndApplyTimeFilter(
     aliasIndex: number,
@@ -588,10 +665,7 @@ export default class SqlQueryMacros {
       having = '',
       aliasIndex = key.toLowerCase().indexOf(' as '),
       alias = 'perSecondColumns';
-    [key,
-alias,
-having,
-fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
+    [key, alias, having, fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       aliasIndex,
       key,
       alias,
@@ -640,26 +714,41 @@ fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
   }
 
   static perSecondColumnsAggregated(query: string, ast: any): string {
-    const [
-      beforeMacrosQuery,
-      fromQuery,
-      having,
-      key,
-      keyAlias,
-      subKey,
-      subKeyAlias,
-      values,
-      aliases,
-      aggFuncs
-    ] = SqlQueryMacros._prepareColumnsAggregated('$perSecondColumnsAggregated', query, ast)
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] =
+      SqlQueryMacros._prepareColumnsAggregated('$perSecondColumnsAggregated', query, ast);
     const finalAggregatedValues: string[] = [];
     const finalValues: string[] = [];
     aliases.forEach((a, i) => {
-      finalAggregatedValues.push(aggFuncs[i]+"("+a+"PerSecond) AS "+a+"PerSecondAgg");
-      finalValues.push("if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / runningDifference(t / 1000)) AS "+a+"PerSecond");
+      finalAggregatedValues.push(aggFuncs[i] + '(' + a + 'PerSecond) AS ' + a + 'PerSecondAgg');
+      finalValues.push(
+        'if(runningDifference(' +
+          a +
+          ') < 0 OR neighbor(' +
+          subKeyAlias +
+          ',-1,' +
+          subKeyAlias +
+          ') != ' +
+          subKeyAlias +
+          ', nan, runningDifference(' +
+          a +
+          ') / runningDifference(t / 1000)) AS ' +
+          a +
+          'PerSecond'
+      );
     });
 
-    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
+    return SqlQueryMacros._formatColumnsAggregated(
+      beforeMacrosQuery,
+      keyAlias,
+      finalAggregatedValues,
+      subKeyAlias,
+      finalValues,
+      key,
+      subKey,
+      values,
+      fromQuery,
+      having
+    );
   }
 
   static increaseColumns(query: string, ast: any): string {
@@ -683,12 +772,7 @@ fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       aliasIndex = key.toLowerCase().indexOf(' as '),
       alias = 'increaseColumns';
 
-    [
-      key,
-      alias,
-      having,
-      fromQuery
-    ] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
+    [key, alias, having, fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       aliasIndex,
       key,
       alias,
@@ -737,27 +821,42 @@ fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
   }
 
   static increaseColumnsAggregated(query: string, ast: any): string {
-    const [
-      beforeMacrosQuery,
-      fromQuery,
-      having,
-      key,
-      keyAlias,
-      subKey,
-      subKeyAlias,
-      values,
-      aliases,
-      aggFuncs
-    ] = SqlQueryMacros._prepareColumnsAggregated('$increaseColumnsAggregated', query, ast)
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] =
+      SqlQueryMacros._prepareColumnsAggregated('$increaseColumnsAggregated', query, ast);
 
     const finalAggregatedValues: string[] = [];
     const finalValues: string[] = [];
     aliases.forEach((a, i) => {
-      finalAggregatedValues.push(aggFuncs[i]+"("+a+"Increase) AS "+a+"IncreaseAgg");
-      finalValues.push("if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / 1) AS "+a+"Increase");
+      finalAggregatedValues.push(aggFuncs[i] + '(' + a + 'Increase) AS ' + a + 'IncreaseAgg');
+      finalValues.push(
+        'if(runningDifference(' +
+          a +
+          ') < 0 OR neighbor(' +
+          subKeyAlias +
+          ',-1,' +
+          subKeyAlias +
+          ') != ' +
+          subKeyAlias +
+          ', nan, runningDifference(' +
+          a +
+          ') / 1) AS ' +
+          a +
+          'Increase'
+      );
     });
 
-    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
+    return SqlQueryMacros._formatColumnsAggregated(
+      beforeMacrosQuery,
+      keyAlias,
+      finalAggregatedValues,
+      subKeyAlias,
+      finalValues,
+      key,
+      subKey,
+      values,
+      fromQuery,
+      having
+    );
   }
 
   static deltaColumns(query: string, ast: any): string {
@@ -778,12 +877,7 @@ fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       having = '',
       aliasIndex = key.toLowerCase().indexOf(' as '),
       alias = 'deltaColumns';
-    [
-      key,
-      alias,
-      having,
-      fromQuery
-    ] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
+    [key, alias, having, fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       aliasIndex,
       key,
       alias,
@@ -832,29 +926,47 @@ fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
   }
 
   static deltaColumnsAggregated(query: string, ast: any): string {
-    const [
-      beforeMacrosQuery,
-      fromQuery,
-      having,
-      key,
-      keyAlias,
-      subKey,
-      subKeyAlias,
-      values,
-      aliases,
-      aggFuncs
-    ] = SqlQueryMacros._prepareColumnsAggregated('$deltaColumnsAggregated', query, ast)
+    const [beforeMacrosQuery, fromQuery, having, key, keyAlias, subKey, subKeyAlias, values, aliases, aggFuncs] =
+      SqlQueryMacros._prepareColumnsAggregated('$deltaColumnsAggregated', query, ast);
     const finalAggregatedValues: string[] = [];
     const finalValues: string[] = [];
     aliases.forEach((a, i) => {
-      finalAggregatedValues.push(aggFuncs[i]+"("+a+"Delta) AS "+a+"DeltaAgg");
-      finalValues.push("if(neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", 0, runningDifference("+a+") / 1) AS "+a+"Delta");
+      finalAggregatedValues.push(aggFuncs[i] + '(' + a + 'Delta) AS ' + a + 'DeltaAgg');
+      finalValues.push(
+        'if(neighbor(' +
+          subKeyAlias +
+          ',-1,' +
+          subKeyAlias +
+          ') != ' +
+          subKeyAlias +
+          ', 0, runningDifference(' +
+          a +
+          ') / 1) AS ' +
+          a +
+          'Delta'
+      );
     });
 
-    return SqlQueryMacros._formatColumnsAggregated(beforeMacrosQuery, keyAlias, finalAggregatedValues, subKeyAlias, finalValues, key, subKey, values, fromQuery, having);
+    return SqlQueryMacros._formatColumnsAggregated(
+      beforeMacrosQuery,
+      keyAlias,
+      finalAggregatedValues,
+      subKeyAlias,
+      finalValues,
+      key,
+      subKey,
+      values,
+      fromQuery,
+      having
+    );
   }
-  
-  static replaceTimeFilters(query: string, range: TimeRange, dateTimeType = TimestampFormat.DateTime, round?: number): string {
+
+  static replaceTimeFilters(
+    query: string,
+    range: TimeRange,
+    dateTimeType = TimestampFormat.DateTime,
+    round?: number
+  ): string {
     let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.from, round || 0));
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.to, round || 0));
 
@@ -871,7 +983,8 @@ fromQuery] = SqlQueryMacros._detectAliasAndApplyTimeFilter(
       )
       .replace(
         /\$timeFilter64ByColumn\(([\w_]+)\)/g,
-        (match: string, columnName: string) => `${SqlQueryHelper.getFilterSqlForDateTime(columnName, TimestampFormat.DateTime64)}`
+        (match: string, columnName: string) =>
+          `${SqlQueryHelper.getFilterSqlForDateTime(columnName, TimestampFormat.DateTime64)}`
       )
       .replace(/\$from/g, from.toString())
       .replace(/\$to/g, to.toString())

@@ -59,7 +59,7 @@ PARTITION BY toDate(_time)
 ORDER BY (cluster_name, bu, pod_namespace, pod_name, container_name, _time);
 
 INSERT INTO default.test_logs_with_complex_labels(_raw, _time, _map)
-SELECT '{"cluster_name":"test' || toString(number) || '","host":"test","pod_namespace":"test","pod_name":"test","container_name":"test"' || toString(number) || ',"container_image":"test","stream":"test","source":"test","source_type":"test","namespace_labels":{"business-unit-code":"test"}}' AS _raw,
+SELECT '{"cluster_name":"test' || toString(number) || '","host":"test","pod_namespace":"test","pod_name":"test","container_name":"test' || toString(number) || '","container_image":"test","stream":"test","source":"test","source_type":"test","namespace_labels":{"business-unit-code":"test"}}' AS _raw,
        now64() - INTERVAL number SECOND _time,
        map('map_key' || toString(number),'map_value' ||toString(number)) AS _map
 FROM numbers(100);

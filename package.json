@@ -22,7 +22,6 @@
   "license": "MIT",
   "devDependencies": {
     "@babel/core": "^7.21.4",
-    "@grafana/e2e": "^11.0.6",
     "@grafana/e2e-selectors": "^11.2.2",
     "@grafana/eslint-config": "^8.0.0",
     "@grafana/tsconfig": "^2.0.0",
@@ -68,6 +67,7 @@
     "@grafana/data": "11.3.0",
     "@grafana/runtime": "11.3.0",
     "@grafana/ui": "11.3.0",
+    "dayjs": "^1.11.13",
     "jest-resolve": "^29.7.0",
     "lodash-es": "^4.17.21",
     "luxon": "^3.5.0",

@@ -2,7 +2,7 @@ import { each, isEmpty, isString, map } from 'lodash';
 import { dateMath, TypedVariableModel } from '@grafana/data';
 import dayjs from 'dayjs';
 import { TemplateSrv } from '@grafana/runtime';
-import {TimestampFormat} from "../../types/types";
+import { TimestampFormat } from '../../types/types';
 
 export class SqlQueryHelper {
   static convertTimestamp(date: any) {

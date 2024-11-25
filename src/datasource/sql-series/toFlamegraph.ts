@@ -1,4 +1,4 @@
-import {Field} from "./sql_series";
+import { Field } from './sql_series';
 
 interface FlamegraphData {
   label: string;
@@ -16,7 +16,7 @@ export const toFlamegraph = (inputSeries): any => {
   // }
 
   try {
-    const series: FlamegraphData[] = inputSeries
+    const series: FlamegraphData[] = inputSeries;
     return transformTraceData(series);
   } catch (error: any) {
     return [
@@ -66,4 +66,4 @@ export const toFlamegraph = (inputSeries): any => {
       },
     ];
   }
-}
+};

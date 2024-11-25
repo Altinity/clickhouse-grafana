@@ -90,7 +90,7 @@ const tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)';
 const macroFuncRe =
   '(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
 const condRe = '\\b(or|and)\\b';
-const inRe = '\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:\'[^\']*\'\\s*,\\s*)*\'[^\']*\'\\s*\\])?';
+const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?";
 const closureRe = '[\\(\\)\\[\\]]';
 const specCharsRe = '[,?:]';
 const macroRe = '\\$[A-Za-z0-9_$]+';
@@ -585,7 +585,6 @@ function isSet(obj, prop) {
   return obj.hasOwnProperty(prop) && !isEmpty(obj[prop]);
 }
 
-
 function betweenBraces(query) {
   let openBraces = 1,
     subQuery = '';
@@ -756,6 +755,5 @@ function print(AST, tab = '') {
 
   return result;
 }
-
 
 export default Scanner;

@@ -1,4 +1,4 @@
-import {each} from "lodash";
+import { each } from 'lodash';
 
 const _toJSTypeInTable = (type: any): string => {
   switch (type) {
@@ -34,7 +34,7 @@ const _toJSTypeInTable = (type: any): string => {
     default:
       return 'string';
   }
-}
+};
 
 const _formatValueByType = (value: any, t: string) => {
   if (value === null) {
@@ -51,7 +51,7 @@ const _formatValueByType = (value: any, t: string) => {
   } else {
     return numeric;
   }
-}
+};
 
 export const toTable = (self): any => {
   let data: Array<{ columns: any[]; rows: any[]; type: string }> = [];
@@ -80,4 +80,4 @@ export const toTable = (self): any => {
   });
 
   return data;
-}
+};

@@ -1,9 +1,6 @@
-import {DataFrame, FieldType, MutableDataFrame} from "@grafana/data";
-import {each, find, omitBy, pickBy} from "lodash";
-import {convertTimezonedDateToUTC} from "./sql_series";
-
-
-
+import { DataFrame, FieldType, MutableDataFrame } from '@grafana/data';
+import { each, find, omitBy, pickBy } from 'lodash';
+import { convertTimezonedDateToUTC } from './sql_series';
 
 const _toFieldType = (type: string, index?: number): FieldType | Object => {
   if (type.startsWith('Nullable(')) {
@@ -38,7 +35,7 @@ const _toFieldType = (type: string, index?: number): FieldType | Object => {
     return FieldType.other;
   }
   return FieldType.string;
-}
+};
 
 export const toLogs = (self: any): DataFrame[] => {
   const dataFrame: DataFrame[] = [];
@@ -98,7 +95,7 @@ export const toLogs = (self: any): DataFrame[] => {
     });
 
     const data = omitBy(ser, (_value: any, key: string) => {
-      labelFields.includes(key)
+      labelFields.includes(key);
     });
     const frameData = Object.entries(data).reduce((acc, [key, value]) => {
       if (
@@ -112,7 +109,7 @@ export const toLogs = (self: any): DataFrame[] => {
         acc[key] = value;
       }
 
-      return acc
+      return acc;
     }, {});
 
     frame.add(frameData);
@@ -120,4 +117,4 @@ export const toLogs = (self: any): DataFrame[] => {
   });
 
   return dataFrame;
-}
+};

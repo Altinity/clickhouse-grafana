@@ -3,7 +3,7 @@ import Scanner from '../scanner/scanner';
 import { TemplateSrv } from '@grafana/runtime';
 import { SqlQueryHelper } from './sql-query-helper';
 import SqlQueryMacros from './sql-query-macros';
-import {TimestampFormat} from "../../types/types";
+import { TimestampFormat } from '../../types/types';
 
 export default class SqlQuery {
   target: any;
@@ -18,10 +18,10 @@ export default class SqlQuery {
 
   replace(options: any, adhocFilters: any) {
     if (!this.target.query) {
-      return ''
+      return '';
     }
 
-    let query = this.target.query.trim()
+    let query = this.target.query.trim();
 
     if (this.target.skip_comments) {
       query = Scanner.RemoveComments(query);
@@ -106,7 +106,6 @@ export default class SqlQuery {
 
     /* Render the ad-hoc condition or evaluate to an always true condition */
     let renderedAdHocCondition = adhocCondition.length > 0 ? '(' + adhocCondition.join(' AND ') + ')' : '1';
-
 
     query = SqlQueryHelper.unescape(query);
     let timeFilter = SqlQueryMacros.getDateTimeFilter(dateTimeType);

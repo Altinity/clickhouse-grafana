@@ -12,6 +12,7 @@ import {
 import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
 import Scanner from '../../../../datasource/scanner/scanner';
+import {FormattedSQL} from "./FormattedSQL";
 
 const RESOLUTION_OPTIONS = [
   { value: 1, label: '1/1' },
@@ -216,12 +217,7 @@ export const QueryTextEditor = ({
             </ToolbarButton>
           </InlineField>
         </InlineFieldRow>
-        {query.showFormattedSQL && (
-          <div style={{ width: '100%' }}>
-            <h5>Reformatted Query</h5>
-            <pre>{sqlFormattedData}</pre>
-          </div>
-        )}
+        <FormattedSQL sql={sqlFormattedData} showFormattedSQL={query.showFormattedSQL} />
         {query.showHelp && <QueryMacrosInfo />}
       </div>
     </>

@@ -129,3 +129,16 @@ def get_round_text(self, query_name):
     """Get SQL Editor step option."""
 
     return locators.round_textfield(query_name=query_name, grafana_version=self.context.grafana_version).get_attribute('value')
+
+@TestStep(When)
+def enter_context_window(self, query_name, context_window):
+    """Enter context window."""
+
+    locators.context_window(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(context_window)
+    locators.context_window(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(Keys.ENTER)
+
+@TestStep(When)
+def get_context_window(self, query_name):
+    """Get context window."""
+
+    return locators.context_window_grafana_select_value_container(query_name=query_name, grafana_version=self.context.grafana_version).text

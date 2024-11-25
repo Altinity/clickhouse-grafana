@@ -8,9 +8,8 @@ on:
       - main
   pull_request:
     branches:
-      - master
-      - main
-      
+      - "*"
+
 env:
   testflows_logs: |
     ./testflows_logs/*

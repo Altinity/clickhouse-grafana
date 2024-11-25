@@ -21,21 +21,90 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 6,
+  "id": 39,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
         "type": "vertamedia-clickhouse-datasource",
         "uid": "P7E099F39B84EA795"
       },
+      "description": "reproduce https://github.com/Altinity/clickhouse-grafana/issues/672",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 22,
+        "x": 0,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "adHocFilters": [
+            {
+              "key": "default.test_logs.level",
+              "operator": "=",
+              "value": "Info"
+            }
+          ],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "100",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "_time",
+          "dateTimeType": "DATETIME64",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "logs",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "initialized": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT * FROM $table WHERE $timeFilter",
+          "rawQuery": " /* grafana dashboard=Test Logs support, user=0 */\n\nSELECT *\n\nFROM default.test_logs_with_complex_labels\n\nWHERE \"_time\" >= toDateTime64(1732352032, 3) AND \"_time\" <= toDateTime64(1732524832, 3)\n",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_logs_with_complex_labels"
+        }
+      ],
+      "title": "Logs WIth Map as Label",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
       "description": "reproduce https://github.com/Altinity/clickhouse-grafana/issues/125 and https://github.com/Altinity/clickhouse-grafana/issues/331",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 9,
         "w": 11,
         "x": 0,
-        "y": 0
+        "y": 8
       },
       "id": 2,
       "options": {
@@ -48,8 +117,19 @@
         "sortOrder": "Descending",
         "wrapLogMessage": false
       },
+      "pluginVersion": "11.3.1",
       "targets": [
         {
+          "adHocFilters": [
+            {
+              "key": "default.test_logs.level",
+              "operator": "=",
+              "value": "Info"
+            }
+          ],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "20",
           "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
@@ -60,15 +140,18 @@
           "dateTimeColDataType": "event_time",
           "dateTimeType": "DATETIME",
           "datetimeLoading": false,
+          "editorMode": "sql",
           "extrapolate": true,
           "format": "logs",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "initialized": true,
           "interval": "",
           "intervalFactor": 1,
           "query": "SELECT *\nFROM $table\n\nWHERE $timeFilter AND $adhoc\n$conditionalTest(AND content ILIKE ${filter:sqlstring},$filter)",
-          "rawQuery": "SELECT *\nFROM default.test_logs\n\nWHERE event_time >= toDateTime(1653997717) AND event_time <= toDateTime(1654019317) AND 1\n AND content ILIKE '%Info%line 11%' ",
+          "rawQuery": " /* grafana dashboard=Test Logs support, user=0 */\n\nSELECT *\n\nFROM default.test_logs\n\nWHERE\n    event_time >= toDateTime(1732347051) AND event_time <= toDateTime(1732519851)\n    AND (level = 'Info')",
           "refId": "A",
           "round": "0s",
+          "showFormattedSQL": true,
           "skip_comments": true,
           "table": "test_logs",
           "tableLoading": false
@@ -83,11 +166,15 @@
         "uid": "P4F4839B759FB0509"
       },
       "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 9,
         "w": 11,
         "x": 11,
-        "y": 0
+        "y": 8
       },
       "id": 3,
       "options": {
@@ -100,6 +187,7 @@
         "sortOrder": "Ascending",
         "wrapLogMessage": true
       },
+      "pluginVersion": "11.3.1",
       "targets": [
         {
           "builderOptions": {
@@ -192,11 +280,13 @@
       "type": "logs"
     }
   ],
-  "schemaVersion": 39,
+  "preload": false,
+  "schemaVersion": 40,
   "tags": [],
   "templating": {
     "list": [
       {
+        "baseFilters": [],
         "datasource": {
           "type": "vertamedia-clickhouse-datasource",
           "uid": "P7E099F39B84EA795"
@@ -208,18 +298,14 @@
             "value": "Info"
           }
         ],
-        "hide": 0,
         "name": "adhoc_variable",
-        "skipUrlSync": false,
         "type": "adhoc"
       },
       {
         "current": {
-          "selected": false,
           "text": "",
           "value": ""
         },
-        "hide": 0,
         "name": "filter",
         "options": [
           {
@@ -229,7 +315,6 @@
           }
         ],
         "query": "",
-        "skipUrlSync": false,
         "type": "textbox"
       }
     ]
@@ -238,9 +323,8 @@
     "from": "now-2d",
     "to": "now"
   },
-  "timeRangeUpdatedDuringEditOrView": false,
   "timepicker": {},
-  "timezone": "",
+  "timezone": "utc",
   "title": "Test Logs support",
   "uid": "VtsMXQl7z",
   "version": 1,

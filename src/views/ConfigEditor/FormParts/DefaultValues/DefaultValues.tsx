@@ -13,12 +13,7 @@ interface DefaultValuesInterface {
   onFieldChange: any;
 }
 
-export const DefaultValues = ({
-  jsonData,
-  newOptions,
-  onSwitchToggle,
-  onFieldChange,
-}: DefaultValuesInterface) => {
+export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldChange }: DefaultValuesInterface) => {
   const [defaultDateTime64Options, setDefaultDateTime64Options] = useState<any[]>([]);
   const [defaultDateTimeOptions, setDefaultDateTimeOptions] = useState<any[]>([]);
   const [defaultUint32Options, setDefaultUint32Options] = useState<any[]>([]);
@@ -240,6 +235,18 @@ export const DefaultValues = ({
                 onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultDateDate32');
               }}
               options={defaultDateDate32Options}
+            />
+          </InlineField>
+          <h6>Logs settings</h6>
+          <InlineField label="Context window" labelWidth={32} style={{ marginLeft: '30px' }}>
+            <Select
+              width={24}
+              data-testid="context-window-size-select"
+              onChange={(changeEvent) => {
+                onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'contextWindowSize');
+              }}
+              options={['10', '20', '50', '100'].map((value) => ({ label: value + ' entries', value }))}
+              value={jsonData.contextWindowSize}
             />
           </InlineField>
         </>

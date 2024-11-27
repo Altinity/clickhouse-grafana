@@ -10,7 +10,7 @@ import { useQueryState } from './hooks/useQueryState';
 import { useFormattedData } from './hooks/useFormattedData';
 import { initializeQueryDefaults } from './helpers/initializeQueryDefaults';
 import './QueryEditor.css';
-import {getAdhocFilters} from "./helpers/getAdHocFilters";
+import { getAdhocFilters } from './helpers/getAdHocFilters';
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const { datasource, query, onChange, onRunQuery } = props;
@@ -23,11 +23,11 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });
   const onFieldChange = (field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value });
   const onTriggerQuery = () => onRunQuery();
-  
+
   // @ts-ignore
-  const adHocFilters = getAdhocFilters(datasource?.name, query.datasource?.uid)
+  const adHocFilters = getAdhocFilters(datasource?.name, query.datasource?.uid);
   // @ts-ignore
-  const adHocFiltersKey = adHocFilters.map(({key,operator,value }) => `${key}${operator}${value}`).join(',');
+  const adHocFiltersKey = adHocFilters.map(({ key, operator, value }) => `${key}${operator}${value}`).join(',');
   const areAdHocFiltersAvailable = !!adHocFilters.length;
 
   useEffect(() => {

@@ -6,8 +6,8 @@ import _ from 'lodash';
 import { DefaultValues } from './FormParts/DefaultValues/DefaultValues';
 import { LANGUAGE_ID } from '../QueryEditor/components/QueryTextEditor/editor/initiateEditor';
 import { MONACO_EDITOR_OPTIONS } from '../constants';
-import {COMPRESSION_TYPE_OPTIONS} from "./constants";
-import {DEFAULT_VALUES_QUERY} from "../../datasource/adhoc";
+import { COMPRESSION_TYPE_OPTIONS } from './constants';
+import { DEFAULT_VALUES_QUERY } from '../../datasource/adhoc';
 
 export interface CHSecureJsonData {
   password?: string;

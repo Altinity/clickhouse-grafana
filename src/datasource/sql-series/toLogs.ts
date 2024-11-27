@@ -86,7 +86,33 @@ export const toLogs = (self: any): DataFrame[] => {
       }
 
       if (key === messageField) {
-        frame.addField({ name: key, type: types[key], labels: labels });
+        const transformObject = (obj) => {
+          // Check if the input is an object and not null
+          if (obj && typeof obj === 'object') {
+            // Create a new object to store the transformed properties
+            const result = Array.isArray(obj) ? [] : {};
+
+            for (const key in obj) {
+              if (Object.prototype.hasOwnProperty.call(obj, key)) {
+                const value = obj[key];
+
+                // If the value is an object (and not null), convert it to a string
+                if (value && typeof value === 'object') {
+                  result[key] = JSON.stringify(value);
+                } else {
+                  // Otherwise, keep the primitive value as it is
+                  result[key] = value;
+                }
+              }
+            }
+
+            return result;
+          }
+          // Return the original value if it's not an object
+          return obj;
+        }
+
+        frame.addField({ name: key, type: types[key], labels: transformObject(labels), config: { filterable: false } });
       } else if (!labelFields.includes(key) && types[key].fieldType === FieldType.time) {
         frame.addField({ name: key, type: FieldType.time });
       } else if (!labelFields.includes(key)) {

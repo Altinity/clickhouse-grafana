@@ -187,7 +187,7 @@ export class CHDataSource
       } PRECEDING AND CURRENT ROW) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
-        ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`;
+        ) WHERE ${inputTimestampColumn} = ${inputTimestampValue}`;
     };
 
     const generateQueryForTimestampForward = (inputTimestampColumn, inputTimestampValue, contextWindowSize) => {
@@ -199,7 +199,7 @@ export class CHDataSource
       } FOLLOWING) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
-        ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`;
+        ) WHERE ${inputTimestampColumn} = ${inputTimestampValue}`;
     };
 
     const generateRequestForTimestampForward = (timestampField, timestamp, currentRowTimestamp, select) => {
@@ -225,6 +225,7 @@ export class CHDataSource
       } else if (!response) {
         throw new Error('No response for traceId log context query');
       }
+      console.log('n3294');
 
       let sqlSeries = new SqlSeries({
         refId: 'FORWARD',
@@ -237,19 +238,26 @@ export class CHDataSource
       const timestampColumn = query?.dateTimeColDataType;
 
       const getLogsTimeBoundaries = async () => {
+        let formattedDate = String(row.timeEpochMs);
+        if (formattedDate.length > 10) {
+          formattedDate = `toDateTime64(${row.timeEpochMs}/1000,3)`;
+        } else {
+          formattedDate = `'${row.timeUtc}'`;
+        }
+
         const boundariesRequest =
           options?.direction === LogRowContextQueryDirection.Backward
-            ? generateQueryForTimestampBackward(timestampColumn, row.timeUtc, query?.contextWindowSize)
-            : generateQueryForTimestampForward(timestampColumn, row.timeUtc, query?.contextWindowSize);
+            ? generateQueryForTimestampBackward(timestampColumn, formattedDate, query?.contextWindowSize)
+            : generateQueryForTimestampForward(timestampColumn, formattedDate, query?.contextWindowSize);
 
         const { stmt, requestId } = this.createQuery(requestOptions, { ...query, query: boundariesRequest });
 
         const result: any = await this._seriesQuery(stmt, requestId + options?.direction);
+
         return result.data[0];
       };
 
       const { timestamp } = await getLogsTimeBoundaries();
-
       const getLogContext = async () => {
         const contextDataRequest =
           options?.direction === LogRowContextQueryDirection.Backward
@@ -319,6 +327,7 @@ export class CHDataSource
   }
 
   queryHasFilter(query: CHQuery, filter: QueryFilterOptions): boolean {
+    console.log('HAS ?')
     return query.adHocFilters.some((f) => f.key === filter.key && f.value === filter.value);
   }
 

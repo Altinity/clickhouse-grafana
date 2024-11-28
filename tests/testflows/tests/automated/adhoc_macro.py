@@ -110,11 +110,11 @@ def default_adhoc(self):
         actions.create_new_altinity_datasource(
             datasource_name="test_default_adhoc",
             url="http://clickhouse:8123",
-            # configure_adhoc_filter_request="SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300",
+            configure_adhoc_filter_request="SELECT DISTINCT {field} AS value FROM {database}.{table} WHERE value LIKE '%U%' LIMIT 300",
         )
 
     with Given("I create new dashboard"):
-        actions.create_dashboard(dashboard_name="default_adhoc")
+        actions.create_dashboard(dashboard_name="default_adhoc", finally_save_dashboard=False)
 
     with When("I create adhoc variable"):
         dashboard.create_new_variable(datasource_name="test_default_adhoc", variable_type="Ad hoc filters")
@@ -135,14 +135,14 @@ def default_adhoc(self):
 
     with And("I enter default adhoc value"):
         with delay():
-            panel.change_adhoc_value(label="query0", variable_number=3, variable_value="NL")
+            panel.change_adhoc_value(label="query0", variable_number=3, variable_value="US")
 
     with And("I get every adhoc value after deleting and adding adhoc"):
         with delay():
             adhoc_values_after_deleting_and_adding_adhoc = panel.get_dropdown_values_set(label="query0", variable_number=3)
 
     with Then("I check adhoc correctly displays values after recreating adhoc"):
-        assert adhoc_values_after_deleting_and_adding_adhoc == {'US', 'CN', 'RU', 'FR', 'EU', 'AR', 'DE', 'UK', 'TK', 'NL'}, error()
+        assert adhoc_values_after_deleting_and_adding_adhoc == {'US', 'RU', 'EU', 'UK'}, error()
 
 
 @TestFeature

@@ -74,6 +74,7 @@ export class CHDataSource
           defaultDateDate32: instanceSettings.jsonData.defaultDateDate32,
         },
         defaultDateTimeType: instanceSettings.jsonData.defaultDateTimeType,
+        contextWindowSize: instanceSettings.jsonData.contextWindowSize,
       };
     }
 

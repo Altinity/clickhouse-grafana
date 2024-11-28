@@ -296,7 +296,7 @@ def enter_datetime64_field(self, datetime64):
 
 @TestStep(When)
 def enter_date_field(self, date):
-    """Enter datetime64 field."""
+    """Enter date field."""
 
     locators.date_field.click()
     locators.date_field.send_keys(date)
@@ -319,6 +319,15 @@ def enter_configure_adhoc_filter_request(self, adhoc_request):
         with delay():
             locators.configure_adhoc_filter_request_input.send_keys(adhoc_request)
             # locators.configure_adhoc_filter_request_input.send_keys(Keys.ENTER)
+
+@TestStep(When)
+def enter_context_window_field(self, context_window):
+    """Enter context window field."""
+
+    locators.context_window_field.click()
+    locators.context_window_field.send_keys(context_window)
+    locators.context_window_field.send_keys(Keys.ENTER)
+
 
 @TestStep(Then)
 def get_column_timestamp_type(self):

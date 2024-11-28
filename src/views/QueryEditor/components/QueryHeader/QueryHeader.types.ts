@@ -1,5 +1,5 @@
-import {CHQuery, EditorMode} from "../../../../types/types";
-import {CHDataSource} from "../../../../datasource/datasource";
+import { CHQuery, EditorMode } from '../../../../types/types';
+import { CHDataSource } from '../../../../datasource/datasource';
 
 export interface QueryHeaderProps {
   isAnnotationView: boolean;

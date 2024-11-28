@@ -6,7 +6,6 @@ export const DEFAULT_DATE_TIME_TYPE = TimestampFormat.DateTime;
 export const DEFAULT_ROUND = '0s';
 export const DEFAULT_INTERVAL_FACTOR = 1;
 
-
 export const MONACO_EDITOR_OPTIONS: any = {
   scrollBeyondLastLine: false,
   wordWrap: 'on',

@@ -115,5 +115,22 @@ class Locators:
         return driver.find_element(SelectBy.XPATH,
                                    f'//*[contains(@{search_class}, "{query_name}")]//h5[text()="Macros"]/..//pre[2]')
 
+    def context_window(self, query_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not(grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+            search_class = "data-rbd-draggable-id"
+        else:
+            search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{query_name}")]//*[./text()="Context window"]/..//input[contains(@id, "react-select")]')
+
+    def context_window_grafana_select_value_container(self, query_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not(grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+            search_class = "data-rbd-draggable-id"
+        else:
+            search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(@{search_class}, "{query_name}")]//*[./text()="Context window"]/..//*[@data-testid="context-window-size-select"]/div[contains(@class, "singleValue")]')
 
 locators = Locators()

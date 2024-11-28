@@ -1,6 +1,6 @@
-import {SelectableValue} from "@grafana/data";
-import {EditorMode} from "../../../../types/types";
-import {E2ESelectors} from "@grafana/e2e-selectors";
+import { SelectableValue } from '@grafana/data';
+import { EditorMode } from '../../../../types/types';
+import { E2ESelectors } from '@grafana/e2e-selectors';
 
 const Components = {
   QueryEditor: {

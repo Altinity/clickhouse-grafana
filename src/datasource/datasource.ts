@@ -225,7 +225,6 @@ export class CHDataSource
       } else if (!response) {
         throw new Error('No response for traceId log context query');
       }
-      console.log('n3294');
 
       let sqlSeries = new SqlSeries({
         refId: 'FORWARD',
@@ -327,7 +326,6 @@ export class CHDataSource
   }
 
   queryHasFilter(query: CHQuery, filter: QueryFilterOptions): boolean {
-    console.log('HAS ?')
     return query.adHocFilters.some((f) => f.key === filter.key && f.value === filter.value);
   }
 

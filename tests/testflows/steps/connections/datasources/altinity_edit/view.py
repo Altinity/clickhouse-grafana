@@ -3,7 +3,7 @@ from testflows.core import *
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By as SelectBy
-
+from steps.delay import delay
 from steps.connections.datasources.altinity_edit.locators import locators
 
 import steps.ui as ui
@@ -302,6 +302,22 @@ def enter_date_field(self, date):
     locators.date_field.send_keys(date)
     locators.date_field.send_keys(Keys.ENTER)
 
+@TestStep(When)
+def select_adhoc_query(self):
+    """Select input query using triple click on textarea."""
+
+    ActionChains(self.context.driver).double_click(locators.configure_adhoc_filter_request).click(locators.configure_adhoc_filter_request).perform()
+
+@TestStep(When)
+def enter_configure_adhoc_filter_request(self, adhoc_request):
+
+    with By("selecting adhoc request"):
+        with delay():
+            select_adhoc_query()
+
+    with By("entering adhoc request"):
+        with delay():
+            locators.configure_adhoc_filter_request_input.send_keys(adhoc_request)
 
 @TestStep(When)
 def enter_context_window_field(self, context_window):

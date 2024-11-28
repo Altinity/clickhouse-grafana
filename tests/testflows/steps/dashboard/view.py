@@ -3,6 +3,7 @@ from testflows.core import *
 from steps.delay import delay
 from selenium.webdriver import ActionChains
 from steps.dashboard.locators import locators
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By as SelectBy
 from selenium.common.exceptions import NoSuchElementException
 
@@ -155,7 +156,7 @@ def open_panel(self, panel_name):
 
 
 @TestStep(When)
-def click_dahsboard_settings_button(self):
+def click_dashboard_settings_button(self):
     """Click dashboard settings button."""
     locators.dashboard_settings_button.click()
 
@@ -182,6 +183,7 @@ def enter_variable_query(self, query):
 def select_datasource(self, datasource_name):
     """Select datasource."""
     locators.select_data_source_dropdown.send_keys(datasource_name)
+    locators.select_data_source_dropdown.send_keys(Keys.ENTER)
 
 
 @TestStep(When)
@@ -208,36 +210,51 @@ def click_edit_button(self):
     locators.edit_button.click()
 
 @TestStep(When)
-def create_new_variable(self, query, datasource_name):
+def enter_variable_type(self, variable_type):
+    """Enter variable type."""
+
+    locators.variable_type_dropdown.click()
+    locators.variable_type_dropdown.send_keys(variable_type)
+    locators.variable_type_dropdown.send_keys(Keys.ENTER)
+
+@TestStep(When)
+def create_new_variable(self, datasource_name, variable_type, query=None, run_query=False):
     """Create new variable."""
 
-    with By("clicking dashboard settings button"):
+    with By("clicking edit button"):
         with delay():
-            click_dahsboard_settings_button()
+            click_edit_button()
+
+    with And("clicking dashboard settings button"):
+        with delay():
+            click_dashboard_settings_button()
 
     with And("clicking variables tab"):
-        click_variables_tab()
+        with delay():
+            click_variables_tab()
 
     with And("clicking add variable button"):
         with delay():
             click_add_variable_button()
 
-    with And("entering variable query"):
-        enter_variable_query(query=query)
-
-    with And("clicking include all option checkbox"):
+    with And("entering variable type"):
         with delay():
-            click_include_all_options_checkbox()
+            enter_variable_type(variable_type=variable_type)
+
+    if not (query is None):
+        with And("entering variable query"):
+            with delay():
+                enter_variable_query(query=query)
 
     with And("selecting datasource"):
-        select_datasource(datasource_name=datasource_name)
-
-    with And("clicking run query"):
         with delay():
-            click_run_query_button()
+            select_datasource(datasource_name=datasource_name)
 
-    with And("clicking apply variable"):
-        click_apply_variable()
+    if run_query:
+        with And("clicking run query"):
+            with delay():
+                click_run_query_button()
+
 
 
 @TestStep(Then)

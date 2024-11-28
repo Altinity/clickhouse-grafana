@@ -43,7 +43,8 @@ def check_existing_data_sources(self):
                     datasources_altinity_edit.click_save_and_test_button()
 
             with Then("I check save and test button works correctly"):
-                assert datasources_altinity_edit.check_alert_success() is True, error()
+                with delay():
+                    assert datasources_altinity_edit.check_alert_success() is True, error()
 
 
 @TestOutline

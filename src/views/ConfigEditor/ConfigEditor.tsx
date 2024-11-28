@@ -1,4 +1,4 @@
-import React, { FormEvent, useState } from 'react';
+import React, {FormEvent, useEffect, useState} from 'react';
 import { CodeEditor, DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput, Select } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, SelectableValue } from '@grafana/data';
 import { CHDataSourceOptions } from '../../types/types';
@@ -22,6 +22,18 @@ export function ConfigEditor(props: Props) {
   const { jsonData, secureJsonFields } = newOptions;
   const secureJsonData = (options.secureJsonData || {}) as CHSecureJsonData;
   const [selectedCompressionType, setSelectedCompressionType] = useState(jsonData.compressionType);
+  const [adHocValuesQuery, setAdHocValuesQuery] = useState(jsonData.adHocValuesQuery || DEFAULT_VALUES_QUERY);
+
+  useEffect(() => {
+    jsonData.adHocValuesQuery = adHocValuesQuery;
+
+    onOptionsChange({
+      ...newOptions,
+      jsonData: { ...jsonData },
+    });
+
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [adHocValuesQuery]);
 
   // @todo remove when merged https://github.com/grafana/grafana/pull/80858
   if (newOptions.url !== '') {
@@ -205,12 +217,10 @@ export function ConfigEditor(props: Props) {
           <div style={{ position: 'relative', minWidth: '600px' }}>
             <CodeEditor
               height={Math.max((jsonData.adHocValuesQuery || '').split('\n').length * 18, 150)}
-              value={jsonData.adHocValuesQuery || DEFAULT_VALUES_QUERY}
+              value={adHocValuesQuery}
               language={LANGUAGE_ID}
               monacoOptions={MONACO_EDITOR_OPTIONS}
-              onChange={(newValue) => {
-                onFieldChange({ value: newValue }, 'adHocValuesQuery');
-              }}
+              onChange={setAdHocValuesQuery}
             />
           </div>
         </InlineField>

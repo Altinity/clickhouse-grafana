@@ -318,7 +318,6 @@ def enter_configure_adhoc_filter_request(self, adhoc_request):
     with By("entering adhoc request"):
         with delay():
             locators.configure_adhoc_filter_request_input.send_keys(adhoc_request)
-            # locators.configure_adhoc_filter_request_input.send_keys(Keys.ENTER)
 
 @TestStep(When)
 def enter_context_window_field(self, context_window):

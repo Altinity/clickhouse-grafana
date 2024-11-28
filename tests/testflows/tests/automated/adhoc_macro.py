@@ -12,7 +12,7 @@ import steps.panel.sql_editor.view as sql_editor
 from requirements.requirements import *
 
 
-@TestOutline(Scenario)
+@TestOutline
 def adhoc_macro_outline(self, dashboard_name, expected_adhoc_values, adhoc_label, adhoc_name):
     """Check that grafana plugin supports adhoc macro."""
 

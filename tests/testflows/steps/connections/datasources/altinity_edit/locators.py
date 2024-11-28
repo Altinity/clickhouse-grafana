@@ -191,5 +191,16 @@ class Locators:
                                    f'//*[./text()="Date Field"]/..//input[contains(@id, "react-select")]')
 
 
+    @property
+    def configure_adhoc_filter_request(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[@data-testid="data-testid Code editor container"]//*[@class="view-lines monaco-mouse-cursor-text"]')
+
+    @property
+    def configure_adhoc_filter_request_input(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[@data-testid="data-testid Code editor container"]//textarea')
 
 locators = Locators()

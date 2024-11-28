@@ -60,12 +60,12 @@ class Locators:
     @property
     def dashboard_settings_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Dashboard settings']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Dashboard settings']")
     
     @property
     def variables_tab(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Tab Variables']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Tab Variables']")
     
     @property
     def add_variable_button(self):
@@ -86,7 +86,12 @@ class Locators:
     def apply_variable_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Variable editor Apply button']")
-    
+
+    @property
+    def variable_type_dropdown(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f"//input[contains(@id, 'variable-select-input-Select variable type')]")
+
     @property
     def include_all_options_checkbox(self):
         driver: WebDriver = current().context.driver

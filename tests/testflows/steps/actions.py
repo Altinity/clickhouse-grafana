@@ -156,6 +156,7 @@ def create_new_altinity_datasource(
         default_timestamp_field=None,
         default_datetime64_field=None,
         default_date_field=None,
+        configure_adhoc_filter_request=None,
 ):
     """Create new datasource.
 
@@ -280,6 +281,11 @@ def create_new_altinity_datasource(
             with delay(before=0.5):
                 with And("entering datasource name"):
                     datasources_altinity_edit.enter_name_into_name_field(datasource_name=datasource_name)
+
+            if not (configure_adhoc_filter_request is None):
+                with delay():
+                    with By("entering configure adhoc filter request"):
+                        datasources_altinity_edit.enter_configure_adhoc_filter_request(adhoc_request=configure_adhoc_filter_request)
 
             with delay():
                 with By("clicking save and test button"):

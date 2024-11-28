@@ -180,6 +180,9 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
                 { label: 'DateTime64', value: TimestampFormat.DateTime64 },
                 { label: 'TimeStamp', value: TimestampFormat.TimeStamp },
                 { label: 'Float', value: TimestampFormat.Float },
+                { label: 'DateTime64(3)', value: TimestampFormat.DateTime64_3 },
+                { label: 'DateTime64(6)', value: TimestampFormat.DateTime64_6 },
+                { label: 'DateTime64(9)', value: TimestampFormat.DateTime64_9 },
               ]}
               value={jsonData.defaultDateTimeType}
             />

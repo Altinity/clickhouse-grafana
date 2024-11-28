@@ -17,6 +17,9 @@ export enum DateTimeColumnSelectorType {
 export enum TimestampFormat {
   DateTime = 'DATETIME',
   DateTime64 = 'DATETIME64',
+  DateTime64_3 = 'DATETIME64_3',
+  DateTime64_6 = 'DATETIME64_6',
+  DateTime64_9 = 'DATETIME64_9',
   TimeStamp = 'TIMESTAMP',
   Float = 'FLOAT',
 }

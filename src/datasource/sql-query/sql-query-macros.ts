@@ -73,6 +73,18 @@ export default class SqlQueryMacros {
         return t;
       }
 
+      if (dateTimeType === TimestampFormat.DateTime64_3) {
+        return `1000 * ${t}`;
+      }
+
+      if (dateTimeType === TimestampFormat.DateTime64_6) {
+        return `1000000 * ${t}`;
+      }
+
+      if (dateTimeType === TimestampFormat.DateTime64_9) {
+        return `1000000000 * ${t}`;
+      }
+
       return t;
     };
     return '$dateTimeCol >= ' + convertFn('$from') + ' AND $dateTimeCol <= ' + convertFn('$to');
@@ -85,6 +97,12 @@ export default class SqlQueryMacros {
       return `$dateTimeCol >= toDateTime64($__from/1000, 3) AND $dateTimeCol <= toDateTime64($__to/1000, 3)`;
     } else if (dateTimeType === TimestampFormat.Float) {
       return `$dateTimeCol >= toFloat64($__from/1000) AND $dateTimeCol <= toFloat64($__to/1000)`;
+    } else if (dateTimeType === TimestampFormat.DateTime64_3) {
+      return `$dateTimeCol >= $__from AND $dateTimeCol <= $__to`;
+    } else if (dateTimeType === TimestampFormat.DateTime64_6) {
+      return `$dateTimeCol >= 1000 * $__from AND $dateTimeCol <= 1000 * $__to`;
+    } else if (dateTimeType === TimestampFormat.DateTime64_9) {
+      return `$dateTimeCol >= 1000000 * $__from AND $dateTimeCol <= 1000000 * $__to`;
     } else {
       return `$dateTimeCol >= ($__from/1000) AND $dateTimeCol <= ($__to/1000)`;
     }
@@ -102,6 +120,18 @@ export default class SqlQueryMacros {
       return 'round($dateTimeCol * 1000)';
     }
 
+    if (dateTimeType === TimestampFormat.DateTime64_3) {
+      return `intDiv($dateTimeCol,1000)`;
+    }
+
+    if (dateTimeType === TimestampFormat.DateTime64_6) {
+      return `intDiv($dateTimeCol,1000000)`;
+    }
+
+    if (dateTimeType === TimestampFormat.DateTime64_9) {
+      return `intDiv($dateTimeCol,1000000000)`;
+    }
+
     return '(intDiv($dateTimeCol, $interval) * $interval) * 1000';
   }
 
@@ -116,6 +146,18 @@ export default class SqlQueryMacros {
 
     if (dateTimeType === TimestampFormat.Float) {
       return '(intDiv($dateTimeCol * 1000, $__interval_ms) * $__interval_ms)';
+    }
+
+    if (dateTimeType === TimestampFormat.DateTime64_3) {
+      return `$dateTimeCol`;
+    }
+
+    if (dateTimeType === TimestampFormat.DateTime64_6) {
+      return `intDiv($dateTimeCol,10000)`;
+    }
+
+    if (dateTimeType === TimestampFormat.DateTime64_9) {
+      return `intDiv($dateTimeCol,1000000)`;
     }
 
     return '(intDiv($dateTimeCol, $__interval_ms) * $__interval_ms)';

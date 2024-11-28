@@ -61,6 +61,34 @@ export const useConnectionData = (query, datasource) => {
             "(substring(type,1,10) = 'DateTime64' OR substring(type,10,10) = 'DateTime64')" +
             'ORDER BY name';
           break;
+        case TimestampFormat.DateTime64_3:
+          query =
+            'SELECT name ' +
+            'FROM system.columns ' +
+            "WHERE database = '" +
+            selectedDatabase +
+            "' AND " +
+            "table = '" +
+            selectedTable +
+            "' AND " +
+            "(substring(type,1,13) = 'DateTime64(3)')" +
+            'ORDER BY name';
+          break;
+        case TimestampFormat.DateTime64_3:
+        case TimestampFormat.DateTime64_6:
+        case TimestampFormat.DateTime64_9:
+          query =
+            'SELECT name ' +
+            'FROM system.columns ' +
+            "WHERE database = '" +
+            selectedDatabase +
+            "' AND " +
+            "table = '" +
+            selectedTable +
+            "' AND " +
+            "(type LIKE 'UInt%' OR type LIKE 'Int%')" +
+            'ORDER BY name';
+          break;
         case TimestampFormat.TimeStamp:
           query =
             'SELECT name ' +

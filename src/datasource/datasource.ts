@@ -187,7 +187,7 @@ export class CHDataSource
       } PRECEDING AND CURRENT ROW) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
-        ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`;
+        ) WHERE ${inputTimestampColumn} = ${inputTimestampValue}`;
     };
 
     const generateQueryForTimestampForward = (inputTimestampColumn, inputTimestampValue, contextWindowSize) => {
@@ -199,7 +199,7 @@ export class CHDataSource
       } FOLLOWING) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
-        ) WHERE ${inputTimestampColumn} = '${inputTimestampValue}'`;
+        ) WHERE ${inputTimestampColumn} = ${inputTimestampValue}`;
     };
 
     const generateRequestForTimestampForward = (timestampField, timestamp, currentRowTimestamp, select) => {
@@ -237,19 +237,26 @@ export class CHDataSource
       const timestampColumn = query?.dateTimeColDataType;
 
       const getLogsTimeBoundaries = async () => {
+        let formattedDate = String(row.timeEpochMs);
+        if (formattedDate.length > 10) {
+          formattedDate = `toDateTime64(${row.timeEpochMs}/1000,3)`;
+        } else {
+          formattedDate = `'${row.timeUtc}'`;
+        }
+
         const boundariesRequest =
           options?.direction === LogRowContextQueryDirection.Backward
-            ? generateQueryForTimestampBackward(timestampColumn, row.timeUtc, query?.contextWindowSize)
-            : generateQueryForTimestampForward(timestampColumn, row.timeUtc, query?.contextWindowSize);
+            ? generateQueryForTimestampBackward(timestampColumn, formattedDate, query?.contextWindowSize)
+            : generateQueryForTimestampForward(timestampColumn, formattedDate, query?.contextWindowSize);
 
         const { stmt, requestId } = this.createQuery(requestOptions, { ...query, query: boundariesRequest });
 
         const result: any = await this._seriesQuery(stmt, requestId + options?.direction);
+
         return result.data[0];
       };
 
       const { timestamp } = await getLogsTimeBoundaries();
-
       const getLogContext = async () => {
         const contextDataRequest =
           options?.direction === LogRowContextQueryDirection.Backward

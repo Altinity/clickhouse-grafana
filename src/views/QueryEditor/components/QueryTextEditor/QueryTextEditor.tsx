@@ -78,12 +78,7 @@ export const QueryTextEditor = ({
 
   return (
     <>
-      <SQLCodeEditor
-        datasource={datasource}
-        onSqlChange={onSqlChange}
-        query={query}
-        onRunQuery={onRunQuery}
-      />
+      <SQLCodeEditor datasource={datasource} onSqlChange={onSqlChange} query={query} onRunQuery={onRunQuery} />
       {!areAdHocFiltersAvailable && adhocFilters.length > 0 && (
         <TagsInput
           className={'adhoc-filters-tags'}
@@ -154,7 +149,7 @@ export const QueryTextEditor = ({
                 width={'auto'}
                 data-testid="context-window-size-select"
                 onChange={(e) => handleContextWindowChange(e.value)}
-                options={[10, 20, 50, 100].map((value) => ({ label: value + ' entries', value }))}
+                options={['10', '20', '50', '100'].map((value) => ({ label: value + ' entries', value }))}
                 value={query.contextWindowSize}
               />
             </InlineField>

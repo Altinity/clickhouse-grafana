@@ -73,19 +73,35 @@ func (q *Query) formatNumericDateAndTimeValues(fmtQuery string) string {
 		substitutionFrom := "$1$2$3 $4 "
 		substitutionTo := "$1$2$3 $4 "
 
-		fromRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(<|<=)\\s*(\\d+)")
-		toRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(>=|>)\\s*(\\d+)")
+		fromRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(<|<=)\\s*([^\\s]+)")
+		toRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(>=|>)\\s*([^\\s]+)")
 		if slices.Contains([]string{"DATE", "DATE32", "DATETIME"}, strings.ToUpper(fieldType)) {
 			substitutionFrom += fmt.Sprintf("to"+strings.ToTitle(strings.ToLower(fieldType))+"(%d)", from.Unix())
 			substitutionTo += fmt.Sprintf("to"+strings.ToTitle(strings.ToLower(fieldType))+"(%d)", to.Unix())
 		}
 		if "DATETIME64" == strings.ToUpper(fieldType) {
-			substitutionFrom += fmt.Sprintf("to"+strings.ToTitle(strings.ToLower(fieldType))+"(%f.3,3)", from.UnixMilli()/1000.0)
-			substitutionTo += fmt.Sprintf("to"+strings.ToTitle(strings.ToLower(fieldType))+"(%f.3,3)", to.UnixMilli()/1000.0)
+			substitutionFrom += fmt.Sprintf("to"+strings.ToTitle(strings.ToLower(fieldType))+"(%.3f,3)", float64(from.UnixMilli())/1000.0)
+			substitutionTo += fmt.Sprintf("to"+strings.ToTitle(strings.ToLower(fieldType))+"(%.3f,3)", float64(to.UnixMilli())/1000.0)
 		}
 		if "TIMESTAMP" == strings.ToUpper(fieldType) {
 			substitutionFrom += fmt.Sprintf("%d", from.Unix())
 			substitutionTo += fmt.Sprintf("%d", to.Unix())
+		}
+		if "TIMESTAMP64_3" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("%d", from.UnixMilli())
+			substitutionTo += fmt.Sprintf("%d", to.UnixMilli())
+		}
+		if "TIMESTAMP64_6" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("%d", from.UnixMicro())
+			substitutionTo += fmt.Sprintf("%d", to.UnixMicro())
+		}
+		if "TIMESTAMP64_9" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("%d", from.UnixNano())
+			substitutionTo += fmt.Sprintf("%d", to.UnixNano())
+		}
+		if "FLOAT" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("%.3f", float64(from.UnixNano())/1000000000.0)
+			substitutionTo += fmt.Sprintf("%.3f", float64(to.UnixNano())/1000000000.0)
 		}
 		return fromRE, substitutionFrom, toRE, substitutionTo
 	}

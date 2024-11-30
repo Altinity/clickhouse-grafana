@@ -21,7 +21,7 @@ export const initializeQueryDefaults = (
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
     editorMode: query.database && query.table ? EditorMode.SQL : EditorMode.Builder,
-    contextWindowSize: query.contextWindowSize || 10,
+    contextWindowSize: query.contextWindowSize || '10',
     adHocValuesQuery: query.adHocValuesQuery || '',
   };
 
@@ -56,6 +56,10 @@ export const initializeQueryDefaults = (
       !initializedQuery.dateTimeColDataType
     ) {
       initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultUint32;
+    }
+
+    if (datasource.defaultValues.contextWindowSize && !query.contextWindowSize) {
+      initializedQuery.contextWindowSize = datasource.defaultValues.contextWindowSize;
     }
 
     onChange({ ...query, ...initializedQuery, initialized: true });

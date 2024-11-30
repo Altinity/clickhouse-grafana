@@ -43,7 +43,8 @@ def check_existing_data_sources(self):
                     datasources_altinity_edit.click_save_and_test_button()
 
             with Then("I check save and test button works correctly"):
-                assert datasources_altinity_edit.check_alert_success() is True, error()
+                with delay():
+                    assert datasources_altinity_edit.check_alert_success() is True, error()
 
 
 @TestOutline
@@ -534,6 +535,69 @@ def check_default_values_datetime64(self):
         default_date_field="EventDate",
         check_reformatted_query="SELECT 'EventDate', 'd64'",
     )
+
+
+@TestOutline
+def check_default_context_window(self, default_context_window):
+    """Check default context window."""
+
+    with Given("I create new altinity datasource"):
+        actions.create_new_altinity_datasource(
+            datasource_name="default_values_context_window",
+            default=True,
+            url="http://clickhouse:8123",
+            use_default_values=True,
+            default_context_window=default_context_window
+        )
+
+    with And("I create new dashboard"):
+        actions.create_dashboard(dashboard_name="default_values_context_window")
+
+    with When("I add visualization for panel"):
+        dashboard.add_visualization()
+
+    with And("I select datasource"):
+        with delay():
+            panel.select_datasource_in_panel_view(datasource_name="default_values_context_window")
+
+    with And("I open SQL editor"):
+        with delay():
+            panel.go_to_sql_editor()
+
+    with And("I change format as dropdown"):
+        with delay():
+            sql_editor.enter_format_as(format_as="Logs", query_name='A')
+
+    with Then("I check Context window is the same as in default datasource values"):
+        with delay():
+            assert sql_editor.get_context_window(query_name="A") == default_context_window, error()
+
+
+@TestScenario
+def check_default_context_window_10(self):
+    """Check default context window for 10 entries."""
+
+    check_default_context_window(default_context_window="10 entries")
+
+
+@TestScenario
+def check_default_context_window_20(self):
+    """Check default context window for 20 entries."""
+
+    check_default_context_window(default_context_window="20 entries")
+
+@TestScenario
+def check_default_context_window_50(self):
+    """Check default context window for 50 entries."""
+
+    check_default_context_window(default_context_window="50 entries")
+
+@TestScenario
+def check_default_context_window_100(self):
+    """Check default context window for 100 entries."""
+
+    check_default_context_window(default_context_window="100 entries")
+
 
 
 @TestFeature

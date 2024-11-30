@@ -1,5 +1,5 @@
-import {CHQuery, TimestampFormat} from "../../../../../types/types";
-import {CHDataSource} from "../../../../../datasource/datasource";
+import { CHQuery, TimestampFormat } from '../../../../../types/types';
+import { CHDataSource } from '../../../../../datasource/datasource';
 
 export function findDifferences(query: CHQuery, datasource: CHDataSource) {
   const { defaultValues } = datasource;
@@ -72,6 +72,15 @@ export function findDifferences(query: CHQuery, datasource: CHDataSource) {
         original: checkValue(query.dateColDataType),
         updated: defaultValues.dateTime.defaultDateDate32,
         fieldName: 'dateColDataType',
+      });
+    }
+
+    if (query.contextWindowSize !== defaultValues.contextWindowSize) {
+      differences.push({
+        key: 'Logs context window size',
+        original: checkValue(query.contextWindowSize),
+        updated: defaultValues.contextWindowSize,
+        fieldName: 'contextWindowSize',
       });
     }
   }

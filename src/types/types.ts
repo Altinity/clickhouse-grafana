@@ -18,6 +18,9 @@ export enum TimestampFormat {
   DateTime = 'DATETIME',
   DateTime64 = 'DATETIME64',
   TimeStamp = 'TIMESTAMP',
+  TimeStamp64_3 = 'TIMESTAMP64_3',
+  TimeStamp64_6 = 'TIMESTAMP64_6',
+  TimeStamp64_9 = 'TIMESTAMP64_9',
   Float = 'FLOAT',
 }
 
@@ -43,7 +46,7 @@ export interface CHQuery extends DataQuery {
   intervalFactor?: number;
   interval?: string;
   formattedQuery?: string;
-  contextWindowSize?: number;
+  contextWindowSize?: string;
   adHocValuesQuery?: string;
 }
 
@@ -67,6 +70,7 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   defaultDateDate32?: string;
   defaultDateTimeType?: string;
   adHocValuesQuery: string;
+  contextWindowSize?: string;
 }
 
 /**

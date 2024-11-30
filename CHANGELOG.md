@@ -1,12 +1,16 @@
 # 3.3.0 (not released yet)
 ## Enhancements:
+* Add dynamic filters to logs panel labels, fix https://github.com/Altinity/clickhouse-grafana/issues/487, https://github.com/Altinity/clickhouse-grafana/issues/672 
 * Allow change SQL for adhoc queries which select values, default query could be slow for generic use cases, depends on data, fix https://github.com/Altinity/clickhouse-grafana/issues/330
 * Allow change log context window size for Logs panel in Query Editor, fix https://github.com/Altinity/clickhouse-grafana/issues/652
 * Add coverage report, current line coverage is ~80%, fix https://github.com/Altinity/clickhouse-grafana/pull/663
+* Add logs context window size to default values in connection settings, fix https://github.com/Altinity/clickhouse-grafana/pull/670
+* Add `copy` button to `Generated SQL` area, fix https://github.com/Altinity/clickhouse-grafana/issues/659
+* Resolve security dependabot alerts remove unused cypress/e2e test
 
 ## Fixes:
 * extrapolation works properly on NaN
-* e2e test cover more use cases 
+* e2e test cover more use cases
 
 # 3.2.4 (2024-10-28)
 

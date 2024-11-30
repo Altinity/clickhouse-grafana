@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"reflect"
 	"sort"
+	"strings"
 	"testing"
 	"time"
 
@@ -1532,7 +1533,7 @@ func TestScannerAST(t *testing.T) {
 }
 
 func TestEvalQueryTimeFilterByColumnAndRange(t *testing.T) {
-	const description = "Query SELECT with $timeFilterByColumn and range with from and to"
+	const description = "Query SELECT with $timeFilterByColumn and range with $from and $to"
 	const query = "SELECT * FROM table WHERE $timeFilterByColumn(column_name)"
 	r := require.New(t)
 	from, err := time.Parse("2006-01-02 15:04:05Z", `2018-12-24 01:02:03Z`)
@@ -1544,24 +1545,47 @@ func TestEvalQueryTimeFilterByColumnAndRange(t *testing.T) {
 		From:  from,
 		To:    to,
 	}
-	q.DateTimeType = "DATETIME"
-	r.Equal(
-		"SELECT * FROM table WHERE column_name >= toDateTime(1545613323) AND column_name <= toDateTime(1546300799)",
-		q.replaceTimeFilters(query, 0),
-		description+" unexpected results DATETIME",
-	)
-
-	q.DateTimeType = "DATETIME64"
-	r.Equal(
-		"SELECT * FROM table WHERE column_name >= toDateTime64(1545613323000/1000, 3) AND column_name <= toDateTime64(1546300799000/1000, 3)",
-		q.replaceTimeFilters(query, 0),
-		description+" unexpected results DATETIME64",
-	)
-
+	testCases := []struct {
+		DateTimeType  string
+		ExpectedQuery string
+	}{
+		{
+			DateTimeType:  "DATETIME",
+			ExpectedQuery: "SELECT * FROM table WHERE column_name >= toDateTime(1545613323) AND column_name <= toDateTime(1546300799)",
+		},
+		{
+			DateTimeType:  "DATETIME64",
+			ExpectedQuery: "SELECT * FROM table WHERE column_name >= toDateTime64(1545613323000/1000,3) AND column_name <= toDateTime64(1546300799000/1000,3)",
+		},
+    {
+      DateTimeType:  "TIMESTAMP",
+      ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1545613323 AND column_name <= 1546300799",
+    },
+		{
+			DateTimeType:  "TIMESTAMP64_3",
+			ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1000*1545613323 AND column_name <= 1000*1546300799",
+		},
+		{
+			DateTimeType:  "TIMESTAMP64_6",
+			ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1000000*1545613323 AND column_name <= 1000000*1546300799",
+		},
+		{
+			DateTimeType:  "TIMESTAMP64_9",
+			ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1000000000*1545613323 AND column_name <= 1000000000*1546300799",
+		},
+	}
+	for _, tc := range testCases {
+		q.DateTimeType = tc.DateTimeType
+		r.Equal(
+			tc.ExpectedQuery,
+			q.replaceTimeFilters(query, 0),
+			description+" unexpected $timeFilterByColumn results "+tc.DateTimeType,
+		)
+	}
 }
 
 func TestEvalQueryTimeFilter64ByColumnAndRangeMs(t *testing.T) {
-	const description = "Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range with from"
+	const description = "Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range with from=$from to=now()"
 	const query = "SELECT * FROM table WHERE $timeFilterByColumn(column_name)"
 	const query64 = "SELECT * FROM table WHERE $timeFilter64ByColumn(column_name)"
 	r := require.New(t)
@@ -1572,21 +1596,81 @@ func TestEvalQueryTimeFilter64ByColumnAndRangeMs(t *testing.T) {
 		From: from,
 		To:   to,
 	}
-	for _, q := range []string{query, query64} {
-		eQ.Query = q
-		eQ.DateTimeType = "DATETIME"
-		expectedQ := fmt.Sprintf("SELECT * FROM table WHERE "+
-			"column_name >= toDateTime(%d) AND "+
-			"column_name <= toDateTime(%d)", from.Unix(), to.Unix())
-		expectedQ64 := fmt.Sprintf("SELECT * FROM table WHERE "+
-			"column_name >= toDateTime64(%d200/1000, 3) AND "+
-			"column_name <= toDateTime64(%d/1000, 3)", from.Unix(), to.UnixMilli())
-		if q == query64 {
-			expectedQ = expectedQ64
-		}
-		r.Equal(expectedQ, eQ.replaceTimeFilters(q, 0), description+" unexpected DATETIME result")
-		eQ.DateTimeType = "DATETIME64"
-		r.Equal(expectedQ64, eQ.replaceTimeFilters(q, 0), description+" unexpected DATETIME64 result")
+	testCases := []struct {
+		DateTimeType string
+		expectedQ    string
+		expectedQ64  string
+	}{
+		{
+			DateTimeType: "DATETIME",
+			expectedQ: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= toDateTime(%d) AND "+
+				"column_name <= toDateTime(%d)", from.Unix(), to.Unix()),
+			expectedQ64: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= toDateTime(%d200/1000) AND "+
+				"column_name <= toDateTime(%d/1000)", from.Unix(), to.UnixMilli()),
+		},
+		{
+			DateTimeType: "DATETIME64",
+			expectedQ: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= toDateTime64(%d200/1000,3) AND "+
+				"column_name <= toDateTime64(%d/1000,3)", from.Unix(), to.UnixMilli()),
+			expectedQ64: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= toDateTime64(%d200/1000,3) AND "+
+				"column_name <= toDateTime64(%d/1000,3)", from.Unix(), to.UnixMilli()),
+		},
+		{
+			DateTimeType: "FLOAT",
+			expectedQ: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= %d AND "+
+				"column_name <= %d", from.Unix(), to.Unix()),
+			expectedQ64: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= %d200/1000 AND "+
+				"column_name <= %d/1000", from.Unix(), to.UnixMilli()),
+		},
+		{
+			DateTimeType: "TIMESTAMP",
+			expectedQ: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= %d AND "+
+				"column_name <= %d", from.Unix(), to.Unix()),
+			expectedQ64: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= %d200/1000 AND "+
+				"column_name <= %d/1000", from.Unix(), to.UnixMilli()),
+		},
+		{
+			DateTimeType: "TIMESTAMP64_3",
+			expectedQ: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= 1000*%d AND "+
+				"column_name <= 1000*%d", from.Unix(), to.Unix()),
+			expectedQ64: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= %d200 AND "+
+				"column_name <= %d", from.Unix(), to.UnixMilli()),
+		},
+		{
+			DateTimeType: "TIMESTAMP64_6",
+			expectedQ: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= 1000000*%d AND "+
+				"column_name <= 1000000*%d", from.Unix(), to.Unix()),
+			expectedQ64: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= 1000*%d200 AND "+
+				"column_name <= 1000*%d", from.Unix(), to.UnixMilli()),
+		},
+		{
+			DateTimeType: "TIMESTAMP64_9",
+			expectedQ: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= 1000000000*%d AND "+
+				"column_name <= 1000000000*%d", from.Unix(), to.Unix()),
+			expectedQ64: fmt.Sprintf("SELECT * FROM table WHERE "+
+				"column_name >= 1000000*%d200 AND "+
+				"column_name <= 1000000*%d", from.Unix(), to.UnixMilli()),
+		},
+	}
+	for _, tc := range testCases {
+		eQ.DateTimeType = tc.DateTimeType
+		eQ.Query = query
+		r.Equal(tc.expectedQ, eQ.replaceTimeFilters(query, 0), description+" unexpected $timeFilterByColumn "+tc.DateTimeType+" result")
+		eQ.Query = query64
+		r.Equal(tc.expectedQ64, eQ.replaceTimeFilters(query64, 0), description+" unexpected $timeFilter64ByColumn "+tc.DateTimeType+" result")
 	}
 }
 
@@ -1599,7 +1683,7 @@ func TestEvalQueryTimeSeriesTimeFilterAndDateTime64(t *testing.T) {
 		"ORDER BY t"
 	const expQuery = "SELECT (intDiv(toFloat64(\"d\") * 1000, (15 * 1000)) * (15 * 1000)) as t, sum(x) AS metric\n" +
 		"FROM default.test_datetime64\n" +
-		"WHERE \"d\" >= toDateTime64(1545613320, 3) AND \"d\" <= toDateTime64(1546300740, 3)\n" +
+		"WHERE \"d\" >= toDateTime64(1545613320,3) AND \"d\" <= toDateTime64(1546300740,3)\n" +
 		"GROUP BY t\n" +
 		"ORDER BY t"
 
@@ -1789,7 +1873,7 @@ func TestEvalQueryTimeSeriesMsTimeFilterMsAndDateTime64(t *testing.T) {
 		"ORDER BY t"
 	const expQuery = "SELECT (intDiv(toFloat64(\"d\") * 1000, 100) * 100) as t, sum(x) AS metric\n" +
 		"FROM default.test_datetime64\n" +
-		"WHERE \"d\" >= toDateTime64(1545613323200/1000, 3) AND \"d\" <= toDateTime64(1546300799200/1000, 3)\n" +
+		"WHERE \"d\" >= toDateTime64(1545613323200/1000,3) AND \"d\" <= toDateTime64(1546300799200/1000,3)\n" +
 		"GROUP BY t\n" +
 		"ORDER BY t"
 
@@ -1976,120 +2060,126 @@ func TestIsClosured(t *testing.T) {
 	})
 }
 
-func TestEvalQueryFloatColumnsSupport(t *testing.T) {
+func TestEvalQueryTimeStamp64AndFloatColumnsSupport(t *testing.T) {
 	r := require.New(t)
+	testCases := []struct {
+		DateTimeType         string
+		ExpectedTimeSeries   string
+		ExpectedTimeFilter   string
+		ExpectedTimeSeriesMs string
+		ExpectedTimeFilterMs string
+	}{
+		{
+			DateTimeType:         "Float",
+			ExpectedTimeSeries:   "(intDiv(\"d\" * 1000, (1 * 1000)) * (1 * 1000))",
+			ExpectedTimeFilter:   "\"d\" >= 1545613323 AND \"d\" <= 1546300799",
+			ExpectedTimeSeriesMs: "(intDiv(\"d\" * 1000, 100) * 100)",
+			ExpectedTimeFilterMs: "\"d\" >= toFloat64(1545613323200/1000) AND \"d\" <= toFloat64(1546300799200/1000)",
+		},
+		{
+			DateTimeType:         "Timestamp",
+			ExpectedTimeSeries:   "(intDiv(\"d\", 1) * 1) * 1000",
+			ExpectedTimeFilter:   "\"d\" >= 1545613323 AND \"d\" <= 1546300799",
+			ExpectedTimeSeriesMs: "(intDiv(\"d\" * 1000, 100) * 100)",
+			ExpectedTimeFilterMs: "\"d\" >= 1545613323200/1000 AND \"d\" <= 1546300799200/1000",
+		},
+		{
+			DateTimeType:         "TimeStamp64_3",
+			ExpectedTimeSeries:   "(intDiv(\"d\", (1 * 1000)) * (1 * 1000))",
+			ExpectedTimeFilter:   "\"d\" >= 1000*1545613323 AND \"d\" <= 1000*1546300799",
+			ExpectedTimeSeriesMs: "(intDiv(\"d\", 100) * 100)",
+			ExpectedTimeFilterMs: "\"d\" >= 1545613323200 AND \"d\" <= 1546300799200",
+		},
+		{
+			DateTimeType:         "TimeStamp64_6",
+			ExpectedTimeSeries:   "(intDiv(\"d\" / 1000, (1 * 1000)) * (1 * 1000))",
+			ExpectedTimeFilter:   "\"d\" >= 1000000*1545613323 AND \"d\" <= 1000000*1546300799",
+			ExpectedTimeSeriesMs: "(intDiv(\"d\" / 1000, 100) * 100)",
+			ExpectedTimeFilterMs: "\"d\" >= 1000*1545613323200 AND \"d\" <= 1000*1546300799200",
+		},
+		{
+			DateTimeType:         "TimeStamp64_9",
+			ExpectedTimeSeries:   "(intDiv(\"d\" / 1000000, (1 * 1000)) * (1 * 1000))",
+			ExpectedTimeFilter:   "\"d\" >= 1000000000*1545613323 AND \"d\" <= 1000000000*1546300799",
+			ExpectedTimeSeriesMs: "(intDiv(\"d\" / 1000000, 100) * 100)",
+			ExpectedTimeFilterMs: "\"d\" >= 1000000*1545613323200 AND \"d\" <= 1000000*1546300799200",
+		},
+	}
+	for _, tc := range testCases {
+		// Test case 1: $timeSeries with $timeFilter
+		t.Run("applyMacros $timeSeries with $timeFilter with "+tc.DateTimeType+" timestamp column type", func(t *testing.T) {
+			description := "applyMacros $timeSeries with $timeFilter and " + tc.DateTimeType + " timestamp column type"
+			const query = "SELECT $timeSeries as t, sum(x) AS metric\n" +
+				"FROM $table\n" +
+				"WHERE $timeFilter\n" +
+				"GROUP BY t\n" +
+				"ORDER BY t"
+			expQuery := "SELECT " + tc.ExpectedTimeSeries + " as t, sum(x) AS metric\n" +
+				"FROM default.test_timestamp_formats\n" +
+				"WHERE " + tc.ExpectedTimeFilter + "\n" +
+				"GROUP BY t\n" +
+				"ORDER BY t"
 
-	// Test case 1: $timeSeries with $timeFilter and Float timestamp column type
-	t.Run("applyMacros $timeSeries with $timeFilter with Float timestamp column type", func(t *testing.T) {
-		const description = "applyMacros $timeSeries with $timeFilter and Float timestamp column type"
-		const query = "SELECT $timeSeries as t, sum(x) AS metric\n" +
-			"FROM $table\n" +
-			"WHERE $timeFilter\n" +
-			"GROUP BY t\n" +
-			"ORDER BY t"
-		const expQuery = "SELECT round(\"d\" * 1000) as t, sum(x) AS metric\n" +
-			"FROM default.test_timestamp_formats\n" +
-			"WHERE \"d\" >= 1545613323 AND \"d\" <= 1546300799\n" +
-			"GROUP BY t\n" +
-			"ORDER BY t"
+			from, err := time.Parse(time.RFC3339, "2018-12-24T01:02:03.200Z")
+			r.NoError(err)
+			to, err := time.Parse(time.RFC3339, "2018-12-31T23:59:59.200Z")
+			r.NoError(err)
 
-		from, err := time.Parse(time.RFC3339, "2018-12-24T01:02:03.200Z")
-		r.NoError(err)
-		to, err := time.Parse(time.RFC3339, "2018-12-31T23:59:59.200Z")
-		r.NoError(err)
+			q := EvalQuery{
+				Query:          query,
+				Interval:       "100ms",
+				IntervalFactor: 1,
+				SkipComments:   false,
+				Table:          "test_timestamp_formats",
+				Database:       "default",
+				DateTimeType:   strings.ToUpper(tc.DateTimeType),
+				DateCol:        "",
+				DateTimeCol:    "d",
+				Round:          "100ms",
+				From:           from,
+				To:             to,
+			}
+			actualQuery, err := q.replace(query)
+			r.NoError(err)
+			r.Equal(expQuery, actualQuery, description)
+		})
 
-		q := EvalQuery{
-			Query:          query,
-			Interval:       "100ms",
-			IntervalFactor: 1,
-			SkipComments:   false,
-			Table:          "test_timestamp_formats",
-			Database:       "default",
-			DateTimeType:   "FLOAT",
-			DateCol:        "",
-			DateTimeCol:    "d",
-			Round:          "100ms",
-			From:           from,
-			To:             to,
-		}
-		actualQuery, err := q.replace(query)
-		r.NoError(err)
-		r.Equal(expQuery, actualQuery, description)
-	})
+		// Test case 2: $timeSeriesMs with $timeFilterMs
+		t.Run("applyMacros $timeSeriesMs with $timeFilterMs with "+tc.DateTimeType+" timestamp column type", func(t *testing.T) {
+			description := "applyMacros $timeSeriesMs with $timeFilterMs and " + tc.DateTimeType + " timestamp column type"
+			const query = "SELECT $timeSeriesMs as t, sum(x) AS metric\n" +
+				"FROM $table\n" +
+				"WHERE $timeFilterMs\n" +
+				"GROUP BY t\n" +
+				"ORDER BY t"
+			expQuery := "SELECT " + tc.ExpectedTimeSeriesMs + " as t, sum(x) AS metric\n" +
+				"FROM default.test_timestamp_formats\n" +
+				"WHERE " + tc.ExpectedTimeFilterMs + "\n" +
+				"GROUP BY t\n" +
+				"ORDER BY t"
 
-	// Test case 2: $timeSeriesMs with $timeFilterMs and Float timestamp column type
-	t.Run("applyMacros $timeSeriesMs with $timeFilterMs with Float timestamp column type", func(t *testing.T) {
-		const description = "applyMacros $timeSeriesMs with $timeFilterMs and Float timestamp column type"
-		const query = "SELECT $timeSeriesMs as t, sum(x) AS metric\n" +
-			"FROM $table\n" +
-			"WHERE $timeFilterMs\n" +
-			"GROUP BY t\n" +
-			"ORDER BY t"
-		const expQuery = "SELECT (intDiv(\"d\" * 1000, 100) * 100) as t, sum(x) AS metric\n" +
-			"FROM default.test_timestamp_formats\n" +
-			"WHERE \"d\" >= toFloat64(1545613323200/1000) AND \"d\" <= toFloat64(1546300799200/1000)\n" +
-			"GROUP BY t\n" +
-			"ORDER BY t"
+			from, err := time.Parse(time.RFC3339, "2018-12-24T01:02:03.200Z")
+			r.NoError(err)
+			to, err := time.Parse(time.RFC3339, "2018-12-31T23:59:59.200Z")
+			r.NoError(err)
 
-		from, err := time.Parse(time.RFC3339, "2018-12-24T01:02:03.200Z")
-		r.NoError(err)
-		to, err := time.Parse(time.RFC3339, "2018-12-31T23:59:59.200Z")
-		r.NoError(err)
-
-		q := EvalQuery{
-			Query:          query,
-			Interval:       "100ms",
-			IntervalFactor: 1,
-			SkipComments:   false,
-			Table:          "test_timestamp_formats",
-			Database:       "default",
-			DateTimeType:   "FLOAT",
-			DateCol:        "",
-			DateTimeCol:    "d",
-			Round:          "100ms",
-			From:           from,
-			To:             to,
-		}
-		actualQuery, err := q.replace(query)
-		r.NoError(err)
-		r.Equal(expQuery, actualQuery, description)
-	})
-
-	// Test case 3: $from and $to with Float timestamp column type
-	t.Run("applyMacros $from and $to with Float timestamp column type", func(t *testing.T) {
-		const description = "applyMacros $from and $to with Float timestamp column type"
-		const query = "SELECT $timeSeries as t, sum(x) AS metric\n" +
-			"FROM $table\n" +
-			"WHERE $dateTimeCol >= $from AND $dateTimeCol <= $to\n" +
-			"GROUP BY t\n" +
-			"ORDER BY t"
-		const expQuery = "SELECT round(\"d\" * 1000) as t, sum(x) AS metric\n" +
-			"FROM default.test_timestamp_formats\n" +
-			"WHERE \"d\" >= 1545613323 AND \"d\" <= 1546300799\n" +
-			"GROUP BY t\n" +
-			"ORDER BY t"
-
-		from, err := time.Parse(time.RFC3339, "2018-12-24T01:02:03.200Z")
-		r.NoError(err)
-		to, err := time.Parse(time.RFC3339, "2018-12-31T23:59:59.200Z")
-		r.NoError(err)
-
-		q := EvalQuery{
-			Query:          query,
-			Interval:       "100ms",
-			IntervalFactor: 1,
-			SkipComments:   false,
-			Table:          "test_timestamp_formats",
-			Database:       "default",
-			DateTimeType:   "FLOAT",
-			DateCol:        "",
-			DateTimeCol:    "d",
-			Round:          "100ms",
-			From:           from,
-			To:             to,
-		}
-		actualQuery, err := q.replace(query)
-		r.NoError(err)
-		r.Equal(expQuery, actualQuery, description)
-	})
+			q := EvalQuery{
+				Query:          query,
+				Interval:       "100ms",
+				IntervalFactor: 1,
+				SkipComments:   false,
+				Table:          "test_timestamp_formats",
+				Database:       "default",
+				DateTimeType:   strings.ToUpper(tc.DateTimeType),
+				DateCol:        "",
+				DateTimeCol:    "d",
+				Round:          "100ms",
+				From:           from,
+				To:             to,
+			}
+			actualQuery, err := q.replace(query)
+			r.NoError(err)
+			r.Equal(expQuery, actualQuery, description)
+		})
+	}
 }

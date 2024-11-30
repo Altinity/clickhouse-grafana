@@ -263,13 +263,21 @@ export class SqlQueryHelper {
     const getConvertFn = (dateTimeType: string) => {
       return function (t: string): string {
         if (dateTimeType === TimestampFormat.DateTime) {
-          return 'toDateTime(' + t + ')';
+          return "toDateTime(" + t + ")"
         }
-
         if (dateTimeType === TimestampFormat.DateTime64) {
-          return 'toDateTime64(' + t + ', 3)';
+          return "toDateTime64(" + t + ",3)"
         }
-        return t;
+        if (dateTimeType === TimestampFormat.TimeStamp64_3) {
+          return "1000*" + t
+        }
+        if (dateTimeType === TimestampFormat.TimeStamp64_6) {
+          return "1000000*" + t
+        }
+        if (dateTimeType === TimestampFormat.TimeStamp64_9) {
+          return "1000000000*" + t
+        }
+        return t
       };
     };
 
@@ -277,6 +285,45 @@ export class SqlQueryHelper {
     let from = '$from';
     let to = '$to';
     if (dateTimeType === TimestampFormat.DateTime64) {
+      from = '$__from/1000';
+      to = '$__to/1000';
+    }
+    return `${columnName} >= ${convertFn(from)} AND ${columnName} <= ${convertFn(to)}`;
+  }
+
+  static getFilterSqlForDateTimeMs(columnName: string, dateTimeType: string) {
+    const getConvertFn = (dateTimeType: string) => {
+      return function (t: string): string {
+        if (dateTimeType === TimestampFormat.DateTime) {
+          return "toDateTime(" + t + ")"
+        }
+
+        if (dateTimeType === TimestampFormat.DateTime64) {
+          return "toDateTime64(" + t + ",3)"
+        }
+        if (dateTimeType === TimestampFormat.Float) {
+          return t + "/1000"
+        }
+        if (dateTimeType === TimestampFormat.TimeStamp) {
+          return t + "/1000"
+        }
+        if (dateTimeType === TimestampFormat.TimeStamp64_3) {
+          return t
+        }
+        if (dateTimeType === TimestampFormat.TimeStamp64_6) {
+          return "1000*" + t
+        }
+        if (dateTimeType === TimestampFormat.TimeStamp64_9) {
+          return "1000000*" + t
+        }
+        return t;
+      };
+    };
+
+    const convertFn = getConvertFn(dateTimeType);
+    let from = "$__from";
+    let to = "$__to";
+    if (dateTimeType === TimestampFormat.DateTime || dateTimeType === TimestampFormat.DateTime64) {
       from = '$__from/1000';
       to = '$__to/1000';
     }

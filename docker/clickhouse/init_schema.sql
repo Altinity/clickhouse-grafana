@@ -33,6 +33,37 @@ INSERT INTO default.test_logs(event_time, content, level, id, label, detected_fi
 INSERT INTO default.test_logs(event_time, content, level, id, label, detected_field) SELECT toDateTime(now()+(number*10)) AS event_time, concat('Info Log line ', toString(number)) as content, 'Info' AS level, generateUUIDv4() as id, if(rand() % 2 = 1,'abc','cba') AS label, 1000000000.05 AS detected_field FROM numbers(1000);
 INSERT INTO default.test_logs(event_time, content, level, id, label, detected_field) SELECT toDateTime(now()+((500+number)*10)) AS event_time, concat('Unknown Log line ', toString(number)) as content, 'Unknown' AS level, generateUUIDv4() as id, if(rand() % 2 = 1,'abc','cba') AS label, 1000000000.05 AS detected_field FROM numbers(1000);
 
+DROP TABLE IF EXISTS default.test_logs_with_complex_labels;
+CREATE TABLE default.test_logs_with_complex_labels(
+  `_raw` String CODEC(ZSTD(1)),
+  `_time` DateTime64(3, 'Asia/Yekaterinburg') CODEC(ZSTD(1)),
+  `_map` Map(String, String),
+  `_db_time` DateTime DEFAULT now() CODEC(ZSTD(1)),
+  `_time_dec` Float64 DEFAULT toFloat64(_time) CODEC(DoubleDelta, Default),
+  `cluster_name` LowCardinality(String) DEFAULT JSONExtractString(_raw, 'cluster_name') CODEC(ZSTD(1)),
+  `host` LowCardinality(String) DEFAULT JSONExtractString(_raw, 'host') CODEC(ZSTD(1)),
+  `pod_namespace` LowCardinality(String) DEFAULT JSONExtractString(_raw, 'pod_namespace') CODEC(ZSTD(1)),
+  `pod_name` String DEFAULT JSONExtractString(_raw, 'pod_name') CODEC(ZSTD(1)),
+  `container_name` String DEFAULT JSONExtractString(_raw, 'container_name') CODEC(ZSTD(1)),
+  `container_image` String DEFAULT JSONExtractString(_raw, 'container_image') CODEC(ZSTD(1)),
+  `stream` LowCardinality(String) DEFAULT JSONExtractString(_raw, 'stream') CODEC(ZSTD(1)),
+  `source` LowCardinality(String) DEFAULT JSONExtractString(_raw, 'source') CODEC(ZSTD(1)),
+  `sourcetype` String DEFAULT JSONExtractString(_raw, 'source_type') CODEC(ZSTD(1)),
+  `message` String DEFAULT JSONExtractString(_raw, 'message') CODEC(ZSTD(1)),
+  `bu` LowCardinality(String) DEFAULT JSON_VALUE(_raw, '$.namespace_labels."business-unit-code"'),
+  INDEX message_ngram_bf message TYPE ngrambf_v1(4, 1024, 2, 0) GRANULARITY 1,
+  INDEX pod_name_token_bf pod_name TYPE tokenbf_v1(2048, 4, 0) GRANULARITY 4
+)
+ENGINE = MergeTree
+PARTITION BY toDate(_time)
+ORDER BY (cluster_name, bu, pod_namespace, pod_name, container_name, _time);
+
+INSERT INTO default.test_logs_with_complex_labels(_raw, _time, _map)
+SELECT '{"cluster_name":"test' || toString(number) || '","host":"test","pod_namespace":"test","pod_name":"test","container_name":"test' || toString(number) || '","container_image":"test","stream":"test","source":"test","source_type":"test","namespace_labels":{"business-unit-code":"test"}}' AS _raw,
+       now64() - INTERVAL number SECOND _time,
+       map('map_key' || toString(number),'map_value' ||toString(number)) AS _map
+FROM numbers(100);
+
 DROP TABLE IF EXISTS default.test_alerts;
 CREATE TABLE IF NOT EXISTS default.test_alerts
 (
@@ -265,17 +296,21 @@ CREATE TABLE default.test_timestamp_formats (
   t DateTime64(3),
   tFloat Float64,
   tDecimal Decimal64(3),
-  tUInt64 UInt64,
+  tUInt64_3 UInt64,
+  tUInt64_6 UInt64,
+  tUInt64_9 UInt64,
   value UInt64
 ) ENGINE = MergeTree()
-ORDER BY (t, tFloat, tDecimal, tUInt64);
+ORDER BY (t, tFloat, tDecimal, tUInt64_3, tUInt64_6, tUInt64_9);
 
 -- Insert data into the table
 INSERT INTO default.test_timestamp_formats
 SELECT
-   now64(3) + INTERVAL number SECOND AS t,
-   toFloat64(now() + INTERVAL number SECOND) + randUniform(0, 1) AS tFloat,
-   toDecimal64(toFloat64(now() + INTERVAL number SECOND) + randUniform(0, 1), 3) AS tDecimal,
-   toUInt64(now() + INTERVAL number SECOND) + toUInt64(randUniform(0, 1000)) AS tUInt64,
-   toUInt64(rand() * 100) AS value
+   now64(3) - INTERVAL number SECOND AS t,
+   toFloat64(now() - INTERVAL number SECOND) + randUniform(0, 1) AS tFloat,
+   toDecimal64(toFloat64(now() - INTERVAL number SECOND) + randUniform(0, 1), 3) AS tDecimal,
+   toUInt64(now() - INTERVAL number SECOND)*1000 + toUInt64(randUniform(0, 1000)) AS tUInt64_3,
+   toUInt64(now() - INTERVAL number SECOND)*1000000 + toUInt64(randUniform(0, 1000000)) AS tUInt64_6,
+   toUInt64(now() - INTERVAL number SECOND)*1000000000 + toUInt64(randUniform(0, 1000000000)) AS tUInt64_9,
+   number AS value
 FROM numbers(86400);

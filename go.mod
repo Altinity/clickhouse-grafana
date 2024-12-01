@@ -5,9 +5,9 @@ go 1.23
 require (
 	github.com/andybalholm/brotli v1.1.1
 	github.com/dlclark/regexp2 v1.11.4
-	github.com/grafana/grafana-plugin-sdk-go v0.259.4
+	github.com/grafana/grafana-plugin-sdk-go v0.260.1
 	github.com/klauspost/compress v1.17.11
-	github.com/stretchr/testify v1.9.0
+	github.com/stretchr/testify v1.10.0
 	golang.org/x/sync v0.9.0
 )
 

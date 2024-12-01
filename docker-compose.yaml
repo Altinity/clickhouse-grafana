@@ -7,9 +7,9 @@ services:
       - ./docker/clickhouse/load_ontime.sh:/docker-entrypoint-initdb.d/load_ontime.sh
       - /var/lib/clickhouse/
       - /var/log/clickhouse-server/
-      
+
   clickhouse:
-    image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-24.5.6.45}
+    image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-latest}
     environment:
       - CLICKHOUSE_ALWAYS_RUN_INITDB_SCRIPTS=true
     ports:
@@ -77,7 +77,7 @@ services:
       - "3000:3000"
 
   grafana_legacy_alerts:
-    profiles: [test]
+    profiles: [ test ]
     image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-10.4.3}
     user: root
     build:
@@ -237,7 +237,7 @@ services:
         go tool covdata textfmt -i=coverage/raw -o=coverage/coverage.txt &&
         go tool cover -html=coverage/coverage.txt -o=coverage/coverage.html
       "
-    
+  
 
   plugin_signer:
     image: node:lts
@@ -250,10 +250,10 @@ services:
       npm run sign
 
   selenium-standalone:
-    profiles: [test]
+    profiles: [ test ]
     image: selenium/standalone-docker:4.18.1-20240224
     container_name: selenium-docker
-#    user: root
+    #    user: root
     links:
       - grafana
       - grafana_legacy_alerts
@@ -264,7 +264,7 @@ services:
       - ./tests/testflows/infra/config.toml:/opt/bin/config.toml
       - ./tests/testflows/tmp/target:/opt/selenium/assets
       - /var/run/docker.sock:/var/run/docker.sock
-#    privileged: true
+    #    privileged: true
     depends_on:
       - grafana
       - trickster

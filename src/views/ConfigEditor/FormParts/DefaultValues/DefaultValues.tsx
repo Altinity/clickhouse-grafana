@@ -4,7 +4,7 @@ import { getOptions, getSettings } from './DefaultValues.api';
 import { TimestampFormat } from '../../../../types/types';
 
 const TIME_RELATED_COLUMNS_QUERY =
-  "SELECT name,database,table,type FROM system.columns WHERE substring(type,1,4) = 'Date' OR substring(type,10,4) = 'Date' OR type LIKE 'UInt64' OR type LIKE 'Float%' OR type LIKE 'Decimal%' \n ORDER BY type,name FORMAT JSON";
+  "SELECT name,database,table,type FROM system.columns WHERE (type LIKE '%Date%' OR type LIKE '%UInt64%' OR type LIKE '%UInt32%' OR type LIKE '%Float%' OR type LIKE '%Decimal%') AND NOT (database='system' AND name LIKE 'ProfileEvent%') AND NOT (database='system' AND name LIKE 'CurrentMetric%') AND NOT (type LIKE 'Tuple%') AND NOT (database IN ('INFORMATION_SCHEMA','information_schema')) ORDER BY type,name FORMAT JSON";
 
 interface DefaultValuesInterface {
   jsonData: any;
@@ -71,6 +71,10 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
             return acc;
           }
           let typeKey: string = item.type;
+          if (typeKey.startsWith('LowCardinality(')) {
+            typeKey = typeKey.slice('LowCardinality('.length);
+            typeKey = typeKey.slice(0, -')'.length);
+          }
           if (typeKey.startsWith('Nullable(')) {
             typeKey = typeKey.slice('Nullable('.length);
             typeKey = typeKey.slice(0, -')'.length);

@@ -58,6 +58,38 @@ export const initializeQueryDefaults = (
       initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultUint32;
     }
 
+    if (
+      datasource.defaultValues.dateTime.defaultFloat &&
+      initializedQuery.dateTimeType === TimestampFormat.Float &&
+      !initializedQuery.dateTimeColDataType
+    ) {
+      initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultFloat;
+    }
+
+    if (
+      datasource.defaultValues.dateTime.defaultTimeStamp64_3 &&
+      initializedQuery.dateTimeType === TimestampFormat.TimeStamp64_3 &&
+      !initializedQuery.dateTimeColDataType
+    ) {
+      initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultTimeStamp64_3;
+    }
+
+    if (
+      datasource.defaultValues.dateTime.defaultTimeStamp64_6 &&
+      initializedQuery.dateTimeType === TimestampFormat.TimeStamp64_6 &&
+      !initializedQuery.dateTimeColDataType
+    ) {
+      initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultTimeStamp64_6;
+    }
+
+    if (
+      datasource.defaultValues.dateTime.defaultTimeStamp64_9 &&
+      initializedQuery.dateTimeType === TimestampFormat.TimeStamp64_9 &&
+      !initializedQuery.dateTimeColDataType
+    ) {
+      initializedQuery.dateTimeColDataType = datasource.defaultValues.dateTime.defaultTimeStamp64_9;
+    }
+
     if (datasource.defaultValues.contextWindowSize && !query.contextWindowSize) {
       initializedQuery.contextWindowSize = datasource.defaultValues.contextWindowSize;
     }

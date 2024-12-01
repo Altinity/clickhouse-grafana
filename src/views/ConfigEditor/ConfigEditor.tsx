@@ -110,7 +110,6 @@ export function ConfigEditor(props: Props) {
           <InlineSwitch
             data-test-id="use-yandex-cloud-authorization-switch"
             id="useYandexCloudAuthorization"
-            className="gf-form"
             value={jsonData.useYandexCloudAuthorization || false}
             onChange={(e) => onSwitchToggle('useYandexCloudAuthorization', e.currentTarget.checked)}
           />
@@ -155,7 +154,6 @@ export function ConfigEditor(props: Props) {
           <InlineSwitch
             id="addCorsHeader"
             data-test-id="add-cors-header-switch"
-            className="gf-form"
             value={jsonData.addCorsHeader || false}
             onChange={(e) => onSwitchToggle('addCorsHeader', e.currentTarget.checked)}
           />
@@ -168,7 +166,6 @@ export function ConfigEditor(props: Props) {
           <InlineSwitch
             data-test-id="use-post-method-switch"
             id="usePOST"
-            className="gf-form"
             value={jsonData.usePOST || false}
             onChange={(e) => onSwitchToggle('usePOST', e.currentTarget.checked)}
           />
@@ -189,7 +186,6 @@ export function ConfigEditor(props: Props) {
           <InlineSwitch
             data-test-id="use-compression-switch"
             id="useCompressions"
-            className="gf-form"
             value={jsonData.useCompression || false}
             onChange={(e) => onSwitchToggle('useCompression', e.currentTarget.checked)}
           />

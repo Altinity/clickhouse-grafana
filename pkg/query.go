@@ -72,9 +72,8 @@ func (q *Query) formatNumericDateAndTimeValues(fmtQuery string) string {
 	formatRegExp := func(fieldName, fieldType string, from, to time.Time) (*regexp.Regexp, string, *regexp.Regexp, string) {
 		substitutionFrom := "$1$2$3 $4 "
 		substitutionTo := "$1$2$3 $4 "
-
-		fromRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(<|<=)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
-		toRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(>=|>)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
+		fromRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(>=|>)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
+		toRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(<|<=)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
 		if slices.Contains([]string{"DATE", "DATE32"}, strings.ToUpper(fieldType)) {
 			substitutionFrom += fmt.Sprintf("to"+strings.Title(strings.ToLower(fieldType))+"(%d)", from.Unix())
 			substitutionTo += fmt.Sprintf("to"+strings.Title(strings.ToLower(fieldType))+"(%d)", to.Unix())

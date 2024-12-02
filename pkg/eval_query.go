@@ -79,7 +79,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		if err != nil {
 			return "", err
 		}
-		q.IntervalSec = int(math.Floor(duration.Seconds()))
+		q.IntervalSec = int(math.Ceil(duration.Seconds()))
 		q.IntervalMs = int(duration.Milliseconds())
 	}
 	if q.IntervalSec <= 0 {
@@ -94,7 +94,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		if i < 1*time.Second {
 			i = 1 * time.Second
 		}
-		q.IntervalSec, err = q.convertInterval(fmt.Sprintf("%fs", math.Floor(i.Seconds())), q.IntervalFactor, false)
+		q.IntervalSec, err = q.convertInterval(fmt.Sprintf("%fs", math.Ceil(i.Seconds())), q.IntervalFactor, false)
 		if err != nil {
 			return "", err
 		}
@@ -224,7 +224,7 @@ func (q *EvalQuery) replaceTimeFilters(query string, round int) string {
 	})
 
 	query = q.replaceRegexpWithCallBack(timeFilter64ByColumnMacroRegexp, query, func(groups []string) string {
-		return q.getFilterSqlForDateTime(groups[1], "DATETIME64")
+		return q.getFilterSqlForDateTimeMs(groups[1], q.DateTimeType)
 	})
 
 	query = fromMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", fromTS))
@@ -236,8 +236,60 @@ func (q *EvalQuery) replaceTimeFilters(query string, round int) string {
 	return query
 }
 
+func (q *EvalQuery) getFilterSqlForDateTimeMs(columnName string, dateTimeType string) string {
+	var convertFn = func(t string) string {
+		if dateTimeType == "DATETIME" {
+			return "toDateTime(" + t + ")"
+		}
+
+		if dateTimeType == "DATETIME64" {
+			return "toDateTime64(" + t + ",3)"
+		}
+		if dateTimeType == "FLOAT" {
+			return t + "/1000"
+		}
+		if dateTimeType == "TIMESTAMP" {
+			return t + "/1000"
+		}
+		if dateTimeType == "TIMESTAMP64_3" {
+			return t
+		}
+		if dateTimeType == "TIMESTAMP64_6" {
+			return "1000*" + t
+		}
+		if dateTimeType == "TIMESTAMP64_9" {
+			return "1000000*" + t
+		}
+		return t
+	}
+	var from = "$__from"
+	var to = "$__to"
+	if dateTimeType == "DATETIME64" || dateTimeType == "DATETIME" {
+		from = "$__from/1000"
+		to = "$__to/1000"
+	}
+	return fmt.Sprintf("%s >= %s AND %s <= %s", columnName, convertFn(from), columnName, convertFn(to))
+}
+
 func (q *EvalQuery) getFilterSqlForDateTime(columnName string, dateTimeType string) string {
-	var convertFn = q.getConvertFn(dateTimeType)
+	var convertFn = func(t string) string {
+		if dateTimeType == "DATETIME" {
+			return "toDateTime(" + t + ")"
+		}
+		if dateTimeType == "DATETIME64" {
+			return "toDateTime64(" + t + ",3)"
+		}
+		if dateTimeType == "TIMESTAMP64_3" {
+			return "1000*" + t
+		}
+		if dateTimeType == "TIMESTAMP64_6" {
+			return "1000000*" + t
+		}
+		if dateTimeType == "TIMESTAMP64_9" {
+			return "1000000000*" + t
+		}
+		return t
+	}
 	var from = "$from"
 	var to = "$to"
 	if dateTimeType == "DATETIME64" {
@@ -245,19 +297,6 @@ func (q *EvalQuery) getFilterSqlForDateTime(columnName string, dateTimeType stri
 		to = "$__to/1000"
 	}
 	return fmt.Sprintf("%s >= %s AND %s <= %s", columnName, convertFn(from), columnName, convertFn(to))
-}
-
-func (q *EvalQuery) getConvertFn(dateTimeType string) func(string) string {
-	return func(t string) string {
-		if dateTimeType == "DATETIME" {
-			return "toDateTime(" + t + ")"
-		}
-
-		if dateTimeType == "DATETIME64" {
-			return "toDateTime64(" + t + ", 3)"
-		}
-		return t
-	}
 }
 
 func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
@@ -985,6 +1024,18 @@ func (q *EvalQuery) getTimeSeries(dateTimeType string) string {
 	if dateTimeType == "DATETIME64" {
 		return "(intDiv(toFloat64($dateTimeCol) * 1000, ($interval * 1000)) * ($interval * 1000))"
 	}
+	if dateTimeType == "FLOAT" {
+		return "(intDiv($dateTimeCol * 1000, ($interval * 1000)) * ($interval * 1000))"
+	}
+	if dateTimeType == "TIMESTAMP64_3" {
+		return "(intDiv($dateTimeCol, ($interval * 1000)) * ($interval * 1000))"
+	}
+	if dateTimeType == "TIMESTAMP64_6" {
+		return "(intDiv($dateTimeCol / 1000, ($interval * 1000)) * ($interval * 1000))"
+	}
+	if dateTimeType == "TIMESTAMP64_9" {
+		return "(intDiv($dateTimeCol / 1000000, ($interval * 1000)) * ($interval * 1000))"
+	}
 	return "(intDiv($dateTimeCol, $interval) * $interval) * 1000"
 }
 
@@ -994,6 +1045,21 @@ func (q *EvalQuery) getTimeSeriesMs(dateTimeType string) string {
 	}
 	if dateTimeType == "DATETIME64" {
 		return "(intDiv(toFloat64($dateTimeCol) * 1000, $__interval_ms) * $__interval_ms)"
+	}
+	if dateTimeType == "TIMESTAMP" {
+		return "(intDiv($dateTimeCol * 1000, $__interval_ms) * $__interval_ms)"
+	}
+	if dateTimeType == "FLOAT" {
+		return "(intDiv($dateTimeCol * 1000, $__interval_ms) * $__interval_ms)"
+	}
+	if dateTimeType == "TIMESTAMP64_3" {
+		return "(intDiv($dateTimeCol, $__interval_ms) * $__interval_ms)"
+	}
+	if dateTimeType == "TIMESTAMP64_6" {
+		return "(intDiv($dateTimeCol / 1000, $__interval_ms) * $__interval_ms)"
+	}
+	if dateTimeType == "TIMESTAMP64_9" {
+		return "(intDiv($dateTimeCol / 1000000, $__interval_ms) * $__interval_ms)"
 	}
 	return "(intDiv($dateTimeCol, $__interval_ms) * $__interval_ms)"
 }
@@ -1008,7 +1074,22 @@ func (q *EvalQuery) getDateTimeFilter(dateTimeType string) string {
 			return "toDateTime(" + t + ")"
 		}
 		if dateTimeType == "DATETIME64" {
-			return "toDateTime64(" + t + ", 3)"
+			return "toDateTime64(" + t + ",3)"
+		}
+		if dateTimeType == "FLOAT" {
+			return t
+		}
+		if dateTimeType == "TIMESTAMP" {
+			return t
+		}
+		if dateTimeType == "TIMESTAMP64_3" {
+			return "1000*" + t
+		}
+		if dateTimeType == "TIMESTAMP64_6" {
+			return "1000000*" + t
+		}
+		if dateTimeType == "TIMESTAMP64_9" {
+			return "1000000000*" + t
 		}
 		return t
 	}
@@ -1018,14 +1099,29 @@ func (q *EvalQuery) getDateTimeFilter(dateTimeType string) string {
 func (q *EvalQuery) getDateTimeFilterMs(dateTimeType string) string {
 	convertFn := func(t string) string {
 		if dateTimeType == "DATETIME" {
-			return "toDateTime(" + t + ")"
+			return "toDateTime(" + t + "/1000)"
 		}
 		if dateTimeType == "DATETIME64" {
-			return "toDateTime64(" + t + ", 3)"
+			return "toDateTime64(" + t + "/1000,3)"
+		}
+		if dateTimeType == "FLOAT" {
+			return "toFloat64(" + t + "/1000)"
+		}
+		if dateTimeType == "TIMESTAMP" {
+			return "" + t + "/1000"
+		}
+		if dateTimeType == "TIMESTAMP64_3" {
+			return t
+		}
+		if dateTimeType == "TIMESTAMP64_6" {
+			return "1000*" + t
+		}
+		if dateTimeType == "TIMESTAMP64_9" {
+			return "1000000*" + t
 		}
 		return t
 	}
-	return "$dateTimeCol >= " + convertFn("$__from/1000") + " AND $dateTimeCol <= " + convertFn("$__to/1000")
+	return "$dateTimeCol >= " + convertFn("$__from") + " AND $dateTimeCol <= " + convertFn("$__to")
 }
 
 func (q *EvalQuery) convertTimestamp(dt time.Time) int64 {
@@ -1215,6 +1311,8 @@ func (s *EvalQueryScanner) push(argument interface{}) {
 			if !ast.hasOwnProperty("aliases") {
 				aliasesArr = newEvalAST(false)
 				ast.Obj["aliases"] = aliasesArr
+			} else {
+				aliasesArr = ast.Obj["aliases"].(*EvalAST)
 			}
 			aliasesArr.Arr = append(aliasesArr.Arr, argument)
 		}

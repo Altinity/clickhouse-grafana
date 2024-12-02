@@ -7,26 +7,50 @@ import TemplateSrvStub from './lib/template_srv_stub';
 import SqlQueryMacros, { TimeRange } from '../datasource/sql-query/sql-query-macros';
 import { SqlQueryHelper } from '../datasource/sql-query/sql-query-helper';
 import {TimestampFormat} from "../types/types";
+import { each } from 'lodash';
 
-describe('Query SELECT with $timeFilterByColumn and range with from and to:', () => {
+describe('Query SELECT with timeFilterByColumn and range with from and to', () => {
   const query = 'SELECT * FROM table WHERE $timeFilterByColumn(column_name)';
   const range: TimeRange = {
     from: dayjs('2018-12-24 01:02:03Z'),
     to: dayjs('2018-12-31 23:59:59Z'),
     raw: RawTimeRangeStub,
   };
+  let testCases = [
+    {
+      DateTimeType:  TimestampFormat.DateTime,
+      ExpectedQuery: "SELECT * FROM table WHERE column_name >= toDateTime(1545613323) AND column_name <= toDateTime(1546300799)",
+    },
+    {
+      DateTimeType:  TimestampFormat.DateTime64,
+      ExpectedQuery: "SELECT * FROM table WHERE column_name >= toDateTime64(1545613323000/1000,3) AND column_name <= toDateTime64(1546300799000/1000,3)",
+    },
+    {
+      DateTimeType:  TimestampFormat.TimeStamp,
+      ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1545613323 AND column_name <= 1546300799",
+    },
+    {
+      DateTimeType:  TimestampFormat.TimeStamp64_3,
+      ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1000*1545613323 AND column_name <= 1000*1546300799",
+    },
+    {
+      DateTimeType:  TimestampFormat.TimeStamp64_6,
+      ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1000000*1545613323 AND column_name <= 1000000*1546300799",
+    },
+    {
+      DateTimeType:  TimestampFormat.TimeStamp64_9,
+      ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1000000000*1545613323 AND column_name <= 1000000000*1546300799",
+    },
+  ]
+  each(testCases, (tc)=>{
+    it('check $timeFilterByColumn for '+tc.DateTimeType, () => {
+      expect(SqlQueryMacros.replaceTimeFilters(query, range, tc.DateTimeType)).toBe(tc.ExpectedQuery);
+    });
 
-  it('gets replaced with BETWEEN filter', () => {
-    expect(SqlQueryMacros.replaceTimeFilters(query, range, TimestampFormat.DateTime)).toBe(
-      'SELECT * FROM table WHERE column_name >= toDateTime(1545613323) AND column_name <= toDateTime(1546300799)'
-    );
-    expect(SqlQueryMacros.replaceTimeFilters(query, range, TimestampFormat.DateTime64)).toBe(
-      'SELECT * FROM table WHERE column_name >= toDateTime64(1545613323000/1000, 3) AND column_name <= toDateTime64(1546300799000/1000, 3)'
-    );
-  });
+  })
 });
 
-describe('Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range with from', () => {
+describe('Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range with from=$from to=now()', () => {
   const query = 'SELECT * FROM table WHERE $timeFilterByColumn(column_name)';
   const query64 = 'SELECT * FROM table WHERE $timeFilter64ByColumn(column_name)';
   const range: TimeRange = {
@@ -37,44 +61,78 @@ describe('Query SELECT with $timeFilterByColumn, $timeFilter64ByColumn and range
       to: 'now',
     },
   };
-
-  it('gets replaced with >= filter', () => {
-    expect(SqlQueryMacros.replaceTimeFilters(query, range, TimestampFormat.DateTime)).toBe(
-      'SELECT * FROM table WHERE ' +
-        'column_name >= toDateTime(' +
-        range.from.unix() +
-        ') AND ' +
-        'column_name <= toDateTime(' +
-        range.to.unix() +
-        ')'
-    );
-    expect(SqlQueryMacros.replaceTimeFilters(query, range, TimestampFormat.DateTime64)).toBe(
-      'SELECT * FROM table WHERE ' +
-        'column_name >= toDateTime64(' +
-        range.from.unix() +
-        '200/1000, 3) AND ' +
-        'column_name <= toDateTime64(' +
-        range.to.valueOf() +
-        '/1000, 3)'
-    );
-    expect(SqlQueryMacros.replaceTimeFilters(query64, range, TimestampFormat.DateTime)).toBe(
-      'SELECT * FROM table WHERE ' +
-        'column_name >= toDateTime64(' +
-        range.from.unix() +
-        '200/1000, 3) AND ' +
-        'column_name <= toDateTime64(' +
-        range.to.valueOf() +
-        '/1000, 3)'
-    );
-    expect(SqlQueryMacros.replaceTimeFilters(query64, range, TimestampFormat.DateTime64)).toBe(
-      'SELECT * FROM table WHERE ' +
-        'column_name >= toDateTime64(' +
-        range.from.unix() +
-        '200/1000, 3) AND ' +
-        'column_name <= toDateTime64(' +
-        range.to.valueOf() +
-        '/1000, 3)'
-    );
+  let testCases = [
+    {
+      DateTimeType: TimestampFormat.DateTime,
+      expectedQ: "SELECT * FROM table WHERE "+
+        `column_name >= toDateTime(${range.from.unix()}) AND `+
+        `column_name <= toDateTime(${range.to.unix()})`,
+      expectedQ64: "SELECT * FROM table WHERE "+
+        `column_name >= toDateTime(${range.from.unix()}200/1000) AND `+
+        `column_name <= toDateTime(${range.to.valueOf()}/1000)`,
+    },
+    {
+      DateTimeType: TimestampFormat.DateTime64,
+      expectedQ: "SELECT * FROM table WHERE "+
+        `column_name >= toDateTime64(${range.from.unix()}200/1000,3) AND `+
+        `column_name <= toDateTime64(${range.to.valueOf()}/1000,3)`,
+      expectedQ64: "SELECT * FROM table WHERE "+
+        `column_name >= toDateTime64(${range.from.unix()}200/1000,3) AND `+
+        `column_name <= toDateTime64(${range.to.valueOf()}/1000,3)`,
+    },
+    {
+      DateTimeType: TimestampFormat.Float,
+      expectedQ: "SELECT * FROM table WHERE "+
+        `column_name >= ${range.from.unix()} AND `+
+        `column_name <= ${range.to.unix()}`,
+      expectedQ64: "SELECT * FROM table WHERE "+
+        `column_name >= ${range.from.unix()}200/1000 AND `+
+        `column_name <= ${range.to.valueOf()}/1000`,
+    },
+    {
+      DateTimeType: TimestampFormat.TimeStamp,
+      expectedQ: "SELECT * FROM table WHERE "+
+        `column_name >= ${range.from.unix()} AND `+
+        `column_name <= ${range.to.unix()}`,
+      expectedQ64: "SELECT * FROM table WHERE "+
+        `column_name >= ${range.from.unix()}200/1000 AND `+
+        `column_name <= ${range.to.valueOf()}/1000`,
+    },
+    {
+      DateTimeType: TimestampFormat.TimeStamp64_3,
+      expectedQ: "SELECT * FROM table WHERE "+
+        `column_name >= 1000*${range.from.unix()} AND `+
+        `column_name <= 1000*${range.to.unix()}`,
+      expectedQ64: "SELECT * FROM table WHERE "+
+        `column_name >= ${range.from.unix()}200 AND `+
+        `column_name <= ${range.to.valueOf()}`,
+    },
+    {
+      DateTimeType: TimestampFormat.TimeStamp64_6,
+      expectedQ: "SELECT * FROM table WHERE "+
+        `column_name >= 1000000*${range.from.unix()} AND `+
+        `column_name <= 1000000*${range.to.unix()}`,
+      expectedQ64: "SELECT * FROM table WHERE "+
+        `column_name >= 1000*${range.from.unix()}200 AND `+
+        `column_name <= 1000*${range.to.valueOf()}`,
+    },
+    {
+      DateTimeType: TimestampFormat.TimeStamp64_9,
+      expectedQ: "SELECT * FROM table WHERE "+
+        `column_name >= 1000000000*${range.from.unix()} AND `+
+        `column_name <= 1000000000*${range.to.unix()}`,
+      expectedQ64: "SELECT * FROM table WHERE "+
+        `column_name >= 1000000*${range.from.unix()}200 AND `+
+        `column_name <= 1000000*${range.to.valueOf()}`,
+    },
+  ]
+  each(testCases, (tc) => {
+    it('check $timeFilterByColumn '+tc.DateTimeType+' with >= AND <= filter', () => {
+      expect(SqlQueryMacros.replaceTimeFilters(query, range, tc.DateTimeType)).toBe(tc.expectedQ);
+    });
+    it('check $timeFilter64ByColumn '+tc.DateTimeType+' with >= AND <= filter', () => {
+      expect(SqlQueryMacros.replaceTimeFilters(query64, range, tc.DateTimeType)).toBe(tc.expectedQ64);
+    });
   });
 });
 
@@ -88,7 +146,7 @@ describe('Query SELECT with $timeSeries $timeFilter and DATETIME64', () => {
   const expQuery =
     'SELECT (intDiv(toFloat64(d) * 1000, (15 * 1000)) * (15 * 1000)) as t, sum(x) AS metric\n' +
     'FROM default.test_datetime64\n' +
-    'WHERE d >= toDateTime64(1545613320, 3) AND d <= toDateTime64(1546300740, 3)\n' +
+    'WHERE d >= toDateTime64(1545613320,3) AND d <= toDateTime64(1546300740,3)\n' +
     'GROUP BY t\n' +
     'ORDER BY t';
   let templateSrv = new TemplateSrvStub();
@@ -1111,7 +1169,7 @@ describe('Query SELECT with $timeSeriesMs $timeFilterMs and DATETIME64', () => {
   const expQuery =
     'SELECT (intDiv(toFloat64(d) * 1000, 100) * 100) as t, sum(x) AS metric\n' +
     'FROM default.test_datetime64\n' +
-    'WHERE d >= toDateTime64(1545613323200/1000, 3) AND d <= toDateTime64(1546300799200/1000, 3)\n' +
+    'WHERE d >= toDateTime64(1545613323200/1000,3) AND d <= toDateTime64(1546300799200/1000,3)\n' +
     'GROUP BY t\n' +
     'ORDER BY t';
   let templateSrv = new TemplateSrvStub();
@@ -1202,4 +1260,129 @@ describe('Query SELECT with special character in table', () => {
   it('applyMacros $table with escaping', () => {
     expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
   });
+});
+
+describe('Check float/timestamp64_X time format', () => {
+  let testCases = [
+    {
+      DateTimeType:         "Float",
+      ExpectedTimeSeries:   "(intDiv(d * 1000, (1 * 1000)) * (1 * 1000))",
+      ExpectedTimeFilter:   "d >= 1545613323 AND d <= 1546300799",
+      ExpectedTimeSeriesMs: "(intDiv(d * 1000, 100) * 100)",
+      ExpectedTimeFilterMs: "d >= toFloat64(1545613323200/1000) AND d <= toFloat64(1546300799200/1000)",
+    },
+    {
+      DateTimeType:         "Timestamp",
+      ExpectedTimeSeries:   "(intDiv(d, 1) * 1) * 1000",
+      ExpectedTimeFilter:   "d >= 1545613323 AND d <= 1546300799",
+      ExpectedTimeSeriesMs: "(intDiv(d * 1000, 100) * 100)",
+      ExpectedTimeFilterMs: "d >= 1545613323200/1000 AND d <= 1546300799200/1000",
+    },
+    {
+      DateTimeType:         "TimeStamp64_3",
+      ExpectedTimeSeries:   "(intDiv(d, (1 * 1000)) * (1 * 1000))",
+      ExpectedTimeFilter:   "d >= 1000*1545613323 AND d <= 1000*1546300799",
+      ExpectedTimeSeriesMs: "(intDiv(d, 100) * 100)",
+      ExpectedTimeFilterMs: "d >= 1545613323200 AND d <= 1546300799200",
+    },
+    {
+      DateTimeType:         "TimeStamp64_6",
+      ExpectedTimeSeries:   "(intDiv(d / 1000, (1 * 1000)) * (1 * 1000))",
+      ExpectedTimeFilter:   "d >= 1000000*1545613323 AND d <= 1000000*1546300799",
+      ExpectedTimeSeriesMs: "(intDiv(d / 1000, 100) * 100)",
+      ExpectedTimeFilterMs: "d >= 1000*1545613323200 AND d <= 1000*1546300799200",
+    },
+    {
+      DateTimeType:         "TimeStamp64_9",
+      ExpectedTimeSeries:   "(intDiv(d / 1000000, (1 * 1000)) * (1 * 1000))",
+      ExpectedTimeFilter:   "d >= 1000000000*1545613323 AND d <= 1000000000*1546300799",
+      ExpectedTimeSeriesMs: "(intDiv(d / 1000000, 100) * 100)",
+      ExpectedTimeFilterMs: "d >= 1000000*1545613323200 AND d <= 1000000*1546300799200",
+    },
+  ]
+  each(testCases, (tc) => {
+    let templateSrv = new TemplateSrvStub();
+    // eslint-disable-next-line
+    let adhocFilters: [] = [];
+
+    let target = {
+      interval: '100ms',
+      intervalFactor: 1,
+      skip_comments: false,
+      table: 'test_timestamp_formats',
+      database: 'default',
+      dateTimeType: tc.DateTimeType.toUpperCase(),
+      dateColDataType: '',
+      dateTimeColDataType: 'd',
+      round: '100ms',
+      rawQuery: '',
+      query: '',
+    };
+
+    let options = {
+      rangeRaw: {
+        from: dayjs('2018-12-24 01:02:03.200Z'),
+        to: dayjs('2018-12-31 23:59:59.200Z'),
+      },
+      range: {
+        from: dayjs('2018-12-24 01:02:03.200Z'),
+        to: dayjs('2018-12-31 23:59:59.200Z'),
+      },
+      scopedVars: {
+        __interval: {
+          text: '100ms',
+          value: '100ms',
+        },
+        __interval_ms: {
+          text: '100',
+          value: 100,
+        },
+      },
+    };
+
+    it('applyMacros $timeSeries with $timeFilter with '+tc.DateTimeType+' timestamp column type', () => {
+      const query =
+        'SELECT $timeSeries as t, sum(x) AS metric\n' +
+        'FROM $table\n' +
+        'WHERE $timeFilter\n' +
+        'GROUP BY t\n' +
+        'ORDER BY t';
+      let expQuery =
+        `SELECT ${tc.ExpectedTimeSeries} as t, sum(x) AS metric\n` +
+        'FROM default.test_timestamp_formats\n' +
+        `WHERE ${tc.ExpectedTimeFilter}\n` +
+        'GROUP BY t\n' +
+        'ORDER BY t';
+
+      target.query = query
+
+      let sql_query = new SqlQuery(target, templateSrv, options);
+
+      expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+    });
+
+    it('applyMacros $timeSeriesMs with $timeFilterMs with '+tc.DateTimeType+' timestamp column type', () => {
+      const query =
+        'SELECT $timeSeriesMs as t, sum(x) AS metric\n' +
+        'FROM $table\n' +
+        'WHERE $timeFilterMs\n' +
+        'GROUP BY t\n' +
+        'ORDER BY t';
+      let expQuery =
+        `SELECT ${tc.ExpectedTimeSeriesMs} as t, sum(x) AS metric\n` +
+        'FROM default.test_timestamp_formats\n' +
+        `WHERE ${tc.ExpectedTimeFilterMs}\n` +
+        'GROUP BY t\n' +
+        'ORDER BY t';
+
+      target.query = query
+
+      let sql_query = new SqlQuery(target, templateSrv, options);
+
+      expect(sql_query.replace(options, adhocFilters)).toBe(expQuery);
+    });
+
+  })
+
+
 });

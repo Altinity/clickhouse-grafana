@@ -230,10 +230,10 @@ def select_datasource_in_panel_view(self, datasource_name):
     """Select datasource in datasource dropdown."""
     with By("clicking datasource dropdown"):
         click_select_datasource_button()
-    with By("waiting datasource in datasource dropdown"):
+    with By(f"waiting datasource={datasource_name} in datasource dropdown"):
         wait_datasource_in_datasource_dropdown(datasource_name=datasource_name)
     with delay():
-        with By("selecting datasource in dropdown"):
+        with By(f"selecting datasource={datasource_name} in dropdown"):
             click_datasource_in_select_datasource_dropdown(datasource_name=datasource_name)
 
 

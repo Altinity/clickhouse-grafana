@@ -9,6 +9,10 @@ const options = [
   { label: 'DateTime', value: TimestampFormat.DateTime },
   { label: 'DateTime64', value: TimestampFormat.DateTime64 },
   { label: 'TimeStamp', value: TimestampFormat.TimeStamp },
+  { label: 'Float', value: TimestampFormat.Float },
+  { label: 'TimeStamp64(3)', value: TimestampFormat.TimeStamp64_3 },
+  { label: 'TimeStamp64(6)', value: TimestampFormat.TimeStamp64_6 },
+  { label: 'TimeStamp64(9)', value: TimestampFormat.TimeStamp64_9 },
 ];
 
 // eslint-disable-next-line

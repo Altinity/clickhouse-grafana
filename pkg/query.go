@@ -72,29 +72,44 @@ func (q *Query) formatNumericDateAndTimeValues(fmtQuery string) string {
 	formatRegExp := func(fieldName, fieldType string, from, to time.Time) (*regexp.Regexp, string, *regexp.Regexp, string) {
 		substitutionFrom := "$1$2$3 $4 "
 		substitutionTo := "$1$2$3 $4 "
-
-		fromRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(<|<=)\\s*(\\d+)")
-		toRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(>=|>)\\s*(\\d+)")
-		if slices.Contains([]string{"DATE", "DATE32", "DATETIME"}, strings.ToUpper(fieldType)) {
-			substitutionFrom += fmt.Sprintf("to"+strings.ToTitle(strings.ToLower(fieldType))+"(%d)", from.Unix())
-			substitutionTo += fmt.Sprintf("to"+strings.ToTitle(strings.ToLower(fieldType))+"(%d)", to.Unix())
-		}
-		if "DATETIME64" == strings.ToUpper(fieldType) {
-			substitutionFrom += fmt.Sprintf("to"+strings.ToTitle(strings.ToLower(fieldType))+"(%f.3,3)", from.UnixMilli()/1000.0)
-			substitutionTo += fmt.Sprintf("to"+strings.ToTitle(strings.ToLower(fieldType))+"(%f.3,3)", to.UnixMilli()/1000.0)
-		}
-		if "TIMESTAMP" == strings.ToUpper(fieldType) {
+		fromRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(>=|>)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
+		toRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(<|<=)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
+		if slices.Contains([]string{"DATE", "DATE32"}, strings.ToUpper(fieldType)) {
+			substitutionFrom += fmt.Sprintf("to"+strings.Title(strings.ToLower(fieldType))+"(%d)", from.Unix())
+			substitutionTo += fmt.Sprintf("to"+strings.Title(strings.ToLower(fieldType))+"(%d)", to.Unix())
+		} else if "DATETIME" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("toDateTime(%d)", from.Unix())
+			substitutionTo += fmt.Sprintf("toDateTime(%d)", to.Unix())
+		} else if "DATETIME64" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("toDateTime64(%.3f,3)", float64(from.UnixMilli())/1000.0)
+			substitutionTo += fmt.Sprintf("toDateTime64(%.3f,3)", float64(to.UnixMilli())/1000.0)
+		} else if "TIMESTAMP" == strings.ToUpper(fieldType) {
 			substitutionFrom += fmt.Sprintf("%d", from.Unix())
 			substitutionTo += fmt.Sprintf("%d", to.Unix())
+		} else if "TIMESTAMP64_3" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("%d", from.UnixMilli())
+			substitutionTo += fmt.Sprintf("%d", to.UnixMilli())
+		} else if "TIMESTAMP64_6" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("%d", from.UnixMicro())
+			substitutionTo += fmt.Sprintf("%d", to.UnixMicro())
+		} else if "TIMESTAMP64_9" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("%d", from.UnixNano())
+			substitutionTo += fmt.Sprintf("%d", to.UnixNano())
+		} else if "FLOAT" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("%.3f", float64(from.UnixNano())/1000000000.0)
+			substitutionTo += fmt.Sprintf("%.3f", float64(to.UnixNano())/1000000000.0)
 		}
 		return fromRE, substitutionFrom, toRE, substitutionTo
 	}
-	dateColFromRE, dateColFromSubstitution, dateColToRE, dateColToSubstitution := formatRegExp(q.DateCol, "Date", q.From, q.To)
-	fmtQuery = dateColFromRE.ReplaceAllString(fmtQuery, dateColFromSubstitution)
-	fmtQuery = dateColToRE.ReplaceAllString(fmtQuery, dateColToSubstitution)
-
-	dateTimeColFromRE, dateTimeColFromSubstitution, dateTimeColToRE, dateTimeColToSubstitution := formatRegExp(q.DateTimeCol, q.DateTimeType, q.From, q.To)
-	fmtQuery = dateTimeColFromRE.ReplaceAllString(fmtQuery, dateTimeColFromSubstitution)
-	fmtQuery = dateTimeColToRE.ReplaceAllString(fmtQuery, dateTimeColToSubstitution)
+	if q.DateCol != "" {
+		dateColFromRE, dateColFromSubstitution, dateColToRE, dateColToSubstitution := formatRegExp(q.DateCol, "Date", q.From, q.To)
+		fmtQuery = dateColFromRE.ReplaceAllString(fmtQuery, dateColFromSubstitution)
+		fmtQuery = dateColToRE.ReplaceAllString(fmtQuery, dateColToSubstitution)
+	}
+	if q.DateTimeCol != "" {
+		dateTimeColFromRE, dateTimeColFromSubstitution, dateTimeColToRE, dateTimeColToSubstitution := formatRegExp(q.DateTimeCol, q.DateTimeType, q.From, q.To)
+		fmtQuery = dateTimeColFromRE.ReplaceAllString(fmtQuery, dateTimeColFromSubstitution)
+		fmtQuery = dateTimeColToRE.ReplaceAllString(fmtQuery, dateTimeColToSubstitution)
+	}
 	return fmtQuery
 }

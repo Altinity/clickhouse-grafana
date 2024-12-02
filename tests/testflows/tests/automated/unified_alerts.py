@@ -143,8 +143,7 @@ def check_green_alert(self):
 def feature(self):
     """Check that grafana plugin supports unified alerts."""
 
-    with When("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='test_alerts_unified', url="http://clickhouse:8123",)
+    actions.create_new_altinity_datasource(datasource_name='test_alerts_unified', url="http://clickhouse:8123",)
 
     for scenario in loads(current_module(), Scenario):
         scenario()

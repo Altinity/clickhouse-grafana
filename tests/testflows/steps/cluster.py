@@ -144,7 +144,8 @@ class Cluster(object):
     def __exit__(self, type, value, traceback):
         try:
             with Finally("I clean up, docker compose cluster"):
-                self.down()
+                # self.down()
+                pass
         finally:
             with self.lock:
                 for shell in self._bash.values():

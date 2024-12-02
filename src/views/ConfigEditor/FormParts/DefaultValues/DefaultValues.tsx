@@ -4,7 +4,7 @@ import { getOptions, getSettings } from './DefaultValues.api';
 import { TimestampFormat } from '../../../../types/types';
 
 const TIME_RELATED_COLUMNS_QUERY =
-  "SELECT name,database,table,type FROM system.columns WHERE substring(type,1,4) = 'Date' OR substring(type,10,4) = 'Date' OR type = 'UInt32' ORDER BY type,name FORMAT JSON";
+  "SELECT name,database,table,type FROM system.columns WHERE (type LIKE '%Date%' OR type LIKE '%UInt64%' OR type LIKE '%UInt32%' OR type LIKE '%Float%' OR type LIKE '%Decimal%') AND NOT (database='system' AND name LIKE 'ProfileEvent%') AND NOT (database='system' AND name LIKE 'CurrentMetric%') AND NOT (type LIKE 'Tuple%') AND NOT (database IN ('INFORMATION_SCHEMA','information_schema')) ORDER BY type,name FORMAT JSON";
 
 interface DefaultValuesInterface {
   jsonData: any;
@@ -18,6 +18,10 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
   const [defaultDateTimeOptions, setDefaultDateTimeOptions] = useState<any[]>([]);
   const [defaultUint32Options, setDefaultUint32Options] = useState<any[]>([]);
   const [defaultDateDate32Options, setDefaultDateDate32Options] = useState<any[]>([]);
+  const [defaultFloatOptions, setDefaultFloatOptions] = useState<any[]>([]);
+  const [defaultTimeStamp64_3Options, setDefaultTimeStamp64_3Options] = useState<any[]>([]);
+  const [defaultTimeStamp64_6Options, setDefaultTimeStamp64_6Options] = useState<any[]>([]);
+  const [defaultTimeStamp64_9Options, setDefaultTimeStamp64_9Options] = useState<any[]>([]);
 
   useEffect(() => {
     const doRequest = async () => {
@@ -67,6 +71,10 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
             return acc;
           }
           let typeKey: string = item.type;
+          if (typeKey.startsWith('LowCardinality(')) {
+            typeKey = typeKey.slice('LowCardinality('.length);
+            typeKey = typeKey.slice(0, -')'.length);
+          }
           if (typeKey.startsWith('Nullable(')) {
             typeKey = typeKey.slice('Nullable('.length);
             typeKey = typeKey.slice(0, -')'.length);
@@ -77,6 +85,15 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
           if (typeKey.startsWith('DateTime(')) {
             typeKey = 'DateTime';
           }
+
+          if (typeKey.startsWith('Float')) {
+            typeKey = 'Float';
+          }
+
+          if (typeKey.startsWith('Decimal')) {
+            typeKey = 'Decimal';
+          }
+
           acc[typeKey] = acc[typeKey] || [];
           acc[typeKey].push(item.name);
           return acc;
@@ -96,11 +113,19 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
         setDefaultDateDate32Options(transformDataToOptions(groupedByType['Date'] || []));
         setDefaultUint32Options(transformDataToOptions(groupedByType['UInt32'] || []));
         setDefaultDateTimeOptions(transformDataToOptions(groupedByType['DateTime'] || []));
+        setDefaultFloatOptions(transformDataToOptions([...groupedByType['Float'],...groupedByType['Decimal']]));
+        setDefaultTimeStamp64_3Options(transformDataToOptions(groupedByType['UInt64'] || []));
+        setDefaultTimeStamp64_6Options(transformDataToOptions(groupedByType['UInt64'] || []));
+        setDefaultTimeStamp64_9Options(transformDataToOptions(groupedByType['UInt64'] || []));
       } catch (e) {
         setDefaultUint32Options([]);
         setDefaultDateTimeOptions([]);
         setDefaultDateTime64Options([]);
         setDefaultDateDate32Options([]);
+        setDefaultFloatOptions([]);
+        setDefaultTimeStamp64_3Options([]);
+        setDefaultTimeStamp64_6Options([]);
+        setDefaultTimeStamp64_9Options([]);
       }
     };
 
@@ -112,7 +137,6 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
       <InlineField label="Use default values" labelWidth={36}>
         <InlineSwitch
           id="useDefaultConfiguration"
-          className="gf-form"
           value={jsonData.useDefaultConfiguration || false}
           onChange={(e) => onSwitchToggle('useDefaultConfiguration', e.currentTarget.checked)}
         />
@@ -179,6 +203,10 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
                 { label: 'DateTime', value: TimestampFormat.DateTime },
                 { label: 'DateTime64', value: TimestampFormat.DateTime64 },
                 { label: 'TimeStamp', value: TimestampFormat.TimeStamp },
+                { label: 'Float', value: TimestampFormat.Float },
+                { label: 'Timestamp64(3)', value: TimestampFormat.TimeStamp64_3 },
+                { label: 'Timestamp64(6)', value: TimestampFormat.TimeStamp64_6 },
+                { label: 'Timestamp64(9)', value: TimestampFormat.TimeStamp64_9 },
               ]}
               value={jsonData.defaultDateTimeType}
             />
@@ -221,6 +249,58 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
                 onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultDateTime64');
               }}
               options={defaultDateTime64Options}
+            />
+          </InlineField>
+          <InlineField label="Float Field" labelWidth={32} style={{ marginLeft: '30px' }}>
+            <Select
+              isClearable
+              id="defaultFloatTimestamp"
+              allowCustomValue={false}
+              width={24}
+              value={jsonData.defaultFloatTimestamp}
+              onChange={(changeEvent) => {
+                onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultFloatTimestamp');
+              }}
+              options={defaultFloatOptions}
+            />
+          </InlineField>
+          <InlineField label="Timestamp64(3) Field" labelWidth={32} style={{ marginLeft: '30px' }}>
+            <Select
+              isClearable
+              id="defaultTimeStamp64_3"
+              allowCustomValue={false}
+              width={24}
+              value={jsonData.defaultTimeStamp64_3}
+              onChange={(changeEvent) => {
+                onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultTimeStamp64_3');
+              }}
+              options={defaultTimeStamp64_3Options}
+            />
+          </InlineField>
+          <InlineField label="Timestamp64(6) Field" labelWidth={32} style={{ marginLeft: '30px' }}>
+            <Select
+              isClearable
+              id="defaultTimeStamp64_6"
+              allowCustomValue={false}
+              width={24}
+              value={jsonData.defaultTimeStamp64_6}
+              onChange={(changeEvent) => {
+                onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultTimeStamp64_6');
+              }}
+              options={defaultTimeStamp64_6Options}
+            />
+          </InlineField>
+          <InlineField label="Timestamp64(9) Field" labelWidth={32} style={{ marginLeft: '30px' }}>
+            <Select
+              isClearable
+              id="defaultTimeStamp64_9"
+              allowCustomValue={false}
+              width={24}
+              value={jsonData.defaultTimeStamp64_9}
+              onChange={(changeEvent) => {
+                onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultTimeStamp64_9');
+              }}
+              options={defaultTimeStamp64_9Options}
             />
           </InlineField>
           <h6>Date column</h6>

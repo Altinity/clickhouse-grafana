@@ -86,7 +86,7 @@ export const useConnectionData = (query, datasource) => {
             "table = '" +
             selectedTable +
             "' AND " +
-            "(type LIKE 'UInt%' OR type LIKE 'Int%')" +
+            "type LIKE '%UInt64%'" +
             'ORDER BY name';
           break;
         case TimestampFormat.Float:
@@ -99,7 +99,7 @@ export const useConnectionData = (query, datasource) => {
             "table = '" +
             selectedTable +
             "' AND " +
-            "type LIKE 'Float%' OR type LIKE 'Decimal%' " +
+            "type LIKE '%Float%' OR type LIKE '%Decimal%' " +
             'ORDER BY name';
           break;
         case 'DATABASES':

@@ -21,8 +21,6 @@ env:
 jobs:
   tests:
     runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-system-ubuntu-22.04 ]
-    env:
-      GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
 
     timeout-minutes: 60
     steps:
@@ -55,7 +53,6 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           file: go_coverage/coverage.txt
-          parallel: true
           format: golang
 
       - uses: actions/upload-artifact@v4

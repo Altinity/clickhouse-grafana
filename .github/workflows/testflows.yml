@@ -54,7 +54,7 @@ jobs:
       - name: Report golang coverage
         uses: coverallsapp/github-action@v2
         with:
-          file: go_coverage/coverage.html
+          file: go_coverage/coverage.txt
           parallel: true
           format: golang
 

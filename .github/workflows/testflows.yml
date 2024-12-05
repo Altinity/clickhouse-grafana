@@ -57,7 +57,8 @@ jobs:
 
       - name: Report typescript coverage
         uses: coverallsapp/github-action@v2
-
+        with:
+          file: coverage/clover.xml
 
       - uses: actions/upload-artifact@v4
         if: always()

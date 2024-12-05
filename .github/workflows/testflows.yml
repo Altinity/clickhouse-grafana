@@ -51,6 +51,13 @@ jobs:
         if: always()
         run: tests/testflows/infra/create-report.sh
 
+      - name: Report golang coverage
+        uses: coverallsapp/github-action@v2
+        with:
+          file: go_coverage/coverage.html
+          parallel: true
+          format: golang
+
       - uses: actions/upload-artifact@v4
         if: always()
         with:

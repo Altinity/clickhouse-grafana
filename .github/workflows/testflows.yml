@@ -59,6 +59,7 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           file: coverage/clover.xml
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - uses: actions/upload-artifact@v4
         if: always()

@@ -67,6 +67,8 @@
     "@grafana/data": "11.3.0",
     "@grafana/runtime": "11.3.0",
     "@grafana/ui": "11.3.0",
+    "date-fns": "^4.1.0",
+    "date-fns-tz": "^3.2.0",
     "dayjs": "^1.11.13",
     "jest-resolve": "^29.7.0",
     "lodash-es": "^4.17.21",

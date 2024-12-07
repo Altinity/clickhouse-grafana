@@ -1,0 +1,2777 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 39,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$delta(Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, max_0 - lagInFrame(max_0,1,0) OVER () AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(EventTime), 30) * 30) * 1000 AS t, max(Valu) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733547869) AND EventDate <= toDate(1733569469) AND EventTime >= toDateTime(1733547869) AND EventTime <= toDateTime(1733569469) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$delta",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$delta(Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, runningDifference(max_0) AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(EventTime), 30) * 30) * 1000 AS t, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733547869) AND EventDate <= toDate(1733569469) AND EventTime >= toDateTime(1733547869) AND EventTime <= toDateTime(1733569469) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$delta - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
+      "id": 21,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$deltaColumns(Name, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, groupArray((deltaColumns, max_0_Delta)) AS groupArr FROM ( SELECT t, deltaColumns, if(lagInFrame(deltaColumns,1,deltaColumns) OVER () != deltaColumns, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(EventTime), 30) * 30) * 1000 AS t, Name AS deltaColumns, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733553293) AND EventDate <= toDate(1733574893) AND EventTime >= toDateTime(1733553293) AND EventTime <= toDateTime(1733574893) GROUP BY t, deltaColumns ORDER BY deltaColumns, t)) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$deltaColumns",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
+      "id": 22,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$deltaColumns(Name, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, groupArray((deltaColumns, max_0_Delta)) AS groupArr FROM ( SELECT t, deltaColumns, if(neighbor(deltaColumns,-1,deltaColumns) != deltaColumns, 0, runningDifference(max_0)) AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name AS deltaColumns, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733553293) AND EventDate <= toDate(1733574893) AND EventTime >= toDateTime(1733553293) AND EventTime <= toDateTime(1733574893) GROUP BY t, deltaColumns ORDER BY deltaColumns, t)) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$deltaColumns - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 23,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$deltaColumnsAggregated(Name, 'test2' AS subName, sum, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, Name, sum(ValueDelta) AS ValueDeltaAgg FROM (  SELECT t, Name, subName, if(lagInFrame(subName,1,subName) OVER () != subName, 0, Value - lagInFrame(Value,1,0) OVER ()) AS ValueDelta  FROM (   SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name, 'test2' AS subName, max(Value) AS Value   FROM default.test_alerts WHERE EventDate >= toDate(1733553293) AND EventDate <= toDate(1733574893) AND EventTime >= toDateTime(1733553293) AND EventTime <= toDateTime(1733574893)   GROUP BY Name, subName, t    ORDER BY Name, subName, t  ) ) GROUP BY Name, t ORDER BY Name, t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$deltaColumnsAggregated",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 24,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$deltaColumnsAggregated(Name, 'test2' AS subName, sum, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, groupArray((deltaColumns, max_0_Delta)) AS groupArr FROM ( SELECT t, deltaColumns, if(neighbor(deltaColumns,-1,deltaColumns) != deltaColumns, 0, runningDifference(max_0)) AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name AS deltaColumns, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733553293) AND EventDate <= toDate(1733574893) AND EventTime >= toDateTime(1733553293) AND EventTime <= toDateTime(1733574893) GROUP BY t, deltaColumns ORDER BY deltaColumns, t)) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$deltaColumnsAggregated - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 24
+      },
+      "id": 3,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$increase(Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\n$increas(Value) FROM default.test_alerts",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$increase",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 24
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$increase(Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, if(runningDifference(max_0) < 0, 0, runningDifference(max_0)) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(EventTime), 30) * 30) * 1000 AS t, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733548152) AND EventDate <= toDate(1733569752) AND EventTime >= toDateTime(1733548152) AND EventTime <= toDateTime(1733569752) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$increase - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 32
+      },
+      "id": 17,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$increaseColumns(Name, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, groupArray((increaseColumns, max_0_Increase)) AS groupArr FROM ( SELECT t, increaseColumns, if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(increaseColumns,1,increaseColumns) != increaseColumns, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name AS increaseColumns, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733551938) AND EventDate <= toDate(1733573538) AND EventTime >= toDateTime(1733551938) AND EventTime <= toDateTime(1733573538) GROUP BY t, increaseColumns ORDER BY increaseColumns, t)) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$increaseColumns",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 32
+      },
+      "id": 18,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$increaseColumns(Name, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, if(runningDifference(max_0) < 0, 0, runningDifference(max_0)) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733551938) AND EventDate <= toDate(1733573538) AND EventTime >= toDateTime(1733551938) AND EventTime <= toDateTime(1733573538) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$increaseColumns - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 40
+      },
+      "id": 19,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$increaseColumnsAggregated(Name, 'test2' AS subName, sum, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, Name, sum(ValueIncrease) AS ValueIncreaseAgg FROM (  SELECT t, Name, subName, if((Value - lagInFrame(Value,1,0) OVER ()) < 0 OR lagInFrame(subName,1,subName) OVER () != subName, nan, Value - lagInFrame(Value,1,0) OVER ()) AS ValueIncrease  FROM (   SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name, 'test2' AS subName, max(Value) AS Value   FROM default.test_alerts WHERE EventDate >= toDate(1733552907) AND EventDate <= toDate(1733574507) AND EventTime >= toDateTime(1733552907) AND EventTime <= toDateTime(1733574507)   GROUP BY Name, subName, t    ORDER BY Name, subName, t  ) ) GROUP BY Name, t ORDER BY Name, t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$increaseColumnsAggregated",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 40
+      },
+      "id": 20,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$increaseColumnsAggregated(Name, 'test2' AS subName, sum, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, groupArray((increaseColumns, max_0_Increase)) AS groupArr FROM ( SELECT t, increaseColumns, if(runningDifference(max_0) < 0 OR neighbor(increaseColumns,-1,increaseColumns) != increaseColumns, 0, runningDifference(max_0)) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name AS increaseColumns, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733552907) AND EventDate <= toDate(1733574507) AND EventTime >= toDateTime(1733552907) AND EventTime <= toDateTime(1733574507) GROUP BY t, increaseColumns ORDER BY increaseColumns, t)) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$increaseColumnsAggregated - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 48
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$perSecond(Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, if(max_0 - lagInFrame(max_0,1,0) OVER () < 0, nan, (max_0 - lagInFrame(max_0,1,0) OVER ()) / ((t - lagInFrame(t,1,0) OVER ())/1000) ) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733548152) AND EventDate <= toDate(1733569752) AND EventTime >= toDateTime(1733548152) AND EventTime <= toDateTime(1733569752) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$perSecond",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 48
+      },
+      "id": 6,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$perSecond(Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\n$perSecond((Value) FROM default.test_alerts",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$perSecond - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 56
+      },
+      "id": 13,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$perSecondColumns(Name, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=1 */\nSELECT t, groupArray((perSecondColumns, max_0_PerSecond)) AS groupArr FROM ( SELECT t, perSecondColumns, if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(perSecondColumns,1,perSecondColumns) OVER () != perSecondColumns, nan, (max_0 - lagInFrame(max_0,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name AS perSecondColumns, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733550114) AND EventDate <= toDate(1733571714) AND EventTime >= toDateTime(1733550114) AND EventTime <= toDateTime(1733571714) GROUP BY t, perSecondColumns ORDER BY perSecondColumns, t)) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$perSecondColumns",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 56
+      },
+      "id": 14,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$perSecondColumns(Name, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=1 */\nSELECT t, if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733550114) AND EventDate <= toDate(1733571714) AND EventTime >= toDateTime(1733550114) AND EventTime <= toDateTime(1733571714) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$perSecondColumns - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 64
+      },
+      "id": 15,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$perSecondColumnsAggregated(Name, 'test2' AS subName, sum, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=1 */\nSELECT t, Name, sum(ValuePerSecond) AS ValuePerSecondAgg FROM (  SELECT t, Name, subName, if((Value - lagInFrame(Value,1,0) OVER ()) < 0 OR lagInFrame(subName,1,subName) != subName, nan, (Value - lagInFrame(Value,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS ValuePerSecond  FROM (   SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name, 'test2' AS subName, max(Value) AS Value   FROM default.test_alerts WHERE EventDate >= toDate(1733550114) AND EventDate <= toDate(1733571714) AND EventTime >= toDateTime(1733550114) AND EventTime <= toDateTime(1733571714)   GROUP BY Name, subName, t    ORDER BY Name, subName, t  ) ) GROUP BY Name, t ORDER BY Name, t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$perSecondColumnsAggregated",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 64
+      },
+      "id": 16,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$perSecondColumnsAggregated(Name, 'test2' AS subName, sum, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=1 */\nSELECT t, groupArray((perSecondColumns, max_0_PerSecond)) AS groupArr FROM ( SELECT t, perSecondColumns, if(runningDifference(max_0) < 0 OR neighbor(perSecondColumns,-1,perSecondColumns) != perSecondColumns, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name AS perSecondColumns, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733550114) AND EventDate <= toDate(1733571714) AND EventTime >= toDateTime(1733550114) AND EventTime <= toDateTime(1733571714) GROUP BY t, perSecondColumns ORDER BY perSecondColumns, t)) GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$perSecondColumnsAggregated - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 72
+      },
+      "id": 7,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$rate(sum(Value) AS vSumValue) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, vSumValu/((t - lagInFrame(t,1,0) OVER ())/1000) vSumValuRate FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, sum(Value) AS vSumValu FROM default.test_alerts WHERE EventDate >= toDate(1733548152) AND EventDate <= toDate(1733569752) AND EventTime >= toDateTime(1733548152) AND EventTime <= toDateTime(1733569752) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$rate",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 72
+      },
+      "id": 8,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$rate(sum(Value) AS vSumValue) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=0 */\nSELECT t, if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, max(Value) AS max_0 FROM default.test_alerts WHERE EventDate >= toDate(1733548152) AND EventDate <= toDate(1733569752) AND EventTime >= toDateTime(1733548152) AND EventTime <= toDateTime(1733569752) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$rate - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 80
+      },
+      "id": 9,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$rateColumns(Name, sum(Value) AS vSumValue) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=1 */\nSELECT t, arrayMap(a -> (a.1, a.2/(t/1000 - lagInFrame(t/1000,1,0) OVER ())), groupArr) FROM (SELECT t, groupArray((Name, vSumValue)) AS groupArr FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name, sum(Value) AS vSumValue FROM default.test_alerts WHERE EventDate >= toDate(1733550114) AND EventDate <= toDate(1733571714) AND EventTime >= toDateTime(1733550114) AND EventTime <= toDateTime(1733571714) GROUP BY t, Name ORDER BY t, Name) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$rateColumns",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 80
+      },
+      "id": 10,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$rateColumns(Name, sum(Value) AS vSumValue) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=1 */\nSELECT t, arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr) FROM (SELECT t, groupArray((Name, vSumValue)) AS groupArr FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name, sum(Value) AS vSumValue FROM default.test_alerts WHERE EventDate >= toDate(1733550114) AND EventDate <= toDate(1733571714) AND EventTime >= toDateTime(1733550114) AND EventTime <= toDateTime(1733571714) GROUP BY t, Name ORDER BY t, Name) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$rateColumns - without window functions",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 88
+      },
+      "id": 11,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$rateColumnsAggregated(Name, if(today() % 2,'subTest1','subTest2') AS SubName, sum, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=1 */\n$rateColumnsAggregated(Name, if(today( % 2,'subTest1','subTest2') AS SubName, sum, Value) FROM default.test_alerts",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$rateColumnsAggregated",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/572",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 88
+      },
+      "id": 12,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "EventDate",
+          "dateTimeColDataType": "EventTime",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "$rateColumnsAggregated(Name, if(today() % 2,'subTest1','subTest2') AS SubName, sum, Value) FROM $table",
+          "rawQuery": "/* grafana dashboard=window functions, user=1 */\nSELECT t, arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr) FROM (SELECT t, groupArray((Name, vSumValue)) AS groupArr FROM ( SELECT (intDiv(toUInt32(EventTime), 20) * 20) * 1000 AS t, Name, sum(Value) AS vSumValue FROM default.test_alerts WHERE EventDate >= toDate(1733550114) AND EventDate <= toDate(1733571714) AND EventTime >= toDateTime(1733550114) AND EventTime <= toDateTime(1733571714) GROUP BY t, Name ORDER BY t, Name) GROUP BY t ORDER BY t)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_alerts",
+          "useWindowFuncForMacros": false
+        }
+      ],
+      "title": "$rateColumnsAggregated - without window functions",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "window functions",
+  "uid": "de6482iletr0gc",
+  "version": 1,
+  "weekStart": ""
+}

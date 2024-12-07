@@ -5,18 +5,20 @@ import SqlQueryMacros from '../datasource/sql-query/sql-query-macros';
 class Case {
   name: string;
   got: string;
+  gotWithWindow: string;
   expected: string;
+  expectedWithWindow: string;
   fn: any;
-  scanner: Scanner;
   query: string;
 
-  constructor(name: string, query: string, expected: string, fn: any) {
+  constructor(name: string, query: string, expected: string, expectedWithWindow: string, fn: any) {
     this.name = name;
     this.expected = expected;
+    this.expectedWithWindow = expectedWithWindow;
     this.query = query;
     this.fn = fn;
-    this.scanner = new Scanner(query);
     this.got = '';
+    this.gotWithWindow = '';
   }
 }
 
@@ -36,10 +38,23 @@ describe('macros builder:', () => {
         ' WHERE $timeFilter' +
         ' GROUP BY t' +
         ' ORDER BY t)',
+
+      '/* comment */ SELECT t,' +
+        ' from_good/((t - lagInFrame(t,1,0) OVER ())/1000) from_goodRate,' +
+        ' from_bad/((t - lagInFrame(t,1,0) OVER ())/1000) from_badRate' +
+        ' FROM (' +
+        ' SELECT $timeSeries AS t,' +
+        ' countIf(Type = 200) AS from_good,' +
+        ' countIf(Type != 200) AS from_bad' +
+        ' FROM requests' +
+        ' WHERE $timeFilter' +
+        ' GROUP BY t' +
+        ' ORDER BY t)',
       SqlQueryMacros.rate
     ),
     new Case(
       '$rate negative',
+      '$rated(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests',
       '$rated(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests',
       '$rated(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests',
       SqlQueryMacros.rate
@@ -47,6 +62,22 @@ describe('macros builder:', () => {
     new Case(
       '$columns',
       '/* comment */$columns(from_OSName, count(*) c) FROM requests ANY INNER JOIN oses USING OS',
+      '/* comment */SELECT t,' +
+        ' groupArray((from_OSName, c)) AS groupArr' +
+        ' FROM (' +
+        ' SELECT $timeSeries AS t,' +
+        ' from_OSName,' +
+        ' count(*) c' +
+        ' FROM requests' +
+        ' ANY INNER JOIN oses USING OS' +
+        ' WHERE $timeFilter' +
+        ' GROUP BY t,' +
+        ' from_OSName' +
+        ' ORDER BY t,' +
+        ' from_OSName)' +
+        ' GROUP BY t' +
+        ' ORDER BY t',
+
       '/* comment */SELECT t,' +
         ' groupArray((from_OSName, c)) AS groupArr' +
         ' FROM (' +
@@ -78,6 +109,18 @@ describe('macros builder:', () => {
         ' WHERE $timeFilter' +
         ' GROUP BY t' +
         ' ORDER BY t)',
+
+      '/* comment */\nSELECT t,' +
+        ' if(max_0 - lagInFrame(max_0,1,0) OVER () < 0, nan, (max_0 - lagInFrame(max_0,1,0) OVER ()) / ((t - lagInFrame(t,1,0) OVER ())/1000) ) AS max_0_PerSecond,' +
+        ' if(max_1 - lagInFrame(max_1,1,0) OVER () < 0, nan, (max_1 - lagInFrame(max_1,1,0) OVER ()) / ((t - lagInFrame(t,1,0) OVER ())/1000) ) AS max_1_PerSecond' +
+        ' FROM (' +
+        ' SELECT $timeSeries AS t,' +
+        ' max(from_total) AS max_0,' +
+        ' max(from_amount) AS max_1' +
+        ' FROM requests' +
+        ' WHERE $timeFilter' +
+        ' GROUP BY t' +
+        ' ORDER BY t)',
       SqlQueryMacros.perSecond
     ),
     new Case(
@@ -86,6 +129,18 @@ describe('macros builder:', () => {
       '/* comment */\nSELECT t,' +
         ' runningDifference(max_0) AS max_0_Delta,' +
         ' runningDifference(max_1) AS max_1_Delta' +
+        ' FROM (' +
+        ' SELECT $timeSeries AS t,' +
+        ' max(from_total) AS max_0,' +
+        ' max(from_amount) AS max_1' +
+        ' FROM requests' +
+        ' WHERE $timeFilter' +
+        ' GROUP BY t' +
+        ' ORDER BY t)',
+
+      '/* comment */\nSELECT t,' +
+        ' max_0 - lagInFrame(max_0,1,0) OVER () AS max_0_Delta,' +
+        ' max_1 - lagInFrame(max_1,1,0) OVER () AS max_1_Delta' +
         ' FROM (' +
         ' SELECT $timeSeries AS t,' +
         ' max(from_total) AS max_0,' +
@@ -110,6 +165,19 @@ describe('macros builder:', () => {
         ' WHERE $timeFilter' +
         ' GROUP BY t' +
         ' ORDER BY t)',
+
+      '/* comment */\nSELECT t,' +
+        ' if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Increase,' +
+        ' if((max_1 - lagInFrame(max_1,1,0) OVER ()) < 0, 0, max_1 - lagInFrame(max_1,1,0) OVER ()) AS max_1_Increase' +
+        ' FROM (' +
+        ' SELECT $timeSeries AS t,' +
+        ' max(from_total) AS max_0,' +
+        ' max(from_amount) AS max_1' +
+        ' FROM requests' +
+        ' WHERE $timeFilter' +
+        ' GROUP BY t' +
+        ' ORDER BY t)',
+
       SqlQueryMacros.increase
     ),
     new Case(
@@ -117,22 +185,40 @@ describe('macros builder:', () => {
       "/* comment */ $rateColumns((AppType = '' ? 'undefined' : AppType) from_type, sum(Hits) from_hits) " +
       " FROM table_all WHERE Event = 'request' AND (-1 IN ($template) OR col IN ($template)) HAVING hits > $interval",
       '/* comment */ SELECT t,' +
-      ' arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
-      ' FROM' +
-      ' (SELECT t,' +
-      ' groupArray((from_type, from_hits)) AS groupArr' +
-      ' FROM (' +
-      ' SELECT $timeSeries AS t,' +
-      " (AppType = '' ? 'undefined' : AppType) from_type," +
-      ' sum(Hits) from_hits' +
-      ' FROM table_all' +
-      ' WHERE $timeFilter' +
-      " AND Event = 'request' AND (-1 IN ($template) OR col IN ($template))" +
-      ' GROUP BY t, from_type' +
-      ' HAVING hits > $interval' +
-      ' ORDER BY t, from_type)' +
-      ' GROUP BY t' +
-      ' ORDER BY t)',
+        ' arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)' +
+        ' FROM' +
+        ' (SELECT t,' +
+        ' groupArray((from_type, from_hits)) AS groupArr' +
+        ' FROM (' +
+        ' SELECT $timeSeries AS t,' +
+        " (AppType = '' ? 'undefined' : AppType) from_type," +
+        ' sum(Hits) from_hits' +
+        ' FROM table_all' +
+        ' WHERE $timeFilter' +
+        " AND Event = 'request' AND (-1 IN ($template) OR col IN ($template))" +
+        ' GROUP BY t, from_type' +
+        ' HAVING hits > $interval' +
+        ' ORDER BY t, from_type)' +
+        ' GROUP BY t' +
+        ' ORDER BY t)',
+
+      '/* comment */ SELECT t,' +
+        ' arrayMap(a -> (a.1, a.2/(t/1000 - lagInFrame(t/1000,1,0) OVER ())), groupArr)' +
+        ' FROM' +
+        ' (SELECT t,' +
+        ' groupArray((from_type, from_hits)) AS groupArr' +
+        ' FROM (' +
+        ' SELECT $timeSeries AS t,' +
+        " (AppType = '' ? 'undefined' : AppType) from_type," +
+        ' sum(Hits) from_hits' +
+        ' FROM table_all' +
+        ' WHERE $timeFilter' +
+        " AND Event = 'request' AND (-1 IN ($template) OR col IN ($template))" +
+        ' GROUP BY t, from_type' +
+        ' HAVING hits > $interval' +
+        ' ORDER BY t, from_type)' +
+        ' GROUP BY t' +
+        ' ORDER BY t)',
       SqlQueryMacros.rateColumns
     ),
     new Case(
@@ -144,6 +230,26 @@ describe('macros builder:', () => {
         ' SELECT t,' +
         ' from_alias,' +
         ' if(runningDifference(max_0) < 0 OR neighbor(from_alias,-1,from_alias) != from_alias, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond' +
+        ' FROM (' +
+        ' SELECT $timeSeries AS t,' +
+        " concat('test', type) AS from_alias," +
+        ' max(from_total) AS max_0' +
+        ' FROM requests' +
+        ' WHERE $timeFilter' +
+        " AND type IN ('udp', 'tcp')" +
+        ' GROUP BY t, from_alias' +
+        ' ORDER BY from_alias, t' +
+        ')' +
+        ')' +
+        ' GROUP BY t' +
+        ' ORDER BY t',
+
+      '/* comment */\nSELECT t,' +
+        ' groupArray((from_alias, max_0_PerSecond)) AS groupArr' +
+        ' FROM (' +
+        ' SELECT t,' +
+        ' from_alias,' +
+        ' if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(from_alias,1,from_alias) OVER () != from_alias, nan, (max_0 - lagInFrame(max_0,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS max_0_PerSecond' +
         ' FROM (' +
         ' SELECT $timeSeries AS t,' +
         " concat('test', type) AS from_alias," +
@@ -181,6 +287,26 @@ describe('macros builder:', () => {
         ')' +
         ' GROUP BY t' +
         ' ORDER BY t',
+
+      '/* comment */\nSELECT t,' +
+        ' groupArray((from_alias, max_0_Delta)) AS groupArr' +
+        ' FROM (' +
+        ' SELECT t,' +
+        ' from_alias,' +
+        ' if(lagInFrame(from_alias,1,from_alias) OVER () != from_alias, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Delta' +
+        ' FROM (' +
+        ' SELECT $timeSeries AS t,' +
+        " concat('test', type) AS from_alias," +
+        ' max(from_total) AS max_0' +
+        ' FROM requests' +
+        ' WHERE $timeFilter' +
+        " AND type IN ('udp', 'tcp')" +
+        ' GROUP BY t, from_alias' +
+        ' ORDER BY from_alias, t' +
+        ')' +
+        ')' +
+        ' GROUP BY t' +
+        ' ORDER BY t',
       SqlQueryMacros.deltaColumns
     ),
     new Case(
@@ -205,12 +331,34 @@ describe('macros builder:', () => {
         ')' +
         ' GROUP BY t' +
         ' ORDER BY t',
+
+      '/* comment */\nSELECT t,' +
+        ' groupArray((from_alias, max_0_Increase)) AS groupArr' +
+        ' FROM (' +
+        ' SELECT t,' +
+        ' from_alias,' +
+        ' if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(from_alias,1,from_alias) OVER () != from_alias, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Increase' +
+        ' FROM (' +
+        ' SELECT $timeSeries AS t,' +
+        " concat('test', type) AS from_alias," +
+        ' max(from_total) AS max_0' +
+        ' FROM requests' +
+        ' WHERE $timeFilter' +
+        " AND type IN ('udp', 'tcp')" +
+        ' GROUP BY t, from_alias' +
+        ' ORDER BY from_alias, t' +
+        ')' +
+        ')' +
+        ' GROUP BY t' +
+        ' ORDER BY t',
       SqlQueryMacros.increaseColumns
     ),
     new Case(
       '$rateColumnsAggregated',
+
       '/* comment */ $rateColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
       " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+
       '/* comment */ SELECT t, datacenter, sum(tx_kbytesRate) AS tx_kbytesRateAgg, sum(rx_bytesRate) AS rx_bytesRateAgg'+
       ' FROM'+
       ' ('+
@@ -228,12 +376,34 @@ describe('macros builder:', () => {
       ')'+
       ' GROUP BY datacenter, t'+
       ' ORDER BY datacenter, t',
+
+      '/* comment */ SELECT t, datacenter, sum(tx_kbytesRate) AS tx_kbytesRateAgg, sum(rx_bytesRate) AS rx_bytesRateAgg'+
+      ' FROM'+
+      ' ('+
+      '  SELECT t, datacenter, dc_interface, ' +
+      'tx_kbytes / (t/1000 - lagInFrame(t/1000,1,0) OVER ()) AS tx_kbytesRate, ' +
+      'rx_bytes / (t/1000 - lagInFrame(t/1000,1,0) OVER ()) AS rx_bytesRate '+
+      ' FROM ('+
+      '   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,'+
+      ' max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes '+
+      '  FROM traffic'+
+      ' WHERE $timeFilter'+
+      " AND datacenter = 'dc1'  "+
+      ' GROUP BY datacenter, dc_interface, t'+
+      '  HAVING rx_bytes > $interval  '+
+      ' ORDER BY datacenter, dc_interface, t ' +
+      ' ) '+
+      ')'+
+      ' GROUP BY datacenter, t'+
+      ' ORDER BY datacenter, t',
+
       SqlQueryMacros.rateColumnsAggregated
     ),
     new Case(
       '$perSecondColumnsAggregated',
       '/* comment */ $perSecondColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
       " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+
       '/* comment */ SELECT t, datacenter, sum(tx_kbytesPerSecond) AS tx_kbytesPerSecondAgg, sum(rx_bytesPerSecond) AS rx_bytesPerSecondAgg'+
       ' FROM'+
       ' ('+
@@ -253,12 +423,34 @@ describe('macros builder:', () => {
       ')'+
       ' GROUP BY datacenter, t'+
       ' ORDER BY datacenter, t',
+
+      '/* comment */ SELECT t, datacenter, sum(tx_kbytesPerSecond) AS tx_kbytesPerSecondAgg, sum(rx_bytesPerSecond) AS rx_bytesPerSecondAgg'+
+      ' FROM'+
+      ' ('+
+      '  SELECT t, datacenter, dc_interface,' +
+      ' if((tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS tx_kbytesPerSecond,' +
+      ' if((rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS rx_bytesPerSecond'+
+      '  FROM ('+
+      '   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,'+
+      ' max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes '+
+      '  FROM traffic'+
+      ' WHERE $timeFilter'+
+      " AND datacenter = 'dc1'  "+
+      ' GROUP BY datacenter, dc_interface, t'+
+      '  HAVING rx_bytes > $interval  '+
+      ' ORDER BY datacenter, dc_interface, t ' +
+      ' ) '+
+      ')'+
+      ' GROUP BY datacenter, t'+
+      ' ORDER BY datacenter, t',
+
       SqlQueryMacros.perSecondColumnsAggregated
     ),
     new Case(
       '$increaseColumnsAggregated',
       '/* comment */ $increaseColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
       " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+
       '/* comment */ SELECT t, datacenter, sum(tx_kbytesIncrease) AS tx_kbytesIncreaseAgg, sum(rx_bytesIncrease) AS rx_bytesIncreaseAgg'+
       ' FROM'+
       ' ('+
@@ -278,12 +470,34 @@ describe('macros builder:', () => {
       ')'+
       ' GROUP BY datacenter, t'+
       ' ORDER BY datacenter, t',
+
+      '/* comment */ SELECT t, datacenter, sum(tx_kbytesIncrease) AS tx_kbytesIncreaseAgg, sum(rx_bytesIncrease) AS rx_bytesIncreaseAgg'+
+      ' FROM'+
+      ' ('+
+      '  SELECT t, datacenter, dc_interface,' +
+      ' if((tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) / 1) AS tx_kbytesIncrease,' +
+      ' if((rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) / 1) AS rx_bytesIncrease'+
+      '  FROM ('+
+      '   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,'+
+      ' max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes '+
+      '  FROM traffic'+
+      ' WHERE $timeFilter'+
+      " AND datacenter = 'dc1'  "+
+      ' GROUP BY datacenter, dc_interface, t'+
+      '  HAVING rx_bytes > $interval  '+
+      ' ORDER BY datacenter, dc_interface, t ' +
+      ' ) '+
+      ')'+
+      ' GROUP BY datacenter, t'+
+      ' ORDER BY datacenter, t',
+
       SqlQueryMacros.increaseColumnsAggregated
     ),
     new Case(
       '$deltaColumnsAggregated',
       '/* comment */ $deltaColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1024 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) '+
       " FROM traffic WHERE datacenter = 'dc1' HAVING rx_bytes > $interval",
+
       '/* comment */ SELECT t, datacenter, sum(tx_kbytesDelta) AS tx_kbytesDeltaAgg, sum(rx_bytesDelta) AS rx_bytesDeltaAgg'+
       ' FROM'+
       ' ('+
@@ -303,21 +517,44 @@ describe('macros builder:', () => {
       ')'+
       ' GROUP BY datacenter, t'+
       ' ORDER BY datacenter, t',
+
+      '/* comment */ SELECT t, datacenter, sum(tx_kbytesDelta) AS tx_kbytesDeltaAgg, sum(rx_bytesDelta) AS rx_bytesDeltaAgg'+
+      ' FROM'+
+      ' ('+
+      '  SELECT t, datacenter, dc_interface,' +
+      ' if(lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, 0, tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) AS tx_kbytesDelta,' +
+      ' if(lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, 0, rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) AS rx_bytesDelta'+
+      '  FROM ('+
+      '   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,'+
+      ' max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes '+
+      '  FROM traffic'+
+      ' WHERE $timeFilter'+
+      " AND datacenter = 'dc1'  "+
+      ' GROUP BY datacenter, dc_interface, t'+
+      '  HAVING rx_bytes > $interval  '+
+      ' ORDER BY datacenter, dc_interface, t ' +
+      ' ) '+
+      ')'+
+      ' GROUP BY datacenter, t'+
+      ' ORDER BY datacenter, t',
+
       SqlQueryMacros.deltaColumnsAggregated
     ),
   ];
 
   each(testCases, (tc) => {
-    let ast = tc.scanner.toAST();
-    tc.got = tc.fn(tc.query, ast);
+    let ast = new Scanner(tc.query).toAST();
+    tc.got = tc.fn(tc.query, ast, false);
 
-    if (tc.got !== tc.expected) {
-      console.log(tc.got);
-      console.log(tc.expected);
-    }
+    ast = new Scanner(tc.query).toAST();
+    tc.gotWithWindow = tc.fn(tc.query, ast, true);
+
     describe(tc.name, () => {
-      it('expects equality', () => {
+      it('expects without window functions', () => {
         expect(tc.got).toEqual(tc.expected);
+      });
+      it('expects with window functions', () => {
+        expect(tc.gotWithWindow).toEqual(tc.expectedWithWindow);
       });
     });
   });
@@ -337,7 +574,7 @@ describe('comments and $rate and from in field name', () => {
     "/*comment1*/\n-- comment2\n/*\ncomment3\n */\nSELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob' GROUP BY t ORDER BY t)";
   const scanner = new Scanner(query);
   it('gets replaced with right FROM query', () => {
-    expect(SqlQueryMacros.applyMacros(query, scanner.toAST())).toBe(expQuery);
+    expect(SqlQueryMacros.applyMacros(query, scanner.toAST(), false)).toBe(expQuery);
   });
 });
 
@@ -393,7 +630,7 @@ describe('columns + union all + with', () => {
     ') GROUP BY t, category ORDER BY t, category) GROUP BY t ORDER BY t';
   const scanner = new Scanner(query);
   let ast = scanner.toAST();
-  let actual = SqlQueryMacros.applyMacros(query, ast);
+  let actual = SqlQueryMacros.applyMacros(query, ast, false);
   it('gets replaced with right FROM query', () => {
     expect(actual).toBe(expQuery);
   });
@@ -418,7 +655,7 @@ describe('columns + order by with fill', () => {
     ') GROUP BY t ORDER BY t';
   const scanner = new Scanner(query);
   let ast = scanner.toAST();
-  let actual = SqlQueryMacros.applyMacros(query, ast);
+  let actual = SqlQueryMacros.applyMacros(query, ast, false);
   it('gets replaced with right FROM query', () => {
     expect(actual).toBe(expQuery);
   });

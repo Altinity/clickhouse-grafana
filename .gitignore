@@ -53,3 +53,4 @@ e2e-results/
 venv/
 tests/testflows/tmp/target/
 tests/testflows/assets/
+.aider*

@@ -48,6 +48,7 @@ export interface CHQuery extends DataQuery {
   formattedQuery?: string;
   contextWindowSize?: string;
   adHocValuesQuery?: string;
+  useWindowFuncForMacros?: boolean;
 }
 
 /**
@@ -75,6 +76,7 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   defaultTimeStamp64_9?: string;
   adHocValuesQuery: string;
   contextWindowSize?: string;
+  useWindowFuncForMacros?: boolean;
 }
 
 /**

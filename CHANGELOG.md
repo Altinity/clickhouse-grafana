@@ -1,3 +1,7 @@
+# 3.3.1 (not released yet)
+## Enhancements:
+* Add using window functions instead of `runningDifference` and `neighbor` for macros, to avoid `allow_deprecated_error_prone_window_functions`, fix https://github.com/Altinity/clickhouse-grafana/issues/572
+
 # 3.3.0 (2024-12-02)
 ## Enhancements:
 * Add dynamic filters to logs panel labels, fix https://github.com/Altinity/clickhouse-grafana/issues/487, https://github.com/Altinity/clickhouse-grafana/issues/672 

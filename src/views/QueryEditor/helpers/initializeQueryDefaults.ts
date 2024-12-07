@@ -13,6 +13,7 @@ export const initializeQueryDefaults = (
     extrapolate: query.extrapolate ?? true,
     skip_comments: query.skip_comments ?? true,
     add_metadata: query.add_metadata ?? true,
+    useWindowFuncForMacros: query.useWindowFuncForMacros ?? true,
     dateTimeType: query.dateTimeType,
     round: query.round || DEFAULT_ROUND,
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,

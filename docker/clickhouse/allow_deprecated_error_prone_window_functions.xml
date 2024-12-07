@@ -1,0 +1,5 @@
+<clickhouse>
+  <profiles><default>
+    <allow_deprecated_error_prone_window_functions>1</allow_deprecated_error_prone_window_functions>
+  </default></profiles>
+</clickhouse>

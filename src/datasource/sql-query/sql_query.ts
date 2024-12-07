@@ -99,7 +99,7 @@ export default class SqlQuery {
         query = scanner.Print(topQueryAST);
       }
 
-      query = SqlQueryMacros.applyMacros(query, topQueryAST);
+      query = SqlQueryMacros.applyMacros(query, topQueryAST, this.target.useWindowFuncForMacros);
     } catch (err) {
       console.error('AST parser error: ', err);
     }

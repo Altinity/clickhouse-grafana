@@ -31,27 +31,28 @@ var toMsMacroRegexp = regexp.MustCompile(`\$__to\b`)
 var intervalMsMacroRegexp = regexp.MustCompile(`\$__interval_ms\b`)
 
 type EvalQuery struct {
-	RefId          string `json:"refId"`
-	RuleUid        string
-	RawQuery       bool   `json:"rawQuery"`
-	Query          string `json:"query"`
-	DateTimeCol    string `json:"dateTimeColDataType"`
-	DateCol        string `json:"dateColDataType"`
-	DateTimeType   string `json:"dateTimeType"`
-	Extrapolate    bool   `json:"extrapolate"`
-	SkipComments   bool   `json:"skip_comments"`
-	AddMetadata    bool   `json:"add_metadata"`
-	Format         string `json:"format"`
-	Round          string `json:"round"`
-	IntervalFactor int    `json:"intervalFactor"`
-	Interval       string `json:"interval"`
-	IntervalSec    int
-	IntervalMs     int
-	Database       string `json:"database"`
-	Table          string `json:"table"`
-	MaxDataPoints  int64
-	From           time.Time
-	To             time.Time
+	RefId                  string `json:"refId"`
+	RuleUid                string
+	RawQuery               bool   `json:"rawQuery"`
+	Query                  string `json:"query"`
+	DateTimeCol            string `json:"dateTimeColDataType"`
+	DateCol                string `json:"dateColDataType"`
+	DateTimeType           string `json:"dateTimeType"`
+	Extrapolate            bool   `json:"extrapolate"`
+	SkipComments           bool   `json:"skip_comments"`
+	AddMetadata            bool   `json:"add_metadata"`
+	UseWindowFuncForMacros bool   `json:"useWindowFuncForMacros"`
+	Format                 string `json:"format"`
+	Round                  string `json:"round"`
+	IntervalFactor         int    `json:"intervalFactor"`
+	Interval               string `json:"interval"`
+	IntervalSec            int
+	IntervalMs             int
+	Database               string `json:"database"`
+	Table                  string `json:"table"`
+	MaxDataPoints          int64
+	From                   time.Time
+	To                     time.Time
 }
 
 func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
@@ -478,8 +479,15 @@ func (q *EvalQuery) rateColumns(query string, ast *EvalAST) (string, error) {
 	if err != nil {
 		return "", err
 	}
+	var timeChange string
+	if q.UseWindowFuncForMacros {
+		timeChange = "(t/1000 - lagInFrame(t/1000,1,0) OVER ())"
+	} else {
+		timeChange = "runningDifference( t/1000 )"
+	}
+
 	return beforeMacrosQuery + "SELECT t" +
-		", arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr)" +
+		", arrayMap(a -> (a.1, a.2/" + timeChange + "), groupArr)" +
 		" FROM (" +
 		query +
 		")", nil
@@ -571,7 +579,11 @@ func (q *EvalQuery) rateColumnsAggregated(query string, ast *EvalAST) (string, e
 	var finalValues []string
 	for i, a := range aliases {
 		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"Rate) AS "+a+"RateAgg")
-		finalValues = append(finalValues, a+" / runningDifference(t / 1000) AS "+a+"Rate")
+		if q.UseWindowFuncForMacros {
+			finalValues = append(finalValues, a+" / (t/1000 - lagInFrame(t/1000,1,0) OVER ()) AS "+a+"Rate")
+		} else {
+			finalValues = append(finalValues, a+" / runningDifference(t / 1000) AS "+a+"Rate")
+		}
 	}
 
 	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
@@ -589,7 +601,14 @@ func (q *EvalQuery) perSecondColumnsAggregated(query string, ast *EvalAST) (stri
 	var finalValues []string
 	for i, a := range aliases {
 		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"PerSecond) AS "+a+"PerSecondAgg")
-		finalValues = append(finalValues, "if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / runningDifference(t / 1000)) AS "+a+"PerSecond")
+		if q.UseWindowFuncForMacros {
+			finalValues = append(finalValues, "if(("+a+" - lagInFrame("+a+",1,0) OVER ()) < 0 OR "+
+				"lagInFrame("+subKeyAlias+",1,"+subKeyAlias+") OVER () != "+subKeyAlias+", nan, "+
+				"("+a+" - lagInFrame("+a+",1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS "+a+"PerSecond",
+			)
+		} else {
+			finalValues = append(finalValues, "if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / runningDifference(t / 1000)) AS "+a+"PerSecond")
+		}
 	}
 
 	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
@@ -607,7 +626,14 @@ func (q *EvalQuery) increaseColumnsAggregated(query string, ast *EvalAST) (strin
 	var finalValues []string
 	for i, a := range aliases {
 		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"Increase) AS "+a+"IncreaseAgg")
-		finalValues = append(finalValues, "if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / 1) AS "+a+"Increase")
+		if q.UseWindowFuncForMacros {
+			finalValues = append(finalValues, "if(("+a+" - lagInFrame("+a+",1,0) OVER ()) < 0 OR "+
+				"lagInFrame("+subKeyAlias+",1,"+subKeyAlias+") OVER () != "+subKeyAlias+
+				", nan, ("+a+" - lagInFrame("+a+",1,0) OVER ()) / 1) AS "+a+"Increase",
+			)
+		} else {
+			finalValues = append(finalValues, "if(runningDifference("+a+") < 0 OR neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", nan, runningDifference("+a+") / 1) AS "+a+"Increase")
+		}
 	}
 
 	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
@@ -625,7 +651,11 @@ func (q *EvalQuery) deltaColumnsAggregated(query string, ast *EvalAST) (string, 
 	var finalValues []string
 	for i, a := range aliases {
 		finalAggregatedValues = append(finalAggregatedValues, aggFuncs[i]+"("+a+"Delta) AS "+a+"DeltaAgg")
-		finalValues = append(finalValues, "if(neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", 0, runningDifference("+a+") / 1) AS "+a+"Delta")
+		if q.UseWindowFuncForMacros {
+			finalValues = append(finalValues, "if(lagInFrame("+subKeyAlias+",1,"+subKeyAlias+") OVER () != "+subKeyAlias+", 0, "+a+" - lagInFrame("+a+",1,0) OVER ()) AS "+a+"Delta")
+		} else {
+			finalValues = append(finalValues, "if(neighbor("+subKeyAlias+",-1,"+subKeyAlias+") != "+subKeyAlias+", 0, runningDifference("+a+") / 1) AS "+a+"Delta")
+		}
 	}
 
 	return q._formatColumnsAggregatedSQL(beforeMacrosQuery, fromQuery, key, keyAlias, subKey, subKeyAlias, values, finalValues, finalAggregatedValues, having), nil
@@ -674,7 +704,11 @@ func (q *EvalQuery) _rate(args []interface{}, beforeMacrosQuery, fromQuery strin
 
 	var cols []string
 	for _, a := range aliases {
-		cols = append(cols, a+"/runningDifference(t/1000) "+a+"Rate")
+		if q.UseWindowFuncForMacros {
+			cols = append(cols, a+"/((t - lagInFrame(t,1,0) OVER ())/1000) "+a+"Rate")
+		} else {
+			cols = append(cols, a+"/runningDifference(t/1000) "+a+"Rate")
+		}
 	}
 
 	fromQuery = q._applyTimeFilter(fromQuery)
@@ -721,14 +755,20 @@ func (q *EvalQuery) perSecondColumns(query string, ast *EvalAST) (string, error)
 		fromQuery = fromQuery[0 : havingIndex-1]
 	}
 	fromQuery = q._applyTimeFilter(fromQuery)
-
+	var maxPerSecond string
+	if q.UseWindowFuncForMacros {
+		maxPerSecond = "if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(" + alias + ",1," + alias + ") OVER () != " + alias +
+			", nan, (max_0 - lagInFrame(max_0,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ()))"
+	} else {
+		maxPerSecond = "if(runningDifference(max_0) < 0 OR neighbor(" + alias + ",-1," + alias + ") != " + alias + ", nan, runningDifference(max_0) / runningDifference(t/1000))"
+	}
 	return beforeMacrosQuery + "SELECT" +
 		" t," +
 		" groupArray((" + alias + ", max_0_PerSecond)) AS groupArr" +
 		" FROM (" +
 		" SELECT t," +
 		" " + alias +
-		", if(runningDifference(max_0) < 0 OR neighbor(" + alias + ",-1," + alias + ") != " + alias + ", nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond" +
+		", " + maxPerSecond + " AS max_0_PerSecond" +
 		" FROM (" +
 		" SELECT $timeSeries AS t" +
 		", " + key +
@@ -775,13 +815,20 @@ func (q *EvalQuery) deltaColumns(query string, ast *EvalAST) (string, error) {
 	}
 	fromQuery = q._applyTimeFilter(fromQuery)
 
+	var maxDelta string
+	if q.UseWindowFuncForMacros {
+		maxDelta = "if(lagInFrame(" + alias + ",1," + alias + ") OVER () != " + alias + ", 0, max_0 - lagInFrame(max_0,1,0) OVER ())"
+	} else {
+		maxDelta = "if(neighbor(" + alias + ",-1," + alias + ") != " + alias + ", 0, runningDifference(max_0))"
+	}
+
 	return beforeMacrosQuery + "SELECT" +
 		" t," +
 		" groupArray((" + alias + ", max_0_Delta)) AS groupArr" +
 		" FROM (" +
 		" SELECT t," +
 		" " + alias +
-		", if(neighbor(" + alias + ",-1," + alias + ") != " + alias + ", 0, runningDifference(max_0)) AS max_0_Delta" +
+		", " + maxDelta + " AS max_0_Delta" +
 		" FROM (" +
 		" SELECT $timeSeries AS t" +
 		", " + key +
@@ -827,6 +874,12 @@ func (q *EvalQuery) increaseColumns(query string, ast *EvalAST) (string, error) 
 		fromQuery = fromQuery[0 : havingIndex-1]
 	}
 	fromQuery = q._applyTimeFilter(fromQuery)
+	var maxIncrease string
+	if q.UseWindowFuncForMacros {
+		maxIncrease = "if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(" + alias + ",1," + alias + ") OVER () != " + alias + ", 0, max_0 - lagInFrame(max_0,1,0) OVER ())"
+	} else {
+		maxIncrease = "if(runningDifference(max_0) < 0 OR neighbor(" + alias + ",-1," + alias + ") != " + alias + ", 0, runningDifference(max_0))"
+	}
 
 	return beforeMacrosQuery + "SELECT" +
 		" t," +
@@ -834,7 +887,7 @@ func (q *EvalQuery) increaseColumns(query string, ast *EvalAST) (string, error) 
 		" FROM (" +
 		" SELECT t," +
 		" " + alias +
-		", if(runningDifference(max_0) < 0 OR neighbor(" + alias + ",-1," + alias + ") != " + alias + ", 0, runningDifference(max_0)) AS max_0_Increase" +
+		", " + maxIncrease + " AS max_0_Increase" +
 		" FROM (" +
 		" SELECT $timeSeries AS t" +
 		", " + key +
@@ -874,7 +927,14 @@ func (q *EvalQuery) _perSecond(args []interface{}, beforeMacrosQuery, fromQuery 
 	var argsStr = make([]string, len(args))
 	for i, item := range args {
 		argsStr[i] = item.(string)
-		cols[i] = fmt.Sprintf("if(runningDifference(max_%d) < 0, nan, runningDifference(max_%d) / runningDifference(t/1000)) AS max_%d_PerSecond", i, i, i)
+		if q.UseWindowFuncForMacros {
+			cols[i] = fmt.Sprintf("if(max_%d - lagInFrame(max_%d,1,0) OVER () < 0, nan, "+
+				"(max_%d - lagInFrame(max_%d,1,0) OVER ()) "+
+				"/ ((t - lagInFrame(t,1,0) OVER ())/1000) ) AS max_%d_PerSecond",
+				i, i, i, i, i)
+		} else {
+			cols[i] = fmt.Sprintf("if(runningDifference(max_%d) < 0, nan, runningDifference(max_%d) / runningDifference(t/1000)) AS max_%d_PerSecond", i, i, i)
+		}
 	}
 
 	fromQuery = q._applyTimeFilter(fromQuery)
@@ -915,7 +975,11 @@ func (q *EvalQuery) _delta(args []interface{}, beforeMacrosQuery, fromQuery stri
 	var argsStr = make([]string, len(args))
 	for i, item := range args {
 		argsStr[i] = item.(string)
-		cols[i] = fmt.Sprintf("runningDifference(max_%d) AS max_%d_Delta", i, i)
+		if q.UseWindowFuncForMacros {
+			cols[i] = fmt.Sprintf("max_%d - lagInFrame(max_%d,1,0) OVER () AS max_%d_Delta", i, i, i)
+		} else {
+			cols[i] = fmt.Sprintf("runningDifference(max_%d) AS max_%d_Delta", i, i)
+		}
 	}
 
 	fromQuery = q._applyTimeFilter(fromQuery)
@@ -956,7 +1020,11 @@ func (q *EvalQuery) _increase(args []interface{}, beforeMacrosQuery, fromQuery s
 	var argsStr = make([]string, len(args))
 	for i, item := range args {
 		argsStr[i] = item.(string)
-		cols[i] = fmt.Sprintf("if(runningDifference(max_%d) < 0, 0, runningDifference(max_%d)) AS max_%d_Increase", i, i, i)
+		if q.UseWindowFuncForMacros {
+			cols[i] = fmt.Sprintf("if((max_%d - lagInFrame(max_%d,1,0) OVER ()) < 0, 0, max_%d - lagInFrame(max_%d,1,0) OVER ()) AS max_%d_Increase", i, i, i, i, i)
+		} else {
+			cols[i] = fmt.Sprintf("if(runningDifference(max_%d) < 0, 0, runningDifference(max_%d)) AS max_%d_Increase", i, i, i)
+		}
 	}
 
 	fromQuery = q._applyTimeFilter(fromQuery)

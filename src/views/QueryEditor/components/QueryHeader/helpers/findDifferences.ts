@@ -83,6 +83,15 @@ export function findDifferences(query: CHQuery, datasource: CHDataSource) {
         fieldName: 'contextWindowSize',
       });
     }
+    if (query.useWindowFuncForMacros !== defaultValues.useWindowFuncForMacros) {
+      differences.push({
+        key: 'Use window functions for macros',
+        original: checkValue(query.useWindowFuncForMacros),
+        updated: defaultValues.useWindowFuncForMacros,
+        fieldName: 'useWindowFuncForMacros',
+      });
+
+    }
   }
 
   return differences;

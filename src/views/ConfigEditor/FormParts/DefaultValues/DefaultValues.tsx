@@ -334,7 +334,7 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
             <InlineSwitch
               id="useWindowFuncForMacros"
               data-testid="use-window-func-for-macros"
-              value={jsonData.useWindowFuncForMacros}
+              value={jsonData.useWindowFuncForMacros ?? true}
               onChange={(e) => onSwitchToggle('useWindowFuncForMacros', e.currentTarget.checked)}
             />
           </InlineField>

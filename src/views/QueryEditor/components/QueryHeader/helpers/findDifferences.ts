@@ -86,8 +86,8 @@ export function findDifferences(query: CHQuery, datasource: CHDataSource) {
     if (query.useWindowFuncForMacros !== defaultValues.useWindowFuncForMacros) {
       differences.push({
         key: 'Use window functions for macros',
-        original: checkValue(query.useWindowFuncForMacros),
-        updated: defaultValues.useWindowFuncForMacros,
+        original: query.useWindowFuncForMacros?.toString() || 'true',
+        updated: defaultValues.useWindowFuncForMacros?.toString() || 'false',
         fieldName: 'useWindowFuncForMacros',
       });
 

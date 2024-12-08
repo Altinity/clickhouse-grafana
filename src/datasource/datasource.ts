@@ -402,49 +402,6 @@ export class CHDataSource
     });
   }
 
-  modifyQuery(query: any, action: any): any {
-    console.log('MODIFY, query: ', query, 'action: ', action);
-    let where = this.syncBackendMigrationGetPropertiesFromAST(query.query, 'where');
-    const labelFilter = action.key + " = '" + action.value + "'";
-
-    switch (action.type) {
-      case 'ADD_FILTER': {
-        if (where.length === 0) {
-          where.push(labelFilter);
-          break;
-        }
-
-        let alreadyAdded = false;
-        _.each(where, (w: string) => {
-          if (w.includes(labelFilter)) {
-            alreadyAdded = true;
-          }
-        });
-        if (!alreadyAdded) {
-          where.push('AND ' + labelFilter);
-        }
-        break;
-      }
-      case 'ADD_FILTER_OUT': {
-        if (where.length === 0) {
-          break;
-        }
-        where.forEach((w: string, i: number) => {
-          if (w.includes(labelFilter)) {
-            where.splice(i, 1);
-          }
-        });
-        break;
-      }
-      default:
-        break;
-    }
-
-    const modifiedQuery = this.syncBackendMigrationReplacePropertyAST(query.query, 'where', where);
-
-    return { ...query, query: modifiedQuery };
-  }
-
   async createQuery(options: any, target: any) {
     const stmt = await this.replace(options, target);
 
@@ -737,7 +694,6 @@ export class CHDataSource
       }
     };
 
-    console.log('Sending query data:', JSON.stringify(queryData, null, 2));
 
     try {
       const response: any = await this.postResource('replace', queryData);

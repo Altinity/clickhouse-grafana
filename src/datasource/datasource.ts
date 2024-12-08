@@ -1,6 +1,5 @@
 import _, { curry, each } from 'lodash';
 import SqlSeries from './frontend-only/sql-series/sql_series';
-import SqlQuery from './sql-query/sql_query';
 import ResponseParser from './frontend-only/response_parser';
 import AdHocFilter from './frontend-only/adhoc';
 import Scanner from './scanner/scanner';
@@ -438,8 +437,7 @@ export class CHDataSource
   }
 
   async createQuery(options: any, target: any) {
-    const response = await this.replace(options, target);
-    const stmt = response.sql
+    const stmt = await this.replace(options, target);
 
     let keys = [];
 
@@ -456,7 +454,7 @@ export class CHDataSource
     };
   }
 
-  annotationQuery(options: any): Promise<AnnotationEvent[]> {
+  async annotationQuery(options: any): Promise<AnnotationEvent[]> {
     if (!options.annotation.query) {
       throw new Error('Query missing in annotation definition');
     }
@@ -470,12 +468,10 @@ export class CHDataSource
       },
       options
     );
-    let queryModel;
     let query;
 
-    queryModel = new SqlQuery(params.annotation, this.templateSrv, params);
-    queryModel = queryModel.replace(params, []);
-    query = queryModel.replace(/\r\n|\r|\n/g, ' ');
+    const replaced = await this.replace(params, params.annotation);
+    query = replaced.replace(/\r\n|\r|\n/g, ' ');
     query += ' FORMAT JSON';
 
     const queryParams = CHDataSource._getRequestOptions(query, true, undefined, this);
@@ -585,8 +581,7 @@ export class CHDataSource
 
   // used in useFormattedData.ts
   async backendMigrationReplace(query) {
-    const queryModel = new SqlQuery(query, this.templateSrv, this.options);
-    const replaced = queryModel.replace(this.options, query.adHocFilters);
+    const replaced = await this.replace(this.options, query);
 
     return replaced;
   }
@@ -738,7 +733,7 @@ export class CHDataSource
     try {
       const response = await this.postResource('replace', queryData);
       console.log(response, 'new query')
-      return response;
+      return response.sql;
     } catch (error) {
       console.error('Error from backend:', error);
       throw error;

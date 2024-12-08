@@ -684,6 +684,13 @@ export class CHDataSource
       }
     };
 
+
+    queryData.query = this.templateSrv.replace(
+      SqlQueryHelper.conditionalTest(queryData.query, this.templateSrv),
+      options.scopedVars,
+      SqlQueryHelper.interpolateQueryExpr
+    );
+
     console.log('Sending query data:', JSON.stringify(queryData, null, 2));
 
     try {

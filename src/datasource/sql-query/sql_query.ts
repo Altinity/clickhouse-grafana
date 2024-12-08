@@ -36,6 +36,7 @@ export default class SqlQuery {
       options.scopedVars,
       SqlQueryHelper.interpolateQueryExpr
     );
+
     let scanner = new Scanner(query);
     let dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : TimestampFormat.DateTime;
     let i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval;

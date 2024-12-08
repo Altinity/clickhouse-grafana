@@ -27,41 +27,6 @@ export class SqlQueryHelper {
     return dayjs(rounded);
   }
 
-  static convertInterval(interval: any, intervalFactor: number, ms?: boolean): number {
-    const durationSplitRegexp = /(\d+)(ms|s|m|h|d|w|M|y)/;
-    const match = interval?.match(durationSplitRegexp);
-
-    if (!interval || typeof interval !== 'string' || interval === '' || !match) {
-      return 0;
-    }
-
-    const value = parseInt(match[1], 10);
-    const unit = match[2];
-
-    const unitsInSeconds: Record<string, number> = {
-      s: 1,
-      m: 60,
-      h: 3600,
-      d: 86400,
-      w: 604800,
-      M: 2592000,
-      y: 31536000,
-      ms: 0.001,
-    };
-
-    if (!(unit in unitsInSeconds)) {
-      throw new Error('Invalid unit in interval: ' + unit);
-    }
-
-    let result = value * unitsInSeconds[unit];
-
-    if (ms) {
-      result *= 1000;
-    }
-
-    return Math.ceil(result * intervalFactor);
-  }
-
   static conditionalTest(query: string, templateSrv: TemplateSrv) {
     let macros = '$conditionalTest(';
     let openMacros = query.indexOf(macros);
@@ -109,23 +74,6 @@ export class SqlQueryHelper {
       if (done === 0) {
         throw { message: '$conditionalTest macros error cannot find referenced variable: ' + param2 };
       }
-      openMacros = query.indexOf(macros);
-    }
-    return query;
-  }
-
-  static unescape(query: string) {
-    const macros = '$unescape(';
-    let openMacros = query.indexOf(macros);
-    while (openMacros !== -1) {
-      let r = SqlQueryHelper.betweenBraces(query.substring(openMacros + macros.length, query.length));
-      if (r.error.length > 0) {
-        throw { message: '$unescape macros error: ' + r.error };
-      }
-      let arg = r.result;
-      arg = arg.replace(/'+/g, '');
-      let closeMacros = openMacros + macros.length + r.result.length + 1;
-      query = query.substring(0, openMacros) + arg + query.substring(closeMacros, query.length);
       openMacros = query.indexOf(macros);
     }
     return query;
@@ -230,10 +178,6 @@ export class SqlQueryHelper {
     }
   }
 
-  static contain(obj: any, field: string): boolean {
-    return obj.hasOwnProperty(field) && !isEmpty(obj[field]);
-  }
-
   static target(from: string, target: any): [string, string] {
     if (from.length === 0) {
       return ['', ''];
@@ -328,15 +272,5 @@ export class SqlQueryHelper {
       to = '$__to/1000';
     }
     return `${columnName} >= ${convertFn(from)} AND ${columnName} <= ${convertFn(to)}`;
-  }
-
-  static escapeTableIdentifier(identifier: string): string {
-    return /^[a-zA-Z][0-9a-zA-Z_]*$/.test(identifier) ? identifier : `\`${identifier.replace(/`/g, '\\`')}\``;
-  }
-
-  static escapeIdentifier(identifier: string): string {
-    return /^[a-zA-Z][0-9a-zA-Z_]*$/.test(identifier) || /\(.*\)/.test(identifier) || /[\/*+\-]/.test(identifier)
-      ? identifier
-      : `"${identifier.replace(/"/g, '\\"')}"`;
   }
 }

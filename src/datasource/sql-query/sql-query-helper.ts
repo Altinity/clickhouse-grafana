@@ -1,4 +1,4 @@
-import { each, isEmpty, isString, map } from 'lodash';
+import { each, isString, map } from 'lodash';
 import { dateMath, TypedVariableModel } from '@grafana/data';
 import dayjs from 'dayjs';
 import { TemplateSrv } from '@grafana/runtime';

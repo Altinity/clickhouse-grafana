@@ -44,9 +44,7 @@ export const QueryTextEditor = ({
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
 
   useEffect(() => {
-    datasource.backendMigrationGetRawDataFromScanner(formattedData).then((rawSql: any) => {
-      setSqlFormattedData(rawSql);
-    })
+    setSqlFormattedData(formattedData);
     // eslint-disable-next-line
   }, [formattedData]);
 

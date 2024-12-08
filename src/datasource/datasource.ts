@@ -552,33 +552,11 @@ export class CHDataSource
     return replaced;
   }
 
-  async backendMigrationGetRawDataFromScanner(formattedData) {
-    const scanner = new Scanner(formattedData);
-    const rawSql = scanner.raw()
-
-    return rawSql;
-  }
-
   async backendMigrationGetPropertiesFromAST(query, propertyName) {
     const scanner = new Scanner(query);
     const ast = scanner.toAST();
 
     return ast[propertyName] || [];
-  }
-
-  syncBackendMigrationGetPropertiesFromAST(query, propertyName) {
-    const scanner = new Scanner(query);
-    const ast = scanner.toAST();
-
-    return ast[propertyName] || [];
-  }
-
-  syncBackendMigrationReplacePropertyAST(query, propertyName, propertyValue) {
-    let scanner = new Scanner(query);
-    let queryAST = scanner.toAST();
-    queryAST[propertyName] = propertyValue;
-
-    return scanner.Print(queryAST);
   }
 
   backendMigrationApplyAdhocFilters(query: string, adhocFilters: any[], target: any): string {

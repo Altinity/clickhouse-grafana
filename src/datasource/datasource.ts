@@ -7,7 +7,6 @@ import Scanner from './scanner/scanner';
 import {
   AnnotationEvent,
   DataQueryRequest,
-  DataSourceApi,
   DataSourceInstanceSettings,
   DataSourceWithLogsContextSupport,
   DataSourceWithToggleableQueryFiltersSupport,
@@ -741,9 +740,8 @@ export class CHDataSource
     console.log('Sending query data:', JSON.stringify(queryData, null, 2));
 
     try {
-      const response = await this.postResource('replace', queryData);
-      console.log(response, 'new query')
-      return response.sql;
+      const response: any = await this.postResource('replace', queryData);
+      return response?.sql || '';
     } catch (error) {
       console.error('Error from backend:', error);
       throw error;

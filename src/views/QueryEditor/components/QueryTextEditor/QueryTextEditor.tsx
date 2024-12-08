@@ -47,6 +47,7 @@ export const QueryTextEditor = ({
     datasource.backendMigrationGetRawDataFromScanner(formattedData).then((rawSql: any) => {
       setSqlFormattedData(rawSql);
     })
+    // eslint-disable-next-line
   }, [formattedData]);
 
   const handleStepChange = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -21,6 +21,7 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource): [str
     } catch (e: any) {
       setError(e?.message);
     }
+    // eslint-disable-next-line
   }, [query, datasource.name, datasource.options, datasource.templateSrv]);
 
   return [formattedData, error];

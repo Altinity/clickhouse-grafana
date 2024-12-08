@@ -1,8 +1,8 @@
 import _, { curry, each } from 'lodash';
-import SqlSeries from './sql-series/sql_series';
+import SqlSeries from './frontend-only/sql-series/sql_series';
 import SqlQuery from './sql-query/sql_query';
-import ResponseParser from './response_parser';
-import AdHocFilter from './adhoc';
+import ResponseParser from './frontend-only/response_parser';
+import AdHocFilter from './frontend-only/adhoc';
 import Scanner from './scanner/scanner';
 
 import {
@@ -587,5 +587,20 @@ export class CHDataSource
 
   getRef() {
     return { type: this.type, uid: this.uid };
+  }
+
+  // used in useFormattedData.ts
+  async backendMigrationReplace(query) {
+    const queryModel = new SqlQuery(query, this.templateSrv, this.options);
+    const replaced = queryModel.replace(this.options, query.adHocFilters);
+
+    return replaced;
+  }
+
+  async backendMigrationGetRawDataFromScanner(formattedData) {
+    const scanner = new Scanner(formattedData);
+    const rawSql = scanner.raw()
+
+    return rawSql;
   }
 }

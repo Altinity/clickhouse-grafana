@@ -11,7 +11,6 @@ import {
 } from '@grafana/ui';
 import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
-import Scanner from '../../../../datasource/scanner/scanner';
 import {FormattedSQL} from "./FormattedSQL";
 
 const RESOLUTION_OPTIONS = [
@@ -45,9 +44,9 @@ export const QueryTextEditor = ({
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
 
   useEffect(() => {
-    const scanner = new Scanner(formattedData);
-    // removed scanner.Format as it contains bugs inherited from v2
-    setSqlFormattedData(scanner.raw());
+    datasource.backendMigrationGetRawDataFromScanner(formattedData).then((rawSql: any) => {
+      setSqlFormattedData(rawSql);
+    })
   }, [formattedData]);
 
   const handleStepChange = (event: React.ChangeEvent<HTMLInputElement>) => {

@@ -1,4 +1,4 @@
-import ResponseParser from '../datasource/response_parser';
+import ResponseParser from '../datasource/frontend-only/response_parser';
 import { AnnotationEvent } from '@grafana/data';
 
 describe('Parse response:', () => {

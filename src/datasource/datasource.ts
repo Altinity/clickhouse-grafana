@@ -339,12 +339,12 @@ export class CHDataSource
       targets.map(async (target) => this.createQuery(options, target))
     );
 
-    this.replace(options, targets[0]);
+    // this.replace(options, targets[0]);
+    // console.log(queries[0], 'old one')
     // No valid targets, return the empty result to save a round trip.
     if (!queries.length) {
       return Promise.resolve({ data: [] });
     }
-
     const allQueryPromise = queries.map((query) => {
       return this._seriesQuery(query.stmt, query.requestId);
     });
@@ -438,11 +438,8 @@ export class CHDataSource
   }
 
   async createQuery(options: any, target: any) {
-    const queryModel = new SqlQuery(target, this.templateSrv, options);
-    // @ts-ignore
-    const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
-    console.log('ADHOC', adhocFilters)
-    const stmt = queryModel.replace(options, adhocFilters);
+    const response = await this.replace(options, target);
+    const stmt = response.sql
 
     let keys = [];
 
@@ -623,52 +620,100 @@ export class CHDataSource
     return scanner.Print(queryAST);
   }
 
-  // async createBackendQuery(options: DataQueryRequest<CHQuery>, target: CHQuery) {
-  //   const queryData = {
-  //     refId: target.refId,
-  //     ruleUid: options.headers?.['X-Rule-Uid'] || '',
-  //     rawQuery: false,
-  //     query: target.query,  // Required field
-  //     dateTimeColDataType: target.dateTimeColDataType || '',
-  //     dateColDataType: target.dateColDataType || '',
-  //     dateTimeType: target.dateTimeType || 'DATETIME',
-  //     extrapolate: target.extrapolate || false,
-  //     skip_comments: target.skip_comments || false,
-  //     add_metadata: target.add_metadata || false,
-  //     format: target.format || 'time_series',
-  //     round: target.round || '0s',
-  //     intervalFactor: target.intervalFactor || 1,
-  //     interval: options.interval || '30s',
-  //     database: target.database || 'default',
-  //     table: target.table || '',
-  //     maxDataPoints: options.maxDataPoints || 0,
-  //     timeRange: {
-  //       from: "2024-12-08T15:04:05Z",  // Convert to Unix timestamp
-  //       to: "2024-12-08T15:05:05Z"       // Convert to Unix timestamp
-  //     }
-  //   };
-  //
-  //   console.log('Sending query data:', JSON.stringify(queryData, null, 2));
-  //
-  //   try {
-  //     const response = await this.postResource('create-query', queryData);
-  //     console.log('Backend response:', response);
-  //     return response;
-  //   } catch (error) {
-  //     console.error('Error from backend:', error);
-  //     throw error;
-  //   }
-  // }
-
-  async backendMigrationApplyAdhocFilters () {
+  backendMigrationApplyAdhocFilters(query: string, adhocFilters: any[], target: any): string {
+    if (!adhocFilters || adhocFilters.length === 0) {
+      return query;
     }
 
+    let scanner = new Scanner(query);
+    let adhocCondition: any[] = [];
+
+    try {
+
+      let ast = scanner.toAST();
+      let topQueryAST = ast;
+
+      /* Check sub queries for ad-hoc filters */
+      while (ast.hasOwnProperty('from') && !Array.isArray(ast.from)) {
+        ast = ast.from;
+      }
+
+      if (!ast.hasOwnProperty('where')) {
+        ast.where = [];
+      }
+
+      let targetInfo = SqlQueryHelper.target(ast.from[0], target);
+
+      adhocFilters.forEach((af: any) => {
+        let parts = af.key.includes('.') ? af.key.split('.') : [targetInfo[0], targetInfo[1], af.key];
+
+        if (parts.length === 1) {
+          parts = [targetInfo[1], ...parts];
+        }
+        if (parts.length === 2) {
+          parts = [targetInfo[0], ...parts];
+        }
+
+        if (parts.length < 3) {
+          console.warn(`adhoc filters: filter '${af.key}' has the wrong format`);
+          return;
+        }
+
+        if (targetInfo[0] !== parts[0] || targetInfo[1] !== parts[1]) {
+          return;
+        }
+
+        const operator = SqlQueryHelper.clickhouseOperator(af.operator);
+        let value = af.value;
+        if (!(typeof value === 'number' ||
+            value.includes("'") ||
+            value.includes(', ') ||
+            value.match(/^\s*\d+\s*$/))) {
+          value = "'" + value + "'";
+        }
+
+        let cond = `${parts[2]} ${operator} ${value}`;
+        adhocCondition.push(cond);
+
+        if (ast.where.length > 0) {
+          cond = 'AND ' + cond;
+        }
+
+        if (!query.includes('$adhoc')) {
+          ast.where.push(cond);
+        }
+      });
+
+      query = scanner.Print(topQueryAST);
+    } catch (err) {
+      console.error('AST parser error: ', err);
+    }
+
+    /* Render the ad-hoc condition or evaluate to an always true condition */
+    let renderedAdHocCondition = adhocCondition.length > 0 ? '(' + adhocCondition.join(' AND ') + ')' : '1';
+
+    // Replace $adhoc macro with the rendered condition
+    query = query.replace(/\$adhoc\b/g, renderedAdHocCondition);
+
+    return query;
+  }
+
   async replace(options: DataQueryRequest<CHQuery>, target: CHQuery) {
+    const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
+
+    const query = this.templateSrv.replace(
+      SqlQueryHelper.conditionalTest(target.query, this.templateSrv),
+      options.scopedVars,
+      SqlQueryHelper.interpolateQueryExpr
+    );
+
+    const queryUpd = this.backendMigrationApplyAdhocFilters(query, adhocFilters, target);
+
     const queryData = {
       refId: target.refId,
       ruleUid: options.headers?.['X-Rule-Uid'] || '',
       rawQuery: false,
-      query: target.query,  // Required field
+      query: queryUpd,  // Required field
       dateTimeColDataType: target.dateTimeColDataType || '',
       dateColDataType: target.dateColDataType || '',
       dateTimeType: target.dateTimeType || 'DATETIME',
@@ -683,23 +728,16 @@ export class CHDataSource
       table: target.table || '',
       maxDataPoints: options.maxDataPoints || 0,
       timeRange: {
-        from: "2024-12-08T15:04:05Z",  // Convert to Unix timestamp
-        to: "2024-12-08T15:05:05Z"       // Convert to Unix timestamp
+        from: options.range.from.toISOString(),  // Convert to Unix timestamp
+        to: options.range.to.toISOString(),       // Convert to Unix timestamp
       }
     };
-
-
-    queryData.query = this.templateSrv.replace(
-      SqlQueryHelper.conditionalTest(queryData.query, this.templateSrv),
-      options.scopedVars,
-      SqlQueryHelper.interpolateQueryExpr
-    );
 
     console.log('Sending query data:', JSON.stringify(queryData, null, 2));
 
     try {
       const response = await this.postResource('replace', queryData);
-      console.log('Backend response:', response);
+      console.log(response, 'new query')
       return response;
     } catch (error) {
       console.error('Error from backend:', error);

@@ -441,6 +441,7 @@ export class CHDataSource
     const queryModel = new SqlQuery(target, this.templateSrv, options);
     // @ts-ignore
     const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
+    console.log('ADHOC', adhocFilters)
     const stmt = queryModel.replace(options, adhocFilters);
 
     let keys = [];
@@ -658,6 +659,9 @@ export class CHDataSource
   //     throw error;
   //   }
   // }
+
+  async backendMigrationApplyAdhocFilters () {
+    }
 
   async replace(options: DataQueryRequest<CHQuery>, target: CHQuery) {
     const queryData = {

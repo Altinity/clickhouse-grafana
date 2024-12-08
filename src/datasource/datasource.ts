@@ -174,9 +174,8 @@ export class CHDataSource
     let traceId;
     const requestOptions = { ...options, range: this.options.range };
 
-    const originalQuery = this.createQuery(requestOptions, query);
-    let scanner = new Scanner(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '));
-    let { select } = scanner.toAST();
+    const originalQuery = await this.createQuery(requestOptions, query);
+    let select = await this.backendMigrationGetPropertiesFromAST(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select');
 
     const generateQueryForTraceID = (traceId, select) => {
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`;
@@ -220,7 +219,7 @@ export class CHDataSource
 
     if (traceId) {
       const queryForTraceID = generateQueryForTraceID(traceId, select);
-      const { stmt, requestId } = this.createQuery(requestOptions, { ...query, query: queryForTraceID });
+      const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: queryForTraceID });
 
       const response: any = await this._seriesQuery(stmt, requestId + options?.direction);
 
@@ -253,7 +252,7 @@ export class CHDataSource
             ? generateQueryForTimestampBackward(timestampColumn, formattedDate, query?.contextWindowSize)
             : generateQueryForTimestampForward(timestampColumn, formattedDate, query?.contextWindowSize);
 
-        const { stmt, requestId } = this.createQuery(requestOptions, { ...query, query: boundariesRequest });
+        const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: boundariesRequest });
 
         const result: any = await this._seriesQuery(stmt, requestId + options?.direction);
 
@@ -267,7 +266,7 @@ export class CHDataSource
             ? generateRequestForTimestampBackward(timestampColumn, timestamp, row.timeUtc, select)
             : generateRequestForTimestampForward(timestampColumn, timestamp, row.timeUtc, select);
 
-        const { stmt, requestId } = this.createQuery(requestOptions, { ...query, query: contextDataRequest });
+        const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: contextDataRequest });
 
         return this._seriesQuery(stmt, requestId + options?.direction);
       };
@@ -333,10 +332,13 @@ export class CHDataSource
     return query.adHocFilters.some((f) => f.key === filter.key && f.value === filter.value);
   }
 
-  query(options: DataQueryRequest<CHQuery>) {
+  async query(options: DataQueryRequest<CHQuery>) {
     this.options = options;
     const targets = options.targets.filter((target) => !target.hide && target.query);
-    const queries = targets.map((target) => this.createQuery(options, target));
+    const queries = await Promise.all(
+      targets.map(async (target) => this.createQuery(options, target))
+    );
+
     // No valid targets, return the empty result to save a round trip.
     if (!queries.length) {
       return Promise.resolve({ data: [] });
@@ -392,9 +394,8 @@ export class CHDataSource
   }
 
   modifyQuery(query: any, action: any): any {
-    let scanner = new Scanner(query.query ?? '');
-    let queryAST = scanner.toAST();
-    let where = queryAST['where'] || [];
+    console.log('MODIFY, query: ', query, 'action: ', action);
+    let where = this.syncBackendMigrationGetPropertiesFromAST(query.query, 'where');
     const labelFilter = action.key + " = '" + action.value + "'";
 
     switch (action.type) {
@@ -430,11 +431,12 @@ export class CHDataSource
         break;
     }
 
-    const modifiedQuery = scanner.Print(queryAST);
+    const modifiedQuery = this.syncBackendMigrationReplacePropertyAST(query.query, 'where', where);
+
     return { ...query, query: modifiedQuery };
   }
 
-  createQuery(options: any, target: any) {
+  async createQuery(options: any, target: any) {
     const queryModel = new SqlQuery(target, this.templateSrv, options);
     // @ts-ignore
     const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
@@ -443,8 +445,7 @@ export class CHDataSource
     let keys = [];
 
     try {
-      let queryAST = new Scanner(stmt).toAST();
-      keys = queryAST['group by'] || [];
+      keys = await this.backendMigrationGetPropertiesFromAST(stmt, 'group by');
     } catch (err) {
       console.log('AST parser error: ', err);
     }
@@ -534,12 +535,6 @@ export class CHDataSource
     });
   }
 
-  formatQuery(query) {
-    let scanner = new Scanner(query ?? '');
-    scanner.Format();
-    return scanner.Format();
-  }
-
   _seriesQuery(query: string, requestId?: string) {
     query += ' FORMAT JSON';
     return this._request(query, requestId);
@@ -602,5 +597,27 @@ export class CHDataSource
     const rawSql = scanner.raw()
 
     return rawSql;
+  }
+
+  async backendMigrationGetPropertiesFromAST(query, propertyName) {
+    const scanner = new Scanner(query);
+    const ast = scanner.toAST();
+
+    return ast[propertyName] || [];
+  }
+
+  syncBackendMigrationGetPropertiesFromAST(query, propertyName) {
+    const scanner = new Scanner(query);
+    const ast = scanner.toAST();
+
+    return ast[propertyName] || [];
+  }
+
+  syncBackendMigrationReplacePropertyAST(query, propertyName, propertyValue) {
+    let scanner = new Scanner(query);
+    let queryAST = scanner.toAST();
+    queryAST[propertyName] = propertyValue;
+
+    return scanner.Print(queryAST);
   }
 }

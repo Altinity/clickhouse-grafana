@@ -18,7 +18,7 @@ import {
   QueryFilterOptions,
   TypedVariableModel,
 } from '@grafana/data';
-import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
+import {BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv} from '@grafana/runtime';
 
 import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
 import { SqlQueryHelper } from './sql-query/sql-query-helper';
@@ -28,7 +28,7 @@ import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 
 const adhocFilterVariable = 'adhoc_query_filter';
 export class CHDataSource
-  extends DataSourceApi<CHQuery, CHDataSourceOptions>
+  extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
   implements DataSourceWithLogsContextSupport<CHQuery>, DataSourceWithToggleableQueryFiltersSupport<CHQuery>
 {
   backendSrv: BackendSrv;
@@ -339,6 +339,7 @@ export class CHDataSource
       targets.map(async (target) => this.createQuery(options, target))
     );
 
+    this.replace(options, targets[0]);
     // No valid targets, return the empty result to save a round trip.
     if (!queries.length) {
       return Promise.resolve({ data: [] });
@@ -619,5 +620,79 @@ export class CHDataSource
     queryAST[propertyName] = propertyValue;
 
     return scanner.Print(queryAST);
+  }
+
+  // async createBackendQuery(options: DataQueryRequest<CHQuery>, target: CHQuery) {
+  //   const queryData = {
+  //     refId: target.refId,
+  //     ruleUid: options.headers?.['X-Rule-Uid'] || '',
+  //     rawQuery: false,
+  //     query: target.query,  // Required field
+  //     dateTimeColDataType: target.dateTimeColDataType || '',
+  //     dateColDataType: target.dateColDataType || '',
+  //     dateTimeType: target.dateTimeType || 'DATETIME',
+  //     extrapolate: target.extrapolate || false,
+  //     skip_comments: target.skip_comments || false,
+  //     add_metadata: target.add_metadata || false,
+  //     format: target.format || 'time_series',
+  //     round: target.round || '0s',
+  //     intervalFactor: target.intervalFactor || 1,
+  //     interval: options.interval || '30s',
+  //     database: target.database || 'default',
+  //     table: target.table || '',
+  //     maxDataPoints: options.maxDataPoints || 0,
+  //     timeRange: {
+  //       from: "2024-12-08T15:04:05Z",  // Convert to Unix timestamp
+  //       to: "2024-12-08T15:05:05Z"       // Convert to Unix timestamp
+  //     }
+  //   };
+  //
+  //   console.log('Sending query data:', JSON.stringify(queryData, null, 2));
+  //
+  //   try {
+  //     const response = await this.postResource('create-query', queryData);
+  //     console.log('Backend response:', response);
+  //     return response;
+  //   } catch (error) {
+  //     console.error('Error from backend:', error);
+  //     throw error;
+  //   }
+  // }
+
+  async replace(options: DataQueryRequest<CHQuery>, target: CHQuery) {
+    const queryData = {
+      refId: target.refId,
+      ruleUid: options.headers?.['X-Rule-Uid'] || '',
+      rawQuery: false,
+      query: target.query,  // Required field
+      dateTimeColDataType: target.dateTimeColDataType || '',
+      dateColDataType: target.dateColDataType || '',
+      dateTimeType: target.dateTimeType || 'DATETIME',
+      extrapolate: target.extrapolate || false,
+      skip_comments: target.skip_comments || false,
+      add_metadata: target.add_metadata || false,
+      format: target.format || 'time_series',
+      round: target.round || '0s',
+      intervalFactor: target.intervalFactor || 1,
+      interval: options.interval || '30s',
+      database: target.database || 'default',
+      table: target.table || '',
+      maxDataPoints: options.maxDataPoints || 0,
+      timeRange: {
+        from: "2024-12-08T15:04:05Z",  // Convert to Unix timestamp
+        to: "2024-12-08T15:05:05Z"       // Convert to Unix timestamp
+      }
+    };
+
+    console.log('Sending query data:', JSON.stringify(queryData, null, 2));
+
+    try {
+      const response = await this.postResource('replace', queryData);
+      console.log('Backend response:', response);
+      return response;
+    } catch (error) {
+      console.error('Error from backend:', error);
+      throw error;
+    }
   }
 }

@@ -19,11 +19,21 @@ import {
 } from '@grafana/data';
 import {BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv} from '@grafana/runtime';
 
-import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
+import {CHDataSourceOptions, CHQuery, DEFAULT_QUERY, TimestampFormat} from '../types/types';
 import { SqlQueryHelper } from './sql-query/sql-query-helper';
-import SqlQueryMacros from './sql-query/sql-query-macros';
 import { QueryEditor } from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
+
+export interface RawTimeRange {
+  from: any | string;
+  to: any | string;
+}
+
+export interface TimeRange {
+  from: any;
+  to: any;
+  raw: RawTimeRange;
+}
 
 const adhocFilterVariable = 'adhoc_query_filter';
 export class CHDataSource
@@ -516,7 +526,7 @@ export class CHDataSource
       let from = SqlQueryHelper.convertTimestamp(options.range.from);
       let to = SqlQueryHelper.convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = SqlQueryMacros.replaceTimeFilters(interpolatedQuery, options.range);
+      interpolatedQuery = CHDataSource.replaceTimeFilters(interpolatedQuery, options.range);
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 
@@ -738,5 +748,36 @@ export class CHDataSource
       console.error('Error from backend:', error);
       throw error;
     }
+  }
+
+  static replaceTimeFilters(
+    query: string,
+    range: TimeRange,
+    dateTimeType = TimestampFormat.DateTime,
+    round?: number
+  ): string {
+    let from = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.from, round || 0));
+    let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(range.to, round || 0));
+
+    // Extending date range to be sure that round does not affect first and last points data
+    if (round && round > 0) {
+      to += round * 2 - 1;
+      from -= round * 2 - 1;
+    }
+
+    return query
+      .replace(
+        /\$timeFilterByColumn\(([\w_]+)\)/g,
+        (match: string, columnName: string) => `${SqlQueryHelper.getFilterSqlForDateTime(columnName, dateTimeType)}`
+      )
+      .replace(
+        /\$timeFilter64ByColumn\(([\w_]+)\)/g,
+        (match: string, columnName: string) =>
+          `${SqlQueryHelper.getFilterSqlForDateTimeMs(columnName, dateTimeType)}`
+      )
+      .replace(/\$from/g, from.toString())
+      .replace(/\$to/g, to.toString())
+      .replace(/\$__from/g, range.from.valueOf())
+      .replace(/\$__to/g, range.to.valueOf());
   }
 }

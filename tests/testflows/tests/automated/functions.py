@@ -182,6 +182,10 @@ def feature(self):
         with delay():
             panel.go_to_sql_editor()
 
+    with When("I turn off window functions"):
+        with delay():
+            sql_editor.click_use_window_functions_toggle(query_name='A')
+
     with Then("I click Show generated SQL button",
               description="opened to check reformatted queries in scenarios"):
         with delay():

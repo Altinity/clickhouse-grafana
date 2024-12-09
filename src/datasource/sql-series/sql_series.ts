@@ -125,8 +125,8 @@ export default class SqlSeries {
     this.keys = options.keys || [];
   }
 
-  toAnnotation = (input: any): any[] => {
-    return toAnnotation(input);
+  toAnnotation = (input: any, meta: any): any[] => {
+    return toAnnotation(input, meta);
   };
 
   toFlamegraph = (): any => {

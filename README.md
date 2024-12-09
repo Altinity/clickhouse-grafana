@@ -1,4 +1,4 @@
-[![Coverage Status](https://coveralls.io/repos/github/Altinity/clickhouse-grafana/badge.svg)](https://coveralls.io/github/Altinity/clickhouse-grafana)
+[![Coverage Status](https://coveralls.io/repos/github/Altinity/clickhouse-grafana/badge.svg?branch=summary-coverage)](https://coveralls.io/github/Altinity/clickhouse-grafana?branch=summary-coverage)
 
 # Altinity Grafana datasource plugin for ClickHouse® (grafana Grafana 4.6+ supported)
 

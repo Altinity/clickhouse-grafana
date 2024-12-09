@@ -30,7 +30,71 @@ func newResourceHandler() backend.CallResourceHandler {
 	mux.HandleFunc("/apply-adhoc-filters", func(w http.ResponseWriter, r *http.Request) {
 		handleApplyAdhocFilters(w, r)
 	})
+	mux.HandleFunc("/replace-time-filters", func(w http.ResponseWriter, r *http.Request) {
+		handleReplaceTimeFilters(w, r)
+	})
 	return httpadapter.New(mux)
+}
+
+func handleReplaceTimeFilters(w http.ResponseWriter, r *http.Request) {
+	if r.Method != http.MethodPost {
+		w.WriteHeader(http.StatusMethodNotAllowed)
+		return
+	}
+
+	var reqData struct {
+		Query     string `json:"query"`
+		TimeRange struct {
+			From string `json:"from"`
+			To   string `json:"to"`
+		} `json:"timeRange"`
+	}
+
+	if err := json.NewDecoder(r.Body).Decode(&reqData); err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid request body"})
+		return
+	}
+
+	// Parse time range
+	from, err := time.Parse(time.RFC3339, reqData.TimeRange.From)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid from time"})
+		return
+	}
+
+	to, err := time.Parse(time.RFC3339, reqData.TimeRange.To)
+	if err != nil {
+		w.WriteHeader(http.StatusBadRequest)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Invalid to time"})
+		return
+	}
+
+	evalQ := EvalQuery{
+		Query: reqData.Query,
+		From:  from,
+		To:    to,
+	}
+
+	sql := evalQ.replaceTimeFilters(evalQ.Query, 0)
+
+	//if err != nil {
+	//	w.WriteHeader(http.StatusInternalServerError)
+	//	json.NewEncoder(w).Encode(map[string]string{"error": err.Error()})
+	//	return
+	//}
+
+	response := map[string]interface{}{
+		"sql": sql,
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(response); err != nil {
+		w.WriteHeader(http.StatusInternalServerError)
+		json.NewEncoder(w).Encode(map[string]string{"error": "Failed to encode response"})
+		return
+	}
 }
 
 func handleGetAstProperty(w http.ResponseWriter, r *http.Request) {
@@ -224,7 +288,7 @@ type AdhocFilter struct {
 
 func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("handleApplyAdhocFilters: Starting request processing\n")
-	
+
 	if r.Method != http.MethodPost {
 		fmt.Printf("handleApplyAdhocFilters: Invalid method: %s\n", r.Method)
 		w.WriteHeader(http.StatusMethodNotAllowed)
@@ -285,7 +349,7 @@ func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 		fromDepth++
 		fmt.Printf("handleApplyAdhocFilters: Processing FROM clause at depth %d\n", fromDepth)
 		fmt.Printf("handleApplyAdhocFilters: Current AST at depth %d: %+v\n", fromDepth, currentAst)
-		
+
 		fromVal, ok := currentAst.Obj["from"]
 		if !ok || fromVal == nil {
 			fmt.Printf("handleApplyAdhocFilters: FROM value not found or nil at depth %d\n", fromDepth)
@@ -321,7 +385,7 @@ func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 		if currentAst.Obj == nil {
 			currentAst.Obj = make(map[string]interface{})
 		}
-		
+
 		fromAst := &EvalAST{
 			Obj: make(map[string]interface{}),
 			Arr: []interface{}{fmt.Sprintf("%s.%s", reqData.Target.Database, reqData.Target.Table)},
@@ -331,7 +395,7 @@ func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 
 	// Ensure WHERE clause exists and is properly initialized
 	fmt.Printf("handleApplyAdhocFilters: Checking and initializing WHERE clause\n")
-	
+
 	if currentAst.Obj == nil {
 		fmt.Printf("handleApplyAdhocFilters: Initializing currentAst.Obj map\n")
 		currentAst.Obj = make(map[string]interface{})
@@ -412,9 +476,9 @@ func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 
 	// Process each adhoc filter
 	for i, filter := range reqData.AdhocFilters {
-		fmt.Printf("\nhandleApplyAdhocFilters: Processing filter %d - Key: %s, Operator: %s, Value: %v\n", 
+		fmt.Printf("\nhandleApplyAdhocFilters: Processing filter %d - Key: %s, Operator: %s, Value: %v\n",
 			i, filter.Key, filter.Operator, filter.Value)
-		
+
 		var parts []string
 		if strings.Contains(filter.Key, ".") {
 			parts = strings.Split(filter.Key, ".")
@@ -460,9 +524,9 @@ func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 			value = fmt.Sprintf("%g", v)
 		case string:
 			// Don't quote if it's already a number or contains special SQL syntax
-			if regexp.MustCompile(`^\s*\d+(\.\d+)?\s*$`).MatchString(v) || 
-			   strings.Contains(v, "'") || 
-			   strings.Contains(v, ", ") {
+			if regexp.MustCompile(`^\s*\d+(\.\d+)?\s*$`).MatchString(v) ||
+				strings.Contains(v, "'") ||
+				strings.Contains(v, ", ") {
 				value = v
 			} else {
 				// Escape single quotes in string values
@@ -497,7 +561,7 @@ func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 	fmt.Printf("\nhandleApplyAdhocFilters: Generating final query\n")
 	fmt.Printf("handleApplyAdhocFilters: Current WHERE array before printing: %v\n", whereAst.Arr)
 	fmt.Printf("handleApplyAdhocFilters: All adhoc conditions: %v\n", adhocConditions)
-	
+
 	query := printAST(ast, " ")
 	fmt.Printf("handleApplyAdhocFilters: Query after printAST: %s\n", query)
 
@@ -507,7 +571,7 @@ func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 		renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
 	}
 	fmt.Printf("handleApplyAdhocFilters: Rendered adhoc condition: %s\n", renderedCondition)
-	
+
 	query = strings.ReplaceAll(query, "$adhoc", renderedCondition)
 	fmt.Printf("handleApplyAdhocFilters: Final query after macro replacement: %s\n", query)
 

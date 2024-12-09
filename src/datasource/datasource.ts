@@ -505,6 +505,13 @@ export class CHDataSource
       targets.map(async (target) => this.createQuery(options, target))
     );
 
+    const result: any = await this.postResource('replace-time-filters', {
+      query: targets[0].query,
+      timeRange: {
+        from: options.range.from.toISOString(),  // Convert to Unix timestamp
+        to: options.range.to.toISOString(),       // Convert to Unix timestamp
+      }
+    });
     // this.replace(options, targets[0]);
     // console.log(queries[0], 'old one')
     // No valid targets, return the empty result to save a round trip.
@@ -639,10 +646,13 @@ export class CHDataSource
     if (options && options.range) {
       let from = convertTimestamp(options.range.from);
       let to = convertTimestamp(options.range.to);
-      interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
+      interpolatedQuery = "select * from $table WHERE $timeFilter"
       interpolatedQuery = CHDataSource.replaceTimeFilters(interpolatedQuery, options.range);
+      console.log('metricFindQUery', interpolatedQuery, options.range, CHDataSource.replaceTimeFilters(interpolatedQuery, options.range))
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
+
+
 
     // todo(nv): fix request id
     return this._seriesQuery(interpolatedQuery).then(curry(this.responseParser.parse)(query));

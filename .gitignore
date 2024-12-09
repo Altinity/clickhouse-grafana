@@ -24,6 +24,8 @@ lib-cov
 # Coverage directory used by tools like istanbul
 coverage
 instrumented
+go_coverage
+.nyc_output
 # Compiled binary addons (https://nodejs.org/api/addons.html)
 dist/
 artifacts/

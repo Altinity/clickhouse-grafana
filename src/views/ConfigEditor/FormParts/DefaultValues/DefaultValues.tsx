@@ -329,6 +329,15 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
               value={jsonData.contextWindowSize}
             />
           </InlineField>
+          <h6>Macros settings</h6>
+          <InlineField label="Use window functions for macros" labelWidth={32} style={{ marginLeft: '30px' }}>
+            <InlineSwitch
+              id="useWindowFuncForMacros"
+              data-testid="use-window-func-for-macros"
+              value={jsonData.useWindowFuncForMacros ?? true}
+              onChange={(e) => onSwitchToggle('useWindowFuncForMacros', e.currentTarget.checked)}
+            />
+          </InlineField>
         </>
       )}
     </div>

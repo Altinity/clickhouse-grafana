@@ -379,7 +379,7 @@ export class CHDataSource
         } else if (target.format === 'logs') {
           result = sqlSeries.toLogs();
         } else if (target.refId === 'Anno') {
-          result = sqlSeries.toAnnotation(response.data);
+          result = sqlSeries.toAnnotation(response.data, response.meta);
         } else {
           _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
             result.push(data);

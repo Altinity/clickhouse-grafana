@@ -144,7 +144,7 @@ class Cluster(object):
     def __exit__(self, type, value, traceback):
         try:
             with Finally("I clean up, docker compose cluster"):
-                if settings.debug:
+                if not settings.debug:
                     self.down()
 
         finally:

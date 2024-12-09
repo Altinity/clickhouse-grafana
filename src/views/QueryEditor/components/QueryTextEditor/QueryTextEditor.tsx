@@ -130,28 +130,15 @@ export const QueryTextEditor = ({
               value={query.intervalFactor}
             />
           </InlineField>
-          {!isAnnotationView && (
-            <InlineField label={<InlineLabel width={'auto'}>Format As</InlineLabel>}>
-              <Select
-                width={'auto'}
-                data-testid="format-as-select"
-                onChange={(e) => handleFormatChange(e.value)}
-                options={FORMAT_OPTIONS}
-                value={query.format}
-              />
-            </InlineField>
-          )}
-          {query.format === 'logs' && (
-            <InlineField label={<InlineLabel width={'auto'}>Context window</InlineLabel>}>
-              <Select
-                width={'auto'}
-                data-testid="context-window-size-select"
-                onChange={(e) => handleContextWindowChange(e.value)}
-                options={['10', '20', '50', '100'].map((value) => ({ label: value + ' entries', value }))}
-                value={query.contextWindowSize}
-              />
-            </InlineField>
-          )}
+          <InlineField
+            label={
+              <InlineLabel width={10} tooltip="Set rounding for $from and $to timestamps...">
+                Round
+              </InlineLabel>
+            }
+          >
+            <Input data-testid="round-input" placeholder="" onChange={handleRoundChange} value={query.round} />
+          </InlineField>
         </InlineFieldRow>
         <InlineFieldRow>
           <InlineField
@@ -188,13 +175,44 @@ export const QueryTextEditor = ({
           </InlineField>
           <InlineField
             label={
-              <InlineLabel width={10} tooltip="Set rounding for $from and $to timestamps...">
-                Round
+              <InlineLabel width={23} tooltip="Turn off if you would like use `runnindDifference` and `neighbor` functions for macros">
+                Use window functions
               </InlineLabel>
             }
+            style={{ height: '100%' }}
           >
-            <Input data-testid="round-input" placeholder="" onChange={handleRoundChange} value={query.round} />
+            <InlineSwitch
+              data-testid="use-window-func-for-macros"
+              width="auto"
+              value={query.useWindowFuncForMacros}
+              onChange={() => handleToggleField('useWindowFuncForMacros')}
+              transparent
+            />
           </InlineField>
+        </InlineFieldRow>
+        <InlineFieldRow>
+          {!isAnnotationView && (
+            <InlineField label={<InlineLabel width={'auto'}>Format As</InlineLabel>}>
+              <Select
+                width={'auto'}
+                data-testid="format-as-select"
+                onChange={(e) => handleFormatChange(e.value)}
+                options={FORMAT_OPTIONS}
+                value={query.format}
+              />
+            </InlineField>
+          )}
+          {query.format === 'logs' && (
+            <InlineField label={<InlineLabel width={'auto'}>Context window</InlineLabel>}>
+              <Select
+                width={'auto'}
+                data-testid="context-window-size-select"
+                onChange={(e) => handleContextWindowChange(e.value)}
+                options={['10', '20', '50', '100'].map((value) => ({ label: value + ' entries', value }))}
+                value={query.contextWindowSize}
+              />
+            </InlineField>
+          )}
           <InlineField>
             <ToolbarButton variant={'primary'} onClick={() => handleToggleField('showHelp')} isOpen={query.showHelp}>
               Show help

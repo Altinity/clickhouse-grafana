@@ -199,7 +199,7 @@ services:
         cp tests/testflows/coverage/raw/* .nyc_output/ &&
         npx nyc report --reporter=html --report-dir=./tests/testflows/frontend_coverage_testflows
         cp coverage/coverage-final.json .nyc_output/ &&
-        npx nyc report --reporter=html --report-dir=./tests/testflows/coverage
+        npx nyc report --reporter html --reporter=lcov --report-dir=./tests/testflows/coverage
       '
 
   backend_coverage_builder:

@@ -553,13 +553,17 @@ export class CHDataSource
   }
 
   async backendMigrationGetPropertiesFromAST(query, propertyName) {
-    const scanner = new Scanner(query);
-    const ast = scanner.toAST();
+    const result = await this.postResource('get-ast-property', { query: query, propertyName: propertyName});
 
-    return ast[propertyName] || [];
+    if (result && result.properties) {
+      return result.properties;
+    }
+
+    return [];
   }
 
-  backendMigrationApplyAdhocFilters(query: string, adhocFilters: any[], target: any): string {
+  async backendMigrationApplyAdhocFilters(query: string, adhocFilters: any[], target: any): Promise<string> {
+    console.log('testing')
     if (!adhocFilters || adhocFilters.length === 0) {
       return query;
     }
@@ -571,6 +575,7 @@ export class CHDataSource
 
       let ast = scanner.toAST();
       let topQueryAST = ast;
+      console.log('AST browser', ast)
 
       /* Check sub queries for ad-hoc filters */
       while (ast.hasOwnProperty('from') && !Array.isArray(ast.from)) {
@@ -646,7 +651,7 @@ export class CHDataSource
       SqlQueryHelper.interpolateQueryExpr
     );
 
-    const queryUpd = this.backendMigrationApplyAdhocFilters(query, adhocFilters, target);
+    const queryUpd = await this.backendMigrationApplyAdhocFilters(query, adhocFilters, target);
 
     const queryData = {
       refId: target.refId,

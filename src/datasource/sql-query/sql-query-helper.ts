@@ -28,10 +28,34 @@ export class SqlQueryHelper {
   }
 
   static conditionalTest(query: string, templateSrv: TemplateSrv) {
+    const betweenBraces = (query: string): boolean | any => {
+      let r = {
+        result: '',
+        error: '',
+      };
+      let openBraces = 1;
+      for (let i = 0; i < query.length; i++) {
+        if (query.charAt(i) === '(') {
+          openBraces++;
+        }
+        if (query.charAt(i) === ')') {
+          openBraces--;
+          if (openBraces === 0) {
+            r.result = query.substring(0, i);
+            break;
+          }
+        }
+      }
+      if (openBraces > 1) {
+        r.error = 'missing parentheses';
+      }
+      return r;
+    }
+
     let macros = '$conditionalTest(';
     let openMacros = query.indexOf(macros);
     while (openMacros !== -1) {
-      let r = SqlQueryHelper.betweenBraces(query.substring(openMacros + macros.length, query.length));
+      let r = betweenBraces(query.substring(openMacros + macros.length, query.length));
       if (r.error.length > 0) {
         throw { message: '$conditionalIn macros error: ' + r.error };
       }
@@ -77,44 +101,6 @@ export class SqlQueryHelper {
       openMacros = query.indexOf(macros);
     }
     return query;
-  }
-
-  static betweenBraces(query: string): boolean | any {
-    let r = {
-      result: '',
-      error: '',
-    };
-    let openBraces = 1;
-    for (let i = 0; i < query.length; i++) {
-      if (query.charAt(i) === '(') {
-        openBraces++;
-      }
-      if (query.charAt(i) === ')') {
-        openBraces--;
-        if (openBraces === 0) {
-          r.result = query.substring(0, i);
-          break;
-        }
-      }
-    }
-    if (openBraces > 1) {
-      r.error = 'missing parentheses';
-    }
-    return r;
-  }
-
-  static interpolateQueryExpr(value: any, variable: any, defaultFormatFn: any) {
-    // if no (`multiselect` or `include all`) and variable is not Array - do not escape
-    if (!variable.multi && !variable.includeAll && !Array.isArray(value)) {
-      return value;
-    }
-    if (!Array.isArray(value)) {
-      return SqlQueryHelper.clickhouseEscape(value, variable);
-    }
-    let escapedValues = value.map(function (v) {
-      return SqlQueryHelper.clickhouseEscape(v, variable);
-    });
-    return escapedValues.join(',');
   }
 
   static clickhouseOperator(value: string): string {

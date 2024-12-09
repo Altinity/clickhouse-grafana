@@ -58,6 +58,13 @@ def click_skip_comments_toggle(self, query_name):
 
 
 @TestStep(When)
+def click_use_window_functions_toggle(self, query_name):
+    """Click Use window functions toggle."""
+
+    locators.use_window_fuctions_toggle(query_name=query_name, grafana_version=self.context.grafana_version).click()
+
+
+@TestStep(When)
 def enter_round(self, round, query_name):
     """Enter Round."""
 

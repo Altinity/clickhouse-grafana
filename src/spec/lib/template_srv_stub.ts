@@ -1,7 +1,6 @@
 import { isArray } from 'lodash';
 import { TemplateSrv } from '@grafana/runtime';
 import { TimeRange } from '@grafana/data';
-import { SqlQueryHelper } from '../../datasource/sql-query/sql-query-helper';
 
 const variableRegex = /\$(\w+)|\[\[([\s\S]+?)(?::(\w+))?\]\]|\${(\w+)(?:\.([^:^\}]+))?(?::([^\}]+))?}/g;
 export default class TemplateSrvStub implements TemplateSrv {

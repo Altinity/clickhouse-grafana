@@ -18,10 +18,8 @@ import {
 import {BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv} from '@grafana/runtime';
 
 import {CHDataSourceOptions, CHQuery, DEFAULT_QUERY, TimestampFormat} from '../types/types';
-import { SqlQueryHelper } from './sql-query/sql-query-helper';
 import { QueryEditor } from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
-import dayjs from "dayjs";
 
 export interface RawTimeRange {
   from: any | string;
@@ -92,20 +90,6 @@ const interpolateQueryExpr = (value: any, variable: any) => {
     return clickhouseEscape(v, variable);
   });
   return escapedValues.join(',');
-}
-
-const roundDate = (date: any, round: number): any => {
-  if (round === 0) {
-    return date;
-  }
-
-  if (isString(date)) {
-    date = dateMath.parse(date, true);
-  }
-
-  let coefficient = 1000 * round;
-  let rounded = Math.floor(date.valueOf() / coefficient) * coefficient;
-  return dayjs(rounded);
 }
 
 const convertTimestamp = (date: any) => {
@@ -504,14 +488,6 @@ export class CHDataSource
     const queries = await Promise.all(
       targets.map(async (target) => this.createQuery(options, target))
     );
-
-    const result: any = await this.postResource('replace-time-filters', {
-      query: targets[0].query,
-      timeRange: {
-        from: options.range.from.toISOString(),  // Convert to Unix timestamp
-        to: options.range.to.toISOString(),       // Convert to Unix timestamp
-      }
-    });
     // this.replace(options, targets[0]);
     // console.log(queries[0], 'old one')
     // No valid targets, return the empty result to save a round trip.
@@ -621,7 +597,7 @@ export class CHDataSource
     return dataRequest as Promise<AnnotationEvent[]>;
   }
 
-  metricFindQuery(query: string, options?: any) {
+  async metricFindQuery(query: string, options?: any) {
     let interpolatedQuery: string;
     const wildcardChar = '%';
     const searchFilterVariableName = '__searchFilter';
@@ -646,13 +622,10 @@ export class CHDataSource
     if (options && options.range) {
       let from = convertTimestamp(options.range.from);
       let to = convertTimestamp(options.range.to);
-      interpolatedQuery = "select * from $table WHERE $timeFilter"
-      interpolatedQuery = CHDataSource.replaceTimeFilters(interpolatedQuery, options.range);
-      console.log('metricFindQUery', interpolatedQuery, options.range, CHDataSource.replaceTimeFilters(interpolatedQuery, options.range))
+      interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
+      interpolatedQuery = await this.replaceTimeFilters(interpolatedQuery, options.range);
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
-
-
 
     // todo(nv): fix request id
     return this._seriesQuery(interpolatedQuery).then(curry(this.responseParser.parse)(query));
@@ -789,34 +762,20 @@ export class CHDataSource
     }
   }
 
-  static replaceTimeFilters(
+  async replaceTimeFilters(
     query: string,
     range: TimeRange,
     dateTimeType = TimestampFormat.DateTime,
-    round?: number
-  ): string {
-    let from = convertTimestamp(roundDate(range.from, round || 0));
-    let to = convertTimestamp(roundDate(range.to, round || 0));
+  ): Promise<string> {
+    const result: any = await this.postResource('replace-time-filters', {
+      query: query,
+      timeRange: {
+        from: range.from.toISOString(),  // Convert to Unix timestamp
+        to: range.to.toISOString(),       // Convert to Unix timestamp
+      },
+      dateTimeType: dateTimeType
+    });
 
-    // Extending date range to be sure that round does not affect first and last points data
-    if (round && round > 0) {
-      to += round * 2 - 1;
-      from -= round * 2 - 1;
-    }
-
-    return query
-      .replace(
-        /\$timeFilterByColumn\(([\w_]+)\)/g,
-        (match: string, columnName: string) => `${SqlQueryHelper.getFilterSqlForDateTime(columnName, dateTimeType)}`
-      )
-      .replace(
-        /\$timeFilter64ByColumn\(([\w_]+)\)/g,
-        (match: string, columnName: string) =>
-          `${SqlQueryHelper.getFilterSqlForDateTimeMs(columnName, dateTimeType)}`
-      )
-      .replace(/\$from/g, from.toString())
-      .replace(/\$to/g, to.toString())
-      .replace(/\$__from/g, range.from.valueOf())
-      .replace(/\$__to/g, range.to.valueOf());
+    return result.sql
   }
 }

@@ -48,6 +48,7 @@ func handleReplaceTimeFilters(w http.ResponseWriter, r *http.Request) {
 			From string `json:"from"`
 			To   string `json:"to"`
 		} `json:"timeRange"`
+		DateTimeType string `json:"dateTimeType"`
 	}
 
 	if err := json.NewDecoder(r.Body).Decode(&reqData); err != nil {
@@ -72,9 +73,10 @@ func handleReplaceTimeFilters(w http.ResponseWriter, r *http.Request) {
 	}
 
 	evalQ := EvalQuery{
-		Query: reqData.Query,
-		From:  from,
-		To:    to,
+		Query:        reqData.Query,
+		From:         from,
+		To:           to,
+		DateTimeType: reqData.DateTimeType,
 	}
 
 	sql := evalQ.replaceTimeFilters(evalQ.Query, 0)

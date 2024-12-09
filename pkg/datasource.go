@@ -329,38 +329,50 @@ func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 		currentAst.Obj["from"] = fromAst
 	}
 
-	// Ensure WHERE clause exists
-	fmt.Printf("handleApplyAdhocFilters: Checking WHERE clause\n")
-	fmt.Printf("handleApplyAdhocFilters: Current AST Obj: %+v\n", currentAst.Obj)
+	// Ensure WHERE clause exists and is properly initialized
+	fmt.Printf("handleApplyAdhocFilters: Checking and initializing WHERE clause\n")
 	
 	if currentAst.Obj == nil {
 		fmt.Printf("handleApplyAdhocFilters: Initializing currentAst.Obj map\n")
 		currentAst.Obj = make(map[string]interface{})
 	}
 
+	var whereAst *EvalAST
 	if !currentAst.hasOwnProperty("where") {
 		fmt.Printf("handleApplyAdhocFilters: Creating new WHERE clause\n")
-		whereAst := &EvalAST{
-			Obj: make(map[string]interface{}),
-			Arr: make([]interface{}, 0),
-		}
-		currentAst.Obj["where"] = whereAst
-	}
-	
-	whereAst, ok := currentAst.Obj["where"].(*EvalAST)
-	if !ok {
-		fmt.Printf("handleApplyAdhocFilters: WHERE clause is not an EvalAST, creating new one\n")
 		whereAst = &EvalAST{
 			Obj: make(map[string]interface{}),
 			Arr: make([]interface{}, 0),
 		}
 		currentAst.Obj["where"] = whereAst
+	} else {
+		whereVal, ok := currentAst.Obj["where"]
+		if !ok || whereVal == nil {
+			fmt.Printf("handleApplyAdhocFilters: WHERE value is nil or missing, creating new one\n")
+			whereAst = &EvalAST{
+				Obj: make(map[string]interface{}),
+				Arr: make([]interface{}, 0),
+			}
+			currentAst.Obj["where"] = whereAst
+		} else {
+			whereAst, ok = whereVal.(*EvalAST)
+			if !ok {
+				fmt.Printf("handleApplyAdhocFilters: WHERE value is not an EvalAST, creating new one\n")
+				whereAst = &EvalAST{
+					Obj: make(map[string]interface{}),
+					Arr: make([]interface{}, 0),
+				}
+				currentAst.Obj["where"] = whereAst
+			}
+		}
 	}
 
 	if whereAst.Arr == nil {
 		fmt.Printf("handleApplyAdhocFilters: Initializing WHERE clause array\n")
 		whereAst.Arr = make([]interface{}, 0)
 	}
+
+	fmt.Printf("handleApplyAdhocFilters: WHERE clause initialized - Arr length: %d\n", len(whereAst.Arr))
 
 	// Get target info from first FROM element
 	fmt.Printf("handleApplyAdhocFilters: Checking FROM clause\n")
@@ -400,7 +412,8 @@ func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 
 	// Process each adhoc filter
 	for i, filter := range reqData.AdhocFilters {
-		fmt.Printf("handleApplyAdhocFilters: Processing filter %d - Key: %s, Operator: %s\n", i, filter.Key, filter.Operator)
+		fmt.Printf("\nhandleApplyAdhocFilters: Processing filter %d - Key: %s, Operator: %s, Value: %v\n", 
+			i, filter.Key, filter.Operator, filter.Value)
 		
 		var parts []string
 		if strings.Contains(filter.Key, ".") {
@@ -440,48 +453,63 @@ func handleApplyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 		}
 		fmt.Printf("handleApplyAdhocFilters: Converted operator from %s to %s\n", filter.Operator, operator)
 
-		// Format value
+		// Format value with consistent quoting
 		var value string
 		switch v := filter.Value.(type) {
 		case float64:
 			value = fmt.Sprintf("%g", v)
 		case string:
-			if strings.Contains(v, "'") || strings.Contains(v, ", ") || regexp.MustCompile(`^\s*\d+\s*$`).MatchString(v) {
+			// Don't quote if it's already a number or contains special SQL syntax
+			if regexp.MustCompile(`^\s*\d+(\.\d+)?\s*$`).MatchString(v) || 
+			   strings.Contains(v, "'") || 
+			   strings.Contains(v, ", ") {
 				value = v
 			} else {
-				value = fmt.Sprintf("'%s'", v)
+				// Escape single quotes in string values
+				escaped := strings.ReplaceAll(v, "'", "''")
+				value = fmt.Sprintf("'%s'", escaped)
 			}
 		default:
-			value = fmt.Sprintf("'%v'", v)
+			// For any other type, convert to string and escape quotes
+			str := fmt.Sprintf("%v", v)
+			escaped := strings.ReplaceAll(str, "'", "''")
+			value = fmt.Sprintf("'%s'", escaped)
 		}
 		fmt.Printf("handleApplyAdhocFilters: Formatted value: %s\n", value)
 
+		// Build the condition with proper spacing
 		condition := fmt.Sprintf("%s %s %s", parts[2], operator, value)
-		adhocConditions = append(adhocConditions, condition)
 		fmt.Printf("handleApplyAdhocFilters: Created condition: %s\n", condition)
+		adhocConditions = append(adhocConditions, condition)
 
-		if len(whereAst.Arr) > 0 {
-			condition = "AND " + condition
-			fmt.Printf("handleApplyAdhocFilters: Added AND to condition: %s\n", condition)
-		}
-
+		// Add the condition to WHERE clause if not using $adhoc macro
 		if !strings.Contains(reqData.Query, "$adhoc") {
+			if len(whereAst.Arr) > 0 {
+				condition = "AND " + condition
+				fmt.Printf("handleApplyAdhocFilters: Added AND to condition: %s\n", condition)
+			}
 			whereAst.Arr = append(whereAst.Arr, condition)
-			fmt.Printf("handleApplyAdhocFilters: Added condition to WHERE clause\n")
+			fmt.Printf("handleApplyAdhocFilters: Added condition to WHERE clause. Current WHERE array length: %d\n", len(whereAst.Arr))
 		}
 	}
 
 	// Update query
-	fmt.Printf("handleApplyAdhocFilters: Generating final query\n")
+	fmt.Printf("\nhandleApplyAdhocFilters: Generating final query\n")
+	fmt.Printf("handleApplyAdhocFilters: Current WHERE array before printing: %v\n", whereAst.Arr)
+	fmt.Printf("handleApplyAdhocFilters: All adhoc conditions: %v\n", adhocConditions)
+	
 	query := printAST(ast, " ")
+	fmt.Printf("handleApplyAdhocFilters: Query after printAST: %s\n", query)
 
 	// Replace $adhoc macro
 	renderedCondition := "1"
 	if len(adhocConditions) > 0 {
 		renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
 	}
+	fmt.Printf("handleApplyAdhocFilters: Rendered adhoc condition: %s\n", renderedCondition)
+	
 	query = strings.ReplaceAll(query, "$adhoc", renderedCondition)
-	fmt.Printf("handleApplyAdhocFilters: Final query: %s\n", query)
+	fmt.Printf("handleApplyAdhocFilters: Final query after macro replacement: %s\n", query)
 
 	response := map[string]interface{}{
 		"query": query,

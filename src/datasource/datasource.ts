@@ -2,7 +2,6 @@ import _, { curry, each } from 'lodash';
 import SqlSeries from './frontend-only/sql-series/sql_series';
 import ResponseParser from './frontend-only/response_parser';
 import AdHocFilter from './frontend-only/adhoc';
-import Scanner from './scanner/scanner';
 
 import {
   AnnotationEvent,
@@ -553,7 +552,7 @@ export class CHDataSource
   }
 
   async backendMigrationGetPropertiesFromAST(query, propertyName) {
-    const result = await this.postResource('get-ast-property', { query: query, propertyName: propertyName});
+    const result: any = await this.postResource('get-ast-property', { query: query, propertyName: propertyName});
 
     if (result && result.properties) {
       return result.properties;
@@ -567,7 +566,7 @@ export class CHDataSource
       return query;
     }
 
-    const result = await this.postResource('apply-adhoc-filters', {
+    const result: any = await this.postResource('apply-adhoc-filters', {
       query: query,
       adhocFilters: adhocFilters,
       target: target

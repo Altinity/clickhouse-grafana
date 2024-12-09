@@ -64,6 +64,14 @@ class Locators:
             search_class = "data-rfd-draggable-id"
         return driver.find_element(SelectBy.XPATH, f'//*[contains(@{search_class}, "{query_name}")]//*[./text()="Skip Comments"]/..//*[contains(@for,"switch")]')
 
+    def use_window_fuctions_toggle(self, query_name, grafana_version=None):
+        driver: WebDriver = current().context.driver
+        if not(grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
+            search_class = "data-rbd-draggable-id"
+        else:
+            search_class = "data-rfd-draggable-id"
+        return driver.find_element(SelectBy.XPATH, f'//*[contains(@{search_class}, "{query_name}")]//*[./text()="Use window functions"]/..//*[contains(@for,"switch")]')
+
     def round_textfield(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver
         if not(grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):

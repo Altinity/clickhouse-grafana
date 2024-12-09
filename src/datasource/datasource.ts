@@ -563,83 +563,17 @@ export class CHDataSource
   }
 
   async backendMigrationApplyAdhocFilters(query: string, adhocFilters: any[], target: any): Promise<string> {
-    console.log('testing')
     if (!adhocFilters || adhocFilters.length === 0) {
       return query;
     }
 
-    let scanner = new Scanner(query);
-    let adhocCondition: any[] = [];
+    const result = await this.postResource('apply-adhoc-filters', {
+      query: query,
+      adhocFilters: adhocFilters,
+      target: target
+    });
 
-    try {
-
-      let ast = scanner.toAST();
-      let topQueryAST = ast;
-      console.log('AST browser', ast)
-
-      /* Check sub queries for ad-hoc filters */
-      while (ast.hasOwnProperty('from') && !Array.isArray(ast.from)) {
-        ast = ast.from;
-      }
-
-      if (!ast.hasOwnProperty('where')) {
-        ast.where = [];
-      }
-
-      let targetInfo = SqlQueryHelper.target(ast.from[0], target);
-
-      adhocFilters.forEach((af: any) => {
-        let parts = af.key.includes('.') ? af.key.split('.') : [targetInfo[0], targetInfo[1], af.key];
-
-        if (parts.length === 1) {
-          parts = [targetInfo[1], ...parts];
-        }
-        if (parts.length === 2) {
-          parts = [targetInfo[0], ...parts];
-        }
-
-        if (parts.length < 3) {
-          console.warn(`adhoc filters: filter '${af.key}' has the wrong format`);
-          return;
-        }
-
-        if (targetInfo[0] !== parts[0] || targetInfo[1] !== parts[1]) {
-          return;
-        }
-
-        const operator = SqlQueryHelper.clickhouseOperator(af.operator);
-        let value = af.value;
-        if (!(typeof value === 'number' ||
-            value.includes("'") ||
-            value.includes(', ') ||
-            value.match(/^\s*\d+\s*$/))) {
-          value = "'" + value + "'";
-        }
-
-        let cond = `${parts[2]} ${operator} ${value}`;
-        adhocCondition.push(cond);
-
-        if (ast.where.length > 0) {
-          cond = 'AND ' + cond;
-        }
-
-        if (!query.includes('$adhoc')) {
-          ast.where.push(cond);
-        }
-      });
-
-      query = scanner.Print(topQueryAST);
-    } catch (err) {
-      console.error('AST parser error: ', err);
-    }
-
-    /* Render the ad-hoc condition or evaluate to an always true condition */
-    let renderedAdHocCondition = adhocCondition.length > 0 ? '(' + adhocCondition.join(' AND ') + ')' : '1';
-
-    // Replace $adhoc macro with the rendered condition
-    query = query.replace(/\$adhoc\b/g, renderedAdHocCondition);
-
-    return query;
+    return result.query;
   }
 
   async replace(options: DataQueryRequest<CHQuery>, target: CHQuery) {

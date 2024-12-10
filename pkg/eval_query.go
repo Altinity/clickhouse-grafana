@@ -2,12 +2,14 @@ package main
 
 import (
 	"fmt"
+	"github.com/dlclark/regexp2"
+	"github.com/hyperjumptech/jiffy"
 	"math"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
-
-	"github.com/dlclark/regexp2"
+	"unicode"
 )
 
 /* var NumberOnlyRegexp = regexp.MustCompile(`^[+-]?\d+(\.\d+)?$`) */
@@ -55,6 +57,51 @@ type EvalQuery struct {
 	To                     time.Time
 }
 
+func parseInterval(interval string) (int, int) {
+	// Parse the duration
+	dur, err := jiffy.DurationOf(interval)
+	if err != nil {
+		return 0, 0
+	}
+
+	// Describe the duration (for a formatted string output)
+	durationSeconds := strings.Map(func(r rune) rune {
+		if unicode.IsDigit(r) {
+			return r
+		}
+		return -1
+	}, jiffy.DescribeDuration(dur, &jiffy.Want{
+		Second:      true,
+		Millisecond: false,
+		Verbose:     false,
+	}))
+
+	durationMilliseconds := strings.Map(func(r rune) rune {
+		if unicode.IsDigit(r) {
+			return r
+		}
+		return -1
+	}, jiffy.DescribeDuration(dur, &jiffy.Want{
+		Second:      false,
+		Millisecond: true,
+		Verbose:     false,
+	}))
+
+	// Calculate seconds and milliseconds
+	seconds, test := strconv.Atoi(durationSeconds)
+	milliseconds, test2 := strconv.Atoi(durationMilliseconds)
+
+	if test != nil || test2 != nil {
+
+	}
+
+	if seconds == 0 {
+		seconds = 1
+	}
+
+	return seconds, milliseconds
+}
+
 func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
 	query, err := q.replace(q.Query)
 	if err != nil {
@@ -76,14 +123,14 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	i := 1 * time.Second
 	ms := 1 * time.Millisecond
 	if q.Interval != "" {
-		duration, err := time.ParseDuration(q.Interval)
+		intervalSeconds, intervalMs := parseInterval(q.Interval)
 		if err != nil {
 			return "", err
 		}
-		q.IntervalSec = int(math.Ceil(duration.Seconds()))
-		q.IntervalMs = int(duration.Milliseconds())
+		q.IntervalSec = intervalSeconds
+		q.IntervalMs = intervalMs
 	}
-	if q.IntervalSec <= 0 {
+	if q.IntervalSec < 0 {
 		if q.MaxDataPoints > 0 {
 			i = q.To.Sub(q.From) / time.Duration(q.MaxDataPoints)
 		} else {

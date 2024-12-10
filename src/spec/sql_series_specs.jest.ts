@@ -1,10 +1,10 @@
-import { toFlamegraph } from '../datasource/frontend-only/sql-series/toFlamegraph';
-import { toLogs } from '../datasource/frontend-only/sql-series/toLogs';
-import { toTable } from '../datasource/frontend-only/sql-series/toTable';
+import { toFlamegraph } from '../datasource/sql-series/toFlamegraph';
+import { toLogs } from '../datasource/sql-series/toLogs';
+import { toTable } from '../datasource/sql-series/toTable';
 
 import { MutableDataFrame } from '@grafana/data';
-import { toTimeSeries } from '../datasource/frontend-only/sql-series/toTimeSeries';
-import { toTraces } from '../datasource/frontend-only/sql-series/toTraces';
+import { toTimeSeries } from '../datasource/sql-series/toTimeSeries';
+import { toTraces } from '../datasource/sql-series/toTraces';
 
 describe('sql-series. toFlamegraph unit tests', () => {
   it('should transform input series into flamegraph data correctly', () => {

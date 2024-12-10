@@ -1,7 +1,7 @@
 import _, {curry, each, isString, map} from 'lodash';
-import SqlSeries from './frontend-only/sql-series/sql_series';
-import ResponseParser from './frontend-only/response_parser';
-import AdHocFilter from './frontend-only/adhoc';
+import SqlSeries from './sql-series/sql_series';
+import ResponseParser from './response_parser';
+import AdHocFilter from './adhoc';
 
 import {
   AnnotationEvent,

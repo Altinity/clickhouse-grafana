@@ -20,7 +20,7 @@ import {BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, Templa
 import {CHDataSourceOptions, CHQuery, DEFAULT_QUERY, TimestampFormat} from '../types/types';
 import { QueryEditor } from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
-
+import {Observable, from} from 'rxjs';
 export interface RawTimeRange {
   from: any | string;
   to: any | string;
@@ -482,23 +482,21 @@ export class CHDataSource
     return query.adHocFilters.some((f) => f.key === filter.key && f.value === filter.value);
   }
 
-  async query(options: DataQueryRequest<CHQuery>) {
+  query(options: DataQueryRequest<CHQuery>): Observable<any> {
     this.options = options;
     const targets = options.targets.filter((target) => !target.hide && target.query);
     const queries = await Promise.all(
       targets.map(async (target) => this.createQuery(options, target))
     );
-    // this.replace(options, targets[0]);
-    // console.log(queries[0], 'old one')
-    // No valid targets, return the empty result to save a round trip.
+
     if (!queries.length) {
-      return Promise.resolve({ data: [] });
+      return from(Promise.resolve({ data: [] }))
     }
     const allQueryPromise = queries.map((query) => {
       return this._seriesQuery(query.stmt, query.requestId);
     });
 
-    return Promise.all(allQueryPromise).then((responses: any): any => {
+    return from(Promise.all(allQueryPromise).then((responses: any): any => {
       let result: any[] = [],
         i = 0;
       _.each(responses, (response) => {
@@ -540,7 +538,7 @@ export class CHDataSource
       });
 
       return { data: result };
-    });
+    }))
   }
 
   async createQuery(options: any, target: any) {

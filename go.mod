@@ -13,6 +13,7 @@ require (
 
 require (
 	github.com/BurntSushi/toml v1.4.0 // indirect
+	github.com/antlr/antlr4 v0.0.0-20200124162019-2d7f727a00b7 // indirect
 	github.com/apache/arrow/go/v15 v15.0.2 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect
 	github.com/cenkalti/backoff/v4 v4.3.0 // indirect
@@ -43,6 +44,7 @@ require (
 	github.com/hashicorp/go-hclog v1.6.3 // indirect
 	github.com/hashicorp/go-plugin v1.6.2 // indirect
 	github.com/hashicorp/yamux v0.1.2 // indirect
+	github.com/hyperjumptech/jiffy v1.0.0 // indirect
 	github.com/invopop/yaml v0.3.1 // indirect
 	github.com/josharian/intern v1.0.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect

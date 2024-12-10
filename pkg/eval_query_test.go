@@ -13,21 +13,21 @@ import (
 )
 
 type macrosTestCase struct {
-	name     string
-	query    string
-	got      string
-	expected string
-  expectedWithWindow string
-	fn       func(string, *EvalAST) (string, error)
+	name               string
+	query              string
+	got                string
+	expected           string
+	expectedWithWindow string
+	fn                 func(string, *EvalAST) (string, error)
 }
 
 func newMacrosTestCase(name, query, expected, expectedWithWindow string, fn func(string, *EvalAST) (string, error)) macrosTestCase {
 	return macrosTestCase{
-		name:     name,
-		query:    query,
-		expected: expected,
+		name:               name,
+		query:              query,
+		expected:           expected,
 		expectedWithWindow: expectedWithWindow,
-		fn:       fn,
+		fn:                 fn,
 	}
 }
 
@@ -49,18 +49,18 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY t"+
 				" ORDER BY t)",
 
-      "/* comment */ SELECT t," +
-        " from_good/((t - lagInFrame(t,1,0) OVER ())/1000) from_goodRate," +
-        " from_bad/((t - lagInFrame(t,1,0) OVER ())/1000) from_badRate" +
-        " FROM (" +
-        " SELECT $timeSeries AS t," +
-        " countIf(Type = 200) AS from_good," +
-        " countIf(Type != 200) AS from_bad" +
-        " FROM requests" +
-        " WHERE $timeFilter" +
-        " GROUP BY t" +
-        " ORDER BY t)",
-        
+			"/* comment */ SELECT t,"+
+				" from_good/((t - lagInFrame(t,1,0) OVER ())/1000) from_goodRate,"+
+				" from_bad/((t - lagInFrame(t,1,0) OVER ())/1000) from_badRate"+
+				" FROM ("+
+				" SELECT $timeSeries AS t,"+
+				" countIf(Type = 200) AS from_good,"+
+				" countIf(Type != 200) AS from_bad"+
+				" FROM requests"+
+				" WHERE $timeFilter"+
+				" GROUP BY t"+
+				" ORDER BY t)",
+
 			q.rate,
 		),
 		newMacrosTestCase(
@@ -95,25 +95,25 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY datacenter, t"+
 				" ORDER BY datacenter, t",
 
-      "/* comment */ SELECT t, datacenter, sum(tx_kbytesRate) AS tx_kbytesRateAgg, sum(rx_bytesRate) AS rx_bytesRateAgg"+
-        " FROM"+
-        " ("+
-        "  SELECT t, datacenter, dc_interface, " +
-        "tx_kbytes / (t/1000 - lagInFrame(t/1000,1,0) OVER ()) AS tx_kbytesRate, " +
-        "rx_bytes / (t/1000 - lagInFrame(t/1000,1,0) OVER ()) AS rx_bytesRate "+
-        " FROM ("+
-        "   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
-        " max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
-        "  FROM traffic"+
-        " WHERE $timeFilter"+
-        " AND datacenter = 'dc1'  "+
-        " GROUP BY datacenter, dc_interface, t"+
-        "  HAVING rx_bytes > $interval  "+
-        " ORDER BY datacenter, dc_interface, t " +
-        " ) "+
-        ")"+
-        " GROUP BY datacenter, t"+
-        " ORDER BY datacenter, t",
+			"/* comment */ SELECT t, datacenter, sum(tx_kbytesRate) AS tx_kbytesRateAgg, sum(rx_bytesRate) AS rx_bytesRateAgg"+
+				" FROM"+
+				" ("+
+				"  SELECT t, datacenter, dc_interface, "+
+				"tx_kbytes / (t/1000 - lagInFrame(t/1000,1,0) OVER ()) AS tx_kbytesRate, "+
+				"rx_bytes / (t/1000 - lagInFrame(t/1000,1,0) OVER ()) AS rx_bytesRate "+
+				" FROM ("+
+				"   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
+				" max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
+				"  FROM traffic"+
+				" WHERE $timeFilter"+
+				" AND datacenter = 'dc1'  "+
+				" GROUP BY datacenter, dc_interface, t"+
+				"  HAVING rx_bytes > $interval  "+
+				" ORDER BY datacenter, dc_interface, t "+
+				" ) "+
+				")"+
+				" GROUP BY datacenter, t"+
+				" ORDER BY datacenter, t",
 
 			q.rateColumnsAggregated,
 		),
@@ -142,26 +142,26 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY datacenter, t"+
 				" ORDER BY datacenter, t",
 
-      "/* comment */ SELECT t, datacenter, sum(tx_kbytesPerSecond) AS tx_kbytesPerSecondAgg, sum(rx_bytesPerSecond) AS rx_bytesPerSecondAgg"+
-        " FROM"+
-        " ("+
-        "  SELECT t, datacenter, dc_interface," +
-        " if((tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS tx_kbytesPerSecond," +
-        " if((rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS rx_bytesPerSecond"+
-        "  FROM ("+
-        "   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
-        " max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
-        "  FROM traffic"+
-        " WHERE $timeFilter"+
-        " AND datacenter = 'dc1'  "+
-        " GROUP BY datacenter, dc_interface, t"+
-        "  HAVING rx_bytes > $interval  "+
-        " ORDER BY datacenter, dc_interface, t " +
-        " ) "+
-        ")"+
-        " GROUP BY datacenter, t"+
-        " ORDER BY datacenter, t",
-        
+			"/* comment */ SELECT t, datacenter, sum(tx_kbytesPerSecond) AS tx_kbytesPerSecondAgg, sum(rx_bytesPerSecond) AS rx_bytesPerSecondAgg"+
+				" FROM"+
+				" ("+
+				"  SELECT t, datacenter, dc_interface,"+
+				" if((tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS tx_kbytesPerSecond,"+
+				" if((rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS rx_bytesPerSecond"+
+				"  FROM ("+
+				"   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
+				" max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
+				"  FROM traffic"+
+				" WHERE $timeFilter"+
+				" AND datacenter = 'dc1'  "+
+				" GROUP BY datacenter, dc_interface, t"+
+				"  HAVING rx_bytes > $interval  "+
+				" ORDER BY datacenter, dc_interface, t "+
+				" ) "+
+				")"+
+				" GROUP BY datacenter, t"+
+				" ORDER BY datacenter, t",
+
 			q.perSecondColumnsAggregated,
 		),
 		/* https://github.com/Altinity/clickhouse-grafana/issues/386 */
@@ -189,27 +189,27 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY datacenter, t"+
 				" ORDER BY datacenter, t",
 
-      "/* comment */ SELECT t, datacenter, sum(tx_kbytesIncrease) AS tx_kbytesIncreaseAgg, sum(rx_bytesIncrease) AS rx_bytesIncreaseAgg"+
-        " FROM"+
-        " ("+
-        "  SELECT t, datacenter, dc_interface," +
-        " if((tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) / 1) AS tx_kbytesIncrease," +
-        " if((rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) / 1) AS rx_bytesIncrease"+
-        "  FROM ("+
-        "   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
-        " max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
-        "  FROM traffic"+
-        " WHERE $timeFilter"+
-        " AND datacenter = 'dc1'  "+
-        " GROUP BY datacenter, dc_interface, t"+
-        "  HAVING rx_bytes > $interval  "+
-        " ORDER BY datacenter, dc_interface, t " +
-        " ) "+
-        ")"+
-        " GROUP BY datacenter, t"+
-        " ORDER BY datacenter, t",
+			"/* comment */ SELECT t, datacenter, sum(tx_kbytesIncrease) AS tx_kbytesIncreaseAgg, sum(rx_bytesIncrease) AS rx_bytesIncreaseAgg"+
+				" FROM"+
+				" ("+
+				"  SELECT t, datacenter, dc_interface,"+
+				" if((tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) / 1) AS tx_kbytesIncrease,"+
+				" if((rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) < 0 OR lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, nan, (rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) / 1) AS rx_bytesIncrease"+
+				"  FROM ("+
+				"   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
+				" max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
+				"  FROM traffic"+
+				" WHERE $timeFilter"+
+				" AND datacenter = 'dc1'  "+
+				" GROUP BY datacenter, dc_interface, t"+
+				"  HAVING rx_bytes > $interval  "+
+				" ORDER BY datacenter, dc_interface, t "+
+				" ) "+
+				")"+
+				" GROUP BY datacenter, t"+
+				" ORDER BY datacenter, t",
 
-      q.increaseColumnsAggregated,
+			q.increaseColumnsAggregated,
 		),
 		/* https://github.com/Altinity/clickhouse-grafana/issues/386 */
 		newMacrosTestCase(
@@ -236,25 +236,25 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY datacenter, t"+
 				" ORDER BY datacenter, t",
 
-      "/* comment */ SELECT t, datacenter, sum(tx_kbytesDelta) AS tx_kbytesDeltaAgg, sum(rx_bytesDelta) AS rx_bytesDeltaAgg"+
-        " FROM"+
-        " ("+
-        "  SELECT t, datacenter, dc_interface," +
-        " if(lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, 0, tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) AS tx_kbytesDelta," +
-        " if(lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, 0, rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) AS rx_bytesDelta"+
-        "  FROM ("+
-        "   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
-        " max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
-        "  FROM traffic"+
-        " WHERE $timeFilter"+
-        " AND datacenter = 'dc1'  "+
-        " GROUP BY datacenter, dc_interface, t"+
-        "  HAVING rx_bytes > $interval  "+
-        " ORDER BY datacenter, dc_interface, t " +
-        " ) "+
-        ")"+
-        " GROUP BY datacenter, t"+
-        " ORDER BY datacenter, t",
+			"/* comment */ SELECT t, datacenter, sum(tx_kbytesDelta) AS tx_kbytesDeltaAgg, sum(rx_bytesDelta) AS rx_bytesDeltaAgg"+
+				" FROM"+
+				" ("+
+				"  SELECT t, datacenter, dc_interface,"+
+				" if(lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, 0, tx_kbytes - lagInFrame(tx_kbytes,1,0) OVER ()) AS tx_kbytesDelta,"+
+				" if(lagInFrame(dc_interface,1,dc_interface) OVER () != dc_interface, 0, rx_bytes - lagInFrame(rx_bytes,1,0) OVER ()) AS rx_bytesDelta"+
+				"  FROM ("+
+				"   SELECT $timeSeries AS t, datacenter, concat(datacenter, interface) AS dc_interface,"+
+				" max(tx_bytes * 1024) AS tx_kbytes, max(rx_bytes) AS rx_bytes "+
+				"  FROM traffic"+
+				" WHERE $timeFilter"+
+				" AND datacenter = 'dc1'  "+
+				" GROUP BY datacenter, dc_interface, t"+
+				"  HAVING rx_bytes > $interval  "+
+				" ORDER BY datacenter, dc_interface, t "+
+				" ) "+
+				")"+
+				" GROUP BY datacenter, t"+
+				" ORDER BY datacenter, t",
 
 			q.deltaColumnsAggregated,
 		),
@@ -281,23 +281,23 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY t"+
 				" ORDER BY t)",
 
-      "/* comment */ SELECT t," +
-        " arrayMap(a -> (a.1, a.2/(t/1000 - lagInFrame(t/1000,1,0) OVER ())), groupArr)" +
-        " FROM" +
-        " (SELECT t," +
-        " groupArray((from_type, from_hits)) AS groupArr" +
-        " FROM (" +
-        " SELECT $timeSeries AS t," +
-        " (AppType = '' ? 'undefined' : AppType) from_type," +
-        " sum(Hits) from_hits" +
-        " FROM table_all" +
-        " WHERE $timeFilter" +
-        " AND Event = 'request' AND (-1 IN ($template) OR col IN ($template))" +
-        " GROUP BY t, from_type" +
-        " HAVING hits > $interval" +
-        " ORDER BY t, from_type)" +
-        " GROUP BY t" +
-        " ORDER BY t)",
+			"/* comment */ SELECT t,"+
+				" arrayMap(a -> (a.1, a.2/(t/1000 - lagInFrame(t/1000,1,0) OVER ())), groupArr)"+
+				" FROM"+
+				" (SELECT t,"+
+				" groupArray((from_type, from_hits)) AS groupArr"+
+				" FROM ("+
+				" SELECT $timeSeries AS t,"+
+				" (AppType = '' ? 'undefined' : AppType) from_type,"+
+				" sum(Hits) from_hits"+
+				" FROM table_all"+
+				" WHERE $timeFilter"+
+				" AND Event = 'request' AND (-1 IN ($template) OR col IN ($template))"+
+				" GROUP BY t, from_type"+
+				" HAVING hits > $interval"+
+				" ORDER BY t, from_type)"+
+				" GROUP BY t"+
+				" ORDER BY t)",
 			q.rateColumns,
 		),
 		newMacrosTestCase(
@@ -319,23 +319,23 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY t"+
 				" ORDER BY t",
 
-      "/* comment */SELECT t," +
-        " groupArray((from_OSName, c)) AS groupArr" +
-        " FROM (" +
-        " SELECT $timeSeries AS t," +
-        " from_OSName," +
-        " count(*) c" +
-        " FROM requests" +
-        " ANY INNER JOIN oses USING OS" +
-        " WHERE $timeFilter" +
-        " GROUP BY t," +
-        " from_OSName" +
-        " ORDER BY t," +
-        " from_OSName)" +
-        " GROUP BY t" +
-        " ORDER BY t",
+			"/* comment */SELECT t,"+
+				" groupArray((from_OSName, c)) AS groupArr"+
+				" FROM ("+
+				" SELECT $timeSeries AS t,"+
+				" from_OSName,"+
+				" count(*) c"+
+				" FROM requests"+
+				" ANY INNER JOIN oses USING OS"+
+				" WHERE $timeFilter"+
+				" GROUP BY t,"+
+				" from_OSName"+
+				" ORDER BY t,"+
+				" from_OSName)"+
+				" GROUP BY t"+
+				" ORDER BY t",
 
-      q.columns,
+			q.columns,
 		),
 		newMacrosTestCase(
 			"$perSecond",
@@ -352,17 +352,17 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY t"+
 				" ORDER BY t)",
 
-      "/* comment */\nSELECT t," +
-        " if(max_0 - lagInFrame(max_0,1,0) OVER () < 0, nan, (max_0 - lagInFrame(max_0,1,0) OVER ()) / ((t - lagInFrame(t,1,0) OVER ())/1000) ) AS max_0_PerSecond," +
-        " if(max_1 - lagInFrame(max_1,1,0) OVER () < 0, nan, (max_1 - lagInFrame(max_1,1,0) OVER ()) / ((t - lagInFrame(t,1,0) OVER ())/1000) ) AS max_1_PerSecond" +
-        " FROM (" +
-        " SELECT $timeSeries AS t," +
-        " max(from_total) AS max_0," +
-        " max(from_amount) AS max_1" +
-        " FROM requests" +
-        " WHERE $timeFilter" +
-        " GROUP BY t" +
-        " ORDER BY t)",
+			"/* comment */\nSELECT t,"+
+				" if(max_0 - lagInFrame(max_0,1,0) OVER () < 0, nan, (max_0 - lagInFrame(max_0,1,0) OVER ()) / ((t - lagInFrame(t,1,0) OVER ())/1000) ) AS max_0_PerSecond,"+
+				" if(max_1 - lagInFrame(max_1,1,0) OVER () < 0, nan, (max_1 - lagInFrame(max_1,1,0) OVER ()) / ((t - lagInFrame(t,1,0) OVER ())/1000) ) AS max_1_PerSecond"+
+				" FROM ("+
+				" SELECT $timeSeries AS t,"+
+				" max(from_total) AS max_0,"+
+				" max(from_amount) AS max_1"+
+				" FROM requests"+
+				" WHERE $timeFilter"+
+				" GROUP BY t"+
+				" ORDER BY t)",
 
 			q.perSecond,
 		),
@@ -381,18 +381,18 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY t"+
 				" ORDER BY t)",
 
-      "/* comment */\nSELECT t," +
-        " max_0 - lagInFrame(max_0,1,0) OVER () AS max_0_Delta," +
-        " max_1 - lagInFrame(max_1,1,0) OVER () AS max_1_Delta" +
-        " FROM (" +
-        " SELECT $timeSeries AS t," +
-        " max(from_total) AS max_0," +
-        " max(from_amount) AS max_1" +
-        " FROM requests" +
-        " WHERE $timeFilter" +
-        " GROUP BY t" +
-        " ORDER BY t)",
-        
+			"/* comment */\nSELECT t,"+
+				" max_0 - lagInFrame(max_0,1,0) OVER () AS max_0_Delta,"+
+				" max_1 - lagInFrame(max_1,1,0) OVER () AS max_1_Delta"+
+				" FROM ("+
+				" SELECT $timeSeries AS t,"+
+				" max(from_total) AS max_0,"+
+				" max(from_amount) AS max_1"+
+				" FROM requests"+
+				" WHERE $timeFilter"+
+				" GROUP BY t"+
+				" ORDER BY t)",
+
 			q.delta,
 		),
 		newMacrosTestCase(
@@ -410,19 +410,19 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY t"+
 				" ORDER BY t)",
 
-      "/* comment */\nSELECT t," +
-        " if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Increase," +
-        " if((max_1 - lagInFrame(max_1,1,0) OVER ()) < 0, 0, max_1 - lagInFrame(max_1,1,0) OVER ()) AS max_1_Increase" +
-        " FROM (" +
-        " SELECT $timeSeries AS t," +
-        " max(from_total) AS max_0," +
-        " max(from_amount) AS max_1" +
-        " FROM requests" +
-        " WHERE $timeFilter" +
-        " GROUP BY t" +
-        " ORDER BY t)",
+			"/* comment */\nSELECT t,"+
+				" if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Increase,"+
+				" if((max_1 - lagInFrame(max_1,1,0) OVER ()) < 0, 0, max_1 - lagInFrame(max_1,1,0) OVER ()) AS max_1_Increase"+
+				" FROM ("+
+				" SELECT $timeSeries AS t,"+
+				" max(from_total) AS max_0,"+
+				" max(from_amount) AS max_1"+
+				" FROM requests"+
+				" WHERE $timeFilter"+
+				" GROUP BY t"+
+				" ORDER BY t)",
 
-      q.increase,
+			q.increase,
 		),
 		newMacrosTestCase(
 			"$perSecondColumns",
@@ -447,25 +447,25 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY t"+
 				" ORDER BY t",
 
-      "/* comment */\nSELECT t," +
-        " groupArray((from_alias, max_0_PerSecond)) AS groupArr" +
-        " FROM (" +
-        " SELECT t," +
-        " from_alias," +
-        " if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(from_alias,1,from_alias) OVER () != from_alias, nan, (max_0 - lagInFrame(max_0,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS max_0_PerSecond" +
-        " FROM (" +
-        " SELECT $timeSeries AS t," +
-        " concat('test', type) AS from_alias," +
-        " max(from_total) AS max_0" +
-        " FROM requests" +
-        " WHERE $timeFilter" +
-        " AND type IN ('udp', 'tcp')" +
-        " GROUP BY t, from_alias" +
-        " ORDER BY from_alias, t" +
-        ")" +
-        ")" +
-        " GROUP BY t" +
-        " ORDER BY t",
+			"/* comment */\nSELECT t,"+
+				" groupArray((from_alias, max_0_PerSecond)) AS groupArr"+
+				" FROM ("+
+				" SELECT t,"+
+				" from_alias,"+
+				" if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(from_alias,1,from_alias) OVER () != from_alias, nan, (max_0 - lagInFrame(max_0,1,0) OVER ()) / (t/1000 - lagInFrame(t/1000,1,0) OVER ())) AS max_0_PerSecond"+
+				" FROM ("+
+				" SELECT $timeSeries AS t,"+
+				" concat('test', type) AS from_alias,"+
+				" max(from_total) AS max_0"+
+				" FROM requests"+
+				" WHERE $timeFilter"+
+				" AND type IN ('udp', 'tcp')"+
+				" GROUP BY t, from_alias"+
+				" ORDER BY from_alias, t"+
+				")"+
+				")"+
+				" GROUP BY t"+
+				" ORDER BY t",
 			q.perSecondColumns,
 		),
 		newMacrosTestCase(
@@ -491,26 +491,26 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY t"+
 				" ORDER BY t",
 
-      "/* comment */\nSELECT t," +
-        " groupArray((from_alias, max_0_Delta)) AS groupArr" +
-        " FROM (" +
-        " SELECT t," +
-        " from_alias," +
-        " if(lagInFrame(from_alias,1,from_alias) OVER () != from_alias, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Delta" +
-        " FROM (" +
-        " SELECT $timeSeries AS t," +
-        " concat('test', type) AS from_alias," +
-        " max(from_total) AS max_0" +
-        " FROM requests" +
-        " WHERE $timeFilter" +
-        " AND type IN ('udp', 'tcp')" +
-        " GROUP BY t, from_alias" +
-        " ORDER BY from_alias, t" +
-        ")" +
-        ")" +
-        " GROUP BY t" +
-        " ORDER BY t",
-        
+			"/* comment */\nSELECT t,"+
+				" groupArray((from_alias, max_0_Delta)) AS groupArr"+
+				" FROM ("+
+				" SELECT t,"+
+				" from_alias,"+
+				" if(lagInFrame(from_alias,1,from_alias) OVER () != from_alias, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Delta"+
+				" FROM ("+
+				" SELECT $timeSeries AS t,"+
+				" concat('test', type) AS from_alias,"+
+				" max(from_total) AS max_0"+
+				" FROM requests"+
+				" WHERE $timeFilter"+
+				" AND type IN ('udp', 'tcp')"+
+				" GROUP BY t, from_alias"+
+				" ORDER BY from_alias, t"+
+				")"+
+				")"+
+				" GROUP BY t"+
+				" ORDER BY t",
+
 			q.deltaColumns,
 		),
 		newMacrosTestCase(
@@ -536,47 +536,47 @@ func TestMacrosBuilder(t *testing.T) {
 				" GROUP BY t"+
 				" ORDER BY t",
 
-      "/* comment */\nSELECT t," +
-        " groupArray((from_alias, max_0_Increase)) AS groupArr" +
-        " FROM (" +
-        " SELECT t," +
-        " from_alias," +
-        " if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(from_alias,1,from_alias) OVER () != from_alias, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Increase" +
-        " FROM (" +
-        " SELECT $timeSeries AS t," +
-        " concat('test', type) AS from_alias," +
-        " max(from_total) AS max_0" +
-        " FROM requests" +
-        " WHERE $timeFilter" +
-        " AND type IN ('udp', 'tcp')" +
-        " GROUP BY t, from_alias" +
-        " ORDER BY from_alias, t" +
-        ")" +
-        ")" +
-        " GROUP BY t" +
-        " ORDER BY t",
-        
+			"/* comment */\nSELECT t,"+
+				" groupArray((from_alias, max_0_Increase)) AS groupArr"+
+				" FROM ("+
+				" SELECT t,"+
+				" from_alias,"+
+				" if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(from_alias,1,from_alias) OVER () != from_alias, 0, max_0 - lagInFrame(max_0,1,0) OVER ()) AS max_0_Increase"+
+				" FROM ("+
+				" SELECT $timeSeries AS t,"+
+				" concat('test', type) AS from_alias,"+
+				" max(from_total) AS max_0"+
+				" FROM requests"+
+				" WHERE $timeFilter"+
+				" AND type IN ('udp', 'tcp')"+
+				" GROUP BY t, from_alias"+
+				" ORDER BY from_alias, t"+
+				")"+
+				")"+
+				" GROUP BY t"+
+				" ORDER BY t",
+
 			q.increaseColumns,
 		),
 	}
 	r := require.New(t)
 	for _, tc := range testCases {
 		t.Logf(tc.name)
-    scanner := newScanner(tc.query)
+		scanner := newScanner(tc.query)
 
 		ast, err := scanner.toAST()
 		r.NoError(err)
-    q.UseWindowFuncForMacros = false
+		q.UseWindowFuncForMacros = false
 		tc.got, err = tc.fn(tc.query, ast)
 		r.NoError(err)
 		r.Equal(tc.expected, tc.got, "expects equal in %s", tc.name)
 
-    ast, err = scanner.toAST()
-    r.NoError(err)
-    q.UseWindowFuncForMacros = true
-    tc.got, err = tc.fn(tc.query, ast)
-    r.NoError(err)
-    r.Equal(tc.expectedWithWindow, tc.got, "expects equal with window function %s", tc.name)
+		ast, err = scanner.toAST()
+		r.NoError(err)
+		q.UseWindowFuncForMacros = true
+		tc.got, err = tc.fn(tc.query, ast)
+		r.NoError(err)
+		r.Equal(tc.expectedWithWindow, tc.got, "expects equal with window function %s", tc.name)
 	}
 }
 
@@ -1801,10 +1801,10 @@ func TestEvalQueryTimeFilterByColumnAndRange(t *testing.T) {
 			DateTimeType:  "DATETIME64",
 			ExpectedQuery: "SELECT * FROM table WHERE column_name >= toDateTime64(1545613323000/1000,3) AND column_name <= toDateTime64(1546300799000/1000,3)",
 		},
-    {
-      DateTimeType:  "TIMESTAMP",
-      ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1545613323 AND column_name <= 1546300799",
-    },
+		{
+			DateTimeType:  "TIMESTAMP",
+			ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1545613323 AND column_name <= 1546300799",
+		},
 		{
 			DateTimeType:  "TIMESTAMP64_3",
 			ExpectedQuery: "SELECT * FROM table WHERE column_name >= 1000*1545613323 AND column_name <= 1000*1546300799",

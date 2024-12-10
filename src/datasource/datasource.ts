@@ -1,34 +1,184 @@
-import _, { curry, each } from 'lodash';
+import _, {curry, each, isString, map} from 'lodash';
 import SqlSeries from './sql-series/sql_series';
-import SqlQuery from './sql-query/sql_query';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
-import Scanner from './scanner/scanner';
 
 import {
   AnnotationEvent,
   DataQueryRequest,
-  DataSourceApi,
   DataSourceInstanceSettings,
   DataSourceWithLogsContextSupport,
-  DataSourceWithToggleableQueryFiltersSupport,
+  DataSourceWithToggleableQueryFiltersSupport, dateMath,
   LogRowContextOptions,
   LogRowContextQueryDirection,
   LogRowModel,
   QueryFilterOptions,
   TypedVariableModel,
 } from '@grafana/data';
-import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
+import {BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv} from '@grafana/runtime';
 
-import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
-import { SqlQueryHelper } from './sql-query/sql-query-helper';
-import SqlQueryMacros from './sql-query/sql-query-macros';
+import {CHDataSourceOptions, CHQuery, DEFAULT_QUERY, TimestampFormat} from '../types/types';
 import { QueryEditor } from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
+import {Observable, from} from 'rxjs';
+export interface RawTimeRange {
+  from: any | string;
+  to: any | string;
+}
+
+export interface TimeRange {
+  from: any;
+  to: any;
+  raw: RawTimeRange;
+}
 
 const adhocFilterVariable = 'adhoc_query_filter';
+
+const clickhouseEscape = (value: any, variable: any): any => {
+  const NumberOnlyRegexp = /^[+-]?\d+(\.\d+)?$/;
+
+  let returnAsIs = true;
+  let returnAsArray = false;
+  // if at least one of options is not digit or is array
+  each(variable.options, function (opt): boolean {
+    if (typeof opt.value === 'string' && opt.value === '$__all') {
+      return true;
+    }
+    if (typeof opt.value === 'number') {
+      returnAsIs = true;
+      return false;
+    }
+    if (typeof opt.value === 'string' && !NumberOnlyRegexp.test(opt.value)) {
+      returnAsIs = false;
+      return false;
+    }
+    if (opt.value instanceof Array) {
+      returnAsArray = true;
+      each(opt.value, function (v): boolean {
+        if (typeof v === 'string' && !NumberOnlyRegexp.test(v)) {
+          returnAsIs = false;
+          return false;
+        }
+        return true;
+      });
+      return false;
+    }
+    return true;
+  });
+
+  if (value instanceof Array && returnAsArray) {
+    let arrayValues = map(value, function (v) {
+      return clickhouseEscape(v, variable);
+    });
+    return '[' + arrayValues.join(', ') + ']';
+  } else if (typeof value === 'number' || (returnAsIs && typeof value === 'string' && NumberOnlyRegexp.test(value))) {
+    return value;
+  } else {
+    return "'" + value.replace(/[\\']/g, '\\$&') + "'";
+  }
+}
+
+const interpolateQueryExpr = (value: any, variable: any) => {
+  // if no (`multiselect` or `include all`) and variable is not Array - do not escape
+  if (!variable.multi && !variable.includeAll && !Array.isArray(value)) {
+    return value;
+  }
+  if (!Array.isArray(value)) {
+    return clickhouseEscape(value, variable);
+  }
+  let escapedValues = value.map(function (v) {
+    return clickhouseEscape(v, variable);
+  });
+  return escapedValues.join(',');
+}
+
+const convertTimestamp = (date: any) => {
+  if (isString(date)) {
+    date = dateMath.parse(date, true);
+  }
+
+  return Math.floor(date.valueOf() / 1000);
+}
+
+const conditionalTest = (query: string, templateSrv: TemplateSrv) => {
+  const betweenBraces = (query: string): boolean | any => {
+    let r = {
+      result: '',
+      error: '',
+    };
+    let openBraces = 1;
+    for (let i = 0; i < query.length; i++) {
+      if (query.charAt(i) === '(') {
+        openBraces++;
+      }
+      if (query.charAt(i) === ')') {
+        openBraces--;
+        if (openBraces === 0) {
+          r.result = query.substring(0, i);
+          break;
+        }
+      }
+    }
+    if (openBraces > 1) {
+      r.error = 'missing parentheses';
+    }
+    return r;
+  }
+
+  let macros = '$conditionalTest(';
+  let openMacros = query.indexOf(macros);
+  while (openMacros !== -1) {
+    let r = betweenBraces(query.substring(openMacros + macros.length, query.length));
+    if (r.error.length > 0) {
+      throw { message: '$conditionalIn macros error: ' + r.error };
+    }
+    let arg = r.result;
+    // first parameters is an expression and require some complex parsing,
+    // so parse from the end where you know that the last parameters is a comma with a variable
+    let param1 = arg.substring(0, arg.lastIndexOf(',')).trim();
+    let param2 = arg.substring(arg.lastIndexOf(',') + 1).trim();
+    // remove the $ from the variable
+    let varInParam = param2.substring(1);
+    let done = 0;
+    //now find in the list of variable what is the value
+    let variables = templateSrv.getVariables();
+    for (let i = 0; i < variables.length; i++) {
+      let varG: TypedVariableModel = variables[i];
+      if (varG.name === varInParam) {
+        let closeMacros = openMacros + macros.length + r.result.length + 1;
+        done = 1;
+
+        const value: any = 'current' in varG ? varG.current.value : '';
+
+        if (
+          // for query variable when all is selected
+          // may be add another test on the all activation may be wise.
+          (varG.type === 'query' &&
+            ((value.length === 1 && value[0] === '$__all') || (typeof value === 'string' && value === '$__all'))) ||
+          // for multi-value drop-down when no one value is select, fix https://github.com/Altinity/clickhouse-grafana/issues/485
+          (typeof value === 'object' && value.length === 0) ||
+          // for textbox variable when nothing is entered
+          (['textbox', 'custom'].includes(varG.type) && ['', undefined, null].includes(value))
+        ) {
+          query = query.substring(0, openMacros) + ' ' + query.substring(closeMacros, query.length);
+        } else {
+          // replace of the macro with standard test.
+          query = query.substring(0, openMacros) + ' ' + param1 + ' ' + query.substring(closeMacros, query.length);
+        }
+        break;
+      }
+    }
+    if (done === 0) {
+      throw { message: '$conditionalTest macros error cannot find referenced variable: ' + param2 };
+    }
+    openMacros = query.indexOf(macros);
+  }
+  return query;
+}
+
+
 export class CHDataSource
-  extends DataSourceApi<CHQuery, CHDataSourceOptions>
+  extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
   implements DataSourceWithLogsContextSupport<CHQuery>, DataSourceWithToggleableQueryFiltersSupport<CHQuery>
 {
   backendSrv: BackendSrv;
@@ -174,9 +324,8 @@ export class CHDataSource
     let traceId;
     const requestOptions = { ...options, range: this.options.range };
 
-    const originalQuery = this.createQuery(requestOptions, query);
-    let scanner = new Scanner(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '));
-    let { select } = scanner.toAST();
+    const originalQuery = await this.createQuery(requestOptions, query);
+    let select = await this.backendMigrationGetPropertiesFromAST(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select');
 
     const generateQueryForTraceID = (traceId, select) => {
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`;
@@ -220,7 +369,7 @@ export class CHDataSource
 
     if (traceId) {
       const queryForTraceID = generateQueryForTraceID(traceId, select);
-      const { stmt, requestId } = this.createQuery(requestOptions, { ...query, query: queryForTraceID });
+      const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: queryForTraceID });
 
       const response: any = await this._seriesQuery(stmt, requestId + options?.direction);
 
@@ -253,7 +402,7 @@ export class CHDataSource
             ? generateQueryForTimestampBackward(timestampColumn, formattedDate, query?.contextWindowSize)
             : generateQueryForTimestampForward(timestampColumn, formattedDate, query?.contextWindowSize);
 
-        const { stmt, requestId } = this.createQuery(requestOptions, { ...query, query: boundariesRequest });
+        const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: boundariesRequest });
 
         const result: any = await this._seriesQuery(stmt, requestId + options?.direction);
 
@@ -267,7 +416,7 @@ export class CHDataSource
             ? generateRequestForTimestampBackward(timestampColumn, timestamp, row.timeUtc, select)
             : generateRequestForTimestampForward(timestampColumn, timestamp, row.timeUtc, select);
 
-        const { stmt, requestId } = this.createQuery(requestOptions, { ...query, query: contextDataRequest });
+        const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: contextDataRequest });
 
         return this._seriesQuery(stmt, requestId + options?.direction);
       };
@@ -333,118 +482,76 @@ export class CHDataSource
     return query.adHocFilters.some((f) => f.key === filter.key && f.value === filter.value);
   }
 
-  query(options: DataQueryRequest<CHQuery>) {
-    this.options = options;
-    const targets = options.targets.filter((target) => !target.hide && target.query);
-    const queries = targets.map((target) => this.createQuery(options, target));
-    // No valid targets, return the empty result to save a round trip.
-    if (!queries.length) {
-      return Promise.resolve({ data: [] });
-    }
+  query(options: DataQueryRequest<CHQuery>): Observable<any> {
+    const queryProcessing = async () => {
+      this.options = options;
+      const targets = options.targets.filter((target) => !target.hide && target.query);
+      const queries = await Promise.all(
+        targets.map(async (target) => this.createQuery(options, target))
+      );
 
-    const allQueryPromise = queries.map((query) => {
-      return this._seriesQuery(query.stmt, query.requestId);
-    });
-
-    return Promise.all(allQueryPromise).then((responses: any): any => {
-      let result: any[] = [],
-        i = 0;
-      _.each(responses, (response) => {
-        const target = options.targets[i];
-        const keys = queries[i].keys;
-
-        i++;
-        if (!response || !response.rows) {
-          return;
-        }
-
-        let sqlSeries = new SqlSeries({
-          refId: target.refId,
-          series: response.data,
-          meta: response.meta,
-          keys: keys,
-          tillNow: options.rangeRaw?.to === 'now',
-          from: SqlQueryHelper.convertTimestamp(options.range.from),
-          to: SqlQueryHelper.convertTimestamp(options.range.to),
-        });
-
-        if (target.format === 'table') {
-          _.each(sqlSeries.toTable(), (data) => {
-            result.push(data);
-          });
-        } else if (target.format === 'traces') {
-          result = sqlSeries.toTraces();
-        } else if (target.format === 'flamegraph') {
-          result = sqlSeries.toFlamegraph();
-        } else if (target.format === 'logs') {
-          result = sqlSeries.toLogs();
-        } else if (target.refId === 'Anno') {
-          result = sqlSeries.toAnnotation(response.data, response.meta);
-        } else {
-          _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
-            result.push(data);
-          });
-        }
+      if (!queries.length) {
+        return from(Promise.resolve({ data: [] }))
+      }
+      const allQueryPromise = queries.map((query) => {
+        return this._seriesQuery(query.stmt, query.requestId);
       });
 
-      return { data: result };
-    });
-  }
+      return Promise.all(allQueryPromise).then((responses: any): any => {
+        let result: any[] = [],
+          i = 0;
+        _.each(responses, (response) => {
+          const target = options.targets[i];
+          const keys = queries[i].keys;
 
-  modifyQuery(query: any, action: any): any {
-    let scanner = new Scanner(query.query ?? '');
-    let queryAST = scanner.toAST();
-    let where = queryAST['where'] || [];
-    const labelFilter = action.key + " = '" + action.value + "'";
+          i++;
+          if (!response || !response.rows) {
+            return;
+          }
 
-    switch (action.type) {
-      case 'ADD_FILTER': {
-        if (where.length === 0) {
-          where.push(labelFilter);
-          break;
-        }
+          let sqlSeries = new SqlSeries({
+            refId: target.refId,
+            series: response.data,
+            meta: response.meta,
+            keys: keys,
+            tillNow: options.rangeRaw?.to === 'now',
+            from: convertTimestamp(options.range.from),
+            to: convertTimestamp(options.range.to),
+          });
 
-        let alreadyAdded = false;
-        _.each(where, (w: string) => {
-          if (w.includes(labelFilter)) {
-            alreadyAdded = true;
+          if (target.format === 'table') {
+            _.each(sqlSeries.toTable(), (data) => {
+              result.push(data);
+            });
+          } else if (target.format === 'traces') {
+            result = sqlSeries.toTraces();
+          } else if (target.format === 'flamegraph') {
+            result = sqlSeries.toFlamegraph();
+          } else if (target.format === 'logs') {
+            result = sqlSeries.toLogs();
+          } else if (target.refId === 'Anno') {
+            result = sqlSeries.toAnnotation(response.data, response.meta);
+          } else {
+            _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
+              result.push(data);
+            });
           }
         });
-        if (!alreadyAdded) {
-          where.push('AND ' + labelFilter);
-        }
-        break;
-      }
-      case 'ADD_FILTER_OUT': {
-        if (where.length === 0) {
-          break;
-        }
-        where.forEach((w: string, i: number) => {
-          if (w.includes(labelFilter)) {
-            where.splice(i, 1);
-          }
-        });
-        break;
-      }
-      default:
-        break;
+
+        return { data: result };
+      })
     }
 
-    const modifiedQuery = scanner.Print(queryAST);
-    return { ...query, query: modifiedQuery };
+    return from(queryProcessing())
   }
 
-  createQuery(options: any, target: any) {
-    const queryModel = new SqlQuery(target, this.templateSrv, options);
-    // @ts-ignore
-    const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
-    const stmt = queryModel.replace(options, adhocFilters);
+  async createQuery(options: any, target: any) {
+    const stmt = await this.replace(options, target);
 
     let keys = [];
 
     try {
-      let queryAST = new Scanner(stmt).toAST();
-      keys = queryAST['group by'] || [];
+      keys = await this.backendMigrationGetPropertiesFromAST(stmt, 'group by');
     } catch (err) {
       console.log('AST parser error: ', err);
     }
@@ -456,7 +563,7 @@ export class CHDataSource
     };
   }
 
-  annotationQuery(options: any): Promise<AnnotationEvent[]> {
+  async annotationQuery(options: any): Promise<AnnotationEvent[]> {
     if (!options.annotation.query) {
       throw new Error('Query missing in annotation definition');
     }
@@ -470,12 +577,10 @@ export class CHDataSource
       },
       options
     );
-    let queryModel;
     let query;
 
-    queryModel = new SqlQuery(params.annotation, this.templateSrv, params);
-    queryModel = queryModel.replace(params, []);
-    query = queryModel.replace(/\r\n|\r|\n/g, ' ');
+    const replaced = await this.replace(params, params.annotation);
+    query = replaced.replace(/\r\n|\r|\n/g, ' ');
     query += ' FORMAT JSON';
 
     const queryParams = CHDataSource._getRequestOptions(query, true, undefined, this);
@@ -494,7 +599,7 @@ export class CHDataSource
     return dataRequest as Promise<AnnotationEvent[]>;
   }
 
-  metricFindQuery(query: string, options?: any) {
+  async metricFindQuery(query: string, options?: any) {
     let interpolatedQuery: string;
     const wildcardChar = '%';
     const searchFilterVariableName = '__searchFilter';
@@ -508,19 +613,19 @@ export class CHDataSource
           text: '',
         },
       };
-      query = this.templateSrv.replace(query, scopedVars, SqlQueryHelper.interpolateQueryExpr);
+      query = this.templateSrv.replace(query, scopedVars, interpolateQueryExpr);
     }
     interpolatedQuery = this.templateSrv.replace(
-      SqlQueryHelper.conditionalTest(query, this.templateSrv),
+      conditionalTest(query, this.templateSrv),
       scopedVars,
-      SqlQueryHelper.interpolateQueryExpr
+      interpolateQueryExpr
     );
 
     if (options && options.range) {
-      let from = SqlQueryHelper.convertTimestamp(options.range.from);
-      let to = SqlQueryHelper.convertTimestamp(options.range.to);
+      let from = convertTimestamp(options.range.from);
+      let to = convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = SqlQueryMacros.replaceTimeFilters(interpolatedQuery, options.range);
+      interpolatedQuery = await this.replaceTimeFilters(interpolatedQuery, options.range);
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 
@@ -532,12 +637,6 @@ export class CHDataSource
     return this.metricFindQuery(DEFAULT_QUERY.query).then(() => {
       return { status: 'success', message: 'Data source is working', title: 'Success' };
     });
-  }
-
-  formatQuery(query) {
-    let scanner = new Scanner(query ?? '');
-    scanner.Format();
-    return scanner.Format();
   }
 
   _seriesQuery(query: string, requestId?: string) {
@@ -574,9 +673,9 @@ export class CHDataSource
           ...query,
           datasource: this.getRef(),
           query: this.templateSrv.replace(
-            SqlQueryHelper.conditionalTest(query.query, this.templateSrv),
+            conditionalTest(query.query, this.templateSrv),
             scopedVars,
-            SqlQueryHelper.interpolateQueryExpr
+            interpolateQueryExpr
           ),
         };
         return expandedQuery;
@@ -587,5 +686,98 @@ export class CHDataSource
 
   getRef() {
     return { type: this.type, uid: this.uid };
+  }
+
+  // used in useFormattedData.ts
+  async backendMigrationReplace(query) {
+    const replaced = await this.replace(this.options, query);
+
+    return replaced;
+  }
+
+  async backendMigrationGetPropertiesFromAST(query, propertyName) {
+    const result: any = await this.postResource('get-ast-property', { query: query, propertyName: propertyName});
+
+    if (result && result.properties) {
+      return result.properties;
+    }
+
+    return [];
+  }
+
+  async backendMigrationApplyAdhocFilters(query: string, adhocFilters: any[], target: any): Promise<string> {
+    if (!adhocFilters || adhocFilters.length === 0) {
+      return query;
+    }
+
+    const result: any = await this.postResource('apply-adhoc-filters', {
+      query: query,
+      adhocFilters: adhocFilters,
+      target: target
+    });
+
+    return result.query;
+  }
+
+  async replace(options: DataQueryRequest<CHQuery>, target: CHQuery) {
+    const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
+
+    const query = this.templateSrv.replace(
+      conditionalTest(target.query, this.templateSrv),
+      options.scopedVars,
+      interpolateQueryExpr
+    );
+
+    const queryUpd = await this.backendMigrationApplyAdhocFilters(query, adhocFilters, target);
+
+    const queryData = {
+      refId: target.refId,
+      ruleUid: options.headers?.['X-Rule-Uid'] || '',
+      rawQuery: false,
+      query: queryUpd,  // Required field
+      dateTimeColDataType: target.dateTimeColDataType || '',
+      dateColDataType: target.dateColDataType || '',
+      dateTimeType: target.dateTimeType || 'DATETIME',
+      extrapolate: target.extrapolate || false,
+      skip_comments: target.skip_comments || false,
+      add_metadata: target.add_metadata || false,
+      format: target.format || 'time_series',
+      round: target.round || '0s',
+      intervalFactor: target.intervalFactor || 1,
+      interval: options.interval || '30s',
+      database: target.database || 'default',
+      table: target.table || '',
+      maxDataPoints: options.maxDataPoints || 0,
+      timeRange: {
+        from: options.range.from.toISOString(),  // Convert to Unix timestamp
+        to: options.range.to.toISOString(),       // Convert to Unix timestamp
+      }
+    };
+
+
+    try {
+      const response: any = await this.postResource('replace', queryData);
+      return response?.sql || '';
+    } catch (error) {
+      console.error('Error from backend:', error);
+      throw error;
+    }
+  }
+
+  async replaceTimeFilters(
+    query: string,
+    range: TimeRange,
+    dateTimeType = TimestampFormat.DateTime,
+  ): Promise<string> {
+    const result: any = await this.postResource('replace-time-filters', {
+      query: query,
+      timeRange: {
+        from: range.from.toISOString(),  // Convert to Unix timestamp
+        to: range.to.toISOString(),       // Convert to Unix timestamp
+      },
+      dateTimeType: dateTimeType
+    });
+
+    return result.sql
   }
 }

@@ -408,4 +408,3 @@ describe('sql-series. toAnnotation unit tests', () => {
     expect(toAnnotation(input, meta)).toEqual(expectedOutput);
   });
 });
-

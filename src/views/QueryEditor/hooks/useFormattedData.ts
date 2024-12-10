@@ -13,7 +13,7 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource): [str
   useEffect(() => {
     try {
       if (datasource.options && datasource.templateSrv) {
-        datasource.backendMigrationReplace(query).then((replaced) => {
+        datasource.replace(datasource.options, query).then((replaced) => {
           setFormattedData(replaced);
           setError(null);
         });

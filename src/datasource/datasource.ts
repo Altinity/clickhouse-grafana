@@ -1,4 +1,4 @@
-import _, {curry, each, isString, map} from 'lodash';
+import _, { curry, each } from 'lodash';
 import SqlSeries from './sql-series/sql_series';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
@@ -8,174 +8,21 @@ import {
   DataQueryRequest,
   DataSourceInstanceSettings,
   DataSourceWithLogsContextSupport,
-  DataSourceWithToggleableQueryFiltersSupport, dateMath,
+  DataSourceWithToggleableQueryFiltersSupport,
   LogRowContextOptions,
   LogRowContextQueryDirection,
   LogRowModel,
   QueryFilterOptions,
   TypedVariableModel,
 } from '@grafana/data';
-import {BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv} from '@grafana/runtime';
+import { BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
-import {CHDataSourceOptions, CHQuery, DEFAULT_QUERY, TimestampFormat} from '../types/types';
+import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
 import { QueryEditor } from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
-import {Observable, from} from 'rxjs';
-export interface RawTimeRange {
-  from: any | string;
-  to: any | string;
-}
-
-export interface TimeRange {
-  from: any;
-  to: any;
-  raw: RawTimeRange;
-}
-
-const adhocFilterVariable = 'adhoc_query_filter';
-
-const clickhouseEscape = (value: any, variable: any): any => {
-  const NumberOnlyRegexp = /^[+-]?\d+(\.\d+)?$/;
-
-  let returnAsIs = true;
-  let returnAsArray = false;
-  // if at least one of options is not digit or is array
-  each(variable.options, function (opt): boolean {
-    if (typeof opt.value === 'string' && opt.value === '$__all') {
-      return true;
-    }
-    if (typeof opt.value === 'number') {
-      returnAsIs = true;
-      return false;
-    }
-    if (typeof opt.value === 'string' && !NumberOnlyRegexp.test(opt.value)) {
-      returnAsIs = false;
-      return false;
-    }
-    if (opt.value instanceof Array) {
-      returnAsArray = true;
-      each(opt.value, function (v): boolean {
-        if (typeof v === 'string' && !NumberOnlyRegexp.test(v)) {
-          returnAsIs = false;
-          return false;
-        }
-        return true;
-      });
-      return false;
-    }
-    return true;
-  });
-
-  if (value instanceof Array && returnAsArray) {
-    let arrayValues = map(value, function (v) {
-      return clickhouseEscape(v, variable);
-    });
-    return '[' + arrayValues.join(', ') + ']';
-  } else if (typeof value === 'number' || (returnAsIs && typeof value === 'string' && NumberOnlyRegexp.test(value))) {
-    return value;
-  } else {
-    return "'" + value.replace(/[\\']/g, '\\$&') + "'";
-  }
-}
-
-const interpolateQueryExpr = (value: any, variable: any) => {
-  // if no (`multiselect` or `include all`) and variable is not Array - do not escape
-  if (!variable.multi && !variable.includeAll && !Array.isArray(value)) {
-    return value;
-  }
-  if (!Array.isArray(value)) {
-    return clickhouseEscape(value, variable);
-  }
-  let escapedValues = value.map(function (v) {
-    return clickhouseEscape(v, variable);
-  });
-  return escapedValues.join(',');
-}
-
-const convertTimestamp = (date: any) => {
-  if (isString(date)) {
-    date = dateMath.parse(date, true);
-  }
-
-  return Math.floor(date.valueOf() / 1000);
-}
-
-const conditionalTest = (query: string, templateSrv: TemplateSrv) => {
-  const betweenBraces = (query: string): boolean | any => {
-    let r = {
-      result: '',
-      error: '',
-    };
-    let openBraces = 1;
-    for (let i = 0; i < query.length; i++) {
-      if (query.charAt(i) === '(') {
-        openBraces++;
-      }
-      if (query.charAt(i) === ')') {
-        openBraces--;
-        if (openBraces === 0) {
-          r.result = query.substring(0, i);
-          break;
-        }
-      }
-    }
-    if (openBraces > 1) {
-      r.error = 'missing parentheses';
-    }
-    return r;
-  }
-
-  let macros = '$conditionalTest(';
-  let openMacros = query.indexOf(macros);
-  while (openMacros !== -1) {
-    let r = betweenBraces(query.substring(openMacros + macros.length, query.length));
-    if (r.error.length > 0) {
-      throw { message: '$conditionalIn macros error: ' + r.error };
-    }
-    let arg = r.result;
-    // first parameters is an expression and require some complex parsing,
-    // so parse from the end where you know that the last parameters is a comma with a variable
-    let param1 = arg.substring(0, arg.lastIndexOf(',')).trim();
-    let param2 = arg.substring(arg.lastIndexOf(',') + 1).trim();
-    // remove the $ from the variable
-    let varInParam = param2.substring(1);
-    let done = 0;
-    //now find in the list of variable what is the value
-    let variables = templateSrv.getVariables();
-    for (let i = 0; i < variables.length; i++) {
-      let varG: TypedVariableModel = variables[i];
-      if (varG.name === varInParam) {
-        let closeMacros = openMacros + macros.length + r.result.length + 1;
-        done = 1;
-
-        const value: any = 'current' in varG ? varG.current.value : '';
-
-        if (
-          // for query variable when all is selected
-          // may be add another test on the all activation may be wise.
-          (varG.type === 'query' &&
-            ((value.length === 1 && value[0] === '$__all') || (typeof value === 'string' && value === '$__all'))) ||
-          // for multi-value drop-down when no one value is select, fix https://github.com/Altinity/clickhouse-grafana/issues/485
-          (typeof value === 'object' && value.length === 0) ||
-          // for textbox variable when nothing is entered
-          (['textbox', 'custom'].includes(varG.type) && ['', undefined, null].includes(value))
-        ) {
-          query = query.substring(0, openMacros) + ' ' + query.substring(closeMacros, query.length);
-        } else {
-          // replace of the macro with standard test.
-          query = query.substring(0, openMacros) + ' ' + param1 + ' ' + query.substring(closeMacros, query.length);
-        }
-        break;
-      }
-    }
-    if (done === 0) {
-      throw { message: '$conditionalTest macros error cannot find referenced variable: ' + param2 };
-    }
-    openMacros = query.indexOf(macros);
-  }
-  return query;
-}
-
+import { from, Observable } from 'rxjs';
+import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
+import { BackendResources } from './backend-resources/backendResources';
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -201,9 +48,11 @@ export class CHDataSource
   compressionType: string;
   adHocValuesQuery: string;
   uid: string;
+  backendResources: BackendResources;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
+    this.backendResources = new BackendResources(this);
     this.uid = instanceSettings.uid;
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;
@@ -336,7 +185,10 @@ export class CHDataSource
     const requestOptions = { ...options, range: this.options.range };
 
     const originalQuery = await this.createQuery(requestOptions, query);
-    let select = await this.backendMigrationGetPropertiesFromAST(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select');
+    let select = await this.backendResources.getPropertyFromAST(
+      originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '),
+      'select'
+    );
 
     const generateQueryForTraceID = (traceId, select) => {
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`;
@@ -382,7 +234,7 @@ export class CHDataSource
       const queryForTraceID = generateQueryForTraceID(traceId, select);
       const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: queryForTraceID });
 
-      const response: any = await this._seriesQuery(stmt, requestId + options?.direction);
+      const response: any = await this.seriesQuery(stmt, requestId + options?.direction);
 
       if (response && !response.rows) {
         return { data: [] };
@@ -415,7 +267,7 @@ export class CHDataSource
 
         const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: boundariesRequest });
 
-        const result: any = await this._seriesQuery(stmt, requestId + options?.direction);
+        const result: any = await this.seriesQuery(stmt, requestId + options?.direction);
 
         return result.data[0];
       };
@@ -429,7 +281,7 @@ export class CHDataSource
 
         const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: contextDataRequest });
 
-        return this._seriesQuery(stmt, requestId + options?.direction);
+        return this.seriesQuery(stmt, requestId + options?.direction);
       };
 
       const response: any = await getLogContext();
@@ -497,15 +349,13 @@ export class CHDataSource
     const queryProcessing = async () => {
       this.options = options;
       const targets = options.targets.filter((target) => !target.hide && target.query);
-      const queries = await Promise.all(
-        targets.map(async (target) => this.createQuery(options, target))
-      );
+      const queries = await Promise.all(targets.map(async (target) => this.createQuery(options, target)));
 
       if (!queries.length) {
-        return from(Promise.resolve({ data: [] }))
+        return from(Promise.resolve({ data: [] }));
       }
       const allQueryPromise = queries.map((query) => {
-        return this._seriesQuery(query.stmt, query.requestId);
+        return this.seriesQuery(query.stmt, query.requestId);
       });
 
       return Promise.all(allQueryPromise).then((responses: any): any => {
@@ -550,10 +400,10 @@ export class CHDataSource
         });
 
         return { data: result };
-      })
-    }
+      });
+    };
 
-    return from(queryProcessing())
+    return from(queryProcessing());
   }
 
   async createQuery(options: any, target: any) {
@@ -562,7 +412,7 @@ export class CHDataSource
     let keys = [];
 
     try {
-      keys = await this.backendMigrationGetPropertiesFromAST(stmt, 'group by');
+      keys = await this.backendResources.getPropertyFromAST(stmt, 'group by');
     } catch (err) {
       console.log('AST parser error: ', err);
     }
@@ -636,12 +486,12 @@ export class CHDataSource
       let from = convertTimestamp(options.range.from);
       let to = convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = await this.replaceTimeFilters(interpolatedQuery, options.range);
+      interpolatedQuery = await this.backendResources.replaceTimeFilters(interpolatedQuery, options.range);
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 
     // todo(nv): fix request id
-    return this._seriesQuery(interpolatedQuery).then(curry(this.responseParser.parse)(query));
+    return this.seriesQuery(interpolatedQuery).then(curry(this.responseParser.parse)(query));
   }
 
   testDatasource() {
@@ -650,7 +500,7 @@ export class CHDataSource
     });
   }
 
-  _seriesQuery(query: string, requestId?: string) {
+  private seriesQuery(query: string, requestId?: string) {
     query += ' FORMAT JSON';
     return this._request(query, requestId);
   }
@@ -699,37 +549,6 @@ export class CHDataSource
     return { type: this.type, uid: this.uid };
   }
 
-  // used in useFormattedData.ts
-  async backendMigrationReplace(query) {
-    const replaced = await this.replace(this.options, query);
-
-    return replaced;
-  }
-
-  async backendMigrationGetPropertiesFromAST(query, propertyName) {
-    const result: any = await this.postResource('get-ast-property', { query: query, propertyName: propertyName});
-
-    if (result && result.properties) {
-      return result.properties;
-    }
-
-    return [];
-  }
-
-  async backendMigrationApplyAdhocFilters(query: string, adhocFilters: any[], target: any): Promise<string> {
-    if (!adhocFilters || adhocFilters.length === 0) {
-      return query;
-    }
-
-    const result: any = await this.postResource('apply-adhoc-filters', {
-      query: query,
-      adhocFilters: adhocFilters,
-      target: target
-    });
-
-    return result.query;
-  }
-
   async replace(options: DataQueryRequest<CHQuery>, target: CHQuery) {
     const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
 
@@ -739,13 +558,13 @@ export class CHDataSource
       interpolateQueryExpr
     );
 
-    const queryUpd = await this.backendMigrationApplyAdhocFilters(query, adhocFilters, target);
+    const queryUpd = await this.backendResources.applyAdhocFilters(query, adhocFilters, target);
 
     const queryData = {
       refId: target.refId,
       ruleUid: options.headers?.['X-Rule-Uid'] || '',
       rawQuery: false,
-      query: queryUpd,  // Required field
+      query: queryUpd, // Required field
       dateTimeColDataType: target.dateTimeColDataType || '',
       dateColDataType: target.dateColDataType || '',
       dateTimeType: target.dateTimeType || 'DATETIME',
@@ -760,11 +579,10 @@ export class CHDataSource
       table: target.table || '',
       maxDataPoints: options.maxDataPoints || 0,
       timeRange: {
-        from: options.range.from.toISOString(),  // Convert to Unix timestamp
-        to: options.range.to.toISOString(),       // Convert to Unix timestamp
-      }
+        from: options.range.from.toISOString(), // Convert to Unix timestamp
+        to: options.range.to.toISOString(), // Convert to Unix timestamp
+      },
     };
-
 
     try {
       const response: any = await this.postResource('replace', queryData);
@@ -773,22 +591,5 @@ export class CHDataSource
       console.error('Error from backend:', error);
       throw error;
     }
-  }
-
-  async replaceTimeFilters(
-    query: string,
-    range: TimeRange,
-    dateTimeType = TimestampFormat.DateTime,
-  ): Promise<string> {
-    const result: any = await this.postResource('replace-time-filters', {
-      query: query,
-      timeRange: {
-        from: range.from.toISOString(),  // Convert to Unix timestamp
-        to: range.to.toISOString(),       // Convert to Unix timestamp
-      },
-      dateTimeType: dateTimeType
-    });
-
-    return result.sql
   }
 }

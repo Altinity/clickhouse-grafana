@@ -322,6 +322,9 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	if q.contain(ast, "$perSecondColumnsAggregated") {
 		return q.perSecondColumnsAggregated(query, ast)
 	}
+	if q.contain(ast, "$deltaColumnsAggregated") {
+		return q.deltaColumnsAggregated(query, ast)
+	}
 	if q.contain(ast, "$delta") {
 		return q.delta(query, ast)
 	}

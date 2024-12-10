@@ -1,3 +1,5 @@
+[![Coverage Status](https://coveralls.io/repos/github/Altinity/clickhouse-grafana/badge.svg?branch=master)](https://coveralls.io/github/Altinity/clickhouse-grafana?branch=master)
+
 # Altinity Grafana datasource plugin for ClickHouse® (grafana Grafana 4.6+ supported)
 
 Altinity ClickHouse datasource plugin provides a support for [ClickHouse](https://clickhouse.tech) as a backend database.

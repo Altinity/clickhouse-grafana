@@ -61,12 +61,12 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
-      - ./coverage/raw/:/usr/share/grafana/coverage
+      - ./go_coverage/raw/:/usr/share/grafana/go_coverage
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
-      GOCOVERDIR: "/usr/share/grafana/coverage"
+      GOCOVERDIR: "/usr/share/grafana/go_coverage"
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
@@ -91,12 +91,12 @@ services:
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
       - ./docker/grafana/alerting/:/etc/grafana/provisioning/alerting/
-      - ./coverage/raw/:/usr/share/grafana/coverage
+      - ./go_coverage/raw/:/usr/share/grafana/go_coverage
 
     environment:
       GF_INSTALL_PLUGINS: grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource
       GF_LOG_LEVEL: debug
-      GOCOVERDIR: "/usr/share/grafana/coverage"
+      GOCOVERDIR: "/usr/share/grafana/go_coverage"
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
@@ -199,7 +199,7 @@ services:
         cp tests/testflows/coverage/raw/* .nyc_output/ &&
         npx nyc report --reporter=html --report-dir=./tests/testflows/frontend_coverage_testflows
         cp coverage/coverage-final.json .nyc_output/ &&
-        npx nyc report --reporter=html --report-dir=./tests/testflows/coverage
+        npx nyc report --reporter html --reporter=lcov --report-dir=./tests/testflows/coverage
       '
 
   backend_coverage_builder:
@@ -217,8 +217,8 @@ services:
       bash -xec "
         git config --global --add safe.directory /go/src/grafana-clickhouse &&
         (command -v mage || go install -v github.com/magefile/mage@latest) &&
-        mkdir -p /go/src/grafana-clickhouse/coverage/raw &&
-        go test -timeout 1m -cover -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ -test.gocoverdir="/go/src/grafana-clickhouse/coverage" &&
+        mkdir -p /go/src/grafana-clickhouse/go_coverage/raw &&
+        go test -timeout 1m -cover -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ -test.gocoverdir="/go/src/grafana-clickhouse/go_coverage" &&
         GOOS=linux GOARCH=amd64 go build -cover -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ &&
         chmod +x dist/altinity-clickhouse-plugin*
       "
@@ -230,13 +230,13 @@ services:
       - ./:/go/src/grafana-clickhouse
     command: |
       bash -xec "
-        go tool covdata textfmt -i=coverage/raw -o=coverage/coverage.txt &&
-        go tool cover -html=coverage/coverage.txt -o=coverage/coverage.html &&
+        go tool covdata textfmt -i=go_coverage/raw -o=go_coverage/coverage.txt &&
+        go tool cover -html=go_coverage/coverage.txt -o=go_coverage/coverage.html &&
         mkdir -p ./tests/testflows/backend_coverage_testflows/
-        mv coverage/coverage.html ./tests/testflows/backend_coverage_testflows/ &&
-        mv coverage/covcounters* coverage/raw/ &&
-        go tool covdata textfmt -i=coverage/raw -o=coverage/coverage.txt &&
-        go tool cover -html=coverage/coverage.txt -o=coverage/coverage.html
+        mv go_coverage/coverage.html ./tests/testflows/backend_coverage_testflows/ &&
+        mv go_coverage/covcounters* go_coverage/raw/ &&
+        go tool covdata textfmt -i=go_coverage/raw -o=go_coverage/coverage.txt &&
+        go tool cover -html=go_coverage/coverage.txt -o=go_coverage/coverage.html
       "
   
 

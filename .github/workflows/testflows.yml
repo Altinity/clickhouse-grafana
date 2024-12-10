@@ -21,8 +21,6 @@ env:
 jobs:
   tests:
     runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-system-ubuntu-22.04 ]
-    env:
-      GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
 
     timeout-minutes: 60
     steps:
@@ -50,6 +48,17 @@ jobs:
       - name: Create reports
         if: always()
         run: tests/testflows/infra/create-report.sh
+
+      - name: Report typescript coverage
+        uses: coverallsapp/github-action@v2
+        with:
+          file: tests/testflows/coverage/lcov.info
+
+      - name: Report golang coverage
+        uses: coverallsapp/github-action@v2
+        with:
+          file: go_coverage/coverage.txt
+          format: golang
 
       - uses: actions/upload-artifact@v4
         if: always()

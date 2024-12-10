@@ -483,62 +483,66 @@ export class CHDataSource
   }
 
   query(options: DataQueryRequest<CHQuery>): Observable<any> {
-    this.options = options;
-    const targets = options.targets.filter((target) => !target.hide && target.query);
-    const queries = await Promise.all(
-      targets.map(async (target) => this.createQuery(options, target))
-    );
+    const queryProcessing = async () => {
+      this.options = options;
+      const targets = options.targets.filter((target) => !target.hide && target.query);
+      const queries = await Promise.all(
+        targets.map(async (target) => this.createQuery(options, target))
+      );
 
-    if (!queries.length) {
-      return from(Promise.resolve({ data: [] }))
-    }
-    const allQueryPromise = queries.map((query) => {
-      return this._seriesQuery(query.stmt, query.requestId);
-    });
-
-    return from(Promise.all(allQueryPromise).then((responses: any): any => {
-      let result: any[] = [],
-        i = 0;
-      _.each(responses, (response) => {
-        const target = options.targets[i];
-        const keys = queries[i].keys;
-
-        i++;
-        if (!response || !response.rows) {
-          return;
-        }
-
-        let sqlSeries = new SqlSeries({
-          refId: target.refId,
-          series: response.data,
-          meta: response.meta,
-          keys: keys,
-          tillNow: options.rangeRaw?.to === 'now',
-          from: convertTimestamp(options.range.from),
-          to: convertTimestamp(options.range.to),
-        });
-
-        if (target.format === 'table') {
-          _.each(sqlSeries.toTable(), (data) => {
-            result.push(data);
-          });
-        } else if (target.format === 'traces') {
-          result = sqlSeries.toTraces();
-        } else if (target.format === 'flamegraph') {
-          result = sqlSeries.toFlamegraph();
-        } else if (target.format === 'logs') {
-          result = sqlSeries.toLogs();
-        } else if (target.refId === 'Anno') {
-          result = sqlSeries.toAnnotation(response.data, response.meta);
-        } else {
-          _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
-            result.push(data);
-          });
-        }
+      if (!queries.length) {
+        return from(Promise.resolve({ data: [] }))
+      }
+      const allQueryPromise = queries.map((query) => {
+        return this._seriesQuery(query.stmt, query.requestId);
       });
 
-      return { data: result };
-    }))
+      return Promise.all(allQueryPromise).then((responses: any): any => {
+        let result: any[] = [],
+          i = 0;
+        _.each(responses, (response) => {
+          const target = options.targets[i];
+          const keys = queries[i].keys;
+
+          i++;
+          if (!response || !response.rows) {
+            return;
+          }
+
+          let sqlSeries = new SqlSeries({
+            refId: target.refId,
+            series: response.data,
+            meta: response.meta,
+            keys: keys,
+            tillNow: options.rangeRaw?.to === 'now',
+            from: convertTimestamp(options.range.from),
+            to: convertTimestamp(options.range.to),
+          });
+
+          if (target.format === 'table') {
+            _.each(sqlSeries.toTable(), (data) => {
+              result.push(data);
+            });
+          } else if (target.format === 'traces') {
+            result = sqlSeries.toTraces();
+          } else if (target.format === 'flamegraph') {
+            result = sqlSeries.toFlamegraph();
+          } else if (target.format === 'logs') {
+            result = sqlSeries.toLogs();
+          } else if (target.refId === 'Anno') {
+            result = sqlSeries.toAnnotation(response.data, response.meta);
+          } else {
+            _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
+              result.push(data);
+            });
+          }
+        });
+
+        return { data: result };
+      })
+    }
+
+    return from(queryProcessing())
   }
 
   async createQuery(options: any, target: any) {

@@ -1,21 +1,21 @@
 package main
 
 import (
-  "context"
-  "encoding/json"
-  "fmt"
-  "github.com/grafana/grafana-plugin-sdk-go/backend"
-  "github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
-  "github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
-  "github.com/grafana/grafana-plugin-sdk-go/backend/resource/httpadapter"
-  "golang.org/x/sync/errgroup"
-  "net/http"
+	"context"
+	"encoding/json"
+	"fmt"
+	"github.com/grafana/grafana-plugin-sdk-go/backend"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
+	"github.com/grafana/grafana-plugin-sdk-go/backend/resource/httpadapter"
+	"golang.org/x/sync/errgroup"
+	"net/http"
 )
 
 func newResourceHandler() backend.CallResourceHandler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/replace", func(w http.ResponseWriter, r *http.Request) {
-		replace(w, r)
+		replaceQuery(w, r)
 	})
 	mux.HandleFunc("/get-ast-property", func(w http.ResponseWriter, r *http.Request) {
 		getAstProperty(w, r)

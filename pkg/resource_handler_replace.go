@@ -1,12 +1,12 @@
 package main
 
 import (
-  "encoding/json"
+	"encoding/json"
 	"net/http"
 	"time"
 )
 
-func replace(w http.ResponseWriter, r *http.Request) {
+func replaceQuery(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodPost {
 		w.WriteHeader(http.StatusMethodNotAllowed)
 		return

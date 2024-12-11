@@ -58,7 +58,7 @@ type EvalQuery struct {
 	To                     time.Time
 }
 
-func parseInterval(interval string) (int, int, error) {
+func parseInterval(interval string, intervalFactor int) (int, int, error) {
 	// Parse the duration
 	dur, err := jiffy.DurationOf(interval)
 	if err != nil {
@@ -108,7 +108,7 @@ func parseInterval(interval string) (int, int, error) {
 		seconds = 1
 	}
 
-	return seconds, milliseconds, nil
+	return seconds * intervalFactor, milliseconds * intervalFactor, nil
 }
 
 func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
@@ -132,7 +132,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	i := 1 * time.Second
 	ms := 1 * time.Millisecond
 	if q.Interval != "" {
-		intervalSeconds, intervalMs, err := parseInterval(q.Interval)
+		intervalSeconds, intervalMs, err := parseInterval(q.Interval, q.IntervalFactor)
 		if err != nil {
 			return "", err
 		}

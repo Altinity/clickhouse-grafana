@@ -57,11 +57,11 @@ type EvalQuery struct {
 	To                     time.Time
 }
 
-func parseInterval(interval string) (int, int) {
+func parseInterval(interval string) (int, int, error) {
 	// Parse the duration
 	dur, err := jiffy.DurationOf(interval)
 	if err != nil {
-		return 0, 0
+		return 0, 0, err
 	}
 
 	// Describe the duration (for a formatted string output)
@@ -88,18 +88,20 @@ func parseInterval(interval string) (int, int) {
 	}))
 
 	// Calculate seconds and milliseconds
-	seconds, test := strconv.Atoi(durationSeconds)
-	milliseconds, test2 := strconv.Atoi(durationMilliseconds)
-
-	if test != nil || test2 != nil {
-
-	}
+	seconds, err := strconv.Atoi(durationSeconds)
+  if err != nil {
+    return 0,0,err
+  }
+	milliseconds, err := strconv.Atoi(durationMilliseconds)
+  if err != nil {
+    return 0,0,err
+  }
 
 	if seconds == 0 {
 		seconds = 1
 	}
 
-	return seconds, milliseconds
+	return seconds, milliseconds, nil
 }
 
 func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
@@ -123,7 +125,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	i := 1 * time.Second
 	ms := 1 * time.Millisecond
 	if q.Interval != "" {
-		intervalSeconds, intervalMs := parseInterval(q.Interval)
+		intervalSeconds, intervalMs, err := parseInterval(q.Interval)
 		if err != nil {
 			return "", err
 		}
@@ -368,9 +370,6 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	}
 	if q.contain(ast, "$perSecondColumnsAggregated") {
 		return q.perSecondColumnsAggregated(query, ast)
-	}
-	if q.contain(ast, "$deltaColumnsAggregated") {
-		return q.deltaColumnsAggregated(query, ast)
 	}
 	if q.contain(ast, "$delta") {
 		return q.delta(query, ast)

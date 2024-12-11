@@ -89,13 +89,13 @@ func parseInterval(interval string) (int, int, error) {
 
 	// Calculate seconds and milliseconds
 	seconds, err := strconv.Atoi(durationSeconds)
-  if err != nil {
-    return 0,0,err
-  }
+	if err != nil {
+		return 0, 0, err
+	}
 	milliseconds, err := strconv.Atoi(durationMilliseconds)
-  if err != nil {
-    return 0,0,err
-  }
+	if err != nil {
+		return 0, 0, err
+	}
 
 	if seconds == 0 {
 		seconds = 1

@@ -194,6 +194,7 @@ export class CHDataSource
   defaultDatabase: string;
   addCorsHeader: boolean;
   xHeaderUser: string;
+  xClickHouseSSLCertificateAuth: boolean;
   defaultValues: any;
   useYandexCloudAuthorization: boolean;
   useCompression: boolean;
@@ -214,6 +215,7 @@ export class CHDataSource
     this.compressionType = instanceSettings.jsonData.compressionType || '';
     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
+    this.xClickHouseSSLCertificateAuth = instanceSettings.jsonData.xClickHouseSSLCertificateAuth || false;
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
     if (instanceSettings.jsonData.useDefaultConfiguration) {
       this.defaultValues = {
@@ -277,10 +279,19 @@ export class CHDataSource
     if (options.useYandexCloudAuthorization) {
       requestOptions.headers['X-ClickHouse-User'] = options.xHeaderUser;
       // look to routes in plugin.json
-      if (requestOptions.url.indexOf('/?') === -1) {
-        requestOptions.url += '/xHeaderKey';
+      if (options.xClickHouseSSLCertificateAuth) {
+        requestOptions.headers['X-ClickHouse-SSL-Certificate-Auth'] = 'on';
+        if (requestOptions.url.indexOf('/?') === -1) {
+          requestOptions.url += '/xClickHouseSSLCertificateAuth';
+        } else {
+          requestOptions.url.replace('/?', '/xClickHouseSSLCertificateAuth/?');
+        }
       } else {
-        requestOptions.url.replace('/?', '/xHeaderKey/?');
+        if (requestOptions.url.indexOf('/?') === -1) {
+          requestOptions.url += '/xHeaderKey';
+        } else {
+          requestOptions.url.replace('/?', '/xHeaderKey/?');
+        }
       }
     }
 

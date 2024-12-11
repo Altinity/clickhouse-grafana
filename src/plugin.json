@@ -65,6 +65,20 @@
           "content": "{{ .SecureJsonData.xHeaderKey }}"
         }
       ]
+    },
+    {
+      "path": "xClickHouseSSLCertificateAuth",
+      "url": "{{ .JsonData.dataSourceUrl }}",
+      "headers": [
+        {
+          "name": "X-ClickHouse-User",
+          "content": "{{ .JsonData.xHeaderUser }}"
+        },
+        {
+          "name": "X-ClickHouse-SSL-Certificate-Auth",
+          "content": "on"
+        }
+      ]
     }
   ]
 }

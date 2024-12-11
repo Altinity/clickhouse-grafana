@@ -13,15 +13,16 @@ import (
 type DatasourceSettings struct {
 	Instance backend.DataSourceInstanceSettings
 
-	AddCorsHeader               bool   `json:"addCorsHeader"`
-	DefaultDatabase             string `json:"defaultDatabase"`
-	UsePost                     bool   `json:"usePOST"`
-	UseYandexCloudAuthorization bool   `json:"useYandexCloudAuthorization"`
-	XHeaderKey                  string `json:"xHeaderKey,omitempty"`
-	XHeaderUser                 string `json:"xHeaderUser,omitempty"`
-	UseCompression              bool   `json:"useCompression,omitempty"`
-	CompressionType             string `json:"compressionType,omitempty"`
-	TLSSkipVerify               bool   `json:"tlsSkipVerify"`
+	AddCorsHeader                 bool   `json:"addCorsHeader"`
+	DefaultDatabase               string `json:"defaultDatabase"`
+	UsePost                       bool   `json:"usePOST"`
+	UseYandexCloudAuthorization   bool   `json:"useYandexCloudAuthorization"`
+	XHeaderKey                    string `json:"xHeaderKey,omitempty"`
+	XHeaderUser                   string `json:"xHeaderUser,omitempty"`
+	XClickHouseSSLCertificateAuth bool   `json:"xClickHouseSSLCertificateAuth,omitempty"`
+	UseCompression                bool   `json:"useCompression,omitempty"`
+	CompressionType               string `json:"compressionType,omitempty"`
+	TLSSkipVerify                 bool   `json:"tlsSkipVerify"`
 
 	CustomHeaders map[string]string `json:"-,omitempty"`
 }

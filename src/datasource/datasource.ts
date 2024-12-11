@@ -567,7 +567,7 @@ export class CHDataSource
       format: target.format || 'time_series',
       round: target.round || '0s',
       intervalFactor: target.intervalFactor || 1,
-      interval: options.interval || '30s',
+      interval: target.interval || '30s',
       database: target.database || 'default',
       table: target.table || '',
       maxDataPoints: options.maxDataPoints || 0,

@@ -53,6 +53,7 @@ type EvalQuery struct {
 	Database               string `json:"database"`
 	Table                  string `json:"table"`
 	MaxDataPoints          int64
+	FrontendDatasource     bool `json:"frontendDatasource"`
 	From                   time.Time
 	To                     time.Time
 }
@@ -1763,6 +1764,9 @@ func (s *EvalQueryScanner) RemoveComments(query string) (string, error) {
 }
 
 func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
+	if q.FrontendDatasource {
+		return "/* grafana dashboard=$__dashboard, user=$__user */\n" + query
+	}
 	return "/* grafana alerts rule=" + q.RuleUid + " query=" + q.RefId + " */ " + query
 }
 

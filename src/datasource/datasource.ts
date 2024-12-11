@@ -552,19 +552,12 @@ export class CHDataSource
   async replace(options: DataQueryRequest<CHQuery>, target: CHQuery) {
     const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
 
-    const query = this.templateSrv.replace(
-      conditionalTest(target.query, this.templateSrv),
-      options.scopedVars,
-      interpolateQueryExpr
-    );
-
-    const queryUpd = await this.backendResources.applyAdhocFilters(query, adhocFilters, target);
-
     const queryData = {
+      frontendDatasource: true,
       refId: target.refId,
       ruleUid: options.headers?.['X-Rule-Uid'] || '',
       rawQuery: false,
-      query: queryUpd, // Required field
+      query: target.query, // Required field
       dateTimeColDataType: target.dateTimeColDataType || '',
       dateColDataType: target.dateColDataType || '',
       dateTimeType: target.dateTimeType || 'DATETIME',
@@ -586,7 +579,16 @@ export class CHDataSource
 
     try {
       const response: any = await this.postResource('replace', queryData);
-      return response?.sql || '';
+
+      const query = this.templateSrv.replace(
+        conditionalTest(response.sql, this.templateSrv),
+        options.scopedVars,
+        interpolateQueryExpr
+      );
+
+      const queryUpd = await this.backendResources.applyAdhocFilters(query, adhocFilters, target);
+
+      return queryUpd;
     } catch (error) {
       console.error('Error from backend:', error);
       throw error;

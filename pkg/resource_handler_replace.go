@@ -13,24 +13,25 @@ func replaceQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	var reqData struct {
-		RefId          string `json:"refId"`
-		RuleUid        string `json:"ruleUid"`
-		RawQuery       bool   `json:"rawQuery"`
-		Query          string `json:"query"`
-		DateTimeCol    string `json:"dateTimeColDataType"`
-		DateCol        string `json:"dateColDataType"`
-		DateTimeType   string `json:"dateTimeType"`
-		Extrapolate    bool   `json:"extrapolate"`
-		SkipComments   bool   `json:"skip_comments"`
-		AddMetadata    bool   `json:"add_metadata"`
-		Format         string `json:"format"`
-		Round          string `json:"round"`
-		IntervalFactor int    `json:"intervalFactor"`
-		Interval       string `json:"interval"`
-		Database       string `json:"database"`
-		Table          string `json:"table"`
-		MaxDataPoints  int64  `json:"maxDataPoints"`
-		TimeRange      struct {
+		RefId              string `json:"refId"`
+		RuleUid            string `json:"ruleUid"`
+		RawQuery           bool   `json:"rawQuery"`
+		Query              string `json:"query"`
+		DateTimeCol        string `json:"dateTimeColDataType"`
+		DateCol            string `json:"dateColDataType"`
+		DateTimeType       string `json:"dateTimeType"`
+		Extrapolate        bool   `json:"extrapolate"`
+		SkipComments       bool   `json:"skip_comments"`
+		AddMetadata        bool   `json:"add_metadata"`
+		Format             string `json:"format"`
+		Round              string `json:"round"`
+		IntervalFactor     int    `json:"intervalFactor"`
+		Interval           string `json:"interval"`
+		Database           string `json:"database"`
+		Table              string `json:"table"`
+		MaxDataPoints      int64  `json:"maxDataPoints"`
+		FrontendDatasource bool   `json:"frontendDatasource"`
+		TimeRange          struct {
 			From string `json:"from"`
 			To   string `json:"to"`
 		} `json:"timeRange"`
@@ -58,25 +59,26 @@ func replaceQuery(w http.ResponseWriter, r *http.Request) {
 	}
 
 	evalQ := EvalQuery{
-		RefId:          reqData.RefId,
-		RuleUid:        reqData.RuleUid,
-		RawQuery:       reqData.RawQuery,
-		Query:          reqData.Query,
-		DateTimeCol:    reqData.DateTimeCol,
-		DateCol:        reqData.DateCol,
-		DateTimeType:   reqData.DateTimeType,
-		Extrapolate:    reqData.Extrapolate,
-		SkipComments:   reqData.SkipComments,
-		AddMetadata:    reqData.AddMetadata,
-		Format:         reqData.Format,
-		Round:          reqData.Round,
-		IntervalFactor: reqData.IntervalFactor,
-		Interval:       reqData.Interval,
-		Database:       reqData.Database,
-		Table:          reqData.Table,
-		MaxDataPoints:  reqData.MaxDataPoints,
-		From:           from,
-		To:             to,
+		RefId:              reqData.RefId,
+		RuleUid:            reqData.RuleUid,
+		RawQuery:           reqData.RawQuery,
+		Query:              reqData.Query,
+		DateTimeCol:        reqData.DateTimeCol,
+		DateCol:            reqData.DateCol,
+		DateTimeType:       reqData.DateTimeType,
+		Extrapolate:        reqData.Extrapolate,
+		SkipComments:       reqData.SkipComments,
+		AddMetadata:        reqData.AddMetadata,
+		Format:             reqData.Format,
+		Round:              reqData.Round,
+		IntervalFactor:     reqData.IntervalFactor,
+		Interval:           reqData.Interval,
+		Database:           reqData.Database,
+		Table:              reqData.Table,
+		MaxDataPoints:      reqData.MaxDataPoints,
+		From:               from,
+		To:                 to,
+		FrontendDatasource: reqData.FrontendDatasource,
 	}
 
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()

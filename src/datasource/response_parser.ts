@@ -71,6 +71,7 @@ export default class ResponseParser {
     let hasRegion = false;
     let hasType = false;
 
+    console.log(columns)
     for (let i = 0, len = columns.length; i < len; i++) {
       const column = columns[i];
 

@@ -70,11 +70,15 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 		req.SetBasicAuth(client.settings.Instance.BasicAuthUser, password)
 	} else if client.settings.UseYandexCloudAuthorization {
 		req.Header.Set("X-ClickHouse-User", client.settings.XHeaderUser)
-		if client.settings.XHeaderKey != "" {
-			req.Header.Set("X-ClickHouse-Key", client.settings.XHeaderKey)
-		}
-		if password, isSecured := client.settings.Instance.DecryptedSecureJSONData["xHeaderKey"]; isSecured {
-			req.Header.Set("X-ClickHouse-Key", password)
+		if client.settings.XClickHouseSSLCertificateAuth {
+			req.Header.Set("X-ClickHouse-SSL-Certificate-Auth", "on")
+		} else {
+			if client.settings.XHeaderKey != "" {
+				req.Header.Set("X-ClickHouse-Key", client.settings.XHeaderKey)
+			}
+			if password, isSecured := client.settings.Instance.DecryptedSecureJSONData["xHeaderKey"]; isSecured {
+				req.Header.Set("X-ClickHouse-Key", password)
+			}
 		}
 	}
 	if client.settings.CustomHeaders != nil {

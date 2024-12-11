@@ -57,6 +57,7 @@ export interface CHQuery extends DataQuery {
 export interface CHDataSourceOptions extends DataSourceJsonData {
   useYandexCloudAuthorization?: boolean;
   xHeaderUser?: string;
+  xClickHouseSSLCertificateAuth?: boolean;
   addCorsHeader?: boolean;
   usePOST?: boolean;
   defaultDatabase?: string;

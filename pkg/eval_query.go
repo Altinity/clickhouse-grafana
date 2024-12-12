@@ -1259,7 +1259,12 @@ func (q *EvalQuery) round(dt time.Time, round int) time.Time {
 	if round == 0 {
 		return dt
 	}
-	return dt.Truncate(time.Duration(round) * time.Second)
+
+	// Round to the nearest multiple of `round` seconds
+	coefficient := round
+	rounded := time.Unix(dt.Unix()/int64(coefficient)*int64(coefficient), 0)
+
+	return rounded
 }
 
 func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool) (int, error) {
@@ -1273,6 +1278,7 @@ func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool
 	if ms {
 		return int(math.Ceil(float64(d.Milliseconds()) * float64(intervalFactor))), nil
 	}
+
 	return int(math.Ceil(d.Seconds() * float64(intervalFactor))), nil
 }
 

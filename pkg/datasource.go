@@ -29,6 +29,9 @@ func newResourceHandler() backend.CallResourceHandler {
 	mux.HandleFunc("/replace-time-filters", func(w http.ResponseWriter, r *http.Request) {
 		replaceTimeFilters(w, r)
 	})
+	mux.HandleFunc("/create-query", func(w http.ResponseWriter, r *http.Request) {
+		createQuery(w, r)
+	})
 	return httpadapter.New(mux)
 }
 

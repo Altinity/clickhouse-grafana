@@ -14,7 +14,7 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource): [str
     try {
       if (datasource.options && datasource.templateSrv) {
         datasource.replace(datasource.options, query).then((replaced) => {
-          setFormattedData(replaced);
+          setFormattedData(replaced.stmt);
           setError(null);
         });
       }

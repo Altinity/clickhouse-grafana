@@ -407,15 +407,7 @@ export class CHDataSource
   }
 
   async createQuery(options: any, target: any) {
-    const stmt = await this.replace(options, target);
-
-    let keys = [];
-
-    try {
-      keys = await this.backendResources.getPropertyFromAST(stmt, 'group by');
-    } catch (err) {
-      console.log('AST parser error: ', err);
-    }
+    const {stmt,keys} = await this.replace(options, target);
 
     return {
       keys: keys,
@@ -440,8 +432,8 @@ export class CHDataSource
     );
     let query;
 
-    const replaced = await this.replace(params, params.annotation);
-    query = replaced.replace(/\r\n|\r|\n/g, ' ');
+    const {stmt} = await this.replace(params, params.annotation);
+    query = stmt.replace(/\r\n|\r|\n/g, ' ');
     query += ' FORMAT JSON';
 
     const queryParams = CHDataSource._getRequestOptions(query, true, undefined, this);
@@ -578,21 +570,25 @@ export class CHDataSource
     };
 
     try {
-      const response: any = await this.postResource('replace', queryData);
+      const {sql, keys}: any = await this.postResource('create-query', queryData);
+
+      console.log('Cond Test',conditionalTest(sql, this.templateSrv),
+        options.scopedVars,
+        interpolateQueryExpr)
 
       const query = this.templateSrv.replace(
-        conditionalTest(response.sql, this.templateSrv),
+        conditionalTest(sql, this.templateSrv),
         options.scopedVars,
         interpolateQueryExpr
       );
 
       const queryUpd = await this.backendResources.applyAdhocFilters(query, adhocFilters, target);
 
-      return queryUpd;
+      return {stmt: queryUpd, keys: keys};
     } catch (error) {
       console.error('Error from backend:', error);
 
-      return target.query
+      return {stmt: target.query, keys: []};
     }
   }
 }

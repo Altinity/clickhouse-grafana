@@ -2210,7 +2210,7 @@ func printAST(AST *EvalAST, tab string) string {
 		result += printItems(AST.Obj["prewhere"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("where") {
+	if AST.hasOwnProperty("where") && len(AST.Obj["where"].(*EvalAST).Arr) > 0 {
 		result += newLine + tab + "WHERE"
 		result += printItems(AST.Obj["where"].(*EvalAST), tab, "")
 	}

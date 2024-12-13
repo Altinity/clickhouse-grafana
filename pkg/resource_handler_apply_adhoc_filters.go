@@ -4,7 +4,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"reflect"
 	"regexp"
 	"strings"
 )
@@ -88,26 +87,28 @@ func applyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 
 	var query string
 	if len(reqData.AdhocFilters) > 0 {
-		fromField, fromExists := ast.Obj["from"].(*EvalAST)
-		_, whereExists := ast.Obj["where"].(*EvalAST)
+		basicAst := ast
+		fromField, _ := ast.Obj["from"].(*EvalAST)
 
-		for fromExists && reflect.TypeOf(fromField.Arr).Kind() != reflect.Array {
-			nextAst, ok := ast.Obj["from"].(*EvalAST)
-			if !ok {
-				// handle error
-			}
-			ast = nextAst
-			fromField, fromExists = ast.Obj["from"].(*EvalAST)
-		}
+		//for fromExists && reflect.TypeOf(fromField.Arr).Kind() != reflect.Array {
+		//	nextAst, ok := ast.Obj["from"].(*EvalAST)
+		//	if !ok {
+		//		break
+		//	}
+		//	ast = nextAst
+		//	fromField, fromExists = ast.Obj["from"].(*EvalAST)
+		//}
 
-		for !whereExists {
+		if !ast.hasOwnProperty("where") {
 			ast.Obj["where"] = &EvalAST{
 				Obj: make(map[string]interface{}),
 				Arr: make([]interface{}, 0),
 			}
 		}
 
-		targetDatabase, targetTable := parseTargets("databasetest.tabletest")
+		wherefield, _ := ast.Obj["where"].(*EvalAST)
+
+		targetDatabase, targetTable := parseTargets("default.test_grafana")
 		// Process each adhoc filter
 		for _, filter := range reqData.AdhocFilters {
 
@@ -139,9 +140,9 @@ func applyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 			// Convert operator
 			operator := filter.Operator
 			switch operator {
-			case "=":
+			case "=~":
 				operator = "LIKE"
-			case "!=":
+			case "!~":
 				operator = "NOT LIKE"
 			}
 
@@ -205,12 +206,4 @@ func applyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 	fmt.Printf("handleApplyAdhocFilters: Successfully completed request\n")
-}
-
-func getMapKeys(m map[string]interface{}) []string {
-	keys := make([]string, 0, len(m))
-	for k := range m {
-		keys = append(keys, k)
-	}
-	return keys
 }

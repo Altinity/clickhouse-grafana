@@ -19,11 +19,7 @@ type Target struct {
 	Table    string
 }
 
-func parseTargets(from string) (string, string) {
-	// If you need dynamic values, you can set them as global vars or pass them via closure.
-	// For now, we define some default values:
-	defaultDatabase := "mydb"
-	defaultTable := "users"
+func parseTargets(from string, defaultDatabase string, defaultTable string) (string, string) {
 
 	if len(from) == 0 {
 		return "", ""
@@ -79,6 +75,7 @@ func applyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 	adhocConditions := make([]string, 0)
 	scanner := newScanner(reqData.Query)
 	ast, err := scanner.toAST()
+	topQueryAst := ast
 	if err != nil {
 		fmt.Printf("handleApplyAdhocFilters: Failed to parse query: %v\n", err)
 		w.WriteHeader(http.StatusInternalServerError)
@@ -87,16 +84,13 @@ func applyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 
 	var query string
 	if len(reqData.AdhocFilters) > 0 {
-		//fromField, _ := ast.Obj["from"].(*EvalAST)
-
-		//for fromExists && reflect.TypeOf(fromField.Arr).Kind() != reflect.Array {
-		//	nextAst, ok := ast.Obj["from"].(*EvalAST)
-		//	if !ok {
-		//		break
-		//	}
-		//	ast = nextAst
-		//	fromField, fromExists = ast.Obj["from"].(*EvalAST)
-		//}
+		for ast.hasOwnProperty("from") && ast.Obj["from"].(*EvalAST).Arr == nil {
+			nextAst, ok := ast.Obj["from"].(*EvalAST)
+			if !ok {
+				break
+			}
+			ast = nextAst
+		}
 
 		if !ast.hasOwnProperty("where") {
 			ast.Obj["where"] = &EvalAST{
@@ -105,7 +99,7 @@ func applyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		targetDatabase, targetTable := parseTargets("default.test_grafana")
+		targetDatabase, targetTable := parseTargets(ast.Obj["from"].(*EvalAST).Arr[0].(string), reqData.Target.Database, reqData.Target.Table)
 		// Process each adhoc filter
 		for _, filter := range reqData.AdhocFilters {
 
@@ -181,7 +175,7 @@ func applyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		query = printAST(ast, " ")
+		query = printAST(topQueryAst, " ")
 	}
 	// Replace $adhoc macro
 	renderedCondition := "1"

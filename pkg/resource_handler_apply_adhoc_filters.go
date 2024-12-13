@@ -87,7 +87,6 @@ func applyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 
 	var query string
 	if len(reqData.AdhocFilters) > 0 {
-		basicAst := ast
 		fromField, _ := ast.Obj["from"].(*EvalAST)
 
 		//for fromExists && reflect.TypeOf(fromField.Arr).Kind() != reflect.Array {
@@ -106,9 +105,7 @@ func applyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 			}
 		}
 
-		wherefield, _ := ast.Obj["where"].(*EvalAST)
-
-		targetDatabase, targetTable := parseTargets("default.test_grafana")
+		targetDatabase, targetTable := parseTargets(fromField.Arr[0].(string))
 		// Process each adhoc filter
 		for _, filter := range reqData.AdhocFilters {
 

@@ -591,7 +591,8 @@ export class CHDataSource
       return queryUpd;
     } catch (error) {
       console.error('Error from backend:', error);
-      throw error;
+
+      return target.query
     }
   }
 }

@@ -40,10 +40,10 @@ def max_data_points(self):
         with Then("I click on the run query"):
             with delay():
                 panel.click_run_query_button()
-#
-#         with Then("I check reformatted query after clicking toggle"):
-#             with delay():
-#                 assert "intDiv(toUInt32(EventTime), 3600) * 3600" in sql_editor.get_reformatted_query(query_name='A'), error()
+
+        with Then("I check reformatted query after clicking toggle"):
+            with delay():
+                assert "intDiv(toUInt32(EventTime), 3600) * 3600" in sql_editor.get_reformatted_query(query_name='A'), error()
 
         with Then("I check Interval text field is changed"):
             with delay():

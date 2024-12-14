@@ -59,9 +59,8 @@ func applyAdhocFilters(w http.ResponseWriter, r *http.Request) {
 		Query        string        `json:"query"`
 		AdhocFilters []AdhocFilter `json:"adhocFilters"`
 		Target       struct {
-			Database string        `json:"database"`
-			Table    string        `json:"table"`
-			AHC      []AdhocFilter `json:"adHocFilters"`
+			Database string `json:"database"`
+			Table    string `json:"table"`
 		} `json:"target"`
 	}
 

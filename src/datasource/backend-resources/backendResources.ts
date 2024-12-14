@@ -1,6 +1,7 @@
 import { TimestampFormat } from '../../types/types';
 import { CHDataSource } from '../datasource';
 import { TimeRange } from '../datasource.types';
+import {SimpleCache} from "../helpers/PersistentCache";
 
 export class BackendResources {
   datasource: CHDataSource;
@@ -27,12 +28,39 @@ export class BackendResources {
       return query;
     }
 
-    const result: any = await this.datasource.postResource('apply-adhoc-filters', {
+
+    const requestParameters = {
       query: query,
       adhocFilters: adhocFilters,
-      target: target,
-    });
+      target: {
+        database: target.database,
+        table: target.table,
+      },
+    };
 
+    // const userCache = new PersistentCacheManager<string, any, any>(
+    //   "apply-adhoc-filters", // Key in sessionStorage
+    //   (parameters) => JSON.stringify(parameters) // Function to extract unique identifier
+    // );
+    //
+    // console.log('pre cache', userCache.cache)
+    // const cachedResult = await userCache.get(requestParameters);
+    // await userCache.set(requestParameters, {'test': 'test'});
+    //
+    // const cachedResult2 = await userCache.get(requestParameters);
+    //
+    // console.log('Cached result', cachedResult, cachedResult2)
+    const cache = new SimpleCache();
+
+    const cachedResult = cache.get('apply-adhoc-filters', requestParameters);
+
+    if (cachedResult) {
+      return cachedResult.query;
+    }
+
+    const result: any = await this.datasource.postResource('apply-adhoc-filters', requestParameters);
+
+    cache.set('apply-adhoc-filters', requestParameters, result);
     return result.query;
   }
 

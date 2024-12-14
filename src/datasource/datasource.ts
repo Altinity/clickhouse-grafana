@@ -23,6 +23,7 @@ import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
 import { BackendResources } from './backend-resources/backendResources';
+import {SimpleCache} from "./helpers/PersistentCache";
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -570,11 +571,24 @@ export class CHDataSource
     };
 
     try {
-      const {sql, keys}: any = await this.postResource('create-query', queryData);
+      const cache = new SimpleCache();
+      const cachedResult = cache.get('create-query', queryData);
+      // console.log(queryData)
+      console.log('create-query')
+      let result;
+      if (!cachedResult) {
+        const {sql, keys}: any = await this.postResource('create-query', queryData);
 
-      console.log('Cond Test',conditionalTest(sql, this.templateSrv),
-        options.scopedVars,
-        interpolateQueryExpr)
+        cache.set('create-query', queryData, {sql, keys});
+        result = {sql, keys};
+      } else {
+        result = cachedResult;
+      }
+
+      const {sql, keys} = result;
+
+
+
 
       const query = this.templateSrv.replace(
         conditionalTest(sql, this.templateSrv),

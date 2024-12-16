@@ -1,6 +1,6 @@
 export class SimpleCache {
   // The key under which the cache is stored in sessionStorage
-  private storageKey: string = "simpleCache";
+  private storageKey = "simpleCache";
 
   // In-memory cache
   private cache: { [key: string]: any } = {};

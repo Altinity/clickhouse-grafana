@@ -139,7 +139,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		q.IntervalSec = intervalSeconds
 		q.IntervalMs = intervalMs
 	}
-	if q.IntervalSec < 0 {
+	if q.IntervalSec <= 0 {
 		if q.MaxDataPoints > 0 {
 			i = q.To.Sub(q.From) / time.Duration(q.MaxDataPoints)
 		} else {

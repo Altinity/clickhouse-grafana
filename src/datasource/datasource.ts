@@ -23,7 +23,6 @@ import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
 import { BackendResources } from './backend-resources/backendResources';
-import {SimpleCache} from "./helpers/PersistentCache";
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -571,22 +570,7 @@ export class CHDataSource
     };
 
     try {
-      const cache = new SimpleCache();
-      const cachedResult = cache.get('create-query', queryData);
-
-      let result;
-      if (!cachedResult) {
-        const {sql, keys}: any = await this.postResource('create-query', queryData);
-
-        cache.set('create-query', queryData, {sql, keys});
-        result = {sql, keys};
-      } else {
-        result = cachedResult;
-      }
-
-      const {sql, keys} = result;
-
-
+      const {sql, keys}: any = await this.postResource('create-query', queryData);
 
 
       const query = this.templateSrv.replace(
@@ -595,7 +579,8 @@ export class CHDataSource
         interpolateQueryExpr
       );
 
-      const queryUpd = await this.backendResources.applyAdhocFilters(query, adhocFilters, target);
+
+      const queryUpd = await this.backendResources.applyAdhocFilters(query || queryData.query, adhocFilters, target);
 
       return {stmt: queryUpd, keys: keys};
     } catch (error) {

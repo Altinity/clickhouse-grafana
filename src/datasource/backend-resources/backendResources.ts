@@ -1,7 +1,6 @@
 import { TimestampFormat } from '../../types/types';
 import { CHDataSource } from '../datasource';
 import { TimeRange } from '../datasource.types';
-import {SimpleCache} from "../helpers/PersistentCache";
 
 export class BackendResources {
   datasource: CHDataSource;
@@ -37,17 +36,9 @@ export class BackendResources {
         table: target.table,
       },
     };
-    const cache = new SimpleCache();
-
-    const cachedResult = cache.get('apply-adhoc-filters', requestParameters);
-
-    if (cachedResult) {
-      return cachedResult.query;
-    }
 
     const result: any = await this.datasource.postResource('apply-adhoc-filters', requestParameters);
 
-    cache.set('apply-adhoc-filters', requestParameters, result);
     return result.query;
   }
 

@@ -573,8 +573,7 @@ export class CHDataSource
     try {
       const cache = new SimpleCache();
       const cachedResult = cache.get('create-query', queryData);
-      // console.log(queryData)
-      console.log('create-query')
+
       let result;
       if (!cachedResult) {
         const {sql, keys}: any = await this.postResource('create-query', queryData);

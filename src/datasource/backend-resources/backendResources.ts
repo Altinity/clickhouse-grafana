@@ -37,19 +37,6 @@ export class BackendResources {
         table: target.table,
       },
     };
-
-    // const userCache = new PersistentCacheManager<string, any, any>(
-    //   "apply-adhoc-filters", // Key in sessionStorage
-    //   (parameters) => JSON.stringify(parameters) // Function to extract unique identifier
-    // );
-    //
-    // console.log('pre cache', userCache.cache)
-    // const cachedResult = await userCache.get(requestParameters);
-    // await userCache.set(requestParameters, {'test': 'test'});
-    //
-    // const cachedResult2 = await userCache.get(requestParameters);
-    //
-    // console.log('Cached result', cachedResult, cachedResult2)
     const cache = new SimpleCache();
 
     const cachedResult = cache.get('apply-adhoc-filters', requestParameters);

@@ -23,6 +23,7 @@ import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
 import { BackendResources } from './backend-resources/backendResources';
+import {handleGetAstProperty, InitiateWasm} from "./wasm";
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -90,6 +91,9 @@ export class CHDataSource
     this.annotations = {
       QueryEditor: QueryEditor,
     };
+    InitiateWasm().then((result) => {
+      handleGetAstProperty()
+    })
   }
 
   static _getRequestOptions(query: string, usePOST?: boolean, requestId?: string, options?: any) {

@@ -11,6 +11,7 @@ import { useFormattedData } from './hooks/useFormattedData';
 import { initializeQueryDefaults } from './helpers/initializeQueryDefaults';
 import './QueryEditor.css';
 import { getAdhocFilters } from './helpers/getAdHocFilters';
+
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
   const { datasource, query, onChange, onRunQuery } = props;
   const isAnnotationView = !props.app;
@@ -33,7 +34,6 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
     if (props.app !== 'explore') {
       onChange({ ...initializedQuery, adHocFilters: adHocFilters });
     }
-
     // eslint-disable-next-line
   }, [props.app, adHocFiltersKey]);
 

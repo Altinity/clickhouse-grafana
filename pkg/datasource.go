@@ -14,24 +14,8 @@ import (
 
 func newResourceHandler() backend.CallResourceHandler {
 	mux := http.NewServeMux()
-	mux.HandleFunc("/replace", func(w http.ResponseWriter, r *http.Request) {
-		replaceQuery(w, r)
-	})
-	mux.HandleFunc("/get-ast-property", func(w http.ResponseWriter, r *http.Request) {
-		getAstProperty(w, r)
-	})
-	mux.HandleFunc("/get-ast", func(w http.ResponseWriter, r *http.Request) {
-		getCompleteAst(w, r)
-	})
-	mux.HandleFunc("/apply-adhoc-filters", func(w http.ResponseWriter, r *http.Request) {
-		applyAdhocFilters(w, r)
-	})
-	mux.HandleFunc("/replace-time-filters", func(w http.ResponseWriter, r *http.Request) {
-		replaceTimeFilters(w, r)
-	})
-	mux.HandleFunc("/create-query", func(w http.ResponseWriter, r *http.Request) {
-		createQuery(w, r)
-	})
+	mux.HandleFunc("/get-ast-property", getAstProperty)
+	mux.HandleFunc("/replace-time-filters", replaceTimeFilters)
 	return httpadapter.New(mux)
 }
 

@@ -1,4 +1,4 @@
-import _, { curry, each } from 'lodash';
+import _, {curry, each} from 'lodash';
 import SqlSeries from './sql-series/sql_series';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
@@ -15,15 +15,15 @@ import {
   QueryFilterOptions,
   TypedVariableModel,
 } from '@grafana/data';
-import { BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
+import {BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv} from '@grafana/runtime';
 
-import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
-import { QueryEditor } from '../views/QueryEditor/QueryEditor';
-import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
-import { from, Observable } from 'rxjs';
-import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
-import { BackendResources } from './backend-resources/backendResources';
-import {handleGetAstProperty, InitiateWasm} from "./wasm";
+import {CHDataSourceOptions, CHQuery, DEFAULT_QUERY} from '../types/types';
+import {QueryEditor} from '../views/QueryEditor/QueryEditor';
+import {getAdhocFilters} from '../views/QueryEditor/helpers/getAdHocFilters';
+import {from, Observable} from 'rxjs';
+import {adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr} from './helpers';
+import {BackendResources} from './backend-resources/backendResources';
+import {createQueryHandler, handleApplyAdhocFilters, InitiateWasm} from "./wasm";
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -91,9 +91,10 @@ export class CHDataSource
     this.annotations = {
       QueryEditor: QueryEditor,
     };
-    InitiateWasm().then((result) => {
-      handleGetAstProperty()
-    })
+
+    // InitiateWasm().then((result) => {
+    //   handleGetAstProperty()
+    // })
   }
 
   static _getRequestOptions(query: string, usePOST?: boolean, requestId?: string, options?: any) {
@@ -545,7 +546,7 @@ export class CHDataSource
     return { type: this.type, uid: this.uid };
   }
 
-  async replace(options: DataQueryRequest<CHQuery>, target: CHQuery) {
+  async replace(options: DataQueryRequest<CHQuery>, target: CHQuery): Promise<any> {
     const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
 
     const queryData = {
@@ -573,9 +574,16 @@ export class CHDataSource
       },
     };
 
-    try {
-      const {sql, keys}: any = await this.postResource('create-query', queryData);
+    console.log(queryData)
 
+    try {
+      const {sql, keys}  = await new Promise<any>((resolve) => {
+        InitiateWasm().then(() => {
+          createQueryHandler(queryData).then((res) => {
+            resolve(res);
+          })
+        });
+      });
 
       const query = this.templateSrv.replace(
         conditionalTest(sql, this.templateSrv),
@@ -584,7 +592,14 @@ export class CHDataSource
       );
 
 
-      const queryUpd = await this.backendResources.applyAdhocFilters(query || queryData.query, adhocFilters, target);
+      const queryUpd = await new Promise<any>((resolve) => {
+        InitiateWasm().then(() => {
+          handleApplyAdhocFilters(query || queryData.query, adhocFilters, target).then((res) => {
+            resolve(res.query);
+          })
+        });
+      });
+
 
       return {stmt: queryUpd, keys: keys};
     } catch (error) {

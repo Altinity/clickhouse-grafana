@@ -22,26 +22,6 @@ export class BackendResources {
     return result.sql;
   }
 
-  async applyAdhocFilters(query: string, adhocFilters: any[], target: any): Promise<string> {
-    if (!adhocFilters || adhocFilters.length === 0) {
-      return query;
-    }
-
-
-    const requestParameters = {
-      query: query,
-      adhocFilters: adhocFilters,
-      target: {
-        database: target.database,
-        table: target.table,
-      },
-    };
-
-    const result: any = await this.datasource.postResource('apply-adhoc-filters', requestParameters);
-
-    return result.query;
-  }
-
   async getPropertyFromAST(query, propertyName) {
     const result: any = await this.datasource.postResource('get-ast-property', {
       query: query,

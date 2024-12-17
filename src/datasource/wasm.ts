@@ -5,19 +5,34 @@ declare global {
   export interface Window {
     Go: any;
     wasmFibonacciSum: (n: number) => number;
-    getAstProperty: (query: string, propertyName: string) => Promise<any>;
+    getAstProperty: (query: string, properttyName: string) => Promise<any>;
+    createQuery: (any) => Promise<any>;
+    applyAdhocFilters: any
   }
 }
 export {};
 
-export function handleGetAstProperty() {
-  return new Promise<number>((resolve) => {
-    console.log('Starting get ast calculation...');
+export function createQueryHandler(queryData) {
+  return new Promise<any>((resolve) => {
+    console.log('Starting create query calculation...');
 
     // Call the wasmFibonacciSum function from Go
     //ts-ignore
-    const res = window.getAstProperty('select 1 from default where test = "4"', 'select');
+    const res = window.createQuery(queryData);
     console.log('DONE get ast calculation...', res);
+
+    resolve(res);
+  });
+}
+
+export function handleApplyAdhocFilters(...parameters) {
+  return new Promise<any>((resolve) => {
+    console.log('Starting handleApplyAdhocFilters calculation...');
+
+    // Call the wasmFibonacciSum function from Go
+    //ts-ignore
+    const res = window.applyAdhocFilters(...parameters);
+    console.log('DONE handleApplyAdhocFilters calculation...', res);
 
     resolve(res);
   });
@@ -31,7 +46,7 @@ export const InitiateWasm = () => {
     const goWasm = new window.Go();
     const result = await WebAssembly.instantiateStreaming(
       // Fetch and instantiate the main.wasm file
-      fetch('/public/plugins/vertamedia-clickhouse-datasource/static/ast_property2.wasm'),
+      fetch('/public/plugins/vertamedia-clickhouse-datasource/static/backend.wasm'),
       // Provide the import object to Go for communication with JavaScript
       goWasm.importObject
     );

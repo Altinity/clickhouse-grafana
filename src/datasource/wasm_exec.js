@@ -18,7 +18,7 @@
 			writeSync(fd, buf) {
 				outputBuf += decoder.decode(buf);
 				const nl = outputBuf.lastIndexOf("\n");
-				if (nl != -1) {
+				if (nl !== -1) {
 					console.log(outputBuf.substring(0, nl));
 					outputBuf = outputBuf.substring(nl + 1);
 				}
@@ -256,7 +256,7 @@
 					// func walltime() (sec int64, nsec int32)
 					"runtime.walltime": (sp) => {
 						sp >>>= 0;
-						const msec = (new Date).getTime();
+						const msec = (new Date()).getTime();
 						setInt64(sp + 8, msec / 1000);
 						this.mem.setInt32(sp + 16, (msec % 1000) * 1000000, true);
 					},
@@ -401,7 +401,7 @@
 					// func valueLength(v ref) int
 					"syscall/js.valueLength": (sp) => {
 						sp >>>= 0;
-						setInt64(sp + 16, parseInt(loadValue(sp + 8).length));
+						setInt64(sp + 16, parseInt(loadValue(sp + 8).length, 10));
 					},
 
 					// valuePrepareString(v ref) (ref, int)

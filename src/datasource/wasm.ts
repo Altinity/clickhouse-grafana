@@ -16,7 +16,7 @@ export function handleGetAstProperty() {
 
     // Call the wasmFibonacciSum function from Go
     //ts-ignore
-    const res = window.getAstProperty('123', 'select');
+    const res = window.getAstProperty('select 1 from default where test = "4"', 'select');
     console.log('DONE get ast calculation...', res);
 
     resolve(res);

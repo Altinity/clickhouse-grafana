@@ -581,8 +581,6 @@ export class CHDataSource
       },
     };
 
-    console.log(queryData)
-
     try {
       const {sql, keys}  = await new Promise<any>((resolve) => {
         InitiateWasm().then(() => {

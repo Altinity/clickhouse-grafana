@@ -295,6 +295,39 @@ def enter_datetime64_field(self, datetime64):
 
 
 @TestStep(When)
+def enter_float_field(self, float):
+    """Enter float field."""
+
+    locators.float_field.click()
+    locators.float_field.send_keys(float)
+    locators.float_field.send_keys(Keys.ENTER)
+
+@TestStep(When)
+def enter_timestamp_64_3_field(self, timestamp_64_3):
+    """Enter Timestamp64(3) field."""
+
+    locators.timestamp_64_3_field.click()
+    locators.timestamp_64_3_field.send_keys(timestamp_64_3)
+    locators.timestamp_64_3_field.send_keys(Keys.ENTER)
+
+@TestStep(When)
+def enter_timestamp_64_6_field(self, timestamp_64_6):
+    """Enter Timestamp64(6) field."""
+
+    locators.timestamp_64_6_field.click()
+    locators.timestamp_64_6_field.send_keys(timestamp_64_6)
+    locators.timestamp_64_6_field.send_keys(Keys.ENTER)
+
+@TestStep(When)
+def enter_timestamp_64_9_field(self, timestamp_64_9):
+    """Enter Timestamp64(9) field."""
+
+    locators.timestamp_64_9_field.click()
+    locators.timestamp_64_9_field.send_keys(timestamp_64_9)
+    locators.timestamp_64_9_field.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
 def enter_date_field(self, date):
     """Enter date field."""
 

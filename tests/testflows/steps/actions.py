@@ -154,6 +154,10 @@ def create_new_altinity_datasource(
         default_column_timestamp_type=None,
         default_datetime_field=None,
         default_timestamp_field=None,
+        default_float_field=None,
+        default_timestamp_64_3_field=None,
+        default_timestamp_64_6_field=None,
+        default_timestamp_64_9_field=None,
         default_datetime64_field=None,
         default_date_field=None,
         default_context_window=None,
@@ -316,9 +320,32 @@ def create_new_altinity_datasource(
 
                 with delay():
                     if not (default_datetime64_field is None):
-                        with By("setting up default datetime64 type"):
+                        with By("setting up default datetime64 field"):
                             datasources_altinity_edit.enter_datetime64_field(
                                 datetime64=default_datetime64_field)
+                with delay():
+                    if not (default_float_field is None):
+                        with By("setting up default float field"):
+                            datasources_altinity_edit.enter_float_field(
+                                float=default_float_field)
+
+                with delay():
+                    if not (default_timestamp_64_3_field is None):
+                        with By("setting up default Timestamp64(3) field"):
+                            datasources_altinity_edit.enter_timestamp_64_3_field(
+                                timestamp_64_3=default_timestamp_64_3_field)
+
+                with delay():
+                    if not (default_timestamp_64_6_field is None):
+                        with By("setting up default Timestamp64(6) field"):
+                            datasources_altinity_edit.enter_timestamp_64_6_field(
+                                timestamp_64_6=default_timestamp_64_6_field)
+
+                with delay():
+                    if not (default_timestamp_64_9_field is None):
+                        with By("setting up default Timestamp64(9) field"):
+                            datasources_altinity_edit.enter_timestamp_64_9_field(
+                                timestamp_64_9=default_timestamp_64_9_field)
 
                 with delay():
                     if not (default_date_field is None):

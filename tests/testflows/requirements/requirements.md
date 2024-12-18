@@ -267,6 +267,10 @@ default values setup menu with the following dropdowns:
 * `Datetime Field`
 * `Timestamp (Uint32) Field`
 * `Datetime64 Field`
+* `Float Field`
+* `Timestamp64(3) Field`
+* `Timestamp64(6) Field`
+* `Timestamp64(9) Field`
 * `Date Field`
 
 ### RQ.SRS.Plugin.DataSourceSetupView.DefaultValuesSetup
@@ -440,6 +444,14 @@ This database name SHALL be prefilled in the query builder.
 version: 1.0
 
 The [Plugin] SHALL support specifying HTTP compression option by using the `HTTP Compression` toggle.
+
+## Specifying AdHoc Filters request
+
+### RQ.SRS.Plugin.DataSourceSetupView.AdhocFiltersRequest
+version: 1.0
+
+The [Plugin] SHALL support specifying AdHoc Filters request using `Configure AdHoc Filters request`.
+This request SHALL be used for every adhoc variable that uses this datasource.
 
 ## Creating Dashboards
 
@@ -657,6 +669,14 @@ version: 1.0
 The [Plugin] SHALL support choosing the visualization type by using the `Format As` dropdown menu.
 The following types SHALL be supported: `Time series`, `Table`, `Logs`, `Trace`, `Flamegraph`.
 
+
+### Specifying Context Window
+
+#### RQ.SRS.Plugin.RawSQLEditorInterface.ContextWindow
+version: 1.0
+
+The [Plugin] SHALL support specifying the `Context window` only for the `Logs` format.
+The `Context window` SHALL define the number of log rows to be downloaded with a single request.
 
 ### Hints
 

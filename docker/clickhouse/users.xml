@@ -1,5 +1,11 @@
 <yandex>
     <users>
         <demo><password>demo</password></demo>
+        <demo_x509>
+          <ssl_certificates>
+            <!-- look listen_ports.xml -->
+            <subject_alt_name>DNS:clickhouse</subject_alt_name>
+          </ssl_certificates>
+        </demo_x509>
     </users>
 </yandex>

@@ -582,7 +582,7 @@ def check_default_values_timestamp_64_6(self):
 
     check_default_values(
         default_column_timestamp_type="Timestamp64(6)",
-        default_timestamp_64_3_field="parts",
+        default_timestamp_64_6_field="parts",
         default_date_field="EventDate",
         check_reformatted_query="SELECT 'EventDate', 'parts'",
     )
@@ -599,7 +599,7 @@ def check_default_values_timestamp_64_9(self):
 
     check_default_values(
         default_column_timestamp_type="Timestamp64(9)",
-        default_timestamp_64_3_field="errors",
+        default_timestamp_64_9_field="errors",
         default_date_field="EventDate",
         check_reformatted_query="SELECT 'EventDate', 'errors'",
     )

@@ -15,7 +15,6 @@ import (
 func newResourceHandler() backend.CallResourceHandler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/get-ast-property", getAstProperty)
-	mux.HandleFunc("/replace-time-filters", replaceTimeFilters)
 	return httpadapter.New(mux)
 }
 

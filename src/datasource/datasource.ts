@@ -17,13 +17,13 @@ import {
 } from '@grafana/data';
 import {BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv} from '@grafana/runtime';
 
-import {CHDataSourceOptions, CHQuery, DEFAULT_QUERY} from '../types/types';
+import {CHDataSourceOptions, CHQuery, DEFAULT_QUERY, TimestampFormat} from '../types/types';
 import {QueryEditor} from '../views/QueryEditor/QueryEditor';
 import {getAdhocFilters} from '../views/QueryEditor/helpers/getAdHocFilters';
 import {from, Observable} from 'rxjs';
 import {adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr} from './helpers';
 import {BackendResources} from './backend-resources/backendResources';
-import {createQueryHandler, handleApplyAdhocFilters, InitiateWasm} from "./wasm";
+import {createQueryHandler, handleApplyAdhocFilters, InitiateWasm, replaceTimeFilters} from "./wasm";
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -483,7 +483,13 @@ export class CHDataSource
       let from = convertTimestamp(options.range.from);
       let to = convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = await this.backendResources.replaceTimeFilters(interpolatedQuery, options.range);
+      interpolatedQuery = await new Promise<any>((resolve) => {
+        InitiateWasm().then(() => {
+          replaceTimeFilters(interpolatedQuery, options.range,  TimestampFormat.DateTime).then((res) => {
+            resolve(res.sql);
+          })
+        });
+      });
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 

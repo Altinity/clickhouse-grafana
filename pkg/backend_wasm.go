@@ -336,6 +336,58 @@ func createQueryWasm(this js.Value, args []js.Value) interface{} {
 	}
 }
 
+// replaceTimeFiltersWasm is the WebAssembly-compatible function that processes time filter replacements
+func replaceTimeFiltersWasm(this js.Value, args []js.Value) interface{} {
+	// Validate input arguments
+	if len(args) != 3 {
+		return map[string]interface{}{
+			"error": "Invalid number of arguments. Expected query, timeRange, and dateTimeType",
+		}
+	}
+
+	// Extract query
+	query := args[0].String()
+
+	// Extract timeRange
+	timeRange := args[1]
+	fromStr := timeRange.Get("from").String()
+	toStr := timeRange.Get("to").String()
+
+	// Extract dateTimeType
+	dateTimeType := args[2].String()
+
+	// Parse time range
+	from, err := time.Parse(time.RFC3339, fromStr)
+	if err != nil {
+		return map[string]interface{}{
+			"error": "Invalid from time",
+		}
+	}
+
+	to, err := time.Parse(time.RFC3339, toStr)
+	if err != nil {
+		return map[string]interface{}{
+			"error": "Invalid to time",
+		}
+	}
+
+	// Create EvalQuery
+	evalQ := EvalQuery{
+		Query:        query,
+		From:         from,
+		To:           to,
+		DateTimeType: dateTimeType,
+	}
+
+	// Replace time filters
+	sql := evalQ.replaceTimeFilters(evalQ.Query, 0)
+
+	// Return the result
+	return map[string]interface{}{
+		"sql": sql,
+	}
+}
+
 func main() {
 	// Create a channel to keep the program running
 	c := make(chan struct{}, 0)
@@ -343,6 +395,7 @@ func main() {
 	// Register the function in the JavaScript global scope
 	js.Global().Set("applyAdhocFilters", js.FuncOf(applyAdhocFiltersWasm))
 	js.Global().Set("createQuery", js.FuncOf(createQueryWasm))
+	js.Global().Set("replaceTimeFilters", js.FuncOf(replaceTimeFiltersWasm))
 
 	// Wait indefinitely
 	<-c

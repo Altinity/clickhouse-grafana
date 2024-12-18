@@ -7,7 +7,8 @@ declare global {
     wasmFibonacciSum: (n: number) => number;
     getAstProperty: (query: string, properttyName: string) => Promise<any>;
     createQuery: (any) => Promise<any>;
-    applyAdhocFilters: any
+    replaceTimeFilters: any;
+    applyAdhocFilters: any;
   }
 }
 export {};
@@ -33,6 +34,26 @@ export function handleApplyAdhocFilters(...parameters) {
     //ts-ignore
     const res = window.applyAdhocFilters(...parameters);
     console.log('DONE handleApplyAdhocFilters calculation...', res);
+
+    resolve(res);
+  });
+}
+
+export function replaceTimeFilters(query, range, dateTimeType) {
+  return new Promise<any>((resolve) => {
+    console.log('Starting replaceTimeFilters calculation...');
+
+    // Call the wasmFibonacciSum function from Go
+    //ts-ignore
+    const res = window.replaceTimeFilters(
+      query,
+      {
+        from: range.from.toISOString(), // Convert to Unix timestamp
+        to: range.to.toISOString(), // Convert to Unix timestamp
+      },
+      dateTimeType,
+    );
+    console.log('DONE replaceTimeFilters calculation...', res);
 
     resolve(res);
   });

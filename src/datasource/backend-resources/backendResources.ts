@@ -9,19 +9,6 @@ export class BackendResources {
     this.datasource = datasource;
   }
 
-  async replaceTimeFilters(query: string, range: TimeRange, dateTimeType = TimestampFormat.DateTime): Promise<string> {
-    const result: any = await this.datasource.postResource('replace-time-filters', {
-      query: query,
-      timeRange: {
-        from: range.from.toISOString(), // Convert to Unix timestamp
-        to: range.to.toISOString(), // Convert to Unix timestamp
-      },
-      dateTimeType: dateTimeType,
-    });
-
-    return result.sql;
-  }
-
   async getPropertyFromAST(query, propertyName) {
     const result: any = await this.datasource.postResource('get-ast-property', {
       query: query,

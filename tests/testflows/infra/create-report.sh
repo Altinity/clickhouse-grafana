@@ -16,7 +16,8 @@ mkdir code_coverage
 mkdir code_coverage/backend
 mkdir code_coverage/frontend
 mkdir ./testflows_logs/frontend
-cp -rfv coverage/* code_coverage/backend
+mkdir ./testflows_logs/backend
+cp -rfv go_coverage/* code_coverage/backend
 cp -rfv tests/testflows/coverage/* code_coverage/frontend
-cp -rfv tests/testflows/frontend_coverage_testflows/* ./testflows_logs/frontend
-cp -rfv tests/testflows/backend_coverage_testflows/* ./testflows_logs/backend
+cp -rfv tests/testflows/frontend_coverage_testflows/* ./testflows_logs/frontend/
+cp -rfv tests/testflows/backend_coverage_testflows/* ./testflows_logs/backend/

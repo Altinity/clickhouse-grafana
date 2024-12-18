@@ -48,6 +48,7 @@ export interface CHQuery extends DataQuery {
   formattedQuery?: string;
   contextWindowSize?: string;
   adHocValuesQuery?: string;
+  useWindowFuncForMacros?: boolean;
 }
 
 /**
@@ -56,6 +57,7 @@ export interface CHQuery extends DataQuery {
 export interface CHDataSourceOptions extends DataSourceJsonData {
   useYandexCloudAuthorization?: boolean;
   xHeaderUser?: string;
+  xClickHouseSSLCertificateAuth?: boolean;
   addCorsHeader?: boolean;
   usePOST?: boolean;
   defaultDatabase?: string;
@@ -75,6 +77,7 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   defaultTimeStamp64_9?: string;
   adHocValuesQuery: string;
   contextWindowSize?: string;
+  useWindowFuncForMacros?: boolean;
 }
 
 /**

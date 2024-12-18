@@ -44,6 +44,7 @@ export class CHDataSource
   defaultDatabase: string;
   addCorsHeader: boolean;
   xHeaderUser: string;
+  xClickHouseSSLCertificateAuth: boolean;
   defaultValues: any;
   useYandexCloudAuthorization: boolean;
   useCompression: boolean;
@@ -64,6 +65,7 @@ export class CHDataSource
     this.compressionType = instanceSettings.jsonData.compressionType || '';
     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
+    this.xClickHouseSSLCertificateAuth = instanceSettings.jsonData.xClickHouseSSLCertificateAuth || false;
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
     if (instanceSettings.jsonData.useDefaultConfiguration) {
       this.defaultValues = {
@@ -127,10 +129,19 @@ export class CHDataSource
     if (options.useYandexCloudAuthorization) {
       requestOptions.headers['X-ClickHouse-User'] = options.xHeaderUser;
       // look to routes in plugin.json
-      if (requestOptions.url.indexOf('/?') === -1) {
-        requestOptions.url += '/xHeaderKey';
+      if (options.xClickHouseSSLCertificateAuth) {
+        requestOptions.headers['X-ClickHouse-SSL-Certificate-Auth'] = 'on';
+        if (requestOptions.url.indexOf('/?') === -1) {
+          requestOptions.url += '/xClickHouseSSLCertificateAuth';
+        } else {
+          requestOptions.url.replace('/?', '/xClickHouseSSLCertificateAuth/?');
+        }
       } else {
-        requestOptions.url.replace('/?', '/xHeaderKey/?');
+        if (requestOptions.url.indexOf('/?') === -1) {
+          requestOptions.url += '/xHeaderKey';
+        } else {
+          requestOptions.url.replace('/?', '/xHeaderKey/?');
+        }
       }
     }
 
@@ -379,7 +390,7 @@ export class CHDataSource
         } else if (target.format === 'logs') {
           result = sqlSeries.toLogs();
         } else if (target.refId === 'Anno') {
-          result = sqlSeries.toAnnotation(response.data);
+          result = sqlSeries.toAnnotation(response.data, response.meta);
         } else {
           _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
             result.push(data);

@@ -22,8 +22,7 @@ import {QueryEditor} from '../views/QueryEditor/QueryEditor';
 import {getAdhocFilters} from '../views/QueryEditor/helpers/getAdHocFilters';
 import {from, Observable} from 'rxjs';
 import {adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr} from './helpers';
-import {BackendResources} from './backend-resources/backendResources';
-import {createQueryHandler, handleApplyAdhocFilters, InitiateWasm, replaceTimeFilters} from "./wasm";
+import {createQueryHandler, getAstProperty, handleApplyAdhocFilters, InitiateWasm, replaceTimeFilters} from "./wasm";
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -49,11 +48,9 @@ export class CHDataSource
   compressionType: string;
   adHocValuesQuery: string;
   uid: string;
-  backendResources: BackendResources;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
-    this.backendResources = new BackendResources(this);
     this.uid = instanceSettings.uid;
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;
@@ -91,10 +88,6 @@ export class CHDataSource
     this.annotations = {
       QueryEditor: QueryEditor,
     };
-
-    // InitiateWasm().then((result) => {
-    //   handleGetAstProperty()
-    // })
   }
 
   static _getRequestOptions(query: string, usePOST?: boolean, requestId?: string, options?: any) {
@@ -190,10 +183,18 @@ export class CHDataSource
     const requestOptions = { ...options, range: this.options.range };
 
     const originalQuery = await this.createQuery(requestOptions, query);
-    let select = await this.backendResources.getPropertyFromAST(
-      originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '),
-      'select'
-    );
+    let select = await new Promise<any>((resolve) => {
+      InitiateWasm().then(() => {
+        getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '),
+          'select').then((result) => {
+          if (result && result.properties) {
+            return resolve(result.properties);
+          }
+
+          resolve([]);
+        })
+      });
+    });
 
     const generateQueryForTraceID = (traceId, select) => {
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`;

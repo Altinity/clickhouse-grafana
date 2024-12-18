@@ -5,7 +5,7 @@ declare global {
   export interface Window {
     Go: any;
     wasmFibonacciSum: (n: number) => number;
-    getAstProperty: (query: string, properttyName: string) => Promise<any>;
+    getAstProperty: (query: string, propertyName: string) => Promise<any>;
     createQuery: (any) => Promise<any>;
     replaceTimeFilters: any;
     applyAdhocFilters: any;
@@ -34,6 +34,18 @@ export function handleApplyAdhocFilters(...parameters) {
     //ts-ignore
     const res = window.applyAdhocFilters(...parameters);
     console.log('DONE handleApplyAdhocFilters calculation...', res);
+
+    resolve(res);
+  });
+}
+
+export function getAstProperty(query, propertyName) {
+  return new Promise<any>((resolve) => {
+    console.log('Starting getAstProperty calculation...');
+
+    //ts-ignore
+    const res = window.getAstProperty(query, propertyName);
+    console.log('DONE getAstProperty calculation...', res);
 
     resolve(res);
   });

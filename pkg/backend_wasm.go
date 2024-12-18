@@ -388,14 +388,63 @@ func replaceTimeFiltersWasm(this js.Value, args []js.Value) interface{} {
 	}
 }
 
+// getAstPropertyWasm is the WebAssembly-compatible function that processes AST property requests
+func getAstPropertyWasm(this js.Value, args []js.Value) interface{} {
+	// Validate input arguments
+	if len(args) != 2 {
+		return map[string]interface{}{
+			"error": "Invalid number of arguments. Expected query and propertyName",
+		}
+	}
+
+	// Extract query and propertyName from arguments
+	query := args[0].String()
+	propertyName := args[1].String()
+
+	// Create scanner and parse AST
+	scanner := newScanner(query)
+	ast, err := scanner.toAST()
+	if err != nil {
+		return map[string]interface{}{
+			"error": fmt.Sprintf("Failed to parse query: %v", err),
+		}
+	}
+
+	// Extract properties from the AST
+	var properties []interface{}
+	if prop, exists := ast.Obj[propertyName]; exists {
+		switch v := prop.(type) {
+		case *EvalAST:
+			// If the property is an AST object, add all items from its array
+			properties = make([]interface{}, len(v.Arr))
+			copy(properties, v.Arr)
+		case []interface{}:
+			// If the property is already a slice, use it directly
+			properties = v
+		case map[string]interface{}:
+			// If the property is an object, add it as a single item
+			properties = []interface{}{v}
+		default:
+			// For any other type, add it as a single item
+			properties = []interface{}{v}
+		}
+	}
+
+	// Return the result
+	return map[string]interface{}{
+		"properties": properties,
+	}
+}
+
 func main() {
 	// Create a channel to keep the program running
 	c := make(chan struct{}, 0)
 
-	// Register the function in the JavaScript global scope
+	// Register all functions in the JavaScript global scope
 	js.Global().Set("applyAdhocFilters", js.FuncOf(applyAdhocFiltersWasm))
 	js.Global().Set("createQuery", js.FuncOf(createQueryWasm))
 	js.Global().Set("replaceTimeFilters", js.FuncOf(replaceTimeFiltersWasm))
+	js.Global().Set("getAstProperty", js.FuncOf(getAstPropertyWasm))
 
 	// Wait indefinitely
 	<-c

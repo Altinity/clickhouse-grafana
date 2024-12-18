@@ -7,16 +7,8 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
-	"github.com/grafana/grafana-plugin-sdk-go/backend/resource/httpadapter"
 	"golang.org/x/sync/errgroup"
-	"net/http"
 )
-
-func newResourceHandler() backend.CallResourceHandler {
-	mux := http.NewServeMux()
-	mux.HandleFunc("/get-ast-property", getAstProperty)
-	return httpadapter.New(mux)
-}
 
 func GetDatasourceServeOpts() datasource.ServeOpts {
 	ds := &ClickHouseDatasource{
@@ -24,9 +16,8 @@ func GetDatasourceServeOpts() datasource.ServeOpts {
 	}
 
 	return datasource.ServeOpts{
-		QueryDataHandler:    ds,
-		CheckHealthHandler:  ds,
-		CallResourceHandler: newResourceHandler(),
+		QueryDataHandler:   ds,
+		CheckHealthHandler: ds,
 	}
 }
 

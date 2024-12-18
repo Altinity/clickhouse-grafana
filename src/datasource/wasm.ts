@@ -42,7 +42,6 @@ export function getAstProperty(query, propertyName) {
 export function replaceTimeFilters(query, range, dateTimeType) {
   return new Promise<any>((resolve) => {
     InitiateWasm().then(() => {
-      // Call the wasmFibonacciSum function from Go
       //ts-ignore
       const res =
         window.replaceTimeFilters &&
@@ -54,7 +53,8 @@ export function replaceTimeFilters(query, range, dateTimeType) {
           },
           dateTimeType
         );
-      resolve(res);
+
+      resolve(res.sql);
     });
   });
 }

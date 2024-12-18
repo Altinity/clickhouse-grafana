@@ -1,4 +1,4 @@
-import _, {curry, each} from 'lodash';
+import _, { curry, each } from 'lodash';
 import SqlSeries from './sql-series/sql_series';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
@@ -15,14 +15,14 @@ import {
   QueryFilterOptions,
   TypedVariableModel,
 } from '@grafana/data';
-import {BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv} from '@grafana/runtime';
+import { BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
-import {CHDataSourceOptions, CHQuery, DEFAULT_QUERY, TimestampFormat} from '../types/types';
-import {QueryEditor} from '../views/QueryEditor/QueryEditor';
-import {getAdhocFilters} from '../views/QueryEditor/helpers/getAdHocFilters';
-import {from, Observable} from 'rxjs';
-import {adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr} from './helpers';
-import {createQueryHandler, getAstProperty, handleApplyAdhocFilters, InitiateWasm, replaceTimeFilters} from "./wasm";
+import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
+import { QueryEditor } from '../views/QueryEditor/QueryEditor';
+import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
+import { from, Observable } from 'rxjs';
+import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
+import { applyAdhocFilters, createQuery, getAstProperty, InitiateWasm, replaceTimeFilters } from './wasm';
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -185,14 +185,13 @@ export class CHDataSource
     const originalQuery = await this.createQuery(requestOptions, query);
     let select = await new Promise<any>((resolve) => {
       InitiateWasm().then(() => {
-        getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '),
-          'select').then((result) => {
+        getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select').then((result) => {
           if (result && result.properties) {
             return resolve(result.properties);
           }
 
           resolve([]);
-        })
+        });
       });
     });
 
@@ -413,7 +412,7 @@ export class CHDataSource
   }
 
   async createQuery(options: any, target: any) {
-    const {stmt,keys} = await this.replace(options, target);
+    const { stmt, keys } = await this.replace(options, target);
 
     return {
       keys: keys,
@@ -438,7 +437,7 @@ export class CHDataSource
     );
     let query;
 
-    const {stmt} = await this.replace(params, params.annotation);
+    const { stmt } = await this.replace(params, params.annotation);
     query = stmt.replace(/\r\n|\r|\n/g, ' ');
     query += ' FORMAT JSON';
 
@@ -484,13 +483,7 @@ export class CHDataSource
       let from = convertTimestamp(options.range.from);
       let to = convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = await new Promise<any>((resolve) => {
-        InitiateWasm().then(() => {
-          replaceTimeFilters(interpolatedQuery, options.range,  TimestampFormat.DateTime).then((res) => {
-            resolve(res.sql);
-          })
-        });
-      });
+      interpolatedQuery = await replaceTimeFilters(interpolatedQuery, options.range, options.dateTimeType);
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 
@@ -582,13 +575,7 @@ export class CHDataSource
     };
 
     try {
-      const {sql, keys}  = await new Promise<any>((resolve) => {
-        InitiateWasm().then(() => {
-          createQueryHandler(queryData).then((res) => {
-            resolve(res);
-          })
-        });
-      });
+      const { sql, keys } = await createQuery(queryData);
 
       const query = this.templateSrv.replace(
         conditionalTest(sql, this.templateSrv),
@@ -596,21 +583,13 @@ export class CHDataSource
         interpolateQueryExpr
       );
 
+      const queryUpd = await applyAdhocFilters(query || queryData.query, adhocFilters, target);
 
-      const queryUpd = await new Promise<any>((resolve) => {
-        InitiateWasm().then(() => {
-          handleApplyAdhocFilters(query || queryData.query, adhocFilters, target).then((res) => {
-            resolve(res.query);
-          })
-        });
-      });
-
-
-      return {stmt: queryUpd, keys: keys};
+      return { stmt: queryUpd, keys: keys };
     } catch (error) {
       console.error('Error from backend:', error);
 
-      return {stmt: target.query, keys: []};
+      return { stmt: target.query, keys: [] };
     }
   }
 }

@@ -13,67 +13,55 @@ declare global {
 }
 export {};
 
-export function createQueryHandler(queryData) {
+export function createQuery(queryData) {
   return new Promise<any>((resolve) => {
-    console.log('Starting create query calculation...');
-
-    // Call the wasmFibonacciSum function from Go
-    //ts-ignore
-    const res = window.createQuery && window.createQuery(queryData);
-    console.log('DONE get ast calculation...', res);
-
-    resolve(res);
+    InitiateWasm().then(() => {
+      const res = window.createQuery && window.createQuery(queryData);
+      resolve(res);
+    });
   });
 }
 
-export function handleApplyAdhocFilters(...parameters) {
+export function applyAdhocFilters(query, adhocFilters, target) {
   return new Promise<any>((resolve) => {
-    console.log('Starting handleApplyAdhocFilters calculation...');
-
-    // Call the wasmFibonacciSum function from Go
-    //ts-ignore
-    const res = window.applyAdhocFilters && window.applyAdhocFilters(...parameters);
-    console.log('DONE handleApplyAdhocFilters calculation...', res);
-
-    resolve(res);
+    InitiateWasm().then(() => {
+      const res = window.applyAdhocFilters && window.applyAdhocFilters(query, adhocFilters, target);
+      resolve(res.query);
+    });
   });
 }
 
 export function getAstProperty(query, propertyName) {
   return new Promise<any>((resolve) => {
-    console.log('Starting getAstProperty calculation...');
-
     //ts-ignore
     const res = window.getAstProperty && window.getAstProperty(query, propertyName);
-    console.log('DONE getAstProperty calculation...', res);
-
     resolve(res);
   });
 }
 
 export function replaceTimeFilters(query, range, dateTimeType) {
   return new Promise<any>((resolve) => {
-    console.log('Starting replaceTimeFilters calculation...');
-
-    // Call the wasmFibonacciSum function from Go
-    //ts-ignore
-    const res = window.replaceTimeFilters && window.replaceTimeFilters(
-      query,
-      {
-        from: range.from.toISOString(), // Convert to Unix timestamp
-        to: range.to.toISOString(), // Convert to Unix timestamp
-      },
-      dateTimeType,
-    );
-    console.log('DONE replaceTimeFilters calculation...', res);
-
-    resolve(res);
+    InitiateWasm().then(() => {
+      // Call the wasmFibonacciSum function from Go
+      //ts-ignore
+      const res =
+        window.replaceTimeFilters &&
+        window.replaceTimeFilters(
+          query,
+          {
+            from: range.from.toISOString(), // Convert to Unix timestamp
+            to: range.to.toISOString(), // Convert to Unix timestamp
+          },
+          dateTimeType
+        );
+      resolve(res);
+    });
   });
 }
 
 export const InitiateWasm = () => {
   if (window.replaceTimeFilters && window.createQuery && window.applyAdhocFilters && window.getAstProperty) {
-    return Promise.resolve()
+    return Promise.resolve();
   }
 
   // Function to asynchronously load WebAssembly

@@ -1,4 +1,4 @@
-import React, {FormEvent, useEffect, useState} from 'react';
+import React, { FormEvent, useEffect, useState } from 'react';
 import { CodeEditor, DataSourceHttpSettings, InlineField, InlineSwitch, Input, SecretInput, Select } from '@grafana/ui';
 import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, SelectableValue } from '@grafana/data';
 import { CHDataSourceOptions } from '../../types/types';
@@ -135,7 +135,11 @@ export function ConfigEditor(props: Props) {
                 onChange={onChangeXHeaderKey}
               />
             </InlineField>
-            <InlineField label="X-ClickHouse-SSL-Certificate-Auth" labelWidth={36} tooltip="Requires non empty X-ClickHouse-User and TLS/SSL client key and client cert, doesn't work with basic authorization">
+            <InlineField
+              label="X-ClickHouse-SSL-Certificate-Auth"
+              labelWidth={36}
+              tooltip="Requires non empty X-ClickHouse-User and TLS/SSL client key and client cert, doesn't work with basic authorization"
+            >
               <InlineSwitch
                 data-test-id="x-clickhouse-ssl-certificate-auth"
                 id="xClickHouseSSLCertificateAuth"

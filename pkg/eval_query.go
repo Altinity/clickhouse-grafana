@@ -12,8 +12,6 @@ import (
 	"unicode"
 )
 
-/* var NumberOnlyRegexp = regexp.MustCompile(`^[+-]?\d+(\.\d+)?$`) */
-
 var timeSeriesMacroRegexp = regexp.MustCompile(`\$timeSeries\b`)
 var timeSeriesMsMacroRegexp = regexp.MustCompile(`\$timeSeriesMs\b`)
 var naturalTimeSeriesMacroRegexp = regexp.MustCompile(`\$naturalTimeSeries\b`)
@@ -1876,48 +1874,6 @@ const skipSpaceRe = "[\\(\\.! \\[]"
 
 const tableFuncRe = "\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b"
 
-/* const builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
-   "coalesce|ifnil|isnil|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
-   "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +
-   "toRelativeYearNum|toTime|toStartOfHour|toStartOfFiveMinute|toStartOfMinute|toStartOfYear|" +
-   "toStartOfQuarter|toStartOfMonth|toMonday|toSecond|toMinute|toHour|toDayOfWeek|toDayOfMonth|" +
-   "toMonth|toYear|toFixedString|toStringCutToZero|reinterpretAsString|reinterpretAsDate|" +
-   "reinterpretAsDateTime|reinterpretAsFloat32|reinterpretAsFloat64|reinterpretAsInt8|" +
-   "reinterpretAsInt16|reinterpretAsInt32|reinterpretAsInt64|reinterpretAsUInt8|" +
-   "reinterpretAsUInt16|reinterpretAsUInt32|reinterpretAsUInt64|toUInt8|toUInt16|toUInt32|" +
-   "toUInt64|toInt8|toInt16|toInt32|toInt64|toFloat32|toFloat64|toDate|toDateTime|toString|" +
-   "bitAnd|bitOr|bitXor|bitNot|bitShiftLeft|bitShiftRight|abs|negate|modulo|intDivOrZero|" +
-   "intDiv|divide|multiply|minus|plus|empty|notEmpty|length|lengthUTF8|lower|upper|lowerUTF8|" +
-   "upperUTF8|reverse|reverseUTF8|concat|substring|substringUTF8|appendTrailingCharIfAbsent|" +
-   "position|positionUTF8|match|extract|extractAll|like|notLike|replaceOne|replaceAll|" +
-   "replaceRegexpOne|range|arrayElement|has|indexOf|countEqual|arrayEnumerate|arrayEnumerateUniq|" +
-   "arrayJoin|arrayMap|arrayFilter|arrayExists|arrayCount|arrayAll|arrayFirst|arraySum|splitByChar|" +
-   "splitByString|alphaTokens|domainWithoutWWW|topLevelDomain|firstSignificantSubdomain|" +
-   "cutToFirstSignificantSubdomain|queryString|URLPathHierarchy|URLHierarchy|extractURLParameterNames|" +
-   "extractURLParameters|extractURLParameter|queryStringAndFragment|cutWWW|cutQueryString|" +
-   "cutFragment|cutQueryStringAndFragment|cutURLParameter|IPv4NumToString|IPv4StringToNum|" +
-   "IPv4NumToStringClassC|IPv6NumToString|IPv6StringToNum|rand|rand64|halfMD5|MD5|sipHash64|" +
-   "sipHash128|cityHash64|intHash32|intHash64|SHA1|SHA224|SHA256|URLHash|hex|unhex|bitmaskToList|" +
-   "bitmaskToArray|floor|ceil|round|roundToExp2|roundDuration|roundAge|regionToCountry|" +
-   "regionToContinent|regionToPopulation|regionIn|regionHierarchy|regionToName|OSToRoot|OSIn|" +
-   "OSHierarchy|SEToRoot|SEIn|SEHierarchy|dictGetUInt8|dictGetUInt16|dictGetUInt32|" +
-   "dictGetUInt64|dictGetInt8|dictGetInt16|dictGetInt32|dictGetInt64|dictGetFloat32|" +
-   "dictGetFloat64|dictGetDate|dictGetDateTime|dictGetString|dictGetHierarchy|dictHas|dictIsIn|" +
-   "argMin|argMax|uniqCombined|uniqHLL12|uniqExact|uniqExactIf|groupArray|groupUniqArray|quantile|" +
-   "quantileDeterministic|quantileTiming|quantileTimingWeighted|quantileExact|" +
-   "quantileExactWeighted|quantileTDigest|median|quantiles|varSamp|varPop|stddevSamp|stddevPop|" +
-   "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|avgIf|" +
-   "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
-   "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
-   "uniqArrayIf|sumArrayIf|uniq)\\b" */
-/* const operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
-   "when|else|end|type|left|right|on|outer|desc|asc|primary|key|between|" +
-   "foreign|not|nil|inner|cross|natural|database|prewhere|using|global|in)\\b" */
-/* const dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
-   "money|real|number|integer|" +
-   "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +
-   "array|tuple|string)\\b" */
-
 var wsOnlyRe = regexp.MustCompile("^(?:" + wsRe + ")$")
 var commentOnlyRe = regexp2.MustCompile("^(?:"+commentRe+")$", regexp2.Multiline)
 var idOnlyRe = regexp.MustCompile("^(?:" + idRe + ")$")
@@ -1928,9 +1884,6 @@ var joinsOnlyRe = regexp.MustCompile("(?mi)^(?:" + joinsRe + ")$")
 var onJoinTokenOnlyRe = regexp.MustCompile("(?mi)^(?:" + onJoinTokenRe + ")$")
 var tableNameOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableNameRe + ")$")
 
-/* var operatorOnlyRe = regexp.MustCompile("^(?mi)(?:" + operatorRe + ")$") */
-/* var dataTypeOnlyRe = regexp.MustCompile("^(?:" + dataTypeRe + ")$") */
-/* var builtInFuncOnlyRe = regexp.MustCompile("^(?:" + builtInFuncRe + ")$") */
 var tableFuncOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableFuncRe + ")$")
 var macroOnlyRe = regexp.MustCompile("(?mi)^(?:" + macroRe + ")$")
 var inOnlyRe = regexp.MustCompile("(?mi)^(?:" + inRe + ")$")
@@ -1993,20 +1946,6 @@ func isID(token string) bool {
 func isStatement(token string) bool {
 	return statementOnlyRe.MatchString(token)
 }
-
-/*
-func isOperator(token string) bool {
-    return operatorOnlyRe.MatchString(token)
-}
-
-func isDataType(token string) bool {
-    return dataTypeOnlyRe.MatchString(token)
-}
-
-func isBuiltInFunc(token string) bool {
-    return builtInFuncOnlyRe.MatchString(token)
-}
-*/
 
 func isTableFunc(token string) bool {
 	return tableFuncOnlyRe.MatchString(token)

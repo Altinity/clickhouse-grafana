@@ -3,7 +3,7 @@
   "version": "3.3.0",
   "description": "Altinity grafana datasource for ClickHouse",
   "scripts": {
-    "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
+    "build": "npm run build:frontend && npm run build:wasm",
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
     "test": "jest",
     "test:coverage": "jest --coverage",
@@ -16,7 +16,9 @@
     "server": "docker compose up --build -d grafana",
     "sign": "bash -xec \"source ./.release_env && npx --yes @grafana/sign-plugin@latest\"",
     "create_instrumented": "npx nyc instrument --source-map --nycrc-path .nycrc ./src ./instrumented",
-    "build:test": "webpack -c ./webpack.config.instrumented.ts --env test"
+    "build:test": "webpack -c ./webpack.config.instrumented.ts --env test",
+    "build:frontend": "webpack -c ./.config/webpack/webpack.config.ts --env production",
+    "build:wasm": "GOARCH=wasm GOOS=js go build -o src/static/backend.wasm ./pkg/backend_wasm.go ./pkg/eval_query.go"
   },
   "author": "Altinity",
   "license": "MIT",

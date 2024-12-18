@@ -113,7 +113,7 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
         setDefaultDateDate32Options(transformDataToOptions(groupedByType['Date'] || []));
         setDefaultUint32Options(transformDataToOptions(groupedByType['UInt32'] || []));
         setDefaultDateTimeOptions(transformDataToOptions(groupedByType['DateTime'] || []));
-        setDefaultFloatOptions(transformDataToOptions([...groupedByType['Float'],...groupedByType['Decimal']]));
+        setDefaultFloatOptions(transformDataToOptions([...groupedByType['Float'], ...groupedByType['Decimal']]));
         setDefaultTimeStamp64_3Options(transformDataToOptions(groupedByType['UInt64'] || []));
         setDefaultTimeStamp64_6Options(transformDataToOptions(groupedByType['UInt64'] || []));
         setDefaultTimeStamp64_9Options(transformDataToOptions(groupedByType['UInt64'] || []));

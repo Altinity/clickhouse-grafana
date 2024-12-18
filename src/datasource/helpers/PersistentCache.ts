@@ -1,6 +1,6 @@
 export class SimpleCache {
   // The key under which the cache is stored in sessionStorage
-  private storageKey = "simpleCache";
+  private storageKey = 'simpleCache';
 
   // In-memory cache
   private cache: { [key: string]: any } = {};
@@ -63,7 +63,7 @@ export class SimpleCache {
       try {
         this.cache = JSON.parse(storedCache);
       } catch (error) {
-        console.error("Failed to parse cache from sessionStorage:", error);
+        console.error('Failed to parse cache from sessionStorage:', error);
         this.cache = {};
       }
     }
@@ -76,7 +76,7 @@ export class SimpleCache {
     try {
       sessionStorage.setItem(this.storageKey, JSON.stringify(this.cache));
     } catch (error) {
-      console.error("Failed to save cache to sessionStorage:", error);
+      console.error('Failed to save cache to sessionStorage:', error);
     }
   }
 
@@ -86,14 +86,14 @@ export class SimpleCache {
    * @returns A JSON string with sorted keys.
    */
   private stableStringify(obj: any): string {
-    if (obj !== null && typeof obj === "object") {
+    if (obj !== null && typeof obj === 'object') {
       if (Array.isArray(obj)) {
-        return `[${obj.map((item) => this.stableStringify(item)).join(",")}]`;
+        return `[${obj.map((item) => this.stableStringify(item)).join(',')}]`;
       } else {
         const keys = Object.keys(obj).sort();
-        return `{${keys.map((key) => `"${key}":${this.stableStringify(obj[key])}`).join(",")}}`;
+        return `{${keys.map((key) => `"${key}":${this.stableStringify(obj[key])}`).join(',')}}`;
       }
-    } else if (typeof obj === "string") {
+    } else if (typeof obj === 'string') {
       return `"${obj}"`;
     } else {
       return String(obj);

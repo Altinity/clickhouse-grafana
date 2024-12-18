@@ -11,7 +11,7 @@ import {
 } from '@grafana/ui';
 import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
-import {FormattedSQL} from "./FormattedSQL";
+import { FormattedSQL } from './FormattedSQL';
 
 const RESOLUTION_OPTIONS = [
   { value: 1, label: '1/1' },
@@ -175,7 +175,10 @@ export const QueryTextEditor = ({
           </InlineField>
           <InlineField
             label={
-              <InlineLabel width={23} tooltip="Turn off if you would like use `runnindDifference` and `neighbor` functions for macros">
+              <InlineLabel
+                width={23}
+                tooltip="Turn off if you would like use `runnindDifference` and `neighbor` functions for macros"
+              >
                 Use window functions
               </InlineLabel>
             }

@@ -492,20 +492,20 @@ def check_default_values(
         assert check_reformatted_query in sql_editor.get_reformatted_query(query_name='A'), error()
 
 
-# @TestScenario
-# @Requirements(
-#     RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),
-#     RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup("1.0")
-# )
-# def check_default_values_datetime(self):
-#     """Check that plugin supports setting up default values with DateTime timestamp type."""
-#
-#     check_default_values(
-#         default_column_timestamp_type="DateTime",
-#         default_datetime_field="EventTime",
-#         default_date_field="EventDate",
-#         check_reformatted_query="SELECT 'EventDate', 'EventTime'",
-#     )
+@TestScenario
+@Requirements(
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup("1.0")
+)
+def check_default_values_datetime(self):
+    """Check that plugin supports setting up default values with DateTime timestamp type."""
+
+    check_default_values(
+        default_column_timestamp_type="DateTime",
+        default_datetime_field="EventTime",
+        default_date_field="EventDate",
+        check_reformatted_query="SELECT 'EventDate', 'EventTime'",
+    )
 
 
 @TestScenario
@@ -523,21 +523,21 @@ def check_default_values_timestamp(self):
         check_reformatted_query="SELECT 'EventDate', 'level'",
     )
 
-#
-# @TestScenario
-# @Requirements(
-#     RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),
-#     RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup("1.0")
-# )
-# def check_default_values_datetime64(self):
-#     """Check that plugin supports setting up default values with DateTime64 timestamp type."""
-#
-#     check_default_values(
-#         default_column_timestamp_type="DateTime64",
-#         default_datetime64_field="d64",
-#         default_date_field="EventDate",
-#         check_reformatted_query="SELECT 'EventDate', 'd64'",
-#     )
+
+@TestScenario
+@Requirements(
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesToggle("1.0"),
+    RQ_SRS_Plugin_DataSourceSetupView_DefaultValuesSetup("1.0")
+)
+def check_default_values_datetime64(self):
+    """Check that plugin supports setting up default values with DateTime64 timestamp type."""
+
+    check_default_values(
+        default_column_timestamp_type="DateTime64",
+        default_datetime64_field="d64",
+        default_date_field="EventDate",
+        check_reformatted_query="SELECT 'EventDate', 'd64'",
+    )
 
 
 @TestScenario
@@ -582,9 +582,9 @@ def check_default_values_timestamp_64_6(self):
 
     check_default_values(
         default_column_timestamp_type="Timestamp64(6)",
-        default_timestamp_64_6_field="parts",
+        default_timestamp_64_6_field="active_parts",
         default_date_field="EventDate",
-        check_reformatted_query="SELECT 'EventDate', 'parts'",
+        check_reformatted_query="SELECT 'EventDate', 'active_parts'",
     )
 
 

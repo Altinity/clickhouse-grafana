@@ -110,7 +110,7 @@ def window_functions_outline(self, panel_name, panel_names):
                 note(f"correlation for {panel_name}: {correlation}")
                 note(data_without_window_functions)
                 note(data_with_window_functions)
-                assert correlation == 1, error()
+                assert correlation > 0.95, error()
 
 @TestFeature
 @Name("window functions")

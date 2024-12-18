@@ -257,9 +257,9 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
               id="defaultFloatTimestamp"
               allowCustomValue={false}
               width={24}
-              value={jsonData.defaultFloatTimestamp}
+              value={jsonData.defaultFloat}
               onChange={(changeEvent) => {
-                onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultFloatTimestamp');
+                onFieldChange({ value: changeEvent ? changeEvent.value : undefined }, 'defaultFloat');
               }}
               options={defaultFloatOptions}
             />

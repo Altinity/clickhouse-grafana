@@ -1,7 +1,9 @@
+from numpy import corrcoef
 from testflows.core import *
 from steps.delay import delay
 from testflows.asserts import error
 
+import csv
 import steps.ui as ui
 import steps.actions as actions
 import steps.panel.view as panel
@@ -13,19 +15,23 @@ from requirements.requirements import *
 
 
 @TestOutline
-def window_functions_outline(self, panel_name):
+def window_functions_outline(self, panel_name, panel_names):
     """Check that grafana plugin supports window functions."""
+
+    with When("I scroll down to the panel"):
+        if panel_names.index(panel_name) != 0:
+            dashboard.scroll_to_panel(panel_name=panel_names[panel_names.index(panel_name) - 1])
 
     with When(f"I open panel {panel_name}"):
         with delay():
             dashboard.open_panel(panel_name=panel_name)
 
     with And("I open Query inspector"):
-        with delay():
+        with delay(after=0.5):
             panel.click_inspect_query_button()
 
     with And("I open Data tab in query inspector modal"):
-        with delay():
+        with delay(after=0.5):
             panel.click_query_inspector_data_tab()
 
     with And("I download csv data file"):
@@ -45,11 +51,11 @@ def window_functions_outline(self, panel_name):
             dashboard.open_panel(panel_name=f"{panel_name} - without window functions")
 
     with And("I open Query inspector"):
-        with delay():
+        with delay(after=0.5):
             panel.click_inspect_query_button()
 
     with And("I open Data tab in query inspector modal"):
-        with delay():
+        with delay(after=0.5):
             panel.click_query_inspector_data_tab()
 
     with And("I download csv data file"):
@@ -63,15 +69,48 @@ def window_functions_outline(self, panel_name):
     with And("I click discard changes"):
         with delay():
             panel.click_discard_button()
-    pause()
+
+    with Then("I save two csv files"):
+        with delay():
+            with By("saving container id"):
+                r = self.context.cluster.command(None, "docker ps -a | grep '4444/tcp, 5900/tcp'")
+                container_id = r.output.split(" ")[0]
+
+            with By("moving csv file from docker"):
+                r = self.context.cluster.command(None, f"rm -rf tests/automated/window_functions/{panel_name[1:]}/")
+                r = self.context.cluster.command(None, f"mkdir -p tests/automated/window_functions/{panel_name[1:]}/")
+                r = self.context.cluster.command(None, f"docker cp {container_id}:/home/seluser/Downloads/ tests/automated/window_functions/{panel_name[1:]}/")
+                r = self.context.cluster.command(None, f"docker exec {container_id} rm -rf /home/seluser/Downloads/")
+
     with Then("I compare two csv files"):
         with delay():
-            r = self.context.cluster.command(None, "docker ps -a | grep '4444/tcp, 5900/tcp'")
-            note(r.output)
-            container_id = r.output.split(" ")[0]
-            note(container_id)
-            r = self.context.cluster.command(None, f"docker cp {container_id}:/home/seluser/Downloads/ widow_functions/")
-            note(r.output)
+            with By("defining filenames"):
+                filename_with_window_functions = self.context.cluster.command(None, f"ls tests/automated/window_functions/{panel_name[1:]}/Downloads/*{panel_name[1:]}-*").output[1:-1]
+                filename_without_window_functions = self.context.cluster.command(None, f"ls tests/automated/window_functions/{panel_name[1:]}/Downloads/*{panel_name[1:]}\ *").output[1:-1]
+
+            with By("getting values from files"):
+                with Step("without window functions"):
+                    file_without_window_functions = open(filename_without_window_functions)
+                    data_without_window_functions = []
+                    for row in csv.reader(file_without_window_functions):
+                        data_without_window_functions.append(row[1])
+                    file_without_window_functions.close()
+
+                with Step("with window functions"):
+                    file_with_window_functions = open(filename_with_window_functions)
+                    data_with_window_functions = []
+                    for row in csv.reader(file_with_window_functions):
+                        data_with_window_functions.append(row[1])
+                    file_with_window_functions.close()
+
+            with By("calculating correlation between this values"):
+                data_without_window_functions = [0 if i == '' else float(i) for i in data_without_window_functions[1:]]
+                data_with_window_functions = [0 if i == '' else float(i) for i in data_with_window_functions[1:]]
+                correlation = corrcoef(data_without_window_functions[1:], data_with_window_functions[1:])[0,1]
+                note(f"correlation for {panel_name}: {correlation}")
+                note(data_without_window_functions)
+                note(data_with_window_functions)
+                assert correlation == 1, error()
 
 @TestFeature
 @Name("window functions")
@@ -83,14 +122,14 @@ def feature(self):
         '$deltaColumns',
         '$deltaColumnsAggregated',
         '$increase',
-        # '$increaseColumns',
-        # '$increaseColumnsAggregated',
-        # '$perSecond',
-        # '$perSecondColumns',
-        # '$perSecondColumnsAggregated',
-        # '$rate',
-        # '$rateColumns',
-        # '$rateColumnsAggregated',
+        '$increaseColumns',
+        '$increaseColumnsAggregated',
+        '$perSecond',
+        '$perSecondColumns',
+        '$perSecondColumnsAggregated',
+        '$rate',
+        '$rateColumns',
+        '$rateColumnsAggregated',
     ]
 
     with Given(f"I open dashboard window functions"):
@@ -98,4 +137,4 @@ def feature(self):
 
     for panel_name in panel_names:
         with Scenario(f"{panel_name} function"):
-            window_functions_outline(panel_name=panel_name)
+            window_functions_outline(panel_name=panel_name, panel_names=panel_names)

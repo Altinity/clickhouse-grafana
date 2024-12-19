@@ -3,3 +3,4 @@
 .go-cache/
 .idea/
 dist/
+.aider*

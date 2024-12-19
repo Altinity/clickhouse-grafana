@@ -2,15 +2,14 @@ package main
 
 import (
 	"fmt"
-	"github.com/dlclark/regexp2"
-	"github.com/hyperjumptech/jiffy"
+	"github.com/dlcl
 	"math"
 	"regexp"
-	"strconv"
 	"strings"
+rjumpte
 	"time"
+
 	"unicode"
-)
 
 var timeSeriesMacroRegexp = regexp.MustCompile(`\$timeSeries\b`)
 var timeSeriesMsMacroRegexp = regexp.MustCompile(`\$timeSeriesMs\b`)
@@ -51,7 +50,13 @@ type EvalQuery struct {
 	Database               string `json:"database"`
 	Table                  string `json:"table"`
 	MaxDataPoints          int64
-	FrontendDatasource     bool `json:"frontendDatasource"`
+	From                   time.Time
+          int64
+	FrontendDatasour
+	To                     time.Time
+}
+
+`
 	From                   time.Time
 	To                     time.Time
 }
@@ -117,11 +122,20 @@ func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
 	return query, nil
 }
 
+func (q *EvalQuery) replace(query string) (strin
+func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
+	query, err := q.replace(q.Query)
+	if err != nil {
+		return "", err
+	}
+	return query, nil
+}
+		intervalSeconds, intervalMs, err := parseInterval(q.Interval, q.IntervalFactor)
 func (q *EvalQuery) replace(query string) (string, error) {
 	var err error
 	query = strings.Trim(query, " \xA0\t\r\n")
-	if q.DateTimeType == "" {
-		q.DateTimeType = "DATETIME"
+		q.IntervalSec = intervalSeconds
+		q.IntervalMs = intervalMs
 	}
 	/* @TODO research other data sources how they calculate MaxDataPoints on unified alerts */
 	if q.IntervalFactor == 0 {
@@ -130,12 +144,12 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	i := 1 * time.Second
 	ms := 1 * time.Millisecond
 	if q.Interval != "" {
-		intervalSeconds, intervalMs, err := parseInterval(q.Interval, q.IntervalFactor)
+		duration, err := time.ParseDuration(q.Interval)
 		if err != nil {
 			return "", err
 		}
-		q.IntervalSec = intervalSeconds
-		q.IntervalMs = intervalMs
+		q.IntervalSec = int(math.Ceil(duration.Seconds()))
+		q.IntervalMs = int(duration.Milliseconds())
 	}
 	if q.IntervalSec <= 0 {
 		if q.MaxDataPoints > 0 {
@@ -358,32 +372,36 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	if q.contain(ast, "$columns") {
 		return q.columns(query, ast)
 	}
+	if q.contain(ast, "$columnsMs") {
+		return q.columnsMs(query, ast)
+	}
 	if q.contain(ast, "$rateColumnsAggregated") {
 		return q.rateColumnsAggregated(query, ast)
 	}
 	if q.contain(ast, "$rateColumns") {
-		return q.rateColumns(query, ast)
-	}
-	if q.contain(ast, "$rate") {
 		return q.rate(query, ast)
 	}
 	if q.contain(ast, "$perSecond") {
 		return q.perSecond(query, ast)
 	}
 	if q.contain(ast, "$perSecondColumns") {
+aColumns") {
+		return q.deltaColumns(query, ast)
+	}
+	if q.contain(ast, "$deltaColumnsAggregate
 		return q.perSecondColumns(query, ast)
 	}
 	if q.contain(ast, "$perSecondColumnsAggregated") {
 		return q.perSecondColumnsAggregated(query, ast)
+	}
+	if q.contain(ast, "$deltaColumnsAggregated") {
+		return q.deltaColumnsAggregated(query, ast)
 	}
 	if q.contain(ast, "$delta") {
 		return q.delta(query, ast)
 	}
 	if q.contain(ast, "$deltaColumns") {
 		return q.deltaColumns(query, ast)
-	}
-	if q.contain(ast, "$deltaColumnsAggregated") {
-		return q.deltaColumnsAggregated(query, ast)
 	}
 	if q.contain(ast, "$increase") {
 		return q.increase(query, ast)
@@ -428,10 +446,26 @@ func (q *EvalQuery) columns(query string, ast *EvalAST) (string, error) {
 	if args == nil || len(args) != 2 {
 		return "", fmt.Errorf("amount of arguments must equal 2 for $columns func. Parsed arguments are: %v", ast.Obj["$columns"])
 	}
-	return q._columns(args[0].(string), args[1].(string), beforeMacrosQuery, fromQuery)
+	return q._columns(args[0].(string), args[1].(string), beforeMacrosQuery, fromQuery, false)
 }
 
-func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string) (string, error) {
+func (q *EvalQuery) columnsMs(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$columnsMs", query)
+	if err != nil {
+		return "", err
+	}
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	args := ast.Obj["$columnsMs"].(*EvalAST).Arr
+	if args == nil || len(args) != 2 {
+		return "", fmt.Errorf("amount of arguments must equal 2 for $columnsMs func. Parsed arguments are: %v", ast.Obj["$columnsMs"])
+	}
+	return q._columns(args[0].(string), args[1].(string), beforeMacrosQuery, fromQuery, true)
+}
+
+func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string, useMs bool) (string, error) {
 	if key[len(key)-1] == ')' || value[len(value)-1] == ')' {
 		return "", fmt.Errorf("some of passed arguments are without aliases: %s, %s", key, value)
 	}
@@ -472,13 +506,16 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string) (s
 			fromQuery = fromQuery[0 : groupByIndex-1]
 		}
 	}
-	fromQuery = q._applyTimeFilter(fromQuery)
-
+	fromQuery = q._applyTimeFilter(fromQuery, useMs)
+	timeSeriesMacro := "$timeSeries"
+	if useMs {
+		timeSeriesMacro = "$timeSeriesMs"
+	}
 	return beforeMacrosQuery + "SELECT" +
 		" t," +
 		" groupArray((" + keyAlias + ", " + valueAlias + ")) AS groupArr" +
 		" FROM (" +
-		" SELECT $timeSeries AS t" +
+		" SELECT " + timeSeriesMacro + " AS t" +
 		", " + key +
 		", " + value + " " +
 		fromQuery +
@@ -532,7 +569,7 @@ func (q *EvalQuery) rateColumns(query string, ast *EvalAST) (string, error) {
 		return "", fmt.Errorf("amount of arguments must equal 2 for $rateColumns func. Parsed arguments are: %v", args)
 	}
 
-	query, err = q._columns(args[0].(string), args[1].(string), "", fromQuery)
+	query, err = q._columns(args[0].(string), args[1].(string), "", fromQuery, false)
 	if err != nil {
 		return "", err
 	}
@@ -573,7 +610,7 @@ func (q *EvalQuery) _prepareColumnsAggregated(macroName string, query string, as
 		having = " " + fromQuery[havingIndex:]
 		fromQuery = fromQuery[0 : havingIndex-1]
 	}
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 
 	var key = args[0].(string)
 	var keySplit = strings.Split(strings.Trim(key, " \xA0\t\r\n"), " ")
@@ -768,7 +805,7 @@ func (q *EvalQuery) _rate(args []interface{}, beforeMacrosQuery, fromQuery strin
 		}
 	}
 
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	return beforeMacrosQuery + "SELECT " +
 		"t," +
 		" " + strings.Join(cols, ", ") +
@@ -811,7 +848,7 @@ func (q *EvalQuery) perSecondColumns(query string, ast *EvalAST) (string, error)
 		having = " " + fromQuery[havingIndex:]
 		fromQuery = fromQuery[0 : havingIndex-1]
 	}
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	var maxPerSecond string
 	if q.UseWindowFuncForMacros {
 		maxPerSecond = "if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(" + alias + ",1," + alias + ") OVER () != " + alias +
@@ -870,7 +907,7 @@ func (q *EvalQuery) deltaColumns(query string, ast *EvalAST) (string, error) {
 		having = " " + fromQuery[havingIndex:]
 		fromQuery = fromQuery[0 : havingIndex-1]
 	}
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 
 	var maxDelta string
 	if q.UseWindowFuncForMacros {
@@ -930,7 +967,7 @@ func (q *EvalQuery) increaseColumns(query string, ast *EvalAST) (string, error) 
 		having = " " + fromQuery[havingIndex:]
 		fromQuery = fromQuery[0 : havingIndex-1]
 	}
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	var maxIncrease string
 	if q.UseWindowFuncForMacros {
 		maxIncrease = "if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(" + alias + ",1," + alias + ") OVER () != " + alias + ", 0, max_0 - lagInFrame(max_0,1,0) OVER ())"
@@ -994,7 +1031,7 @@ func (q *EvalQuery) _perSecond(args []interface{}, beforeMacrosQuery, fromQuery 
 		}
 	}
 
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	return beforeMacrosQuery + "SELECT " +
 		"t," +
 		" " + strings.Join(cols, ", ") +
@@ -1039,7 +1076,7 @@ func (q *EvalQuery) _delta(args []interface{}, beforeMacrosQuery, fromQuery stri
 		}
 	}
 
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	return beforeMacrosQuery + "SELECT " +
 		"t," +
 		" " + strings.Join(cols, ", ") +
@@ -1084,7 +1121,7 @@ func (q *EvalQuery) _increase(args []interface{}, beforeMacrosQuery, fromQuery s
 		}
 	}
 
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	return beforeMacrosQuery + "SELECT " +
 		"t," +
 		" " + strings.Join(cols, ", ") +
@@ -1097,12 +1134,17 @@ func (q *EvalQuery) _increase(args []interface{}, beforeMacrosQuery, fromQuery s
 		")", nil
 }
 
-func (q *EvalQuery) _applyTimeFilter(query string) string {
+func (q *EvalQuery) _applyTimeFilter(query string, useMs bool) string {
+	timeFilterMacro := "$timeFilter"
+	if useMs {
+		timeFilterMacro = "$timeFilterMs"
+	}
 	if strings.Contains(strings.ToLower(query), "where") {
 		whereRe := regexp.MustCompile("(?i)where")
-		query = whereRe.ReplaceAllString(query, "WHERE $$timeFilter AND")
+		//don't delete $ it needs for replacing with regexp
+		query = whereRe.ReplaceAllString(query, "WHERE $"+timeFilterMacro+" AND")
 	} else {
-		query += " WHERE $timeFilter"
+		query += " WHERE " + timeFilterMacro
 	}
 
 	return query
@@ -1242,7 +1284,12 @@ func (q *EvalQuery) getDateTimeFilterMs(dateTimeType string) string {
 			return "1000*" + t
 		}
 		if dateTimeType == "TIMESTAMP64_9" {
-			return "1000000*" + t
+
+	// Round to the nearest multiple of `round` seconds
+	coefficient := round
+	rounded := time.Unix(dt.Unix()/int64(coefficient)*int64(coefficient), 0)
+
+	return rounded
 		}
 		return t
 	}
@@ -1256,13 +1303,9 @@ func (q *EvalQuery) convertTimestamp(dt time.Time) int64 {
 func (q *EvalQuery) round(dt time.Time, round int) time.Time {
 	if round == 0 {
 		return dt
+ni
 	}
-
-	// Round to the nearest multiple of `round` seconds
-	coefficient := round
-	rounded := time.Unix(dt.Unix()/int64(coefficient)*int64(coefficient), 0)
-
-	return rounded
+	return dt.Truncate(time.Duration(round) * time.Second)
 }
 
 func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool) (int, error) {
@@ -1276,7 +1319,6 @@ func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool
 	if ms {
 		return int(math.Ceil(float64(d.Milliseconds()) * float64(intervalFactor))), nil
 	}
-
 	return int(math.Ceil(d.Seconds() * float64(intervalFactor))), nil
 }
 
@@ -1753,6 +1795,8 @@ func (s *EvalQueryScanner) CheckArrayJOINAndExpectNextOrNext(joinType string) (b
 			return false, fmt.Errorf("parseJOIN s.expectNext() return: %v", err)
 		}
 		if expectNext {
+valQuery) string {
+	if q.Fronten
 			return expectNext, nil
 		}
 	}
@@ -1768,9 +1812,6 @@ func (s *EvalQueryScanner) RemoveComments(query string) (string, error) {
 }
 
 func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
-	if q.FrontendDatasource {
-		return "/* grafana dashboard=$__dashboard, user=$__user */\n" + query
-	}
 	return "/* grafana alerts rule=" + q.RuleUid + " query=" + q.RefId + " */ " + query
 }
 
@@ -1860,19 +1901,16 @@ const joinsRe = "\\b(" +
 	"cross\\s+outer\\s+join|" +
 	"cross\\s+join|" +
 	"outer\\s+join|" +
-	"join" +
-	")\\b"
-const onJoinTokenRe = "\\b(using|on)\\b"
-const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
-const condRe = "\\b(or|and)\\b"
-const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?"
-const closureRe = "[\\(\\)\\[\\]]"
-const specCharsRe = "[,?:]"
-const macroRe = "\\$[A-Za-z0-9_$]+"
-const skipSpaceRe = "[\\(\\.! \\[]"
-
-const tableFuncRe = "\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b"
+   "quantileDeterministic|quantileTiming|quantileTimingWeighted|quantileExact|" +
+   "quantileExactWeighted|quantileTDigest|median|quantiles|varSamp|varPop|stddevSamp|stddevPop|" +
+   "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|avgIf|" +
+   "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
+   "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
+   "uniqArrayIf|sumArrayIf|uniq)\\b" */
+/* const operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
+   "when|else|end|type|left|right|on|outer|desc|asc|primary|key|between|" +
+   "foreign|not|nil|inner|cross|natural|database|prewhere|using|global|in)\\b" */
+/* const dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
 
 var wsOnlyRe = regexp.MustCompile("^(?:" + wsRe + ")$")
 var commentOnlyRe = regexp2.MustCompile("^(?:"+commentRe+")$", regexp2.Multiline)
@@ -1884,6 +1922,9 @@ var joinsOnlyRe = regexp.MustCompile("(?mi)^(?:" + joinsRe + ")$")
 var onJoinTokenOnlyRe = regexp.MustCompile("(?mi)^(?:" + onJoinTokenRe + ")$")
 var tableNameOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableNameRe + ")$")
 
+/* var operatorOnlyRe = regexp.MustCompile("^(?mi)(?:" + operatorRe + ")$") */
+/* var dataTypeOnlyRe = regexp.MustCompile("^(?:" + dataTypeRe + ")$") */
+/* var builtInFuncOnlyRe = regexp.MustCompile("^(?:" + builtInFuncRe + ")$") */
 var tableFuncOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableFuncRe + ")$")
 var macroOnlyRe = regexp.MustCompile("(?mi)^(?:" + macroRe + ")$")
 var inOnlyRe = regexp.MustCompile("(?mi)^(?:" + inRe + ")$")
@@ -1933,19 +1974,19 @@ func isMacroFunc(token string) bool {
 func isMacro(token string) bool {
 	return macroOnlyRe.MatchString(token)
 }
-
-func isComment(token string) bool {
-	res, _ := commentOnlyRe.MatchString(token)
-	return res
+/*
+func isOperator(token string) bool {
+    return operatorOnlyRe.MatchString(token)
 }
 
-func isID(token string) bool {
-	return idOnlyRe.MatchString(token)
+func isDataType(token string) bool {
+    return dataTypeOnlyRe.MatchString(token)
 }
 
-func isStatement(token string) bool {
-	return statementOnlyRe.MatchString(token)
+func isBuiltInFunc(token string) bool {
+    return builtInFuncOnlyRe.MatchString(token)
 }
+*/
 
 func isTableFunc(token string) bool {
 	return tableFuncOnlyRe.MatchString(token)
@@ -2102,6 +2143,11 @@ func printAST(AST *EvalAST, tab string) string {
 		result += printItems(AST.Obj["$columns"].(*EvalAST), tab, ",") + ")"
 	}
 
+	if AST.hasOwnProperty("$columnsMs") {
+		result += tab + "$columnsMs("
+		result += printItems(AST.Obj["$columnsMs"].(*EvalAST), tab, ",") + ")"
+	}
+
 	if AST.hasOwnProperty("$rateColumns") {
 		result += tab + "$rateColumns("
 		result += printItems(AST.Obj["$rateColumns"].(*EvalAST), tab, ",") + ")"
@@ -2135,7 +2181,7 @@ func printAST(AST *EvalAST, tab string) string {
 		for _, item := range AST.Obj["join"].(*EvalAST).Arr {
 			itemAST := item.(*EvalAST)
 			joinType := itemAST.Obj["type"].(string)
-			result += newLine + tab + strings.ToUpper(joinType) + printItems(itemAST.Obj["source"].(*EvalAST), tab, "") + " " + printItems(itemAST.Obj["aliases"].(*EvalAST), "", " ")
+	if AST.hasOwnProperty("where") && len(AST.Obj["where"].(*EvalAST).Arr) > 0 {
 			if itemAST.hasOwnProperty("using") && len(itemAST.Obj["using"].(*EvalAST).Arr) > 0 {
 				result += " USING " + printItems(itemAST.Obj["using"].(*EvalAST), "", " ")
 			} else if itemAST.hasOwnProperty("on") && len(itemAST.Obj["on"].(*EvalAST).Arr) > 0 {
@@ -2149,7 +2195,7 @@ func printAST(AST *EvalAST, tab string) string {
 		result += printItems(AST.Obj["prewhere"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("where") && len(AST.Obj["where"].(*EvalAST).Arr) > 0 {
+	if AST.hasOwnProperty("where") {
 		result += newLine + tab + "WHERE"
 		result += printItems(AST.Obj["where"].(*EvalAST), tab, "")
 	}

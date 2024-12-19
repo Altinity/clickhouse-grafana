@@ -338,6 +338,43 @@ func TestMacrosBuilder(t *testing.T) {
 			q.columns,
 		),
 		newMacrosTestCase(
+			"$columnsMs",
+			"/* comment */$columnsMs(from_OSName, count(*) c) FROM requests ANY INNER JOIN oses USING OS",
+			"/* comment */SELECT t,"+
+				" groupArray((from_OSName, c)) AS groupArr"+
+				" FROM ("+
+				" SELECT $timeSeriesMs AS t,"+
+				" from_OSName,"+
+				" count(*) c"+
+				" FROM requests"+
+				" ANY INNER JOIN oses USING OS"+
+				" WHERE $timeFilterMs"+
+				" GROUP BY t,"+
+				" from_OSName"+
+				" ORDER BY t,"+
+				" from_OSName)"+
+				" GROUP BY t"+
+				" ORDER BY t",
+
+			"/* comment */SELECT t,"+
+				" groupArray((from_OSName, c)) AS groupArr"+
+				" FROM ("+
+				" SELECT $timeSeriesMs AS t,"+
+				" from_OSName,"+
+				" count(*) c"+
+				" FROM requests"+
+				" ANY INNER JOIN oses USING OS"+
+				" WHERE $timeFilterMs"+
+				" GROUP BY t,"+
+				" from_OSName"+
+				" ORDER BY t,"+
+				" from_OSName)"+
+				" GROUP BY t"+
+				" ORDER BY t",
+
+			q.columnsMs,
+		),
+		newMacrosTestCase(
 			"$perSecond",
 			"/* comment */\n$perSecond(from_total, from_amount) FROM requests",
 			"/* comment */\nSELECT t,"+
@@ -1726,6 +1763,42 @@ func TestScannerAST(t *testing.T) {
 				"root":   newEvalAST(false),
 				"select": newEvalAST(false),
 				"$columns": &EvalAST{Arr: []interface{}{
+					"service_name",
+					"sum(agg_value) as value",
+				}},
+				"from": &EvalAST{Arr: []interface{}{
+					"$table",
+				}},
+				"where": &EvalAST{Arr: []interface{}{
+					"service_name = 'mysql'",
+				}},
+				"having": &EvalAST{Arr: []interface{}{
+					"value > 100",
+				}},
+				"group by": &EvalAST{Arr: []interface{}{
+					"t", "service_name",
+				}},
+				"order by": &EvalAST{Arr: []interface{}{
+					"t", "service_name WITH FILL 60000",
+				}},
+			}},
+		),
+		/* fix https://github.com/Altinity/clickhouse-grafana/issues/430 */
+		newASTTestCase(
+			"AST case 29 $columnsMs",
+			"$columnsMs(\n"+
+				"  service_name,   \n"+
+				"  sum(agg_value) as value\n"+
+				")\n"+
+				"FROM $table\n"+
+				"WHERE service_name='mysql'\n"+
+				"GROUP BY t, service_name\n"+
+				"HAVING value>100\n"+
+				"ORDER BY t, service_name WITH FILL 60000",
+			&EvalAST{Obj: map[string]interface{}{
+				"root":   newEvalAST(false),
+				"select": newEvalAST(false),
+				"$columnsMs": &EvalAST{Arr: []interface{}{
 					"service_name",
 					"sum(agg_value) as value",
 				}},

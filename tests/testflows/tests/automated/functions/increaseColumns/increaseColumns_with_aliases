@@ -1,2 +1,2 @@
 $increaseColumns(first_variable as a, second_variable as b) from table_name
-SELECT t, groupArray((a, max_0_Increase)) AS groupArr FROM ( SELECT t, a, if(runningDifference(max_0) < 0 OR neighbor(a,-1,a) != a, 0, runningDifference(max_0)) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, first_variable as a, max(second_variable as b) AS max_0 from table_name WHERE
+SELECT t, groupArray((a, max_0_Increase)) AS groupArr FROM ( SELECT t, a, if(runningDifference(max_0) < 0 OR neighbor(a,-1,a) != a, 0, runningDifference(max_0)) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(""), 30) * 30) * 1000 AS t, first_variable as a, max(second_variable as b) AS max_0 from table_name WHERE

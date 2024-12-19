@@ -3,8 +3,8 @@
   "version": "3.3.0",
   "description": "Altinity grafana datasource for ClickHouse",
   "scripts": {
-    "build": "webpack -c ./.config/webpack/webpack.config.ts --env production",
-    "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
+    "build": "npm run build:frontend && npm run build:wasm",
+    "dev": "npm run build:wasm && webpack -w -c ./.config/webpack/webpack.config.ts --env development",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
@@ -16,7 +16,9 @@
     "server": "docker compose up --build -d grafana",
     "sign": "bash -xec \"source ./.release_env && npx --yes @grafana/sign-plugin@latest\"",
     "create_instrumented": "npx nyc instrument --source-map --nycrc-path .nycrc ./src ./instrumented",
-    "build:test": "webpack -c ./webpack.config.instrumented.ts --env test"
+    "build:test": "webpack -c ./webpack.config.instrumented.ts --env test",
+    "build:frontend": "webpack -c ./.config/webpack/webpack.config.ts --env production",
+    "build:wasm": "GOARCH=wasm GOOS=js go build -trimpath -ldflags=\"-s -w -buildid=\" -gcflags=\"all=-l\" -o src/static/backend.wasm ./pkg/backend_wasm.go ./pkg/eval_query.go && gzip -f ./src/static/backend.wasm"
   },
   "author": "Altinity",
   "license": "MIT",
@@ -35,6 +37,7 @@
     "@types/lodash": "^4.14.194",
     "@types/luxon": "^3.4.2",
     "@types/node": "^18.15.11",
+    "@types/pako": "^2.0.3",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
     "eslint-webpack-plugin": "^4.0.1",
@@ -63,19 +66,16 @@
     "node": ">=16"
   },
   "dependencies": {
-    "@emotion/css": "^11.1.3",
     "@grafana/data": "11.3.0",
     "@grafana/runtime": "11.3.0",
     "@grafana/ui": "11.3.0",
+    "brotli-wasm": "^3.0.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "dayjs": "^1.11.13",
-    "jest-resolve": "^29.7.0",
-    "lodash-es": "^4.17.21",
     "luxon": "^3.5.0",
+    "pako": "^2.1.0",
     "react": "18.3.0",
-    "react-dom": "18.3.0",
-    "tslib": "2.5.3"
+    "react-dom": "18.3.0"
   },
   "packageManager": "npm@9.8.1"
 }

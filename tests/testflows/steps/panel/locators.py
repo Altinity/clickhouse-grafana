@@ -92,6 +92,16 @@ class Locators:
         return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Tab Data']")
 
     @property
+    def query_inspector_data_options_expand_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, "//*[@aria-label='Expand query row' and ..//text() = 'Data options']")
+
+    @property
+    def query_inspector_data_options_dropdown(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, "//*[@data-testid='dataOptions' and ..//text() = 'Data options']")
+
+    @property
     def query_inspector_download_csv_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, "//*[text()='Download CSV']/../../button")

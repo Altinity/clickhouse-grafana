@@ -87,6 +87,16 @@ class Locators:
         return driver.find_element(SelectBy.CSS_SELECTOR, "[aria-label='Panel inspector Query refresh button']")
 
     @property
+    def query_inspector_data_tab(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Tab Data']")
+
+    @property
+    def query_inspector_download_csv_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, "//*[text()='Download CSV']/../../button")
+
+    @property
     def query_inspector_url(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, "//*[(@class='json-formatter-string' and "

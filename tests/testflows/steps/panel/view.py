@@ -278,6 +278,21 @@ def click_query_inspector_close_button(self):
 
     locators.query_inspector_close_button.click()
 
+
+@TestStep(When)
+def click_query_inspector_data_tab(self):
+    """Click query inspector data tab."""
+
+    locators.query_inspector_data_tab.click()
+
+
+@TestStep(When)
+def click_query_inspector_download_csv_button(self):
+    """Click query inspector download csv button."""
+
+    locators.query_inspector_download_csv_button.click()
+
+
 @TestStep(Then)
 def check_query_inspector_request(self, url_parts):
     """Check url in query inspector."""

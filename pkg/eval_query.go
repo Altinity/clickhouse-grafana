@@ -2,14 +2,15 @@ package main
 
 import (
 	"fmt"
-	"github.com/dlcl
+	"github.com/dlclark/regexp2"
+	"github.com/hyperjumptech/jiffy"
 	"math"
 	"regexp"
+	"strconv"
 	"strings"
-rjumpte
 	"time"
-
 	"unicode"
+)
 
 var timeSeriesMacroRegexp = regexp.MustCompile(`\$timeSeries\b`)
 var timeSeriesMsMacroRegexp = regexp.MustCompile(`\$timeSeriesMs\b`)
@@ -50,13 +51,7 @@ type EvalQuery struct {
 	Database               string `json:"database"`
 	Table                  string `json:"table"`
 	MaxDataPoints          int64
-	From                   time.Time
-          int64
-	FrontendDatasour
-	To                     time.Time
-}
-
-`
+	FrontendDatasource     bool `json:"frontendDatasource"`
 	From                   time.Time
 	To                     time.Time
 }
@@ -122,20 +117,11 @@ func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
 	return query, nil
 }
 
-func (q *EvalQuery) replace(query string) (strin
-func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
-	query, err := q.replace(q.Query)
-	if err != nil {
-		return "", err
-	}
-	return query, nil
-}
-		intervalSeconds, intervalMs, err := parseInterval(q.Interval, q.IntervalFactor)
 func (q *EvalQuery) replace(query string) (string, error) {
 	var err error
 	query = strings.Trim(query, " \xA0\t\r\n")
-		q.IntervalSec = intervalSeconds
-		q.IntervalMs = intervalMs
+	if q.DateTimeType == "" {
+		q.DateTimeType = "DATETIME"
 	}
 	/* @TODO research other data sources how they calculate MaxDataPoints on unified alerts */
 	if q.IntervalFactor == 0 {
@@ -144,12 +130,12 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	i := 1 * time.Second
 	ms := 1 * time.Millisecond
 	if q.Interval != "" {
-		duration, err := time.ParseDuration(q.Interval)
+		intervalSeconds, intervalMs, err := parseInterval(q.Interval, q.IntervalFactor)
 		if err != nil {
 			return "", err
 		}
-		q.IntervalSec = int(math.Ceil(duration.Seconds()))
-		q.IntervalMs = int(duration.Milliseconds())
+		q.IntervalSec = intervalSeconds
+		q.IntervalMs = intervalMs
 	}
 	if q.IntervalSec <= 0 {
 		if q.MaxDataPoints > 0 {
@@ -379,16 +365,15 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 		return q.rateColumnsAggregated(query, ast)
 	}
 	if q.contain(ast, "$rateColumns") {
+		return q.rateColumns(query, ast)
+	}
+	if q.contain(ast, "$rate") {
 		return q.rate(query, ast)
 	}
 	if q.contain(ast, "$perSecond") {
 		return q.perSecond(query, ast)
 	}
 	if q.contain(ast, "$perSecondColumns") {
-aColumns") {
-		return q.deltaColumns(query, ast)
-	}
-	if q.contain(ast, "$deltaColumnsAggregate
 		return q.perSecondColumns(query, ast)
 	}
 	if q.contain(ast, "$perSecondColumnsAggregated") {
@@ -1284,12 +1269,7 @@ func (q *EvalQuery) getDateTimeFilterMs(dateTimeType string) string {
 			return "1000*" + t
 		}
 		if dateTimeType == "TIMESTAMP64_9" {
-
-	// Round to the nearest multiple of `round` seconds
-	coefficient := round
-	rounded := time.Unix(dt.Unix()/int64(coefficient)*int64(coefficient), 0)
-
-	return rounded
+			return "1000000*" + t
 		}
 		return t
 	}
@@ -1303,9 +1283,13 @@ func (q *EvalQuery) convertTimestamp(dt time.Time) int64 {
 func (q *EvalQuery) round(dt time.Time, round int) time.Time {
 	if round == 0 {
 		return dt
-ni
 	}
-	return dt.Truncate(time.Duration(round) * time.Second)
+
+	// Round to the nearest multiple of `round` seconds
+	coefficient := round
+	rounded := time.Unix(dt.Unix()/int64(coefficient)*int64(coefficient), 0)
+
+	return rounded
 }
 
 func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool) (int, error) {
@@ -1319,6 +1303,7 @@ func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool
 	if ms {
 		return int(math.Ceil(float64(d.Milliseconds()) * float64(intervalFactor))), nil
 	}
+
 	return int(math.Ceil(d.Seconds() * float64(intervalFactor))), nil
 }
 
@@ -1795,8 +1780,6 @@ func (s *EvalQueryScanner) CheckArrayJOINAndExpectNextOrNext(joinType string) (b
 			return false, fmt.Errorf("parseJOIN s.expectNext() return: %v", err)
 		}
 		if expectNext {
-valQuery) string {
-	if q.Fronten
 			return expectNext, nil
 		}
 	}
@@ -1812,6 +1795,9 @@ func (s *EvalQueryScanner) RemoveComments(query string) (string, error) {
 }
 
 func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
+	if q.FrontendDatasource {
+		return "/* grafana dashboard=$__dashboard, user=$__user */\n" + query
+	}
 	return "/* grafana alerts rule=" + q.RuleUid + " query=" + q.RefId + " */ " + query
 }
 
@@ -1901,16 +1887,19 @@ const joinsRe = "\\b(" +
 	"cross\\s+outer\\s+join|" +
 	"cross\\s+join|" +
 	"outer\\s+join|" +
-   "quantileDeterministic|quantileTiming|quantileTimingWeighted|quantileExact|" +
-   "quantileExactWeighted|quantileTDigest|median|quantiles|varSamp|varPop|stddevSamp|stddevPop|" +
-   "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|avgIf|" +
-   "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
-   "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
-   "uniqArrayIf|sumArrayIf|uniq)\\b" */
-/* const operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
-   "when|else|end|type|left|right|on|outer|desc|asc|primary|key|between|" +
-   "foreign|not|nil|inner|cross|natural|database|prewhere|using|global|in)\\b" */
-/* const dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
+	"join" +
+	")\\b"
+const onJoinTokenRe = "\\b(using|on)\\b"
+const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
+const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
+const condRe = "\\b(or|and)\\b"
+const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?"
+const closureRe = "[\\(\\)\\[\\]]"
+const specCharsRe = "[,?:]"
+const macroRe = "\\$[A-Za-z0-9_$]+"
+const skipSpaceRe = "[\\(\\.! \\[]"
+
+const tableFuncRe = "\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b"
 
 var wsOnlyRe = regexp.MustCompile("^(?:" + wsRe + ")$")
 var commentOnlyRe = regexp2.MustCompile("^(?:"+commentRe+")$", regexp2.Multiline)
@@ -1922,9 +1911,6 @@ var joinsOnlyRe = regexp.MustCompile("(?mi)^(?:" + joinsRe + ")$")
 var onJoinTokenOnlyRe = regexp.MustCompile("(?mi)^(?:" + onJoinTokenRe + ")$")
 var tableNameOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableNameRe + ")$")
 
-/* var operatorOnlyRe = regexp.MustCompile("^(?mi)(?:" + operatorRe + ")$") */
-/* var dataTypeOnlyRe = regexp.MustCompile("^(?:" + dataTypeRe + ")$") */
-/* var builtInFuncOnlyRe = regexp.MustCompile("^(?:" + builtInFuncRe + ")$") */
 var tableFuncOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableFuncRe + ")$")
 var macroOnlyRe = regexp.MustCompile("(?mi)^(?:" + macroRe + ")$")
 var inOnlyRe = regexp.MustCompile("(?mi)^(?:" + inRe + ")$")
@@ -1974,6 +1960,8 @@ func isMacroFunc(token string) bool {
 func isMacro(token string) bool {
 	return macroOnlyRe.MatchString(token)
 }
+
+/
 /*
 func isOperator(token string) bool {
     return operatorOnlyRe.MatchString(token)
@@ -2181,7 +2169,7 @@ func printAST(AST *EvalAST, tab string) string {
 		for _, item := range AST.Obj["join"].(*EvalAST).Arr {
 			itemAST := item.(*EvalAST)
 			joinType := itemAST.Obj["type"].(string)
-	if AST.hasOwnProperty("where") && len(AST.Obj["where"].(*EvalAST).Arr) > 0 {
+			result += newLine + tab + strings.ToUpper(joinType) + printItems(itemAST.Obj["source"].(*EvalAST), tab, "") + " " + printItems(itemAST.Obj["aliases"].(*EvalAST), "", " ")
 			if itemAST.hasOwnProperty("using") && len(itemAST.Obj["using"].(*EvalAST).Arr) > 0 {
 				result += " USING " + printItems(itemAST.Obj["using"].(*EvalAST), "", " ")
 			} else if itemAST.hasOwnProperty("on") && len(itemAST.Obj["on"].(*EvalAST).Arr) > 0 {
@@ -2195,7 +2183,7 @@ func printAST(AST *EvalAST, tab string) string {
 		result += printItems(AST.Obj["prewhere"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("where") {
+	if AST.hasOwnProperty("where") && len(AST.Obj["where"].(*EvalAST).Arr) > 0 {
 		result += newLine + tab + "WHERE"
 		result += printItems(AST.Obj["where"].(*EvalAST), tab, "")
 	}

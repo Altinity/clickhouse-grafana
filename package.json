@@ -4,7 +4,7 @@
   "description": "Altinity grafana datasource for ClickHouse",
   "scripts": {
     "build": "npm run build:frontend && npm run build:wasm",
-    "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
+    "dev": "npm run build:wasm && webpack -w -c ./.config/webpack/webpack.config.ts --env development",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
@@ -18,7 +18,7 @@
     "create_instrumented": "npx nyc instrument --source-map --nycrc-path .nycrc ./src ./instrumented",
     "build:test": "webpack -c ./webpack.config.instrumented.ts --env test",
     "build:frontend": "webpack -c ./.config/webpack/webpack.config.ts --env production",
-    "build:wasm": "GOARCH=wasm GOOS=js go build -o src/static/backend.wasm ./pkg/backend_wasm.go ./pkg/eval_query.go"
+    "build:wasm": "GOARCH=wasm GOOS=js go build -o src/static/backend.wasm ./pkg/backend_wasm.go ./pkg/eval_query.go && gzip -f ./src/static/backend.wasm"
   },
   "author": "Altinity",
   "license": "MIT",
@@ -37,6 +37,7 @@
     "@types/lodash": "^4.14.194",
     "@types/luxon": "^3.4.2",
     "@types/node": "^18.15.11",
+    "@types/pako": "^2.0.3",
     "copy-webpack-plugin": "^11.0.0",
     "css-loader": "^6.7.3",
     "eslint-webpack-plugin": "^4.0.1",
@@ -68,9 +69,11 @@
     "@grafana/data": "11.3.0",
     "@grafana/runtime": "11.3.0",
     "@grafana/ui": "11.3.0",
+    "brotli-wasm": "^3.0.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "luxon": "^3.5.0",
+    "pako": "^2.1.0",
     "react": "18.3.0",
     "react-dom": "18.3.0"
   },

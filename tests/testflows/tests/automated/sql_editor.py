@@ -38,8 +38,7 @@ $deltaColumns(key, value) - is a combination of $columns and $delta for Counter-
 $deltaColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need to calculate \`delta\` for higher cardinality dimension and then aggregate by lower cardinality dimension
 $increase(cols...) - converts query results as "non-negative delta value inside interval" for Counter-like(growing only) metrics, will zero if counter reset and delta less zero
 $increaseColumns(key, value) - is a combination of $columns and $increase for Counter-like metrics
-$increaseColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need to calculate \`increase\` for higher cardinality dimension and then aggregate by lower cardinality dimension
-"""
+$increaseColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need to calculate \`increase\` for higher cardinality dimension and then aggregate by lower cardinality dimension"""
 
 
 @TestScenario

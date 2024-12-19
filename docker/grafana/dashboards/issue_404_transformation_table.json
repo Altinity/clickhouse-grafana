@@ -1,0 +1,216 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "https://github.com/Altinity/clickhouse-grafana/issues/404",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 47,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/404",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\n    1 AS t,\n    concat('Category ', toString(cat)) AS cat,\n    count(idx) AS errors\nFROM (\n    SELECT\n        rand() % 4 + 1 AS cat, /* Random category */\n        rand() % 100 AS idx   /* Random idx values */\n    FROM numbers(1000)        /* More rows for higher variability */\n) subquery\nGROUP BY t, cat",
+          "rawQuery": "/* grafana dashboard=Issue 404 - Transformation Table, user=0 */\nSELECT\n    1 AS t,\n    concat('Category ', toString(cat)) AS cat,\n    count(idx) AS errors\nFROM (\n    SELECT\n        rand() % 4 + 1 AS cat, \n        rand() % 100 AS idx   \n    FROM numbers(1000)        \n) subquery\nGROUP BY t, cat",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "test_grafana",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Table",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/404",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\n    1 AS t,\n    concat('Category ', toString(cat)) AS cat,\n    count(idx) AS errors\nFROM (\n    SELECT\n        rand() % 4 + 1 AS cat, /* Random category */\n        rand() % 100 AS idx   /* Random idx values */\n    FROM numbers(1000)        /* More rows for higher variability */\n) subquery\nGROUP BY t, cat",
+          "rawQuery": "/* grafana dashboard=Issue 404 - Transformation Table, user=0 */\nSELECT\n    1 AS t,\n    concat('Category ', toString(cat)) AS cat,\n    count(idx) AS errors\nFROM (\n    SELECT\n        rand() % 4 + 1 AS cat, \n        rand() % 100 AS idx   \n    FROM numbers(1000)        \n) subquery\nGROUP BY t, cat",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "test_grafana",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Transposed table",
+      "transformations": [
+        {
+          "id": "transpose",
+          "options": {}
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Issue 404 - Transformation Table",
+  "uid": "fe7akkad29mgwc",
+  "version": 1,
+  "weekStart": ""
+}

@@ -110,7 +110,7 @@ export const toLogs = (self: any): DataFrame[] => {
           }
           // Return the original value if it's not an object
           return obj;
-        }
+        };
 
         frame.addField({ name: key, type: types[key], labels: transformObject(labels), config: { filterable: false } });
       } else if (!labelFields.includes(key) && types[key].fieldType === FieldType.time) {

@@ -17,6 +17,9 @@ export default class SqlQueryMacros {
     if (SqlQueryHelper.contain(ast, '$columns')) {
       return SqlQueryMacros.columns(query, ast, useWindowFunc);
     }
+    if (SqlQueryHelper.contain(ast, '$columnsMs')) {
+      return SqlQueryMacros.columnsMs(query, ast, useWindowFunc);
+    }
     if (SqlQueryHelper.contain(ast, '$rate')) {
       return SqlQueryMacros.rate(query, ast, useWindowFunc);
     }
@@ -207,7 +210,7 @@ export default class SqlQueryMacros {
       }
     });
 
-    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery, false);
     return (
       beforeMacrosQuery +
       'SELECT ' +
@@ -246,10 +249,11 @@ export default class SqlQueryMacros {
     return [query.slice(0, mPos), query.slice(fromIndex)];
   }
 
-  static _applyTimeFilter(query: string): string {
+  static _applyTimeFilter(query: string, useMs: boolean): string {
+    const timeFilterMacro = useMs ? '$timeFilterMs' : '$timeFilter';
     return query.toLowerCase().includes('where')
-      ? query.replace(/where/gi, 'WHERE $timeFilter AND')
-      : `${query} WHERE $timeFilter`;
+      ? query.replace(/where/gi, `WHERE ${timeFilterMacro} AND`)
+      : `${query} WHERE ${timeFilterMacro}`;
   }
 
   static transformQuery(
@@ -270,7 +274,7 @@ export default class SqlQueryMacros {
     let cols: any[] = [];
     transformation(args, cols);
 
-    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery, false);
     return (
       beforeMacrosQuery +
       'SELECT ' +
@@ -318,7 +322,7 @@ export default class SqlQueryMacros {
       }
     });
 
-    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery, false);
     return (
       beforeMacrosQuery +
       'SELECT ' +
@@ -369,7 +373,7 @@ export default class SqlQueryMacros {
       }
     });
 
-    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery, false);
     return (
       beforeMacrosQuery +
       'SELECT ' +
@@ -408,7 +412,7 @@ export default class SqlQueryMacros {
     });
   }
 
-  static _columns(key: string, value: string, beforeMacrosQuery: string, fromQuery: string): string {
+  static _columns(key: string, value: string, beforeMacrosQuery: string, fromQuery: string, useMs: boolean): string {
     if (key.slice(-1) === ')' || value.slice(-1) === ')') {
       throw { message: 'Some of passed arguments are without aliases: ' + key + ', ' + value };
     }
@@ -460,8 +464,8 @@ export default class SqlQueryMacros {
         fromQuery = fromQuery.slice(0, groupByIndex - 1);
       }
     }
-    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
-
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery, useMs);
+    const timeSeriesMacro: string = useMs ? '$timeSeriesMs' : '$timeSeries';
     return (
       beforeMacrosQuery +
       'SELECT' +
@@ -472,7 +476,7 @@ export default class SqlQueryMacros {
       valueAlias +
       ')) AS groupArr' +
       ' FROM (' +
-      ' SELECT $timeSeries AS t' +
+      ' SELECT '+timeSeriesMacro+' AS t' +
       ', ' +
       key +
       ', ' +
@@ -499,7 +503,21 @@ export default class SqlQueryMacros {
         message: 'Amount of arguments must equal 2 for $columns func. Parsed arguments are: ' + ast.$columns.join(', '),
       };
     }
-    return SqlQueryMacros._columns(args[0], args[1], beforeMacrosQuery, fromQuery);
+    return SqlQueryMacros._columns(args[0], args[1], beforeMacrosQuery, fromQuery, false);
+  }
+
+  static columnsMs(query: string, ast: any, useWindowFunc: boolean): string {
+    let [beforeMacrosQuery, fromQuery] = SqlQueryMacros._parseMacro('$columnsMs', query);
+    if (fromQuery.length < 1) {
+      return query;
+    }
+    let args = ast['$columnsMs'];
+    if (args.length !== 2) {
+      throw {
+        message: 'Amount of arguments must equal 2 for $columnsMs func. Parsed arguments are: ' + ast.$columnsMs.join(', '),
+      };
+    }
+    return SqlQueryMacros._columns(args[0], args[1], beforeMacrosQuery, fromQuery, true);
   }
 
   static rateColumns(query: string, ast: any, useWindowFunc: boolean): string {
@@ -514,7 +532,7 @@ export default class SqlQueryMacros {
       };
     }
 
-    query = SqlQueryMacros._columns(args[0], args[1], '', fromQuery);
+    query = SqlQueryMacros._columns(args[0], args[1], '', fromQuery, false);
     let timeChange: string;
     if (useWindowFunc) {
       timeChange = '(t/1000 - lagInFrame(t/1000,1,0) OVER ())'
@@ -559,7 +577,7 @@ export default class SqlQueryMacros {
       having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
       fromQuery = fromQuery.slice(0, havingIndex - 1);
     }
-    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery, false);
 
     let key = args[0];
     let keyAlias = key.trim().split(' ').pop();
@@ -697,7 +715,7 @@ export default class SqlQueryMacros {
       having = ' ' + fromQuery.slice(havingIndex, fromQuery.length);
       fromQuery = fromQuery.slice(0, havingIndex - 1);
     }
-    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery);
+    fromQuery = SqlQueryMacros._applyTimeFilter(fromQuery, false);
     return [key, alias, having, fromQuery];
   }
 

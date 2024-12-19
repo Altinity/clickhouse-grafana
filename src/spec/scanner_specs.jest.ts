@@ -781,6 +781,35 @@ describe('Scanner:', () => {
     });
   });
 
+  /* fix https://github.com/Altinity/clickhouse-grafana/issues/430 */
+  describe('AST case 29 $columnsMs', () => {
+    let query = "$columnsMs(\n"+
+        "  service_name,   \n"+
+        "  sum(agg_value) as value\n"+
+        ")\n"+
+        "FROM $table\n" +
+        "WHERE service_name='mysql'\n" +
+        "GROUP BY t, service_name\n" +
+        "HAVING value>100\n"+
+        "ORDER BY t, service_name WITH FILL 60000",
+      scanner = new Scanner(query);
+
+    let expectedAST = {
+      root: [],
+      $columnsMs: ["service_name", "sum(agg_value) as value", ],
+      select: [],
+      from: ['$table'],
+      where: ["service_name = 'mysql'"],
+      having: ['value > 100'],
+      'group by': ['t', 'service_name'],
+      'order by': ['t', 'service_name WITH FILL 60000'],
+    };
+
+    it('expects equality', () => {
+      expect(scanner.toAST()).toEqual(expectedAST);
+    });
+  });
+
 });
 
 // https://github.com/Altinity/clickhouse-grafana/issues/648

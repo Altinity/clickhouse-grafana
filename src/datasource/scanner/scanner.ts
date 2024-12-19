@@ -88,7 +88,7 @@ const joinsRe =
 const onJoinTokenRe = '\\b(using|on)\\b';
 const tableNameRe = '([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)';
 const macroFuncRe =
-  '(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)';
+  '(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columnsMs|\\$columns)';
 const condRe = '\\b(or|and)\\b';
 const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?";
 const closureRe = '[\\(\\)\\[\\]]';
@@ -663,6 +663,11 @@ function print(AST, tab = '') {
   if (isSet(AST, '$columns')) {
     result += tab + '$columns(';
     result += printItems(AST.$columns, tab, ',') + ')';
+  }
+
+  if (isSet(AST, '$columnsMs')) {
+    result += tab + '$columnsMs(';
+    result += printItems(AST.$columnsMs, tab, ',') + ')';
   }
 
   if (isSet(AST, '$rateColumns')) {

@@ -304,6 +304,9 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	if q.contain(ast, "$columns") {
 		return q.columns(query, ast)
 	}
+	if q.contain(ast, "$columnsMs") {
+		return q.columnsMs(query, ast)
+	}
 	if q.contain(ast, "$rateColumnsAggregated") {
 		return q.rateColumnsAggregated(query, ast)
 	}
@@ -374,10 +377,26 @@ func (q *EvalQuery) columns(query string, ast *EvalAST) (string, error) {
 	if args == nil || len(args) != 2 {
 		return "", fmt.Errorf("amount of arguments must equal 2 for $columns func. Parsed arguments are: %v", ast.Obj["$columns"])
 	}
-	return q._columns(args[0].(string), args[1].(string), beforeMacrosQuery, fromQuery)
+	return q._columns(args[0].(string), args[1].(string), beforeMacrosQuery, fromQuery, false)
 }
 
-func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string) (string, error) {
+func (q *EvalQuery) columnsMs(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$columnsMs", query)
+	if err != nil {
+		return "", err
+	}
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	args := ast.Obj["$columnsMs"].(*EvalAST).Arr
+	if args == nil || len(args) != 2 {
+		return "", fmt.Errorf("amount of arguments must equal 2 for $columnsMs func. Parsed arguments are: %v", ast.Obj["$columnsMs"])
+	}
+	return q._columns(args[0].(string), args[1].(string), beforeMacrosQuery, fromQuery, true)
+}
+
+func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string, useMs bool) (string, error) {
 	if key[len(key)-1] == ')' || value[len(value)-1] == ')' {
 		return "", fmt.Errorf("some of passed arguments are without aliases: %s, %s", key, value)
 	}
@@ -418,13 +437,16 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string) (s
 			fromQuery = fromQuery[0 : groupByIndex-1]
 		}
 	}
-	fromQuery = q._applyTimeFilter(fromQuery)
-
+	fromQuery = q._applyTimeFilter(fromQuery, useMs)
+	timeSeriesMacro := "$timeSeries"
+	if useMs {
+		timeSeriesMacro = "$timeSeriesMs"
+	}
 	return beforeMacrosQuery + "SELECT" +
 		" t," +
 		" groupArray((" + keyAlias + ", " + valueAlias + ")) AS groupArr" +
 		" FROM (" +
-		" SELECT $timeSeries AS t" +
+		" SELECT " + timeSeriesMacro + " AS t" +
 		", " + key +
 		", " + value + " " +
 		fromQuery +
@@ -478,7 +500,7 @@ func (q *EvalQuery) rateColumns(query string, ast *EvalAST) (string, error) {
 		return "", fmt.Errorf("amount of arguments must equal 2 for $rateColumns func. Parsed arguments are: %v", args)
 	}
 
-	query, err = q._columns(args[0].(string), args[1].(string), "", fromQuery)
+	query, err = q._columns(args[0].(string), args[1].(string), "", fromQuery, false)
 	if err != nil {
 		return "", err
 	}
@@ -519,7 +541,7 @@ func (q *EvalQuery) _prepareColumnsAggregated(macroName string, query string, as
 		having = " " + fromQuery[havingIndex:]
 		fromQuery = fromQuery[0 : havingIndex-1]
 	}
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 
 	var key = args[0].(string)
 	var keySplit = strings.Split(strings.Trim(key, " \xA0\t\r\n"), " ")
@@ -714,7 +736,7 @@ func (q *EvalQuery) _rate(args []interface{}, beforeMacrosQuery, fromQuery strin
 		}
 	}
 
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	return beforeMacrosQuery + "SELECT " +
 		"t," +
 		" " + strings.Join(cols, ", ") +
@@ -757,7 +779,7 @@ func (q *EvalQuery) perSecondColumns(query string, ast *EvalAST) (string, error)
 		having = " " + fromQuery[havingIndex:]
 		fromQuery = fromQuery[0 : havingIndex-1]
 	}
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	var maxPerSecond string
 	if q.UseWindowFuncForMacros {
 		maxPerSecond = "if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(" + alias + ",1," + alias + ") OVER () != " + alias +
@@ -816,7 +838,7 @@ func (q *EvalQuery) deltaColumns(query string, ast *EvalAST) (string, error) {
 		having = " " + fromQuery[havingIndex:]
 		fromQuery = fromQuery[0 : havingIndex-1]
 	}
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 
 	var maxDelta string
 	if q.UseWindowFuncForMacros {
@@ -876,7 +898,7 @@ func (q *EvalQuery) increaseColumns(query string, ast *EvalAST) (string, error) 
 		having = " " + fromQuery[havingIndex:]
 		fromQuery = fromQuery[0 : havingIndex-1]
 	}
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	var maxIncrease string
 	if q.UseWindowFuncForMacros {
 		maxIncrease = "if((max_0 - lagInFrame(max_0,1,0) OVER ()) < 0 OR lagInFrame(" + alias + ",1," + alias + ") OVER () != " + alias + ", 0, max_0 - lagInFrame(max_0,1,0) OVER ())"
@@ -940,7 +962,7 @@ func (q *EvalQuery) _perSecond(args []interface{}, beforeMacrosQuery, fromQuery 
 		}
 	}
 
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	return beforeMacrosQuery + "SELECT " +
 		"t," +
 		" " + strings.Join(cols, ", ") +
@@ -985,7 +1007,7 @@ func (q *EvalQuery) _delta(args []interface{}, beforeMacrosQuery, fromQuery stri
 		}
 	}
 
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	return beforeMacrosQuery + "SELECT " +
 		"t," +
 		" " + strings.Join(cols, ", ") +
@@ -1030,7 +1052,7 @@ func (q *EvalQuery) _increase(args []interface{}, beforeMacrosQuery, fromQuery s
 		}
 	}
 
-	fromQuery = q._applyTimeFilter(fromQuery)
+	fromQuery = q._applyTimeFilter(fromQuery, false)
 	return beforeMacrosQuery + "SELECT " +
 		"t," +
 		" " + strings.Join(cols, ", ") +
@@ -1043,12 +1065,17 @@ func (q *EvalQuery) _increase(args []interface{}, beforeMacrosQuery, fromQuery s
 		")", nil
 }
 
-func (q *EvalQuery) _applyTimeFilter(query string) string {
+func (q *EvalQuery) _applyTimeFilter(query string, useMs bool) string {
+	timeFilterMacro := "$timeFilter"
+	if useMs {
+		timeFilterMacro = "$timeFilterMs"
+	}
 	if strings.Contains(strings.ToLower(query), "where") {
 		whereRe := regexp.MustCompile("(?i)where")
-		query = whereRe.ReplaceAllString(query, "WHERE $$timeFilter AND")
+		//don't delete $ it needs for replacing with regexp
+		query = whereRe.ReplaceAllString(query, "WHERE $"+timeFilterMacro+" AND")
 	} else {
-		query += " WHERE $timeFilter"
+		query += " WHERE " + timeFilterMacro
 	}
 
 	return query
@@ -1801,7 +1828,7 @@ const joinsRe = "\\b(" +
 	")\\b"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
+const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columnsMs|\\$columns)"
 const condRe = "\\b(or|and)\\b"
 const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?"
 const closureRe = "[\\(\\)\\[\\]]"
@@ -2096,6 +2123,11 @@ func printAST(AST *EvalAST, tab string) string {
 	if AST.hasOwnProperty("$columns") {
 		result += tab + "$columns("
 		result += printItems(AST.Obj["$columns"].(*EvalAST), tab, ",") + ")"
+	}
+
+	if AST.hasOwnProperty("$columnsMs") {
+		result += tab + "$columnsMs("
+		result += printItems(AST.Obj["$columnsMs"].(*EvalAST), tab, ",") + ")"
 	}
 
 	if AST.hasOwnProperty("$rateColumns") {

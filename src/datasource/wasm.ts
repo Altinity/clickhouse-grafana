@@ -1,4 +1,5 @@
 import './wasm_exec.js';
+import pako from "pako"
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 declare global {
@@ -67,11 +68,19 @@ export const InitiateWasm = () => {
   // Function to asynchronously load WebAssembly
   async function loadWasm(): Promise<void> {
     // Create a new Go object
+    const response = await fetch('/public/plugins/vertamedia-clickhouse-datasource/static/backend.wasm.gz')
+
+    // Check if the file is compressed with gzip (browser usually does this automatically)
+    const compressedBuffer = await response.arrayBuffer();
+
+    // Decompress the file using pako
+    const decompressedBuffer = pako.ungzip(new Uint8Array(compressedBuffer));
+
     // ts-ignore
     const goWasm = new window.Go();
-    const result = await WebAssembly.instantiateStreaming(
+    const result = await WebAssembly.instantiate(
       // Fetch and instantiate the main.wasm file
-      fetch('/public/plugins/vertamedia-clickhouse-datasource/static/backend.wasm'),
+      decompressedBuffer,
       // Provide the import object to Go for communication with JavaScript
       goWasm.importObject
     );

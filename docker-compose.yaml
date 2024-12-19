@@ -135,7 +135,6 @@ services:
 
 
   frontend_builder:
-    image: altinity/builder
     build:
       dockerfile: ./docker/builder/Dockerfile
     environment:
@@ -158,7 +157,6 @@ services:
       '
 
   backend_builder:
-    image: altinity/builder
     build:
       dockerfile: ./docker/builder/Dockerfile
     working_dir: /go/src/grafana-clickhouse
@@ -181,7 +179,6 @@ services:
       "
 
   frontend_coverage_builder:
-    image: altinity/builder
     build:
       dockerfile: ./docker/builder/Dockerfile
     working_dir: /grafana-clickhouse

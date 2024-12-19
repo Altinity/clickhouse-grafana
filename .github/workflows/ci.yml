@@ -21,18 +21,6 @@ jobs:
           node-version: '20'
           cache: 'npm'
 
-      - name: Install dependencies
-        run: npm ci
-
-      - name: Check types
-        run: npm run typecheck
-      - name: Lint
-        run: npm run lint
-      - name: Unit tests
-        run: npm run test:ci
-      - name: Build frontend
-        run: npm run build
-
       - name: Check for backend
         id: check-for-backend
         run: |
@@ -46,6 +34,18 @@ jobs:
         uses: actions/setup-go@v5
         with:
           go-version: '1.23'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Check types
+        run: npm run typecheck
+      - name: Lint
+        run: npm run lint
+      - name: Unit tests
+        run: npm run test:ci
+      - name: Build frontend
+        run: npm run build
 
       - name: Test backend
         if: steps.check-for-backend.outputs.has-backend == 'true'

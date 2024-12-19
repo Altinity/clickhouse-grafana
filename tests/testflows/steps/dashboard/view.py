@@ -62,17 +62,24 @@ def click_add_visualization_button(self):
 
 
 @TestStep(When)
+def scroll_to_panel(self, panel_name):
+    """Scroll until panel is presented."""
+
+    driver = self.context.driver
+    driver.execute_script("arguments[0].scrollIntoView();", locators.panel(panel_name=panel_name))
+
+
+@TestStep(When)
 def open_dropdown_menu_for_panel(self, panel_name):
     """Open dropdown menu for panel."""
 
-    with By(f"waiting panel menu for {panel_name} to be loaded"):
-        wait_panel_menu_button(panel_name=panel_name)
-
-    with And("moving cursor to menu button"):
-        move_cursor_to_menu_button(panel_name=panel_name)
+    with By("moving cursor to menu button"):
+        with delay():
+            move_cursor_to_menu_button(panel_name=panel_name)
 
     with And("clicking menu button"):
-        click_menu_button_for_panel(panel_name=panel_name)
+        with delay():
+            click_menu_button_for_panel(panel_name=panel_name)
 
 
 @TestStep(When)
@@ -151,8 +158,8 @@ def open_panel(self, panel_name):
         with When(f"I open dropdown menu for panel {panel_name}"):
             open_dropdown_menu_for_panel(panel_name=panel_name)
 
-    with When("I open panel view"):
-        edit_panel(panel_name=panel_name)
+        with When("I open panel view"):
+            edit_panel(panel_name=panel_name)
 
 
 @TestStep(When)

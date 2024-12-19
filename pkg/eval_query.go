@@ -1891,7 +1891,7 @@ const joinsRe = "\\b(" +
 	")\\b"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columns)"
+const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columnsMs|\\$columns)"
 const condRe = "\\b(or|and)\\b"
 const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?"
 const closureRe = "[\\(\\)\\[\\]]"
@@ -1961,7 +1961,19 @@ func isMacro(token string) bool {
 	return macroOnlyRe.MatchString(token)
 }
 
-/
+func isComment(token string) bool {
+	res, _ := commentOnlyRe.MatchString(token)
+	return res
+}
+
+func isID(token string) bool {
+	return idOnlyRe.MatchString(token)
+}
+
+func isStatement(token string) bool {
+	return statementOnlyRe.MatchString(token)
+}
+
 /*
 func isOperator(token string) bool {
     return operatorOnlyRe.MatchString(token)

@@ -112,15 +112,32 @@ const getMacrosAutocompletion = function () {
         'A combination of $perSecond and $columns' + '\n' + 'Example:\n $perSecondColumns(type, total) FROM requests',
     },
     {
+      name: '$perSecondColumnsAggregated(key, subkey, aggFunction1, value1, aggFunctionN, valueN) - if you need to calculate \`perSecond\` for higher cardinality dimension and then aggregate by lower cardinality dimension',
+      def: '$perSecondColumnsAggregated(key, subkey, aggFunction1, value1, aggFunctionN, valueN)',
+      docText:
+        'if you need to calculate `$perSecond` for higher cardinality dimension and then aggregate by lower cardinality dimension',
+    },
+    {
       name: '$deltaColumns',
       def: '$deltaColumns(key, value)',
       docText: 'A combination of $delta and $columns' + '\n' + 'Example:\n $deltaColumns(type, total) FROM requests',
+    },
+    {
+      name: '$deltaColumnsAggregated',
+      def: '$deltaColumnsAggregated(key, subkey, aggFunction1, value1, aggFunctionN, valueN)',
+      docText: 'if you need to calculate `$delta` for higher cardinality dimension and then aggregate by lower cardinality dimension',
     },
     {
       name: '$increaseColumns',
       def: '$increaseColumns(key, value)',
       docText:
         'A combination of $increase and $columns' + '\n' + 'Example:\n $increaseColumns(type, total) FROM requests',
+    },
+    {
+      name: '$increaseColumnsAggregated',
+      def: '$increaseColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN)',
+      docText:
+        'if you need to calculate `$increase` for higher cardinality dimension and then aggregate by lower cardinality dimension',
     },
     {
       name: '$columns',
@@ -131,10 +148,24 @@ const getMacrosAutocompletion = function () {
         'Example:\n $columns(OSName, count(*) c) FROM requests',
     },
     {
+      name: '$columnsMs',
+      def: '$columnsMs(key, value)',
+      docText:
+        'Query values as array of [key, value], where key will be used as label. Can be used to display multiple lines at graph' +
+        '\n' +
+        'Example:\n $columnsMs(OSName, count(*) c) FROM requests',
+    },
+    {
       name: '$rateColumns',
       def: '$rateColumns(key, value)',
       docText:
         'A combination of `$columns` and `$rate` .' + '\n' + 'Example:\n $rateColumns(OS, count(*) c) FROM requests',
+    },
+    {
+      name: '$rateColumnsAggregated',
+      def: '$rateColumnsAggregated(key, subkey, aggFunction1, value1, aggFunctionN, valueN)',
+      docText:
+        'if you need calculate `$rate` for higher cardinality dimension and then aggregate by lower cardinality dimension',
     },
     {
       name: '$unescape',

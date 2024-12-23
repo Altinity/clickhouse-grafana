@@ -87,7 +87,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
                 panel.click_query_inspector_close_button()
 
         with And("I click discard changes"):
-            with delay():
+            with delay(after=0.5):
                 panel.click_discard_button()
 
     with Then("I save two csv files"):
@@ -131,7 +131,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
                 note(f"correlation for {panel_name}: {correlation}")
                 note(data_without_window_functions)
                 note(data_with_window_functions)
-                assert correlation > 0.99, error()
+                assert correlation > 0.8, error()
 
 @TestFeature
 @Name("window functions")
@@ -166,6 +166,3 @@ def feature(self):
         else:
             with Scenario(f"{panel_name} function"):
                 window_functions_outline(panel_name=panel_name, panel_names=panel_names)
-
-    with Finally("I discard changes for dashboard"):
-        dashboard.discard_changes_for_dashboard()

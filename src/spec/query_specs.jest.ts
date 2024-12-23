@@ -96,6 +96,42 @@ describe('macros builder:', () => {
       SqlQueryMacros.columns
     ),
     new Case(
+      '$columnsMs',
+      '/* comment */$columnsMs(from_OSName, count(*) c) FROM requests ANY INNER JOIN oses USING OS',
+      '/* comment */SELECT t,' +
+      ' groupArray((from_OSName, c)) AS groupArr' +
+      ' FROM (' +
+      ' SELECT $timeSeriesMs AS t,' +
+      ' from_OSName,' +
+      ' count(*) c' +
+      ' FROM requests' +
+      ' ANY INNER JOIN oses USING OS' +
+      ' WHERE $timeFilterMs' +
+      ' GROUP BY t,' +
+      ' from_OSName' +
+      ' ORDER BY t,' +
+      ' from_OSName)' +
+      ' GROUP BY t' +
+      ' ORDER BY t',
+
+      '/* comment */SELECT t,' +
+      ' groupArray((from_OSName, c)) AS groupArr' +
+      ' FROM (' +
+      ' SELECT $timeSeriesMs AS t,' +
+      ' from_OSName,' +
+      ' count(*) c' +
+      ' FROM requests' +
+      ' ANY INNER JOIN oses USING OS' +
+      ' WHERE $timeFilterMs' +
+      ' GROUP BY t,' +
+      ' from_OSName' +
+      ' ORDER BY t,' +
+      ' from_OSName)' +
+      ' GROUP BY t' +
+      ' ORDER BY t',
+      SqlQueryMacros.columnsMs
+    ),
+    new Case(
       '$perSecond',
       '/* comment */\n$perSecond(from_total, from_amount) FROM requests',
       '/* comment */\nSELECT t,' +

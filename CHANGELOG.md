@@ -5,7 +5,11 @@
 * Add support DateTime(timezone) types to Annotations query, fix https://github.com/Altinity/clickhouse-grafana/issues/642
 * Add single stat panel with categories, fix https://github.com/Altinity/clickhouse-grafana/issues/403
 * Add log context windows size to connection settings, fix https://github.com/Altinity/clickhouse-grafana/issues/657
+* Add `X-ClickHouse-SSL-Certificate-Auth` support, fix https://github.com/Altinity/clickhouse-grafana/issues/580
+* Add `$columnsMs` macro, fix https://github.com/Altinity/clickhouse-grafana/issues/430
 
+## Fixes:
+* Add transposed table example, fix https://github.com/Altinity/clickhouse-grafana/issues/404 
 
 # 3.3.0 (2024-12-02)
 ## Enhancements:

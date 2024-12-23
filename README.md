@@ -233,6 +233,43 @@ This will help to build the next graph:
 ![req_by_os image](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/08_requests_by_os.png)
 
 ---
+### $columnsMs(key, value) - same as $columns but for time series with ms
+
+Example usage:
+
+```sql
+$columnsMs(OSName, count(*) c)
+FROM requests
+INNER JOIN oses USING (OS)
+```
+
+Query will be transformed into:
+
+```sql
+SELECT
+    t,
+    groupArray((OSName, c)) AS groupArr
+FROM
+(
+    SELECT
+        $timeSeriesMs AS t,
+        OSName,
+        count(*) AS c
+    FROM requests
+    INNER JOIN oses USING (OS)
+    WHERE ((EventDate >= toDate(1482796627)) AND (EventDate <= toDate(1482853383))) AND ((EventTime >= toDateTime64(1482796627,3)) AND (EventTime <= toDateTime64(1482853383,3)))
+    GROUP BY
+        t,
+        OSName
+    ORDER BY
+        t,
+        OSName
+)
+GROUP BY t
+ORDER BY t
+```
+
+---
 
 ### $rateColumns(key, value) - is a combination of $columns and $rate
 

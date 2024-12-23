@@ -42,7 +42,7 @@ export function ConfigEditor(props: Props) {
   const onSwitchToggle = (
     key: keyof Pick<
       CHDataSourceOptions,
-      'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST' | 'useCompression'
+      'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST' | 'useCompression' | 'xClickHouseSSLCertificateAuth'
     >,
     value: boolean
   ) => {
@@ -133,6 +133,14 @@ export function ConfigEditor(props: Props) {
                 placeholder={`DB user password`}
                 onReset={onResetXHeaderKey}
                 onChange={onChangeXHeaderKey}
+              />
+            </InlineField>
+            <InlineField label="X-ClickHouse-SSL-Certificate-Auth" labelWidth={36} tooltip="Requires non empty X-ClickHouse-User and TLS/SSL client key and client cert, doesn't work with basic authorization">
+              <InlineSwitch
+                data-test-id="x-clickhouse-ssl-certificate-auth"
+                id="xClickHouseSSLCertificateAuth"
+                value={jsonData.xClickHouseSSLCertificateAuth || false}
+                onChange={(e) => onSwitchToggle('xClickHouseSSLCertificateAuth', e.currentTarget.checked)}
               />
             </InlineField>
           </>

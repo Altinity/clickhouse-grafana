@@ -127,11 +127,11 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
             with By("calculating correlation between this values"):
                 data_without_window_functions = [0 if i == '' else float(i) for i in data_without_window_functions[1:]]
                 data_with_window_functions = [0 if i == '' else float(i) for i in data_with_window_functions[1:]]
-                correlation = corrcoef(data_without_window_functions[1:], data_with_window_functions[1:])[0,1]
+                correlation = corrcoef(data_without_window_functions[5:], data_with_window_functions[5:])[0,1]
                 note(f"correlation for {panel_name}: {correlation}")
                 note(data_without_window_functions)
                 note(data_with_window_functions)
-                assert correlation > 0.8, error()
+                assert correlation > 0.99, error()
 
 @TestFeature
 @Name("window functions")

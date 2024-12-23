@@ -94,12 +94,12 @@ class Locators:
     @property
     def query_inspector_data_options_expand_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, "//*[@aria-label='Expand query row' and ..//text() = 'Data options']")
+        return driver.find_element(SelectBy.XPATH, "//*[@aria-label='Panel inspector Data content']//button[@aria-label='Expand query row']")
 
     @property
     def query_inspector_data_options_dropdown(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, "//*[@data-testid='dataOptions' and ..//text() = 'Data options']")
+        return driver.find_element(SelectBy.XPATH, "//*[@aria-label='Panel inspector Data content']//input[@aria-label='Select dataframe']")
 
     @property
     def query_inspector_download_csv_button(self):

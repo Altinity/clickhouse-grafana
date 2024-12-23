@@ -30,7 +30,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         with And("I click run query button"):
             with delay():
                 panel.click_run_query_button()
-                
+
         with And("I open Query inspector"):
             with delay(after=0.5):
                 panel.click_inspect_query_button()
@@ -159,10 +159,10 @@ def feature(self):
     for panel_name in panel_names:
         if "Columns" in panel_name:
             with Scenario(f"{panel_name} function first row"):
-                window_functions_outline(panel_name=panel_name, panel_names=panel_names, column="test1 (0)")
+                window_functions_outline(panel_name=panel_name, panel_names=panel_names, column="test1")
 
             with Scenario(f"{panel_name} function second row"):
-                window_functions_outline(panel_name=panel_name, panel_names=panel_names, column="test2 (1)")
+                window_functions_outline(panel_name=panel_name, panel_names=panel_names, column="test2")
         else:
             with Scenario(f"{panel_name} function"):
                 window_functions_outline(panel_name=panel_name, panel_names=panel_names)

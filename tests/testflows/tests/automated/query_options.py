@@ -1,3 +1,4 @@
+from sqlalchemy.testing.plugin.plugin_base import after_test
 from testflows.core import *
 from steps.delay import delay
 from testflows.asserts import error
@@ -294,5 +295,7 @@ def feature(self):
         scenario()
 
     with Finally("I discard changes for dashboard"):
-        panel.click_discard_button()
-        dashboard.discard_changes_for_dashboard()
+        with delay():
+            panel.click_discard_button()
+        with delay(after=0.5):
+            dashboard.discard_changes_for_dashboard()

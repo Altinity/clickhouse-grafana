@@ -47,6 +47,32 @@ def click_datasource_in_select_datasource_dropdown(self, datasource_name):
 
     locators.select_datasource(datasource_name=datasource_name).click()
 
+@TestStep
+def click_data_options_expand_button(self):
+    """Click data options expand button."""
+
+    locators.query_inspector_data_options_expand_button.click()
+
+
+@TestStep
+def enter_data_options_dropdown(self, row):
+    """Enter data options dropdown."""
+
+    locators.query_inspector_data_options_dropdown.click()
+    locators.query_inspector_data_options_dropdown.send_keys(row)
+    locators.query_inspector_data_options_dropdown.send_keys(Keys.ENTER)
+
+@TestStep
+def change_row_for_download(self, row):
+    """Change row for download."""
+
+    with By("clicking data options expand button"):
+        with delay():
+            click_data_options_expand_button()
+
+    with By("entering row name into data options dropdown"):
+        with delay():
+            enter_data_options_dropdown(row=row)
 
 @TestStep(When)
 def click_sql_editor_toggle(self, query_name):
@@ -277,6 +303,21 @@ def click_query_inspector_close_button(self):
     """Click query inspector close button."""
 
     locators.query_inspector_close_button.click()
+
+
+@TestStep(When)
+def click_query_inspector_data_tab(self):
+    """Click query inspector data tab."""
+
+    locators.query_inspector_data_tab.click()
+
+
+@TestStep(When)
+def click_query_inspector_download_csv_button(self):
+    """Click query inspector download csv button."""
+
+    locators.query_inspector_download_csv_button.click()
+
 
 @TestStep(Then)
 def check_query_inspector_request(self, url_parts):

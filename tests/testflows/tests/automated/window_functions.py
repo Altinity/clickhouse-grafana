@@ -38,7 +38,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         if not (column is None):
             with And("I change csv file to download"):
                 with delay():
-                    panel.change_row_for_download(row="Series joined by time")
+                    panel.change_column_for_download(column=column)
 
         with And("I download csv data file"):
             with delay():
@@ -68,7 +68,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         if not (column is None):
             with And("I change csv file to download"):
                 with delay():
-                    panel.change_row_for_download(row="Series joined by time")
+                    panel.change_column_for_download(column=column)
 
         with And("I download csv data file"):
             with delay():
@@ -158,3 +158,6 @@ def feature(self):
         else:
             with Scenario(f"{panel_name} function"):
                 window_functions_outline(panel_name=panel_name, panel_names=panel_names)
+
+    with Finally("I discard changes for dashboard"):
+        dashboard.discard_changes_for_dashboard()

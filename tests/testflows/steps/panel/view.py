@@ -55,24 +55,24 @@ def click_data_options_expand_button(self):
 
 
 @TestStep
-def enter_data_options_dropdown(self, row):
+def enter_data_options_dropdown(self, column):
     """Enter data options dropdown."""
 
     locators.query_inspector_data_options_dropdown.click()
-    locators.query_inspector_data_options_dropdown.send_keys(row)
+    locators.query_inspector_data_options_dropdown.send_keys(column)
     locators.query_inspector_data_options_dropdown.send_keys(Keys.ENTER)
 
 @TestStep
-def change_row_for_download(self, row):
-    """Change row for download."""
+def change_column_for_download(self, column):
+    """Change column for download."""
 
     with By("clicking data options expand button"):
         with delay():
             click_data_options_expand_button()
 
-    with By("entering row name into data options dropdown"):
+    with By("entering column name into data options dropdown"):
         with delay():
-            enter_data_options_dropdown(row=row)
+            enter_data_options_dropdown(column=column)
 
 @TestStep(When)
 def click_sql_editor_toggle(self, query_name):

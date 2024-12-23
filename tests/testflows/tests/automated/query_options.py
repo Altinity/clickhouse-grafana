@@ -264,7 +264,7 @@ def feature(self):
         actions.create_new_altinity_datasource(datasource_name='query_options', url="http://clickhouse:8123",)
 
     with Given("I create new dashboard"):
-        actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)
+        actions.create_dashboard(dashboard_name=dashboard_name)
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()
@@ -293,8 +293,6 @@ def feature(self):
     for scenario in loads(current_module(), Scenario):
         scenario()
 
-    with Finally("I discard changes for dashboard"):
+    with Finally("I discard changes for panel"):
         with delay():
             panel.click_discard_button()
-        with delay(after=0.5):
-            dashboard.discard_changes_for_dashboard()

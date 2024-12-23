@@ -27,6 +27,10 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
             with delay():
                 dashboard.open_panel(panel_name=panel_name)
 
+        with And("I click run query button"):
+            with delay():
+                panel.click_run_query_button()
+                
         with And("I open Query inspector"):
             with delay(after=0.5):
                 panel.click_inspect_query_button()
@@ -56,6 +60,10 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         with When(f"I open panel {panel_name} - without window functions"):
             with delay():
                 dashboard.open_panel(panel_name=f"{panel_name} - without window functions")
+
+        with And("I click run query button"):
+            with delay():
+                panel.click_run_query_button()
 
         with And("I open Query inspector"):
             with delay(after=0.5):

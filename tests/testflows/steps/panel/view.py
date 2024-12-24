@@ -324,7 +324,7 @@ def check_query_inspector_request(self, url_parts):
     """Check url in query inspector."""
 
     with By("opening query inspector"):
-        with delay():
+        with delay(after=0.5):
             click_inspect_query_button()
 
     with By("clicking refresh button in query inspector"):

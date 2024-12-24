@@ -292,3 +292,7 @@ def feature(self):
 
     for scenario in loads(current_module(), Scenario):
         scenario()
+
+    with Finally("I discard changes for panel"):
+        with delay():
+            panel.click_discard_button()

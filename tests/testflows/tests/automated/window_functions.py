@@ -27,6 +27,10 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
             with delay():
                 dashboard.open_panel(panel_name=panel_name)
 
+        with And("I click run query button"):
+            with delay():
+                panel.click_run_query_button()
+
         with And("I open Query inspector"):
             with delay(after=0.5):
                 panel.click_inspect_query_button()
@@ -38,7 +42,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         if not (column is None):
             with And("I change csv file to download"):
                 with delay():
-                    panel.change_row_for_download(row="Series joined by time")
+                    panel.change_column_for_download(column=column)
 
         with And("I download csv data file"):
             with delay():
@@ -57,6 +61,10 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
             with delay():
                 dashboard.open_panel(panel_name=f"{panel_name} - without window functions")
 
+        with And("I click run query button"):
+            with delay():
+                panel.click_run_query_button()
+
         with And("I open Query inspector"):
             with delay(after=0.5):
                 panel.click_inspect_query_button()
@@ -68,7 +76,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         if not (column is None):
             with And("I change csv file to download"):
                 with delay():
-                    panel.change_row_for_download(row="Series joined by time")
+                    panel.change_column_for_download(column=column)
 
         with And("I download csv data file"):
             with delay():
@@ -79,7 +87,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
                 panel.click_query_inspector_close_button()
 
         with And("I click discard changes"):
-            with delay():
+            with delay(after=0.5):
                 panel.click_discard_button()
 
     with Then("I save two csv files"):
@@ -119,7 +127,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
             with By("calculating correlation between this values"):
                 data_without_window_functions = [0 if i == '' else float(i) for i in data_without_window_functions[1:]]
                 data_with_window_functions = [0 if i == '' else float(i) for i in data_with_window_functions[1:]]
-                correlation = corrcoef(data_without_window_functions[1:], data_with_window_functions[1:])[0,1]
+                correlation = corrcoef(data_without_window_functions[5:], data_with_window_functions[5:])[0,1]
                 note(f"correlation for {panel_name}: {correlation}")
                 note(data_without_window_functions)
                 note(data_with_window_functions)
@@ -151,10 +159,10 @@ def feature(self):
     for panel_name in panel_names:
         if "Columns" in panel_name:
             with Scenario(f"{panel_name} function first row"):
-                window_functions_outline(panel_name=panel_name, panel_names=panel_names, column="test1 (0)")
+                window_functions_outline(panel_name=panel_name, panel_names=panel_names, column="test1")
 
             with Scenario(f"{panel_name} function second row"):
-                window_functions_outline(panel_name=panel_name, panel_names=panel_names, column="test2 (1)")
+                window_functions_outline(panel_name=panel_name, panel_names=panel_names, column="test2")
         else:
             with Scenario(f"{panel_name} function"):
                 window_functions_outline(panel_name=panel_name, panel_names=panel_names)

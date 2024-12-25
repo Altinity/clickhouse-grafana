@@ -1,0 +1,187 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 43,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P94617B551CAC0F6A"
+      },
+      "description": "reproduce https://github.com/Altinity/clickhouse-grafana/issues/456",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [
+            {
+              "condition": "",
+              "key": "service_name",
+              "keyLabel": "service_name",
+              "operator": "=",
+              "value": "mysql",
+              "valueLabels": [
+                "mysql"
+              ]
+            }
+          ],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P94617B551CAC0F6A"
+          },
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT $timeSeries as t, service_name, count() FROM $table WHERE $timeFilter GROUP BY t, service_name ORDER BY t",
+          "rawQuery": " /* grafana dashboard=AdHoc with Hiding table name, user=0 */\n\nSELECT\n    (intDiv(toUInt32(event_time), 20) * 20) * 1000 as t,\n    service_name,\n    count()\nFROM default.test_grafana\n\nWHERE\n    event_time >= toDateTime(1735113709) AND event_time <= toDateTime(1735135309)\n    AND service_name = 'service990'\nGROUP BY\n    t,\n    service_name\nORDER BY t\n",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_grafana",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "AdHoc with Hide Table name",
+      "type": "timeseries"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "baseFilters": [],
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "P94617B551CAC0F6A"
+        },
+        "filters": [
+          {
+            "condition": "",
+            "key": "service_name",
+            "keyLabel": "service_name",
+            "operator": "=",
+            "value": "mysql",
+            "valueLabels": [
+              "mysql"
+            ]
+          }
+        ],
+        "name": "adhoc_hide_tables",
+        "type": "adhoc"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "AdHoc with Hiding table name",
+  "uid": "fe7zdj034j1tsc",
+  "version": 1,
+  "weekStart": ""
+}

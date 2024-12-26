@@ -60,6 +60,7 @@ def create_local_chrome_driver(self, browser, local_webdriver_path, common_optio
                 "download.directory_upgrade": True,
                 "profile.default_content_settings.popups": 0,
                 "download.default_directory": default_download_directory,
+                "profile.default_content_setting_values.automatic_downloads": 1
             },
         )
         if is_no_sandbox:
@@ -119,7 +120,7 @@ def webdriver(
         local_webdriver_path=None,
         is_no_sandbox=False,
         is_headless=False,
-        incognito=True,
+        incognito=False,
         global_wait_time=1,
         clean_up=True,
         suite="grafana"
@@ -127,7 +128,7 @@ def webdriver(
     """Create a webdriver instance."""
 
     with Given("common options"):
-        common_options = ["--disable-infobars", "start-maximized", "--disable-dev-shm-usage"]
+        common_options = ["--disable-infobars", "start-maximized", "--disable-dev-shm-usage", "--disable-popup-blocking"]
 
         if incognito:
             common_options.append("--incognito")
@@ -174,7 +175,7 @@ def webdriver(
 
 
 @TestStep(Given)
-def create_driver(self, incognito=True, clean_up=True, suite=None):
+def create_driver(self, incognito=False, clean_up=True, suite=None):
     """Create a driver based on the arguments in the context."""
 
     driver = webdriver(

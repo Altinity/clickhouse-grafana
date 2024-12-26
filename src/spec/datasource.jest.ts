@@ -172,7 +172,7 @@ describe('clickhouse sql series:', () => {
     let adhocCtrl = new AdhocCtrl({ defaultDatabase: 'default' });
     it('should be inited', function () {
       expect(adhocCtrl.query).toBe(
-        "SELECT database, table, name, type FROM system.columns WHERE database = 'default' AND database NOT IN ('system','INFORMATION_SCHEMA','information_schema') ORDER BY database, table"
+        "SELECT database, table, name, type FROM system.columns WHERE database = 'default' ORDER BY database, table"
       );
       expect(adhocCtrl.datasource.defaultDatabase).toBe('default');
     });

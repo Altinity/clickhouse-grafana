@@ -2,11 +2,12 @@
 ## Enhancements:
 * Add using window functions instead of `runningDifference` and `neighbor` for macros, to avoid `allow_deprecated_error_prone_window_functions`, fix https://github.com/Altinity/clickhouse-grafana/issues/572
 * Add public coverage report summary, fix https://github.com/Altinity/clickhouse-grafana/issues/660
-* Add support DateTime(timezone) types to Annotations query, fix https://github.com/Altinity/clickhouse-grafana/issues/642
+* Add support `DateTime(timezone)` types to Annotations query, fix https://github.com/Altinity/clickhouse-grafana/issues/642
 * Add single stat panel with categories, fix https://github.com/Altinity/clickhouse-grafana/issues/403
 * Add log context windows size to connection settings, fix https://github.com/Altinity/clickhouse-grafana/issues/657
 * Add `X-ClickHouse-SSL-Certificate-Auth` support, fix https://github.com/Altinity/clickhouse-grafana/issues/580
 * Add `$columnsMs` macro, fix https://github.com/Altinity/clickhouse-grafana/issues/430
+* Add `adhoc hide table names` connection settings option, fix https://github.com/Altinity/clickhouse-grafana/issues/456
 
 ## Fixes:
 * Add transposed table example, fix https://github.com/Altinity/clickhouse-grafana/issues/404 

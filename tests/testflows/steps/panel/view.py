@@ -47,6 +47,32 @@ def click_datasource_in_select_datasource_dropdown(self, datasource_name):
 
     locators.select_datasource(datasource_name=datasource_name).click()
 
+@TestStep
+def click_data_options_expand_button(self):
+    """Click data options expand button."""
+
+    locators.query_inspector_data_options_expand_button.click()
+
+
+@TestStep
+def enter_data_options_dropdown(self, column):
+    """Enter data options dropdown."""
+
+    locators.query_inspector_data_options_dropdown.click()
+    locators.query_inspector_data_options_dropdown.send_keys(column)
+    locators.query_inspector_data_options_dropdown.send_keys(Keys.ENTER)
+
+@TestStep
+def change_column_for_download(self, column):
+    """Change column for download."""
+
+    with By("clicking data options expand button"):
+        with delay():
+            click_data_options_expand_button()
+
+    with By("entering column name into data options dropdown"):
+        with delay():
+            enter_data_options_dropdown(column=column)
 
 @TestStep(When)
 def click_sql_editor_toggle(self, query_name):
@@ -278,12 +304,27 @@ def click_query_inspector_close_button(self):
 
     locators.query_inspector_close_button.click()
 
+
+@TestStep(When)
+def click_query_inspector_data_tab(self):
+    """Click query inspector data tab."""
+
+    locators.query_inspector_data_tab.click()
+
+
+@TestStep(When)
+def click_query_inspector_download_csv_button(self):
+    """Click query inspector download csv button."""
+
+    locators.query_inspector_download_csv_button.click()
+
+
 @TestStep(Then)
 def check_query_inspector_request(self, url_parts):
     """Check url in query inspector."""
 
     with By("opening query inspector"):
-        with delay():
+        with delay(after=0.5):
             click_inspect_query_button()
 
     with By("clicking refresh button in query inspector"):
@@ -625,5 +666,5 @@ def save_dashboard(self):
             click_save_button()
 
     with And("clicking save confirmation button"):
-        with delay(before=0.5):
+        with delay(before=0.5, after=0.5):
             click_save_confirmation_button()

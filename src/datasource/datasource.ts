@@ -47,6 +47,7 @@ export class CHDataSource
   useCompression: boolean;
   compressionType: string;
   adHocValuesQuery: string;
+  adHocHideTableNames: boolean;
   uid: string;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
@@ -59,6 +60,7 @@ export class CHDataSource
     this.usePOST = instanceSettings.jsonData.usePOST || false;
     this.useCompression = instanceSettings.jsonData.useCompression || false;
     this.adHocValuesQuery = instanceSettings.jsonData.adHocValuesQuery || '';
+    this.adHocHideTableNames = instanceSettings.jsonData.adHocHideTableNames || false;
     this.compressionType = instanceSettings.jsonData.compressionType || '';
     this.defaultDatabase = instanceSettings.jsonData.defaultDatabase || '';
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';

@@ -80,14 +80,26 @@ export default class AdHocFilter {
   // Values for fields with Enum type were already fetched in GetTagKeys func and stored in `tagValues`
   // Values for fields which not represented on `tagValues` get from ClickHouse and cached on `tagValues`
   async GetTagValues(options) {
+    // Determine which query to use initially
+    const initialQuery = this.adHocValuesQuery || DEFAULT_VALUES_QUERY;
+    // Function to build the query
+    let database: string, table: string, field: string;
+    const buildQuery = (queryTemplate: string) =>
+      queryTemplate.replace('{field}', field).replace('{database}', database).replace('{table}', table);
+
     if (this.datasource.adHocHideTableNames) {
       // @todo could be very slow
-      const allTablesColumnSQL = "SELECT groupConcat(' UNION ALL ')(concat('( SELECT DISTINCT toString(`',name,'`) AS value FROM `',database,'`.`',table,'` LIMIT 300 )')) AS q FROM system.columns WHERE name='"+options.key+"'"
-      let allValuesSQL = '';
+      const allTablesColumnSQL = "SELECT name,database,table FROM system.columns WHERE name='" + options.key + "'";
+      let allValuesSQL: string[] = [];
       let isGetAllValuesOK: boolean = await this.datasource
         .metricFindQuery(allTablesColumnSQL)
         .then((response: any) => {
-          allValuesSQL = response[0].text;
+          allValuesSQL = response.map((item: any) => {
+            field = item.name;
+            database = item.database;
+            table = item.table;
+            return buildQuery("(" + initialQuery + ")");
+          });
           return true;
         })
         .catch((error: any) => {
@@ -96,10 +108,10 @@ export default class AdHocFilter {
         });
 
       if (!isGetAllValuesOK) {
-        return []
+        return [];
       }
       return this.datasource
-        .metricFindQuery(allValuesSQL)
+        .metricFindQuery(allValuesSQL.join(" UNION ALL "))
         .then((response: any) => {
           // Process and cache the response
           this.tagValues[options.key] = this.processTagValuesResponse(response);
@@ -111,8 +123,6 @@ export default class AdHocFilter {
           return this.tagValues[options.key];
         });
     }
-    // Determine which query to use initially
-    const initialQuery = this.adHocValuesQuery || DEFAULT_VALUES_QUERY;
 
     // If the tag values are already cached, return them immediately
     if (Object.prototype.hasOwnProperty.call(this.tagValues, options.key)) {
@@ -125,7 +135,6 @@ export default class AdHocFilter {
     }
 
     // Destructure key items based on their length
-    let database, table, field;
     if (keyItems.length === 3) {
       [database, table, field] = keyItems;
     } else {
@@ -133,9 +142,6 @@ export default class AdHocFilter {
       [table, field] = keyItems;
     }
 
-    // Function to build the query
-    const buildQuery = (queryTemplate) =>
-      queryTemplate.replace('{field}', field).replace('{database}', database).replace('{table}', table);
 
     // Execute the initial query
     return this.datasource

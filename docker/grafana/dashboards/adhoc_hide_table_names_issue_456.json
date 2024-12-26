@@ -104,18 +104,7 @@
       "pluginVersion": "11.4.0",
       "targets": [
         {
-          "adHocFilters": [
-            {
-              "condition": "",
-              "key": "service_name",
-              "keyLabel": "service_name",
-              "operator": "=",
-              "value": "mysql",
-              "valueLabels": [
-                "mysql"
-              ]
-            }
-          ],
+          "adHocFilters": [],
           "adHocValuesQuery": "",
           "add_metadata": true,
           "contextWindowSize": "10",
@@ -181,7 +170,7 @@
   "timepicker": {},
   "timezone": "browser",
   "title": "AdHoc with Hiding table name",
-  "uid": "fe7zdj034j1tsc",
+  "uid": "adhoc_hide_table_names",
   "version": 1,
   "weekStart": ""
 }

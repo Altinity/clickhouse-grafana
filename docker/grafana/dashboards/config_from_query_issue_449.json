@@ -1,0 +1,404 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 51,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [
+            {
+              "condition": "",
+              "key": "default.test_grafana.country",
+              "operator": "=",
+              "value": "NL"
+            }
+          ],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "WITH topx AS (\n   SELECT DISTINCT CASE WHEN ${split:text} = '' THEN 'other' ELSE ${split:text} END AS filter, count() AS cnt \n   FROM $table WHERE $timeFilter AND $adhoc  GROUP BY ${split:text} \n   ORDER BY cnt DESC LIMIT 10\n)\n\nSELECT\n    $timeSeries as t,\n    CASE WHEN ${split:text} IN (SELECT filter FROM topx) THEN ${split:text} ELSE 'other' END AS spl,\n    count()\nFROM $table\n\nWHERE $timeFilter AND $adhoc\nGROUP BY t, spl\n\nORDER BY t, spl\n",
+          "rawQuery": " /* grafana dashboard=Config from query result, Issue 449, user=0 */\n\nWITH topx AS(SELECT DISTINCT CASE WHEN service_name = '' THEN 'other' ELSE service_name END AS filter, count() AS cnt FROM default.test_grafana WHERE event_time >= toDateTime(1731695619) AND event_time <= toDateTime(1735232147) AND (country = 'NL') GROUP BY service_name ORDER BY cnt DESC LIMIT 10)\nSELECT\n    (intDiv(toUInt32(event_time), 3600) * 3600) * 1000 as t,\n    CASE WHEN service_name IN (\n    SELECT filter\n\n    FROM topx\n) THEN service_name ELSE 'other' END AS spl,\n    count()\nFROM default.test_grafana\n\nWHERE\n    event_time >= toDateTime(1731695619) AND event_time <= toDateTime(1735232147)\n    AND (country = 'NL')\nGROUP BY\n    t,\n    spl\nORDER BY\n    t,\n    spl",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "test_grafana",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Timeseries",
+      "transformations": [
+        {
+          "id": "configFromData",
+          "options": {
+            "configRefId": "A - postgresql",
+            "mappings": []
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 3,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": false,
+        "showTime": false,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [
+            {
+              "condition": "",
+              "key": "default.test_grafana.country",
+              "operator": "=",
+              "value": "NL"
+            }
+          ],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "logs",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT *\nFROM $table\n\nWHERE $timeFilter AND $adhoc",
+          "rawQuery": " /* grafana dashboard=Config from query result, Issue 449 Copy, user=0 */\n\nSELECT *\n\nFROM default.test_logs\n\nWHERE\n    event_time >= toDateTime(1731695619) AND event_time <= toDateTime(1735232147)\n    AND 1",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "test_logs",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Logs",
+      "transformations": [
+        {
+          "id": "configFromData",
+          "options": {
+            "applyTo": {
+              "id": "byName"
+            },
+            "configRefId": "A",
+            "mappings": []
+          }
+        }
+      ],
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 9
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [
+            {
+              "condition": "",
+              "key": "default.test_grafana.country",
+              "operator": "=",
+              "value": "NL"
+            }
+          ],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "WITH topx AS (\n   SELECT DISTINCT CASE WHEN ${split:text} = '' THEN 'other' ELSE ${split:text} END AS filter, count() AS cnt \n   FROM $table WHERE $timeFilter AND $adhoc  GROUP BY ${split:text} \n   ORDER BY cnt DESC LIMIT 10\n)\n\nSELECT\n    $timeSeries as t,\n    CASE WHEN ${split:text} IN (SELECT filter FROM topx) THEN ${split:text} ELSE 'other' END AS spl,\n    count()\nFROM $table\n\nWHERE $timeFilter AND $adhoc\nGROUP BY t, spl\n\nORDER BY t, spl\n",
+          "rawQuery": " /* grafana dashboard=Config from query result, Issue 449, user=0 */\n\nWITH topx AS(SELECT DISTINCT CASE WHEN service_name = '' THEN 'other' ELSE service_name END AS filter, count() AS cnt FROM default.test_grafana WHERE event_time >= toDateTime(1731695619) AND event_time <= toDateTime(1735232147) AND (country = 'NL') GROUP BY service_name ORDER BY cnt DESC LIMIT 10)\nSELECT\n    (intDiv(toUInt32(event_time), 3600) * 3600) * 1000 as t,\n    CASE WHEN service_name IN (\n    SELECT filter\n\n    FROM topx\n) THEN service_name ELSE 'other' END AS spl,\n    count()\nFROM default.test_grafana\n\nWHERE\n    event_time >= toDateTime(1731695619) AND event_time <= toDateTime(1735232147)\n    AND (country = 'NL')\nGROUP BY\n    t,\n    spl\nORDER BY\n    t,\n    spl",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "test_grafana",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Timeseries",
+      "transformations": [
+        {
+          "id": "configFromData",
+          "options": {
+            "configRefId": "A - postgresql",
+            "mappings": []
+          }
+        }
+      ],
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "baseFilters": [],
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "P7E099F39B84EA795"
+        },
+        "filters": [
+          {
+            "condition": "",
+            "key": "default.test_grafana.country",
+            "operator": "=",
+            "value": "NL"
+          }
+        ],
+        "name": "adhoc_variable",
+        "type": "adhoc"
+      },
+      {
+        "current": {
+          "text": "service_name",
+          "value": "service_name"
+        },
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "P7E099F39B84EA795"
+        },
+        "definition": "SELECT name FROM system.columns WHERE database='default' AND table='test_grafana' AND type ILIKE '%String%'",
+        "includeAll": false,
+        "name": "split",
+        "options": [],
+        "query": "SELECT name FROM system.columns WHERE database='default' AND table='test_grafana' AND type ILIKE '%String%'",
+        "refresh": 1,
+        "regex": "",
+        "type": "query"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-15m",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Config from query result, Issue 449 Copy Copy",
+  "uid": "be81n7eenft34b",
+  "version": 1,
+  "weekStart": ""
+}

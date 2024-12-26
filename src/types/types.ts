@@ -75,7 +75,8 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   defaultTimeStamp64_3?: string;
   defaultTimeStamp64_6?: string;
   defaultTimeStamp64_9?: string;
-  adHocValuesQuery: string;
+  adHocValuesQuery?: string;
+  adHocHideTableNames?: boolean;
   contextWindowSize?: string;
   useWindowFuncForMacros?: boolean;
 }

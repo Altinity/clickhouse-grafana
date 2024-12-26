@@ -1,0 +1,18 @@
+﻿apiVersion: 1
+
+datasources:
+  - name: clickhouse-hide-adhoc-tables
+    type: vertamedia-clickhouse-datasource
+    access: proxy
+    url: http://clickhouse:8123
+    basicAuth: true
+    secureJsonData:
+      basicAuthPassword: ""
+    basicAuthUser: "default"
+    editable: false
+    jsonData:
+      addCorsHeader: true
+      usePOST: true
+      useCompression: true
+      compressionType: gzip
+      adHocHideTableNames: true

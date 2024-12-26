@@ -2,7 +2,7 @@ import { size } from 'lodash';
 import SqlSeries from '../datasource/sql-series/sql_series';
 import AdhocCtrl from '../datasource/adhoc';
 import ResponseParser from '../datasource/response_parser';
-import { FieldType, MutableDataFrame } from '@grafana/data';
+import { FieldType } from '@grafana/data';
 
 describe('clickhouse sql series:', () => {
   describe('SELECT $timeseries response WHERE $adhoc = 1', () => {
@@ -267,11 +267,6 @@ describe('clickhouse sql series:', () => {
     });
     let logs = sqlSeries.toLogs();
 
-    it('expects array of MutableDataFrames', () => {
-      expect(size(logs)).toBe(4);
-      expect(logs[0]).toBeInstanceOf(MutableDataFrame);
-    });
-
     it('should have refId', () => {
       expect(logs[0].refId).toBe('A');
     });
@@ -281,7 +276,7 @@ describe('clickhouse sql series:', () => {
     });
 
     it('should get four fields in DataFrame', () => {
-      expect(size(logs[0].fields)).toBe(4);
+      expect(logs[0].fields.length).toBe(5);
     });
 
     it('should get first field in DataFrame as time', () => {
@@ -289,15 +284,15 @@ describe('clickhouse sql series:', () => {
     });
 
     it('should get second field in DataFrame as content with labels', () => {
-      expect(logs[0].fields[1]).toHaveProperty('labels');
-      expect(logs[0].fields[1].labels).toHaveProperty('host');
+      expect(logs[0].fields[3].name).toEqual('labels');
+      expect(logs[0].fields[3].values[0]).toHaveProperty('host');
     });
 
     it('should get one datapoints for each field in each DataFrame', () => {
-      expect(size(logs[0].fields[0].values)).toBe(1);
-      expect(size(logs[0].fields[1].values)).toBe(1);
-      expect(size(logs[0].fields[2].values)).toBe(1);
-      expect(size(logs[0].fields[3].values)).toBe(1);
+      expect(size(logs[0].fields)).toBe(5);
+      expect(size(logs[0].fields[1].values)).toBe(4);
+      expect(size(logs[0].fields[2].values)).toBe(4);
+      expect(size(logs[0].fields[3].values)).toBe(4);
     });
   });
 });

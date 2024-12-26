@@ -160,9 +160,9 @@ export const toTimeSeries = (extrapolate = true, self): any => {
 
   each(metrics, function (dataPoints, seriesName) {
     if (extrapolate) {
-      timeSeries.push({ target: seriesName, datapoints: extrapolateDataPoints(dataPoints, self) });
+      timeSeries.push({ target: seriesName, datapoints: extrapolateDataPoints(dataPoints, self), refId: seriesName && self.refId ? `${self.refId} - ${seriesName}` : undefined});
     } else {
-      timeSeries.push({ target: seriesName, datapoints: dataPoints });
+      timeSeries.push({ target: seriesName, datapoints: dataPoints, refId: seriesName && self.refId ? `${self.refId} - ${seriesName}` : undefined});
     }
   });
 

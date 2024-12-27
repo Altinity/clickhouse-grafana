@@ -338,5 +338,9 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid RefreshPicker run button"]')
 
+    def annotation_toggle(self, annotation_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//label[@data-testid="data-testid Dashboard template variables submenu Label {annotation_name}"]/..//label[@aria-label="Toggle switch"]')
+
 
 locators = Locators()

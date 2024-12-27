@@ -55,4 +55,9 @@ e2e-results/
 venv/
 tests/testflows/tmp/target/
 tests/testflows/assets/
+# aider
 .aider*
+
+# WASM
+src/static/*.wasm.*
+src/static/*.wasm

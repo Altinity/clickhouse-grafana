@@ -118,12 +118,13 @@ def delete_dashboard(self, dashboard_name):
 def open_dashboard(self, dashboard_name):
     """Open dashboard view."""
 
-    with delay():
-        with When("I go to dashboards view"):
+    with When("I go to dashboards view"):
+        with delay():
             open_dashboards_view()
 
     with And(f"I go to {dashboard_name}"):
-        open_dashboard_view(dashboard_name=dashboard_name)
+        with delay():
+            open_dashboard_view(dashboard_name=dashboard_name)
 
 
 @TestStep(Then)

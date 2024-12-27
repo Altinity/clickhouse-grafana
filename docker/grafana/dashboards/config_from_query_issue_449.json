@@ -24,7 +24,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 51,
+  "id": 11,
   "links": [],
   "panels": [
     {
@@ -397,7 +397,7 @@
   },
   "timepicker": {},
   "timezone": "",
-  "title": "Config from query result, Issue 449 Copy Copy",
+  "title": "Config from query result, Issue 449",
   "uid": "be81n7eenft34b",
   "version": 1,
   "weekStart": ""

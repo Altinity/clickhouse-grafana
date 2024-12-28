@@ -2,15 +2,15 @@ package main
 
 import (
 	"fmt"
+	"github.com/dlclark/regexp2"
+	"github.com/hyperjumptech/jiffy"
 	"math"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
-
-	"github.com/dlclark/regexp2"
+	"unicode"
 )
-
-/* var NumberOnlyRegexp = regexp.MustCompile(`^[+-]?\d+(\.\d+)?$`) */
 
 var timeSeriesMacroRegexp = regexp.MustCompile(`\$timeSeries\b`)
 var timeSeriesMsMacroRegexp = regexp.MustCompile(`\$timeSeriesMs\b`)
@@ -51,8 +51,62 @@ type EvalQuery struct {
 	Database               string `json:"database"`
 	Table                  string `json:"table"`
 	MaxDataPoints          int64
+	FrontendDatasource     bool `json:"frontendDatasource"`
 	From                   time.Time
 	To                     time.Time
+}
+
+func parseInterval(interval string, intervalFactor int) (int, int, error) {
+	// Parse the duration
+	dur, err := jiffy.DurationOf(interval)
+	if err != nil {
+		return 0, 0, err
+	}
+
+	// Describe the duration (for a formatted string output)
+	durationSeconds := strings.Map(func(r rune) rune {
+		if unicode.IsDigit(r) {
+			return r
+		}
+		return -1
+	}, jiffy.DescribeDuration(dur, &jiffy.Want{
+		Second:      true,
+		Millisecond: false,
+		Verbose:     false,
+	}))
+
+	durationMilliseconds := strings.Map(func(r rune) rune {
+		if unicode.IsDigit(r) {
+			return r
+		}
+		return -1
+	}, jiffy.DescribeDuration(dur, &jiffy.Want{
+		Second:      false,
+		Millisecond: true,
+		Verbose:     false,
+	}))
+
+	var seconds, milliseconds int
+	// Calculate seconds and milliseconds
+	if durationSeconds != "" {
+		seconds, err = strconv.Atoi(durationSeconds)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+
+	if durationMilliseconds != "" {
+		milliseconds, err = strconv.Atoi(durationMilliseconds)
+		if err != nil {
+			return 0, 0, err
+		}
+	}
+
+	if seconds == 0 {
+		seconds = 1
+	}
+
+	return seconds * intervalFactor, milliseconds * intervalFactor, nil
 }
 
 func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
@@ -76,12 +130,12 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	i := 1 * time.Second
 	ms := 1 * time.Millisecond
 	if q.Interval != "" {
-		duration, err := time.ParseDuration(q.Interval)
+		intervalSeconds, intervalMs, err := parseInterval(q.Interval, q.IntervalFactor)
 		if err != nil {
 			return "", err
 		}
-		q.IntervalSec = int(math.Ceil(duration.Seconds()))
-		q.IntervalMs = int(duration.Milliseconds())
+		q.IntervalSec = intervalSeconds
+		q.IntervalMs = intervalMs
 	}
 	if q.IntervalSec <= 0 {
 		if q.MaxDataPoints > 0 {
@@ -1230,7 +1284,12 @@ func (q *EvalQuery) round(dt time.Time, round int) time.Time {
 	if round == 0 {
 		return dt
 	}
-	return dt.Truncate(time.Duration(round) * time.Second)
+
+	// Round to the nearest multiple of `round` seconds
+	coefficient := round
+	rounded := time.Unix(dt.Unix()/int64(coefficient)*int64(coefficient), 0)
+
+	return rounded
 }
 
 func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool) (int, error) {
@@ -1244,6 +1303,7 @@ func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool
 	if ms {
 		return int(math.Ceil(float64(d.Milliseconds()) * float64(intervalFactor))), nil
 	}
+
 	return int(math.Ceil(d.Seconds() * float64(intervalFactor))), nil
 }
 
@@ -1735,6 +1795,9 @@ func (s *EvalQueryScanner) RemoveComments(query string) (string, error) {
 }
 
 func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
+	if q.FrontendDatasource {
+		return "/* grafana dashboard=$__dashboard, user=$__user */\n" + query
+	}
 	return "/* grafana alerts rule=" + q.RuleUid + " query=" + q.RefId + " */ " + query
 }
 
@@ -1838,48 +1901,6 @@ const skipSpaceRe = "[\\(\\.! \\[]"
 
 const tableFuncRe = "\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b"
 
-/* const builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
-   "coalesce|ifnil|isnil|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
-   "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +
-   "toRelativeYearNum|toTime|toStartOfHour|toStartOfFiveMinute|toStartOfMinute|toStartOfYear|" +
-   "toStartOfQuarter|toStartOfMonth|toMonday|toSecond|toMinute|toHour|toDayOfWeek|toDayOfMonth|" +
-   "toMonth|toYear|toFixedString|toStringCutToZero|reinterpretAsString|reinterpretAsDate|" +
-   "reinterpretAsDateTime|reinterpretAsFloat32|reinterpretAsFloat64|reinterpretAsInt8|" +
-   "reinterpretAsInt16|reinterpretAsInt32|reinterpretAsInt64|reinterpretAsUInt8|" +
-   "reinterpretAsUInt16|reinterpretAsUInt32|reinterpretAsUInt64|toUInt8|toUInt16|toUInt32|" +
-   "toUInt64|toInt8|toInt16|toInt32|toInt64|toFloat32|toFloat64|toDate|toDateTime|toString|" +
-   "bitAnd|bitOr|bitXor|bitNot|bitShiftLeft|bitShiftRight|abs|negate|modulo|intDivOrZero|" +
-   "intDiv|divide|multiply|minus|plus|empty|notEmpty|length|lengthUTF8|lower|upper|lowerUTF8|" +
-   "upperUTF8|reverse|reverseUTF8|concat|substring|substringUTF8|appendTrailingCharIfAbsent|" +
-   "position|positionUTF8|match|extract|extractAll|like|notLike|replaceOne|replaceAll|" +
-   "replaceRegexpOne|range|arrayElement|has|indexOf|countEqual|arrayEnumerate|arrayEnumerateUniq|" +
-   "arrayJoin|arrayMap|arrayFilter|arrayExists|arrayCount|arrayAll|arrayFirst|arraySum|splitByChar|" +
-   "splitByString|alphaTokens|domainWithoutWWW|topLevelDomain|firstSignificantSubdomain|" +
-   "cutToFirstSignificantSubdomain|queryString|URLPathHierarchy|URLHierarchy|extractURLParameterNames|" +
-   "extractURLParameters|extractURLParameter|queryStringAndFragment|cutWWW|cutQueryString|" +
-   "cutFragment|cutQueryStringAndFragment|cutURLParameter|IPv4NumToString|IPv4StringToNum|" +
-   "IPv4NumToStringClassC|IPv6NumToString|IPv6StringToNum|rand|rand64|halfMD5|MD5|sipHash64|" +
-   "sipHash128|cityHash64|intHash32|intHash64|SHA1|SHA224|SHA256|URLHash|hex|unhex|bitmaskToList|" +
-   "bitmaskToArray|floor|ceil|round|roundToExp2|roundDuration|roundAge|regionToCountry|" +
-   "regionToContinent|regionToPopulation|regionIn|regionHierarchy|regionToName|OSToRoot|OSIn|" +
-   "OSHierarchy|SEToRoot|SEIn|SEHierarchy|dictGetUInt8|dictGetUInt16|dictGetUInt32|" +
-   "dictGetUInt64|dictGetInt8|dictGetInt16|dictGetInt32|dictGetInt64|dictGetFloat32|" +
-   "dictGetFloat64|dictGetDate|dictGetDateTime|dictGetString|dictGetHierarchy|dictHas|dictIsIn|" +
-   "argMin|argMax|uniqCombined|uniqHLL12|uniqExact|uniqExactIf|groupArray|groupUniqArray|quantile|" +
-   "quantileDeterministic|quantileTiming|quantileTimingWeighted|quantileExact|" +
-   "quantileExactWeighted|quantileTDigest|median|quantiles|varSamp|varPop|stddevSamp|stddevPop|" +
-   "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|avgIf|" +
-   "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
-   "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
-   "uniqArrayIf|sumArrayIf|uniq)\\b" */
-/* const operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
-   "when|else|end|type|left|right|on|outer|desc|asc|primary|key|between|" +
-   "foreign|not|nil|inner|cross|natural|database|prewhere|using|global|in)\\b" */
-/* const dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
-   "money|real|number|integer|" +
-   "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +
-   "array|tuple|string)\\b" */
-
 var wsOnlyRe = regexp.MustCompile("^(?:" + wsRe + ")$")
 var commentOnlyRe = regexp2.MustCompile("^(?:"+commentRe+")$", regexp2.Multiline)
 var idOnlyRe = regexp.MustCompile("^(?:" + idRe + ")$")
@@ -1890,9 +1911,6 @@ var joinsOnlyRe = regexp.MustCompile("(?mi)^(?:" + joinsRe + ")$")
 var onJoinTokenOnlyRe = regexp.MustCompile("(?mi)^(?:" + onJoinTokenRe + ")$")
 var tableNameOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableNameRe + ")$")
 
-/* var operatorOnlyRe = regexp.MustCompile("^(?mi)(?:" + operatorRe + ")$") */
-/* var dataTypeOnlyRe = regexp.MustCompile("^(?:" + dataTypeRe + ")$") */
-/* var builtInFuncOnlyRe = regexp.MustCompile("^(?:" + builtInFuncRe + ")$") */
 var tableFuncOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableFuncRe + ")$")
 var macroOnlyRe = regexp.MustCompile("(?mi)^(?:" + macroRe + ")$")
 var inOnlyRe = regexp.MustCompile("(?mi)^(?:" + inRe + ")$")
@@ -2177,7 +2195,7 @@ func printAST(AST *EvalAST, tab string) string {
 		result += printItems(AST.Obj["prewhere"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("where") {
+	if AST.hasOwnProperty("where") && len(AST.Obj["where"].(*EvalAST).Arr) > 0 {
 		result += newLine + tab + "WHERE"
 		result += printItems(AST.Obj["where"].(*EvalAST), tab, "")
 	}

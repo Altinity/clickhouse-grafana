@@ -11,8 +11,7 @@ import {
 } from '@grafana/ui';
 import QueryMacrosInfo from './QueryMacrosInfo';
 import { SQLCodeEditor } from './SQLCodeEditor';
-import Scanner from '../../../../datasource/scanner/scanner';
-import {FormattedSQL} from "./FormattedSQL";
+import { FormattedSQL } from './FormattedSQL';
 
 const RESOLUTION_OPTIONS = [
   { value: 1, label: '1/1' },
@@ -45,9 +44,8 @@ export const QueryTextEditor = ({
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
 
   useEffect(() => {
-    const scanner = new Scanner(formattedData);
-    // removed scanner.Format as it contains bugs inherited from v2
-    setSqlFormattedData(scanner.raw());
+    setSqlFormattedData(formattedData);
+    // eslint-disable-next-line
   }, [formattedData]);
 
   const handleStepChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -177,7 +175,10 @@ export const QueryTextEditor = ({
           </InlineField>
           <InlineField
             label={
-              <InlineLabel width={23} tooltip="Turn off if you would like use `runnindDifference` and `neighbor` functions for macros">
+              <InlineLabel
+                width={23}
+                tooltip="Turn off if you would like use `runnindDifference` and `neighbor` functions for macros"
+              >
                 Use window functions
               </InlineLabel>
             }

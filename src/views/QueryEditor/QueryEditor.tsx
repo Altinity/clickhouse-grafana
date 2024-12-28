@@ -34,7 +34,6 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
     if (props.app !== 'explore') {
       onChange({ ...initializedQuery, adHocFilters: adHocFilters });
     }
-
     // eslint-disable-next-line
   }, [props.app, adHocFiltersKey]);
 

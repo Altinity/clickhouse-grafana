@@ -12,6 +12,7 @@ services:
     image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-latest}
     environment:
       - CLICKHOUSE_ALWAYS_RUN_INITDB_SCRIPTS=true
+      # - TZ=Europe/Moscow
     ports:
       - "8123:8123"
       - "9000:9000"

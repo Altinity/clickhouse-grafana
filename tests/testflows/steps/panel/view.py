@@ -225,6 +225,24 @@ def take_visualization_screenshot(self, screenshot_name):
 
     locators.visualization.screenshot(f'./screenshots/{screenshot_name}.png')
 
+@TestStep(When)
+def click_annotation_toggle(self, annotation_name):
+    """Click annotation toggle."""
+
+    locators.annotation_toggle(annotation_name=annotation_name).click()
+
+@TestStep
+def refresh_annotation(self, annotation_name):
+    """Turn annotation off and on."""
+
+    with By("turning annotation off"):
+        with delay():
+            click_annotation_toggle(annotation_name=annotation_name)
+
+    with By("turning annotation on"):
+        with delay():
+            click_annotation_toggle(annotation_name=annotation_name)
+
 
 @TestStep(Then)
 def take_screenshot_for_visualization(self, screenshot_name):

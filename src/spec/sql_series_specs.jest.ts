@@ -1,8 +1,6 @@
 import { toFlamegraph } from '../datasource/sql-series/toFlamegraph';
 import { toLogs } from '../datasource/sql-series/toLogs';
 import { toTable } from '../datasource/sql-series/toTable';
-
-import { MutableDataFrame } from '@grafana/data';
 import { toTimeSeries } from '../datasource/sql-series/toTimeSeries';
 import { toTraces } from '../datasource/sql-series/toTraces';
 
@@ -98,25 +96,6 @@ describe('sql-series. toLogs unit tests', () => {
     expect(result).toEqual([]);
   });
 
-  it('should return an empty array of object if no message field is found', () => {
-    const input = {
-      series: [{ id: 1 }],
-      meta: [{ name: 'level', type: 'FixedString' }],
-    };
-    const result = toLogs(input);
-
-    const expected = new MutableDataFrame({
-      fields: [],
-      meta: {
-        preferredVisualisationType: 'logs',
-      },
-    });
-
-    expect(result[0] instanceof MutableDataFrame).toBeTruthy();
-    expect(result[0].fields).toEqual(expected.fields);
-    expect(result[0].meta).toEqual(expected.meta);
-  });
-
   it('should correctly identify the message field', () => {
     const input = {
       series: [{ id: 1, content: 'Log message' }],
@@ -126,8 +105,8 @@ describe('sql-series. toLogs unit tests', () => {
       ],
     };
     const result = toLogs(input);
-    expect(result.length).toBe(1);
-    expect(result[0].fields[0].name).toBe('content');
+    expect(result[0].fields.length).toBe(2);
+    expect(result[0].fields[0].name).toBe('body');
   });
 
   it('should handle Nullable types correctly', () => {
@@ -140,9 +119,9 @@ describe('sql-series. toLogs unit tests', () => {
     };
     const result = toLogs(input);
     expect(result.length).toBe(1);
-    expect(result[0].fields.length).toBe(2);
+    expect(result[0].fields.length).toBe(4);
     expect(result[0].fields[0].name).toBe('timestamp');
-    expect(result[0].fields[1].name).toBe('level');
+    expect(result[0].fields[1].name).toBe('severity');
   });
 
   it('should add label fields correctly', () => {
@@ -157,11 +136,11 @@ describe('sql-series. toLogs unit tests', () => {
     };
     const result = toLogs(input);
     expect(result.length).toBe(1);
-    expect(result[0].fields.length).toBe(3); // [message + labels], level, timestamp
+    expect(result[0].fields.length).toBe(4); // [message + labels], level, timestamp
     const message = result[0].fields.find((field) => {
-      return field.name === 'message';
+      return field.name === 'labels';
     });
-    expect(message?.labels?.user).toBe('user1'); // user
+    expect(message?.values[0].user).toBe('user1'); // user
   });
 
   it('should convert time with time zone to UTC', () => {

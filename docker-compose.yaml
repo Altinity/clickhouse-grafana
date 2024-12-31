@@ -9,7 +9,7 @@ services:
       - /var/log/clickhouse-server/
 
   clickhouse:
-    image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-latest}
+    image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-24.8.8}
     environment:
       - CLICKHOUSE_ALWAYS_RUN_INITDB_SCRIPTS=true
       # - TZ=Europe/Moscow

@@ -53,6 +53,14 @@ e2e-results/
 
 # virtual environment
 venv/
+# aider
+.aider*
+
+# WASM
+src/static/*.wasm.*
+src/static/*.wasm
+
+# test temporary files
 tests/testflows/tmp/target/
 tests/testflows/assets/
-.aider*
+tests/automated/**.csv

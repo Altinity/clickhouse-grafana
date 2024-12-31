@@ -1,4 +1,4 @@
-# 3.3.1 (not released yet)
+# 3.3.1 (2024-12-27)
 ## Enhancements:
 * Add using window functions instead of `runningDifference` and `neighbor` for macros, to avoid `allow_deprecated_error_prone_window_functions`, fix https://github.com/Altinity/clickhouse-grafana/issues/572
 * Add public coverage report summary, fix https://github.com/Altinity/clickhouse-grafana/issues/660
@@ -10,7 +10,11 @@
 * Add `adhoc hide table names` connection settings option, fix https://github.com/Altinity/clickhouse-grafana/issues/456
 
 ## Fixes:
-* Add transposed table example, fix https://github.com/Altinity/clickhouse-grafana/issues/404 
+* Add transposed table example, fix https://github.com/Altinity/clickhouse-grafana/issues/404
+* Add "show DateTime As is" dashboard to avoid show DateTime fields in browser timezone, fix https://github.com/Altinity/clickhouse-grafana/issues/450
+* Refactoring `Logs` visualization, add "config from query result" transformation, fix https://github.com/Altinity/clickhouse-grafana/issues/449
+* Refactoring `adhoc` filters, add connection option to allow hide table names from field name, fix https://github.com/Altinity/clickhouse-grafana/issues/456
+* Checked tooltip visualization in Grafana 11.x, fix https://github.com/Altinity/clickhouse-grafana/issues/478
 
 # 3.3.0 (2024-12-02)
 ## Enhancements:

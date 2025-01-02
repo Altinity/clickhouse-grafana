@@ -1,0 +1,6 @@
+﻿apiVersion: 1
+
+datasources:
+ - name: grafana-testdata-datasource
+   type: grafana-testdata-datasource
+   editable: false

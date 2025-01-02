@@ -167,6 +167,49 @@ def default_values_not_affect_url_textfield(self):
             assert datasources_altinity_edit.get_url_textfield_text() == "http://clickhouse:8123", error()
 
 
+@TestScenario
+def annotations_without_time_reformatting(self):
+    """Check that grafana supports annotations query in different formats."""
+
+    with When("I go to Annotation event_time"):
+        with delay():
+            dashboards.open_dashboard(dashboard_name="Annotation event_time")
+
+    with And("I screenshot event_time panel"):
+        with By("opening panel event_time"):
+            with delay():
+                dashboard.open_panel(panel_name='event_time')
+
+        with By("refreshing annotation 1"):
+            with delay():
+                panel.refresh_annotation(annotation_name="annotation_1")
+
+        with By("taking screenshot for visualization for event_time panel"):
+            with delay():
+                panel.take_screenshot_for_visualization(screenshot_name="event_tme_panel")
+
+    with When("I go to Annotation event_time"):
+        with delay():
+            dashboards.open_dashboard(dashboard_name="Annotation event_time")
+
+    with And("I screenshot toUInt64 panel"):
+        with By("opening panel toUInt64"):
+            with delay():
+                dashboard.open_panel(panel_name='toUInt64')
+
+        with By("refreshing annotation 2"):
+            with delay():
+                panel.refresh_annotation(annotation_name="annotation_2")
+
+        with By("taking screenshot for visualization for toUInt64 panel"):
+            with delay():
+                panel.take_screenshot_for_visualization(screenshot_name="toUInt64_panel")
+
+    with Then("I compare screenshots"):
+        with delay():
+            assert actions.compare_screenshots_percent(screenshot_name_1="event_tme_panel", screenshot_name_2="toUInt64_panel") > 0.9, error()
+
+
 @TestFeature
 @Name("e2e")
 def feature(self):

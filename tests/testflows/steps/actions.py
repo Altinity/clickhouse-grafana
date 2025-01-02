@@ -27,6 +27,21 @@ def compare_screenshots(self, screenshot_name_1, screenshot_name_2):
     return image_1 == image_2
 
 
+@TestStep(Then)
+def compare_screenshots_percent(self, screenshot_name_1, screenshot_name_2):
+    """Check that screenshots are similar."""
+    image_1 = Image.open(os.path.join(self.context.project_root_dir, 'tests', 'testflows', 'screenshots', f"{screenshot_name_1}.png"))
+    image_2 = Image.open(os.path.join(self.context.project_root_dir, 'tests', 'testflows', 'screenshots', f"{screenshot_name_2}.png"))
+    difference = np.array(image_1) == np.array(image_2)
+    overlap = 0
+    for i in difference:
+        for j in i:
+            for k in j:
+                overlap += k
+    note(f"overlap percent: {overlap/(difference.shape[0] * difference.shape[1] * difference.shape[2])}")
+    return overlap/(difference.shape[0] * difference.shape[1] * difference.shape[2])
+
+
 @TestStep(Given)
 def create_dashboard(self, dashboard_name, open_it=True, finally_save_dashboard=True):
     """Create new dashboard named {dashboard_name} and open it."""

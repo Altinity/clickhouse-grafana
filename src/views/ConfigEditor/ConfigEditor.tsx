@@ -42,7 +42,7 @@ export function ConfigEditor(props: Props) {
   const onSwitchToggle = (
     key: keyof Pick<
       CHDataSourceOptions,
-      'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST' | 'useCompression' | 'xClickHouseSSLCertificateAuth'
+      'useYandexCloudAuthorization' | 'addCorsHeader' | 'usePOST' | 'useCompression' | 'xClickHouseSSLCertificateAuth' | 'adHocHideTableNames'
     >,
     value: boolean
   ) => {
@@ -227,6 +227,14 @@ export function ConfigEditor(props: Props) {
               onChange={setAdHocValuesQuery}
             />
           </div>
+        </InlineField>
+        <InlineField label="Hide table names in adhoc filters" labelWidth={32} tooltip="Applicable if you want adhoc with short filed names">
+          <InlineSwitch
+            data-test-id="adhoc-hide-table-names"
+            id="adhoc"
+            value={jsonData.adHocHideTableNames || false}
+            onChange={(e) => onSwitchToggle('adHocHideTableNames', e.currentTarget.checked)}
+          />
         </InlineField>
       </div>
     </>

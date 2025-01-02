@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 48,
+  "id": 19,
   "links": [],
   "panels": [
     {
@@ -67,7 +67,7 @@
           },
           "links": [
             {
-              "title": "link to service",
+              "title": "${__field.name}",
               "url": "/d/${__dashboard.uid}/${__dashboard}?var-service_name=${__field.name}"
             }
           ],
@@ -128,7 +128,7 @@
           "interval": "",
           "intervalFactor": 1,
           "query": "SELECT $timeSeries as t, service_name, count() FROM $table \r\nWHERE \r\n$timeFilter \r\n$conditionalTest(AND service_name IN ($service_name),$service_name)\r\nGROUP BY t, service_name ORDER BY t",
-          "rawQuery": "/* grafana dashboard=issue_644 Data Links Dashboard, user=1 */\nSELECT (intDiv(toUInt32(event_time), 30) * 30) * 1000 as t, service_name, count() FROM default.test_grafana \r\nWHERE \r\nevent_time >= toDateTime(1735022955) AND event_time <= toDateTime(1735044555) \r\n AND service_name IN ('mysql') \r\nGROUP BY t, service_name ORDER BY t",
+          "rawQuery": "/* grafana dashboard=issue_644 Data Links Dashboard, user=1 */\nSELECT (intDiv(toUInt32(event_time), 30) * 30) * 1000 as t, service_name, count() FROM default.test_grafana \r\nWHERE \r\nevent_time >= toDateTime(1735801763) AND event_time <= toDateTime(1735823363) \r\n \r\nGROUP BY t, service_name ORDER BY t",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
@@ -138,7 +138,109 @@
           "useWindowFuncForMacros": true
         }
       ],
-      "title": "Data Links source",
+      "title": "ClickHouse Data Links source",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "grafana-testdata-datasource",
+        "uid": "P4B2E8993429FB0B1"
+      },
+      "description": "reproduce https://github.com/Altinity/clickhouse-grafana/issues/644",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "links": [
+            {
+              "targetBlank": true,
+              "title": "${__field.name}",
+              "url": "/d/${__dashboard.uid}/${__dashboard}?var-service_name=${__field.name}"
+            }
+          ],
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "grafana-testdata-datasource",
+            "uid": "P4B2E8993429FB0B1"
+          },
+          "refId": "A",
+          "scenarioId": "random_walk",
+          "seriesCount": 1
+        }
+      ],
+      "title": "Test Data Links source",
       "type": "timeseries"
     }
   ],
@@ -180,6 +282,6 @@
   "timezone": "browser",
   "title": "issue_644 Data Links Dashboard",
   "uid": "ee7vpodeqn5z4a",
-  "version": 5,
+  "version": 2,
   "weekStart": ""
 }

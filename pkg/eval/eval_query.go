@@ -1,9 +1,8 @@
-package main
+package eval
 
 import (
 	"fmt"
 	"github.com/dlclark/regexp2"
-	"github.com/hyperjumptech/jiffy"
 	"math"
 	"regexp"
 	"strconv"
@@ -56,57 +55,117 @@ type EvalQuery struct {
 	To                     time.Time
 }
 
+// Define constants for time units in milliseconds
+const (
+	Millisecond = 1
+	Second      = 1000 * Millisecond
+	Minute      = 60 * Second
+	Hour        = 60 * Minute
+	Day         = 24 * Hour
+	Week        = 7 * Day
+	Month       = 30 * Day  // Approximation
+	Year        = 365 * Day // Approximation
+)
+
+// unitsInMilliseconds maps supported units to their equivalent in milliseconds
+var unitsInMilliseconds = map[string]int64{
+	"y":  Year,
+	"M":  Month,
+	"w":  Week,
+	"d":  Day,
+	"h":  Hour,
+	"m":  Minute,
+	"s":  Second,
+	"ms": Millisecond,
+}
+
+// parseInterval parses a duration string and applies an interval factor.
+// It returns the scaled seconds and milliseconds.
 func parseInterval(interval string, intervalFactor int) (int, int, error) {
-	// Parse the duration
-	dur, err := jiffy.DurationOf(interval)
-	if err != nil {
-		return 0, 0, err
+	if intervalFactor <= 0 {
+		return 0, 0, nil
 	}
 
-	// Describe the duration (for a formatted string output)
-	durationSeconds := strings.Map(func(r rune) rune {
-		if unicode.IsDigit(r) {
-			return r
-		}
-		return -1
-	}, jiffy.DescribeDuration(dur, &jiffy.Want{
-		Second:      true,
-		Millisecond: false,
-		Verbose:     false,
-	}))
+	// List of unit suffixes sorted by length in descending order to match "ms" before "m" or "s"
+	unitSuffixes := []string{"ms", "y", "M", "w", "d", "h", "m", "s"}
 
-	durationMilliseconds := strings.Map(func(r rune) rune {
-		if unicode.IsDigit(r) {
-			return r
-		}
-		return -1
-	}, jiffy.DescribeDuration(dur, &jiffy.Want{
-		Second:      false,
-		Millisecond: true,
-		Verbose:     false,
-	}))
+	totalMilliseconds := int64(0)
+	i := 0
+	n := len(interval)
 
-	var seconds, milliseconds int
-	// Calculate seconds and milliseconds
-	if durationSeconds != "" {
-		seconds, err = strconv.Atoi(durationSeconds)
+	for i < n {
+		// Skip any leading whitespace
+		for i < n && unicode.IsSpace(rune(interval[i])) {
+			i++
+		}
+		if i >= n {
+			break
+		}
+
+		// Parse the number
+		startNum := i
+		// Handle negative durations if needed
+		// For now, assume positive numbers
+		for i < n && (unicode.IsDigit(rune(interval[i])) || interval[i] == '.') {
+			i++
+		}
+		if startNum == i {
+			return 0, 0, fmt.Errorf("expected number at position %d in interval '%s'", i, interval)
+		}
+		numStr := interval[startNum:i]
+		// Convert number to float to handle decimal units like "1.5h"
+		num, err := strconv.ParseFloat(numStr, 64)
 		if err != nil {
-			return 0, 0, err
+			return 0, 0, fmt.Errorf("invalid number '%s' in interval '%s': %v", numStr, interval, err)
 		}
-	}
 
-	if durationMilliseconds != "" {
-		milliseconds, err = strconv.Atoi(durationMilliseconds)
-		if err != nil {
-			return 0, 0, err
+		// Parse the unit
+		unit := ""
+		for _, suffix := range unitSuffixes {
+			suffixLen := len(suffix)
+			if i+suffixLen <= n && interval[i:i+suffixLen] == suffix {
+				unit = suffix
+				i += suffixLen
+				break
+			}
 		}
+		if unit == "" {
+			return 0, 0, fmt.Errorf("unknown unit at position %d in interval '%s'", i, interval)
+		}
+
+		// Get the multiplier for the unit
+		multiplier, exists := unitsInMilliseconds[unit]
+		if !exists {
+			return 0, 0, fmt.Errorf("unsupported unit '%s' in interval '%s'", unit, interval)
+		}
+
+		// Accumulate total milliseconds
+		// To avoid floating point precision issues, convert to integer milliseconds
+		millis := int64(num * float64(multiplier))
+		totalMilliseconds += millis
 	}
 
-	if seconds == 0 {
-		seconds = 1
+	// Split totalMilliseconds into seconds and milliseconds
+	totalSeconds := totalMilliseconds / 1000
+	remainingMilliseconds := totalMilliseconds % 1000
+
+	// If totalSeconds is zero, default to 1 as per original logic
+	if totalSeconds == 0 {
+		totalSeconds = 1
 	}
 
-	return seconds * intervalFactor, milliseconds * intervalFactor, nil
+	// Apply the interval factor
+	scaledSeconds := totalSeconds * int64(intervalFactor)
+	scaledMilliseconds := remainingMilliseconds * int64(intervalFactor)
+
+	// Handle overflow: Convert excess milliseconds into seconds
+	if scaledMilliseconds >= 1000 {
+		additionalSeconds := scaledMilliseconds / 1000
+		scaledMilliseconds = scaledMilliseconds % 1000
+		scaledSeconds += additionalSeconds
+	}
+
+	return int(scaledSeconds), int(scaledMilliseconds), nil
 }
 
 func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
@@ -160,8 +219,8 @@ func (q *EvalQuery) replace(query string) (string, error) {
 			return "", err
 		}
 	}
-	scanner := newScanner(query)
-	ast, err := scanner.toAST()
+	scanner := NewScanner(query)
+	ast, err := scanner.ToAST()
 	if err != nil {
 		return "", fmt.Errorf("parse AST error: %v ", err)
 	}
@@ -225,7 +284,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	query = intervalMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.IntervalSec))
 	query = intervalMsMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.IntervalMs))
 
-	query = q.replaceTimeFilters(query, myRound)
+	query = q.ReplaceTimeFilters(query, myRound)
 
 	return query, nil
 }
@@ -260,7 +319,7 @@ func (q *EvalQuery) replaceRegexpWithCallBack(re *regexp.Regexp, str string, rep
 	return result + str[lastIndex:]
 }
 
-func (q *EvalQuery) replaceTimeFilters(query string, round int) string {
+func (q *EvalQuery) ReplaceTimeFilters(query string, round int) string {
 	from := q.round(q.From, round)
 	to := q.round(q.To, round)
 
@@ -1369,7 +1428,7 @@ func newEvalAST(isObj bool) *EvalAST {
 	}
 
 }
-func (e *EvalAST) hasOwnProperty(key string) bool {
+func (e *EvalAST) HasOwnProperty(key string) bool {
 	v, hasKey := e.Obj[key]
 	return hasKey && v != nil
 }
@@ -1400,7 +1459,7 @@ type EvalQueryScanner struct {
 	_s           string
 }
 
-func newScanner(query string) EvalQueryScanner {
+func NewScanner(query string) EvalQueryScanner {
 	return EvalQueryScanner{
 		_sOriginal: query,
 		Token:      "",
@@ -1451,11 +1510,11 @@ func (s *EvalQueryScanner) expectNext() (bool, error) {
 }
 
 func (s *EvalQueryScanner) Format() (string, error) {
-	ast, err := s.toAST()
+	ast, err := s.ToAST()
 	if err != nil {
 		return "", err
 	}
-	return printAST(ast, ""), nil
+	return PrintAST(ast, ""), nil
 }
 
 func (s *EvalQueryScanner) push(argument interface{}) {
@@ -1466,7 +1525,7 @@ func (s *EvalQueryScanner) push(argument interface{}) {
 			ast.Arr = append(ast.Arr, argument)
 		} else {
 			var aliasesArr *EvalAST
-			if !ast.hasOwnProperty("aliases") {
+			if !ast.HasOwnProperty("aliases") {
 				aliasesArr = newEvalAST(false)
 				ast.Obj["aliases"] = aliasesArr
 			} else {
@@ -1498,7 +1557,7 @@ func (s *EvalQueryScanner) appendToken(argument string) string {
 	return " " + s.Token
 }
 
-func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
+func (s *EvalQueryScanner) ToAST() (*EvalAST, error) {
 	var err error
 	s._s = s._sOriginal
 	s.Tree = newEvalAST(true)
@@ -1515,7 +1574,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 		} else if !next {
 			break
 		}
-		if !s.isExpectedNext() && isStatement(s.Token) && !s.Tree.hasOwnProperty(strings.ToLower(s.Token)) {
+		if !s.isExpectedNext() && isStatement(s.Token) && !s.Tree.HasOwnProperty(strings.ToLower(s.Token)) {
 			if strings.ToUpper(s.Token) == "WITH" && s.RootToken == "order by" {
 				argument += s.appendToken(argument)
 				continue
@@ -1560,7 +1619,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 			if subAST, err = toAST(subQuery); err != nil {
 				return nil, err
 			}
-			if subAST.hasOwnProperty("root") {
+			if subAST.HasOwnProperty("root") {
 				s.Tree.Obj[funcName] = subAST.Obj["root"]
 			} else {
 				s.Tree.Obj[funcName] = subAST
@@ -1583,7 +1642,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 				if subAST, err = toAST(subQuery); err != nil {
 					return nil, err
 				}
-				if subAST.hasOwnProperty("root") && len(subAST.Obj["root"].(*EvalAST).Arr) > 0 {
+				if subAST.HasOwnProperty("root") && len(subAST.Obj["root"].(*EvalAST).Arr) > 0 {
 					var subArr = subAST.Obj["root"].(*EvalAST)
 					argument += " ("
 					for _, item := range subArr.Arr {
@@ -1591,7 +1650,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 					}
 					argument = argument + ")"
 				} else {
-					argument += " (" + newLine + printAST(subAST, tabSize) + ")"
+					argument += " (" + newLine + PrintAST(subAST, tabSize) + ")"
 					if s.RootToken != "select" {
 						s.push(argument)
 						argument = ""
@@ -1652,7 +1711,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 }
 
 func (s *EvalQueryScanner) parseJOIN(argument string) (string, error) {
-	if !s.Tree.hasOwnProperty("join") {
+	if !s.Tree.HasOwnProperty("join") {
 		s.Tree.Obj["join"] = newEvalAST(false)
 	}
 	var joinType = s.Token
@@ -2029,15 +2088,15 @@ func printItems(items *EvalAST, tab string, separator string) string {
 			}
 		}
 	} else if len(items.Obj) > 0 {
-		result = newLine + "(" + newLine + printAST(items, tab+tabSize) + newLine + ")"
+		result = newLine + "(" + newLine + PrintAST(items, tab+tabSize) + newLine + ")"
 	}
 
 	return result
 }
 
 func toAST(s string) (*EvalAST, error) {
-	var scanner = newScanner(s)
-	return scanner.toAST()
+	var scanner = NewScanner(s)
+	return scanner.ToAST()
 }
 
 // isClosured checks if a string has properly balanced brackets while ignoring brackets within quotes
@@ -2117,118 +2176,118 @@ func betweenBraces(query string) string {
 }
 
 // see https://clickhouse.tech/docs/en/sql-reference/statements/select/
-func printAST(AST *EvalAST, tab string) string {
+func PrintAST(AST *EvalAST, tab string) string {
 	var result = ""
-	if AST.hasOwnProperty("root") {
+	if AST.HasOwnProperty("root") {
 		result += printItems(AST.Obj["root"].(*EvalAST), "\n", "\n")
 	}
 
-	if AST.hasOwnProperty("$rate") {
+	if AST.HasOwnProperty("$rate") {
 		result += tab + "$rate("
 		result += printItems(AST.Obj["$rate"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$perSecond") {
+	if AST.HasOwnProperty("$perSecond") {
 		result += tab + "$perSecond("
 		result += printItems(AST.Obj["$perSecond"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$perSecondColumns") {
+	if AST.HasOwnProperty("$perSecondColumns") {
 		result += tab + "$perSecondColumns("
 		result += printItems(AST.Obj["$perSecondColumns"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$columns") {
+	if AST.HasOwnProperty("$columns") {
 		result += tab + "$columns("
 		result += printItems(AST.Obj["$columns"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$columnsMs") {
+	if AST.HasOwnProperty("$columnsMs") {
 		result += tab + "$columnsMs("
 		result += printItems(AST.Obj["$columnsMs"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$rateColumns") {
+	if AST.HasOwnProperty("$rateColumns") {
 		result += tab + "$rateColumns("
 		result += printItems(AST.Obj["$rateColumns"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$rateColumnsAggregated") {
+	if AST.HasOwnProperty("$rateColumnsAggregated") {
 		result += tab + "$rateColumnsAggregated("
 		result += printItems(AST.Obj["$rateColumnsAggregated"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("with") {
+	if AST.HasOwnProperty("with") {
 		result += tab + "WITH"
 		result += printItems(AST.Obj["with"].(*EvalAST), tab, ",")
 	}
 
-	if AST.hasOwnProperty("select") {
+	if AST.HasOwnProperty("select") {
 		result += tab + "SELECT"
 		result += printItems(AST.Obj["select"].(*EvalAST), tab, ",")
 	}
 
-	if AST.hasOwnProperty("from") {
+	if AST.HasOwnProperty("from") {
 		result += newLine + tab + "FROM"
 		result += printItems(AST.Obj["from"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("aliases") {
+	if AST.HasOwnProperty("aliases") {
 		result += printItems(AST.Obj["aliases"].(*EvalAST), "", " ")
 	}
 
-	if AST.hasOwnProperty("join") {
+	if AST.HasOwnProperty("join") {
 		for _, item := range AST.Obj["join"].(*EvalAST).Arr {
 			itemAST := item.(*EvalAST)
 			joinType := itemAST.Obj["type"].(string)
 			result += newLine + tab + strings.ToUpper(joinType) + printItems(itemAST.Obj["source"].(*EvalAST), tab, "") + " " + printItems(itemAST.Obj["aliases"].(*EvalAST), "", " ")
-			if itemAST.hasOwnProperty("using") && len(itemAST.Obj["using"].(*EvalAST).Arr) > 0 {
+			if itemAST.HasOwnProperty("using") && len(itemAST.Obj["using"].(*EvalAST).Arr) > 0 {
 				result += " USING " + printItems(itemAST.Obj["using"].(*EvalAST), "", " ")
-			} else if itemAST.hasOwnProperty("on") && len(itemAST.Obj["on"].(*EvalAST).Arr) > 0 {
+			} else if itemAST.HasOwnProperty("on") && len(itemAST.Obj["on"].(*EvalAST).Arr) > 0 {
 				result += " ON " + printItems(itemAST.Obj["on"].(*EvalAST), tab, " ")
 			}
 		}
 	}
 
-	if AST.hasOwnProperty("prewhere") {
+	if AST.HasOwnProperty("prewhere") {
 		result += newLine + tab + "PREWHERE"
 		result += printItems(AST.Obj["prewhere"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("where") && len(AST.Obj["where"].(*EvalAST).Arr) > 0 {
+	if AST.HasOwnProperty("where") && len(AST.Obj["where"].(*EvalAST).Arr) > 0 {
 		result += newLine + tab + "WHERE"
 		result += printItems(AST.Obj["where"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("group by") {
+	if AST.HasOwnProperty("group by") {
 		result += newLine + tab + "GROUP BY"
 		result += printItems(AST.Obj["group by"].(*EvalAST), tab, ",")
 	}
 
-	if AST.hasOwnProperty("having") {
+	if AST.HasOwnProperty("having") {
 		result += newLine + tab + "HAVING"
 		result += printItems(AST.Obj["having"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("order by") {
+	if AST.HasOwnProperty("order by") {
 		result += newLine + tab + "ORDER BY"
 		result += printItems(AST.Obj["order by"].(*EvalAST), tab, ",")
 	}
 
-	if AST.hasOwnProperty("limit") {
+	if AST.HasOwnProperty("limit") {
 		result += newLine + tab + "LIMIT"
 		result += printItems(AST.Obj["limit"].(*EvalAST), tab, ",")
 	}
 
-	if AST.hasOwnProperty("union all") {
+	if AST.HasOwnProperty("union all") {
 		for _, item := range AST.Obj["union all"].(*EvalAST).Arr {
 			itemAST := item.(*EvalAST)
 			result += newLine + newLine + tab + "UNION ALL" + newLine + newLine
-			result += printAST(itemAST, tab)
+			result += PrintAST(itemAST, tab)
 		}
 	}
 
-	if AST.hasOwnProperty("format") {
+	if AST.HasOwnProperty("format") {
 		result += newLine + tab + "FORMAT"
 		result += printItems(AST.Obj["format"].(*EvalAST), tab, "")
 	}

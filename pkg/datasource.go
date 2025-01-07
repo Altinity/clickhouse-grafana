@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"github.com/altinity/clickhouse-grafana/pkg/eval"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
@@ -64,7 +65,7 @@ func (ds *ClickHouseDatasource) executeQuery(pluginContext backend.PluginContext
 	}
 }
 
-func (ds *ClickHouseDatasource) evalQuery(pluginContext backend.PluginContext, ctx context.Context, evalQuery *EvalQuery) backend.DataResponse {
+func (ds *ClickHouseDatasource) evalQuery(pluginContext backend.PluginContext, ctx context.Context, evalQuery *eval.EvalQuery) backend.DataResponse {
 	onErr := func(err error) backend.DataResponse {
 		backend.Logger.Error(fmt.Sprintf("Datasource evalQuery error: %s", err))
 		return backend.DataResponse{Error: err}
@@ -95,7 +96,7 @@ func (ds *ClickHouseDatasource) QueryData(
 	wg, wgCtx := errgroup.WithContext(ctx)
 	ruleUid := req.Headers["X-Rule-Uid"]
 	for _, query := range req.Queries {
-		var evalQ = EvalQuery{
+		var evalQ = eval.EvalQuery{
 			RuleUid:       ruleUid,
 			From:          query.TimeRange.From,
 			To:            query.TimeRange.To,

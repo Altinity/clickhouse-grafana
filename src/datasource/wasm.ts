@@ -1,5 +1,5 @@
 import './wasm_exec.js';
-import pako from "pako"
+import pako from 'pako';
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 declare global {
@@ -26,7 +26,9 @@ export function createQuery(queryData) {
 export function applyAdhocFilters(query, adhocFilters, target) {
   return new Promise<any>((resolve) => {
     InitiateWasm().then(() => {
-      const res = window.applyAdhocFilters && window.applyAdhocFilters(query, adhocFilters, target);
+      const res = window.applyAdhocFilters && window.applyAdhocFilters({
+        query, adhocFilters, target
+      });
       resolve(res.query);
     });
   });
@@ -43,20 +45,20 @@ export function getAstProperty(query, propertyName) {
 export function replaceTimeFilters(query, range, dateTimeType) {
   return new Promise<any>((resolve) => {
     InitiateWasm().then(() => {
-      //ts-ignore
-      const res =
-        window.replaceTimeFilters &&
-        window.replaceTimeFilters(
-          query,
-          {
-            from: range.from.toISOString(), // Convert to Unix timestamp
-            to: range.to.toISOString(), // Convert to Unix timestamp
-          },
-          dateTimeType
-        );
+      setTimeout(() => {
+        //ts-ignore
+        const res =
+          window.replaceTimeFilters &&
+          window.replaceTimeFilters({ query,
+              timeRange: {
+                from: range.from.toISOString(), // Convert to Unix timestamp
+                to: range.to.toISOString(), // Convert to Unix timestamp
+              },
+              dateTimeType:  dateTimeType });
 
-      resolve(res.sql);
-    });
+        resolve(res.sql);
+      }, 100)
+    })
   });
 }
 
@@ -68,25 +70,22 @@ export const InitiateWasm = () => {
   // Function to asynchronously load WebAssembly
   async function loadWasm(): Promise<void> {
     // Create a new Go object
-    const response = await fetch('/public/plugins/vertamedia-clickhouse-datasource/static/backend.wasm.gz')
+    const go = new window.Go(); // Defined in wasm_exec.js
 
-    // Check if the file is compressed with gzip (browser usually does this automatically)
-    const compressedBuffer = await response.arrayBuffer();
+    let wasm;
 
-    // Decompress the file using pako
-    const decompressedBuffer = pako.ungzip(new Uint8Array(compressedBuffer));
+    const compressedBuffer = await fetch('/public/plugins/vertamedia-clickhouse-datasource/static/backend.wasm.gz').then(resp =>
+      resp.arrayBuffer()
+    )
 
-    // ts-ignore
-    const goWasm = new window.Go();
-    const result = await WebAssembly.instantiate(
-      // Fetch and instantiate the main.wasm file
-      decompressedBuffer,
-      // Provide the import object to Go for communication with JavaScript
-      goWasm.importObject
-    );
-    // Run the Go program with the WebAssembly instance
-    goWasm.run(result.instance);
+    const fetchedData = pako.ungzip(new Uint8Array(compressedBuffer));
+
+    WebAssembly.instantiate(fetchedData, go.importObject).then(function (obj) {
+      wasm = obj.instance;
+      go.run(wasm)
+    })
+
   }
 
   return loadWasm();
-};
+}

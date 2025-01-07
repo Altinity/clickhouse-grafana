@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"github.com/altinity/clickhouse-grafana/pkg/eval"
 	"regexp"
 	"strings"
 	"syscall/js"
@@ -47,18 +48,11 @@ func parseTargets(from string, defaultDatabase string, defaultTable string) (str
 
 // applyAdhocFiltersWasm is the WebAssembly-compatible function that processes adhoc filters
 func applyAdhocFiltersWasm(this js.Value, args []js.Value) interface{} {
-	// Validate input arguments
-	if len(args) != 3 {
-		return map[string]interface{}{
-			"error": "Invalid number of arguments. Expected query, adhocFilters, and target",
-		}
-	}
+	jsObj := args[0]
+	query := jsObj.Get("query").String()
+	adhocFiltersJS := jsObj.Get("adhocFilters")
+	targetJS := jsObj.Get("target")
 
-	// Extract query
-	query := args[0].String()
-
-	// Extract adhoc filters
-	adhocFiltersJS := args[1]
 	adhocFilters := make([]AdhocFilter, adhocFiltersJS.Length())
 	for i := 0; i < adhocFiltersJS.Length(); i++ {
 		filter := adhocFiltersJS.Index(i)
@@ -70,7 +64,6 @@ func applyAdhocFiltersWasm(this js.Value, args []js.Value) interface{} {
 	}
 
 	// Extract target
-	targetJS := args[2]
 	target := Target{
 		Database: targetJS.Get("database").String(),
 		Table:    targetJS.Get("table").String(),
@@ -78,8 +71,8 @@ func applyAdhocFiltersWasm(this js.Value, args []js.Value) interface{} {
 
 	// Process the query
 	adhocConditions := make([]string, 0)
-	scanner := newScanner(query)
-	ast, err := scanner.toAST()
+	scanner := eval.NewScanner(query)
+	ast, err := scanner.ToAST()
 	topQueryAst := ast
 	if err != nil {
 		return map[string]interface{}{
@@ -89,8 +82,8 @@ func applyAdhocFiltersWasm(this js.Value, args []js.Value) interface{} {
 
 	if len(adhocFilters) > 0 {
 		// Navigate to the deepest FROM clause
-		for ast.hasOwnProperty("from") && ast.Obj["from"].(*EvalAST).Arr == nil {
-			nextAst, ok := ast.Obj["from"].(*EvalAST)
+		for ast.HasOwnProperty("from") && ast.Obj["from"].(*eval.EvalAST).Arr == nil {
+			nextAst, ok := ast.Obj["from"].(*eval.EvalAST)
 			if !ok {
 				break
 			}
@@ -98,15 +91,15 @@ func applyAdhocFiltersWasm(this js.Value, args []js.Value) interface{} {
 		}
 
 		// Initialize WHERE clause if it doesn't exist
-		if !ast.hasOwnProperty("where") {
-			ast.Obj["where"] = &EvalAST{
+		if !ast.HasOwnProperty("where") {
+			ast.Obj["where"] = &eval.EvalAST{
 				Obj: make(map[string]interface{}),
 				Arr: make([]interface{}, 0),
 			}
 		}
 
 		// Get target database and table
-		targetDatabase, targetTable := parseTargets(ast.Obj["from"].(*EvalAST).Arr[0].(string), target.Database, target.Table)
+		targetDatabase, targetTable := parseTargets(ast.Obj["from"].(*eval.EvalAST).Arr[0].(string), target.Database, target.Table)
 
 		// Process each adhoc filter
 		for _, filter := range adhocFilters {
@@ -170,14 +163,14 @@ func applyAdhocFiltersWasm(this js.Value, args []js.Value) interface{} {
 
 			// Add the condition to WHERE clause if not using $adhoc macro
 			if !strings.Contains(query, "$adhoc") {
-				if len(ast.Obj["where"].(*EvalAST).Arr) > 0 {
+				if len(ast.Obj["where"].(*eval.EvalAST).Arr) > 0 {
 					condition = "AND " + condition
 				}
-				ast.Obj["where"].(*EvalAST).Arr = append(ast.Obj["where"].(*EvalAST).Arr, condition)
+				ast.Obj["where"].(*eval.EvalAST).Arr = append(ast.Obj["where"].(*eval.EvalAST).Arr, condition)
 			}
 		}
 
-		query = printAST(topQueryAst, " ")
+		query = eval.PrintAST(topQueryAst, " ")
 	}
 
 	// Replace $adhoc macro
@@ -272,8 +265,8 @@ func createQueryWasm(this js.Value, args []js.Value) interface{} {
 		}
 	}
 
-	// Create EvalQuery
-	evalQ := EvalQuery{
+	// Create eval.EvalQuery
+	evalQ := eval.EvalQuery{
 		RefId:              reqData.RefId,
 		RuleUid:            reqData.RuleUid,
 		RawQuery:           reqData.RawQuery,
@@ -304,8 +297,8 @@ func createQueryWasm(this js.Value, args []js.Value) interface{} {
 		}
 	}
 
-	scanner := newScanner(sql)
-	ast, err := scanner.toAST()
+	scanner := eval.NewScanner(sql)
+	ast, err := scanner.ToAST()
 	if err != nil {
 		return map[string]interface{}{
 			"error": fmt.Sprintf("Failed to parse query: %v", err),
@@ -316,7 +309,7 @@ func createQueryWasm(this js.Value, args []js.Value) interface{} {
 	var properties []interface{}
 	if prop, exists := ast.Obj["group by"]; exists {
 		switch v := prop.(type) {
-		case *EvalAST:
+		case *eval.EvalAST:
 			// If the property is an AST object, add all items from its array
 			properties = make([]interface{}, len(v.Arr))
 			copy(properties, v.Arr)
@@ -338,29 +331,28 @@ func createQueryWasm(this js.Value, args []js.Value) interface{} {
 
 // replaceTimeFiltersWasm is the WebAssembly-compatible function that processes time filter replacements
 func replaceTimeFiltersWasm(this js.Value, args []js.Value) interface{} {
-	// Validate input arguments
-	if len(args) != 3 {
-		return map[string]interface{}{
-			"error": "Invalid number of arguments. Expected query, timeRange, and dateTimeType",
-		}
+	jsObj := args[0]
+	reqData := QueryRequest{
+		Query:        jsObj.Get("query").String(),
+		DateTimeType: jsObj.Get("dateTimeType").String(),
 	}
 
+	// Extract time range
+	timeRange := jsObj.Get("timeRange")
+	reqData.TimeRange.From = timeRange.Get("from").String()
+	reqData.TimeRange.To = timeRange.Get("to").String()
+
 	// Extract query
-	query := args[0].String()
-
-	// Extract timeRange
-	timeRange := args[1]
-	fromStr := timeRange.Get("from").String()
-	toStr := timeRange.Get("to").String()
-
-	// Extract dateTimeType
-	dateTimeType := args[2].String()
-
+	query := reqData.Query
+	dateTimeType := reqData.DateTimeType
+	fromStr := reqData.TimeRange.From
+	toStr := reqData.TimeRange.To
 	// Parse time range
 	from, err := time.Parse(time.RFC3339, fromStr)
 	if err != nil {
 		return map[string]interface{}{
 			"error": "Invalid from time",
+			"data":  from,
 		}
 	}
 
@@ -368,11 +360,12 @@ func replaceTimeFiltersWasm(this js.Value, args []js.Value) interface{} {
 	if err != nil {
 		return map[string]interface{}{
 			"error": "Invalid to time",
+			"data":  to,
 		}
 	}
 
-	// Create EvalQuery
-	evalQ := EvalQuery{
+	//// Create eval.EvalQuery
+	evalQ := eval.EvalQuery{
 		Query:        query,
 		From:         from,
 		To:           to,
@@ -380,7 +373,7 @@ func replaceTimeFiltersWasm(this js.Value, args []js.Value) interface{} {
 	}
 
 	// Replace time filters
-	sql := evalQ.replaceTimeFilters(evalQ.Query, 0)
+	sql := evalQ.ReplaceTimeFilters(evalQ.Query, 0)
 
 	// Return the result
 	return map[string]interface{}{
@@ -402,8 +395,8 @@ func getAstPropertyWasm(this js.Value, args []js.Value) interface{} {
 	propertyName := args[1].String()
 
 	// Create scanner and parse AST
-	scanner := newScanner(query)
-	ast, err := scanner.toAST()
+	scanner := eval.NewScanner(query)
+	ast, err := scanner.ToAST()
 	if err != nil {
 		return map[string]interface{}{
 			"error": fmt.Sprintf("Failed to parse query: %v", err),
@@ -414,7 +407,7 @@ func getAstPropertyWasm(this js.Value, args []js.Value) interface{} {
 	var properties []interface{}
 	if prop, exists := ast.Obj[propertyName]; exists {
 		switch v := prop.(type) {
-		case *EvalAST:
+		case *eval.EvalAST:
 			// If the property is an AST object, add all items from its array
 			properties = make([]interface{}, len(v.Arr))
 			copy(properties, v.Arr)

@@ -608,7 +608,7 @@ func TestMacrosBuilder(t *testing.T) {
 		r.NoError(err)
 		r.Equal(tc.expected, tc.got, "expects equal in %s", tc.name)
 
-		ast, err = scanner.toAST()
+		ast, err = scanner.ToAST()
 		r.NoError(err)
 		q.UseWindowFuncForMacros = true
 		tc.got, err = tc.fn(tc.query, ast)
@@ -631,7 +631,7 @@ func TestCommentsAndRateMacrosWithFromKeywordInFieldName(t *testing.T) {
 	r := require.New(t)
 	q := EvalQuery{}
 	scanner := NewScanner(query)
-	ast, err := scanner.toAST()
+	ast, err := scanner.ToAST()
 	r.NoError(err)
 	actual, err := q.applyMacros(query, ast)
 	r.NoError(err)

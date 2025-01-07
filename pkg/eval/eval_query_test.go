@@ -599,9 +599,9 @@ func TestMacrosBuilder(t *testing.T) {
 	r := require.New(t)
 	for _, tc := range testCases {
 		t.Logf(tc.name)
-		scanner := newScanner(tc.query)
+		scanner := NewScanner(tc.query)
 
-		ast, err := scanner.toAST()
+		ast, err := scanner.ToAST()
 		r.NoError(err)
 		q.UseWindowFuncForMacros = false
 		tc.got, err = tc.fn(tc.query, ast)
@@ -630,7 +630,7 @@ func TestCommentsAndRateMacrosWithFromKeywordInFieldName(t *testing.T) {
 	const expQuery = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\nSELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob' GROUP BY t ORDER BY t)"
 	r := require.New(t)
 	q := EvalQuery{}
-	scanner := newScanner(query)
+	scanner := NewScanner(query)
 	ast, err := scanner.toAST()
 	r.NoError(err)
 	actual, err := q.applyMacros(query, ast)
@@ -691,8 +691,8 @@ func TestColumnsMacrosWithUnionAllAndWithKeyword(t *testing.T) {
 		") GROUP BY t, category ORDER BY t, category) GROUP BY t ORDER BY t"
 	r := require.New(t)
 	q := EvalQuery{}
-	scanner := newScanner(query)
-	ast, err := scanner.toAST()
+	scanner := NewScanner(query)
+	ast, err := scanner.ToAST()
 	r.NoError(err)
 	actual, err := q.applyMacros(query, ast)
 	r.NoError(err)
@@ -724,8 +724,8 @@ func TestColumnsMacrosWithGroupWithFill(t *testing.T) {
 		") GROUP BY t ORDER BY t"
 	r := require.New(t)
 	q := EvalQuery{}
-	scanner := newScanner(query)
-	ast, err := scanner.toAST()
+	scanner := NewScanner(query)
+	ast, err := scanner.ToAST()
 	r.NoError(err)
 	actual, err := q.applyMacros(query, ast)
 	r.NoError(err)
@@ -808,7 +808,7 @@ func newASTTestCase(name, query string, expectedAST *EvalAST) astTestCase {
 		name:        name,
 		query:       query,
 		expectedAST: expectedAST,
-		scanner:     newScanner(query),
+		scanner:     NewScanner(query),
 	}
 }
 
@@ -1824,7 +1824,7 @@ func TestScannerAST(t *testing.T) {
 	r := require.New(t)
 	for _, tc := range testCases {
 		t.Logf(tc.name)
-		ast, err := tc.scanner.toAST()
+		ast, err := tc.scanner.ToAST()
 		r.NoError(err)
 		check, err := tc.CheckASTEqual(tc.expectedAST, ast)
 		r.NoError(err)
@@ -1895,7 +1895,7 @@ func TestEvalQueryTimeFilterByColumnAndRange(t *testing.T) {
 		q.DateTimeType = tc.DateTimeType
 		r.Equal(
 			tc.ExpectedQuery,
-			q.replaceTimeFilters(query, 0),
+			q.ReplaceTimeFilters(query, 0),
 			description+" unexpected $timeFilterByColumn results "+tc.DateTimeType,
 		)
 	}
@@ -1985,9 +1985,9 @@ func TestEvalQueryTimeFilter64ByColumnAndRangeMs(t *testing.T) {
 	for _, tc := range testCases {
 		eQ.DateTimeType = tc.DateTimeType
 		eQ.Query = query
-		r.Equal(tc.expectedQ, eQ.replaceTimeFilters(query, 0), description+" unexpected $timeFilterByColumn "+tc.DateTimeType+" result")
+		r.Equal(tc.expectedQ, eQ.ReplaceTimeFilters(query, 0), description+" unexpected $timeFilterByColumn "+tc.DateTimeType+" result")
 		eQ.Query = query64
-		r.Equal(tc.expectedQ64, eQ.replaceTimeFilters(query64, 0), description+" unexpected $timeFilter64ByColumn "+tc.DateTimeType+" result")
+		r.Equal(tc.expectedQ64, eQ.ReplaceTimeFilters(query64, 0), description+" unexpected $timeFilter64ByColumn "+tc.DateTimeType+" result")
 	}
 }
 

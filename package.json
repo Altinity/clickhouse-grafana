@@ -19,7 +19,7 @@
     "build:test": "npm run build:wasm && npm run build:test:frontend",
     "build:test:frontend": "webpack -c ./webpack.config.instrumented.ts --env test",
     "build:frontend": "webpack -c ./.config/webpack/webpack.config.ts --env production",
-    "build:wasm": "GOARCH=wasm GOOS=js tinygo build -o src/static/backend.wasm --target wasm ./pkg/backend_wasm.go && gzip -f ./src/static/backend.wasm"
+    "build:wasm": "GOARCH=wasm GOOS=js tinygo build -o src/static/backend2.wasm --target wasm ./pkg/backend_wasm.go && gzip -f ./src/static/backend.wasm"
   },
   "author": "Altinity",
   "license": "MIT",

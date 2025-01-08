@@ -159,11 +159,16 @@ export const toTimeSeries = (extrapolate = true, self): any => {
   });
 
   each(metrics, function (dataPoints, seriesName) {
-    if (extrapolate) {
-      timeSeries.push({ target: seriesName, datapoints: extrapolateDataPoints(dataPoints, self), refId: seriesName && self.refId ? `${self.refId} - ${seriesName}` : undefined});
-    } else {
-      timeSeries.push({ target: seriesName, datapoints: dataPoints, refId: seriesName && self.refId ? `${self.refId} - ${seriesName}` : undefined});
-    }
+    const processedDataPoints = extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints;
+
+    timeSeries.push({
+      length: processedDataPoints.length,
+      fields: [
+        { config: { links: []}, name: 'time', type: 'time', values: processedDataPoints.map((v: any) => v[1])},
+        { config: { links: []}, name: seriesName, values: processedDataPoints.map((v: any) => v[0])},
+      ],
+      refId: seriesName && self.refId ? `${self.refId} - ${seriesName}` : undefined
+    })
   });
 
   return timeSeries;

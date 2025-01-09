@@ -314,7 +314,7 @@ describe('sql-series. toTimeSeries unit tests', () => {
     selfMock.keys = [];
 
     const result = toTimeSeries(true, selfMock);
-    expect(result).toEqual([{ target: 'value', datapoints: [[10, 1000]] }]);
+    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000]}, {"config": {"links": []}, "name": "value", "values": [10]}], "length": 1, "refId": undefined}]);
   });
 
   it('should handle multiple data points correctly', () => {
@@ -329,56 +329,18 @@ describe('sql-series. toTimeSeries unit tests', () => {
     selfMock.keys = [];
 
     const result = toTimeSeries(true, selfMock);
-    expect(result).toEqual([
-      {
-        target: 'value',
-        datapoints: [
-          [10, 1000],
-          [20, 2000],
-        ],
-      },
-    ]);
+    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 2000]}, {"config": {"links": []}, "name": "value", "values": [10, 20]}], "length": 2, "refId": undefined}]);
   });
 
   it('should extrapolate data points when required', () => {
-    let expectedDataPoints: number[][] = [];
-    selfMock.series = [];
-    for (let i = 1; i <= 10; i++) {
-      const t = Date.now();
-      selfMock.series[i - 1] = { time: t - i * 15 * 1000, value: i * 2 + 30 };
-      expectedDataPoints[i - 1] = [i * 2 + 30, t - i * 15 * 1000];
-    }
-
-    expectedDataPoints[9][0] = 48.2; // extrapolated value
-    selfMock.meta = [
-      { name: 'time', type: 'UInt32' },
-      { name: 'value', type: 'UInt64' },
-    ];
-    selfMock.keys = [];
-    selfMock.tillNow = true;
-
+    let selfMock = {"from": 0, "keys": [], "meta": [{"name": "time", "type": "UInt32"}, {"name": "value", "type": "UInt64"}], "series": [{"time": 1736332351828, "value": 32}, {"time": 1736332336828, "value": 34}, {"time": 1736332321828, "value": 36}, {"time": 1736332306828, "value": 38}, {"time": 1736332291828, "value": 40}, {"time": 1736332276828, "value": 42}, {"time": 1736332261828, "value": 44}, {"time": 1736332246828, "value": 46}, {"time": 1736332231828, "value": 48}, {"time": 1736332216828, "value": 50}], "tillNow": true, "to": 1000}
     const result = toTimeSeries(true, selfMock);
-    expect(result).toEqual([
-      {
-        target: 'value',
-        datapoints: expectedDataPoints,
-      },
-    ]);
+    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1736332351828, 1736332336828, 1736332321828, 1736332306828, 1736332291828, 1736332276828, 1736332261828, 1736332246828, 1736332231828, 1736332216828]}, {"config": {"links": []}, "name": "value", "values": [32, 34, 36, 38, 40, 42, 44, 46, 48, 48.2]}], "length": 10, "refId": undefined}]);
 
-    // less 10 points
-    selfMock.series = [];
-    expectedDataPoints = [];
-    for (let i = 1; i <= 3; i++) {
-      selfMock.series[i - 1] = { time: Date.now() - i * 30 * 1000, value: i * 2 + 50 };
-      expectedDataPoints[i - 1] = [i * 2 + 50, Date.now() - i * 30 * 1000];
-    }
+    selfMock = {"from": 0, "keys": [], "meta": [{"name": "time", "type": "UInt32"}, {"name": "value", "type": "UInt64"}], "series": [{"time": 1736332580592, "value": 52}, {"time": 1736332550592, "value": 54}, {"time": 1736332520592, "value": 56}], "tillNow": true, "to": 1000}
     const resultNonExtrapolated = toTimeSeries(true, selfMock);
-    expect(resultNonExtrapolated).toEqual([
-      {
-        target: 'value',
-        datapoints: expectedDataPoints,
-      },
-    ]);
+    expect(resultNonExtrapolated).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1736332580592, 1736332550592, 1736332520592]}, {"config": {"links": []}, "name": "value", "values": [52, 54, 56]}], "length": 3, "refId": undefined}]);
+
   });
 
   it('should handle composite keys correctly', () => {
@@ -395,24 +357,7 @@ describe('sql-series. toTimeSeries unit tests', () => {
     selfMock.tillNow = false;
 
     const result = toTimeSeries(true, selfMock);
-    expect(result).toEqual([
-      {
-        target: 'A',
-        datapoints: [
-          [1000, 1000],
-          [10, 1000],
-        ],
-      },
-      {
-        target: 'B',
-        datapoints: [
-          [null, 1000],
-          [null, 1000],
-          [2000, 2000],
-          [20, 2000],
-        ],
-      },
-    ]);
+    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 1000]}, {"config": {"links": []}, "name": "A", "values": [1000, 10]}], "length": 2, "refId": undefined}, {"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 1000, 2000, 2000]}, {"config": {"links": []}, "name": "B", "values": [null, null, 2000, 20]}], "length": 4, "refId": undefined}])
   });
 
   it('should handle null values correctly', () => {
@@ -427,15 +372,7 @@ describe('sql-series. toTimeSeries unit tests', () => {
     selfMock.keys = [];
 
     const result = toTimeSeries(false, selfMock);
-    expect(result).toEqual([
-      {
-        target: 'value',
-        datapoints: [
-          [null, 1000],
-          [20, 2000],
-        ],
-      },
-    ]);
+    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 2000]}, {"config": {"links": []}, "name": "value", "values": [null, 20]}], "length": 2, "refId": undefined}]);
   });
 });
 

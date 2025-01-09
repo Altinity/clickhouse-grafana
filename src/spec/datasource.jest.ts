@@ -48,8 +48,8 @@ describe('clickhouse sql series:', () => {
     });
 
     it('should get three datapoints', () => {
-      expect(size(timeSeries[0].datapoints)).toBe(3);
-      expect(size(timeSeries[1].datapoints)).toBe(3);
+      expect(size(timeSeries[0].fields[0].values)).toBe(3);
+      expect(size(timeSeries[0].fields[0].values)).toBe(3);
     });
   });
 
@@ -116,10 +116,10 @@ describe('clickhouse sql series:', () => {
     });
 
     it('should get three datapoints', () => {
-      expect(size(timeSeries[0].datapoints)).toBe(4);
-      expect(size(timeSeries[1].datapoints)).toBe(4);
-      expect(size(timeSeries[2].datapoints)).toBe(4);
-      expect(size(timeSeries[3].datapoints)).toBe(4);
+      expect(size(timeSeries[0].fields[0].values)).toBe(4);
+      expect(size(timeSeries[1].fields[0].values)).toBe(4);
+      expect(size(timeSeries[2].fields[0].values)).toBe(4);
+      expect(size(timeSeries[3].fields[0].values)).toBe(4);
     });
   });
 

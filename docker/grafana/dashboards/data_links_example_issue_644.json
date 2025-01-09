@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 19,
+  "id": 39,
   "links": [],
   "panels": [
     {
@@ -67,6 +67,7 @@
           },
           "links": [
             {
+              "targetBlank": true,
               "title": "${__field.name}",
               "url": "/d/${__dashboard.uid}/${__dashboard}?var-service_name=${__field.name}"
             }
@@ -128,7 +129,7 @@
           "interval": "",
           "intervalFactor": 1,
           "query": "SELECT $timeSeries as t, service_name, count() FROM $table \r\nWHERE \r\n$timeFilter \r\n$conditionalTest(AND service_name IN ($service_name),$service_name)\r\nGROUP BY t, service_name ORDER BY t",
-          "rawQuery": "/* grafana dashboard=issue_644 Data Links Dashboard, user=1 */\nSELECT (intDiv(toUInt32(event_time), 30) * 30) * 1000 as t, service_name, count() FROM default.test_grafana \r\nWHERE \r\nevent_time >= toDateTime(1735801763) AND event_time <= toDateTime(1735823363) \r\n \r\nGROUP BY t, service_name ORDER BY t",
+          "rawQuery": "/* grafana dashboard=issue_644 Data Links Dashboard, user=0 */\nSELECT (intDiv(toUInt32(event_time), 30) * 30) * 1000 as t, service_name, count() FROM default.test_grafana \r\nWHERE \r\nevent_time >= toDateTime(1736391575) AND event_time <= toDateTime(1736413175) \r\n AND service_name IN ('postgresql') \r\nGROUP BY t, service_name ORDER BY t",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
@@ -282,6 +283,6 @@
   "timezone": "browser",
   "title": "issue_644 Data Links Dashboard",
   "uid": "ee7vpodeqn5z4a",
-  "version": 2,
+  "version": 1,
   "weekStart": ""
 }

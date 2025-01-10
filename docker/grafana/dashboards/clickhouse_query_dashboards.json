@@ -1,0 +1,3414 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": 53,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "CurrentMetric_Query from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 29,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT \n    $timeSeries as t,\n    hostName() as host,\n    max(CurrentMetric_Query) as QueriesRunning\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE \n$timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "Running Queries",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 36,
+      "panels": [],
+      "title": "By query",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "Every row represents queries which have the same normalized_query_hash, the higher metric is - the more red the rows is.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "continuous-BlYlRd"
+          },
+          "custom": {
+            "fillOpacity": 100,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 0
+          },
+          "links": [
+            {
+              "title": "zoom to query",
+              "url": "/d/${__dashboard.uid}/${__dashboard}?${datasource:queryparam}&${metric:queryparam}&${query_kind:queryparam}&${user:queryparam}&${hostname:queryparam}&${exception_code:queryparam}&${__url_time_range}&var-query_hash=${__field.name}"
+            }
+          ],
+          "mappings": [],
+          "thresholds": {
+            "mode": "percentage",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "#EAB839",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "none"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 32,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 25,
+      "maxDataPoints": 400,
+      "options": {
+        "colWidth": 1,
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "rowHeight": 0.9,
+        "showValue": "never",
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "sql",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "with \n   (intDiv(toUInt32(event_time), $interval)) as query_finish,\n   (intDiv(toUInt32(query_start_time), $interval)) as query_start,\n   arrayMap( i -> ( query_start + i ) * $interval * 1000, range(query_finish - query_start + 1) ) as timestamps\nSELECT \n    arrayJoin(timestamps) as t,\n    normalized_query_hash,\n    ${metric:raw} as m\nFROM merge(system,'^query_log')\nWHERE \n    event_date BETWEEN toDate($__from / 1000) - INTERVAL 1 DAY AND toDate($__to / 1000) + INTERVAL 1 DAY\n    AND event_time BETWEEN toDateTime($__from / 1000) - INTERVAL 20 MINUTE AND  toDateTime($__to / 1000) + INTERVAL 20 MINUTE\n    AND type!=1\n    $conditionalTest(AND hostName() in ($hostname),$hostname)\n    $conditionalTest(AND query_kind in ($query_kind),$query_kind)\n    $conditionalTest(AND exception_code in ($exception_code),$exception_code)\n    $conditionalTest(AND initial_user in ($user),$user)\n    AND normalized_query_hash in [$query_hash]\n    AND t BETWEEN $__from  AND $__to\nGROUP BY normalized_query_hash, t\nORDER BY count(t) OVER(PARTITION BY normalized_query_hash) DESC, sum(m) OVER(PARTITION BY normalized_query_hash) DESC\nLIMIT 200 BY t",
+          "rawQuery": "/* grafana dashboard=ClickHouse Queries Analysis, user=1 */\nwith \n   (intDiv(toUInt32(event_time), 300)) as query_finish,\n   (intDiv(toUInt32(query_start_time), 300)) as query_start,\n   arrayMap( i -> ( query_start + i ) * 300 * 1000, range(query_finish - query_start + 1) ) as timestamps\nSELECT \n    arrayJoin(timestamps) as t,\n    normalized_query_hash,\n    count() as m\nFROM merge(system,'^query_log')\nWHERE \n    event_date BETWEEN toDate(1736429767896 / 1000) - INTERVAL 1 DAY AND toDate(1736516167896 / 1000) + INTERVAL 1 DAY\n    AND event_time BETWEEN toDateTime(1736429767896 / 1000) - INTERVAL 20 MINUTE AND  toDateTime(1736516167896 / 1000) + INTERVAL 20 MINUTE\n    AND type!=1\n     AND hostName() in ('') \n     \n     \n     \n    AND normalized_query_hash in []\n    AND t BETWEEN 1736429767896  AND 1736516167896\nGROUP BY normalized_query_hash, t\nORDER BY count(t) OVER(PARTITION BY normalized_query_hash) DESC, sum(m) OVER(PARTITION BY normalized_query_hash) DESC\nLIMIT 200 BY t",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "showHelp": false,
+          "skip_comments": true,
+          "table": "query_log",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Queries timeline",
+      "type": "status-history"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 38
+      },
+      "id": 35,
+      "panels": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "description": "Shows selected metric ($metric) distribution by initial user, based on the query_log data",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-BlYlRd"
+              },
+              "custom": {
+                "fillOpacity": 100,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineWidth": 0
+              },
+              "links": [
+                {
+                  "targetBlank": false,
+                  "title": "zoom to user",
+                  "url": "/d/${__dashboard.uid}/${__dashboard}?${datasource:queryparam}&${metric:queryparam}&${query_kind:queryparam}&${hostname:queryparam}&${exception_code:queryparam}&${query_hash:queryparam}&${__url_time_range}&var-user=${__field.name}"
+                }
+              ],
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 10
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 26,
+            "w": 24,
+            "x": 0,
+            "y": 39
+          },
+          "id": 37,
+          "maxDataPoints": 400,
+          "options": {
+            "colWidth": 1,
+            "legend": {
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true
+            },
+            "rowHeight": 0.9,
+            "showValue": "never",
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "add_metadata": true,
+              "database": "system",
+              "datasource": {
+                "type": "vertamedia-clickhouse-datasource",
+                "uid": "P7E099F39B84EA795"
+              },
+              "dateColDataType": "event_date",
+              "dateLoading": false,
+              "dateTimeColDataType": "event_time",
+              "dateTimeType": "DATETIME",
+              "datetimeLoading": false,
+              "editorMode": "builder",
+              "expr": "",
+              "extrapolate": false,
+              "format": "time_series",
+              "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 2,
+              "query": "with \n   (intDiv(toUInt32(event_time), $interval)) as query_finish,\n   (intDiv(toUInt32(query_start_time), $interval)) as query_start,\n   arrayMap( i -> ( query_start + i ) * $interval * 1000, range(query_finish - query_start + 1) ) as timestamps\nSELECT \n    arrayJoin(timestamps) as t,\n    initial_user as u,\n    ${metric:raw} as m\nFROM clusterAllReplicas('{cluster}', merge(system,'^query_log'))\nWHERE \n    event_date BETWEEN toDate($__from / 1000) - INTERVAL 1 DAY AND toDate($__to / 1000) + INTERVAL 1 DAY\n    AND event_time BETWEEN toDateTime($__from / 1000) - INTERVAL 20 MINUTE AND toDateTime($__to / 1000) + INTERVAL 20 MINUTE\n    AND type!=1\n    $conditionalTest(AND hostName() in ($hostname),$hostname)\n    $conditionalTest(AND query_kind in ($query_kind),$query_kind)\n    $conditionalTest(AND exception_code in ($exception_code),$exception_code)\n    $conditionalTest(AND initial_user in ($user),$user)\n    $conditionalTest(AND normalized_query_hash in [$query_hash],$query_hash)\n    AND t BETWEEN $__from  AND $__to\nGROUP BY u,t\nORDER BY count(t) OVER(PARTITION BY u) DESC, sum(m) OVER(PARTITION BY u) DESC \nLIMIT 100 BY t\nSETTINGS skip_unavailable_shards=1",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "round": "0s",
+              "skip_comments": true,
+              "table": "query_log",
+              "tableLoading": false
+            }
+          ],
+          "title": "Distribution by user",
+          "type": "status-history"
+        }
+      ],
+      "title": "By user",
+      "type": "row"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 39
+      },
+      "id": 34,
+      "panels": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "description": "Shows selected metric ($metric) distribution by hosts, based on the query_log data",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-BlYlRd"
+              },
+              "custom": {
+                "fillOpacity": 100,
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                },
+                "lineWidth": 0
+              },
+              "links": [
+                {
+                  "targetBlank": false,
+                  "title": "zoom to host",
+                  "url": "/d/${__dashboard.uid}/${__dashboard}?${datasource:queryparam}&${metric:queryparam}&${query_kind:queryparam}&${user:queryparam}&${query_hash:queryparam}&${exception_code:queryparam}&${__url_time_range}&var-hostname=${__field.name}"
+                }
+              ],
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 10
+                  }
+                ]
+              },
+              "unit": "none"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 24,
+            "x": 0,
+            "y": 40
+          },
+          "id": 26,
+          "maxDataPoints": 400,
+          "options": {
+            "colWidth": 1,
+            "legend": {
+              "displayMode": "list",
+              "placement": "bottom",
+              "showLegend": false
+            },
+            "rowHeight": 0.9,
+            "showValue": "never",
+            "tooltip": {
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "10.0.1",
+          "targets": [
+            {
+              "add_metadata": true,
+              "database": "system",
+              "datasource": {
+                "type": "vertamedia-clickhouse-datasource",
+                "uid": "P7E099F39B84EA795"
+              },
+              "dateColDataType": "event_date",
+              "dateLoading": false,
+              "dateTimeColDataType": "event_time",
+              "dateTimeType": "DATETIME",
+              "datetimeLoading": false,
+              "editorMode": "builder",
+              "expr": "",
+              "extrapolate": false,
+              "format": "time_series",
+              "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 2,
+              "query": "with \n   (intDiv(toUInt32(event_time), $interval)) as query_finish,\n   (intDiv(toUInt32(query_start_time), $interval)) as query_start,\n   arrayMap( i -> ( query_start + i ) * $interval * 1000, range(query_finish - query_start + 1) ) as timestamps\nSELECT \n    arrayJoin(timestamps) as t,\n    hostName() as host,\n    ${metric:raw} as m\nFROM clusterAllReplicas('{cluster}', merge(system,'^query_log'))\nWHERE \n    event_date BETWEEN toDate($__from / 1000) - INTERVAL 1 DAY AND toDate($__to / 1000) + INTERVAL 1 DAY\n    AND event_time BETWEEN toDateTime($__from / 1000) - INTERVAL 20 MINUTE AND  toDateTime($__to / 1000) + INTERVAL 20 MINUTE\n    AND type!=1\n    $conditionalTest(AND hostName() in ($hostname),$hostname)\n    $conditionalTest(AND query_kind in ($query_kind),$query_kind)\n    $conditionalTest(AND exception_code in ($exception_code),$exception_code)\n    $conditionalTest(AND initial_user in ($user),$user)\n    $conditionalTest(AND normalized_query_hash in ($query_hash),$query_hash)\n    AND t BETWEEN $__from  AND $__to\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+              "refId": "A",
+              "resultFormat": "time_series",
+              "round": "0s",
+              "skip_comments": true,
+              "table": "query_log",
+              "tableLoading": false
+            }
+          ],
+          "title": "Distribution by host",
+          "type": "status-history"
+        }
+      ],
+      "title": "By host",
+      "type": "row"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 40
+      },
+      "id": 39,
+      "panels": [],
+      "title": "System metrics",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "ProfileEvent_OSCPUVirtualTimeMicroseconds from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 41
+      },
+      "id": 41,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  avg(m) / 1000000\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(ProfileEvent_OSCPUVirtualTimeMicroseconds) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "CPU Usage",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "CurrentMetric_MemoryTracking from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 46
+      },
+      "id": 53,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(CurrentMetric_MemoryTracking) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "MemoryTracking",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "ProfileEvent_OSReadBytes and ProfileEvent_OSWriteBytes  from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": true,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 500000000,
+            "axisSoftMin": -500000000,
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 51
+      },
+      "id": 44,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  'Read ' || host as h,\n  avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(ProfileEvent_OSReadBytes) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY h,t\nORDER BY h,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        },
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  'Write ' || host as h,\n  - avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(ProfileEvent_OSWriteBytes) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY h,t\nORDER BY h,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "OSReadBytes /  OSWriteBytes (per second)",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "ProfileEvent_OSReadChars and ProfileEvent_OSWriteChars  (includes page cache) from system.metric_log ",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": true,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "axisSoftMax": 500000000,
+            "axisSoftMin": -500000000,
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "bytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 59
+      },
+      "id": 45,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  'Read ' || host as h,\n  avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(ProfileEvent_OSReadChars) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY h,t\nORDER BY h,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        },
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  'Write ' || host as h,\n  - avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(ProfileEvent_OSWriteChars) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY h,t\nORDER BY h,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "OSReadChars /  OSWriteChars (per second)",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "ProfileEvent_OSIOWaitMicroseconds from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 67
+      },
+      "id": 42,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  avg(m) / 1000000\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(ProfileEvent_OSIOWaitMicroseconds) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "IOWait",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "ProfileEvent_OSCPUWaitMicroseconds from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 72
+      },
+      "id": 43,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  avg(m) / 1000000\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(ProfileEvent_OSCPUWaitMicroseconds) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "CPUWait",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "LoadAverage1  from asynchronous_metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 77
+      },
+      "id": 28,
+      "interval": "10s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT \n    $timeSeries as t,\n    hostName() as host,\n    max(value) as LoadAverage1\nFROM clusterAllReplicas('{cluster}', merge(system,'^asynchronous_metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nAND metric = 'LoadAverage1'\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "asynchronous_metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "LoadAverage1",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "NetworkReceiveBytes and  NetworkSendBytes  from asynchronous_metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": true,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "binBps"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 82
+      },
+      "id": 46,
+      "interval": "10s",
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT \n    $timeSeries as t,\n    'Receive ' || host as h,\n    max(val) as v\nFROM \n(\n    SELECT \n        event_time,\n        hostName() as host,\n        anyIf(value, metric LIKE 'NetworkReceiveBytes%') / anyIf(value, metric = 'AsynchronousMetricsUpdateInterval')  as val\n    FROM clusterAllReplicas('{cluster}', merge(system,'^asynchronous_metric_log'))\n    WHERE $timeFilter\n    $conditionalTest(AND hostName() in ($hostname),$hostname)\n    AND (metric LIKE 'NetworkReceiveBytes%' OR metric = 'AsynchronousMetricsUpdateInterval')\n    GROUP BY host,event_time\n)\nGROUP BY h,t\nORDER BY h,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "asynchronous_metric_log",
+          "tableLoading": false
+        },
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT \n    $timeSeries as t,\n    'Send ' || host as h,\n    - max(val) as v\nFROM \n(\n    SELECT \n        event_time,\n        hostName() as host,\n        anyIf(value, metric LIKE 'NetworkSendBytes%') / anyIf(value, metric = 'AsynchronousMetricsUpdateInterval')  as val\n    FROM clusterAllReplicas('{cluster}', merge(system,'^asynchronous_metric_log'))\n    WHERE $timeFilter\n    $conditionalTest(AND hostName() in ($hostname),$hostname)\n    AND (metric LIKE 'NetworkSendBytes%' OR metric = 'AsynchronousMetricsUpdateInterval')\n    GROUP BY host,event_time\n)\nGROUP BY h,t\nORDER BY h,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "asynchronous_metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "Network: Receive & Send",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "CurrentMetric_TCPConnection, CurrentMetric_HTTPConnection,  CurrentMetric_InterserverConnection and CurrentMetric_MySQLConnection from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 90
+      },
+      "id": 55,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  max(_metric) as metric\nFROM \n(\nWITH \n    arrayJoin([(CurrentMetric_TCPConnection, 'TCP'), (CurrentMetric_HTTPConnection,'HTTP'), (CurrentMetric_InterserverConnection,'Interserver'), (CurrentMetric_MySQLConnection,'MySQL') ] ) as m\nSELECT \n    event_time,\n    m.2 || ' ' || hostName() as host,\n    sum(m.1) AS _metric\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "Connections",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "ProfileEvent_Query from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 95
+      },
+      "id": 40,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  avg(m) \nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(ProfileEvent_Query) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "Queries Started",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "CurrentMetric_Query from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 100
+      },
+      "id": 54,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT \n    $timeSeries as t,\n    hostName() as host,\n    max(CurrentMetric_Query) as QueriesRunning\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE \n$timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "Running Queries",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "CurrentMetric_Merge from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 105
+      },
+      "id": 47,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(CurrentMetric_Merge) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "Merges running",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "CurrentMetric_PartMutation from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 110
+      },
+      "id": 48,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(CurrentMetric_PartMutation) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "Mutations running",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "CurrentMetric_Move from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 115
+      },
+      "id": 49,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(CurrentMetric_Move) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "Moves running",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "CurrentMetric_DistributedSend from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 120
+      },
+      "id": 50,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(CurrentMetric_DistributedSend) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "DistributedSend running",
+      "transformations": [
+        {
+          "id": "calculateField",
+          "options": {
+            "mode": "reduceRow",
+            "reduce": {
+              "reducer": "sum"
+            },
+            "replaceFields": false
+          }
+        }
+      ],
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "CurrentMetric_ReplicatedFetch and CurrentMetric_ReplicatedSend from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 125
+      },
+      "id": 51,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  'Fetch ' || host as h,\n  avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(CurrentMetric_ReplicatedFetch) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY h,t\nORDER BY h,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        },
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  'Send ' || host as h,\n  -avg(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(CurrentMetric_ReplicatedSend) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY h,t\nORDER BY h,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "A",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "ReplicatedFetch & ReplicatedSend running",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "CurrentMetric_ReplicatedChecks from system.metric_log",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total"
+            },
+            "properties": [
+              {
+                "id": "custom.axisPlacement",
+                "value": "hidden"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 130
+      },
+      "id": 52,
+      "options": {
+        "legend": {
+          "calcs": [
+            "max",
+            "mean"
+          ],
+          "displayMode": "table",
+          "placement": "bottom",
+          "showLegend": false,
+          "sortBy": "Max",
+          "sortDesc": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "10.0.1",
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "event_date",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "builder",
+          "expr": "",
+          "extrapolate": false,
+          "format": "time_series",
+          "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+          "hide": false,
+          "interval": "",
+          "intervalFactor": 2,
+          "query": "SELECT    \n  (intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t,\n  host,\n  max(m)\nFROM \n(\nSELECT \n    event_time,\n    hostName() as host,\n    sum(CurrentMetric_ReplicatedChecks) AS m\nFROM clusterAllReplicas('{cluster}', merge(system,'^metric_log'))\nWHERE $timeFilter\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY host,event_time\n)\nGROUP BY host,t\nORDER BY host,t\nSETTINGS skip_unavailable_shards=1",
+          "refId": "B",
+          "resultFormat": "time_series",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "metric_log",
+          "tableLoading": false
+        }
+      ],
+      "title": "ReplicatedChecks running",
+      "type": "timeseries"
+    },
+    {
+      "collapsed": true,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 135
+      },
+      "id": 38,
+      "panels": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "description": "",
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "continuous-BlYlRd"
+              },
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "percentage",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "#EAB839",
+                    "value": 10
+                  }
+                ]
+              },
+              "unit": "short"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "query"
+                },
+                "properties": [
+                  {
+                    "id": "custom.inspect",
+                    "value": true
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "min_event_time"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "dateTimeAsIso"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "cnt"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "short"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "QueriesDuration"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "s"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "ReadRows"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "short"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "MemoryUsageQ97"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "bytes"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*(Bytes|Chars).*/"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "bytes"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "query_hash"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "string"
+                  },
+                  {
+                    "id": "custom.width",
+                    "value": 196
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byRegexp",
+                  "options": "/.*Time.*/"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "s"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "exception_sample"
+                },
+                "properties": [
+                  {
+                    "id": "custom.inspect",
+                    "value": true
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 26,
+            "w": 24,
+            "x": 0,
+            "y": 42
+          },
+          "id": 30,
+          "interval": "30s",
+          "maxDataPoints": 400,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "OSReadBytesIncludePageCache"
+              }
+            ]
+          },
+          "pluginVersion": "11.1.0",
+          "targets": [
+            {
+              "add_metadata": true,
+              "database": "system",
+              "datasource": {
+                "type": "vertamedia-clickhouse-datasource",
+                "uid": "P7E099F39B84EA795"
+              },
+              "dateColDataType": "event_date",
+              "dateLoading": false,
+              "dateTimeColDataType": "event_time",
+              "dateTimeType": "DATETIME",
+              "datetimeLoading": false,
+              "editorMode": "builder",
+              "expr": "",
+              "extrapolate": false,
+              "format": "table",
+              "formattedQuery": "<font color=\"darkcyan\">$rate</font>(<font color=\"navajowhite\">count</font>() c)<br /><font color=\"darkorange\">FROM</font> <font color=\"darkcyan\">cluster('all-sharded',system.query_log)</font><br /><font color=\"darkorange\">where</font>  <font color=\"darkorange\">type</font> <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$type</font>)<br />    <font color=\"yellow\">and</font> initial_user <font color=\"darkorange\">in</font> (<font color=\"darkcyan\">$user</font>)<br />    <font color=\"yellow\">and</font>(<font color=\"lightgreen\">'$query_kind'</font> <font color=\"yellow\">=</font> <font color=\"lightgreen\">'all'</font> <font color=\"yellow\">or</font>(positionCaseInsensitive(query,  <font color=\"lightgreen\">'$query_kind'</font>) <font color=\"yellow\">=</font> <font color=\"cornflowerblue\">1</font>))",
+              "hide": false,
+              "interval": "",
+              "intervalFactor": 2,
+              "query": "SELECT \n    toString(normalized_query_hash) as query_hash,\n    argMax(query_id, cputime) AS sample_query_id,\n    replace(argMax(query, cputime), '\\n', ' ') AS query,\n    count() as cnt,\n    sum(query_duration_ms) / 1000 AS QueriesDuration, /* wall clock */\n    sum(ProfileEvents['OSCPUVirtualTimeMicroseconds'] as cputime) / 1000000 AS OSCPUVirtualTime, /* similar to usertime + system time */\n    sum(ProfileEvents['OSIOWaitMicroseconds']) / 1000000 AS OSIOWaitTime, /* IO waits, usually disks - that metric is 'orthogonal' to other */ \n    quantile(0.97)(memory_usage) as MemoryUsageQ97 ,\n    sum(read_rows) AS ReadRows,\n    sum(read_bytes) AS ReadBytes,\n    sum(ProfileEvents['NetworkReceiveBytes']) AS NetworkReceiveBytes,\n    sum(ProfileEvents['NetworkSendBytes']) AS NetworkSendBytes,\n    sum(written_rows) AS WrittenRows,\n    sum(written_bytes) AS WrittenBytes, /* */\n    sum(result_rows) AS ResultRows,\n    sum(result_bytes) AS ResultBytes,\n    arrayStringConcat(groupUniqArrayIf(5)( errorCodeToName(exception_code), exception_code <> 0 ), ',') AS exceptions,\n    arrayStringConcat(groupUniqArray(5)( initial_user ), ',') AS users,\n    sum(ProfileEvents['DiskReadElapsedMicroseconds']) / 1000000 AS DiskReadTime,\n    sum(ProfileEvents['DiskWriteElapsedMicroseconds']) / 1000000 AS DiskWriteTime,\n    sum(ProfileEvents['RealTimeMicroseconds']) / 1000000 AS RealTime,  /* same as above but x number of thread */\n    sum(ProfileEvents['UserTimeMicroseconds']) / 1000000 AS UserTime,  /* time when our query was doin some cpu-insense work, creating cpu load */\n    sum(ProfileEvents['SystemTimeMicroseconds']) / 1000000 AS SystemTime, /* time spend on waiting for some system operations */\n    sum(ProfileEvents['NetworkSendElapsedMicroseconds']) / 1000000 AS NetworkSendTime, /* check the other side of the network! */\n    sum(ProfileEvents['NetworkReceiveElapsedMicroseconds']) / 1000000 AS NetworkReceiveTime, /* check the other side of the network! */\n    sum(ProfileEvents['SelectedParts']) as SelectedParts,\n    sum(ProfileEvents['SelectedRanges']) as SelectedRanges,\n    sum(ProfileEvents['SelectedMarks']) as SelectedMarks,\n    sum(ProfileEvents['SelectedRows']) as SelectedRows,  /* those may different from read_rows - here the number or rows potentially matching the where conditions, not neccessary all will be read */\n    sum(ProfileEvents['SelectedBytes']) as SelectedBytes,\n    sum(ProfileEvents['FileOpen']) as FileOpen,\n    sum(ProfileEvents['ZooKeeperTransactions']) as ZooKeeperTransactions,\n    sum(ProfileEvents['OSReadBytes'] ) as OSReadBytesExcludePageCache,\n    sum(ProfileEvents['OSWriteBytes'] ) as OSWriteBytesExcludePageCache,\n    sum(ProfileEvents['OSReadChars'] ) as OSReadBytesIncludePageCache,\n    sum(ProfileEvents['OSWriteChars'] ) as OSWriteCharsIncludePageCache,\n    anyIf(exception, exception<>'') as exception_sample,\n    min(event_time) as min_event_time,\n    max(event_time) as max_event_time\nFROM clusterAllReplicas('{cluster}', merge(system,'^query_log'))\nWHERE \nhostName() IN ($hostname)\nAND $timeFilter AND type in (2,4)-- QueryFinish, ExceptionWhileProcessing\nand normalized_query_hash IN [$query_hash]\nGROUP BY normalized_query_hash\nORDER BY cnt DESC\nSETTINGS skip_unavailable_shards=1",
+              "refId": "B",
+              "resultFormat": "time_series",
+              "round": "0s",
+              "skip_comments": true,
+              "table": "query_log",
+              "tableLoading": false
+            }
+          ],
+          "title": "",
+          "type": "table"
+        }
+      ],
+      "title": "Queries",
+      "type": "row"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 40,
+  "tags": [
+    "Altinity",
+    "clickhouse",
+    "queries",
+    "performance"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "clickhouse",
+          "value": "P7E099F39B84EA795"
+        },
+        "includeAll": false,
+        "label": "Cluster",
+        "name": "datasource",
+        "options": [],
+        "query": "vertamedia-clickhouse-datasource",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "text": [
+            ""
+          ],
+          "value": [
+            ""
+          ]
+        },
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "${datasource}"
+        },
+        "definition": "SELECT hostName() FROM clusterAllReplicas('{cluster}', system.one)",
+        "includeAll": true,
+        "label": "Host",
+        "multi": true,
+        "name": "hostname",
+        "options": [],
+        "query": "SELECT hostName() FROM clusterAllReplicas('{cluster}', system.one)\nSETTINGS skip_unavailable_shards=1",
+        "refresh": 1,
+        "regex": "",
+        "sort": 1,
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "P7E099F39B84EA795"
+        },
+        "definition": "SELECT query_kind\nFROM clusterAllReplicas('{cluster}',merge(system,'^query_log'))\nWHERE\nevent_date BETWEEN toDate($__from / 1000) AND toDate($__to / 1000)\nAND event_time BETWEEN toDateTime($__from / 1000) AND  toDateTime($__to / 1000)\n    AND type!=1\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY query_kind \nORDER BY count() DESC\nSETTINGS skip_unavailable_shards=1",
+        "includeAll": true,
+        "label": "Kind",
+        "multi": true,
+        "name": "query_kind",
+        "options": [],
+        "query": "SELECT query_kind\nFROM clusterAllReplicas('{cluster}',merge(system,'^query_log'))\nWHERE\nevent_date BETWEEN toDate($__from / 1000) AND toDate($__to / 1000)\nAND event_time BETWEEN toDateTime($__from / 1000) AND  toDateTime($__to / 1000)\n    AND type!=1\n$conditionalTest(AND hostName() in ($hostname),$hostname)\nGROUP BY query_kind \nORDER BY count() DESC\nSETTINGS skip_unavailable_shards=1",
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "${datasource}"
+        },
+        "definition": "SELECT initial_user\nFROM clusterAllReplicas('{cluster}',merge(system,'^query_log'))\nWHERE\n event_date BETWEEN toDate($__from / 1000) AND toDate($__to / 1000)\n AND event_time BETWEEN toDateTime($__from / 1000) AND  toDateTime($__to / 1000)\n AND type <> 1\n $conditionalTest(AND hostName() in ($hostname),$hostname)\n $conditionalTest(AND query_kind in ($query_kind),$query_kind)\nGROUP BY initial_user\nORDER BY count() DESC\nSETTINGS skip_unavailable_shards=1",
+        "description": "Show only queries started by those users",
+        "includeAll": true,
+        "label": "User",
+        "multi": true,
+        "name": "user",
+        "options": [],
+        "query": "SELECT initial_user\nFROM clusterAllReplicas('{cluster}',merge(system,'^query_log'))\nWHERE\n event_date BETWEEN toDate($__from / 1000) AND toDate($__to / 1000)\n AND event_time BETWEEN toDateTime($__from / 1000) AND  toDateTime($__to / 1000)\n AND type <> 1\n $conditionalTest(AND hostName() in ($hostname),$hostname)\n $conditionalTest(AND query_kind in ($query_kind),$query_kind)\nGROUP BY initial_user\nORDER BY count() DESC\nSETTINGS skip_unavailable_shards=1",
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "P7E099F39B84EA795"
+        },
+        "definition": "SELECT\n   toString(exception_code) || '__' || errorCodeToName(exception_code) \nFROM clusterAllReplicas('{cluster}', merge(system,'^query_log'))\nWHERE \n   event_date BETWEEN toDate($__from / 1000) AND toDate($__to / 1000)\n   AND event_time BETWEEN toDateTime($__from / 1000) AND  toDateTime($__to / 1000)\n   AND type != 1\n   $conditionalTest(AND hostName() in ($hostname),$hostname)\n   $conditionalTest(AND query_kind in ($query_kind),$query_kind)\n   $conditionalTest(AND (initial_user in ($user) OR user in ($user)),$user)\nGROUP BY exception_code\nORDER BY count() DESC LIMIT 100\nSETTINGS skip_unavailable_shards=1",
+        "includeAll": true,
+        "label": "Exception",
+        "multi": true,
+        "name": "exception_code",
+        "options": [],
+        "query": "SELECT\n   toString(exception_code) || '__' || errorCodeToName(exception_code) \nFROM clusterAllReplicas('{cluster}', merge(system,'^query_log'))\nWHERE \n   event_date BETWEEN toDate($__from / 1000) AND toDate($__to / 1000)\n   AND event_time BETWEEN toDateTime($__from / 1000) AND  toDateTime($__to / 1000)\n   AND type != 1\n   $conditionalTest(AND hostName() in ($hostname),$hostname)\n   $conditionalTest(AND query_kind in ($query_kind),$query_kind)\n   $conditionalTest(AND (initial_user in ($user) OR user in ($user)),$user)\nGROUP BY exception_code\nORDER BY count() DESC LIMIT 100\nSETTINGS skip_unavailable_shards=1",
+        "refresh": 2,
+        "regex": "/^(?<value>[0-9]+)__(?<text>.*)$/",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "${datasource}"
+        },
+        "definition": "SELECT\n    normalized_query_hash\nFROM clusterAllReplicas('{cluster}', merge(system,'^query_log'))\nWHERE \n   event_date BETWEEN toDate($__from / 1000) AND toDate($__to / 1000)\n   AND event_time BETWEEN toDateTime($__from / 1000) AND  toDateTime($__to / 1000)\n   AND type != 1\n   $conditionalTest(AND hostName() in ($hostname),$hostname)\n   $conditionalTest(AND query_kind in ($query_kind),$query_kind)\n   $conditionalTest(AND exception_code in ($exception_code),$exception_code)\n   $conditionalTest(AND (initial_user in ($user) OR user in ($user)),$user)\nGROUP BY normalized_query_hash\nORDER BY ${metric:raw} DESC LIMIT 80\nSETTINGS skip_unavailable_shards=1",
+        "includeAll": true,
+        "multi": true,
+        "name": "query_hash",
+        "options": [],
+        "query": "SELECT\n    normalized_query_hash\nFROM clusterAllReplicas('{cluster}', merge(system,'^query_log'))\nWHERE \n   event_date BETWEEN toDate($__from / 1000) AND toDate($__to / 1000)\n   AND event_time BETWEEN toDateTime($__from / 1000) AND  toDateTime($__to / 1000)\n   AND type != 1\n   $conditionalTest(AND hostName() in ($hostname),$hostname)\n   $conditionalTest(AND query_kind in ($query_kind),$query_kind)\n   $conditionalTest(AND exception_code in ($exception_code),$exception_code)\n   $conditionalTest(AND (initial_user in ($user) OR user in ($user)),$user)\nGROUP BY normalized_query_hash\nORDER BY ${metric:raw} DESC LIMIT 80\nSETTINGS skip_unavailable_shards=1",
+        "refresh": 2,
+        "regex": "",
+        "type": "query"
+      },
+      {
+        "current": {
+          "text": "count()",
+          "value": "count()"
+        },
+        "includeAll": false,
+        "name": "metric",
+        "options": [
+          {
+            "selected": true,
+            "text": "count",
+            "value": "count()"
+          },
+          {
+            "selected": false,
+            "text": "query_time",
+            "value": "sum(query_duration_ms)"
+          },
+          {
+            "selected": false,
+            "text": "cpu_time",
+            "value": "sum(ProfileEvents['OSCPUVirtualTimeMicroseconds'])"
+          },
+          {
+            "selected": false,
+            "text": "read_bytes",
+            "value": "sum(read_bytes)"
+          },
+          {
+            "selected": false,
+            "text": "network_receive",
+            "value": "sum(ProfileEvents['NetworkReceiveBytes'])"
+          },
+          {
+            "selected": false,
+            "text": "network_send",
+            "value": "sum(ProfileEvents['NetworkSendElapsedMicroseconds'])"
+          },
+          {
+            "selected": false,
+            "text": "selected_ranges",
+            "value": "sum(ProfileEvents['SelectedRanges'])"
+          },
+          {
+            "selected": false,
+            "text": "memory",
+            "value": "quantile(0.97)(memory_usage)"
+          },
+          {
+            "selected": false,
+            "text": "threads",
+            "value": "max(peak_threads_usage)"
+          },
+          {
+            "selected": false,
+            "text": "open_files",
+            "value": "sum(ProfileEvents['FileOpen'])"
+          },
+          {
+            "selected": false,
+            "text": "external_processing_files",
+            "value": "sum(ProfileEvents['ExternalProcessingFilesTotal'])"
+          }
+        ],
+        "query": "count : count(), query_time : sum(query_duration_ms), cpu_time : sum(ProfileEvents['OSCPUVirtualTimeMicroseconds']), read_bytes : sum(read_bytes), network_receive :  sum(ProfileEvents['NetworkReceiveBytes']), network_send : sum(ProfileEvents['NetworkSendElapsedMicroseconds']), selected_ranges : sum(ProfileEvents['SelectedRanges']), memory : quantile(0.97)(memory_usage), threads : max(peak_threads_usage), open_files : sum(ProfileEvents['FileOpen']), external_processing_files : sum(ProfileEvents['ExternalProcessingFilesTotal'])",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "ClickHouse Queries Analysis",
+  "uid": "clickhouse-queries-analysis",
+  "version": 2,
+  "weekStart": ""
+}

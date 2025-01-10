@@ -1,0 +1,3 @@
+<clickhouse>
+  <macros><cluster>default</cluster></macros>
+</clickhouse>

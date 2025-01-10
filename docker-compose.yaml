@@ -22,6 +22,7 @@ services:
       - /var/log/clickhouse-server
       - ./docker/clickhouse/init_schema.sql:/docker-entrypoint-initdb.d/init_schema.sql
       - ./docker/clickhouse/low_memory.xml:/etc/clickhouse-server/config.d/low_memory.xml
+      - ./docker/clickhouse/macros.xml:/etc/clickhouse-server/config.d/macros.xml
       - ./docker/clickhouse/allow_deprecated_error_prone_window_functions.xml:/etc/clickhouse-server/users.d/allow_deprecated_error_prone_window_functions.xml
       - ./docker/clickhouse/postgres_dictionary.xml:/etc/clickhouse-server/postgres_dictionary.xml
       - ./docker/clickhouse/listen_ports.xml:/etc/clickhouse-server/config.d/listen_ports.xml

@@ -80,11 +80,10 @@ export const InitiateWasm = () => {
 
     const fetchedData = pako.ungzip(new Uint8Array(compressedBuffer));
 
-    WebAssembly.instantiate(fetchedData, go.importObject).then(function (obj) {
-      wasm = obj.instance;
-      go.run(wasm)
-    })
+    const obj = await WebAssembly.instantiate(fetchedData, go.importObject)
 
+    wasm = obj.instance;
+    go.run(wasm)
   }
 
   return loadWasm();

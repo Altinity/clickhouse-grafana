@@ -620,7 +620,7 @@ def check_default_context_window(self, default_context_window):
         )
 
     with And("I create new dashboard"):
-        actions.create_dashboard(dashboard_name="default_values_context_window")
+        actions.create_dashboard(dashboard_name="a_default_values_context_window")
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()

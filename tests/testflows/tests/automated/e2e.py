@@ -20,7 +20,7 @@ def gh_api_check(self):
     """Check that gh-api data source works correctly."""
 
     with When("I go to clickhouse dashboard"):
-        dashboards.open_dashboard(dashboard_name="gh-api")
+        dashboards.open_dashboard(dashboard_name="dashboard-gh-api")
 
 
     with Then("I check gh-api datasource works correctly"):

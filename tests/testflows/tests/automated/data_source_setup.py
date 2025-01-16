@@ -467,7 +467,7 @@ def check_default_values(
         )
 
     with And("I create new dashboard"):
-        actions.create_dashboard(dashboard_name="default_values")
+        actions.create_dashboard(dashboard_name="a_default_values")
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()

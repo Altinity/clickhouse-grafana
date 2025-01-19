@@ -1519,6 +1519,11 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 
 			if isClosureChars(s.Token) {
 				subQuery = betweenBraces(s._s)
+
+				if subQuery == "" {
+					betweenBrackets(s._s)
+				}
+
 				var subAST *EvalAST
 				if subAST, err = toAST(subQuery); err != nil {
 					return nil, err
@@ -2088,6 +2093,24 @@ func betweenBraces(query string) string {
 			openBraces++
 		}
 		if query[i] == ')' {
+			if openBraces == 1 {
+				subQuery = query[0:i]
+				break
+			}
+			openBraces--
+		}
+	}
+	return subQuery
+}
+
+func betweenBrackets(query string) string {
+	var openBraces = 1
+	var subQuery = ""
+	for i := 0; i < len(query); i++ {
+		if query[i] == '[' {
+			openBraces++
+		}
+		if query[i] == ']' {
 			if openBraces == 1 {
 				subQuery = query[0:i]
 				break

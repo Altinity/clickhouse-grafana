@@ -189,7 +189,7 @@ export class CHDataSource
 
     const originalQuery = this.createQuery(requestOptions, query);
     let scanner = new Scanner(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '));
-    let { select } = scanner.toAST();
+    let { select, where } = scanner.toAST();
 
     const generateQueryForTraceID = (traceId, select) => {
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`;
@@ -204,7 +204,7 @@ export class CHDataSource
       } PRECEDING AND CURRENT ROW) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
-        ) WHERE ${inputTimestampColumn} = ${inputTimestampValue}`;
+        ) WHERE ${where?.length ? where.join(' ') + ' AND' : ''} ${inputTimestampColumn} = ${inputTimestampValue}`;
     };
 
     const generateQueryForTimestampForward = (inputTimestampColumn, inputTimestampValue, contextWindowSize) => {
@@ -216,19 +216,19 @@ export class CHDataSource
       } FOLLOWING) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
-        ) WHERE ${inputTimestampColumn} = ${inputTimestampValue}`;
+        ) WHERE  ${where?.length ? where.join(' ') + ' AND' : ''} ${inputTimestampColumn} = ${inputTimestampValue}`;
     };
 
     const generateRequestForTimestampForward = (timestampField, timestamp, currentRowTimestamp, select) => {
       return `SELECT ${select.join(
         ','
-      )} FROM $table WHERE ${timestampField} <'${timestamp}' AND ${timestampField} > '${currentRowTimestamp}'`;
+      )} FROM $table WHERE ${where?.length ? where.join(' ') + ' AND' : ''} ${timestampField} <'${timestamp}' AND ${timestampField} > '${currentRowTimestamp}'`;
     };
 
     const generateRequestForTimestampBackward = (timestampField, timestamp, currentRowTimestamp, select) => {
       return `SELECT ${select.join(
         ','
-      )} FROM $table WHERE ${timestampField} > '${timestamp}' AND ${timestampField} < '${currentRowTimestamp}'`;
+      )} FROM $table WHERE ${where?.length ? where.join(' ') + ' AND' : ''} ${timestampField} > '${timestamp}' AND ${timestampField} < '${currentRowTimestamp}'`;
     };
 
     if (traceId) {

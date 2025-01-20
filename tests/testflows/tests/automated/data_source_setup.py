@@ -68,7 +68,7 @@ def check_creating_datasource_and_panel(
         with_ca_cert=False,
         ca_cert=None,
         skip_tls_verify=False,
-        dashboard_name="dashboard_panel",
+        dashboard_name="a_dashboard_panel",
         use_post_method=False,
         add_cors_flag=False,
         url_parts=None,
@@ -467,7 +467,7 @@ def check_default_values(
         )
 
     with And("I create new dashboard"):
-        actions.create_dashboard(dashboard_name="default_values")
+        actions.create_dashboard(dashboard_name="a_default_values")
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()

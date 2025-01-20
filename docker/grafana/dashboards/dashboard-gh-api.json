@@ -168,8 +168,8 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "gh-api",
-    "uid": "gh-api",
+    "title": "dashboard-gh-api",
+    "uid": "dashboard-gh-api",
     "version": 8,
     "weekStart": ""
   }

@@ -53,12 +53,16 @@ jobs:
         uses: coverallsapp/github-action@v2
         with:
           file: tests/testflows/coverage/lcov.info
+          flag-name: typescript
+          debug: true
 
       - name: Report golang coverage
         uses: coverallsapp/github-action@v2
         with:
           file: go_coverage/coverage.txt
           format: golang
+          flag-name: golang
+          debug: true
 
       - uses: actions/upload-artifact@v4
         if: always()

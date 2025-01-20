@@ -68,7 +68,7 @@ def check_creating_datasource_and_panel(
         with_ca_cert=False,
         ca_cert=None,
         skip_tls_verify=False,
-        dashboard_name="dashboard_panel",
+        dashboard_name="a_dashboard_panel",
         use_post_method=False,
         add_cors_flag=False,
         url_parts=None,

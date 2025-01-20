@@ -114,7 +114,7 @@ def default_adhoc(self):
         )
 
     with Given("I create new dashboard"):
-        actions.create_dashboard(dashboard_name="default_adhoc", finally_save_dashboard=False)
+        actions.create_dashboard(dashboard_name="a_default_adhoc", finally_save_dashboard=False)
 
     with When("I create adhoc variable"):
         dashboard.create_new_variable(datasource_name="test_default_adhoc", variable_type="Ad hoc filters")
@@ -123,7 +123,7 @@ def default_adhoc(self):
         panel.save_dashboard()
 
     with When("I open dashboard"):
-        dashboards.open_dashboard(dashboard_name="default_adhoc")
+        dashboards.open_dashboard(dashboard_name="a_default_adhoc")
 
     with And("I add adhoc"):
         with delay():

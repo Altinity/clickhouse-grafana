@@ -1521,7 +1521,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 				subQuery = betweenBraces(s._s)
 
 				if subQuery == "" {
-					betweenBrackets(s._s)
+					betweenSquareBraces(s._s)
 				}
 
 				var subAST *EvalAST
@@ -2103,7 +2103,7 @@ func betweenBraces(query string) string {
 	return subQuery
 }
 
-func betweenBrackets(query string) string {
+func betweenSquareBraces(query string) string {
 	var openBraces = 1
 	var subQuery = ""
 	for i := 0; i < len(query); i++ {

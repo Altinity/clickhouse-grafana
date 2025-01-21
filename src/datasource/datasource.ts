@@ -185,7 +185,7 @@ export class CHDataSource
     const requestOptions = { ...options, range: this.options.range };
 
     const originalQuery = await this.createQuery(requestOptions, query);
-    let select = await new Promise<any>((resolve) => {
+    let { select, where } = await new Promise<any>((resolve) => {
       InitiateWasm().then(() => {
         getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select').then((result) => {
           if (result && result.properties) {
@@ -210,7 +210,7 @@ export class CHDataSource
       } PRECEDING AND CURRENT ROW) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
-        ) WHERE ${inputTimestampColumn} = ${inputTimestampValue}`;
+        ) WHERE ${where?.length ? where.join(' ') + ' AND' : ''} ${inputTimestampColumn} = ${inputTimestampValue}`;
     };
 
     const generateQueryForTimestampForward = (inputTimestampColumn, inputTimestampValue, contextWindowSize) => {
@@ -222,19 +222,19 @@ export class CHDataSource
       } FOLLOWING) AS timestamp
           FROM $table
           ORDER BY ${inputTimestampColumn}
-        ) WHERE ${inputTimestampColumn} = ${inputTimestampValue}`;
+        ) WHERE  ${where?.length ? where.join(' ') + ' AND' : ''} ${inputTimestampColumn} = ${inputTimestampValue}`;
     };
 
     const generateRequestForTimestampForward = (timestampField, timestamp, currentRowTimestamp, select) => {
       return `SELECT ${select.join(
         ','
-      )} FROM $table WHERE ${timestampField} <'${timestamp}' AND ${timestampField} > '${currentRowTimestamp}'`;
+      )} FROM $table WHERE ${where?.length ? where.join(' ') + ' AND' : ''} ${timestampField} <'${timestamp}' AND ${timestampField} > '${currentRowTimestamp}'`;
     };
 
     const generateRequestForTimestampBackward = (timestampField, timestamp, currentRowTimestamp, select) => {
       return `SELECT ${select.join(
         ','
-      )} FROM $table WHERE ${timestampField} > '${timestamp}' AND ${timestampField} < '${currentRowTimestamp}'`;
+      )} FROM $table WHERE ${where?.length ? where.join(' ') + ' AND' : ''} ${timestampField} > '${timestamp}' AND ${timestampField} < '${currentRowTimestamp}'`;
     };
 
     if (traceId) {

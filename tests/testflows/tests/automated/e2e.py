@@ -63,7 +63,7 @@ def mixed_data_sources(self):
         actions.create_new_altinity_datasource(datasource_name='mixed_2', url="http://clickhouse:8123")
 
     with Given("I create new dashboard"):
-        actions.create_dashboard(dashboard_name="a_mixed")
+        actions.create_dashboard(dashboard_name="mixed")
 
     with When("I add visualization for panel"):
         dashboard.add_visualization()
@@ -108,7 +108,7 @@ def mixed_data_sources(self):
 
     with Then("I open dashboard view"):
         with delay():
-            dashboards.open_dashboard(dashboard_name="a_mixed")
+            dashboards.open_dashboard(dashboard_name="mixed")
 
     with Then("I go to panel edit the first time"):
         with delay():

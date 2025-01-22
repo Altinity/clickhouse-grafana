@@ -22,7 +22,7 @@ def check_red_alert(self):
     """Check that grafana plugin supports red unified alerts."""
 
     with Given("I define dashboard name for tests"):
-        dashboard_name = define("dashboard_name", "a_red_alert")
+        dashboard_name = define("dashboard_name", "red_alert")
 
     with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)
@@ -80,7 +80,7 @@ def check_green_alert(self):
     """Check that grafana plugin supports green unified alerts."""
 
     with Given("I define dashboard name for tests"):
-        dashboard_name = define("dashboard_name", "a_green_alert")
+        dashboard_name = define("dashboard_name", "green_alert")
 
     with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)

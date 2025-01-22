@@ -59,7 +59,7 @@ def check_red_alert(self):
     with When("I setup unified alerts"):
         actions.setup_unified_alerts(
             alert_name="red_alert",
-            alert_folder_name="test_red_alert",
+            alert_folder_name="test_alert_red",
             alert_group_name="test_alert_group",
             threshold_value='0'
         )
@@ -117,7 +117,7 @@ def check_green_alert(self):
     with When("I setup unified alerts"):
         actions.setup_unified_alerts(
             alert_name="green_alert",
-            alert_folder_name="test_green_alert",
+            alert_folder_name="test_alert_green",
             alert_group_name="test_alert_group",
             threshold_value='10'
         )

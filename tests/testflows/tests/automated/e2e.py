@@ -210,6 +210,23 @@ def annotations_without_time_reformatting(self):
             assert actions.compare_screenshots_percent(screenshot_name_1="event_tme_panel", screenshot_name_2="toUInt64_panel") > 0.9, error()
 
 
+@TestScenario
+def many_categories(self):
+    """Check that grafana plugin supports visualizing timeseries with many categories."""
+
+    with When("I go to ClickHouse Queries Analysis dashboard"):
+        with delay():
+            dashboards.open_dashboard(dashboard_name="ClickHouse Queries Analysis")
+
+    with And("I open Queries timeline panel"):
+        with delay():
+            dashboard.open_panel(panel_name="Queries timeline")
+
+    with Then("I check there is no errors on the visualization"):
+        with delay():
+            assert panel.check_no_labels(labels=["normalized_query_hash", "Too many points"]), error()
+
+
 @TestFeature
 @Name("e2e")
 def feature(self):

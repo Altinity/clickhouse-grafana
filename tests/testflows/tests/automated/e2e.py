@@ -218,14 +218,18 @@ def many_categories(self):
         with delay():
             dashboards.open_dashboard(dashboard_name="ClickHouse Queries Analysis")
 
-    with And("I open Queries timeline panel"):
-        with delay():
-            dashboard.open_panel(panel_name="Queries timeline")
+    try:
+        with And("I open Queries timeline panel"):
+            with delay():
+                dashboard.open_panel(panel_name="Queries timeline")
 
-    with Then("I check there is no errors on the visualization"):
-        with delay():
-            assert panel.check_no_labels(labels=["normalized_query_hash", "Too many points"]), error()
-
+        with Then("I check there is no errors on the visualization"):
+            with delay():
+                assert panel.check_no_labels(labels=["normalized_query_hash", "Too many points"]), error()
+    finally:
+        with Finally("I discard changes for panel"):
+            with delay():
+                panel.click_discard_button()
 
 @TestFeature
 @Name("e2e")

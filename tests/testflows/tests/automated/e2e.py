@@ -219,9 +219,13 @@ def many_categories(self):
             dashboards.open_dashboard(dashboard_name="ClickHouse Queries Analysis")
 
     try:
-        with And("I open Queries timeline panel"):
+        with When("I open Queries timeline panel"):
             with delay():
                 dashboard.open_panel(panel_name="Queries timeline")
+
+        with And("I click run query button"):
+            with delay():
+                panel.click_run_query_button()
 
         with Then("I check there is no errors on the visualization"):
             with delay():
@@ -230,6 +234,10 @@ def many_categories(self):
         with Finally("I discard changes for panel"):
             with delay():
                 panel.click_discard_button()
+
+        with And("I discard changes for dashboard"):
+            with delay():
+                dashboard.discard_changes_for_dashboard()
 
 @TestFeature
 @Name("e2e")

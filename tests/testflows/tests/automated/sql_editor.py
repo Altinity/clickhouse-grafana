@@ -57,7 +57,7 @@ def add_metadata_toggle(self):
                 panel.click_on_the_visualization()
 
         with Then("I check reformatted query"):
-            assert "/* grafana dashboard=a_test_sql_editor, user=1 */" in sql_editor.get_reformatted_query(query_name='A'), error()
+            assert "/* grafana dashboard=test_sql_editor, user=1 */" in sql_editor.get_reformatted_query(query_name='A'), error()
 
     try:
         with Then("I click Add metadata toggle"):
@@ -66,7 +66,7 @@ def add_metadata_toggle(self):
 
         with Then("I check reformatted query after clicking toggle"):
             with delay():
-                assert not ("/* grafana dashboard=a_test_sql_editor, user=1 */" in sql_editor.get_reformatted_query(query_name='A')), error()
+                assert not ("/* grafana dashboard=test_sql_editor, user=1 */" in sql_editor.get_reformatted_query(query_name='A')), error()
 
     finally:
         with Finally("I return Add metadata toggle status back"):
@@ -439,7 +439,7 @@ def feature(self):
     """Check that grafana plugin supports SQL Editor options."""
 
     with Given("I define dashboard name for tests"):
-        dashboard_name = define("dashboard_name", "a_test_sql_editor")
+        dashboard_name = define("dashboard_name", "test_sql_editor")
 
     with When("I create new altinity datasource"):
         actions.create_new_altinity_datasource(datasource_name='sql_editor', url="http://clickhouse:8123",)

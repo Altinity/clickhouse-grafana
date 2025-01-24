@@ -63,4 +63,4 @@ src/static/*.wasm
 # test temporary files
 tests/testflows/tmp/target/
 tests/testflows/assets/
-tests/automated/**.csv
+tests/testflows/tests/automated/**/Downloads/*.csv

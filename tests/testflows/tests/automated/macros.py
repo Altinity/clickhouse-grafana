@@ -204,7 +204,7 @@ def feature(self):
     """Check that grafana plugin supports macros."""
 
     with Given("I define dashboard name for tests"):
-        dashboard_name = define("dashboard_name", "a_test_macros")
+        dashboard_name = define("dashboard_name", "test_macros")
 
     with When("I create new altinity datasource"):
         actions.create_new_altinity_datasource(datasource_name='macros', url="http://clickhouse:8123",)

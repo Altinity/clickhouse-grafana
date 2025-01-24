@@ -686,3 +686,18 @@ def save_dashboard(self):
     with And("clicking save confirmation button"):
         with delay(before=0.5, after=0.5):
             click_save_confirmation_button()
+
+@TestStep(When)
+def check_no_labels(self, labels):
+    """Check there is no labels in the panel."""
+
+    for label in labels:
+        with By(f"searching for label {label}"):
+            try:
+                ui.wait_for_element_to_be_visible(
+                    select_type=SelectBy.XPATH,
+                    element=f'//*[contains(text(), "{label}")]'
+                )
+                return False
+            except:
+                return True

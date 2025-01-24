@@ -22,7 +22,7 @@ def check_red_alert(self):
     """Check that grafana plugin supports red unified alerts."""
 
     with Given("I define dashboard name for tests"):
-        dashboard_name = define("dashboard_name", "a_red_alert")
+        dashboard_name = define("dashboard_name", "red_alert")
 
     with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)
@@ -59,7 +59,7 @@ def check_red_alert(self):
     with When("I setup unified alerts"):
         actions.setup_unified_alerts(
             alert_name="red_alert",
-            alert_folder_name="test_red_alert",
+            alert_folder_name="test_alert_red",
             alert_group_name="test_alert_group",
             threshold_value='0'
         )
@@ -80,7 +80,7 @@ def check_green_alert(self):
     """Check that grafana plugin supports green unified alerts."""
 
     with Given("I define dashboard name for tests"):
-        dashboard_name = define("dashboard_name", "a_green_alert")
+        dashboard_name = define("dashboard_name", "green_alert")
 
     with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name=dashboard_name, finally_save_dashboard=False)
@@ -117,7 +117,7 @@ def check_green_alert(self):
     with When("I setup unified alerts"):
         actions.setup_unified_alerts(
             alert_name="green_alert",
-            alert_folder_name="test_green_alert",
+            alert_folder_name="test_alert_green",
             alert_group_name="test_alert_group",
             threshold_value='10'
         )

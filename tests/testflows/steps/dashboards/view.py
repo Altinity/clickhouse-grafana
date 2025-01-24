@@ -2,6 +2,7 @@ from testflows.core import *
 
 from steps.delay import delay
 from steps.dashboards.locators import locators
+from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By as SelectBy
 from selenium.common.exceptions import NoSuchElementException
 
@@ -48,6 +49,13 @@ def click_delete_confirmation_button(self):
     """Click delete button to confirm dashboard deletion."""
     locators.delete_confirmation_button.click()
 
+
+@TestStep(When)
+def find_dashboard(self, dashboard_name):
+    """Find dashboard in dashboards list."""
+
+    locators.search_dashboard_textfield.send_keys(dashboard_name)
+    locators.search_dashboard_textfield.send_keys(Keys.ENTER)
 
 @TestStep(When)
 def open_dashboard_view(self, dashboard_name):
@@ -97,19 +105,23 @@ def delete_dashboard(self, dashboard_name):
         with delay():
             open_dashboards_view()
 
-    with By("selecting dashboard"):
+    with And("finding dashboard"):
+        with delay(after=0.5):
+            find_dashboard(dashboard_name=dashboard_name)
+
+    with And("selecting dashboard"):
         with delay():
             click_dashboard_checkmark(dashboard_name=dashboard_name)
 
-    with By("clicking delete button"):
+    with And("clicking delete button"):
         with delay():
             click_delete_button()
 
-    with By("entering confirmation"):
+    with And("entering confirmation"):
         with delay():
             enter_delete_conformation()
 
-    with By("clicking delete button in confirmation window"):
+    with And("clicking delete button in confirmation window"):
         with delay():
             click_delete_confirmation_button()
 
@@ -122,6 +134,10 @@ def open_dashboard(self, dashboard_name):
         with delay():
             open_dashboards_view()
 
+    with When("I find dashboard"):
+        with delay(after=0.5):
+            find_dashboard(dashboard_name=dashboard_name)
+
     with And(f"I go to {dashboard_name}"):
         with delay():
             open_dashboard_view(dashboard_name=dashboard_name)
@@ -133,6 +149,10 @@ def check_dashboard_exists(self, dashboard_name):
 
     with By("opening dashboard view"):
         open_dashboards_view()
+
+    with And("finding dashboard"):
+        with delay(after=0.5):
+            find_dashboard(dashboard_name=dashboard_name)
 
     with By("checking dashboard exists"):
         try:

@@ -26,8 +26,8 @@ class Locators:
     def check_mark(self, dashboard_name):
         driver: WebDriver = current().context.driver
         return driver.find_element(
-            SelectBy.CSS_SELECTOR,
-            f"[data-testid='data-testid browse dashboards row {dashboard_name}'] [role='cell']"
+            SelectBy.XPATH,
+            f"//*[@aria-label='Search results table']//span"
         )
 
     @property
@@ -52,6 +52,14 @@ class Locators:
         return driver.find_element(
             SelectBy.CSS_SELECTOR,
             f"[data-testid='data-testid Confirm Modal Danger Button']"
+        )
+
+    @property
+    def search_dashboard_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(
+            SelectBy.CSS_SELECTOR,
+            f"[placeholder='Search for dashboards and folders']"
         )
 
 

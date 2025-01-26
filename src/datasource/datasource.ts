@@ -16,7 +16,7 @@ import {
   LogRowContextQueryDirection,
   LogRowModel,
   QueryFilterOptions,
-  TypedVariableModel,
+  TypedVariableModel, VariableSupportType,
 } from '@grafana/data';
 import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
@@ -90,6 +90,14 @@ export class CHDataSource
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);
     this.responseParser = new ResponseParser();
+    this.variables = {
+      getType(): VariableSupportType {
+        return VariableSupportType.Custom;
+      },
+      editor: QueryEditor,
+      query: this.query.bind(this),
+    }
+
     this.annotations = {
       QueryEditor: QueryEditor,
     };

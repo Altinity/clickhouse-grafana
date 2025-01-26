@@ -15,4 +15,4 @@ export const FORMAT_OPTIONS = [
   { label: 'Flame Graph', value: 'flamegraph' },
 ];
 
-export const CONTEXT_WINDOW_OPTIONS = [ '10', '20', '50', '100' ].map(value => ({ value, label: value }));
+export const CONTEXT_WINDOW_OPTIONS = ['10', '20', '50', '100'].map((value) => ({ label: value + ' entries', value }))

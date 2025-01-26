@@ -49,6 +49,8 @@ export interface CHQuery extends DataQuery {
   contextWindowSize?: string;
   adHocValuesQuery?: string;
   useWindowFuncForMacros?: boolean;
+  showHelp: boolean;
+  showFormattedSQL: boolean;
 }
 
 /**
@@ -93,4 +95,6 @@ export const DEFAULT_QUERY: CHQuery = {
   rawQuery: '',
   editorMode: EditorMode.SQL,
   adHocFilters: [],
+  showHelp: false,
+  showFormattedSQL: false,
 };

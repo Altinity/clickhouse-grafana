@@ -13,7 +13,7 @@ import {
   LogRowContextQueryDirection,
   LogRowModel,
   QueryFilterOptions,
-  TypedVariableModel,
+  TypedVariableModel, VariableSupportType,
 } from '@grafana/data';
 import { BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
@@ -87,6 +87,15 @@ export class CHDataSource
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);
     this.responseParser = new ResponseParser();
+    this.variables = {
+      getType(): VariableSupportType {
+        return VariableSupportType.Custom;
+      },
+      // @ts-ignore
+      editor: QueryEditor,
+      query: this.query.bind(this),
+    }
+
     this.annotations = {
       QueryEditor: QueryEditor,
     };
@@ -357,7 +366,7 @@ export class CHDataSource
       this.options = options;
       const targets = options.targets.filter((target) => !target.hide && target.query);
       const queries = await Promise.all(targets.map(async (target) => this.createQuery(options, target)));
-
+      // No valid targets, return the empty result to save a round trip.
       if (!queries.length) {
         return from(Promise.resolve({ data: [] }));
       }
@@ -406,22 +415,75 @@ export class CHDataSource
           }
         });
 
-        return { data: result };
-      });
-    };
+      return { data: result };
+    });
+  };
 
-    return from(queryProcessing());
-  }
+  return from(queryProcessing());
+}
+
+// modifyQuery(query: any, action: any): any {
+//   let originalQuery = query.query ?? ''
+//   let { _, where } = await new Promise<any>((resolve) => {
+//     InitiateWasm().then(() => {
+//       getAstProperty(originalQuery.replace(/\r\n|\r|\n/g, ' '), 'select').then((result) => {
+//         if (result && result.properties) {
+//           return resolve(result.properties);
+//         }
+//
+//         resolve([]);
+//       });
+//     });
+//   });
+//
+//   const labelFilter = action.key + " = '" + action.value + "'";
+//
+//   switch (action.type) {
+//     case 'ADD_FILTER': {
+//       if (where.length === 0) {
+//         where.push(labelFilter);
+//         break;
+//       }
+//
+//       let alreadyAdded = false;
+//       _.each(where, (w: string) => {
+//         if (w.includes(labelFilter)) {
+//           alreadyAdded = true;
+//         }
+//       });
+//       if (!alreadyAdded) {
+//         where.push('AND ' + labelFilter);
+//       }
+//       break;
+//     }
+//     case 'ADD_FILTER_OUT': {
+//       if (where.length === 0) {
+//         break;
+//       }
+//       where.forEach((w: string, i: number) => {
+//         if (w.includes(labelFilter)) {
+//           where.splice(i, 1);
+//         }
+//       });
+//       break;
+//     }
+//     default:
+//       break;
+//   }
+//
+//   const modifiedQuery = scanner.Print(queryAST);
+//   return { ...query, query: modifiedQuery };
+// }
 
   async createQuery(options: any, target: any) {
     const { stmt, keys } = await this.replace(options, target);
 
-    return {
-      keys: keys,
-      requestId: options.panelId + target.refId,
-      stmt: stmt,
-    };
-  }
+  return {
+    keys: keys,
+    requestId: options.panelId + target.refId,
+    stmt: stmt,
+  };
+}
 
   async annotationQuery(options: any): Promise<AnnotationEvent[]> {
     if (!options.annotation.query) {

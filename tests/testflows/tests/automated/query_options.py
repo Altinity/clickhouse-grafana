@@ -258,7 +258,7 @@ def feature(self):
     """Check that grafana plugin supports query options."""
 
     with Given("I define dashboard name for tests"):
-        dashboard_name = define("dashboard_name", "a_query_options")
+        dashboard_name = define("dashboard_name", "query_options")
 
     with When("I create new altinity datasource"):
         actions.create_new_altinity_datasource(datasource_name='query_options', url="http://clickhouse:8123",)

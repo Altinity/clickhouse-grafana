@@ -175,7 +175,7 @@ services:
       bash -xec "
         git config --global --add safe.directory /go/src/grafana-clickhouse &&
         (command -v mage || go install -v github.com/magefile/mage@latest) &&
-        go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/ &&
+        go test -timeout 1m -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/... &&
         mage -v && 
         chmod +x ./dist/altinity-clickhouse-plugin*
       "

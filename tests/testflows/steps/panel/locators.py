@@ -342,5 +342,9 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, f'//label[@data-testid="data-testid Dashboard template variables submenu Label {annotation_name}"]/..//label[@aria-label="Toggle switch"]')
 
+    def label_textfield(self, label):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[contains(text(), "{label}")]')
 
 locators = Locators()

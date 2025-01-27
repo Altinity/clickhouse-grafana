@@ -12,7 +12,7 @@ import { initializeQueryDefaults } from './helpers/initializeQueryDefaults';
 import './QueryEditor.css';
 import { getAdhocFilters } from './helpers/getAdHocFilters';
 
-export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>) {
+export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>): any {
   const { datasource, query, onChange, onRunQuery } = props;
   const isAnnotationView = !props.app;
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);

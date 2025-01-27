@@ -16,7 +16,7 @@ import {
   LogRowContextQueryDirection,
   LogRowModel,
   QueryFilterOptions,
-  TypedVariableModel,
+  TypedVariableModel, VariableSupportType,
 } from '@grafana/data';
 import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
@@ -25,6 +25,7 @@ import { SqlQueryHelper } from './sql-query/sql-query-helper';
 import SqlQueryMacros from './sql-query/sql-query-macros';
 import { QueryEditor } from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
+import {from, Observable} from "rxjs";
 
 const adhocFilterVariable = 'adhoc_query_filter';
 export class CHDataSource
@@ -90,6 +91,15 @@ export class CHDataSource
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);
     this.responseParser = new ResponseParser();
+    this.variables = {
+      getType(): VariableSupportType {
+        return VariableSupportType.Custom;
+      },
+      // @ts-ignore
+      editor: QueryEditor,
+      query: this.query.bind(this),
+    }
+
     this.annotations = {
       QueryEditor: QueryEditor,
     };
@@ -346,62 +356,65 @@ export class CHDataSource
     return query.adHocFilters.some((f) => f.key === filter.key && f.value === filter.value);
   }
 
-  query(options: DataQueryRequest<CHQuery>) {
-    this.options = options;
-    const targets = options.targets.filter((target) => !target.hide && target.query);
-    const queries = targets.map((target) => this.createQuery(options, target));
-    // No valid targets, return the empty result to save a round trip.
-    if (!queries.length) {
-      return Promise.resolve({ data: [] });
-    }
-
-    const allQueryPromise = queries.map((query) => {
-      return this._seriesQuery(query.stmt, query.requestId);
-    });
-
-    return Promise.all(allQueryPromise).then((responses: any): any => {
-      let result: any[] = [],
-        i = 0;
-      _.each(responses, (response) => {
-        const target = options.targets[i];
-        const keys = queries[i].keys;
-
-        i++;
-        if (!response || !response.rows) {
-          return;
-        }
-
-        let sqlSeries = new SqlSeries({
-          refId: target.refId,
-          series: response.data,
-          meta: response.meta,
-          keys: keys,
-          tillNow: options.rangeRaw?.to === 'now',
-          from: SqlQueryHelper.convertTimestamp(options.range.from),
-          to: SqlQueryHelper.convertTimestamp(options.range.to),
-        });
-
-        if (target.format === 'table') {
-          _.each(sqlSeries.toTable(), (data) => {
-            result.push(data);
-          });
-        } else if (target.format === 'traces') {
-          result = sqlSeries.toTraces();
-        } else if (target.format === 'flamegraph') {
-          result = sqlSeries.toFlamegraph();
-        } else if (target.format === 'logs') {
-          result = sqlSeries.toLogs();
-        } else if (target.refId === 'Anno') {
-          result = sqlSeries.toAnnotation(response.data, response.meta);
-        } else {
-          _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
-            result.push(data);
-          });
-        }
+  query(options: DataQueryRequest<CHQuery>): Observable<any> {
+    const queryProcessing = async () => {
+      this.options = options;
+      const targets = options.targets.filter((target) => !target.hide && target.query);
+      const queries = await Promise.all(targets.map(async (target) => this.createQuery(options, target)));
+      // No valid targets, return the empty result to save a round trip.
+      if (!queries.length) {
+        return from(Promise.resolve({ data: [] }));
+      }
+      const allQueryPromise = queries.map((query) => {
+        return this._seriesQuery(query.stmt, query.requestId);
       });
 
-      return { data: result };
-    });
+      return Promise.all(allQueryPromise).then((responses: any): any => {
+        let result: any[] = [],
+          i = 0;
+        _.each(responses, (response) => {
+          const target = options.targets[i];
+          const keys = queries[i].keys;
+
+          i++;
+          if (!response || !response.rows) {
+            return;
+          }
+
+          let sqlSeries = new SqlSeries({
+            refId: target.refId,
+            series: response.data,
+            meta: response.meta,
+            keys: keys,
+            tillNow: options.rangeRaw?.to === 'now',
+            from: SqlQueryHelper.convertTimestamp(options.range.from),
+            to: SqlQueryHelper.convertTimestamp(options.range.to),
+          });
+
+          if (target.format === 'table') {
+            _.each(sqlSeries.toTable(), (data) => {
+              result.push(data);
+            });
+          } else if (target.format === 'traces') {
+            result = sqlSeries.toTraces();
+          } else if (target.format === 'flamegraph') {
+            result = sqlSeries.toFlamegraph();
+          } else if (target.format === 'logs') {
+            result = sqlSeries.toLogs();
+          } else if (target.refId === 'Anno') {
+            result = sqlSeries.toAnnotation(response.data, response.meta);
+          } else {
+            _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
+              result.push(data);
+            });
+          }
+        });
+
+        return { data: result };
+      });
+    };
+
+    return from(queryProcessing());
   }
 
   modifyQuery(query: any, action: any): any {

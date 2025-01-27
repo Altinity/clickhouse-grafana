@@ -29,6 +29,10 @@ jobs:
         with:
           ref: ${{ inputs.ref }}
 
+      - uses: acifani/setup-tinygo@v2
+        with:
+          tinygo-version: '0.35.0'
+
       - name: Setup
         run: tests/testflows/infra/setup.sh
 

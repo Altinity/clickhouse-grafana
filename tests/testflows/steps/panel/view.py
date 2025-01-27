@@ -688,7 +688,7 @@ def save_dashboard(self):
             click_save_confirmation_button()
 
 @TestStep(When)
-def check_no_labels(self, labels):
+def check_no_labels_on_visualization(self, labels):
     """Check there is no labels in the panel."""
 
     for label in labels:
@@ -696,7 +696,7 @@ def check_no_labels(self, labels):
             try:
                 ui.wait_for_element_to_be_visible(
                     select_type=SelectBy.XPATH,
-                    element=f'//*[contains(text(), "{label}")]'
+                    element=f'//*[@data-viz-panel-key]//*[contains(text(), "{label}")]'
                 )
                 return False
             except:

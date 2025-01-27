@@ -305,6 +305,10 @@ class Scanner {
 
         if (isClosureChars(this.token)) {
           subQuery = betweenBraces(this._s);
+          if (!subQuery) {
+            subQuery = betweenBrackets(this._s);
+          }
+
           let subAST = toAST(subQuery);
           if (isSet(subAST, 'root')) {
             argument +=
@@ -600,6 +604,27 @@ function betweenBraces(query) {
       openBraces--;
     }
   }
+  return subQuery;
+}
+
+
+function betweenBrackets(query) {
+  let openBraces = 1;
+  let subQuery = '';
+
+  for (let i = 0; i < query.length; i++) {
+    if (query.charAt(i) === '[') {
+      openBraces++;
+    }
+    if (query.charAt(i) === ']') {
+      if (openBraces === 1) {
+        subQuery = query.substring(0, i);
+        break;
+      }
+      openBraces--;
+    }
+  }
+
   return subQuery;
 }
 

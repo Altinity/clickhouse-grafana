@@ -1,0 +1,463 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 3785,
+  "links": [],
+  "panels": [
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 3,
+      "panels": [],
+      "title": "No repeat, no single quotes",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 1
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "table",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT (${type})",
+          "rawQuery": "/* grafana dashboard=Variable test 11.4, user=4 */\nSELECT ('foo','bar','baz')",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "No single quotes",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 7
+      },
+      "id": 10,
+      "panels": [],
+      "title": "No repeat, single quotes",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "table",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT ('${type}')",
+          "rawQuery": "/* grafana dashboard=Variable test 11.4, user=4 */\nSELECT (''foo','bar','baz'')",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "No single quotes",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 7,
+      "panels": [],
+      "title": "Repeat, single quotes",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 15
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.4.0",
+      "repeat": "type",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "table",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT ('${type}')",
+          "rawQuery": "/* grafana dashboard=Variable test 11.4, user=4 */\nSELECT (''foo','bar','baz'')",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$type",
+      "type": "table"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 21
+      },
+      "id": 4,
+      "panels": [],
+      "title": "Repeat, no single quotes",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 22
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "11.4.0",
+      "repeat": "type",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "table",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT (${type})",
+          "rawQuery": "/* grafana dashboard=Variable test 11.4, user=4 */\nSELECT (baz)",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "$type",
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": [
+            "$__all"
+          ],
+          "value": [
+            "$__all"
+          ]
+        },
+        "includeAll": true,
+        "multi": true,
+        "name": "type",
+        "options": [
+          {
+            "selected": false,
+            "text": "foo",
+            "value": "foo"
+          },
+          {
+            "selected": false,
+            "text": "bar",
+            "value": "bar"
+          },
+          {
+            "selected": false,
+            "text": "baz",
+            "value": "baz"
+          }
+        ],
+        "query": "foo, bar, baz",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "Archer Sink",
+          "value": "a5617c9a-2798-477c-a708-a264b48dc43e"
+        },
+        "name": "datasource",
+        "options": [],
+        "query": "vertamedia-clickhouse-datasource",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Variable test 11.4",
+  "uid": "ceak279mxrim8d",
+  "version": 5,
+  "weekStart": ""
+}

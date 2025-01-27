@@ -158,7 +158,7 @@ export class SqlQueryHelper {
   static interpolateQueryExpr(value: any, variable: any, defaultFormatFn: any) {
     // if no (`multiselect` or `include all`) and variable is not Array - do not escape
     if (!variable.multi && !variable.includeAll && !Array.isArray(value)) {
-      return value;
+      return `'${value}'`
     }
     if (!Array.isArray(value)) {
       return SqlQueryHelper.clickhouseEscape(value, variable);
@@ -166,6 +166,7 @@ export class SqlQueryHelper {
     let escapedValues = value.map(function (v) {
       return SqlQueryHelper.clickhouseEscape(v, variable);
     });
+
     return escapedValues.join(',');
   }
 

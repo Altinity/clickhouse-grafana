@@ -90,10 +90,6 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
             with delay(after=0.5):
                 panel.click_discard_button()
 
-        with And("I discard changes for dashboard"):
-            with delay():
-                dashboard.discard_changes_for_dashboard()
-
     with Then("I save two csv files"):
         with delay():
             with By("saving container id"):
@@ -170,3 +166,7 @@ def feature(self):
         else:
             with Scenario(f"{panel_name} function"):
                 window_functions_outline(panel_name=panel_name, panel_names=panel_names)
+
+    with Finally("I discard changes for dashboard"):
+        with delay():
+            dashboard.discard_changes_for_dashboard()

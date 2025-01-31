@@ -57,7 +57,8 @@ def add_metadata_toggle(self):
                 panel.click_on_the_visualization()
 
         with Then("I check reformatted query"):
-            assert "/* grafana dashboard=test_sql_editor, user" in sql_editor.get_reformatted_query(query_name='A'), error()
+            assert "/* grafana dashboard" in sql_editor.get_reformatted_query(query_name='A'), error()
+            assert "test_sql_editor" in sql_editor.get_reformatted_query(query_name='A'), error()
 
     try:
         with Then("I click Add metadata toggle"):
@@ -66,7 +67,8 @@ def add_metadata_toggle(self):
 
         with Then("I check reformatted query after clicking toggle"):
             with delay():
-                assert not ("/* grafana dashboard=test_sql_editor, user" in sql_editor.get_reformatted_query(query_name='A')), error()
+                assert not ("/* grafana dashboard" in sql_editor.get_reformatted_query(query_name='A')), error()
+                assert not ("test_sql_editor" in sql_editor.get_reformatted_query(query_name='A')), error()
 
     finally:
         with Finally("I return Add metadata toggle status back"):

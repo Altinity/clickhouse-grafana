@@ -136,9 +136,8 @@ def select_input_query(self, query_name):
     """Select input query using triple click on textarea."""
 
     locators.input_in_sql_editor(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(Keys.CONTROL, 'a')
-    # ActionChains(self.context.driver).double_click(locators.sql_editor_input(query_name=query_name, grafana_version=self.context.grafana_version)).click(locators.sql_editor_input(query_name=query_name, grafana_version=self.context.grafana_version)).perform()
 
-
+ 
 @TestStep(When)
 def clear_panel_title(self):
     """Clear panel title."""

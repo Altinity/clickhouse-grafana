@@ -188,9 +188,13 @@ def annotations_without_time_reformatting(self):
             with delay():
                 panel.take_screenshot_for_visualization(screenshot_name="event_tme_panel")
 
-        with Finally("I discard changes for panel"):
-            with delay():
-                panel.click_discard_button()
+    with Finally("I discard changes for panel"):
+        with delay(after=0.5):
+            panel.click_discard_button()
+
+    with And("I discard changes for dashboard"):
+        with delay(after=0.5):
+            dashboard.discard_changes_for_dashboard()
 
     with When("I go to Annotation event_time"):
         with delay():
@@ -209,14 +213,14 @@ def annotations_without_time_reformatting(self):
             with delay():
                 panel.take_screenshot_for_visualization(screenshot_name="toUInt64_panel")
 
-        with Finally("I discard changes for panel"):
-            with delay():
-                panel.click_discard_button()
+    with Finally("I discard changes for panel"):
+        with delay(after=0.5):
+            panel.click_discard_button()
 
-        with And("I discard changes for dashboard"):
-            with delay():
-                dashboard.discard_changes_for_dashboard()
-                
+    with And("I discard changes for dashboard"):
+        with delay(after=0.5):
+            dashboard.discard_changes_for_dashboard()
+
     with Then("I compare screenshots"):
         with delay():
             assert actions.compare_screenshots_percent(screenshot_name_1="event_tme_panel", screenshot_name_2="toUInt64_panel") > 0.9, error()
@@ -244,11 +248,11 @@ def many_categories(self):
                 assert panel.check_no_labels(labels=["normalized_query_hash", "Too many points"]), error()
     finally:
         with Finally("I discard changes for panel"):
-            with delay():
+            with delay(after=0.5):
                 panel.click_discard_button()
 
         with And("I discard changes for dashboard"):
-            with delay():
+            with delay(after=0.5):
                 dashboard.discard_changes_for_dashboard()
 
 @TestFeature

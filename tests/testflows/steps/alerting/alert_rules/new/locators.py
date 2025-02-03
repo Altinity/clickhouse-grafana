@@ -135,13 +135,13 @@ class Locators:
     def new_folder_name_textfield(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f"/html/body/div[6]//*[@data-testid='data-testid alert-rule name-folder-name-field']")
+                                   f"//*[@data-testid='data-testid alert-rule name-folder-name-field']")
 
     @property
     def new_folder_create_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f"/html/body/div[6]//*[@data-testid='data-testid alert-rule name-folder-name-create-button']")
+                                   f"//*[@data-testid='data-testid alert-rule name-folder-name-create-button']")
 
     @property
     def new_evaluation_group_button(self):

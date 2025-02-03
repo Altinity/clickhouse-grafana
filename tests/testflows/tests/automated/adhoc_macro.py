@@ -37,11 +37,11 @@ def adhoc_macro_outline(self, dashboard_name, expected_adhoc_values, adhoc_label
 
         with And("I get default adhoc value"):
             with delay():
-                default_adhoc_value = panel.get_adhoc_dropdown_value(label=adhoc_label, variable_number=3)
+                default_adhoc_value = panel.get_adhoc_dropdown_value(adhoc_name=adhoc_name)
 
         with When("I get every adhoc value"):
             with delay():
-                adhoc_values = panel.get_dropdown_values_set(label=adhoc_label, variable_number=3)
+                adhoc_values = panel.get_dropdown_values_set(adhoc_name=adhoc_name, adhoc_label=adhoc_label)
                 note(adhoc_values)
                 assert adhoc_values == expected_adhoc_values, error()
 
@@ -55,15 +55,19 @@ def adhoc_macro_outline(self, dashboard_name, expected_adhoc_values, adhoc_label
 
         with And("I enter adhoc name"):
             with delay():
-                panel.enter_value_adhoc_dropdown(label=adhoc_label, variable_number=1, variable_value=adhoc_name)
+                panel.enter_value_adhoc_dropdown(adhoc_label=adhoc_label, variable_value=adhoc_name)
+
+        with And("I enter adhoc operator '='"):
+            with delay():
+                panel.enter_value_adhoc_dropdown(adhoc_label=adhoc_label, variable_value='=')
 
         with And("I enter default adhoc value"):
             with delay():
-                panel.change_adhoc_value(label=adhoc_label, variable_number=3, variable_value=default_adhoc_value)
+                panel.enter_value_adhoc_dropdown(adhoc_label=adhoc_label, variable_value=default_adhoc_value)
 
         with And("I get every adhoc value after deleting and adding adhoc"):
             with delay():
-                adhoc_values_after_deleting_and_adding_adhoc = panel.get_dropdown_values_set(label=adhoc_label, variable_number=3)
+                adhoc_values_after_deleting_and_adding_adhoc = panel.get_dropdown_values_set(adhoc_name=adhoc_name, adhoc_label=adhoc_label)
 
         with Then("I check adhoc correctly displays values after recreating adhoc"):
             assert adhoc_values_after_deleting_and_adding_adhoc == adhoc_values, error()
@@ -86,7 +90,7 @@ def adhoc_macro_outline(self, dashboard_name, expected_adhoc_values, adhoc_label
         for adhoc_value in adhoc_values:
             with When(f"I define adhoc value as {adhoc_value}"):
                 with delay():
-                    panel.change_adhoc_value(label=adhoc_label, variable_number=3, variable_value=adhoc_value)
+                    panel.change_adhoc_value(adhoc_name=adhoc_name, adhoc_label=adhoc_label, variable_value=adhoc_value)
 
             with Then(f"I check reformatted query contains adhoc {adhoc_value}"):
                 with delay():
@@ -131,17 +135,21 @@ def default_adhoc(self):
 
     with And("I enter adhoc name"):
         with delay():
-            panel.enter_value_adhoc_dropdown(label="query0", variable_number=1, variable_value="default.test_grafana.country")
+            panel.enter_value_adhoc_dropdown(adhoc_label="query0", variable_value="default.test_grafana.country")
+
+    with And("I enter adhoc operator '='"):
+        with delay():
+            panel.enter_value_adhoc_dropdown(adhoc_label="query0", variable_value='=')
 
     with And("I enter default adhoc value"):
         with delay():
-            panel.change_adhoc_value(label="query0", variable_number=3, variable_value="US")
+            panel.enter_value_adhoc_dropdown(adhoc_label="query0", variable_value="US")
 
     with And("I get every adhoc value after deleting and adding adhoc"):
         with delay():
-            adhoc_values_after_deleting_and_adding_adhoc = panel.get_dropdown_values_set(label="query0", variable_number=3)
+            adhoc_values_after_deleting_and_adding_adhoc = panel.get_dropdown_values_set(adhoc_label="query0", adhoc_name="default.test_grafana.country")
 
-    with Then("I check adhoc correctly displays values after recreating adhoc"):
+    with Then("I check adhoc correctly displays values"):
         assert adhoc_values_after_deleting_and_adding_adhoc == {'US', 'RU', 'EU', 'UK'}, error()
 
 

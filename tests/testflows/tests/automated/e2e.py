@@ -188,6 +188,10 @@ def annotations_without_time_reformatting(self):
             with delay():
                 panel.take_screenshot_for_visualization(screenshot_name="event_tme_panel")
 
+        with Finally("I discard changes for panel"):
+            with delay():
+                panel.click_discard_button()
+
     with When("I go to Annotation event_time"):
         with delay():
             dashboards.open_dashboard(dashboard_name="Annotation event_time")
@@ -205,6 +209,14 @@ def annotations_without_time_reformatting(self):
             with delay():
                 panel.take_screenshot_for_visualization(screenshot_name="toUInt64_panel")
 
+        with Finally("I discard changes for panel"):
+            with delay():
+                panel.click_discard_button()
+
+        with And("I discard changes for dashboard"):
+            with delay():
+                dashboard.discard_changes_for_dashboard()
+                
     with Then("I compare screenshots"):
         with delay():
             assert actions.compare_screenshots_percent(screenshot_name_1="event_tme_panel", screenshot_name_2="toUInt64_panel") > 0.9, error()

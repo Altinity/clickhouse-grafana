@@ -135,7 +135,8 @@ def wait_sql_editor_input(self):
 def select_input_query(self, query_name):
     """Select input query using triple click on textarea."""
 
-    ActionChains(self.context.driver).double_click(locators.sql_editor_input(query_name=query_name, grafana_version=self.context.grafana_version)).click(locators.sql_editor_input(query_name=query_name, grafana_version=self.context.grafana_version)).perform()
+    locators.input_in_sql_editor(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(Keys.CONTROL, 'a')
+    # ActionChains(self.context.driver).double_click(locators.sql_editor_input(query_name=query_name, grafana_version=self.context.grafana_version)).click(locators.sql_editor_input(query_name=query_name, grafana_version=self.context.grafana_version)).perform()
 
 
 @TestStep(When)
@@ -172,13 +173,17 @@ def enter_sql_editor_input(self, query, query_name='A'):
     """Enter SQL request into sql editor input field."""
 
     with By("waiting SQL editor"):
-        wait_sql_editor_input()
+        with delay():
+            wait_sql_editor_input()
 
     with By("selecting input string"):
-        select_input_query(query_name=query_name)
+        with delay():
+            select_input_query(query_name=query_name)
 
     with By("entering request"):
-        locators.input_in_sql_editor(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(query)
+        with delay():
+            locators.input_in_sql_editor(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(query + ' ')
+            locators.input_in_sql_editor(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(Keys.ENTER)
 
 
 @TestStep(When)

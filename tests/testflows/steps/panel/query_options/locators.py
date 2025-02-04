@@ -15,36 +15,36 @@ class Locators:
     def max_data_points_textfield(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[@class="gf-form" and .//text()="Max data points"]//input')
+                                   f'//input[@id="max-data-points-input"]')
 
     @property
     def interval_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[@class="gf-form" and .//text()="Interval"]/label[@class="gf-form-label width-6"]')
+                                   f'//*[@class="css-1t8vb7c"]')
 
     @property
     def min_interval_textfield(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[@class="gf-form" and .//text()="Min interval"]//input')
+        return driver.find_element(SelectBy.XPATH, f'//input[@id="min-interval-input"]')
 
     @property
     def relative_time_textfield(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[@class="gf-form" and .//text()="Relative time"]//input')
+                                   f'//input[@id="relative-time-input"]')
 
     @property
     def time_shift_textfield(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[@class="gf-form" and .//text()="Time shift"]//input')
+                                   f'//input[@id="time-shift-input"]')
 
     @property
     def hide_time_info_toggle(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[contains(@class,"InlineFieldRow") and .//text()="Hide time info"]//label[@aria-label="Toggle switch"]')
+                                   f'//div[@class="css-1n85obj"]//label[@for="hide-time-info-switch"]')
 
     @property
     def relative_time_info(self):

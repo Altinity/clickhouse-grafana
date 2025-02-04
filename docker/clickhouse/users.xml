@@ -7,5 +7,6 @@
             <subject_alt_name>DNS:clickhouse</subject_alt_name>
           </ssl_certificates>
         </demo_x509>
+        <default><networks replace="1"><ip>0.0.0.0/0</ip></networks></default>
     </users>
 </yandex>

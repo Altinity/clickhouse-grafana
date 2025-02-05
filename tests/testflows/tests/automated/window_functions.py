@@ -166,3 +166,7 @@ def feature(self):
         else:
             with Scenario(f"{panel_name} function"):
                 window_functions_outline(panel_name=panel_name, panel_names=panel_names)
+
+    with Finally("I discard changes for dashboard"):
+        with delay():
+            dashboard.discard_changes_for_dashboard()

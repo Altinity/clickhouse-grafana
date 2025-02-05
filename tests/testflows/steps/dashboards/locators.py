@@ -34,8 +34,8 @@ class Locators:
     def delete_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(
-            SelectBy.CSS_SELECTOR,
-            f"[class='css-ttl745-button']"
+            SelectBy.XPATH,
+            f"//*[@data-testid='manage-actions']/button[span/text()='Delete']"
         )
 
     @property

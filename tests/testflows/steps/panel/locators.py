@@ -316,22 +316,22 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="data-testid Drawer close"]')
 
-    def adhoc_dropdown(self, label, variable_number):
+    def adhoc_dropdown(self, label):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//label[@data-testid="data-testid Dashboard template variables submenu Label {label}"]/../div/div[1]/div[{variable_number}]//input')
+        return driver.find_element(SelectBy.XPATH, f'//*[@data-testid="data-testid Dashboard template variables submenu Label {label}"]/..//input')
 
-    def adhoc_grafana_single_value(self, label, variable_number):
+    def adhoc(self, adhoc_name):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//label[@data-testid="data-testid Dashboard template variables submenu Label {label}"]/../div/div[1]/div[{variable_number}]//*[contains(@class, "singleValue")]')
+        return driver.find_element(SelectBy.XPATH, f'//*[@aria-label="Edit filter with key {adhoc_name}"]')
 
     @property
     def add_adhoc_filter_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="AdHocFilter-add"]')
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[placeholder="Filter by label values"]')
 
     def remove_adhoc_button(self, adhoc_name):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[data-testid="AdHocFilter-remove-{adhoc_name}"]')
+        return driver.find_element(SelectBy.CSS_SELECTOR, f'[aria-label="Remove filter with key {adhoc_name}"]')
       
     @property
     def refresh_button(self):
@@ -340,7 +340,7 @@ class Locators:
 
     def annotation_toggle(self, annotation_name):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//label[@data-testid="data-testid Dashboard template variables submenu Label {annotation_name}"]/..//label[@aria-label="Toggle switch"]')
+        return driver.find_element(SelectBy.XPATH, f'//label[@data-testid="data-testid Dashboard template variables submenu Label {annotation_name}"]/..//div/label')
 
     def label_textfield(self, label):
         driver: WebDriver = current().context.driver

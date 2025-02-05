@@ -26,6 +26,8 @@ export default [
   '$increaseColumnsAggregated',
   '$columns',
   '$columnsMs',
+  '$lttb',
+  '$lttbMs',
   '$unescape',
   '$adhoc',
   '$conditionalTest',

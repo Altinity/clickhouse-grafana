@@ -34,6 +34,48 @@ func newMacrosTestCase(name, query, expected, expectedWithWindow string, fn func
 func TestMacrosBuilder(t *testing.T) {
 	q := EvalQuery{}
 	testCases := []macrosTestCase{
+		// https://github.com/Altinity/clickhouse-grafana/issues/500
+		newMacrosTestCase(
+			"$lttb",
+			"/* comment */\n$lttb(auto, toStartOfMinute(time) AS x_alias, sum(from_total) AS sum_from_total) FROM requests WHERE type IN ('udp', 'tcp') GROUP BY x_alias",
+			"/* comment */\nSELECT `lttb_result.1` AS x_alias, `lttb_result.2` AS sum_from_total FROM (\n"+
+				"  SELECT untuple(arrayJoin(lttb(toUInt64( ($__to - $__from) / $__interval_ms ))(toStartOfMinute(time) AS x_alias, sum(from_total) AS sum_from_total))) AS lttb_result FROM requests WHERE $timeFilter AND type IN ('udp', 'tcp') GROUP BY x_alias\n"+
+				") ORDER BY x_alias",
+
+			"/* comment */\nSELECT `lttb_result.1` AS x_alias, `lttb_result.2` AS sum_from_total FROM (\n"+
+				"  SELECT untuple(arrayJoin(lttb(toUInt64( ($__to - $__from) / $__interval_ms ))(toStartOfMinute(time) AS x_alias, sum(from_total) AS sum_from_total))) AS lttb_result FROM requests WHERE $timeFilter AND type IN ('udp', 'tcp') GROUP BY x_alias\n"+
+				") ORDER BY x_alias",
+
+			q.lttb,
+		),
+		// https://github.com/Altinity/clickhouse-grafana/issues/500
+		newMacrosTestCase(
+			"$lttb with args",
+			"/* comment */\n$lttb(auto, category, toStartOfMinute(time) AS x_alias, sum(from_total) AS sum_from_total) FROM requests WHERE type IN ('udp', 'tcp') GROUP BY category",
+			"/* comment */\nSELECT category, `lttb_result.1` AS x_alias, `lttb_result.2` AS sum_from_total FROM (\n"+
+				"  SELECT category, untuple(arrayJoin(lttb(toUInt64( ($__to - $__from) / $__interval_ms ))(toStartOfMinute(time) AS x_alias, sum(from_total) AS sum_from_total))) AS lttb_result FROM requests WHERE $timeFilter AND type IN ('udp', 'tcp') GROUP BY category\n"+
+				") ORDER BY x_alias",
+
+			"/* comment */\nSELECT category, `lttb_result.1` AS x_alias, `lttb_result.2` AS sum_from_total FROM (\n"+
+				"  SELECT category, untuple(arrayJoin(lttb(toUInt64( ($__to - $__from) / $__interval_ms ))(toStartOfMinute(time) AS x_alias, sum(from_total) AS sum_from_total))) AS lttb_result FROM requests WHERE $timeFilter AND type IN ('udp', 'tcp') GROUP BY category\n"+
+				") ORDER BY x_alias",
+
+			q.lttb,
+		),
+		// https://github.com/Altinity/clickhouse-grafana/issues/500
+		newMacrosTestCase(
+			"$lttbMs",
+			"/* comment */\n$lttbMs(auto, toStartOfMinute(time) AS x_alias, sum(from_total) AS sum_from_total) FROM requests WHERE type IN ('udp', 'tcp') GROUP BY x_alias",
+			"/* comment */\nSELECT `lttb_result.1` AS x_alias, `lttb_result.2` AS sum_from_total FROM (\n"+
+				"  SELECT untuple(arrayJoin(lttb(toUInt64( ($__to - $__from) / $__interval_ms ))(toStartOfMinute(time) AS x_alias, sum(from_total) AS sum_from_total))) AS lttb_result FROM requests WHERE $timeFilterMs AND type IN ('udp', 'tcp') GROUP BY x_alias\n"+
+				") ORDER BY x_alias",
+
+			"/* comment */\nSELECT `lttb_result.1` AS x_alias, `lttb_result.2` AS sum_from_total FROM (\n"+
+				"  SELECT untuple(arrayJoin(lttb(toUInt64( ($__to - $__from) / $__interval_ms ))(toStartOfMinute(time) AS x_alias, sum(from_total) AS sum_from_total))) AS lttb_result FROM requests WHERE $timeFilterMs AND type IN ('udp', 'tcp') GROUP BY x_alias\n"+
+				") ORDER BY x_alias",
+
+			q.lttbMs,
+		),
 		newMacrosTestCase(
 			"$rate",
 			"/* comment */ $rate(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests",

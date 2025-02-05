@@ -420,6 +420,12 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	if q.contain(ast, "$columnsMs") {
 		return q.columnsMs(query, ast)
 	}
+	if q.contain(ast, "$lttb") {
+		return q.lttb(query, ast)
+	}
+	if q.contain(ast, "$lttbMs") {
+		return q.lttbMs(query, ast)
+	}
 	if q.contain(ast, "$rateColumnsAggregated") {
 		return q.rateColumnsAggregated(query, ast)
 	}
@@ -569,6 +575,82 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string, us
 		")" +
 		" GROUP BY t" +
 		" ORDER BY t", nil
+}
+
+func (q *EvalQuery) lttb(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$lttb", query)
+	if err != nil {
+		return "", err
+	}
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	args := ast.Obj["$lttb"].(*EvalAST).Arr
+	if args == nil || len(args) < 3 {
+		return "", fmt.Errorf("amount of arguments must great or equal 3 for $lttb func. Parsed arguments are: %v", ast.Obj["$lttb"])
+	}
+	return q._lttb(beforeMacrosQuery, fromQuery, args, false)
+}
+
+func (q *EvalQuery) lttbMs(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$lttbMs", query)
+	if err != nil {
+		return "", err
+	}
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	args := ast.Obj["$lttbMs"].(*EvalAST).Arr
+	if args == nil || len(args) < 3 {
+		return "", fmt.Errorf("amount of arguments must great or equal 3 for $lttbMs func. Parsed arguments are: %v", ast.Obj["$lttbMs"])
+	}
+	return q._lttb(beforeMacrosQuery, fromQuery, args, true)
+}
+
+func (q *EvalQuery) _lttb(beforeMacrosQuery string, fromQuery string, args []interface{}, useMs bool) (string, error) {
+	bucketNumbers := args[0].(string)
+	if strings.ToLower(strings.Trim(bucketNumbers, " \xA0\t\r\n")) == "auto" {
+		bucketNumbers = "toUInt64( ($__to - $__from) / $__interval_ms )"
+	}
+
+	var argsExceptLastTwo strings.Builder
+	if len(args) > 3 {
+		for i, arg := range args[1 : len(args)-2] {
+			if i > 0 {
+				argsExceptLastTwo.WriteString(", ") // Add delimiter after the first element
+			}
+			argsExceptLastTwo.WriteString(fmt.Sprintf("%v", arg)) // Convert each element to a string
+		}
+		argsExceptLastTwo.WriteString(", ")
+	}
+
+	xField := args[len(args)-2].(string)
+	yField := args[len(args)-1].(string)
+	if xField[len(xField)-1] == ')' || yField[len(yField)-1] == ')' {
+		return "", fmt.Errorf("some of passed arguments are without aliases: %s, %s", xField, yField)
+	}
+
+	var xSplit = strings.Split(strings.Trim(xField, " \xA0\t\r\n"), " ")
+	var xAlias = "x_field"
+	if len(xSplit) > 1 {
+		xAlias = xSplit[len(xSplit)-1]
+	}
+
+	var ySplit = strings.Split(strings.Trim(yField, " \xA0\t\r\n"), " ")
+	var yAlias = "y_field"
+	if len(ySplit) > 1 {
+		yAlias = ySplit[len(ySplit)-1]
+	}
+
+	fromQuery = q._applyTimeFilter(fromQuery, useMs)
+
+	return beforeMacrosQuery + "SELECT " + argsExceptLastTwo.String() + "`lttb_result.1` AS " + xAlias + ", `lttb_result.2` AS " + yAlias +
+		" FROM (\n" +
+		"  SELECT " + argsExceptLastTwo.String() + "untuple(arrayJoin(lttb(" + bucketNumbers + ")(" + xField + ", " + yField + "))) AS lttb_result " +
+		fromQuery + "\n" +
+		") ORDER BY " + xAlias, nil
 }
 
 func findKeywordOutsideBrackets(query, keyword string) int {
@@ -803,7 +885,7 @@ func (q *EvalQuery) _fromIndex(query, macro string) (int, error) {
 	var fromRe = regexp.MustCompile("(?im)\\" + macro + "\\([\\w\\s\\S]+?\\)(\\s+FROM\\s+)")
 	var matches = fromRe.FindStringSubmatchIndex(query)
 	if len(matches) == 0 {
-		return 0, fmt.Errorf("could not find FROM-statement at: %s", query)
+		return 0, fmt.Errorf("can't find FROM-statement at: %s", query)
 	}
 	var fragmentWithFrom = query[matches[len(matches)-2]:matches[len(matches)-1]]
 	var fromRelativeIndex = strings.Index(strings.ToLower(fragmentWithFrom), "from")
@@ -1955,7 +2037,7 @@ const joinsRe = "\\b(" +
 	")\\b"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columnsMs|\\$columns)"
+const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columnsMs|\\$columns|\\$lttbMs|\\$lttb)"
 const condRe = "\\b(or|and)\\b"
 const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?"
 const closureRe = "[\\(\\)\\[\\]]"
@@ -2238,6 +2320,16 @@ func PrintAST(AST *EvalAST, tab string) string {
 	if AST.HasOwnProperty("$rateColumnsAggregated") {
 		result += tab + "$rateColumnsAggregated("
 		result += printItems(AST.Obj["$rateColumnsAggregated"].(*EvalAST), tab, ",") + ")"
+	}
+
+	if AST.HasOwnProperty("$lttb") {
+		result += tab + "$lttb("
+		result += printItems(AST.Obj["$lttb"].(*EvalAST), tab, ",") + ")"
+	}
+
+	if AST.HasOwnProperty("$lttbMs") {
+		result += tab + "$lttbMs("
+		result += printItems(AST.Obj["$lttb"].(*EvalAST), tab, ",") + ")"
 	}
 
 	if AST.HasOwnProperty("with") {

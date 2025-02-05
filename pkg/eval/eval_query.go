@@ -612,7 +612,11 @@ func (q *EvalQuery) lttbMs(query string, ast *EvalAST) (string, error) {
 func (q *EvalQuery) _lttb(beforeMacrosQuery string, fromQuery string, args []interface{}, useMs bool) (string, error) {
 	bucketNumbers := args[0].(string)
 	if strings.ToLower(strings.Trim(bucketNumbers, " \xA0\t\r\n")) == "auto" {
-		bucketNumbers = "toUInt64( ($__to - $__from) / $__interval_ms )"
+		if useMs {
+			bucketNumbers = "toUInt64( ($__to - $__from) / $__interval_ms )"
+		} else {
+			bucketNumbers = "toUInt64( ($to - $from) / $interval )"
+		}
 	}
 
 	var argsExceptLastTwo strings.Builder
@@ -633,20 +637,14 @@ func (q *EvalQuery) _lttb(beforeMacrosQuery string, fromQuery string, args []int
 	}
 
 	var xSplit = strings.Split(strings.Trim(xField, " \xA0\t\r\n"), " ")
-	var xAlias = "x_field"
-	if len(xSplit) > 1 {
-		xAlias = xSplit[len(xSplit)-1]
-	}
+	var xAlias = xSplit[len(xSplit)-1]
 
 	var ySplit = strings.Split(strings.Trim(yField, " \xA0\t\r\n"), " ")
-	var yAlias = "y_field"
-	if len(ySplit) > 1 {
-		yAlias = ySplit[len(ySplit)-1]
-	}
+	var yAlias = ySplit[len(ySplit)-1]
 
 	fromQuery = q._applyTimeFilter(fromQuery, useMs)
 
-	return beforeMacrosQuery + "SELECT " + argsExceptLastTwo.String() + "`lttb_result.1` AS " + xAlias + ", `lttb_result.2` AS " + yAlias +
+	return beforeMacrosQuery + "SELECT `lttb_result.1` AS " + xAlias + ", " + argsExceptLastTwo.String() + "`lttb_result.2` AS " + yAlias +
 		" FROM (\n" +
 		"  SELECT " + argsExceptLastTwo.String() + "untuple(arrayJoin(lttb(" + bucketNumbers + ")(" + xField + ", " + yField + "))) AS lttb_result " +
 		fromQuery + "\n" +

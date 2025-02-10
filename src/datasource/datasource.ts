@@ -22,7 +22,7 @@ import { QueryEditor } from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
-import { applyAdhocFilters, createQuery, getAstProperty, InitiateWasm, replaceTimeFilters } from './wasm';
+import { ClickHouseWasm } from './wasm';
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -33,7 +33,8 @@ export class CHDataSource
   adHocFilter: AdHocFilter;
   responseParser: ResponseParser;
   options: any;
-
+  pluginId: string;
+  wasmModule: ClickHouseWasm;
   url: string;
   basicAuth: any;
   withCredentials: any;
@@ -52,6 +53,8 @@ export class CHDataSource
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
+    this.pluginId = instanceSettings.meta.id
+    this.wasmModule = ClickHouseWasm.getInstance(instanceSettings.meta.id);
     this.uid = instanceSettings.uid;
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;
@@ -194,15 +197,23 @@ export class CHDataSource
     const requestOptions = { ...options, range: this.options.range };
 
     const originalQuery = await this.createQuery(requestOptions, query);
-    let { select, where } = await new Promise<any>((resolve) => {
-      InitiateWasm().then(() => {
-        getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select').then((result) => {
-          if (result && result.properties) {
-            return resolve(result.properties);
-          }
+    let select = await new Promise<any>((resolve) => {
+      this.wasmModule.getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select').then((result) => {
+        if (result && result.properties) {
+          return resolve(result.properties);
+        }
 
-          resolve([]);
-        });
+        resolve([]);
+      });
+    });
+
+    let where = await new Promise<any>((resolve) => {
+      this.wasmModule.getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'where').then((result) => {
+        if (result && result.properties) {
+          return resolve(result.properties);
+        }
+
+        resolve([]);
       });
     });
 
@@ -249,7 +260,6 @@ export class CHDataSource
     if (traceId) {
       const queryForTraceID = generateQueryForTraceID(traceId, select);
       const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: queryForTraceID });
-
       const response: any = await this.seriesQuery(stmt, requestId + options?.direction);
 
       if (response && !response.rows) {
@@ -282,7 +292,6 @@ export class CHDataSource
             : generateQueryForTimestampForward(timestampColumn, formattedDate, query?.contextWindowSize);
 
         const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: boundariesRequest });
-
         const result: any = await this.seriesQuery(stmt, requestId + options?.direction);
 
         return result.data[0];
@@ -296,7 +305,6 @@ export class CHDataSource
             : generateRequestForTimestampForward(timestampColumn, timestamp, row.timeUtc, select);
 
         const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: contextDataRequest });
-
         return this.seriesQuery(stmt, requestId + options?.direction);
       };
 
@@ -361,129 +369,96 @@ export class CHDataSource
     return query.adHocFilters.some((f) => f.key === filter.key && f.value === filter.value);
   }
 
-  query(options: DataQueryRequest<CHQuery>): Observable<any> {
-    const queryProcessing = async () => {
-      this.options = options;
-      const targets = options.targets.filter((target) => !target.hide && target.query);
-      const queries = await Promise.all(targets.map(async (target) => this.createQuery(options, target)));
-      // No valid targets, return the empty result to save a round trip.
-      if (!queries.length) {
-        return from(Promise.resolve({ data: [] }));
+  processQueryResponse(responses: any, options: any, queries: any[]): any {
+    let result: any[] = [];
+    let i = 0;
+
+    _.each(responses, (response) => {
+      const target = options.targets[i];
+      const keys = queries[i].keys;
+
+      i++;
+      if (!response || !response.rows) {
+        return;
       }
-      const allQueryPromise = queries.map((query) => {
-        return this.seriesQuery(query.stmt, query.requestId);
+
+      let sqlSeries = new SqlSeries({
+        refId: target.refId,
+        series: response.data,
+        meta: response.meta,
+        keys: keys,
+        tillNow: options.rangeRaw?.to === 'now',
+        from: convertTimestamp(options.range.from),
+        to: convertTimestamp(options.range.to),
       });
 
-      return Promise.all(allQueryPromise).then((responses: any): any => {
-        let result: any[] = [],
-          i = 0;
-        _.each(responses, (response) => {
-          const target = options.targets[i];
-          const keys = queries[i].keys;
-
-          i++;
-          if (!response || !response.rows) {
-            return;
-          }
-
-          let sqlSeries = new SqlSeries({
-            refId: target.refId,
-            series: response.data,
-            meta: response.meta,
-            keys: keys,
-            tillNow: options.rangeRaw?.to === 'now',
-            from: convertTimestamp(options.range.from),
-            to: convertTimestamp(options.range.to),
-          });
-
-          if (target.format === 'table') {
-            _.each(sqlSeries.toTable(), (data) => {
-              result.push(data);
-            });
-          } else if (target.format === 'traces') {
-            result = sqlSeries.toTraces();
-          } else if (target.format === 'flamegraph') {
-            result = sqlSeries.toFlamegraph();
-          } else if (target.format === 'logs') {
-            result = sqlSeries.toLogs();
-          } else if (target.refId === 'Anno') {
-            result = sqlSeries.toAnnotation(response.data, response.meta);
-          } else {
-            _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
-              result.push(data);
-            });
-          }
+      if (target.format === 'table') {
+        _.each(sqlSeries.toTable(), (data) => {
+          result.push(data);
         });
-
-      return { data: result };
+      } else if (target.format === 'traces') {
+        result = sqlSeries.toTraces();
+      } else if (target.format === 'flamegraph') {
+        result = sqlSeries.toFlamegraph();
+      } else if (target.format === 'logs') {
+        result = sqlSeries.toLogs();
+      } else if (target.refId === 'Anno') {
+        result = sqlSeries.toAnnotation(response.data, response.meta);
+      } else {
+        _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
+          result.push(data);
+        });
+      }
     });
-  };
 
-  return from(queryProcessing());
-}
+    return { data: result };
+  }
 
-// modifyQuery(query: any, action: any): any {
-//   let originalQuery = query.query ?? ''
-//   let { _, where } = await new Promise<any>((resolve) => {
-//     InitiateWasm().then(() => {
-//       getAstProperty(originalQuery.replace(/\r\n|\r|\n/g, ' '), 'select').then((result) => {
-//         if (result && result.properties) {
-//           return resolve(result.properties);
-//         }
-//
-//         resolve([]);
-//       });
-//     });
-//   });
-//
-//   const labelFilter = action.key + " = '" + action.value + "'";
-//
-//   switch (action.type) {
-//     case 'ADD_FILTER': {
-//       if (where.length === 0) {
-//         where.push(labelFilter);
-//         break;
-//       }
-//
-//       let alreadyAdded = false;
-//       _.each(where, (w: string) => {
-//         if (w.includes(labelFilter)) {
-//           alreadyAdded = true;
-//         }
-//       });
-//       if (!alreadyAdded) {
-//         where.push('AND ' + labelFilter);
-//       }
-//       break;
-//     }
-//     case 'ADD_FILTER_OUT': {
-//       if (where.length === 0) {
-//         break;
-//       }
-//       where.forEach((w: string, i: number) => {
-//         if (w.includes(labelFilter)) {
-//           where.splice(i, 1);
-//         }
-//       });
-//       break;
-//     }
-//     default:
-//       break;
-//   }
-//
-//   const modifiedQuery = scanner.Print(queryAST);
-//   return { ...query, query: modifiedQuery };
-// }
+  async executeQueries (targets: any[], options: any): Promise<any> {
+    const queries = await Promise.all(
+      targets.map(async (target) => this.createQuery(this.options, target))
+    );
+
+    if (!queries.length) {
+      return { data: [] };
+    }
+
+    const responses = await Promise.all(
+      queries.map((query) => this.seriesQuery(query.stmt, query.requestId))
+    );
+
+    return this.processQueryResponse(responses, options, queries)
+  }
+
+
+  query(options: DataQueryRequest<CHQuery>): Observable<any> {
+    const queryProcessing = async () => {
+      try {
+        this.options = options;
+        const targets = options.targets.filter((target) => !target.hide && target.query);
+        return await this.executeQueries(targets, options);
+      } catch (error) {
+        console.error('Query processing failed:', error);
+        throw error;
+      }
+    };
+  
+    return from(queryProcessing());
+  }
 
   async createQuery(options: any, target: any) {
-    const { stmt, keys } = await this.replace(options, target);
-
-  return {
-    keys: keys,
-    requestId: options.panelId + target.refId,
-    stmt: stmt,
-  };
-}
+    try {
+      const { stmt, keys } = await this.replace(options, target);
+      return {
+        keys: keys,
+        requestId: options.panelId + target.refId,
+        stmt: stmt,
+      };
+    } catch (error) {
+      // Propagate the error
+      throw error;
+    }
+  }
 
   async annotationQuery(options: any): Promise<AnnotationEvent[]> {
     if (!options.annotation.query) {
@@ -547,7 +522,7 @@ export class CHDataSource
       let from = convertTimestamp(options.range.from);
       let to = convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = await replaceTimeFilters(interpolatedQuery, options.range, options.dateTimeType);
+      interpolatedQuery = await this.wasmModule.replaceTimeFilters(interpolatedQuery, options.range, options.dateTimeType);
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 
@@ -611,7 +586,8 @@ export class CHDataSource
   }
 
   async replace(options: DataQueryRequest<CHQuery>, target: CHQuery): Promise<any> {
-    const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
+    try {
+      const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
 
     const queryData = {
       frontendDatasource: true,
@@ -637,9 +613,7 @@ export class CHDataSource
         to: options.range.to.toISOString(), // Convert to Unix timestamp
       },
     };
-
-    try {
-      const { sql, keys } = await createQuery(queryData);
+     const { sql, keys } = await this.wasmModule.createQuery(queryData);
 
       const query = this.templateSrv.replace(
         conditionalTest(sql, this.templateSrv),
@@ -647,13 +621,12 @@ export class CHDataSource
         interpolateQueryExpr
       );
 
-      const queryUpd = await applyAdhocFilters(query || queryData.query, adhocFilters, target);
+      const queryUpd = await this.wasmModule.applyAdhocFilters(query || queryData.query, adhocFilters, target);
 
       return { stmt: queryUpd, keys: keys };
     } catch (error) {
-      console.error('Error from backend:', error);
-
-      return { stmt: target.query, keys: [] };
+      // Propagate the error instead of returning a default value
+      throw error;
     }
   }
 }

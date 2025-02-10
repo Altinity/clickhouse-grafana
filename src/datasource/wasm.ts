@@ -1,90 +1,86 @@
 import './wasm_exec.js';
 import pako from 'pako';
 
-/* eslint-disable @typescript-eslint/no-explicit-any */
 declare global {
   export interface Window {
     Go: any;
-    wasmFibonacciSum: (n: number) => number;
     getAstProperty?: (query: string, propertyName: string) => Promise<any>;
     createQuery?: (any) => Promise<any>;
     replaceTimeFilters: any;
     applyAdhocFilters: any;
   }
 }
-export {};
 
-export function createQuery(queryData) {
-  return new Promise<any>((resolve) => {
-    InitiateWasm().then(() => {
-      const res = window.createQuery && window.createQuery(queryData);
-      resolve(res);
-    });
-  });
-}
+export class ClickHouseWasm {
+  private static instance: ClickHouseWasm;
+  private initialized = false;
+  private pluginId: string;
 
-export function applyAdhocFilters(query, adhocFilters, target) {
-  return new Promise<any>((resolve) => {
-    InitiateWasm().then(() => {
-      const res = window.applyAdhocFilters && window.applyAdhocFilters({
-        query, adhocFilters, target
-      });
-      resolve(res.query);
-    });
-  });
-}
-
-export function getAstProperty(query, propertyName) {
-  return new Promise<any>((resolve) => {
-    //ts-ignore
-    const res = window.getAstProperty && window.getAstProperty(query, propertyName);
-    resolve(res);
-  });
-}
-
-export function replaceTimeFilters(query, range, dateTimeType) {
-  return new Promise<any>((resolve) => {
-    InitiateWasm().then(() => {
-      setTimeout(() => {
-        //ts-ignore
-        const res =
-          window.replaceTimeFilters &&
-          window.replaceTimeFilters({ query,
-              timeRange: {
-                from: range.from.toISOString(), // Convert to Unix timestamp
-                to: range.to.toISOString(), // Convert to Unix timestamp
-              },
-              dateTimeType:  dateTimeType });
-
-        resolve(res.sql);
-      }, 100)
-    })
-  });
-}
-
-export const InitiateWasm = () => {
-  if (window.replaceTimeFilters && window.createQuery && window.applyAdhocFilters && window.getAstProperty) {
-    return Promise.resolve();
+  private constructor(pluginId: string) {
+    this.pluginId = pluginId
   }
 
-  // Function to asynchronously load WebAssembly
-  async function loadWasm(): Promise<void> {
-    // Create a new Go object
-    const go = new window.Go(); // Defined in wasm_exec.js
+  static getInstance(pluginId: string): ClickHouseWasm {
+    if (!ClickHouseWasm.instance) {
+      ClickHouseWasm.instance = new ClickHouseWasm(pluginId);
+    }
+    return ClickHouseWasm.instance;
+  }
 
-    let wasm;
+  async initialize(pluginId: string): Promise<void> {
+    if (this.initialized || (window.replaceTimeFilters && window.createQuery && 
+        window.applyAdhocFilters && window.getAstProperty)) {
+      return;
+    }
 
-    const compressedBuffer = await fetch('/public/plugins/vertamedia-clickhouse-datasource/static/backend.wasm.gz').then(resp =>
-      resp.arrayBuffer()
-    )
+    const go = new window.Go();
+    const compressedBuffer = await fetch(`/public/plugins/${pluginId}/static/backend.wasm.gz`)
+      .then(resp => resp.arrayBuffer());
 
     const fetchedData = pako.ungzip(new Uint8Array(compressedBuffer));
-
-    const obj = await WebAssembly.instantiate(fetchedData, go.importObject)
-
-    wasm = obj.instance;
-    go.run(wasm)
+    const obj = await WebAssembly.instantiate(fetchedData, go.importObject);
+    go.run(obj.instance);
+    this.initialized = true;
   }
 
-  return loadWasm();
+  async createQuery(queryData: any): Promise<any> {
+    await this.ensureInitialized();
+    return window.createQuery?.(queryData);
+  }
+
+  async applyAdhocFilters(query: string, adhocFilters: any, target: any): Promise<string> {
+    await this.ensureInitialized();
+    const res = await window.applyAdhocFilters?.({
+      query,
+      adhocFilters,
+      target
+    });
+    return res.query;
+  }
+
+  async getAstProperty(query: string, propertyName: string): Promise<any> {
+    await this.ensureInitialized();
+    return window.getAstProperty?.(query, propertyName);
+  }
+
+  async replaceTimeFilters(query: string, range: any, dateTimeType: string): Promise<string> {
+    await this.ensureInitialized();
+    const res = await window.replaceTimeFilters?.({
+      query,
+      timeRange: {
+        from: range.from.toISOString(),
+        to: range.to.toISOString(),
+      },
+      dateTimeType
+    });
+    return res.sql;
+  }
+
+  private async ensureInitialized(): Promise<void> {
+    if (!this.initialized) {
+      await this.initialize(this.pluginId);
+    }
+  }
 }
+
+export default ClickHouseWasm;

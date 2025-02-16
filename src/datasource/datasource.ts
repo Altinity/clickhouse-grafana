@@ -11,7 +11,7 @@ import {
   DataSourceApi,
   DataSourceInstanceSettings,
   DataSourceWithLogsContextSupport,
-  DataSourceWithToggleableQueryFiltersSupport,
+  DataSourceWithToggleableQueryFiltersSupport, FieldType,
   LogRowContextOptions,
   LogRowContextQueryDirection,
   LogRowModel,
@@ -20,10 +20,10 @@ import {
 } from '@grafana/data';
 import { BackendSrv, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
-import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
+import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
 import { SqlQueryHelper } from './sql-query/sql-query-helper';
 import SqlQueryMacros from './sql-query/sql-query-macros';
-import { QueryEditor } from '../views/QueryEditor/QueryEditor';
+import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import {from, Observable} from "rxjs";
 
@@ -91,12 +91,13 @@ export class CHDataSource
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);
     this.responseParser = new ResponseParser();
+    // console.log(this.query.bind(this))
     this.variables = {
       getType(): VariableSupportType {
         return VariableSupportType.Custom;
       },
       // @ts-ignore
-      editor: QueryEditor,
+      editor: QueryEditorVariable,
       query: this.query.bind(this),
     }
 
@@ -358,6 +359,7 @@ export class CHDataSource
 
   query(options: DataQueryRequest<CHQuery>): Observable<any> {
     const queryProcessing = async () => {
+      console.log(options, 'MMMM<<<<<')
       this.options = options;
       const targets = options.targets.filter((target) => !target.hide && target.query);
       const queries = await Promise.all(targets.map(async (target) => this.createQuery(options, target)));
@@ -370,17 +372,20 @@ export class CHDataSource
       });
 
       return Promise.all(allQueryPromise).then((responses: any): any => {
+        console.log(responses, '-----')
         let result: any[] = [],
           i = 0;
         _.each(responses, (response) => {
           const target = options.targets[i];
           const keys = queries[i].keys;
 
+          console.log(321)
           i++;
           if (!response || !response.rows) {
             return;
           }
 
+          console.log(123)
           let sqlSeries = new SqlSeries({
             refId: target.refId,
             series: response.data,
@@ -391,6 +396,7 @@ export class CHDataSource
             to: SqlQueryHelper.convertTimestamp(options.range.to),
           });
 
+          console.log(target.format)
           if (target.format === 'table') {
             _.each(sqlSeries.toTable(), (data) => {
               result.push(data);
@@ -403,17 +409,45 @@ export class CHDataSource
             result = sqlSeries.toLogs();
           } else if (target.refId === 'Anno') {
             result = sqlSeries.toAnnotation(response.data, response.meta);
+          } else if (target.datasourceMode === DatasourceMode.Variables ) {
+            console.log('Itz datasource mode VARIAELBLE')
+            console.log(sqlSeries.series)
+            result = [{
+              refId: 'A',
+              fields: [
+                {
+                  name: 'text',
+                  type: FieldType.string,
+                  values: sqlSeries.series.map(item => item.name),
+                },
+                {
+                  name: 'values',
+                  type: FieldType.string,
+                  values: sqlSeries.series.map(item => item.name),
+                },
+                // {
+                //   name: 'values',
+                //   type: FieldType.string,
+                //   values: ['logline text1', 'logline text2'],
+                // },
+              ]
+            }]
           } else {
+            console.log('RRRRRR')
             _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
               result.push(data);
             });
           }
         });
 
+        console.log({ data: result }, '--------')
         return { data: result };
       });
     };
 
+    queryProcessing().then(result => {
+      return result
+    })
     return from(queryProcessing());
   }
 

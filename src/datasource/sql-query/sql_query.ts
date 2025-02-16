@@ -125,7 +125,7 @@ export default class SqlQuery {
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.to, myround));
 
     // TODO: replace
-    this.target.rawQuery = query
+    const query2 = query
       .replace(/\$timeSeries\b/g, SqlQueryMacros.getTimeSeries(dateTimeType))
       .replace(/\$timeSeriesMs\b/g, SqlQueryMacros.getTimeSeriesMs(dateTimeType))
       .replace(/\$naturalTimeSeries/g, SqlQueryMacros.getNaturalTimeSeries(dateTimeType, from, to))
@@ -141,12 +141,13 @@ export default class SqlQuery {
       .replace(/\$adhoc\b/g, renderedAdHocCondition);
 
     const round = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1);
-    this.target.rawQuery = SqlQueryMacros.replaceTimeFilters(
-      this.target.rawQuery,
+    console.log('<<<',this.target)
+    return SqlQueryMacros.replaceTimeFilters(
+      query2,
       this.options.range,
       dateTimeType,
       round
     );
-    return this.target.rawQuery;
+    // return this.target.rawQuery;
   }
 }

@@ -1,16 +1,16 @@
-import React, { useEffect, useState } from 'react';
-import { QueryEditorProps } from '@grafana/data';
-import { CHDataSource } from '../../datasource/datasource';
+import React, {useEffect, useState} from 'react';
+import {CoreApp, QueryEditorProps} from '@grafana/data';
+import {CHDataSource} from '../../datasource/datasource';
 import {CHDataSourceOptions, CHQuery, DatasourceMode, EditorMode} from '../../types/types';
-import { QueryHeader } from './components/QueryHeader/QueryHeader';
-import { QueryTextEditor } from './components/QueryTextEditor/QueryTextEditor';
-import { QueryBuilder } from './components/QueryBuilder/QueryBuilder';
-import { Alert } from '@grafana/ui';
-import { useQueryState } from './hooks/useQueryState';
-import { useFormattedData } from './hooks/useFormattedData';
+import {QueryHeader} from './components/QueryHeader/QueryHeader';
+import {QueryTextEditor} from './components/QueryTextEditor/QueryTextEditor';
+import {QueryBuilder} from './components/QueryBuilder/QueryBuilder';
+import {Alert} from '@grafana/ui';
+import {useQueryState} from './hooks/useQueryState';
+import {useFormattedData} from './hooks/useFormattedData';
 import {initializeQueryDefaults, initializeQueryDefaultsForVariables} from './helpers/initializeQueryDefaults';
 import './QueryEditor.css';
-import { getAdhocFilters } from './helpers/getAdHocFilters';
+import {getAdhocFilters} from './helpers/getAdHocFilters';
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>): any {
   const { datasource, query, onChange, onRunQuery } = props;
@@ -31,7 +31,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const areAdHocFiltersAvailable = !!adHocFilters.length;
 
   useEffect(() => {
-    if (props.app !== 'explore') {
+    if (props.app !== CoreApp.Explore) {
       onChange({ ...initializedQuery, adHocFilters: adHocFilters });
     }
 
@@ -79,8 +79,8 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
 
   const { datasource, query, onChange, onRunQuery } = props;
   let processedQuery
-  if (typeof props.query === 'string') {
-    processedQuery = {query: query, datasourceMode: DatasourceMode.Variables }
+  if (typeof props.query as string | CHQuery === 'string') {
+    processedQuery = {query: query, datasourceMode: DatasourceMode.Variable }
   } else {
     processedQuery = query
   };
@@ -90,7 +90,6 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
   useQueryState(query, onChange, datasource);
-  console.log(initializedQuery)
   const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });
   const onFieldChange = (field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value });
   const onTriggerQuery = () => onRunQuery();
@@ -102,7 +101,7 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
   const areAdHocFiltersAvailable = !!adHocFilters.length;
 
   useEffect(() => {
-    if (props.app !== 'explore') {
+    if (props.app !== CoreApp.Explore) {
       onChange({ ...initializedQuery, adHocFilters: adHocFilters });
     }
 

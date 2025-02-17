@@ -141,13 +141,12 @@ export default class SqlQuery {
       .replace(/\$adhoc\b/g, renderedAdHocCondition);
 
     const round = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1);
-    console.log('<<<',this.target)
+
     return SqlQueryMacros.replaceTimeFilters(
       query2,
       this.options.range,
       dateTimeType,
       round
     );
-    // return this.target.rawQuery;
   }
 }

@@ -91,7 +91,6 @@ export class CHDataSource
     this.templateSrv = getTemplateSrv();
     this.adHocFilter = new AdHocFilter(this);
     this.responseParser = new ResponseParser();
-    // console.log(this.query.bind(this))
     this.variables = {
       getType(): VariableSupportType {
         return VariableSupportType.Custom;
@@ -359,7 +358,6 @@ export class CHDataSource
 
   query(options: DataQueryRequest<CHQuery>): Observable<any> {
     const queryProcessing = async () => {
-      console.log(options, 'MMMM<<<<<')
       this.options = options;
       const targets = options.targets.filter((target) => !target.hide && target.query);
       const queries = await Promise.all(targets.map(async (target) => this.createQuery(options, target)));
@@ -372,20 +370,17 @@ export class CHDataSource
       });
 
       return Promise.all(allQueryPromise).then((responses: any): any => {
-        console.log(responses, '-----')
         let result: any[] = [],
           i = 0;
         _.each(responses, (response) => {
           const target = options.targets[i];
           const keys = queries[i].keys;
 
-          console.log(321)
           i++;
           if (!response || !response.rows) {
             return;
           }
 
-          console.log(123)
           let sqlSeries = new SqlSeries({
             refId: target.refId,
             series: response.data,
@@ -396,7 +391,6 @@ export class CHDataSource
             to: SqlQueryHelper.convertTimestamp(options.range.to),
           });
 
-          console.log(target.format)
           if (target.format === 'table') {
             _.each(sqlSeries.toTable(), (data) => {
               result.push(data);
@@ -409,38 +403,73 @@ export class CHDataSource
             result = sqlSeries.toLogs();
           } else if (target.refId === 'Anno') {
             result = sqlSeries.toAnnotation(response.data, response.meta);
-          } else if (target.datasourceMode === DatasourceMode.Variables ) {
-            console.log('Itz datasource mode VARIAELBLE')
-            console.log(sqlSeries.series)
-            result = [{
+          } else if (target.datasourceMode === DatasourceMode.Variable ) {
+            if (sqlSeries.meta.length === 0) {
+              result =[]
+            }
+
+            let isTextExist = false;
+            let isValueExist = false;
+
+            sqlSeries.meta.forEach((col: any) => {
+              if (col.name === 'text') {
+                isTextExist = true;
+              }
+              if (col.name === 'value' ) {
+                isValueExist = true;
+              }
+            })
+
+            const resultContent: { length: any; refId: string; fields: any[] } = {
               refId: 'A',
-              fields: [
-                {
+              length:  sqlSeries.series.length,
+              fields: []
+            }
+
+            if (isTextExist && isValueExist) {
+              resultContent.fields.push({
+                name: 'text',
+                type: FieldType.string,
+                values: sqlSeries.series.map(item => item.text.toString()),
+              })
+              resultContent.fields.push({
+                name: 'value',
+                type: FieldType.string,
+                values: sqlSeries.series.map(item => item.value.toString()),
+              })
+            } else if (isTextExist) {
+              resultContent.fields.push({
+                name: 'text',
+                type: FieldType.string,
+                values: sqlSeries.series.map(item => item.text),
+              })
+            } else {
+              const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');
+              if (getFirstStringField) {
+                resultContent.fields.push({
                   name: 'text',
                   type: FieldType.string,
-                  values: sqlSeries.series.map(item => item.name),
-                },
-                {
-                  name: 'values',
+                  values: sqlSeries.series.map(item => item[getFirstStringField.name]),
+                })
+              } else {
+                const getFirstElement = sqlSeries.meta[0];
+
+                resultContent.fields.push({
+                  name: 'text',
                   type: FieldType.string,
-                  values: sqlSeries.series.map(item => item.name),
-                },
-                // {
-                //   name: 'values',
-                //   type: FieldType.string,
-                //   values: ['logline text1', 'logline text2'],
-                // },
-              ]
-            }]
+                  values: sqlSeries.series.map(item => item[getFirstElement.name]),
+                })
+              }
+            }
+
+            result = [resultContent]
           } else {
-            console.log('RRRRRR')
             _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
               result.push(data);
             });
           }
         });
 
-        console.log({ data: result }, '--------')
         return { data: result };
       });
     };

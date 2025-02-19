@@ -3,7 +3,7 @@ import Scanner from '../scanner/scanner';
 import { TemplateSrv } from '@grafana/runtime';
 import { SqlQueryHelper } from './sql-query-helper';
 import SqlQueryMacros from './sql-query-macros';
-import { TimestampFormat } from '../../types/types';
+import {DatasourceMode, TimestampFormat} from '../../types/types';
 
 export default class SqlQuery {
   target: any;
@@ -36,6 +36,24 @@ export default class SqlQuery {
       options.scopedVars,
       SqlQueryHelper.interpolateQueryExpr
     );
+
+    if (this.target.datasourceMode === DatasourceMode.Variable) {
+      const wildcardChar = '%';
+      const searchFilterVariableName = '__searchFilter';
+      let scopedVars = {};
+      if (query?.indexOf(searchFilterVariableName) !== -1) {
+        const searchFilterValue =
+          options && options.searchFilter ? `${options.searchFilter}${wildcardChar}` : `${wildcardChar}`;
+        scopedVars = {
+          __searchFilter: {
+            value: searchFilterValue,
+            text: '',
+          },
+        };
+        query = this.templateSrv.replace(query, scopedVars, SqlQueryHelper.interpolateQueryExpr);
+      }
+    }
+
     let scanner = new Scanner(query);
     let dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : TimestampFormat.DateTime;
     let i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval;
@@ -125,7 +143,7 @@ export default class SqlQuery {
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.to, myround));
 
     // TODO: replace
-    const query2 = query
+    const queryWithReplacedMacroses = query
       .replace(/\$timeSeries\b/g, SqlQueryMacros.getTimeSeries(dateTimeType))
       .replace(/\$timeSeriesMs\b/g, SqlQueryMacros.getTimeSeriesMs(dateTimeType))
       .replace(/\$naturalTimeSeries/g, SqlQueryMacros.getNaturalTimeSeries(dateTimeType, from, to))
@@ -143,7 +161,7 @@ export default class SqlQuery {
     const round = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1);
 
     return SqlQueryMacros.replaceTimeFilters(
-      query2,
+      queryWithReplacedMacroses,
       this.options.range,
       dateTimeType,
       round

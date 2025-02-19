@@ -53,6 +53,7 @@ export class CHDataSource
   adHocValuesQuery: string;
   adHocHideTableNames: boolean;
   uid: string;
+  datasourceMode?: DatasourceMode;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
@@ -97,7 +98,7 @@ export class CHDataSource
       },
       // @ts-ignore
       editor: QueryEditorVariable,
-      query: this.query.bind(this),
+      query: this.queryVariables.bind(this),
     }
 
     this.annotations = {
@@ -480,6 +481,112 @@ export class CHDataSource
     return from(queryProcessing());
   }
 
+  queryVariables(options: DataQueryRequest<CHQuery>): Observable<any> {
+    const queryProcessing = async () => {
+      this.options = options;
+      const targets = options.targets.filter((target) => !target.hide && target?.query || typeof target === 'string');
+      const queries = await Promise.all(targets.map(async (target) => {
+        return this.createQuery(options, (typeof target === 'string') ? {query: target, datasourceMode: DatasourceMode.Variable} : target)
+      }));
+
+      // No valid targets, return the empty result to save a round trip.
+      if (!queries.length) {
+        return from(Promise.resolve({ data: [] }));
+      }
+      const allQueryPromise = queries.map((query) => {
+        return this._seriesQuery(query.stmt, query.requestId + String(Math.random()));
+      });
+
+      return Promise.all(allQueryPromise).then((responses: any): any => {
+        let result: any[] = [],
+          i = 0;
+        _.each(responses, (response) => {
+          const target = options.targets[i];
+          const keys = queries[i].keys;
+
+          i++;
+          if (!response || !response.rows) {
+            return;
+          }
+
+          let sqlSeries = new SqlSeries({
+            refId: target.refId,
+            series: response.data,
+            meta: response.meta,
+            keys: keys,
+            tillNow: options.rangeRaw?.to === 'now',
+            from: SqlQueryHelper.convertTimestamp(options.range.from),
+            to: SqlQueryHelper.convertTimestamp(options.range.to),
+          });
+
+          if (sqlSeries.meta.length === 0) {
+            result =[]
+          }
+
+          let isTextExist = false;
+          let isValueExist = false;
+
+          sqlSeries.meta.forEach((col: any) => {
+            if (col.name === 'text') {
+              isTextExist = true;
+            }
+            if (col.name === 'value' ) {
+              isValueExist = true;
+            }
+          })
+
+          const resultContent: { length: any; refId: string; fields: any[] } = {
+            refId: 'A',
+            length:  sqlSeries.series.length,
+            fields: []
+          }
+
+          if (isTextExist && isValueExist) {
+            resultContent.fields.push({
+              name: 'text',
+              type: FieldType.string,
+              values: sqlSeries.series.map(item => item.text.toString()),
+            })
+            resultContent.fields.push({
+              name: 'value',
+              type: FieldType.string,
+              values: sqlSeries.series.map(item => item.value.toString()),
+            })
+          } else if (isTextExist) {
+            resultContent.fields.push({
+              name: 'text',
+              type: FieldType.string,
+              values: sqlSeries.series.map(item => item.text),
+            })
+          } else {
+            const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');
+            if (getFirstStringField) {
+              resultContent.fields.push({
+                name: 'text',
+                type: FieldType.string,
+                values: sqlSeries.series.map(item => item[getFirstStringField.name]),
+              })
+            } else {
+              const getFirstElement = sqlSeries.meta[0];
+
+              resultContent.fields.push({
+                name: 'text',
+                type: FieldType.string,
+                values: sqlSeries.series.map(item => item[getFirstElement.name]),
+              })
+            }
+          }
+
+          result = [resultContent]
+        });
+
+        return { data: result };
+      });
+    };
+
+    return from(queryProcessing());
+  }
+
   modifyQuery(query: any, action: any): any {
     let scanner = new Scanner(query.query ?? '');
     let queryAST = scanner.toAST();
@@ -540,7 +647,7 @@ export class CHDataSource
 
     return {
       keys: keys,
-      requestId: options.panelId + target.refId,
+      requestId: options.panelId + target.refId + (this.datasourceMode || '') + String(Math.random()),
       stmt: stmt,
     };
   }

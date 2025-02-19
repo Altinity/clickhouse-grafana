@@ -27,10 +27,6 @@ export default class SqlQuery {
       query = Scanner.RemoveComments(query);
     }
 
-    if (this.target.add_metadata) {
-      query = Scanner.AddMetadata(query);
-    }
-
     query = this.templateSrv.replace(
       SqlQueryHelper.conditionalTest(query, this.templateSrv),
       options.scopedVars,
@@ -143,7 +139,7 @@ export default class SqlQuery {
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.to, myround));
 
     // TODO: replace
-    const queryWithReplacedMacroses = query
+    let queryWithReplacedMacroses = query
       .replace(/\$timeSeries\b/g, SqlQueryMacros.getTimeSeries(dateTimeType))
       .replace(/\$timeSeriesMs\b/g, SqlQueryMacros.getTimeSeriesMs(dateTimeType))
       .replace(/\$naturalTimeSeries/g, SqlQueryMacros.getNaturalTimeSeries(dateTimeType, from, to))
@@ -160,11 +156,19 @@ export default class SqlQuery {
 
     const round = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1);
 
-    return SqlQueryMacros.replaceTimeFilters(
+
+    if (this.target.add_metadata) {
+      queryWithReplacedMacroses = Scanner.AddMetadata(queryWithReplacedMacroses);
+    }
+
+    this.target.rawQuery = SqlQueryMacros.replaceTimeFilters(
       queryWithReplacedMacroses,
       this.options.range,
       dateTimeType,
       round
     );
+
+    return this.target.rawQuery;
+
   }
 }

@@ -1,4 +1,4 @@
-import './wasm_exec.js';
+import './wasm_exec';
 import pako from 'pako';
 
 declare global {

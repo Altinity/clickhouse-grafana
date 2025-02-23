@@ -1,4 +1,4 @@
-// ts-nocheck
+// @ts-nocheck
 // Copyright 2018 The Go Authors. All rights reserved.
 // Use of this source code is governed by a BSD-style
 // license that can be found in the LICENSE file.
@@ -101,17 +101,6 @@
 		}
 	}
 
-	// if (!global.crypto) {
-  //   console.log('polyfilling crypto')
-	// 	const nodeCrypto = require("node:crypto");
-  //   console.log('success')
-	// 	global.crypto = {
-	// 		getRandomValues(b) {
-	// 			nodeCrypto.randomFillSync(b);
-	// 		},
-	// 	};
-	// }
-
 	if (!global.performance) {
 		global.performance = {
 			now() {
@@ -121,23 +110,27 @@
 		};
 	}
 
-	// if (!global.TextEncoder) {
-	// 	global.TextEncoder = require("node:util").TextEncoder;
-	// }
-  //
-	// if (!global.TextDecoder) {
-	// 	global.TextDecoder = require("node:util").TextDecoder;
-	// }
-
 	// End of polyfills for common API.
 
 	const encoder = new TextEncoder("utf-8");
 	const decoder = new TextDecoder("utf-8");
 	let reinterpretBuf = new DataView(new ArrayBuffer(8));
-	let logLine = [];
+	let logLine: any[] = [];
 	const wasmExit = {}; // thrown to exit via proc_exit (not an error)
 
 	global.Go = class {
+		private _inst!: WasmInstance;
+		private _values: any[] = [];
+		private _goRefCounts: number[] = [];
+		private _ids: Map<any, bigint> = new Map();
+		private _idPool: BigInt[] = [];
+		private _callbackTimeouts: Map<number, NodeJS.Timeout>;
+		private _nextCallbackTimeoutID: number;
+		public exited = false;
+		public exitCode = 0;
+		private _resolveExitPromise: () => void;
+		public importObject: ImportObject;
+
 		constructor() {
 			this._callbackTimeouts = new Map();
 			this._nextCallbackTimeoutID = 1;
@@ -198,11 +191,11 @@
 					if (id === undefined) {
 						id = BigInt(this._values.length);
 					}
-					this._values[id] = v;
-					this._goRefCounts[id] = 0;
+					this._values[id as unknown as number] = v;
+					this._goRefCounts[id as unknown as number] = 0;
 					this._ids.set(v, id);
 				}
-				this._goRefCounts[id]++;
+				this._goRefCounts[id as unknown as number]++;
 				let typeFlag = 1n;
 				switch (typeof v) {
 					case "string":
@@ -223,11 +216,11 @@
 				mem().setBigUint64(addr, v_ref, true);
 			}
 
-			const loadSlice = (array, len, cap) => {
+			const loadSlice = (array, len) => {
 				return new Uint8Array(this._inst.exports.memory.buffer, array, len);
 			}
 
-			const loadSliceOfValues = (array, len, cap) => {
+			const loadSliceOfValues = (array, len) => {
 				const a = new Array(len);
 				for (let i = 0; i < len; i++) {
 					a[i] = loadValue(array + i * 8);
@@ -311,7 +304,7 @@
 
 					// func finalizeRef(v ref)
           "syscall/js.finalizeRef": (v_ref) => {
-            const id = mem().getUint32(unboxValue(v_ref), true);
+            const id = mem().getUint32(unboxValue(v_ref), true) as BigInt
             this._goRefCounts[id]--;
             if (this._goRefCounts[id] === 0) {
               const v = this._values[id];
@@ -376,10 +369,10 @@
 					},
 
 					// func valueInvoke(v ref, args []ref) (ref, bool)
-					"syscall/js.valueInvoke": (ret_addr, v_ref, args_ptr, args_len, args_cap) => {
+					"syscall/js.valueInvoke": (ret_addr, v_ref, args_ptr, args_len) => {
 						try {
 							const v = unboxValue(v_ref);
-							const args = loadSliceOfValues(args_ptr, args_len, args_cap);
+							const args = loadSliceOfValues(args_ptr, args_len);
 							storeValue(ret_addr, Reflect.apply(v, undefined, args));
 							mem().setUint8(ret_addr + 8, 1);
 						} catch (err) {
@@ -389,9 +382,9 @@
 					},
 
 					// func valueNew(v ref, args []ref) (ref, bool)
-					"syscall/js.valueNew": (ret_addr, v_ref, args_ptr, args_len, args_cap) => {
+					"syscall/js.valueNew": (ret_addr, v_ref, args_ptr, args_len) => {
 						const v = unboxValue(v_ref);
-						const args = loadSliceOfValues(args_ptr, args_len, args_cap);
+						const args = loadSliceOfValues(args_ptr, args_len);
 						try {
 							storeValue(ret_addr, Reflect.construct(v, args));
 							mem().setUint8(ret_addr + 8, 1);
@@ -415,9 +408,9 @@
 					},
 
 					// valueLoadString(v ref, b []byte)
-					"syscall/js.valueLoadString": (v_ref, slice_ptr, slice_len, slice_cap) => {
+					"syscall/js.valueLoadString": (v_ref, slice_ptr, slice_len) => {
 						const str = unboxValue(v_ref);
-						loadSlice(slice_ptr, slice_len, slice_cap).set(str);
+						loadSlice(slice_ptr, slice_len).set(str);
 					},
 
 					// func valueInstanceOf(v ref, t ref) bool
@@ -504,6 +497,7 @@
 				return this.exitCode;
 			} else {
 				this._inst.exports._initialize();
+        return this.exitCode;
 			}
 		}
 
@@ -546,7 +540,7 @@
 			process.exit(1);
 		}
 
-		const go = new Go();
+		const go = new global.Go();
 		WebAssembly.instantiate(fs.readFileSync(process.argv[2]), go.importObject).then(async (result) => {
 			let exitCode = await go.run(result.instance);
 			process.exit(exitCode);

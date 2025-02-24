@@ -442,7 +442,7 @@ export class CHDataSource
         throw error;
       }
     };
-  
+
     return from(queryProcessing());
   }
 

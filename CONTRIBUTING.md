@@ -20,6 +20,16 @@ docker compose up --no-deps -d grafana clickhouse
 ```
 after that open http://localhost:3000/ to open grafana instance with one clickhouse datasource
 
+#### Ability to debug WASM code
+
+Install https://goo.gle/wasm-debugging-extension
+
+Check in JS console in DevTools something like
+```
+[C/C++ DevTools Support (DWARF)] Loading debug symbols for wasm://wasm/main-006e733a...
+[C/C++ DevTools Support (DWARF)] Loaded debug symbols for wasm://wasm/main-006e733a, found 213 source file(s)
+```
+
 #### Frontend Builder
 
 The frontend builder is the docker container used to transpile the typescript source code into the javascript found in the `dist` dir. This will affect the grafana query and configuration functionality.

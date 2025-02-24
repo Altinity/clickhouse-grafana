@@ -3,7 +3,7 @@ import Scanner from '../scanner/scanner';
 import { TemplateSrv } from '@grafana/runtime';
 import { SqlQueryHelper } from './sql-query-helper';
 import SqlQueryMacros from './sql-query-macros';
-import { TimestampFormat } from '../../types/types';
+import {DatasourceMode, TimestampFormat} from '../../types/types';
 
 export default class SqlQuery {
   target: any;
@@ -27,15 +27,29 @@ export default class SqlQuery {
       query = Scanner.RemoveComments(query);
     }
 
-    if (this.target.add_metadata) {
-      query = Scanner.AddMetadata(query);
-    }
-
     query = this.templateSrv.replace(
       SqlQueryHelper.conditionalTest(query, this.templateSrv),
       options.scopedVars,
       SqlQueryHelper.interpolateQueryExpr
     );
+
+    if (this.target.datasourceMode === DatasourceMode.Variable) {
+      const wildcardChar = '%';
+      const searchFilterVariableName = '__searchFilter';
+      let scopedVars = {};
+      if (query?.indexOf(searchFilterVariableName) !== -1) {
+        const searchFilterValue =
+          options && options.searchFilter ? `${options.searchFilter}${wildcardChar}` : `${wildcardChar}`;
+        scopedVars = {
+          __searchFilter: {
+            value: searchFilterValue,
+            text: '',
+          },
+        };
+        query = this.templateSrv.replace(query, scopedVars, SqlQueryHelper.interpolateQueryExpr);
+      }
+    }
+
     let scanner = new Scanner(query);
     let dateTimeType = this.target.dateTimeType ? this.target.dateTimeType : TimestampFormat.DateTime;
     let i = this.templateSrv.replace(this.target.interval, options.scopedVars) || options.interval;
@@ -125,7 +139,7 @@ export default class SqlQuery {
     let to = SqlQueryHelper.convertTimestamp(SqlQueryHelper.round(this.options.range.to, myround));
 
     // TODO: replace
-    this.target.rawQuery = query
+    let queryWithReplacedMacroses = query
       .replace(/\$timeSeries\b/g, SqlQueryMacros.getTimeSeries(dateTimeType))
       .replace(/\$timeSeriesMs\b/g, SqlQueryMacros.getTimeSeriesMs(dateTimeType))
       .replace(/\$naturalTimeSeries/g, SqlQueryMacros.getNaturalTimeSeries(dateTimeType, from, to))
@@ -141,12 +155,24 @@ export default class SqlQuery {
       .replace(/\$adhoc\b/g, renderedAdHocCondition);
 
     const round = this.target.round === '$step' ? interval : SqlQueryHelper.convertInterval(this.target.round, 1);
+
+
+    if (this.target.add_metadata) {
+      queryWithReplacedMacroses = this.templateSrv.replace(
+        SqlQueryHelper.conditionalTest(Scanner.AddMetadata(queryWithReplacedMacroses), this.templateSrv),
+        options.scopedVars,
+        SqlQueryHelper.interpolateQueryExpr,
+      );
+    }
+
     this.target.rawQuery = SqlQueryMacros.replaceTimeFilters(
-      this.target.rawQuery,
+      queryWithReplacedMacroses,
       this.options.range,
       dateTimeType,
       round
     );
+
     return this.target.rawQuery;
+
   }
 }

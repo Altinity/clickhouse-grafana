@@ -158,7 +158,11 @@ export default class SqlQuery {
 
 
     if (this.target.add_metadata) {
-      queryWithReplacedMacroses = Scanner.AddMetadata(queryWithReplacedMacroses);
+      queryWithReplacedMacroses = this.templateSrv.replace(
+        SqlQueryHelper.conditionalTest(Scanner.AddMetadata(queryWithReplacedMacroses), this.templateSrv),
+        options.scopedVars,
+        SqlQueryHelper.interpolateQueryExpr,
+      );
     }
 
     this.target.rawQuery = SqlQueryMacros.replaceTimeFilters(

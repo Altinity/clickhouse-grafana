@@ -254,14 +254,14 @@ func createQueryWasm(this js.Value, args []js.Value) interface{} {
 	from, err := time.Parse(time.RFC3339, reqData.TimeRange.From)
 	if err != nil {
 		return map[string]interface{}{
-			"error": "Invalid from time",
+			"error": "Invalid `$from` time",
 		}
 	}
 
 	to, err := time.Parse(time.RFC3339, reqData.TimeRange.To)
 	if err != nil {
 		return map[string]interface{}{
-			"error": "Invalid to time",
+			"error": "Invalid `$to` time",
 		}
 	}
 

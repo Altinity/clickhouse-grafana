@@ -156,6 +156,22 @@ const getMacrosAutocompletion = function () {
         'Example:\n $columnsMs(OSName, count(*) c) FROM requests',
     },
     {
+      name: '$lttb',
+      def: '$lttb(buckets_number, [field1,...fieldN,] x_field, y_field)',
+      docText:
+        'allow get down-sampled result which contains more outliers than avg and any other aggregation' +
+        '\n' +
+        'Example:\n $lttb(auto, event_time, count(*) c) FROM requests',
+    },
+    {
+      name: '$lttbMs',
+      def: '$lttbMs(buckets_number, [field1,...fieldN,], x_field, y_field)',
+      docText:
+        'allow get down-sampled result which contains more outliers than avg and any other aggregation' +
+        '\n' +
+        'Example:\n $lttbMs(100, event_time, count(*) c) FROM requests',
+    },
+    {
       name: '$rateColumns',
       def: '$rateColumns(key, value)',
       docText:

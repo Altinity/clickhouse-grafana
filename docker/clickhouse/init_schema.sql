@@ -332,3 +332,19 @@ SELECT
    toUInt64(now() - INTERVAL number SECOND)*1000000000 + toUInt64(randUniform(0, 1000000000)) AS tUInt64_9,
    number AS value
 FROM numbers(86400);
+
+DROP TABLE IF EXISTS default.test_lttb SYNC;
+CREATE TABLE default.test_lttb(
+  event_time DateTime,
+  event_time_ms DateTime64(3),
+  category LowCardinality(String),
+  requests UInt64
+) ENGINE=MergeTree() ORDER BY event_time;
+
+INSERT INTO default.test_lttb
+SELECT
+  now() - INTERVAL number SECOND,
+  now() - INTERVAL number SECOND + INTERVAL randUniform(0, 100) MILLISECOND,
+  'category' || toString(number%25),
+  rand() % 1000000
+FROM numbers(86400);

@@ -18,6 +18,7 @@ import {
   ContextWindowSizeSelect,
   ToolbarButtons,
 } from './components';
+import {DatasourceMode} from "../../../../types/types";
 
 export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
   query,
@@ -85,7 +86,7 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
           />
         </InlineFieldRow>
         <InlineFieldRow>
-          {!isAnnotationView && (
+          {(!isAnnotationView && query.datasourceMode !== DatasourceMode.Variable) && (
             <FormatAsSelect
               query={query}
               onChange={(e: any) => handlers.handleFormatChange(e.value)}

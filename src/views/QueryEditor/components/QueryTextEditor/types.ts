@@ -1,4 +1,5 @@
 import {SelectableValue} from "@grafana/data";
+import {DatasourceMode} from "../../../../types/types";
 
 export interface Query {
   extrapolate: boolean;
@@ -12,6 +13,7 @@ export interface Query {
   contextWindowSize?: string;
   showHelp: boolean;
   showFormattedSQL: boolean;
+  datasourceMode?: DatasourceMode;
 }
 
 export interface AdhocFilter {

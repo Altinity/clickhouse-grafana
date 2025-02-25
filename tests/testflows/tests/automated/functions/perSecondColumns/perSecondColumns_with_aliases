@@ -1,2 +1,2 @@
 $perSecondColumns(key as k, value as v) FROM table_name
-SELECT t, groupArray((k, max_0_PerSecond)) AS groupArr FROM ( SELECT t, k, if(runningDifference(max_0) < 0 OR neighbor(k,-1,k) != k, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, max(value as v) AS max_0 FROM table_name WHERE
+SELECT t, groupArray((k, max_0_PerSecond)) AS groupArr FROM ( SELECT t, k, if(runningDifference(max_0) < 0 OR neighbor(k,-1,k) != k, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(""), 30) * 30) * 1000 AS t, key as k, max(value as v) AS max_0 FROM table_name WHERE

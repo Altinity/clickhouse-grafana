@@ -1,8 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import { InlineFieldRow } from '@grafana/ui';
 import { SQLCodeEditor } from './SQLCodeEditor';
-import Scanner from '../../../../datasource/scanner/scanner';
-import { FormattedSQL } from "./FormattedSQL";
+import { FormattedSQL } from './FormattedSQL';
 import QueryMacrosInfo from './QueryMacrosInfo';
 import { useQueryHandlers } from './hooks/useQueryHandlers';
 import { QueryTextEditorProps } from './types';
@@ -36,54 +35,54 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
   const handlers = useQueryHandlers({ onFieldChange, query });
 
   useEffect(() => {
-    const scanner = new Scanner(formattedData);
-    setSqlFormattedData(scanner.raw());
+    setSqlFormattedData(formattedData);
+    // eslint-disable-next-line
   }, [formattedData]);
 
   return (
     <>
-      <SQLCodeEditor 
-        datasource={datasource} 
-        onSqlChange={onSqlChange} 
-        query={query} 
-        onRunQuery={onRunQuery} 
+      <SQLCodeEditor
+        datasource={datasource}
+        onSqlChange={onSqlChange}
+        query={query}
+        onRunQuery={onRunQuery}
       />
-      <AdhocFilterTags 
-        adhocFilters={adhocFilters} 
-        areAdHocFiltersAvailable={areAdHocFiltersAvailable} 
-        onFieldChange={onFieldChange} 
+      <AdhocFilterTags
+        adhocFilters={adhocFilters}
+        areAdHocFiltersAvailable={areAdHocFiltersAvailable}
+        onFieldChange={onFieldChange}
       />
       <div className="gf-form" style={{ display: 'flex', flexDirection: 'column', marginTop: '10px' }}>
         <InlineFieldRow>
-          <ExtrapolationSwitch 
-            query={query} 
-            onChange={() => handlers.handleToggleField('extrapolate')} 
+          <ExtrapolationSwitch
+            query={query}
+            onChange={() => handlers.handleToggleField('extrapolate')}
           />
-          <StepInput 
-            query={query} 
-            handleStepChange={handlers.handleStepChange} 
+          <StepInput
+            query={query}
+            handleStepChange={handlers.handleStepChange}
           />
-          <ResolutionsInput 
-            query={query} 
-            handleResolutionChange={handlers.handleResolutionChange} 
+          <ResolutionsInput
+            query={query}
+            handleResolutionChange={handlers.handleResolutionChange}
           />
-          <RoundInput 
-            query={query} 
-            handleRoundChange={handlers.handleRoundChange} 
+          <RoundInput
+            query={query}
+            handleRoundChange={handlers.handleRoundChange}
           />
         </InlineFieldRow>
         <InlineFieldRow>
-          <MetadataSwitch 
-            query={query} 
-            onChange={() => handlers.handleToggleField('add_metadata')} 
+          <MetadataSwitch
+            query={query}
+            onChange={() => handlers.handleToggleField('add_metadata')}
           />
-          <SkipCommentsSwitch 
-            query={query} 
-            onChange={() => handlers.handleToggleField('skip_comments')} 
+          <SkipCommentsSwitch
+            query={query}
+            onChange={() => handlers.handleToggleField('skip_comments')}
           />
-          <UseWindowFunctionSwitch 
-            query={query} 
-            onChange={() => handlers.handleToggleField('useWindowFuncForMacros')} 
+          <UseWindowFunctionSwitch
+            query={query}
+            onChange={() => handlers.handleToggleField('useWindowFuncForMacros')}
           />
         </InlineFieldRow>
         <InlineFieldRow>
@@ -94,9 +93,9 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
             />
           )}
           {query.format === 'logs' && (
-            <ContextWindowSizeSelect 
-              query={query} 
-              onChange={(e: any) => handlers.handleContextWindowChange(e.value)} 
+            <ContextWindowSizeSelect
+              query={query}
+              onChange={(e: any) => handlers.handleContextWindowChange(e.value)}
             />
           )}
           <ToolbarButtons

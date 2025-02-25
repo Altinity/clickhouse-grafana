@@ -147,7 +147,7 @@ describe('sql-series. toLogs unit tests', () => {
     const input = {
       series: [{ id: 1, timestamp: '2024-01-01T05:00:00', level: 'info' }],
       meta: [
-        { name: 'timestamp', type: 'DateTime(\'Asia/Yekaterinburg\'\')' },
+        { name: 'timestamp', type: "DateTime('Asia/Yekaterinburg'')" },
         { name: 'level', type: 'String' },
       ],
     };
@@ -358,10 +358,6 @@ describe('sql-series. toTimeSeries unit tests', () => {
 
     const result = toTimeSeries(true, selfMock);
     expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 1000]}, {"config": {"links": []}, "name": "A", "values": [1000, 10]}], "length": 2, "refId": undefined}, {"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 1000, 2000, 2000]}, {"config": {"links": []}, "name": "B", "values": [null, null, 2000, 20]}], "length": 4, "refId": undefined}])
-    // expect(result).toEqual([
-    //   { target: 'A', datapoints: [[1000, 1000], [10, 1000]] },
-    //   { target: 'B', datapoints: [[null, 1000], [null, 1000], [2000, 2000], [20, 2000]] },
-    // ]);
   });
 
   it('should handle null values correctly', () => {

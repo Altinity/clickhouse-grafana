@@ -1,2 +1,2 @@
 $rate(first_variable, second_variable) from table_name
-SELECT t, first_variable/runningDifference(t/1000) first_variableRate, second_variable/runningDifference(t/1000) second_variableRate FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, first_variable, second_variable from table_name WHERE
+SELECT t, first_variable/runningDifference(t/1000) first_variableRate, second_variable/runningDifference(t/1000) second_variableRate FROM ( SELECT (intDiv(toUInt32(""), 30) * 30) * 1000 AS t, first_variable, second_variable from table_name WHERE

@@ -128,13 +128,7 @@ export class SqlQueryHelper {
             done = 1;
 
             const value: any = 'current' in varG ? varG.current.value : '';
-            // console.log('value', value,varG, (varG.type === 'query' &&
-            //   ((value.length === 1 && value[0] === '$__all') || (typeof value === 'string' && value === '$__all'))),
-            // // for multi-value drop-down when no one value is select, fix https://github.com/Altinity/clickhouse-grafana/issues/485
-            // (typeof value === 'object' && value.length === 0),
-            // // for textbox variable when nothing is entered
-            // (['textbox', 'custom'].includes(varG.type) && ['', undefined, null].includes(value)));
-
+            
             if (
               // for query variable when all is selected
               // may be add another test on the all activation may be wise.

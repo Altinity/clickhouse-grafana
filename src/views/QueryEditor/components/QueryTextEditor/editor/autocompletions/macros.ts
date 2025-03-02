@@ -185,9 +185,10 @@ const getMacrosAutocompletion = function () {
     },
     {
       name: '$conditionalTest',
-      def: '$conditionalTest(SQL predicate,$variable)',
+      def: '$conditionalTest(SQL predicate,$variable) | $conditionalTest(SQL_if, SQL_else, $variable)',
       docText:
-        'Will add `SQL predicate` filter expression only if $variable have non empty value' +
+        'Will add `SQL predicate` filter expression only if $variable have non empty value. ' +
+        'Alternatively, can use the format with 3 parameters where SQL_else is used when $variable is empty. ' +
         '\n' +
         'Example:\n' +
         'SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter\n' +
@@ -197,6 +198,7 @@ const getMacrosAutocompletion = function () {
         '    AND toLowerCase(column3) ilike ${text_with_single_quote:sqlstring},\n' +
         '    $text_with_single_quote\n' +
         '  )\n' +
+        '  $conditionalTest(AND status = \'active\', AND status = \'all\', $statusFilter)\n' +
         'GROUP BY t\n' +
         'ORDER BY t',
     },

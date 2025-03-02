@@ -71,43 +71,133 @@ export class SqlQueryHelper {
         throw { message: '$conditionalIn macros error: ' + r.error };
       }
       let arg = r.result;
-      // first parameters is an expression and require some complex parsing,
-      // so parse from the end where you know that the last parameters is a comma with a variable
-      let param1 = arg.substring(0, arg.lastIndexOf(',')).trim();
-      let param2 = arg.substring(arg.lastIndexOf(',') + 1).trim();
-      // remove the $ from the variable
-      let varInParam = param2.substring(1);
-      let done = 0;
-      //now find in the list of variable what is the value
-      let variables = templateSrv.getVariables();
-      for (let i = 0; i < variables.length; i++) {
-        let varG: TypedVariableModel = variables[i];
-        if (varG.name === varInParam) {
-          let closeMacros = openMacros + macros.length + r.result.length + 1;
-          done = 1;
-
-          const value: any = 'current' in varG ? varG.current.value : '';
-
-          if (
-            // for query variable when all is selected
-            // may be add another test on the all activation may be wise.
-            (varG.type === 'query' &&
-              ((value.length === 1 && value[0] === '$__all') || (typeof value === 'string' && value === '$__all'))) ||
-            // for multi-value drop-down when no one value is select, fix https://github.com/Altinity/clickhouse-grafana/issues/485
-            (typeof value === 'object' && value.length === 0) ||
-            // for textbox variable when nothing is entered
-            (['textbox', 'custom'].includes(varG.type) && ['', undefined, null].includes(value))
-          ) {
-            query = query.substring(0, openMacros) + ' ' + query.substring(closeMacros, query.length);
-          } else {
-            // replace of the macro with standard test.
-            query = query.substring(0, openMacros) + ' ' + param1 + ' ' + query.substring(closeMacros, query.length);
-          }
-          break;
-        }
+      
+      // Count number of parameters by counting commas outside of nested parentheses
+      let commaCount = 0;
+      let nestedParentheses = 0;
+      for (let i = 0; i < arg.length; i++) {
+        if (arg[i] === '(') {
+          nestedParentheses++;
+        } else if (arg[i] === ')') {
+          nestedParentheses--;
+        } else if (arg[i] === ',' && nestedParentheses === 0) {
+          commaCount++;
+        } 
       }
-      if (done === 0) {
-        throw { message: '$conditionalTest macros error cannot find referenced variable: ' + param2 };
+      
+      // For 3-parameter format: $conditionalTest(SQL_if, SQL_else, $var)
+      if (commaCount === 2) {
+        // Find positions of commas that aren't inside nested parentheses
+        let firstCommaPos = -1;
+        let secondCommaPos = -1;
+        nestedParentheses = 0;
+        
+        for (let i = 0; i < arg.length; i++) {
+          if (arg[i] === '(') {
+            nestedParentheses++;
+          } else if (arg[i] === ')') {
+            nestedParentheses--;
+          } else if (arg[i] === ',' && nestedParentheses === 0) {
+            if (firstCommaPos === -1) {
+              firstCommaPos = i;
+            } else {
+              secondCommaPos = i;
+              break;
+            }
+          }
+        }
+        
+        let param1 = arg.substring(0, firstCommaPos).trim();
+        let param2 = arg.substring(firstCommaPos + 1, secondCommaPos).trim();
+        let param3 = arg.substring(secondCommaPos + 1).trim();
+        
+        // Check if the last parameter is a variable (starts with $)
+        if (!param3.startsWith('$')) {
+          throw { message: '$conditionalTest macros error: last parameter must be a variable, got: ' + param3 };
+        }
+        
+        // remove the $ from the variable
+        let varInParam = param3.substring(1);
+        let done = 0;
+        //now find in the list of variable what is the value
+        let variables = templateSrv.getVariables();
+        for (let i = 0; i < variables.length; i++) {
+          let varG: TypedVariableModel = variables[i];
+          if (varG.name === varInParam) {
+            let closeMacros = openMacros + macros.length + r.result.length + 1;
+            done = 1;
+
+            const value: any = 'current' in varG ? varG.current.value : '';
+            // console.log('value', value,varG, (varG.type === 'query' &&
+            //   ((value.length === 1 && value[0] === '$__all') || (typeof value === 'string' && value === '$__all'))),
+            // // for multi-value drop-down when no one value is select, fix https://github.com/Altinity/clickhouse-grafana/issues/485
+            // (typeof value === 'object' && value.length === 0),
+            // // for textbox variable when nothing is entered
+            // (['textbox', 'custom'].includes(varG.type) && ['', undefined, null].includes(value)));
+
+            if (
+              // for query variable when all is selected
+              // may be add another test on the all activation may be wise.
+              (varG.type === 'query' &&
+                ((value.length === 1 && value[0] === '$__all') || (typeof value === 'string' && value === '$__all'))) ||
+              // for multi-value drop-down when no one value is select, fix https://github.com/Altinity/clickhouse-grafana/issues/485
+              (typeof value === 'object' && value.length === 0) ||
+              // for textbox variable when nothing is entered
+              (['textbox', 'custom'].includes(varG.type) && ['', undefined, null].includes(value))
+            ) {
+              // Use SQL_else when variable is empty
+              query = query.substring(0, openMacros) + ' ' + param2 + ' ' + query.substring(closeMacros, query.length);
+            } else {
+              // Use SQL_if when variable has a value
+              query = query.substring(0, openMacros) + ' ' + param1 + ' ' + query.substring(closeMacros, query.length);
+            }
+            break;
+          }
+        }
+        if (done === 0) {
+          throw { message: '$conditionalTest macros error cannot find referenced variable: ' + param3 };
+        }
+      } 
+      // For 2-parameter format: $conditionalTest(SQL_if, $var)
+      else {
+        // first parameters is an expression and require some complex parsing,
+        // so parse from the end where you know that the last parameters is a comma with a variable
+        let param1 = arg.substring(0, arg.lastIndexOf(',')).trim();
+        let param2 = arg.substring(arg.lastIndexOf(',') + 1).trim();
+        // remove the $ from the variable
+        let varInParam = param2.substring(1);
+        let done = 0;
+        //now find in the list of variable what is the value
+        let variables = templateSrv.getVariables();
+        for (let i = 0; i < variables.length; i++) {
+          let varG: TypedVariableModel = variables[i];
+          if (varG.name === varInParam) {
+            let closeMacros = openMacros + macros.length + r.result.length + 1;
+            done = 1;
+
+            const value: any = 'current' in varG ? varG.current.value : '';
+
+            if (
+              // for query variable when all is selected
+              // may be add another test on the all activation may be wise.
+              (varG.type === 'query' &&
+                ((value.length === 1 && value[0] === '$__all') || (typeof value === 'string' && value === '$__all'))) ||
+              // for multi-value drop-down when no one value is select, fix https://github.com/Altinity/clickhouse-grafana/issues/485
+              (typeof value === 'object' && value.length === 0) ||
+              // for textbox variable when nothing is entered
+              (['textbox', 'custom'].includes(varG.type) && ['', undefined, null].includes(value))
+            ) {
+              query = query.substring(0, openMacros) + ' ' + query.substring(closeMacros, query.length);
+            } else {
+              // replace of the macro with standard test.
+              query = query.substring(0, openMacros) + ' ' + param1 + ' ' + query.substring(closeMacros, query.length);
+            }
+            break;
+          }
+        }
+        if (done === 0) {
+          throw { message: '$conditionalTest macros error cannot find referenced variable: ' + param2 };
+        }
       }
       openMacros = query.indexOf(macros);
     }

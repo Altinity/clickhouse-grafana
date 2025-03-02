@@ -18,9 +18,8 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 31,
+  "id": 12,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
@@ -34,11 +33,13 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
             "axisCenteredZero": false,
             "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
@@ -100,8 +101,13 @@
           "sort": "none"
         }
       },
+      "pluginVersion": "11.4.0",
       "targets": [
         {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
           "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
@@ -112,32 +118,151 @@
           "dateTimeColDataType": "event_time",
           "dateTimeType": "DATETIME",
           "datetimeLoading": false,
+          "editorMode": "sql",
           "extrapolate": true,
           "format": "time_series",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
           "intervalFactor": 1,
           "query": "SELECT\n    $timeSeries as t,\n    sum(too_big_value) as v,\n    service_name\nFROM $table\n\nWHERE $timeFilter\n$conditionalTest(AND service_name IN ($service_name), $service_name)\nGROUP BY t, service_name\nORDER BY t\n",
-          "rawQuery": "SELECT\n    (intDiv(toUInt32(event_time), 20) * 20) * 1000 as t,\n    sum(too_big_value) as v,\n    service_name\nFROM default.test_grafana\n\nWHERE event_time >= toDateTime(1694564758) AND event_time <= toDateTime(1694586358)\n \nGROUP BY t, service_name\nORDER BY t",
+          "rawQuery": "/* grafana dashboard='$conditionalTest + template Variables', user='0' */\nSELECT\n    (intDiv(toUInt32(event_time), 30) * 30) * 1000 as t,\n    sum(too_big_value) as v,\n    service_name\nFROM default.test_grafana\n\nWHERE event_time >= toDateTime(1740915902) AND event_time <= toDateTime(1740937502)\n AND service_name IN ('postgresql') \nGROUP BY t, service_name\nORDER BY t",
           "refId": "A",
           "round": "0s",
           "skip_comments": true,
           "table": "test_grafana",
-          "tableLoading": false
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
         }
       ],
-      "title": "$conditionalTest + template variables",
+      "title": "2 parameters $conditionalTest + template variables",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "fix https://github.com/Altinity/clickhouse-grafana/issues/661",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.4.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT\n    $timeSeries as t,\n    sum(too_big_value) as v,\n    service_name\nFROM $table\n\nWHERE $timeFilter\n$conditionalTest(AND service_name IN ($service_name), AND service_name IN ('mysql'), $service_name)\nGROUP BY t, service_name\nORDER BY t\n",
+          "rawQuery": "/* grafana dashboard='$conditionalTest + template Variables', user='0' */\nSELECT\n    (intDiv(toUInt32(event_time), 30) * 30) * 1000 as t,\n    sum(too_big_value) as v,\n    service_name\nFROM default.test_grafana\n\nWHERE event_time >= toDateTime(1740915902) AND event_time <= toDateTime(1740937502)\n AND service_name IN ('postgresql') \nGROUP BY t, service_name\nORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_grafana",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "3 parameters $conditionalTest with ELSE statement + template variables",
       "type": "timeseries"
     }
   ],
+  "preload": false,
   "refresh": "",
-  "schemaVersion": 38,
-  "style": "dark",
+  "schemaVersion": 40,
   "tags": [],
   "templating": {
     "list": [
       {
         "current": {
-          "selected": true,
           "text": [],
           "value": []
         },
@@ -146,16 +271,30 @@
           "uid": "P7E099F39B84EA795"
         },
         "definition": "SELECT DISTINCT service_name FROM default.test_grafana",
-        "hide": 0,
-        "includeAll": false,
+        "includeAll": true,
         "multi": true,
         "name": "service_name",
         "options": [],
-        "query": "SELECT DISTINCT service_name FROM default.test_grafana",
+        "query": {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "datasourceMode": "Variable",
+          "editorMode": "builder",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "SELECT DISTINCT service_name FROM default.test_grafana",
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT DISTINCT service_name FROM default.test_grafana",
+          "rawQuery": "/* grafana dashboard='$conditionalTest + template Variables', user='0' */\nSELECT DISTINCT service_name FROM default.test_grafana",
+          "round": "0s",
+          "skip_comments": true,
+          "useWindowFuncForMacros": true
+        },
         "refresh": 2,
         "regex": "",
-        "skipUrlSync": false,
-        "sort": 0,
         "type": "query"
       }
     ]
@@ -168,6 +307,6 @@
   "timezone": "",
   "title": "$conditionalTest + template Variables",
   "uid": "cd6a9b5a-d9c4-4e97-bcb9-10e9f00fcfec",
-  "version": 4,
+  "version": 1,
   "weekStart": ""
 }

@@ -246,14 +246,6 @@ def many_categories(self):
         with Then("I check there is no errors on the visualization"):
             with delay():
                 assert panel.check_no_labels_on_visualization(labels=["normalized_query_hash", "Too many points"]), error()
-    finally:
-        with Finally("I discard changes for panel"):
-            with delay(after=0.5):
-                panel.click_discard_button()
-
-        with And("I discard changes for dashboard"):
-            with delay(after=0.5):
-                dashboard.discard_changes_for_dashboard()
 
 @TestFeature
 @Name("e2e")

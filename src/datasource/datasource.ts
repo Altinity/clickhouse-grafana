@@ -8,7 +8,7 @@ import {
   DataQueryRequest,
   DataSourceInstanceSettings,
   DataSourceWithLogsContextSupport,
-  DataSourceWithToggleableQueryFiltersSupport,
+  DataSourceWithToggleableQueryFiltersSupport, FieldType,
   LogRowContextOptions,
   LogRowContextQueryDirection,
   LogRowModel,
@@ -17,8 +17,8 @@ import {
 } from '@grafana/data';
 import { BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
-import { CHDataSourceOptions, CHQuery, DEFAULT_QUERY } from '../types/types';
-import { QueryEditor } from '../views/QueryEditor/QueryEditor';
+import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
+import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
@@ -50,6 +50,7 @@ export class CHDataSource
   adHocValuesQuery: string;
   adHocHideTableNames: boolean;
   uid: string;
+  datasourceMode?: DatasourceMode;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
@@ -95,8 +96,8 @@ export class CHDataSource
         return VariableSupportType.Custom;
       },
       // @ts-ignore
-      editor: QueryEditor,
-      query: this.query.bind(this),
+      editor: QueryEditorVariable,
+      query: this.queryVariables.bind(this),
     }
 
     this.annotations = {
@@ -392,24 +393,84 @@ export class CHDataSource
         to: convertTimestamp(options.range.to),
       });
 
-      if (target.format === 'table') {
-        _.each(sqlSeries.toTable(), (data) => {
-          result.push(data);
+          if (target.format === 'table') {
+            _.each(sqlSeries.toTable(), (data) => {
+              result.push(data);
+            });
+          } else if (target.format === 'traces') {
+            result = sqlSeries.toTraces();
+          } else if (target.format === 'flamegraph') {
+            result = sqlSeries.toFlamegraph();
+          } else if (target.format === 'logs') {
+            result = sqlSeries.toLogs();
+          } else if (target.refId === 'Anno') {
+            result = sqlSeries.toAnnotation(response.data, response.meta);
+          } else if (target.datasourceMode === DatasourceMode.Variable ) {
+            if (sqlSeries.meta.length === 0) {
+              result =[]
+            }
+
+            let isTextExist = false;
+            let isValueExist = false;
+
+            sqlSeries.meta.forEach((col: any) => {
+              if (col.name === 'text') {
+                isTextExist = true;
+              }
+              if (col.name === 'value' ) {
+                isValueExist = true;
+              }
+            })
+
+            const resultContent: { length: any; refId: string; fields: any[] } = {
+              refId: 'A',
+              length:  sqlSeries.series.length,
+              fields: []
+            }
+
+            if (isTextExist && isValueExist) {
+              resultContent.fields.push({
+                name: 'text',
+                type: FieldType.string,
+                values: sqlSeries.series.map(item => item.text.toString()),
+              })
+              resultContent.fields.push({
+                name: 'value',
+                type: FieldType.string,
+                values: sqlSeries.series.map(item => item.value.toString()),
+              })
+            } else if (isTextExist) {
+              resultContent.fields.push({
+                name: 'text',
+                type: FieldType.string,
+                values: sqlSeries.series.map(item => item.text),
+              })
+            } else {
+              const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');
+              if (getFirstStringField) {
+                resultContent.fields.push({
+                  name: 'text',
+                  type: FieldType.string,
+                  values: sqlSeries.series.map(item => item[getFirstStringField.name]),
+                })
+              } else {
+                const getFirstElement = sqlSeries.meta[0];
+
+                resultContent.fields.push({
+                  name: 'text',
+                  type: FieldType.string,
+                  values: sqlSeries.series.map(item => item[getFirstElement.name]),
+                })
+              }
+            }
+
+            result = [resultContent]
+          } else {
+            _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
+              result.push(data);
+            });
+          }
         });
-      } else if (target.format === 'traces') {
-        result = sqlSeries.toTraces();
-      } else if (target.format === 'flamegraph') {
-        result = sqlSeries.toFlamegraph();
-      } else if (target.format === 'logs') {
-        result = sqlSeries.toLogs();
-      } else if (target.refId === 'Anno') {
-        result = sqlSeries.toAnnotation(response.data, response.meta);
-      } else {
-        _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
-          result.push(data);
-        });
-      }
-    });
 
     return { data: result };
   }
@@ -443,6 +504,115 @@ export class CHDataSource
       }
     };
 
+    queryProcessing().then(result => {
+      return result
+    })
+    return from(queryProcessing());
+  }
+
+  queryVariables(options: DataQueryRequest<CHQuery>): Observable<any> {
+    const queryProcessing = async () => {
+      this.options = options;
+      const targets = options.targets.filter((target) => !target.hide && target?.query || typeof target === 'string');
+      const queries = await Promise.all(targets.map(async (target) => {
+        return this.createQuery(options, (typeof target === 'string') ? {query: target, datasourceMode: DatasourceMode.Variable} : target)
+      }));
+
+      // No valid targets, return the empty result to save a round trip.
+      if (!queries.length) {
+        return from(Promise.resolve({ data: [] }));
+      }
+      const allQueryPromise = queries.map((query) => {
+        return this.seriesQuery(query.stmt, query.requestId + String(Math.random()));
+      });
+
+      return Promise.all(allQueryPromise).then((responses: any): any => {
+        let result: any[] = [],
+          i = 0;
+        _.each(responses, (response) => {
+          const target = options.targets[i];
+          const keys = queries[i].keys;
+
+          i++;
+          if (!response || !response.rows) {
+            return;
+          }
+
+          let sqlSeries = new SqlSeries({
+            refId: target.refId,
+            series: response.data,
+            meta: response.meta,
+            keys: keys,
+            tillNow: options.rangeRaw?.to === 'now',
+            from: convertTimestamp(options.range.from),
+            to: convertTimestamp(options.range.to),
+          });
+
+          if (sqlSeries.meta.length === 0) {
+            result =[]
+          }
+
+          let isTextExist = false;
+          let isValueExist = false;
+
+          sqlSeries.meta.forEach((col: any) => {
+            if (col.name === 'text') {
+              isTextExist = true;
+            }
+            if (col.name === 'value' ) {
+              isValueExist = true;
+            }
+          })
+
+          const resultContent: { length: any; refId: string; fields: any[] } = {
+            refId: 'A',
+            length:  sqlSeries.series.length,
+            fields: []
+          }
+
+          if (isTextExist && isValueExist) {
+            resultContent.fields.push({
+              name: 'text',
+              type: FieldType.string,
+              values: sqlSeries.series.map(item => item.text.toString()),
+            })
+            resultContent.fields.push({
+              name: 'value',
+              type: FieldType.string,
+              values: sqlSeries.series.map(item => item.value.toString()),
+            })
+          } else if (isTextExist) {
+            resultContent.fields.push({
+              name: 'text',
+              type: FieldType.string,
+              values: sqlSeries.series.map(item => item.text),
+            })
+          } else {
+            const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');
+            if (getFirstStringField) {
+              resultContent.fields.push({
+                name: 'text',
+                type: FieldType.string,
+                values: sqlSeries.series.map(item => item[getFirstStringField.name]),
+              })
+            } else {
+              const getFirstElement = sqlSeries.meta[0];
+
+              resultContent.fields.push({
+                name: 'text',
+                type: FieldType.string,
+                values: sqlSeries.series.map(item => item[getFirstElement.name]),
+              })
+            }
+          }
+
+          result = [resultContent]
+        });
+
+        return { data: result };
+      });
+    };
+
     return from(queryProcessing());
   }
 
@@ -451,7 +621,7 @@ export class CHDataSource
       const { stmt, keys } = await this.replace(options, target);
       return {
         keys: keys,
-        requestId: options.panelId + target.refId,
+        requestId: options.panelId + target.refId + (this.datasourceMode || '') + String(Math.random()),
         stmt: stmt,
       };
     } catch (error) {
@@ -588,32 +758,36 @@ export class CHDataSource
   async replace(options: DataQueryRequest<CHQuery>, target: CHQuery): Promise<any> {
     try {
       const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
+      const queryData = {
+        frontendDatasource: true,
+        refId: target.refId,
+        ruleUid: options.headers?.['X-Rule-Uid'] || '',
+        rawQuery: false,
+        query: target.query, // Required field
+        dateTimeColDataType: target.dateTimeColDataType || '',
+        dateColDataType: target.dateColDataType || '',
+        dateTimeType: target.dateTimeType || 'DATETIME',
+        extrapolate: target.extrapolate || false,
+        skip_comments: target.skip_comments || false,
+        add_metadata: target.add_metadata || false,
+        format: target.format || 'time_series',
+        round: target.round || '0s',
+        intervalFactor: target.intervalFactor || 1,
+        interval: target.interval || options.interval || '30s',
+        database: target.database || 'default',
+        table: target.table || '',
+        maxDataPoints: options.maxDataPoints || 0,
+        timeRange: {
+          from: options.range.from.toISOString(), // Convert to Unix timestamp
+          to: options.range.to.toISOString(), // Convert to Unix timestamp
+        },
+      };
+     const createQueryResult = await this.wasmModule.createQuery(queryData);
+      const { sql, keys, error } = createQueryResult
 
-    const queryData = {
-      frontendDatasource: true,
-      refId: target.refId,
-      ruleUid: options.headers?.['X-Rule-Uid'] || '',
-      rawQuery: false,
-      query: target.query, // Required field
-      dateTimeColDataType: target.dateTimeColDataType || '',
-      dateColDataType: target.dateColDataType || '',
-      dateTimeType: target.dateTimeType || 'DATETIME',
-      extrapolate: target.extrapolate || false,
-      skip_comments: target.skip_comments || false,
-      add_metadata: target.add_metadata || false,
-      format: target.format || 'time_series',
-      round: target.round || '0s',
-      intervalFactor: target.intervalFactor || 1,
-      interval: target.interval || options.interval || '30s',
-      database: target.database || 'default',
-      table: target.table || '',
-      maxDataPoints: options.maxDataPoints || 0,
-      timeRange: {
-        from: options.range.from.toISOString(), // Convert to Unix timestamp
-        to: options.range.to.toISOString(), // Convert to Unix timestamp
-      },
-    };
-     const { sql, keys } = await this.wasmModule.createQuery(queryData);
+      if (error) {
+        throw new Error(error);
+      }
 
       const query = this.templateSrv.replace(
         conditionalTest(sql, this.templateSrv),

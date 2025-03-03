@@ -195,6 +195,7 @@ services:
         mkdir -p instrumented &&
         npm run create_instrumented && 
         cp -R -n src/* instrumented/ &&
+        npm run build:test:frontend &&
         npm run test:coverage
       '
 

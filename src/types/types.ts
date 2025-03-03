@@ -24,9 +24,16 @@ export enum TimestampFormat {
   Float = 'FLOAT',
 }
 
+export enum DatasourceMode {
+  Variable = 'Variable',
+  Datasource = 'Datasource',
+  Annotation = 'Annotation'
+}
+
 export interface CHQuery extends DataQuery {
   query: string;
   format: string;
+  datasourceMode: DatasourceMode;
   extrapolate: boolean;
   rawQuery: string;
   editorMode?: EditorMode;
@@ -97,4 +104,5 @@ export const DEFAULT_QUERY: CHQuery = {
   adHocFilters: [],
   showHelp: false,
   showFormattedSQL: false,
+  datasourceMode: DatasourceMode.Datasource,
 };

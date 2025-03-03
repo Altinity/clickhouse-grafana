@@ -11,16 +11,16 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource): [str
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    try {
       if (datasource.options && datasource.templateSrv) {
         datasource.replace(datasource.options, query).then((replaced) => {
           setFormattedData(replaced.stmt);
           setError(null);
-        });
+        }).catch((e) => {
+          setFormattedData(query.query);
+          setError(e.toString());
+        })
       }
-    } catch (e: any) {
-      setError(e?.message);
-    }
+
     // eslint-disable-next-line
   }, [query, datasource.name, datasource.options, datasource.templateSrv]);
 

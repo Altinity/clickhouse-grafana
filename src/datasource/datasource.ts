@@ -758,32 +758,36 @@ export class CHDataSource
   async replace(options: DataQueryRequest<CHQuery>, target: CHQuery): Promise<any> {
     try {
       const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
+      const queryData = {
+        frontendDatasource: true,
+        refId: target.refId,
+        ruleUid: options.headers?.['X-Rule-Uid'] || '',
+        rawQuery: false,
+        query: target.query, // Required field
+        dateTimeColDataType: target.dateTimeColDataType || '',
+        dateColDataType: target.dateColDataType || '',
+        dateTimeType: target.dateTimeType || 'DATETIME',
+        extrapolate: target.extrapolate || false,
+        skip_comments: target.skip_comments || false,
+        add_metadata: target.add_metadata || false,
+        format: target.format || 'time_series',
+        round: target.round || '0s',
+        intervalFactor: target.intervalFactor || 1,
+        interval: target.interval || options.interval || '30s',
+        database: target.database || 'default',
+        table: target.table || '',
+        maxDataPoints: options.maxDataPoints || 0,
+        timeRange: {
+          from: options.range.from.toISOString(), // Convert to Unix timestamp
+          to: options.range.to.toISOString(), // Convert to Unix timestamp
+        },
+      };
+     const createQueryResult = await this.wasmModule.createQuery(queryData);
+      const { sql, keys, error } = createQueryResult
 
-    const queryData = {
-      frontendDatasource: true,
-      refId: target.refId,
-      ruleUid: options.headers?.['X-Rule-Uid'] || '',
-      rawQuery: false,
-      query: target.query, // Required field
-      dateTimeColDataType: target.dateTimeColDataType || '',
-      dateColDataType: target.dateColDataType || '',
-      dateTimeType: target.dateTimeType || 'DATETIME',
-      extrapolate: target.extrapolate || false,
-      skip_comments: target.skip_comments || false,
-      add_metadata: target.add_metadata || false,
-      format: target.format || 'time_series',
-      round: target.round || '0s',
-      intervalFactor: target.intervalFactor || 1,
-      interval: target.interval || options.interval || '30s',
-      database: target.database || 'default',
-      table: target.table || '',
-      maxDataPoints: options.maxDataPoints || 0,
-      timeRange: {
-        from: options.range.from.toISOString(), // Convert to Unix timestamp
-        to: options.range.to.toISOString(), // Convert to Unix timestamp
-      },
-    };
-     const { sql, keys } = await this.wasmModule.createQuery(queryData);
+      if (error) {
+        throw new Error(error);
+      }
 
       const query = this.templateSrv.replace(
         conditionalTest(sql, this.templateSrv),

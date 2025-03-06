@@ -73,6 +73,72 @@ class Locators:
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Call to action button Add variable']")
     
     @property
+    def variable_name_textfield(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Variable editor Form Name field']")
+    
+
+
+    @property
+    def go_to_query_button(self):
+            driver: WebDriver = current().context.driver
+            return driver.find_element(SelectBy.XPATH, f"//button[.//text()='Go to Query']")
+    
+
+    @property
+    def database_dropdown(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[./text()="FROM"]/..//..//input[contains(@id, "react-select")]')
+
+    @property
+    def table_dropdown(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[@data-testid="table-select"]/..//input[contains(@id, "react-select")]')
+
+    @property
+    def column_timestamp_type_dropdown(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[./text()="Column timestamp type"]/..//..//input[contains(@id, "react-select")]')
+
+    @property
+    def timestamp_column_dropdown(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[./text()="Timestamp Column"]/..//..//input[contains(@id, "react-select")]')
+
+    @property
+    def date_column_dropdown(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH,
+                                   f'//*[./text()="Date column"]/..//..//input[contains(@id, "react-select")]')
+
+    @property
+    def show_generated_sql_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//button[.//text()="Show generated SQL"]')
+    
+    @property
+    def reformatted_query(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, '//pre')
+    
+    @property
+    def sql_editor_input(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f"//*[@class='view-lines monaco-mouse-cursor-text']")
+
+    @property
+    def input_in_sql_editor(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f"//*[@class='inputarea monaco-mouse-cursor-text']")
+
+    @property
+    def values_preview(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f"//*[./text()='Preview of values']/../div")
+
+    @property
     def query_field_for_variable(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Variable editor Form Default Variable Query Editor textarea']")

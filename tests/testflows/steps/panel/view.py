@@ -479,6 +479,13 @@ def click_apply_button(self):
 
 
 @TestStep(When)
+def click_back_to_dashboard_button(self):
+    """Click back to dashbord button for panel."""
+
+    locators.back_to_dashboard_button.click()
+
+
+@TestStep(When)
 def click_discard_button(self):
     """Click discard button for panel."""
 

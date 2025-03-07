@@ -18,7 +18,7 @@
     "create_instrumented": "npx nyc instrument --source-map --nycrc-path .nycrc ./src ./instrumented",
     "build:test:frontend": "webpack -c ./webpack.config.instrumented.ts --env test",
     "build:frontend": "webpack -c ./.config/webpack/webpack.config.ts --env production",
-    "build:wasm": "GOARCH=wasm GOOS=js tinygo build --target wasm ./pkg/backend_wasm.go && gzip -f ./backend_wasm.wasm && mkdir -pv ./src/static/ && mv ./backend_wasm.wasm.gz ./src/static/backend.wasm.gz"
+    "build:wasm": "GOARCH=wasm GOOS=js tinygo build --target wasm ./pkg/backend_wasm.go && gzip -f ./backend_wasm.wasm && mkdir -pv ./src/static/ && mv -fv ./backend_wasm.wasm.gz ./src/static/backend.wasm.gz"
   },
   "author": "Altinity",
   "license": "MIT",

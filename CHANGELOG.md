@@ -1,3 +1,7 @@
+# 3.4.0 (not released yet)
+## Enhancements:
+* add $lttb and $lttbMs macros to allow show down-sampled time series which will contains more outliers than avg or other kind of aggregation, fix https://github.com/Altinity/clickhouse-grafana/issues/500
+
 # 3.3.1 (2024-12-27)
 ## Enhancements:
 * Add using window functions instead of `runningDifference` and `neighbor` for macros, to avoid `allow_deprecated_error_prone_window_functions`, fix https://github.com/Altinity/clickhouse-grafana/issues/572

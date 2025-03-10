@@ -124,6 +124,7 @@ def regression(self, before, after):
     Feature(run=load("testflows.tests.automated.macros", "feature"))
     Feature(run=load("testflows.tests.automated.adhoc_macro", "feature"))
     Feature(run=load("testflows.tests.automated.unified_alerts", "feature"))
+    Feature(run=load("testflows.tests.automated.template_variables_editor", "feature"))
 
 
     self.context.grafana_version = "10.4.3"

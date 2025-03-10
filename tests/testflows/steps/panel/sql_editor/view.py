@@ -89,10 +89,7 @@ def click_show_generated_sql_button(self, query_name):
 
 @TestStep(When)
 def get_reformatted_query(self, query_name):
-    """Get reformatted query for sql query."""
-
-    return locators.reformatted_query(query_name=query_name, grafana_version=self.context.grafana_version).text
-
+    return locators.reformatted_query(query_name=query_name, grafana_version=self.context.grafana_version).text.replace("\n", "")
 
 @TestStep(When)
 def get_time_from_in_seconds(self, query_name):

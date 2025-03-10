@@ -31,7 +31,7 @@ def function_check(self, query, expected_reformatted_query):
 
     with Then("I check reformatted query"):
         with delay():
-            assert expected_reformatted_query in sql_editor.get_reformatted_query(query_name='A'), error()
+            assert expected_reformatted_query.replace("\n", "") in sql_editor.get_reformatted_query(query_name='A'), error()
 
 
 @TestOutline

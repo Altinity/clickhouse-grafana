@@ -190,7 +190,7 @@ def annotations_without_time_reformatting(self):
 
     with Finally("I discard changes for panel"):
         with delay(after=0.5):
-            panel.click_discard_button()
+            panel.click_back_to_dashboard_button()
 
     with And("I discard changes for dashboard"):
         with delay(after=0.5):
@@ -215,7 +215,7 @@ def annotations_without_time_reformatting(self):
 
     with Finally("I discard changes for panel"):
         with delay(after=0.5):
-            panel.click_discard_button()
+            panel.click_back_to_dashboard_button()
 
     with And("I discard changes for dashboard"):
         with delay(after=0.5):
@@ -249,7 +249,7 @@ def many_categories(self):
     finally:
         with Finally("I discard changes for panel"):
             with delay(after=0.5):
-                panel.click_discard_button()
+                panel.click_back_to_dashboard_button()
 
         with And("I discard changes for dashboard"):
             with delay(after=0.5):

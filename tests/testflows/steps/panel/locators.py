@@ -346,5 +346,10 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
                                    f'//*[contains(text(), "{label}")]')
+    
+    @property
+    def back_to_dashboard_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//button[@data-testid="data-testid Back to dashboard button"]')
 
 locators = Locators()

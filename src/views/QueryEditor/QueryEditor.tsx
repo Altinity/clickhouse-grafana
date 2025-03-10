@@ -104,7 +104,6 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
     if (props.app !== CoreApp.Explore) {
       onChange({ ...initializedQuery, adHocFilters: adHocFilters });
     }
-
     // eslint-disable-next-line
   }, [props.app, adHocFiltersKey]);
 

@@ -1,2 +1,2 @@
 $deltaColumns(key, value) FROM table_name
-SELECT t, groupArray((deltaColumns, max_0_Delta)) AS groupArr FROM ( SELECT t, deltaColumns, if(neighbor(deltaColumns,-1,deltaColumns) != deltaColumns, 0, runningDifference(max_0)) AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key AS deltaColumns, max(value) AS max_0 FROM table_name WHERE
+SELECT t, groupArray((deltaColumns, max_0_Delta)) AS groupArr FROM ( SELECT t, deltaColumns, if(neighbor(deltaColumns,-1,deltaColumns) != deltaColumns, 0, runningDifference(max_0)) AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(""), 30) * 30) * 1000 AS t, key AS deltaColumns, max(value) AS max_0 FROM table_name WHERE

@@ -1,2 +1,2 @@
 $rateColumnsAggregated(key as k, subkey as s, fun1 as f, val1 as v) from table_name
-SELECT t, k, fun1 as f(vRate) AS vRateAgg FROM (  SELECT t, k, s, v / runningDifference(t / 1000) AS vRate  FROM (   SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, subkey as s, max(val1) AS v   from table_name WHERE
+SELECT t, k, fun1 as f(vRate) AS vRateAgg FROM (  SELECT t, k, s, v / runningDifference(t / 1000) AS vRate  FROM (   SELECT (intDiv(toUInt32(""), 30) * 30) * 1000 AS t, key as k, subkey as s, max(val1) AS v   from table_name WHERE

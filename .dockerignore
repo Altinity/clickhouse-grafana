@@ -1,0 +1,9 @@
+.git
+.aider*
+.go-cache
+.idea
+go_coverage
+instrumented
+node_modules
+venv
+coverage

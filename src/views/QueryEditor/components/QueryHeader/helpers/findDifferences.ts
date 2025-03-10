@@ -90,7 +90,6 @@ export function findDifferences(query: CHQuery, datasource: CHDataSource) {
         updated: defaultValues.useWindowFuncForMacros?.toString() || 'false',
         fieldName: 'useWindowFuncForMacros',
       });
-
     }
   }
 

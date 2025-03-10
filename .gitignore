@@ -11,7 +11,7 @@ yarn-error.log*
 .pnpm-debug.log*
 
 node_modules/
-
+src/static/*
 # Runtime data
 pids
 *.pid

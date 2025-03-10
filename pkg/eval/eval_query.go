@@ -1,16 +1,15 @@
-package main
+package eval
 
 import (
 	"fmt"
+	"github.com/dlclark/regexp2"
 	"math"
 	"regexp"
+	"strconv"
 	"strings"
 	"time"
-
-	"github.com/dlclark/regexp2"
+	"unicode"
 )
-
-/* var NumberOnlyRegexp = regexp.MustCompile(`^[+-]?\d+(\.\d+)?$`) */
 
 var timeSeriesMacroRegexp = regexp.MustCompile(`\$timeSeries\b`)
 var timeSeriesMsMacroRegexp = regexp.MustCompile(`\$timeSeriesMs\b`)
@@ -51,8 +50,122 @@ type EvalQuery struct {
 	Database               string `json:"database"`
 	Table                  string `json:"table"`
 	MaxDataPoints          int64
+	FrontendDatasource     bool `json:"frontendDatasource"`
 	From                   time.Time
 	To                     time.Time
+}
+
+// Define constants for time units in milliseconds
+const (
+	Millisecond = 1
+	Second      = 1000 * Millisecond
+	Minute      = 60 * Second
+	Hour        = 60 * Minute
+	Day         = 24 * Hour
+	Week        = 7 * Day
+	Month       = 30 * Day  // Approximation
+	Year        = 365 * Day // Approximation
+)
+
+// unitsInMilliseconds maps supported units to their equivalent in milliseconds
+var unitsInMilliseconds = map[string]int64{
+	"y":  Year,
+	"M":  Month,
+	"w":  Week,
+	"d":  Day,
+	"h":  Hour,
+	"m":  Minute,
+	"s":  Second,
+	"ms": Millisecond,
+}
+
+// parseInterval parses a duration string and applies an interval factor.
+// It returns the scaled seconds and milliseconds.
+func parseInterval(interval string, intervalFactor int) (int, int, error) {
+	if intervalFactor <= 0 {
+		return 0, 0, nil
+	}
+
+	// List of unit suffixes sorted by length in descending order to match "ms" before "m" or "s"
+	unitSuffixes := []string{"ms", "y", "M", "w", "d", "h", "m", "s"}
+
+	totalMilliseconds := int64(0)
+	i := 0
+	n := len(interval)
+
+	for i < n {
+		// Skip any leading whitespace
+		for i < n && unicode.IsSpace(rune(interval[i])) {
+			i++
+		}
+		if i >= n {
+			break
+		}
+
+		// Parse the number
+		startNum := i
+		// Handle negative durations if needed
+		// For now, assume positive numbers
+		for i < n && (unicode.IsDigit(rune(interval[i])) || interval[i] == '.') {
+			i++
+		}
+		if startNum == i {
+			return 0, 0, fmt.Errorf("expected number at position %d in interval '%s'", i, interval)
+		}
+		numStr := interval[startNum:i]
+		// Convert number to float to handle decimal units like "1.5h"
+		num, err := strconv.ParseFloat(numStr, 64)
+		if err != nil {
+			return 0, 0, fmt.Errorf("invalid number '%s' in interval '%s': %v", numStr, interval, err)
+		}
+
+		// Parse the unit
+		unit := ""
+		for _, suffix := range unitSuffixes {
+			suffixLen := len(suffix)
+			if i+suffixLen <= n && interval[i:i+suffixLen] == suffix {
+				unit = suffix
+				i += suffixLen
+				break
+			}
+		}
+		if unit == "" {
+			return 0, 0, fmt.Errorf("unknown unit at position %d in interval '%s'", i, interval)
+		}
+
+		// Get the multiplier for the unit
+		multiplier, exists := unitsInMilliseconds[unit]
+		if !exists {
+			return 0, 0, fmt.Errorf("unsupported unit '%s' in interval '%s'", unit, interval)
+		}
+
+		// Accumulate total milliseconds
+		// To avoid floating point precision issues, convert to integer milliseconds
+		millis := int64(num * float64(multiplier))
+		totalMilliseconds += millis
+	}
+
+	// Split totalMilliseconds into seconds and milliseconds
+	totalSeconds := totalMilliseconds / 1000
+	remainingMilliseconds := totalMilliseconds % 1000
+
+	// If totalSeconds is zero, default to 1 as per original logic
+	if totalSeconds == 0 {
+		totalSeconds = 1
+	}
+
+	// Apply the interval factor
+	scaledSeconds := totalSeconds * int64(intervalFactor)
+	scaledMilliseconds := remainingMilliseconds * int64(intervalFactor)
+
+	// Handle overflow: Convert excess milliseconds into seconds
+	if scaledMilliseconds >= 1000 {
+		additionalSeconds := scaledMilliseconds / 1000
+		scaledMilliseconds = scaledMilliseconds % 1000
+		scaledSeconds += additionalSeconds
+	}
+
+	return int(scaledSeconds), int(scaledMilliseconds), nil
 }
 
 func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
@@ -76,12 +189,12 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	i := 1 * time.Second
 	ms := 1 * time.Millisecond
 	if q.Interval != "" {
-		duration, err := time.ParseDuration(q.Interval)
+		intervalSeconds, intervalMs, err := parseInterval(q.Interval, q.IntervalFactor)
 		if err != nil {
 			return "", err
 		}
-		q.IntervalSec = int(math.Ceil(duration.Seconds()))
-		q.IntervalMs = int(duration.Milliseconds())
+		q.IntervalSec = intervalSeconds
+		q.IntervalMs = intervalMs
 	}
 	if q.IntervalSec <= 0 {
 		if q.MaxDataPoints > 0 {
@@ -106,8 +219,8 @@ func (q *EvalQuery) replace(query string) (string, error) {
 			return "", err
 		}
 	}
-	scanner := newScanner(query)
-	ast, err := scanner.toAST()
+	scanner := NewScanner(query)
+	ast, err := scanner.ToAST()
 	if err != nil {
 		return "", fmt.Errorf("parse AST error: %v ", err)
 	}
@@ -171,7 +284,7 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	query = intervalMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.IntervalSec))
 	query = intervalMsMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", q.IntervalMs))
 
-	query = q.replaceTimeFilters(query, myRound)
+	query = q.ReplaceTimeFilters(query, myRound)
 
 	return query, nil
 }
@@ -206,7 +319,7 @@ func (q *EvalQuery) replaceRegexpWithCallBack(re *regexp.Regexp, str string, rep
 	return result + str[lastIndex:]
 }
 
-func (q *EvalQuery) replaceTimeFilters(query string, round int) string {
+func (q *EvalQuery) ReplaceTimeFilters(query string, round int) string {
 	from := q.round(q.From, round)
 	to := q.round(q.To, round)
 
@@ -306,6 +419,12 @@ func (q *EvalQuery) applyMacros(query string, ast *EvalAST) (string, error) {
 	}
 	if q.contain(ast, "$columnsMs") {
 		return q.columnsMs(query, ast)
+	}
+	if q.contain(ast, "$lttb") {
+		return q.lttb(query, ast)
+	}
+	if q.contain(ast, "$lttbMs") {
+		return q.lttbMs(query, ast)
 	}
 	if q.contain(ast, "$rateColumnsAggregated") {
 		return q.rateColumnsAggregated(query, ast)
@@ -456,6 +575,80 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string, us
 		")" +
 		" GROUP BY t" +
 		" ORDER BY t", nil
+}
+
+func (q *EvalQuery) lttb(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$lttb", query)
+	if err != nil {
+		return "", err
+	}
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	args := ast.Obj["$lttb"].(*EvalAST).Arr
+	if args == nil || len(args) < 3 {
+		return "", fmt.Errorf("amount of arguments must great or equal 3 for $lttb func. Parsed arguments are: %v", ast.Obj["$lttb"])
+	}
+	return q._lttb(beforeMacrosQuery, fromQuery, args, false)
+}
+
+func (q *EvalQuery) lttbMs(query string, ast *EvalAST) (string, error) {
+	macroQueries, err := q._parseMacro("$lttbMs", query)
+	if err != nil {
+		return "", err
+	}
+	beforeMacrosQuery, fromQuery := macroQueries[0], macroQueries[1]
+	if len(fromQuery) < 1 {
+		return query, nil
+	}
+	args := ast.Obj["$lttbMs"].(*EvalAST).Arr
+	if args == nil || len(args) < 3 {
+		return "", fmt.Errorf("amount of arguments must great or equal 3 for $lttbMs func. Parsed arguments are: %v", ast.Obj["$lttbMs"])
+	}
+	return q._lttb(beforeMacrosQuery, fromQuery, args, true)
+}
+
+func (q *EvalQuery) _lttb(beforeMacrosQuery string, fromQuery string, args []interface{}, useMs bool) (string, error) {
+	bucketNumbers := args[0].(string)
+	if strings.ToLower(strings.Trim(bucketNumbers, " \xA0\t\r\n")) == "auto" {
+		if useMs {
+			bucketNumbers = "toUInt64( ($__to - $__from) / $__interval_ms )"
+		} else {
+			bucketNumbers = "toUInt64( ($to - $from) / $interval )"
+		}
+	}
+
+	var argsExceptLastTwo strings.Builder
+	if len(args) > 3 {
+		for i, arg := range args[1 : len(args)-2] {
+			if i > 0 {
+				argsExceptLastTwo.WriteString(", ") // Add delimiter after the first element
+			}
+			argsExceptLastTwo.WriteString(fmt.Sprintf("%v", arg)) // Convert each element to a string
+		}
+		argsExceptLastTwo.WriteString(", ")
+	}
+
+	xField := args[len(args)-2].(string)
+	yField := args[len(args)-1].(string)
+	if xField[len(xField)-1] == ')' || yField[len(yField)-1] == ')' {
+		return "", fmt.Errorf("some of passed arguments are without aliases: %s, %s", xField, yField)
+	}
+
+	var xSplit = strings.Split(strings.Trim(xField, " \xA0\t\r\n"), " ")
+	var xAlias = xSplit[len(xSplit)-1]
+
+	var ySplit = strings.Split(strings.Trim(yField, " \xA0\t\r\n"), " ")
+	var yAlias = ySplit[len(ySplit)-1]
+
+	fromQuery = q._applyTimeFilter(fromQuery, useMs)
+
+	return beforeMacrosQuery + "SELECT `lttb_result.1` AS " + xAlias + ", " + argsExceptLastTwo.String() + "`lttb_result.2` AS " + yAlias +
+		" FROM (\n" +
+		"  SELECT " + argsExceptLastTwo.String() + "untuple(arrayJoin(lttb(" + bucketNumbers + ")(" + xField + ", " + yField + "))) AS lttb_result " +
+		fromQuery + "\n" +
+		") ORDER BY " + xAlias, nil
 }
 
 func findKeywordOutsideBrackets(query, keyword string) int {
@@ -690,7 +883,7 @@ func (q *EvalQuery) _fromIndex(query, macro string) (int, error) {
 	var fromRe = regexp.MustCompile("(?im)\\" + macro + "\\([\\w\\s\\S]+?\\)(\\s+FROM\\s+)")
 	var matches = fromRe.FindStringSubmatchIndex(query)
 	if len(matches) == 0 {
-		return 0, fmt.Errorf("could not find FROM-statement at: %s", query)
+		return 0, fmt.Errorf("can't find FROM-statement at: %s", query)
 	}
 	var fragmentWithFrom = query[matches[len(matches)-2]:matches[len(matches)-1]]
 	var fromRelativeIndex = strings.Index(strings.ToLower(fragmentWithFrom), "from")
@@ -1230,7 +1423,12 @@ func (q *EvalQuery) round(dt time.Time, round int) time.Time {
 	if round == 0 {
 		return dt
 	}
-	return dt.Truncate(time.Duration(round) * time.Second)
+
+	// Round to the nearest multiple of `round` seconds
+	coefficient := round
+	rounded := time.Unix(dt.Unix()/int64(coefficient)*int64(coefficient), 0)
+
+	return rounded
 }
 
 func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool) (int, error) {
@@ -1244,6 +1442,7 @@ func (q *EvalQuery) convertInterval(interval string, intervalFactor int, ms bool
 	if ms {
 		return int(math.Ceil(float64(d.Milliseconds()) * float64(intervalFactor))), nil
 	}
+
 	return int(math.Ceil(d.Seconds() * float64(intervalFactor))), nil
 }
 
@@ -1309,7 +1508,7 @@ func newEvalAST(isObj bool) *EvalAST {
 	}
 
 }
-func (e *EvalAST) hasOwnProperty(key string) bool {
+func (e *EvalAST) HasOwnProperty(key string) bool {
 	v, hasKey := e.Obj[key]
 	return hasKey && v != nil
 }
@@ -1340,7 +1539,7 @@ type EvalQueryScanner struct {
 	_s           string
 }
 
-func newScanner(query string) EvalQueryScanner {
+func NewScanner(query string) EvalQueryScanner {
 	return EvalQueryScanner{
 		_sOriginal: query,
 		Token:      "",
@@ -1391,11 +1590,11 @@ func (s *EvalQueryScanner) expectNext() (bool, error) {
 }
 
 func (s *EvalQueryScanner) Format() (string, error) {
-	ast, err := s.toAST()
+	ast, err := s.ToAST()
 	if err != nil {
 		return "", err
 	}
-	return printAST(ast, ""), nil
+	return PrintAST(ast, ""), nil
 }
 
 func (s *EvalQueryScanner) push(argument interface{}) {
@@ -1406,7 +1605,7 @@ func (s *EvalQueryScanner) push(argument interface{}) {
 			ast.Arr = append(ast.Arr, argument)
 		} else {
 			var aliasesArr *EvalAST
-			if !ast.hasOwnProperty("aliases") {
+			if !ast.HasOwnProperty("aliases") {
 				aliasesArr = newEvalAST(false)
 				ast.Obj["aliases"] = aliasesArr
 			} else {
@@ -1438,7 +1637,7 @@ func (s *EvalQueryScanner) appendToken(argument string) string {
 	return " " + s.Token
 }
 
-func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
+func (s *EvalQueryScanner) ToAST() (*EvalAST, error) {
 	var err error
 	s._s = s._sOriginal
 	s.Tree = newEvalAST(true)
@@ -1455,7 +1654,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 		} else if !next {
 			break
 		}
-		if !s.isExpectedNext() && isStatement(s.Token) && !s.Tree.hasOwnProperty(strings.ToLower(s.Token)) {
+		if !s.isExpectedNext() && isStatement(s.Token) && !s.Tree.HasOwnProperty(strings.ToLower(s.Token)) {
 			if strings.ToUpper(s.Token) == "WITH" && s.RootToken == "order by" {
 				argument += s.appendToken(argument)
 				continue
@@ -1500,7 +1699,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 			if subAST, err = toAST(subQuery); err != nil {
 				return nil, err
 			}
-			if subAST.hasOwnProperty("root") {
+			if subAST.HasOwnProperty("root") {
 				s.Tree.Obj[funcName] = subAST.Obj["root"]
 			} else {
 				s.Tree.Obj[funcName] = subAST
@@ -1528,7 +1727,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 				if subAST, err = toAST(subQuery); err != nil {
 					return nil, err
 				}
-				if subAST.hasOwnProperty("root") && len(subAST.Obj["root"].(*EvalAST).Arr) > 0 {
+				if subAST.HasOwnProperty("root") && len(subAST.Obj["root"].(*EvalAST).Arr) > 0 {
 					var subArr = subAST.Obj["root"].(*EvalAST)
 					argument += " ("
 					for _, item := range subArr.Arr {
@@ -1536,7 +1735,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 					}
 					argument = argument + ")"
 				} else {
-					argument += " (" + newLine + printAST(subAST, tabSize) + ")"
+					argument += " (" + newLine + PrintAST(subAST, tabSize) + ")"
 					if s.RootToken != "select" {
 						s.push(argument)
 						argument = ""
@@ -1597,7 +1796,7 @@ func (s *EvalQueryScanner) toAST() (*EvalAST, error) {
 }
 
 func (s *EvalQueryScanner) parseJOIN(argument string) (string, error) {
-	if !s.Tree.hasOwnProperty("join") {
+	if !s.Tree.HasOwnProperty("join") {
 		s.Tree.Obj["join"] = newEvalAST(false)
 	}
 	var joinType = s.Token
@@ -1740,6 +1939,9 @@ func (s *EvalQueryScanner) RemoveComments(query string) (string, error) {
 }
 
 func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
+	if q.FrontendDatasource {
+		return "/* grafana dashboard=$__dashboard, user=$__user */\n" + query
+	}
 	return "/* grafana alerts rule=" + q.RuleUid + " query=" + q.RefId + " */ " + query
 }
 
@@ -1833,7 +2035,7 @@ const joinsRe = "\\b(" +
 	")\\b"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columnsMs|\\$columns)"
+const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columnsMs|\\$columns|\\$lttbMs|\\$lttb)"
 const condRe = "\\b(or|and)\\b"
 const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?"
 const closureRe = "[\\(\\)\\[\\]]"
@@ -1842,48 +2044,6 @@ const macroRe = "\\$[A-Za-z0-9_$]+"
 const skipSpaceRe = "[\\(\\.! \\[]"
 
 const tableFuncRe = "\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b"
-
-/* const builtInFuncRe = "\\b(avg|countIf|first|last|max|min|sum|sumIf|ucase|lcase|mid|round|rank|now|" +
-   "coalesce|ifnil|isnil|nvl|count|timeSlot|yesterday|today|now|toRelativeSecondNum|" +
-   "toRelativeMinuteNum|toRelativeHourNum|toRelativeDayNum|toRelativeWeekNum|toRelativeMonthNum|" +
-   "toRelativeYearNum|toTime|toStartOfHour|toStartOfFiveMinute|toStartOfMinute|toStartOfYear|" +
-   "toStartOfQuarter|toStartOfMonth|toMonday|toSecond|toMinute|toHour|toDayOfWeek|toDayOfMonth|" +
-   "toMonth|toYear|toFixedString|toStringCutToZero|reinterpretAsString|reinterpretAsDate|" +
-   "reinterpretAsDateTime|reinterpretAsFloat32|reinterpretAsFloat64|reinterpretAsInt8|" +
-   "reinterpretAsInt16|reinterpretAsInt32|reinterpretAsInt64|reinterpretAsUInt8|" +
-   "reinterpretAsUInt16|reinterpretAsUInt32|reinterpretAsUInt64|toUInt8|toUInt16|toUInt32|" +
-   "toUInt64|toInt8|toInt16|toInt32|toInt64|toFloat32|toFloat64|toDate|toDateTime|toString|" +
-   "bitAnd|bitOr|bitXor|bitNot|bitShiftLeft|bitShiftRight|abs|negate|modulo|intDivOrZero|" +
-   "intDiv|divide|multiply|minus|plus|empty|notEmpty|length|lengthUTF8|lower|upper|lowerUTF8|" +
-   "upperUTF8|reverse|reverseUTF8|concat|substring|substringUTF8|appendTrailingCharIfAbsent|" +
-   "position|positionUTF8|match|extract|extractAll|like|notLike|replaceOne|replaceAll|" +
-   "replaceRegexpOne|range|arrayElement|has|indexOf|countEqual|arrayEnumerate|arrayEnumerateUniq|" +
-   "arrayJoin|arrayMap|arrayFilter|arrayExists|arrayCount|arrayAll|arrayFirst|arraySum|splitByChar|" +
-   "splitByString|alphaTokens|domainWithoutWWW|topLevelDomain|firstSignificantSubdomain|" +
-   "cutToFirstSignificantSubdomain|queryString|URLPathHierarchy|URLHierarchy|extractURLParameterNames|" +
-   "extractURLParameters|extractURLParameter|queryStringAndFragment|cutWWW|cutQueryString|" +
-   "cutFragment|cutQueryStringAndFragment|cutURLParameter|IPv4NumToString|IPv4StringToNum|" +
-   "IPv4NumToStringClassC|IPv6NumToString|IPv6StringToNum|rand|rand64|halfMD5|MD5|sipHash64|" +
-   "sipHash128|cityHash64|intHash32|intHash64|SHA1|SHA224|SHA256|URLHash|hex|unhex|bitmaskToList|" +
-   "bitmaskToArray|floor|ceil|round|roundToExp2|roundDuration|roundAge|regionToCountry|" +
-   "regionToContinent|regionToPopulation|regionIn|regionHierarchy|regionToName|OSToRoot|OSIn|" +
-   "OSHierarchy|SEToRoot|SEIn|SEHierarchy|dictGetUInt8|dictGetUInt16|dictGetUInt32|" +
-   "dictGetUInt64|dictGetInt8|dictGetInt16|dictGetInt32|dictGetInt64|dictGetFloat32|" +
-   "dictGetFloat64|dictGetDate|dictGetDateTime|dictGetString|dictGetHierarchy|dictHas|dictIsIn|" +
-   "argMin|argMax|uniqCombined|uniqHLL12|uniqExact|uniqExactIf|groupArray|groupUniqArray|quantile|" +
-   "quantileDeterministic|quantileTiming|quantileTimingWeighted|quantileExact|" +
-   "quantileExactWeighted|quantileTDigest|median|quantiles|varSamp|varPop|stddevSamp|stddevPop|" +
-   "covarSamp|covarPop|corr|sequenceMatch|sequenceCount|uniqUpTo|avgIf|" +
-   "quantilesTimingIf|argMinIf|uniqArray|sumArray|quantilesTimingArrayIf|uniqArrayIf|medianIf|" +
-   "quantilesIf|varSampIf|varPopIf|stddevSampIf|stddevPopIf|covarSampIf|covarPopIf|corrIf|" +
-   "uniqArrayIf|sumArrayIf|uniq)\\b" */
-/* const operatorRe = "\\b(select|group by|order by|from|where|limit|offset|having|as|" +
-   "when|else|end|type|left|right|on|outer|desc|asc|primary|key|between|" +
-   "foreign|not|nil|inner|cross|natural|database|prewhere|using|global|in)\\b" */
-/* const dataTypeRe = "\\b(int|numeric|decimal|date|varchar|char|bigint|float|double|bit|binary|text|set|timestamp|" +
-   "money|real|number|integer|" +
-   "uint8|uint16|uint32|uint64|int8|int16|int32|int64|float32|float64|datetime|enum8|enum16|" +
-   "array|tuple|string)\\b" */
 
 var wsOnlyRe = regexp.MustCompile("^(?:" + wsRe + ")$")
 var commentOnlyRe = regexp2.MustCompile("^(?:"+commentRe+")$", regexp2.Multiline)
@@ -1895,9 +2055,6 @@ var joinsOnlyRe = regexp.MustCompile("(?mi)^(?:" + joinsRe + ")$")
 var onJoinTokenOnlyRe = regexp.MustCompile("(?mi)^(?:" + onJoinTokenRe + ")$")
 var tableNameOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableNameRe + ")$")
 
-/* var operatorOnlyRe = regexp.MustCompile("^(?mi)(?:" + operatorRe + ")$") */
-/* var dataTypeOnlyRe = regexp.MustCompile("^(?:" + dataTypeRe + ")$") */
-/* var builtInFuncOnlyRe = regexp.MustCompile("^(?:" + builtInFuncRe + ")$") */
 var tableFuncOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableFuncRe + ")$")
 var macroOnlyRe = regexp.MustCompile("(?mi)^(?:" + macroRe + ")$")
 var inOnlyRe = regexp.MustCompile("(?mi)^(?:" + inRe + ")$")
@@ -2016,15 +2173,15 @@ func printItems(items *EvalAST, tab string, separator string) string {
 			}
 		}
 	} else if len(items.Obj) > 0 {
-		result = newLine + "(" + newLine + printAST(items, tab+tabSize) + newLine + ")"
+		result = newLine + "(" + newLine + PrintAST(items, tab+tabSize) + newLine + ")"
 	}
 
 	return result
 }
 
 func toAST(s string) (*EvalAST, error) {
-	var scanner = newScanner(s)
-	return scanner.toAST()
+	var scanner = NewScanner(s)
+	return scanner.ToAST()
 }
 
 // isClosured checks if a string has properly balanced brackets while ignoring brackets within quotes
@@ -2122,118 +2279,128 @@ func betweenSquareBraces(query string) string {
 }
 
 // see https://clickhouse.tech/docs/en/sql-reference/statements/select/
-func printAST(AST *EvalAST, tab string) string {
+func PrintAST(AST *EvalAST, tab string) string {
 	var result = ""
-	if AST.hasOwnProperty("root") {
+	if AST.HasOwnProperty("root") {
 		result += printItems(AST.Obj["root"].(*EvalAST), "\n", "\n")
 	}
 
-	if AST.hasOwnProperty("$rate") {
+	if AST.HasOwnProperty("$rate") {
 		result += tab + "$rate("
 		result += printItems(AST.Obj["$rate"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$perSecond") {
+	if AST.HasOwnProperty("$perSecond") {
 		result += tab + "$perSecond("
 		result += printItems(AST.Obj["$perSecond"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$perSecondColumns") {
+	if AST.HasOwnProperty("$perSecondColumns") {
 		result += tab + "$perSecondColumns("
 		result += printItems(AST.Obj["$perSecondColumns"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$columns") {
+	if AST.HasOwnProperty("$columns") {
 		result += tab + "$columns("
 		result += printItems(AST.Obj["$columns"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$columnsMs") {
+	if AST.HasOwnProperty("$columnsMs") {
 		result += tab + "$columnsMs("
 		result += printItems(AST.Obj["$columnsMs"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$rateColumns") {
+	if AST.HasOwnProperty("$rateColumns") {
 		result += tab + "$rateColumns("
 		result += printItems(AST.Obj["$rateColumns"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("$rateColumnsAggregated") {
+	if AST.HasOwnProperty("$rateColumnsAggregated") {
 		result += tab + "$rateColumnsAggregated("
 		result += printItems(AST.Obj["$rateColumnsAggregated"].(*EvalAST), tab, ",") + ")"
 	}
 
-	if AST.hasOwnProperty("with") {
+	if AST.HasOwnProperty("$lttb") {
+		result += tab + "$lttb("
+		result += printItems(AST.Obj["$lttb"].(*EvalAST), tab, ",") + ")"
+	}
+
+	if AST.HasOwnProperty("$lttbMs") {
+		result += tab + "$lttbMs("
+		result += printItems(AST.Obj["$lttb"].(*EvalAST), tab, ",") + ")"
+	}
+
+	if AST.HasOwnProperty("with") {
 		result += tab + "WITH"
 		result += printItems(AST.Obj["with"].(*EvalAST), tab, ",")
 	}
 
-	if AST.hasOwnProperty("select") {
+	if AST.HasOwnProperty("select") {
 		result += tab + "SELECT"
 		result += printItems(AST.Obj["select"].(*EvalAST), tab, ",")
 	}
 
-	if AST.hasOwnProperty("from") {
+	if AST.HasOwnProperty("from") {
 		result += newLine + tab + "FROM"
 		result += printItems(AST.Obj["from"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("aliases") {
+	if AST.HasOwnProperty("aliases") {
 		result += printItems(AST.Obj["aliases"].(*EvalAST), "", " ")
 	}
 
-	if AST.hasOwnProperty("join") {
+	if AST.HasOwnProperty("join") {
 		for _, item := range AST.Obj["join"].(*EvalAST).Arr {
 			itemAST := item.(*EvalAST)
 			joinType := itemAST.Obj["type"].(string)
 			result += newLine + tab + strings.ToUpper(joinType) + printItems(itemAST.Obj["source"].(*EvalAST), tab, "") + " " + printItems(itemAST.Obj["aliases"].(*EvalAST), "", " ")
-			if itemAST.hasOwnProperty("using") && len(itemAST.Obj["using"].(*EvalAST).Arr) > 0 {
+			if itemAST.HasOwnProperty("using") && len(itemAST.Obj["using"].(*EvalAST).Arr) > 0 {
 				result += " USING " + printItems(itemAST.Obj["using"].(*EvalAST), "", " ")
-			} else if itemAST.hasOwnProperty("on") && len(itemAST.Obj["on"].(*EvalAST).Arr) > 0 {
+			} else if itemAST.HasOwnProperty("on") && len(itemAST.Obj["on"].(*EvalAST).Arr) > 0 {
 				result += " ON " + printItems(itemAST.Obj["on"].(*EvalAST), tab, " ")
 			}
 		}
 	}
 
-	if AST.hasOwnProperty("prewhere") {
+	if AST.HasOwnProperty("prewhere") {
 		result += newLine + tab + "PREWHERE"
 		result += printItems(AST.Obj["prewhere"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("where") {
+	if AST.HasOwnProperty("where") && len(AST.Obj["where"].(*EvalAST).Arr) > 0 {
 		result += newLine + tab + "WHERE"
 		result += printItems(AST.Obj["where"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("group by") {
+	if AST.HasOwnProperty("group by") {
 		result += newLine + tab + "GROUP BY"
 		result += printItems(AST.Obj["group by"].(*EvalAST), tab, ",")
 	}
 
-	if AST.hasOwnProperty("having") {
+	if AST.HasOwnProperty("having") {
 		result += newLine + tab + "HAVING"
 		result += printItems(AST.Obj["having"].(*EvalAST), tab, "")
 	}
 
-	if AST.hasOwnProperty("order by") {
+	if AST.HasOwnProperty("order by") {
 		result += newLine + tab + "ORDER BY"
 		result += printItems(AST.Obj["order by"].(*EvalAST), tab, ",")
 	}
 
-	if AST.hasOwnProperty("limit") {
+	if AST.HasOwnProperty("limit") {
 		result += newLine + tab + "LIMIT"
 		result += printItems(AST.Obj["limit"].(*EvalAST), tab, ",")
 	}
 
-	if AST.hasOwnProperty("union all") {
+	if AST.HasOwnProperty("union all") {
 		for _, item := range AST.Obj["union all"].(*EvalAST).Arr {
 			itemAST := item.(*EvalAST)
 			result += newLine + newLine + tab + "UNION ALL" + newLine + newLine
-			result += printAST(itemAST, tab)
+			result += PrintAST(itemAST, tab)
 		}
 	}
 
-	if AST.hasOwnProperty("format") {
+	if AST.HasOwnProperty("format") {
 		result += newLine + tab + "FORMAT"
 		result += printItems(AST.Obj["format"].(*EvalAST), tab, "")
 	}

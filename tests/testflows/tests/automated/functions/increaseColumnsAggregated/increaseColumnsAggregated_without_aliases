@@ -1,2 +1,2 @@
 $increaseColumnsAggregated(key, value, fun1, val1) from table_name
-SELECT t, key, fun1(val1Increase) AS val1IncreaseAgg FROM (  SELECT t, key, value, if(runningDifference(val1) < 0 OR neighbor(value,-1,value) != value, nan, runningDifference(val1) / 1) AS val1Increase  FROM (   SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key, value, max(val1) AS val1   from table_name WHERE
+SELECT t, key, fun1(val1Increase) AS val1IncreaseAgg FROM (  SELECT t, key, value, if(runningDifference(val1) < 0 OR neighbor(value,-1,value) != value, nan, runningDifference(val1) / 1) AS val1Increase  FROM (   SELECT (intDiv(toUInt32(""), 30) * 30) * 1000 AS t, key, value, max(val1) AS val1   from table_name WHERE

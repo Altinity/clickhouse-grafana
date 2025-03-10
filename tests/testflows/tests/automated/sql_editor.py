@@ -28,6 +28,8 @@ A description of macros is available by typing their names in Raw Editor"""
 help_functions = """$rate(cols...) - function to convert query results as "change rate per interval". Example usage: $rate(countIf(Type = 200) * 60 AS good, countIf(Type != 200) * 60 AS bad) FROM requests
 $columns(key, value) - function to query values as an array of [key, value], where key would be used as a label. Example usage: $columns(Type, count() c) FROM requests
 $columnsMs(key, value) - same with $columns but time will in milliseconds. Example usage: $columns(Type, count() c) FROM requests
+$lttb(bucket_numbers, x_field, y_fields) - allow get down-sampled result which contains more outliers than avg and any other aggregation. Example usage: $lttbMs(100, event_time, count() c) FROM requests
+$lttbMs(bucket_numbers, x_field, y_fields) - same with $lttb but time will in milliseconds. Example usage: $lttbMs(auto, event_time, count() c) FROM requests
 $rateColumns(key, value) - is a combination of $columns and $rate. Example usage: $rateColumns(Type, count() c) FROM requests
 $rateColumnsAggregated(key, subkey, aggFunction1, value1, ... aggFunctionN, valueN) - if you need calculate `$rate` for higher cardinality dimension and then aggregate by lower cardinality dimension. Example usage: $rateColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes * 1014 AS tx_kbytes, sum, max(rx_bytes) AS rx_bytes) FROM traffic
 $perSecond(cols...) - converts query results as "change rate per interval" for Counter-like(growing only) metrics

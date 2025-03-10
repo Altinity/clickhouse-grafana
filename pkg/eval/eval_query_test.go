@@ -1,4 +1,4 @@
-package main
+package eval
 
 import (
 	"encoding/json"
@@ -34,6 +34,48 @@ func newMacrosTestCase(name, query, expected, expectedWithWindow string, fn func
 func TestMacrosBuilder(t *testing.T) {
 	q := EvalQuery{}
 	testCases := []macrosTestCase{
+		// https://github.com/Altinity/clickhouse-grafana/issues/500
+		newMacrosTestCase(
+			"$lttb",
+			"/* comment */\n$lttb(auto, toStartOfMinute(time) AS x_alias, from_total) FROM requests WHERE type IN ('udp', 'tcp') GROUP BY x_alias",
+			"/* comment */\nSELECT `lttb_result.1` AS x_alias, `lttb_result.2` AS from_total FROM (\n"+
+				"  SELECT untuple(arrayJoin(lttb(toUInt64( ($to - $from) / $interval ))(toStartOfMinute(time) AS x_alias, from_total))) AS lttb_result FROM requests WHERE $timeFilter AND type IN ('udp', 'tcp') GROUP BY x_alias\n"+
+				") ORDER BY x_alias",
+
+			"/* comment */\nSELECT `lttb_result.1` AS x_alias, `lttb_result.2` AS from_total FROM (\n"+
+				"  SELECT untuple(arrayJoin(lttb(toUInt64( ($to - $from) / $interval ))(toStartOfMinute(time) AS x_alias, from_total))) AS lttb_result FROM requests WHERE $timeFilter AND type IN ('udp', 'tcp') GROUP BY x_alias\n"+
+				") ORDER BY x_alias",
+
+			q.lttb,
+		),
+		// https://github.com/Altinity/clickhouse-grafana/issues/500
+		newMacrosTestCase(
+			"$lttb with args",
+			"/* comment */\n$lttb(auto, category, toStartOfMinute(time) AS x_alias, from_total AS sum_from_total) FROM requests WHERE type IN ('udp', 'tcp') GROUP BY category",
+			"/* comment */\nSELECT `lttb_result.1` AS x_alias, category, `lttb_result.2` AS sum_from_total FROM (\n"+
+				"  SELECT category, untuple(arrayJoin(lttb(toUInt64( ($to - $from) / $interval ))(toStartOfMinute(time) AS x_alias, from_total AS sum_from_total))) AS lttb_result FROM requests WHERE $timeFilter AND type IN ('udp', 'tcp') GROUP BY category\n"+
+				") ORDER BY x_alias",
+
+			"/* comment */\nSELECT `lttb_result.1` AS x_alias, category, `lttb_result.2` AS sum_from_total FROM (\n"+
+				"  SELECT category, untuple(arrayJoin(lttb(toUInt64( ($to - $from) / $interval ))(toStartOfMinute(time) AS x_alias, from_total AS sum_from_total))) AS lttb_result FROM requests WHERE $timeFilter AND type IN ('udp', 'tcp') GROUP BY category\n"+
+				") ORDER BY x_alias",
+
+			q.lttb,
+		),
+		// https://github.com/Altinity/clickhouse-grafana/issues/500
+		newMacrosTestCase(
+			"$lttbMs",
+			"/* comment */\n$lttbMs(auto, toStartOfMinute(time) AS x_alias, from_total AS sum_from_total) FROM requests WHERE type IN ('udp', 'tcp') GROUP BY x_alias",
+			"/* comment */\nSELECT `lttb_result.1` AS x_alias, `lttb_result.2` AS sum_from_total FROM (\n"+
+				"  SELECT untuple(arrayJoin(lttb(toUInt64( ($__to - $__from) / $__interval_ms ))(toStartOfMinute(time) AS x_alias, from_total AS sum_from_total))) AS lttb_result FROM requests WHERE $timeFilterMs AND type IN ('udp', 'tcp') GROUP BY x_alias\n"+
+				") ORDER BY x_alias",
+
+			"/* comment */\nSELECT `lttb_result.1` AS x_alias, `lttb_result.2` AS sum_from_total FROM (\n"+
+				"  SELECT untuple(arrayJoin(lttb(toUInt64( ($__to - $__from) / $__interval_ms ))(toStartOfMinute(time) AS x_alias, from_total AS sum_from_total))) AS lttb_result FROM requests WHERE $timeFilterMs AND type IN ('udp', 'tcp') GROUP BY x_alias\n"+
+				") ORDER BY x_alias",
+
+			q.lttbMs,
+		),
 		newMacrosTestCase(
 			"$rate",
 			"/* comment */ $rate(countIf(Type = 200) AS from_good, countIf(Type != 200) AS from_bad) FROM requests",
@@ -599,16 +641,16 @@ func TestMacrosBuilder(t *testing.T) {
 	r := require.New(t)
 	for _, tc := range testCases {
 		t.Logf(tc.name)
-		scanner := newScanner(tc.query)
+		scanner := NewScanner(tc.query)
 
-		ast, err := scanner.toAST()
+		ast, err := scanner.ToAST()
 		r.NoError(err)
 		q.UseWindowFuncForMacros = false
 		tc.got, err = tc.fn(tc.query, ast)
 		r.NoError(err)
 		r.Equal(tc.expected, tc.got, "expects equal in %s", tc.name)
 
-		ast, err = scanner.toAST()
+		ast, err = scanner.ToAST()
 		r.NoError(err)
 		q.UseWindowFuncForMacros = true
 		tc.got, err = tc.fn(tc.query, ast)
@@ -630,8 +672,8 @@ func TestCommentsAndRateMacrosWithFromKeywordInFieldName(t *testing.T) {
 	const expQuery = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\nSELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob' GROUP BY t ORDER BY t)"
 	r := require.New(t)
 	q := EvalQuery{}
-	scanner := newScanner(query)
-	ast, err := scanner.toAST()
+	scanner := NewScanner(query)
+	ast, err := scanner.ToAST()
 	r.NoError(err)
 	actual, err := q.applyMacros(query, ast)
 	r.NoError(err)
@@ -691,8 +733,8 @@ func TestColumnsMacrosWithUnionAllAndWithKeyword(t *testing.T) {
 		") GROUP BY t, category ORDER BY t, category) GROUP BY t ORDER BY t"
 	r := require.New(t)
 	q := EvalQuery{}
-	scanner := newScanner(query)
-	ast, err := scanner.toAST()
+	scanner := NewScanner(query)
+	ast, err := scanner.ToAST()
 	r.NoError(err)
 	actual, err := q.applyMacros(query, ast)
 	r.NoError(err)
@@ -724,8 +766,8 @@ func TestColumnsMacrosWithGroupWithFill(t *testing.T) {
 		") GROUP BY t ORDER BY t"
 	r := require.New(t)
 	q := EvalQuery{}
-	scanner := newScanner(query)
-	ast, err := scanner.toAST()
+	scanner := NewScanner(query)
+	ast, err := scanner.ToAST()
 	r.NoError(err)
 	actual, err := q.applyMacros(query, ast)
 	r.NoError(err)
@@ -808,7 +850,7 @@ func newASTTestCase(name, query string, expectedAST *EvalAST) astTestCase {
 		name:        name,
 		query:       query,
 		expectedAST: expectedAST,
-		scanner:     newScanner(query),
+		scanner:     NewScanner(query),
 	}
 }
 
@@ -1824,7 +1866,7 @@ func TestScannerAST(t *testing.T) {
 	r := require.New(t)
 	for _, tc := range testCases {
 		t.Logf(tc.name)
-		ast, err := tc.scanner.toAST()
+		ast, err := tc.scanner.ToAST()
 		r.NoError(err)
 		check, err := tc.CheckASTEqual(tc.expectedAST, ast)
 		r.NoError(err)
@@ -1895,7 +1937,7 @@ func TestEvalQueryTimeFilterByColumnAndRange(t *testing.T) {
 		q.DateTimeType = tc.DateTimeType
 		r.Equal(
 			tc.ExpectedQuery,
-			q.replaceTimeFilters(query, 0),
+			q.ReplaceTimeFilters(query, 0),
 			description+" unexpected $timeFilterByColumn results "+tc.DateTimeType,
 		)
 	}
@@ -1985,9 +2027,9 @@ func TestEvalQueryTimeFilter64ByColumnAndRangeMs(t *testing.T) {
 	for _, tc := range testCases {
 		eQ.DateTimeType = tc.DateTimeType
 		eQ.Query = query
-		r.Equal(tc.expectedQ, eQ.replaceTimeFilters(query, 0), description+" unexpected $timeFilterByColumn "+tc.DateTimeType+" result")
+		r.Equal(tc.expectedQ, eQ.ReplaceTimeFilters(query, 0), description+" unexpected $timeFilterByColumn "+tc.DateTimeType+" result")
 		eQ.Query = query64
-		r.Equal(tc.expectedQ64, eQ.replaceTimeFilters(query64, 0), description+" unexpected $timeFilter64ByColumn "+tc.DateTimeType+" result")
+		r.Equal(tc.expectedQ64, eQ.ReplaceTimeFilters(query64, 0), description+" unexpected $timeFilter64ByColumn "+tc.DateTimeType+" result")
 	}
 }
 

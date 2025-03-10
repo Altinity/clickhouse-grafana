@@ -1,2 +1,2 @@
 $rateColumns(key as k, value as v) FROM table_name
-SELECT t, arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr) FROM (SELECT t, groupArray((k, v)) AS groupArr FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, key as k, value as v FROM table_name WHERE
+SELECT t, arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr) FROM (SELECT t, groupArray((k, v)) AS groupArr FROM ( SELECT (intDiv(toUInt32(""), 30) * 30) * 1000 AS t, key as k, value as v FROM table_name WHERE

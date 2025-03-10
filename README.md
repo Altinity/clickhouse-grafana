@@ -270,6 +270,49 @@ ORDER BY t
 ```
 
 ---
+### $lttb(buckets_number, [field1, ... fieldN], x_field, y_field) - allow show down-sampled time series which will contains more outliers than avg or other kind of aggregation
+
+If bucket_number is `auto`, then it will calculated as `toUInt64( ($to-$from) / $interval )`
+Example usage:
+
+```sql
+$lttb(auto, category, event_time, count(*) c)
+FROM requests GROUP BY category
+```
+
+Query will be transformed into:
+
+```sql
+SELECT category, lttb_result.1 AS event_time, lttb_result.2 AS c FROM (
+    SELECT category, untuple(arrayJoin(lttb(toUInt64( ($to - $from) / $interval ))(event_time, cont(*) AS c))) AS lttb_result
+    FROM requests WHERE $timeFilter GROUP BY category
+) ORDER BY event_time
+```
+
+---
+
+---
+### $lttbMs(buckets_number, [field1,... fieldN], x_field, y_field) - same as $lttb but for time series with ms
+
+If bucket_number is `auto`, then it will calculated as `toUInt64( ($__to-$__from) / $__interval_ms )`
+
+Example usage:
+
+```sql
+$lttbMs(100, event_time, count(*) c)
+FROM requests
+```
+
+Query will be transformed into:
+
+```sql
+SELECT lttb_result.1 AS event_time, lttb_result.2 AS c FROM (
+    SELECT untuple(arrayJoin(lttb(100)(event_time, count(*) AS c))) AS lttb_result
+    FROM requests WHERE $timeFilterMs    
+) ORDER BY event_time
+```
+
+---
 
 ### $rateColumns(key, value) - is a combination of $columns and $rate
 

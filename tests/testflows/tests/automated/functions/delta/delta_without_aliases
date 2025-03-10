@@ -1,2 +1,2 @@
 $delta(first_variable, second_variable) from table_name
-SELECT t, runningDifference(max_0) AS max_0_Delta, runningDifference(max_1) AS max_1_Delta FROM ( SELECT (intDiv(toUInt32(undefined), 30) * 30) * 1000 AS t, max(first_variable) AS max_0, max(second_variable) AS max_1 from table_name WHERE
+SELECT t, runningDifference(max_0) AS max_0_Delta, runningDifference(max_1) AS max_1_Delta FROM ( SELECT (intDiv(toUInt32(""), 30) * 30) * 1000 AS t, max(first_variable) AS max_0, max(second_variable) AS max_1 from table_name WHERE

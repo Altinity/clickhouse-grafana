@@ -504,9 +504,6 @@ export class CHDataSource
       }
     };
 
-    queryProcessing().then(result => {
-      return result
-    })
     return from(queryProcessing());
   }
 

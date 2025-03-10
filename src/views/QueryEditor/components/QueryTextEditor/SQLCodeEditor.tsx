@@ -4,6 +4,7 @@ import { CodeEditor } from '@grafana/ui';
 import { useSystemDatabases } from '../../hooks/useSystemDatabases';
 import { useAutocompleteData } from '../../hooks/useAutocompletionData';
 import { MONACO_EDITOR_OPTIONS } from '../../../constants';
+import { DatasourceMode } from '../../../../types/types';
 
 export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: any) => {
   const [initialized, setInitialized] = useState(false);
@@ -12,7 +13,11 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: an
   const databasesData = useSystemDatabases(datasource);
 
   useEffect(() => {
-    onSqlChange(updatedSQLQuery);
+    // Auto-run query immediately only when NOT in variable mode
+    if (query.datasourceMode !== DatasourceMode.Variable) {
+      onSqlChange(updatedSQLQuery);
+    }
+
     // eslint-disable-next-line
   }, [updatedSQLQuery]);
 
@@ -37,6 +42,15 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: an
     }, 20);
   }, [autocompletionData, databasesData, initialized, datasource.templateSrv]);
 
+  // Only run query on blur for non-variable mode
+  const handleBlur = (updatedQuery) => {
+    if (query.datasourceMode === DatasourceMode.Variable) {
+      onSqlChange(updatedQuery);
+    } else {
+      onRunQuery(updatedQuery);
+    }
+  };
+
   return (
     <div style={{ position: 'relative', width: '100%', marginTop: '10px' }}>
       <CodeEditor
@@ -46,7 +60,7 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: an
         monacoOptions={MONACO_EDITOR_OPTIONS}
         onBeforeEditorMount={() => setInitialized(true)}
         onChange={setUpdatedSQLQuery}
-        onBlur={onRunQuery}
+        onBlur={handleBlur}
       />
     </div>
   );

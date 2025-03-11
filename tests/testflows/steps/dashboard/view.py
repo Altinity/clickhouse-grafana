@@ -11,12 +11,185 @@ import steps.ui as ui
 
 
 @TestStep(When)
+def select_input_query(self, query_name):
+    """Select input query using ctrl + a on textarea."""
+
+    locators.input_in_sql_editor.send_keys(Keys.CONTROL, 'a')
+
+
+@TestStep(When)
+def enter_sql_editor_input(self, query, query_name='A'):
+    """Enter SQL request into sql editor input field."""
+
+    with By("selecting input string"):
+        with delay():
+            select_input_query(query_name=query_name)
+
+    with By("entering request"):
+        with delay():
+            locators.input_in_sql_editor.send_keys(query + ' ')
+            locators.input_in_sql_editor.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_database(self, database):
+    """Enter Database."""
+
+    locators.database_dropdown.click()
+    locators.database_dropdown.send_keys(database)
+    locators.database_dropdown.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_table(self, table):
+    """Enter Table."""
+
+    locators.table_dropdown.click()
+    locators.table_dropdown.send_keys(table)
+    locators.table_dropdown.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_column_timestamp_type(self, column_timestamp_type):
+    """Enter Column timestamp type."""
+
+    locators.column_timestamp_type_dropdown.click()
+    locators.column_timestamp_type_dropdown.send_keys(column_timestamp_type)
+    locators.column_timestamp_type_dropdown.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_timestamp_column(self, timestamp_column):
+    """Enter Timestamp Column."""
+
+    locators.timestamp_column_dropdown.click()
+    locators.timestamp_column_dropdown.send_keys(timestamp_column)
+    locators.timestamp_column_dropdown.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_date_column(self, date_column):
+    """Enter Date Column."""
+
+    locators.date_column_dropdown.click()
+    locators.date_column_dropdown.send_keys(date_column)
+    locators.date_column_dropdown.send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def setup_query_settings_for_variable(
+        self,
+        database="default",
+        table="test_grafana",
+        column_timestamp_type="DateTime",
+        timestamp_column="event_time",
+        date_column=""
+):
+    """Setup all macro in Query Settings."""
+
+    with When("I setup database"):
+        with delay():
+            enter_database(database=database)
+
+    with When("I setup table"):
+        with delay():
+            enter_table(table=table)
+
+    with When("I setup column timestamp type"):
+        with delay():
+            enter_column_timestamp_type(column_timestamp_type=column_timestamp_type)
+
+    with When("I setup timestamp column"):
+        with delay():
+            enter_timestamp_column(timestamp_column=timestamp_column)
+
+
+@TestStep(When)
+def click_go_to_query_button(self):
+    """Click Go to Query button."""
+
+    locators.go_to_query_button.click()
+
+@TestStep(When)
+def click_show_generated_sql_button(self):
+    """Click Show generated SQL button."""
+
+    locators.show_generated_sql_button.click()
+
+
+@TestStep(When)
+def get_reformatted_query(self):
+    """Get reformatted query for sql query."""
+
+    return locators.reformatted_query.text
+
+@TestStep(When)
+def get_values_preview(self):
+    """Get values preview."""
+
+    return locators.values_preview.text
+
+@TestStep(When)
 def wait_panel_menu_button(self, panel_name):
     """Wait panel menu button for panel."""
 
     ui.wait_for_element_to_be_present(
         select_type=SelectBy.CSS_SELECTOR, element=f"[data-testid='data-testid Panel menu {panel_name}']"
     )
+
+
+@TestStep(When)
+def enter_variable_name(self, variable_name):
+    """Enter variable name."""
+
+    locators.variable_name_textfield.clear()
+    locators.variable_name_textfield.send_keys(variable_name)
+    locators.variable_name_textfield.send_keys(Keys.ENTER)
+    
+
+@TestStep(When)
+def create_variable_for_dashboard(self, datasource_name, query):
+    """Create variable for dashboard."""
+    
+    with When("I click edit button"):
+        with delay():
+            click_edit_button()
+
+    with And("I click dashboard settings button"):
+        with delay():
+            click_dashboard_settings_button()
+
+    with And("I click variables tab"):
+        with delay():
+            click_variables_tab()
+
+    with And("I click add variable button"):
+        with delay():
+            click_add_variable_button()
+
+    with And("I select datasource"):
+        with delay():
+            select_datasource(datasource_name=datasource_name)
+
+    with And("I set up query settings for variable"):
+        with delay():
+            setup_query_settings_for_variable()
+
+    with And("I click go to query button"):
+        with delay():
+            click_go_to_query_button()
+
+    with And("I enter query"):
+        with delay():
+            enter_sql_editor_input(query=query)
+
+    with And("I click run query"):
+        with delay():
+            click_run_query_button()
+
+    with And("I click save dashboard"):
+        with delay():
+            saving_dashboard()
 
 
 @TestStep(When)
@@ -189,6 +362,7 @@ def enter_variable_query(self, query):
 @TestStep(When)
 def select_datasource(self, datasource_name):
     """Select datasource."""
+    
     locators.select_data_source_dropdown.send_keys(datasource_name)
     locators.select_data_source_dropdown.send_keys(Keys.ENTER)
 

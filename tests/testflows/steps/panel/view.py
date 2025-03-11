@@ -133,7 +133,7 @@ def wait_sql_editor_input(self):
 
 @TestStep(When)
 def select_input_query(self, query_name):
-    """Select input query using triple click on textarea."""
+    """Select input query using ctrl + a on textarea."""
 
     locators.input_in_sql_editor(query_name=query_name, grafana_version=self.context.grafana_version).send_keys(Keys.CONTROL, 'a')
 
@@ -582,6 +582,87 @@ def click_save_button(self):
     """Click save button."""
 
     locators.save_button(grafana_version=self.context.grafana_version).click()
+
+
+
+
+
+@TestStep(When)
+def click_variable_dropdown(self, variable_name):
+    """Click variable dropdown."""
+
+    locators.variable_dropdown(variable_name=variable_name).click()
+
+
+@TestStep(When)
+def get_variable_dropdown_value(self, variable_name):
+    """Get variable dropdown html."""
+
+    return locators.variable(variable_name=variable_name).text
+
+@TestStep(When)
+def change_variable_value_order(self, variable_name, value_order):
+    """Change variable value."""
+
+    with By("clicking on variable dropdown"):
+        with delay():
+            click_variable_dropdown(variable_name=variable_name)
+
+    with By("choosing value from variable dropdown"):
+        with delay():
+            choose_value_from_variable_dropdown(variable_name=variable_name, value_order=value_order)
+
+
+@TestStep(When)
+def change_variable_value(self, variable_name, variable_value):
+    """Change variable value."""
+
+    with By("clicking on variable dropdown"):
+        with delay():
+            click_variable_dropdown(variable_name=variable_name)
+
+    with By("entering value into variable dropdown"):
+        with delay():
+            enter_value_variable_dropdown(variable_name=variable_name, variable_value=variable_value)
+
+
+@TestStep(When)
+def get_dropdown_variable_values_set(self, variable_name):
+    """Get dropdown values set."""
+
+    values_set = set()
+    with When(f"I get 0 dropdown value"):
+        change_variable_value_order(variable_name=variable_name, value_order=0)
+        value = get_variable_dropdown_value(variable_name=variable_name)
+
+    order = 1
+    while not (value in values_set):
+        values_set.add(value)
+        with When(f"I get {order} dropdown value"):
+            change_variable_value_order(variable_name=variable_name, value_order=order)
+            value = get_variable_dropdown_value(variable_name=variable_name)
+        order+=1
+
+    return values_set
+
+
+@TestStep(When)
+def choose_value_from_variable_dropdown(self, variable_name, value_order):
+    """Choose value from variable dropdown value."""
+
+    for i in range(value_order):
+        locators.variable_dropdown(variable_name=variable_name).send_keys(Keys.ARROW_DOWN)
+
+    locators.variable_dropdown(variable_name=variable_name).send_keys(Keys.ENTER)
+
+
+@TestStep(When)
+def enter_value_variable_dropdown(self, variable_name, variable_value):
+    """Enter value variable dropdown value."""
+
+    locators.variable_dropdown(variable_name=variable_name).send_keys(variable_value)
+    locators.variable_dropdown(variable_name=variable_name).send_keys(Keys.ENTER)
+
 
 
 @TestStep(When)

@@ -320,6 +320,18 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, f'//*[@data-testid="data-testid Dashboard template variables submenu Label {label}"]/..//input')
 
+
+    def variable_dropdown(self, variable_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[@data-testid="data-testid Dashboard template variables submenu Label {variable_name}"]/..//input')
+
+
+    def variable(self, variable_name):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, f'//*[@data-testid="data-testid Dashboard template variables submenu Label {variable_name}"]/../div')
+
+
+
     def adhoc(self, adhoc_name):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH, f'//*[@aria-label="Edit filter with key {adhoc_name}"]')

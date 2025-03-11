@@ -899,7 +899,62 @@ with 2 variables
      GROUP BY t
      ORDER BY t
  ```
+### Extended Conditional Test with Else Clause
 
+A new signature of the macro now supports three parameters:
+
+```sql
+$conditionalTest(SQL_if, SQL_else, $variable)
+ ```
+
+If the variable is type query with all selected or if the variable is a textbox with nothing entered, then the SQL_if is included in the generated query. Otherwise, the SQL_else is included.
+
+To give an example:
+with 2 variables
+  $var query with include All option
+  $text textbox
+  $text_with_single_quote textbox with single quote
+
+  The following query
+
+  ```sql
+   SELECT
+     $timeSeries as t,
+     count()
+     FROM $table
+     WHERE $timeFilter
+      $conditionalTest(AND toLowerCase(column) in ($var), AND toLowerCase(column) in ($var), $var)
+      $conditionalTest(AND toLowerCase(column2) like '%$text%', AND toLowerCase(column2) like '%$text%', $text)
+      $conditionalTest(AND toLowerCase(column3) ilike ${text_with_single_quote:sqlstring}, AND toLowerCase(column3) ilike ${text_with_single_quote:sqlstring}, $text_with_single_quote)
+     GROUP BY t
+     ORDER BY t
+  ```
+
+   if the `$var` is selected as "All" value, and the `$text` variable is empty, the query will be converted into:
+
+  ```sql
+    SELECT
+      $timeSeries as t,
+      count()
+       FROM $table
+       WHERE $timeFilter
+     GROUP BY t
+     ORDER BY t
+  ```
+
+  If the `$var` template variable have select some elements, and the `$text` template variable has at least one char, the query will be converted into:
+
+  ```sql
+  SELECT
+      $timeSeries as t,
+      count()
+       FROM $table
+       WHERE $timeFilter
+     AND toLowerCase(column) in ($var)
+     AND toLowerCase(column2) like '%$text%'
+     GROUP BY t
+     ORDER BY t
+ ```
 ## Working with panels
 
 ### Pie Chart ([https://grafana.com/plugins/grafana-piechart-panel](https://grafana.com/plugins/grafana-piechart-panel))

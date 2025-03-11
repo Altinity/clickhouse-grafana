@@ -73,7 +73,7 @@ def reformatted_query(self):
     with Then("I check reformatted sql button"):
         with delay():
             debug(dashboard.get_reformatted_query())
-            assert "SELECT 'default.test_grafana', '""', 'event_time', '(intDiv(toUInt32(event_time), 0) * 0) * 1000'" in dashboard.get_reformatted_query(), error()
+            assert "SELECT 'default.test_grafana', '""', 'event_time', '(intDiv(toUInt32(event_time), 30) * 30) * 1000'" in dashboard.get_reformatted_query(), error()
     
 
 @TestScenario

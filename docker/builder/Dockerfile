@@ -2,8 +2,8 @@ FROM ubuntu:latest
 LABEL maintainer="Altinity <support@altinity.com>"
 
 ARG NODEJS_VERSION=22
-ARG GOLANG_VERSION=1.23
-ARG TINYGO_VERSION=0.35.0
+ARG GOLANG_VERSION=1.24
+ARG TINYGO_VERSION=0.36.0
 
 RUN apt update && apt install --no-install-recommends -y curl git gnupg2 software-properties-common && \
     ( curl -fsSL https://deb.nodesource.com/setup_${NODEJS_VERSION}.x | bash - ) && \

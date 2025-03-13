@@ -640,7 +640,7 @@ func TestMacrosBuilder(t *testing.T) {
 	}
 	r := require.New(t)
 	for _, tc := range testCases {
-		t.Logf(tc.name)
+		t.Log(tc.name)
 		scanner := NewScanner(tc.query)
 
 		ast, err := scanner.ToAST()
@@ -1865,7 +1865,7 @@ func TestScannerAST(t *testing.T) {
 
 	r := require.New(t)
 	for _, tc := range testCases {
-		t.Logf(tc.name)
+		t.Log(tc.name)
 		ast, err := tc.scanner.ToAST()
 		r.NoError(err)
 		check, err := tc.CheckASTEqual(tc.expectedAST, ast)

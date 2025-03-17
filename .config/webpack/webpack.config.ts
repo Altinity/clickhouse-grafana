@@ -197,7 +197,6 @@ const config = async (env): Promise<Configuration> => {
       alias: {
         // Map 'node:' scheme to standard module names
         'node:crypto': 'crypto-browserify',
-        'node:fs': 'browserify-fs', // Note: fs is not fully supported in the browser
         'node:util': 'util/',
         // Add other aliases as needed
       },

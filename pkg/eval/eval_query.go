@@ -155,7 +155,7 @@ func parseInterval(interval string, intervalFactor int) (int, int, error) {
 	if scaledSeconds == 0 {
 		scaledSeconds = 1
 		// Also adjust milliseconds to 1000 to maintain consistency
-		scaledMilliseconds = 1000
+		//scaledMilliseconds = 1000
 	}
 
 	return int(scaledSeconds), int(scaledMilliseconds), nil

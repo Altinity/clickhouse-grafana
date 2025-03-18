@@ -145,24 +145,17 @@ func parseInterval(interval string, intervalFactor int) (int, int, error) {
 		totalMilliseconds += millis
 	}
 
-	// Split totalMilliseconds into seconds and milliseconds
-	totalSeconds := totalMilliseconds / 1000
-	remainingMilliseconds := totalMilliseconds % 1000
-
-	// If totalSeconds is zero, default to 1 as per original logic
-	if totalSeconds == 0 {
-		totalSeconds = 1
-	}
-
 	// Apply the interval factor
-	scaledSeconds := totalSeconds * int64(intervalFactor)
-	scaledMilliseconds := remainingMilliseconds * int64(intervalFactor)
+	scaledMilliseconds := totalMilliseconds * int64(intervalFactor)
 
-	// Handle overflow: Convert excess milliseconds into seconds
-	if scaledMilliseconds >= 1000 {
-		additionalSeconds := scaledMilliseconds / 1000
-		scaledMilliseconds = scaledMilliseconds % 1000
-		scaledSeconds += additionalSeconds
+	// Calculate seconds from the total milliseconds
+	scaledSeconds := scaledMilliseconds / 1000
+
+	// If seconds is zero, default to 1 as per original logic
+	if scaledSeconds == 0 {
+		scaledSeconds = 1
+		// Also adjust milliseconds to 1000 to maintain consistency
+		//scaledMilliseconds = 1000
 	}
 
 	return int(scaledSeconds), int(scaledMilliseconds), nil

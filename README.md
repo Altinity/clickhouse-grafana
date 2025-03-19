@@ -1179,12 +1179,12 @@ All other fields returned from data source will be recognized by Grafana as [det
 ## Flamegraph support
 ![Format as: Flamegraph](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/25_format_as_flamegraph.png)
 
-To show Traces you need query in format as "Flame Graph"
+To show Flamegraph you need query in format as "Flame Graph"
 According to https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/flame-graph/#data-api, you need to have recordset with 4 fields
 - `level` - Numeric - the level of the stack frame. The root frame is level 0.
 - `label` - String - the function name or other symbol which identify
 - `value` - Numeric - the number of samples or bytes that were recorded in this stack trace
-- `self` - Numeric - the number of samples or bytes that were recorded in only this stack frame excluding the children, for clickhouse this is usually zero cause we can't calculate)
+- `self` - Numeric - the number of samples or bytes that were recorded in only this stack frame excluding the children, for clickhouse this is usually zero, but for the last frame in stack requires `self` equals with `value` to properly flamegraph vizualization
 
 **Moreover, rows shall be ordered by stack trace and level**
 

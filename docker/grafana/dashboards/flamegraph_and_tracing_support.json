@@ -19,13 +19,17 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
+  "id": 46,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
         "type": "vertamedia-clickhouse-datasource",
         "uid": "PFA2E00E697AAEA0A"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
       },
       "gridPos": {
         "h": 8,
@@ -41,6 +45,15 @@
           "url": "https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/traces/"
         }
       ],
+      "options": {
+        "spanFilters": {
+          "criticalPathOnly": false,
+          "matchesOnly": false,
+          "serviceNameOperator": "=",
+          "spanNameOperator": "="
+        }
+      },
+      "pluginVersion": "11.5.2",
       "targets": [
         {
           "add_metadata": true,
@@ -77,6 +90,10 @@
         "uid": "PFA2E00E697AAEA0A"
       },
       "description": "",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 9,
         "w": 24,
@@ -100,9 +117,14 @@
           "url": "https://grafana.com/docs/grafana/latest/panels-visualizations/visualizations/flame-graph/#data-api"
         }
       ],
+      "options": {},
+      "pluginVersion": "11.5.2",
       "targets": [
         {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
           "add_metadata": true,
+          "contextWindowSize": "10",
           "database": "system",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
@@ -111,28 +133,31 @@
           "dateColDataType": "event_date",
           "dateTimeColDataType": "event_time",
           "dateTimeType": "DATETIME",
-          "editorMode": "builder",
+          "editorMode": "sql",
           "extrapolate": false,
           "format": "flamegraph",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "interval": "",
           "intervalFactor": 1,
-          "query": "SELECT length(trace)  - level_num AS level, label, count() AS value, 0 self \r\nFROM $table \r\nARRAY JOIN arrayEnumerate(trace) AS level_num, \r\narrayMap(x -> if(addressToSymbol(x) != '', demangle(addressToSymbol(x)), 'unknown') , trace) AS label \r\nWHERE trace_type='Real' AND $timeFilter\r\nGROUP BY level, label, trace\r\nORDER BY trace, level\r\n",
+          "query": "SELECT\r\n  (arrayMap(\r\n    x -> if(addressToSymbol(x) != '', demangle(addressToSymbol(x)), 'unknown'),\r\n    arrayJoin(\r\n      arrayPopFront(\r\n      arrayMap(\r\n        x -> arraySlice(reverse(trace), 1, x),\r\n        range(length(trace) - 1)\r\n      )\r\n      )\r\n    )\r\n  ) AS trace_level)[-1] AS label,\r\n  count() AS value,\r\n  length(trace_level) AS level,\r\n  countIf(length(trace)-2 = length(trace_level)) AS self\r\nFROM $table\r\nWHERE trace_type='Real' AND $timeFilter \r\nGROUP BY trace_level\r\nORDER BY trace_level,level SETTINGS allow_introspection_functions=1",
           "rawQuery": "/* grafana dashboard=FlameGraph and Tracing support, user=1 */ SELECT level, label, count() AS value, 0 self \r\nFROM system.trace_log \r\nARRAY JOIN arrayEnumerate(trace) AS level, \r\narrayMap(x -> demangle(addressToSymbol(x) ), trace) AS label \r\nWHERE trace_type='Real' AND event_date >= toDate(1713685956) AND event_date <= toDate(1713707556) AND event_time >= toDateTime(1713685956) AND event_time <= toDateTime(1713707556)\r\nGROUP BY ALL;",
           "refId": "A",
           "round": "0s",
-          "showFormattedSQL": false,
+          "showFormattedSQL": true,
           "showHelp": false,
           "skip_comments": false,
           "step": "",
-          "table": "trace_log"
+          "table": "trace_log",
+          "useWindowFuncForMacros": true
         }
       ],
       "title": "flamegraph example",
       "type": "flamegraph"
     }
   ],
+  "preload": false,
   "refresh": "",
-  "schemaVersion": 39,
+  "schemaVersion": 40,
   "tags": [],
   "templating": {
     "list": []
@@ -145,6 +170,6 @@
   "timezone": "browser",
   "title": "FlameGraph and Tracing support",
   "uid": "edimrzy0cijnkf",
-  "version": 4,
+  "version": 1,
   "weekStart": ""
 }

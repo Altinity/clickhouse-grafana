@@ -54,9 +54,16 @@ jobs:
       - name: Test backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
         uses: magefile/mage-action@v3
+        env:
+          GOCOVERDIR: ./coverage/
         with:
           version: latest
           args: coverage
+
+      - name: check GOCOVERDIR
+        run: |
+          ls -la ./
+          ls -la ./coverage/
 
       - name: Report golang coverage
         if: steps.check-for-backend.outputs.has-backend == 'true'

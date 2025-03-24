@@ -54,10 +54,16 @@ jobs:
         run: tests/testflows/infra/create-report.sh
 
 
-      - name: Report coverage
+      - name: Report typescript coverage
         uses: coverallsapp/github-action@v2
         with:
-          files: tests/testflows/coverage/lcov.info go_coverage/coverage.txt
+          file: tests/testflows/coverage/lcov.info
+
+      - name: Report golang coverage
+        uses: coverallsapp/github-action@v2
+        with:
+          file: go_coverage/coverage.txt
+          format: golang
 
       - uses: actions/upload-artifact@v4
         if: always()

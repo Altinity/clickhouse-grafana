@@ -69,6 +69,7 @@ jobs:
         if: steps.check-for-backend.outputs.has-backend == 'true'
         uses: coverallsapp/github-action@v2
         with:
+          debug: 'true'
           file: ./coverage/backend.txt
           format: golang
 

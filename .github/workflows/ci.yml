@@ -62,8 +62,8 @@ jobs:
 
       - name: check GOCOVERDIR
         run: |
-          ls -la ./
           ls -la ./coverage/
+          cat ./coverage/backend.txt
 
       - name: Report golang coverage
         if: steps.check-for-backend.outputs.has-backend == 'true'

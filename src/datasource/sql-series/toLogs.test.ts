@@ -186,4 +186,4 @@ describe('toLogs', () => {
       expect(labels["complex_data['performance']"]).toBe('{"cpu":80,"memory":"1.2GB"}');
     }
   });
-}); 
+});

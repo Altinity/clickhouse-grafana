@@ -2,7 +2,7 @@ import {createDataFrame, DataFrame, DataFrameType, FieldType} from '@grafana/dat
 import {each, find, omitBy, pickBy} from 'lodash';
 import {convertTimezonedDateToUTC} from './sql_series';
 
-const transformObject = (obj) => {
+export const transformObject = (obj) => {
   // Check if the input is an object and not null
   if (obj && typeof obj === 'object') {
     // Create a new object to store the transformed properties
@@ -12,9 +12,29 @@ const transformObject = (obj) => {
       if (Object.prototype.hasOwnProperty.call(obj, key)) {
         const value = obj[key];
 
-        // If the value is an object (and not null), convert it to a string
+        // If the value is an object (and not null), extract first level properties
         if (value && typeof value === 'object') {
-          result[key] = JSON.stringify(value);
+          if (Array.isArray(value)) {
+            // For arrays, we still stringify
+            result[key] = JSON.stringify(value);
+          } else {
+            // For objects, extract first level properties
+            for (const nestedKey in value) {
+              if (Object.prototype.hasOwnProperty.call(value, nestedKey)) {
+                const nestedValue = value[nestedKey];
+                // Create a new key in the format `key[nestedKey]`
+                const newKey = `${key}['${nestedKey}']`;
+                
+                // If nested value is still an object, stringify it
+                if (nestedValue && typeof nestedValue === 'object') {
+                  result[newKey] = JSON.stringify(nestedValue);
+                } else {
+                  // Otherwise, keep the primitive value as is
+                  result[newKey] = nestedValue;
+                }
+              }
+            }
+          }
         } else {
           // Otherwise, keep the primitive value as it is
           result[key] = value;

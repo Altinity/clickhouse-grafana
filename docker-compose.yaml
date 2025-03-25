@@ -254,6 +254,7 @@ services:
         mkdir -p ./tests/testflows/backend_coverage_testflows/
         mv go_coverage/coverage.html ./tests/testflows/backend_coverage_testflows/ &&
         mv go_coverage/covcounters* go_coverage/raw/ &&
+        mv go_coverage/covmeta* go_coverage/raw/ &&
         go tool covdata textfmt -i=go_coverage/raw -o=go_coverage/coverage.txt &&
         go tool cover -html=go_coverage/coverage.txt -o=go_coverage/coverage.html
       "

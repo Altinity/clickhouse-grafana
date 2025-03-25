@@ -59,6 +59,11 @@ jobs:
         with:
           file: tests/testflows/coverage/lcov.info
 
+      - name: check GOCOVERDIR
+        run: |
+          ls -la ./go_coverage/
+          cat ./go_coverage/coverage.txt
+
       - name: Report golang coverage
         uses: coverallsapp/github-action@v2
         with:

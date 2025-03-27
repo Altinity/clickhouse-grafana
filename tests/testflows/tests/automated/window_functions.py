@@ -30,8 +30,11 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         with And("I click run query button"):
             with delay():
                 panel.click_run_query_button()
+        
+        with Then("I check generated SQL contains running difference function"):
+            assert not ("runningDifference" in sql_editor.get_reformatted_query(query_name="A"))
 
-        with And("I open Query inspector"):
+        with When("I open Query inspector"):
             with delay(after=0.5):
                 panel.click_inspect_query_button()
 
@@ -64,8 +67,11 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         with And("I click run query button"):
             with delay():
                 panel.click_run_query_button()
+                
+        with Then("I check generated SQL contains running difference function"):
+            assert "runningDifference" in sql_editor.get_reformatted_query(query_name="A")
 
-        with And("I open Query inspector"):
+        with When("I open Query inspector"):
             with delay(after=0.5):
                 panel.click_inspect_query_button()
 

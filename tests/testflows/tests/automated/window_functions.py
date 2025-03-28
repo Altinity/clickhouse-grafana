@@ -30,8 +30,11 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         with And("I click run query button"):
             with delay():
                 panel.click_run_query_button()
+        
+        with Then("I check generated SQL contains running difference function"):
+            assert not ("runningDifference" in sql_editor.get_reformatted_query(query_name="A")), error()
 
-        with And("I open Query inspector"):
+        with When("I open Query inspector"):
             with delay(after=0.5):
                 panel.click_inspect_query_button()
 
@@ -54,7 +57,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
 
         with And("I click discard changes"):
             with delay():
-                panel.click_discard_button()
+                panel.click_back_to_dashboard_button()
 
     with When(f"I download data for {panel_name} - without window functions panel{'' if column is None else ', ' + column + ' column'}"):
         with When(f"I open panel {panel_name} - without window functions"):
@@ -64,8 +67,11 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         with And("I click run query button"):
             with delay():
                 panel.click_run_query_button()
+                
+        with Then("I check generated SQL contains running difference function"):
+            assert "runningDifference" in sql_editor.get_reformatted_query(query_name="A"), error()
 
-        with And("I open Query inspector"):
+        with When("I open Query inspector"):
             with delay(after=0.5):
                 panel.click_inspect_query_button()
 
@@ -88,7 +94,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
 
         with And("I click discard changes"):
             with delay(after=0.5):
-                panel.click_discard_button()
+                panel.click_back_to_dashboard_button()
 
     with Then("I save two csv files"):
         with delay():
@@ -127,7 +133,7 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
             with By("calculating correlation between this values"):
                 data_without_window_functions = [0 if i == '' else float(i) for i in data_without_window_functions[1:]]
                 data_with_window_functions = [0 if i == '' else float(i) for i in data_with_window_functions[1:]]
-                correlation = corrcoef(data_without_window_functions[5:], data_with_window_functions[5:])[0,1]
+                correlation = corrcoef(data_without_window_functions, data_with_window_functions)[0,1]
                 note(f"correlation for {panel_name}: {correlation}")
                 note(data_without_window_functions)
                 note(data_with_window_functions)

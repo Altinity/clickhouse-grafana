@@ -92,10 +92,11 @@ class Locators:
         return driver.find_element(SelectBy.XPATH,
                                    f"//div/header//div[text()='{expression_name}']/../../../../..//label[text()='{dropdown_name}']/../div")
 
-    def expression_textfield(self, expression_name):
+    @property
+    def expression_textfield(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f"//div/header//div[text()='{expression_name}']/../../../../..//input[contains(@class,'input-input')]")
+                                   f"//div[@data-testid='data-testid alert-rule step-2']//input[contains(@class,'input-input') and @type='number']")
 
     def expression_value_range_condition(self, expression_name):
         driver: WebDriver = current().context.driver

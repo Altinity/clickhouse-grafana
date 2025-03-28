@@ -462,7 +462,7 @@ def setup_unified_alerts(
 
     with And("I enter `Threshold` value"):
         with delay():
-            alert_rules.enter_expression_textfield(expression_name="C", textfield_value=threshold_value)
+            alert_rules.enter_expression_textfield(textfield_value=threshold_value)
 
     with And("I click preview button"):
         with delay():

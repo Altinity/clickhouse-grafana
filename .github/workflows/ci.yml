@@ -54,9 +54,23 @@ jobs:
       - name: Test backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
         uses: magefile/mage-action@v3
+        env:
+          GOCOVERDIR: ./coverage/
         with:
           version: latest
           args: coverage
+
+      - name: check GOCOVERDIR
+        run: |
+          ls -la ./coverage/
+          cat ./coverage/backend.txt
+
+      - name: Report golang coverage
+        if: steps.check-for-backend.outputs.has-backend == 'true'
+        uses: coverallsapp/github-action@v2
+        with:
+          file: ./coverage/backend.out
+          format: golang
 
       - name: Build backend
         if: steps.check-for-backend.outputs.has-backend == 'true'

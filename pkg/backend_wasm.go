@@ -189,25 +189,26 @@ func applyAdhocFiltersWasm(this js.Value, args []js.Value) interface{} {
 
 // QueryRequest represents the structure of the query request
 type QueryRequest struct {
-	RefId              string
-	RuleUid            string
-	RawQuery           bool
-	Query              string
-	DateTimeCol        string
-	DateCol            string
-	DateTimeType       string
-	Extrapolate        bool
-	SkipComments       bool
-	AddMetadata        bool
-	Format             string
-	Round              string
-	IntervalFactor     int
-	Interval           string
-	Database           string
-	Table              string
-	MaxDataPoints      int64
-	FrontendDatasource bool
-	TimeRange          struct {
+	RefId                  string
+	RuleUid                string
+	RawQuery               bool
+	Query                  string
+	DateTimeCol            string
+	DateCol                string
+	DateTimeType           string
+	Extrapolate            bool
+	SkipComments           bool
+	AddMetadata            bool
+	Format                 string
+	Round                  string
+	IntervalFactor         int
+	Interval               string
+	Database               string
+	Table                  string
+	MaxDataPoints          int64
+	FrontendDatasource     bool
+	UseWindowFuncForMacros bool
+	TimeRange              struct {
 		From string
 		To   string
 	}
@@ -225,24 +226,25 @@ func createQueryWasm(this js.Value, args []js.Value) interface{} {
 	// Extract request data from JavaScript object
 	jsObj := args[0]
 	reqData := QueryRequest{
-		RefId:              jsObj.Get("refId").String(),
-		RuleUid:            jsObj.Get("ruleUid").String(),
-		RawQuery:           jsObj.Get("rawQuery").Bool(),
-		Query:              jsObj.Get("query").String(),
-		DateTimeCol:        jsObj.Get("dateTimeColDataType").String(),
-		DateCol:            jsObj.Get("dateColDataType").String(),
-		DateTimeType:       jsObj.Get("dateTimeType").String(),
-		Extrapolate:        jsObj.Get("extrapolate").Bool(),
-		SkipComments:       jsObj.Get("skip_comments").Bool(),
-		AddMetadata:        jsObj.Get("add_metadata").Bool(),
-		Format:             jsObj.Get("format").String(),
-		Round:              jsObj.Get("round").String(),
-		IntervalFactor:     jsObj.Get("intervalFactor").Int(),
-		Interval:           jsObj.Get("interval").String(),
-		Database:           jsObj.Get("database").String(),
-		Table:              jsObj.Get("table").String(),
-		MaxDataPoints:      int64(jsObj.Get("maxDataPoints").Int()),
-		FrontendDatasource: jsObj.Get("frontendDatasource").Bool(),
+		RefId:                  jsObj.Get("refId").String(),
+		RuleUid:                jsObj.Get("ruleUid").String(),
+		RawQuery:               jsObj.Get("rawQuery").Bool(),
+		Query:                  jsObj.Get("query").String(),
+		DateTimeCol:            jsObj.Get("dateTimeColDataType").String(),
+		DateCol:                jsObj.Get("dateColDataType").String(),
+		DateTimeType:           jsObj.Get("dateTimeType").String(),
+		Extrapolate:            jsObj.Get("extrapolate").Bool(),
+		SkipComments:           jsObj.Get("skip_comments").Bool(),
+		AddMetadata:            jsObj.Get("add_metadata").Bool(),
+		Format:                 jsObj.Get("format").String(),
+		Round:                  jsObj.Get("round").String(),
+		IntervalFactor:         jsObj.Get("intervalFactor").Int(),
+		Interval:               jsObj.Get("interval").String(),
+		Database:               jsObj.Get("database").String(),
+		Table:                  jsObj.Get("table").String(),
+		MaxDataPoints:          int64(jsObj.Get("maxDataPoints").Int()),
+		FrontendDatasource:     jsObj.Get("frontendDatasource").Bool(),
+		UseWindowFuncForMacros: jsObj.Get("useWindowFuncForMacros").Bool(),
 	}
 
 	// Extract time range
@@ -267,26 +269,27 @@ func createQueryWasm(this js.Value, args []js.Value) interface{} {
 
 	// Create eval.EvalQuery
 	evalQ := eval.EvalQuery{
-		RefId:              reqData.RefId,
-		RuleUid:            reqData.RuleUid,
-		RawQuery:           reqData.RawQuery,
-		Query:              reqData.Query,
-		DateTimeCol:        reqData.DateTimeCol,
-		DateCol:            reqData.DateCol,
-		DateTimeType:       reqData.DateTimeType,
-		Extrapolate:        reqData.Extrapolate,
-		SkipComments:       reqData.SkipComments,
-		AddMetadata:        reqData.AddMetadata,
-		Format:             reqData.Format,
-		Round:              reqData.Round,
-		IntervalFactor:     reqData.IntervalFactor,
-		Interval:           reqData.Interval,
-		Database:           reqData.Database,
-		Table:              reqData.Table,
-		MaxDataPoints:      reqData.MaxDataPoints,
-		From:               from,
-		To:                 to,
-		FrontendDatasource: reqData.FrontendDatasource,
+		RefId:                  reqData.RefId,
+		RuleUid:                reqData.RuleUid,
+		RawQuery:               reqData.RawQuery,
+		Query:                  reqData.Query,
+		DateTimeCol:            reqData.DateTimeCol,
+		DateCol:                reqData.DateCol,
+		DateTimeType:           reqData.DateTimeType,
+		Extrapolate:            reqData.Extrapolate,
+		SkipComments:           reqData.SkipComments,
+		AddMetadata:            reqData.AddMetadata,
+		Format:                 reqData.Format,
+		Round:                  reqData.Round,
+		IntervalFactor:         reqData.IntervalFactor,
+		Interval:               reqData.Interval,
+		Database:               reqData.Database,
+		Table:                  reqData.Table,
+		MaxDataPoints:          reqData.MaxDataPoints,
+		From:                   from,
+		To:                     to,
+		FrontendDatasource:     reqData.FrontendDatasource,
+		UseWindowFuncForMacros: reqData.UseWindowFuncForMacros,
 	}
 
 	// Apply macros and get AST

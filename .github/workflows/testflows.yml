@@ -31,7 +31,7 @@ jobs:
 
       - uses: acifani/setup-tinygo@v2
         with:
-          tinygo-version: '0.36.0'
+          tinygo-version: '0.37.0'
 
       - name: Setup
         run: tests/testflows/infra/setup.sh

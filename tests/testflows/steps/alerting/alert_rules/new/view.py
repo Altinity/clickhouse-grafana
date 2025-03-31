@@ -60,11 +60,11 @@ def enter_expression_param(self, expression_name, param_name, param_value):
 
 
 @TestStep(When)
-def enter_expression_textfield(self, expression_name, textfield_value):
+def enter_expression_textfield(self,textfield_value):
     """Enter textfield parameter for expression."""
 
-    locators.expression_textfield(expression_name=expression_name).clear()
-    locators.expression_textfield(expression_name=expression_name).send_keys(textfield_value)
+    locators.expression_textfield.clear()
+    locators.expression_textfield.send_keys(textfield_value)
 
 
 @TestStep(When)

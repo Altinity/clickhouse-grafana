@@ -787,13 +787,33 @@ export class CHDataSource
         throw new Error(error);
       }
 
-      const query = this.templateSrv.replace(
+      let query = this.templateSrv.replace(
         conditionalTest(sql, this.templateSrv),
         options.scopedVars,
         interpolateQueryExpr
       );
 
-      const queryUpd = await this.wasmModule.applyAdhocFilters(query || queryData.query, adhocFilters, target);
+      const wildcardChar = '%';
+      const searchFilterVariableName = '__searchFilter';
+      let scopedVars = {};
+      if (query?.indexOf(searchFilterVariableName) !== -1) {
+        const searchFilterValue = `${wildcardChar}`;
+        scopedVars = {
+          __searchFilter: {
+            value: searchFilterValue,
+            text: '',
+          },
+        };
+        query = this.templateSrv.replace(query, scopedVars, interpolateQueryExpr);
+      }
+
+      const interpolatedQuery = this.templateSrv.replace(
+        conditionalTest(query, this.templateSrv),
+        scopedVars,
+        interpolateQueryExpr
+      );
+
+      const queryUpd = await this.wasmModule.applyAdhocFilters(interpolatedQuery || queryData.query, adhocFilters, target);
 
       return { stmt: queryUpd, keys: keys };
     } catch (error) {

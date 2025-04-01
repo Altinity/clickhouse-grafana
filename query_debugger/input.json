@@ -1,0 +1,25 @@
+{
+  "frontendDatasource": true,
+  "refId": "B",
+  "ruleUid": "",
+  "rawQuery": false,
+  "query": "(GROUP BY category) Group by category,test",
+  "dateTimeColDataType": "event_time",
+  "dateColDataType": "",
+  "dateTimeType": "DATETIME",
+  "extrapolate": true,
+  "skip_comments": true,
+  "add_metadata": true,
+  "useWindowFuncForMacros": true,
+  "format": "time_series",
+  "round": "0s",
+  "intervalFactor": 1,
+  "interval": "1h",
+  "database": "default",
+  "table": "test_lttb",
+  "maxDataPoints": 569,
+  "timeRange": {
+    "from": "2025-03-02T22:18:06.471Z",
+    "to": "2025-04-01T22:18:06.471Z"
+  }
+}

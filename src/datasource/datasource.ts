@@ -767,7 +767,7 @@ export class CHDataSource
         extrapolate: target.extrapolate || false,
         skip_comments: target.skip_comments || false,
         add_metadata: target.add_metadata || false,
-        useWindowFuncForMacros: target.useWindowFuncForMacros,
+        useWindowFuncForMacros: target.useWindowFuncForMacros || false,
         format: target.format || 'time_series',
         round: target.round || '0s',
         intervalFactor: target.intervalFactor || 1,

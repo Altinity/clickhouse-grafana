@@ -3,7 +3,7 @@
   "refId": "B",
   "ruleUid": "",
   "rawQuery": false,
-  "query": "(GROUP BY category) Group by category,test",
+  "query": "$lttbMs(auto, category, event_time, requests) FROM $table WHERE $timeFilter GROUP BY category",
   "dateTimeColDataType": "event_time",
   "dateColDataType": "",
   "dateTimeType": "DATETIME",

@@ -37,6 +37,51 @@ type QueryRequest struct {
 	} `json:"timeRange"`
 }
 
+// findGroupByProperties recursively searches for GROUP BY clauses in the AST
+func findGroupByProperties(ast *eval.EvalAST) []interface{} {
+	// First, check if there's a GROUP BY at this level
+	if prop, exists := ast.Obj["group by"]; exists {
+		switch v := prop.(type) {
+		case *eval.EvalAST:
+			// If the property is an AST object, add all items from its array
+			properties := make([]interface{}, len(v.Arr))
+			copy(properties, v.Arr)
+			return properties
+		case []interface{}:
+			// If the property is already a slice, use it directly
+			return v
+		default:
+			// For any other type, add it as a single item
+			return []interface{}{v}
+		}
+	}
+
+	// If not found at this level, check if there's a FROM clause that might contain a subquery
+	if from, exists := ast.Obj["from"]; exists {
+		switch v := from.(type) {
+		case *eval.EvalAST:
+			// If FROM contains another AST (subquery), recursively search in it
+			subProperties := findGroupByProperties(v)
+			if len(subProperties) > 0 {
+				return subProperties
+			}
+		}
+	}
+
+	// If nothing found in subqueries, check any other properties that might contain nested ASTs
+	for _, obj := range ast.Obj {
+		if subAST, ok := obj.(*eval.EvalAST); ok {
+			subProperties := findGroupByProperties(subAST)
+			if len(subProperties) > 0 {
+				return subProperties
+			}
+		}
+	}
+
+	// Return empty slice if nothing found
+	return []interface{}{}
+}
+
 // createQuery is the debug version of createQueryWasm
 func createQuery(reqData QueryRequest) map[string]interface{} {
 	// Parse time range
@@ -95,28 +140,17 @@ func createQuery(reqData QueryRequest) map[string]interface{} {
 		}
 	}
 
-	// Extract properties from AST
-	var properties []interface{}
-	if prop, exists := ast.Obj["group by"]; exists {
-		switch v := prop.(type) {
-		case *eval.EvalAST:
-			// If the property is an AST object, add all items from its array
-			properties = make([]interface{}, len(v.Arr))
-			copy(properties, v.Arr)
-		case []interface{}:
-			// If the property is already a slice, use it directly
-			properties = v
-		default:
-			// For any other type, add it as a single item
-			properties = []interface{}{v}
-		}
-	}
-	fmt.Printf("Error reading file: %s\n", properties)
+	// Use the recursive function to find GROUP BY properties at any level
+	properties := findGroupByProperties(ast)
 
-	// Return the result
+	// Return the result with detailed information about the AST structure
 	return map[string]interface{}{
 		"sql":  sql,
 		"keys": properties,
+		"debug": map[string]interface{}{
+			"hasFromClause":    ast.HasOwnProperty("from"),
+			"hasGroupByClause": ast.HasOwnProperty("group by"),
+		},
 	}
 }
 

@@ -780,15 +780,17 @@ export class CHDataSource
           to: options.range.to.toISOString(), // Convert to Unix timestamp
         },
       };
-     const createQueryResult = await this.wasmModule.createQuery(queryData);
+      const createQueryResult = await this.wasmModule.createQuery(queryData);
       const { sql, keys, error } = createQueryResult
 
       if (error) {
         throw new Error(error);
       }
 
-      let query = this.templateSrv.replace(
-        conditionalTest(sql, this.templateSrv),
+      let query = await this.wasmModule.applyAdhocFilters(sql || queryData.query, adhocFilters, target);
+
+      query = this.templateSrv.replace(
+        conditionalTest(query, this.templateSrv),
         options.scopedVars,
         interpolateQueryExpr
       );
@@ -813,9 +815,7 @@ export class CHDataSource
         interpolateQueryExpr
       );
 
-      const queryUpd = await this.wasmModule.applyAdhocFilters(interpolatedQuery || queryData.query, adhocFilters, target);
-
-      return { stmt: queryUpd, keys: keys };
+      return { stmt: interpolatedQuery, keys: keys };
     } catch (error) {
       // Propagate the error instead of returning a default value
       throw error;

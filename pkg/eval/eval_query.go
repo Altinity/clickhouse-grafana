@@ -930,8 +930,8 @@ func (q *EvalQuery) _rate(args []interface{}, beforeMacrosQuery, fromQuery strin
 		" SELECT $timeSeries AS t" +
 		", " + strings.Join(argsStr, ", ") +
 		" " + fromQuery +
-		" GROUP BY t" +
-		" ORDER BY t" +
+		"\n GROUP BY t" +
+		"\n ORDER BY t" +
 		")", nil
 }
 

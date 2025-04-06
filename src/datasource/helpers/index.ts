@@ -84,7 +84,6 @@ export const clickhouseEscape = (value: any, variable: any): any => {
   const NumberOnlyRegexp = /^[+-]?\d+(\.\d+)?$/;
 
   let returnAsIs = true;
-  let returnAsArray = false;
   // if at least one of options is not digit or is array
   each(variable.options, function (opt): boolean {
     if (typeof opt.value === 'string' && opt.value === '$__all') {
@@ -98,21 +97,11 @@ export const clickhouseEscape = (value: any, variable: any): any => {
       returnAsIs = false;
       return false;
     }
-    if (opt.value instanceof Array) {
-      returnAsArray = true;
-      each(opt.value, function (v): boolean {
-        if (typeof v === 'string' && !NumberOnlyRegexp.test(v)) {
-          returnAsIs = false;
-          return false;
-        }
-        return true;
-      });
-      return false;
-    }
+
     return true;
   });
 
-  if (value instanceof Array && returnAsArray) {
+  if (value instanceof Array) {
     let arrayValues = map(value, function (v) {
       return clickhouseEscape(v, variable);
     });
@@ -125,6 +114,12 @@ export const clickhouseEscape = (value: any, variable: any): any => {
 };
 
 export const interpolateQueryExpr = (value: any, variable: any) => {
+  // Repeated Single variable value
+  if (variable.multi === undefined && variable.includeAll === undefined && !Array.isArray(value)) {
+    return `'${value}'`;
+  }
+
+  // Single variable value
   if (!variable.multi && !variable.includeAll && !Array.isArray(value)) {
     return value;
   }

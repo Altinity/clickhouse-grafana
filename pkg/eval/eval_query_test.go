@@ -88,8 +88,8 @@ func TestMacrosBuilder(t *testing.T) {
 				" countIf(Type != 200) AS from_bad"+
 				" FROM requests"+
 				" WHERE $timeFilter"+
-				" GROUP BY t"+
-				" ORDER BY t)",
+				"\\n GROUP BY t"+
+				"\\n ORDER BY t)",
 
 			"/* comment */ SELECT t,"+
 				" from_good/((t - lagInFrame(t,1,0) OVER ())/1000) from_goodRate,"+
@@ -100,8 +100,8 @@ func TestMacrosBuilder(t *testing.T) {
 				" countIf(Type != 200) AS from_bad"+
 				" FROM requests"+
 				" WHERE $timeFilter"+
-				" GROUP BY t"+
-				" ORDER BY t)",
+				"\\n GROUP BY t"+
+				"\\n ORDER BY t)",
 
 			q.rate,
 		),

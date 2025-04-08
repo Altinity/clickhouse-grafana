@@ -4,15 +4,15 @@ import { useSystemDatabases } from './useSystemDatabases';
 import { useAutocompleteData } from './useAutocompletionData';
 import { useEffect, useState } from 'react';
 
-export const useFormattedData = (query: CHQuery, datasource: CHDataSource): [string, string | null] => {
+export const useFormattedData = (query: CHQuery, datasource: CHDataSource, options?: any): [string, string | null] => {
   useSystemDatabases(datasource);
   useAutocompleteData(datasource);
   const [formattedData, setFormattedData] = useState(query.query);
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-      if (datasource.options && datasource.templateSrv) {
-        datasource.replace(datasource.options, query).then((replaced) => {
+      if ((datasource.options || options) && datasource.templateSrv) {
+        datasource.replace(datasource.options || options, query).then((replaced) => {
           setFormattedData(replaced.stmt);
           setError(null);
         }).catch((e) => {
@@ -22,7 +22,7 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource): [str
       }
 
     // eslint-disable-next-line
-  }, [query, datasource.name, datasource.options, datasource.templateSrv]);
+  }, [query, datasource.name, datasource.options, options, datasource.templateSrv]);
 
   return [formattedData, error];
 };

@@ -214,6 +214,51 @@ type QueryRequest struct {
 	}
 }
 
+// findGroupByProperties recursively searches for GROUP BY clauses in the AST
+func findGroupByProperties(ast *eval.EvalAST) []interface{} {
+	// First, check if there's a GROUP BY at this level
+	if prop, exists := ast.Obj["group by"]; exists {
+		switch v := prop.(type) {
+		case *eval.EvalAST:
+			// If the property is an AST object, add all items from its array
+			properties := make([]interface{}, len(v.Arr))
+			copy(properties, v.Arr)
+			return properties
+		case []interface{}:
+			// If the property is already a slice, use it directly
+			return v
+		default:
+			// For any other type, add it as a single item
+			return []interface{}{v}
+		}
+	}
+
+	// If not found at this level, check if there's a FROM clause that might contain a subquery
+	if from, exists := ast.Obj["from"]; exists {
+		switch v := from.(type) {
+		case *eval.EvalAST:
+			// If FROM contains another AST (subquery), recursively search in it
+			subProperties := findGroupByProperties(v)
+			if len(subProperties) > 0 {
+				return subProperties
+			}
+		}
+	}
+
+	// If nothing found in subqueries, check any other properties that might contain nested ASTs
+	for _, obj := range ast.Obj {
+		if subAST, ok := obj.(*eval.EvalAST); ok {
+			subProperties := findGroupByProperties(subAST)
+			if len(subProperties) > 0 {
+				return subProperties
+			}
+		}
+	}
+
+	// Return empty slice if nothing found
+	return []interface{}{}
+}
+
 // createQueryWasm is the WebAssembly-compatible function that processes query creation
 func createQueryWasm(this js.Value, args []js.Value) interface{} {
 	// Validate input arguments
@@ -308,22 +353,8 @@ func createQueryWasm(this js.Value, args []js.Value) interface{} {
 		}
 	}
 
-	// Extract properties from AST
-	var properties []interface{}
-	if prop, exists := ast.Obj["group by"]; exists {
-		switch v := prop.(type) {
-		case *eval.EvalAST:
-			// If the property is an AST object, add all items from its array
-			properties = make([]interface{}, len(v.Arr))
-			copy(properties, v.Arr)
-		case []interface{}:
-			// If the property is already a slice, use it directly
-			properties = v
-		default:
-			// For any other type, add it as a single item
-			properties = []interface{}{v}
-		}
-	}
+	// Use the recursive function to find GROUP BY properties at any level
+	properties := findGroupByProperties(ast)
 
 	// Return the result
 	return map[string]interface{}{
@@ -406,7 +437,15 @@ func getAstPropertyWasm(this js.Value, args []js.Value) interface{} {
 		}
 	}
 
-	// Extract properties from the AST
+	// Use the recursive function if we're looking for group by
+	if propertyName == "group by" {
+		properties := findGroupByProperties(ast)
+		return map[string]interface{}{
+			"properties": properties,
+		}
+	}
+
+	// Standard extraction for other properties
 	var properties []interface{}
 	if prop, exists := ast.Obj[propertyName]; exists {
 		switch v := prop.(type) {

@@ -88,8 +88,8 @@ func TestMacrosBuilder(t *testing.T) {
 				" countIf(Type != 200) AS from_bad"+
 				" FROM requests"+
 				" WHERE $timeFilter"+
-				" GROUP BY t"+
-				" ORDER BY t)",
+				"\n GROUP BY t"+
+				"\n ORDER BY t)",
 
 			"/* comment */ SELECT t,"+
 				" from_good/((t - lagInFrame(t,1,0) OVER ())/1000) from_goodRate,"+
@@ -100,8 +100,8 @@ func TestMacrosBuilder(t *testing.T) {
 				" countIf(Type != 200) AS from_bad"+
 				" FROM requests"+
 				" WHERE $timeFilter"+
-				" GROUP BY t"+
-				" ORDER BY t)",
+				"\n GROUP BY t"+
+				"\n ORDER BY t)",
 
 			q.rate,
 		),
@@ -669,7 +669,7 @@ func TestCommentsAndRateMacrosWithFromKeywordInFieldName(t *testing.T) {
 	const query = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\n$rate(countIf(service_name='mysql' AND from_user='alice') AS mysql_alice, countIf(service_name='postgres') AS postgres)\n" +
 		"FROM $table\n" +
 		"WHERE from_user='bob'"
-	const expQuery = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\nSELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob' GROUP BY t ORDER BY t)"
+	const expQuery = "/*comment1*/\n-- comment2\n/*\ncomment3\n */\nSELECT t, mysql_alice/runningDifference(t/1000) mysql_aliceRate, postgres/runningDifference(t/1000) postgresRate FROM ( SELECT $timeSeries AS t, countIf(service_name = 'mysql' AND from_user = 'alice') AS mysql_alice, countIf(service_name = 'postgres') AS postgres FROM $table\nWHERE $timeFilter AND from_user='bob'\n GROUP BY t\n ORDER BY t)"
 	r := require.New(t)
 	q := EvalQuery{}
 	scanner := NewScanner(query)

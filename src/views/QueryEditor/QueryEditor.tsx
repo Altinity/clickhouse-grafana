@@ -17,6 +17,15 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const isAnnotationView = !props.app;
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource, data?.request);
+
+  useEffect(() => {
+    if (formattedData !== initializedQuery.query) {
+      onChange({ ...initializedQuery, rawQuery: formattedData })
+    }
+
+    // eslint-disable-next-line
+  }, [formattedData, initializedQuery.query]);
+
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
   useQueryState(query, onChange, datasource);
 
@@ -89,6 +98,15 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
   const initializedQuery = initializeQueryDefaultsForVariables(processedQuery, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource);
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
+
+  useEffect(() => {
+    if (formattedData !== initializedQuery.query) {
+      onChange({ ...initializedQuery, rawQuery: formattedData })
+    }
+
+    // eslint-disable-next-line
+  }, [formattedData, initializedQuery.query]);
+
   useQueryState(query, onChange, datasource);
   const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });
   const onFieldChange = (field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value });

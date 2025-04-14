@@ -273,7 +273,7 @@
       "type": "table"
     }
   ],
-  "schemaVersion": 22,
+  "schemaVersion": 40,
   "style": "dark",
   "tags": [],
   "templating": {

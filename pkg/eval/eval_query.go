@@ -2034,6 +2034,7 @@ const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\
 const closureRe = "[\\(\\)\\[\\]]"
 const specCharsRe = "[,?:]"
 const macroRe = "\\$[A-Za-z0-9_$]+"
+const macroVarRe = "\\${[A-Za-z0-9_]+(:[A-Za-z0-9_]+)?}"
 const skipSpaceRe = "[\\(\\.! \\[]"
 
 const tableFuncRe = "\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b"
@@ -2049,7 +2050,7 @@ var onJoinTokenOnlyRe = regexp.MustCompile("(?mi)^(?:" + onJoinTokenRe + ")$")
 var tableNameOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableNameRe + ")$")
 
 var tableFuncOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableFuncRe + ")$")
-var macroOnlyRe = regexp.MustCompile("(?mi)^(?:" + macroRe + ")$")
+var macroOnlyRe = regexp.MustCompile("(?mi)^(?:" + macroRe + "|" + macroVarRe + ")$")
 var inOnlyRe = regexp.MustCompile("(?mi)^(?:" + inRe + ")$")
 var condOnlyRe = regexp.MustCompile("(?mi)^(?:" + condRe + ")$")
 
@@ -2061,7 +2062,7 @@ var skipSpaceOnlyRe = regexp.MustCompile("^(?:" + skipSpaceRe + ")$")
 
 var tokenRe = strings.Join([]string{
 	statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, floatRe, intRe,
-	binaryOpRe, closureRe, specCharsRe, macroRe,
+	binaryOpRe, closureRe, specCharsRe, macroVarRe, macroRe,
 }, "|")
 
 var tokenReComplied = regexp2.MustCompile("^(?:"+tokenRe+")", regexp2.IgnoreCase+regexp2.Multiline)

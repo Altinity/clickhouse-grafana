@@ -4,9 +4,10 @@ services:
     environment:
       - CLICKHOUSE_ALWAYS_RUN_INITDB_SCRIPTS=true
     volumes:
-      - ./docker/clickhouse/load_ontime.sh:/docker-entrypoint-initdb.d/load_ontime.sh
       - /var/lib/clickhouse/
       - /var/log/clickhouse-server/
+      - ./docker/clickhouse/init_schema_ontime.sql:/docker-entrypoint-initdb.d/init_schema.sql
+      - ./docker/clickhouse/users.xml:/etc/clickhouse-server/users.d/users.xml
 
   clickhouse:
     image: ${CLICKHOUSE_IMAGE:-clickhouse/clickhouse-server}:${CLICKHOUSE_VERSION:-latest}

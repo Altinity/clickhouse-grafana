@@ -90,7 +90,6 @@ export const toTimeSeries = (extrapolate = true, self): any => {
   if (self.series.length === 0) {
     return timeSeries;
   }
-  console.log(self)
 
   let metrics: { [key: string]: any[] } = {};
   // timeCol have to be the first column always
@@ -160,9 +159,8 @@ export const toTimeSeries = (extrapolate = true, self): any => {
   });
 
   each(metrics, function (dataPoints, seriesName) {
-    const processedDataPoints = extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints;
+    const processedDataPoints = (extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints).filter(item => (typeof item[0] === 'number' || item[0] === null) && item[1]);
 
-    console.log(seriesName, processedDataPoints, dataPoints)
     timeSeries.push({
       length: processedDataPoints.length,
       fields: [
@@ -173,6 +171,5 @@ export const toTimeSeries = (extrapolate = true, self): any => {
     })
   });
 
-  console.log('---', timeSeries)
   return timeSeries;
 };

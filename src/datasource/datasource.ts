@@ -780,8 +780,9 @@ export class CHDataSource
           to: options.range.to.toISOString(), // Convert to Unix timestamp
         },
       };
+
      const createQueryResult = await this.wasmModule.createQuery(queryData);
-      const { sql, keys, error } = createQueryResult
+      let { sql, error } = createQueryResult
 
       if (error) {
         throw new Error(error);
@@ -815,7 +816,9 @@ export class CHDataSource
 
       const queryUpd = await this.wasmModule.applyAdhocFilters(interpolatedQuery || queryData.query, adhocFilters, target);
 
-      return { stmt: queryUpd, keys: keys };
+      const { properties } = await this.wasmModule.getAstProperty(queryUpd, 'group by')
+
+      return { stmt: queryUpd, keys: properties };
     } catch (error) {
       // Propagate the error instead of returning a default value
       throw error;

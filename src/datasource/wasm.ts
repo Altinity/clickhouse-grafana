@@ -44,7 +44,6 @@ export class ClickHouseWasm {
   }
 
   async createQuery(queryData: any): Promise<any> {
-    console.log(queryData)
     await this.ensureInitialized();
     return window.createQuery?.(queryData);
   }

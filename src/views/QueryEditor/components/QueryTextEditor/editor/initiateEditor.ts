@@ -92,14 +92,15 @@ export const initiateEditor = (
     const constantsImported = constants;
     const macrosImported = macros;
 
+    const sortedFunctions = [...functionsImported].sort((a, b) => b.length - a.length);
+    const allKeywords = [...keywordsImported, ...dynamicKeyword, ...dynamicSystemDatabases];
+    const sortedKeywords = [...allKeywords].sort((a, b) => b.length - a.length);
+
     monacoInstance.languages.setMonarchTokensProvider(LANGUAGE_ID, {
       tokenizer: {
         root: [
-          [
-            new RegExp(`\\b(${[...keywordsImported, ...dynamicKeyword, ...dynamicSystemDatabases].join('|')})\\b`),
-            TokenType.KEYWORDS,
-          ],
-          [new RegExp(`\\s(${functionsImported.join('|')})`), TokenType.FUNCTIONS],
+          [new RegExp(`\\b(${sortedFunctions.join('|')})(?=\\()`), TokenType.FUNCTIONS],
+          [new RegExp(`\\b(${sortedKeywords.join('|')})(?=\\W|$)`), TokenType.KEYWORDS],
           [new RegExp(`[()]`), TokenType.PARENTHESIS],
           [new RegExp(`--.*$`), TokenType.COMMENT],
           [new RegExp(`\`\`\`.*\`\`\``), TokenType.COMMENT_BLOCK],
@@ -108,7 +109,7 @@ export const initiateEditor = (
           [new RegExp(`'.*?'`), TokenType.STRING],
           [new RegExp(`\\b(${dataTypesImported.join('|')})\\b`), TokenType.DATATYPES],
           [new RegExp(`\\b(${constantsImported.join('|')})\\b`), TokenType.CONSTANTS],
-          [new RegExp(`(${macrosImported.map((macros) => macros.replace('$', '\\$')).join('|')})`), TokenType.MACROS],
+          [new RegExp(`\\b(${macrosImported.map((macros) => macros.replace('$', '\\$')).join('|')})\\b`), TokenType.MACROS],
         ],
       },
     });
@@ -119,7 +120,6 @@ export const initiateEditor = (
       base: 'vs-dark',
       inherit: false,
       rules: [
-        { token: TokenType.FUNCTIONS, foreground: Colors.FUNCTIONS },
         { token: TokenType.PARENTHESIS, foreground: Colors.PARENTHESIS },
         { token: TokenType.KEYWORDS, foreground: Colors.KEYWORDS },
         { token: TokenType.CONSTANTS, foreground: Colors.CONSTANTS },
@@ -129,6 +129,7 @@ export const initiateEditor = (
         { token: TokenType.COMMENT_BLOCK, foreground: Colors.COMMENT_BLOCK },
         { token: TokenType.VARIABLE, foreground: Colors.MACROS },
         { token: TokenType.STRING, foreground: Colors.STRING },
+        { token: TokenType.FUNCTIONS, foreground: Colors.FUNCTIONS },
       ],
       colors: {
         'editor.foreground': '#e0e0e0',

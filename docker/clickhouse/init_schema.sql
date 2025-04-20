@@ -324,7 +324,7 @@ ORDER BY (t, tFloat, tDecimal, tUInt64_3, tUInt64_6, tUInt64_9);
 -- Insert data into the table
 INSERT INTO default.test_timestamp_formats
 SELECT
-   now64(3) - INTERVAL number SECOND AS t,
+   now64(3) - INTERVAL number + 7200 SECOND AS t,
    toFloat64(now() - INTERVAL number SECOND) + randUniform(0, 1) AS tFloat,
    toDecimal64(toFloat64(now() - INTERVAL number SECOND) + randUniform(0, 1), 3) AS tDecimal,
    toUInt64(now() - INTERVAL number SECOND)*1000 + toUInt64(randUniform(0, 1000)) AS tUInt64_3,

@@ -13,10 +13,10 @@ import './QueryEditor.css';
 import {getAdhocFilters} from './helpers/getAdHocFilters';
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>): any {
-  const { datasource, query, onChange, onRunQuery } = props;
+  const { datasource, query, onChange, onRunQuery, data } = props;
   const isAnnotationView = !props.app;
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
-  const [formattedData, error] = useFormattedData(initializedQuery, datasource);
+  const [formattedData, error] = useFormattedData(initializedQuery, datasource, data?.request);
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
   useQueryState(query, onChange, datasource);
 

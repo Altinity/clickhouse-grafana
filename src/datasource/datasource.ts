@@ -817,7 +817,7 @@ export class CHDataSource
       
       const { properties } = await this.wasmModule.getAstProperty(interpolatedQuery, 'group by')
 
-      return { stmt: queryUpd, keys: properties };
+      return { stmt: interpolatedQuery, keys: properties };
     } catch (error) {
       // Propagate the error instead of returning a default value
       throw error;

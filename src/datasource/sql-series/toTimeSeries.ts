@@ -159,7 +159,7 @@ export const toTimeSeries = (extrapolate = true, self): any => {
   });
 
   each(metrics, function (dataPoints, seriesName) {
-    const processedDataPoints = extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints;
+    const processedDataPoints = (extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints).filter(item => (typeof item[0] === 'number' || item[0] === null) && item[1]);
 
     timeSeries.push({
       length: processedDataPoints.length,

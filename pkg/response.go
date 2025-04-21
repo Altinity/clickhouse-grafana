@@ -178,7 +178,7 @@ func (r *Response) createFrameIfNotExistsAndAddPoint(query *Query, framesMap map
 		timeStampDataFieldMap[frameName] = data.NewField(timestampFieldName, nil, []time.Time{})
 		valueDataFieldMap[frameName] = NewDataFieldByType(frameName, fieldType)
 		framesMap[frameName] = data.NewFrame(
-			frameName,
+			"",
 			timeStampDataFieldMap[frameName],
 			valueDataFieldMap[frameName],
 		)

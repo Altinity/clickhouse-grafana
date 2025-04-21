@@ -176,7 +176,7 @@ func applyAdhocFiltersWasm(this js.Value, args []js.Value) interface{} {
 	// Replace $adhoc macro
 	renderedCondition := "1"
 	if len(adhocConditions) > 0 {
-		renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
+		renderedCondition = fmt.Sprintf("AND (%s)", strings.Join(adhocConditions, " AND "))
 	}
 
 	query = strings.ReplaceAll(query, "$adhoc", renderedCondition)

@@ -48,6 +48,7 @@ export interface CHQuery extends DataQuery {
 
   skip_comments?: boolean;
   add_metadata?: boolean;
+  nullifySparse?: boolean;
 
   round?: string;
   intervalFactor?: number;
@@ -88,6 +89,7 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   adHocHideTableNames?: boolean;
   contextWindowSize?: string;
   useWindowFuncForMacros?: boolean;
+  nullifySparse?: boolean;
 }
 
 /**
@@ -105,4 +107,5 @@ export const DEFAULT_QUERY: CHQuery = {
   showHelp: false,
   showFormattedSQL: false,
   datasourceMode: DatasourceMode.Datasource,
+  nullifySparse: false,
 };

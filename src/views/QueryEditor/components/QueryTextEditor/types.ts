@@ -8,6 +8,7 @@ export interface Query {
   round?: string;
   add_metadata?: boolean;
   skip_comments?: boolean;
+  nullifySparse?: boolean;
   useWindowFuncForMacros?: boolean;
   format: string;
   contextWindowSize?: string;

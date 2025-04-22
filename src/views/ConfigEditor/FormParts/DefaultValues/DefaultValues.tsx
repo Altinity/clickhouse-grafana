@@ -338,6 +338,14 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
               onChange={(e) => onSwitchToggle('useWindowFuncForMacros', e.currentTarget.checked)}
             />
           </InlineField>
+          <InlineField label="Nullify sparse categories" labelWidth={32} style={{ marginLeft: '30px' }}>
+            <InlineSwitch
+              id="nullifySparse"
+              data-testid="nullify-sparse-switch"
+              value={jsonData.nullifySparse ?? false}
+              onChange={(e) => onSwitchToggle('nullifySparse', e.currentTarget.checked)}
+            />
+          </InlineField>
         </>
       )}
     </div>

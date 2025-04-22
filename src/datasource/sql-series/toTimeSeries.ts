@@ -68,24 +68,27 @@ const extrapolateDataPoints = (datapoints: any, self) => {
   return datapoints;
 };
 
-const _pushDatapoint = (metrics: any, timestamp: number, key: string, value: number) => {
+const _pushDatapoint = (metrics: any, timestamp: number, key: string, value: number, nullifySparse: boolean) => {
   if (!metrics[key]) {
     metrics[key] = [];
-    /* Fill null values for each new series */
-    for (let seriesName in metrics) {
-      metrics[seriesName].forEach((v: any) => {
-        if (v[1] < timestamp) {
-          metrics[key].push([null, v[1]]);
-        }
-      });
-      break;
+
+    /* Fill null values for each new series only if nullifySparse is true */
+    if (nullifySparse) {
+      for (let seriesName in metrics) {
+        metrics[seriesName].forEach((v: any) => {
+          if (v[1] < timestamp) {
+            metrics[key].push([null, v[1]]);
+          }
+        });
+        break;
+      }
     }
   }
 
   metrics[key].push([_formatValue(value), timestamp]);
 };
 
-export const toTimeSeries = (extrapolate = true, self): any => {
+export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): any => {
   let timeSeries: any[] = [];
   if (self.series.length === 0) {
     return timeSeries;
@@ -125,11 +128,13 @@ export const toTimeSeries = (extrapolate = true, self): any => {
     /* Make sure all series end with a value or nil for current timestamp
      * to render discontinuous timeseries properly. */
     if (lastTimeStamp < t) {
-      each(metrics, function (dataPoints, seriesName) {
-        if (dataPoints[dataPoints.length - 1][1] < lastTimeStamp) {
-          dataPoints.push([null, lastTimeStamp]);
-        }
-      });
+      if (nullifySparse) {
+        each(metrics, function (dataPoints, seriesName) {
+          if (dataPoints[dataPoints.length - 1][1] < lastTimeStamp) {
+            dataPoints.push([null, lastTimeStamp]);
+          }
+        });
+      }
       lastTimeStamp = t;
     }
     /* For each metric-value pair in row, construct a datapoint */
@@ -150,10 +155,10 @@ export const toTimeSeries = (extrapolate = true, self): any => {
       if (isArray(val)) {
         /* Expand groupArray into multiple timeseries */
         each(val, function (arr) {
-          _pushDatapoint(metrics, t, arr[0], arr[1]);
+          _pushDatapoint(metrics, t, arr[0], arr[1], nullifySparse);
         });
       } else {
-        _pushDatapoint(metrics, t, key, val);
+        _pushDatapoint(metrics, t, key, val, nullifySparse);
       }
     });
   });

@@ -13,6 +13,7 @@ export const initializeQueryDefaults = (
     extrapolate: query.extrapolate ?? true,
     skip_comments: query.skip_comments ?? true,
     add_metadata: query.add_metadata ?? true,
+    nullifySparse: query.nullifySparse ?? false,
     useWindowFuncForMacros: query.useWindowFuncForMacros ?? true,
     dateTimeType: query.dateTimeType,
     round: query.round || DEFAULT_ROUND,
@@ -93,6 +94,11 @@ export const initializeQueryDefaults = (
 
     if (datasource.defaultValues.contextWindowSize && !query.contextWindowSize) {
       initializedQuery.contextWindowSize = datasource.defaultValues.contextWindowSize;
+    }
+
+    console.log(datasource.defaultValues.nullifySparse, query.nullifySparse, '------')
+    if (datasource.defaultValues.nullifySparse !== undefined && query.nullifySparse === undefined) {
+      initializedQuery.nullifySparse = datasource.defaultValues.nullifySparse;
     }
 
     onChange({ ...query, ...initializedQuery, initialized: true });
@@ -118,6 +124,7 @@ export const initializeQueryDefaultsForVariables = (
     extrapolate: query.extrapolate ?? true,
     skip_comments: query.skip_comments ?? true,
     add_metadata: query.add_metadata ?? true,
+    nullifySparse: query.nullifySparse ?? false,
     useWindowFuncForMacros: query.useWindowFuncForMacros ?? true,
     dateTimeType: query.dateTimeType,
     round: query.round || DEFAULT_ROUND,
@@ -198,6 +205,10 @@ export const initializeQueryDefaultsForVariables = (
 
     if (datasource.defaultValues.contextWindowSize && !query.contextWindowSize) {
       initializedQuery.contextWindowSize = datasource.defaultValues.contextWindowSize;
+    }
+
+    if (datasource.defaultValues.nullifySparse !== undefined && query.nullifySparse === undefined) {
+      initializedQuery.nullifySparse = datasource.defaultValues.nullifySparse;
     }
 
     onChange({ ...query, ...initializedQuery, initialized: true });

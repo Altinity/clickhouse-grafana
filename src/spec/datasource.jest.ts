@@ -109,7 +109,7 @@ describe('clickhouse sql series:', () => {
       meta: response.meta,
       table: '',
     });
-    let timeSeries = sqlSeries.toTimeSeries();
+    let timeSeries = sqlSeries.toTimeSeries(false, true);
 
     it('expects four results', () => {
       expect(size(timeSeries)).toBe(4);

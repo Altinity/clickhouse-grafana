@@ -91,6 +91,14 @@ export function findDifferences(query: CHQuery, datasource: CHDataSource) {
         fieldName: 'useWindowFuncForMacros',
       });
     }
+    if (query.nullifySparse !== defaultValues.nullifySparse) {
+      differences.push({
+        key: 'Nullify sparse categories',
+        original: query.nullifySparse?.toString() || 'false',
+        updated: defaultValues.nullifySparse?.toString() || 'false',
+        fieldName: 'nullifySparse',
+      });
+    }
   }
 
   return differences;

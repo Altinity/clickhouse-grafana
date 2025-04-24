@@ -143,9 +143,9 @@ export default class SqlSeries {
     return toTable(self);
   };
 
-  toTimeSeries = (extrapolate = true): any => {
+  toTimeSeries = (extrapolate = true, nullifySparse = false): any => {
     let self = this;
-    return toTimeSeries(extrapolate, self);
+    return toTimeSeries(extrapolate, nullifySparse, self);
   };
 
   toTraces = (): any => {

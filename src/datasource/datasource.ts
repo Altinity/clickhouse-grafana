@@ -84,6 +84,7 @@ export class CHDataSource
         },
         defaultDateTimeType: instanceSettings.jsonData.defaultDateTimeType,
         contextWindowSize: instanceSettings.jsonData.contextWindowSize,
+        nullifySparse: instanceSettings.jsonData.nullifySparse,
       };
     }
 
@@ -466,7 +467,7 @@ export class CHDataSource
 
             result = [resultContent]
           } else {
-            _.each(sqlSeries.toTimeSeries(target.extrapolate), (data) => {
+            _.each(sqlSeries.toTimeSeries(target.extrapolate, target.nullifySparse), (data) => {
               result.push(data);
             });
           }

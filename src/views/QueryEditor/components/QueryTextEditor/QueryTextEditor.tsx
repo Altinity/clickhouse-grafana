@@ -13,6 +13,7 @@ import {
   RoundInput,
   MetadataSwitch,
   SkipCommentsSwitch,
+  NullifySparseSwitch,
   UseWindowFunctionSwitch,
   FormatAsSelect,
   ContextWindowSizeSelect,
@@ -79,6 +80,10 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
           <SkipCommentsSwitch
             query={query}
             onChange={() => handlers.handleToggleField('skip_comments')}
+          />
+          <NullifySparseSwitch
+            query={query}
+            onChange={() => handlers.handleToggleField('nullifySparse')}
           />
           <UseWindowFunctionSwitch
             query={query}

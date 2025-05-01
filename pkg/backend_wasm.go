@@ -160,26 +160,34 @@ func applyAdhocFiltersWasm(this js.Value, args []js.Value) interface{} {
 			// Build the condition with proper spacing
 			condition := fmt.Sprintf("%s %s %s", parts[2], operator, value)
 			adhocConditions = append(adhocConditions, condition)
-
-			// Add the condition to WHERE clause if not using $adhoc macro
-			if !strings.Contains(query, "$adhoc") {
-				if len(ast.Obj["where"].(*eval.EvalAST).Arr) > 0 {
-					condition = "AND " + condition
-				}
-				ast.Obj["where"].(*eval.EvalAST).Arr = append(ast.Obj["where"].(*eval.EvalAST).Arr, condition)
-			}
 		}
 
-		query = eval.PrintAST(topQueryAst, " ")
+		// Handle conditions differently based on $adhoc presence
+		if !strings.Contains(query, "$adhoc") {
+			// If no $adhoc, modify WHERE clause through AST
+			whereAst := ast.Obj["where"].(*eval.EvalAST)
+			if len(adhocConditions) > 0 {
+				combinedCondition := strings.Join(adhocConditions, " AND ")
+				if len(whereAst.Arr) > 0 {
+					// If WHERE has existing conditions, add with AND
+					whereAst.Arr = append(whereAst.Arr, "AND", fmt.Sprintf("(%s)", combinedCondition))
+				} else {
+					// If WHERE is empty, add without AND
+					whereAst.Arr = append(whereAst.Arr, combinedCondition)
+				}
+			}
+			query = eval.PrintAST(topQueryAst, " ")
+		}
 	}
 
-	// Replace $adhoc macro
-	renderedCondition := "1"
-	if len(adhocConditions) > 0 {
-		renderedCondition = fmt.Sprintf("AND (%s)", strings.Join(adhocConditions, " AND "))
+	// Always handle $adhoc replacement, even for empty filters
+	if strings.Contains(query, "$adhoc") {
+		renderedCondition := "1"
+		if len(adhocConditions) > 0 {
+			renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
+		}
+		query = strings.ReplaceAll(query, "$adhoc", renderedCondition)
 	}
-
-	query = strings.ReplaceAll(query, "$adhoc", renderedCondition)
 
 	// Return the result
 	return map[string]interface{}{

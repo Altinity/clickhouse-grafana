@@ -1,6 +1,28 @@
 # 3.4.0 (not released yet)
 ## Enhancements:
-* add $lttb and $lttbMs macros to allow show down-sampled time series which will contains more outliers than avg or other kind of aggregation, fix https://github.com/Altinity/clickhouse-grafana/issues/500
+* add query editor with syntax highlight and error handling to template variables UI, fix https://github.com/Altinity/clickhouse-grafana/issues/614
+* move query parsing code to golang-only, now we use WASM on frontend, fix https://github.com/Altinity/clickhouse-grafana/issues/688
+* improve Map(String, anytype) fields in logs panel, will convert as labels and allow adhoc filtering by `+` and `-` buttons, fix https://github.com/Altinity/clickhouse-grafana/issues/634
+* add `$lttb` and `$lttbMs` macros to allow show down-sampled time series which will contains more outliers than avg or other kind of aggregation, fix https://github.com/Altinity/clickhouse-grafana/issues/500
+* add UI option `Nullify sparce data` with this option, for multi-category requests, if some category miss value for some timestamp in response, then fill it as null, fix https://github.com/Altinity/clickhouse-grafana/pull/778
+* pass WHERE filters for context window query in logs visualization, fix https://github.com/Altinity/clickhouse-grafana/issues/706
+* re-implements flamegraph visualization, now `self` calculates properly, fix https://github.com/Altinity/clickhouse-grafana/issues/725
+* add else condition to `$conditionalTest` macros, fix https://github.com/Altinity/clickhouse-grafana/issues/661
+* multiple improvements e2e test with modern Grafana 11.x fixes and more cases coverage, thanks https://github.com/antip00
+* implements time-series result parsing for format `DateTime-related type, category, metric value` with properly time-zone parsing, fix https://github.com/Altinity/clickhouse-grafana/issues/742
+* improve support adhoc variables in logs format
+
+## Fixes:
+* fix corner cases for dashboards with `repeat by variable value` option, fix https://github.com/Altinity/clickhouse-grafana/issues/712
+* some improvements for syntax highlight, fix https://github.com/Altinity/clickhouse-grafana/issues/746
+* fix compatibility with new grafana 10.x table plugin, fix https://github.com/Altinity/clickhouse-grafana/issues/764
+* fix ontime datasource example, fix https://github.com/Altinity/clickhouse-grafana/issues/763
+* fix corner case for multi-value, template variables usage, fix https://github.com/Altinity/clickhouse-grafana/issues/762
+* fix corner cases `Too many points to visualize properly.`, for time-series visualization in `time, category, value` format, fix https://github.com/Altinity/clickhouse-grafana/issues/705
+* fix corner cases for data links, when got result with one time-series in format for multiple time-series, fix https://github.com/Altinity/clickhouse-grafana/issues/644
+* fix security alerts, fix https://github.com/Altinity/clickhouse-grafana/issues/737
+* fix corner cases for `transformations` in table format, fix https://github.com/Altinity/clickhouse-grafana/issues/758
+* fix corner cases and simplify for `$adhoc` macros, fix https://github.com/Altinity/clickhouse-grafana/issues/779
 
 # 3.3.1 (2024-12-27)
 ## Enhancements:

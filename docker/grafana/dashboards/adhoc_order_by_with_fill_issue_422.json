@@ -120,7 +120,7 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "interval": "",
           "intervalFactor": 1,
-          "query": "SELECT\r\n    $timeSeries as t,\r\n    sum(too_big_value) * 8 / $interval AS B\r\nFROM $table\r\n\r\nWHERE\r\n    event_time BETWEEN $from AND $to\r\n    $adhoc \r\nGROUP BY t\r\nORDER BY t WITH FILL STEP ($interval*1000*5)",
+          "query": "SELECT\r\n    $timeSeries as t,\r\n    sum(too_big_value) * 8 / $interval AS B\r\nFROM $table\r\n\r\nWHERE\r\n    event_time BETWEEN $from AND $to\r\n AND   $adhoc \r\nGROUP BY t\r\nORDER BY t WITH FILL STEP ($interval*1000*5)",
           "rawQuery": "WITH FILL STEP(20 * 1000 * 5)\nSELECT\n    (intDiv(toUInt32(event_time), 20) * 20) * 1000 as t,\n    sum(too_big_value) * 8 / 20 AS B\nFROM default.test_grafana\n\nWHERE\n    event_time BETWEEN 1653974934\n    AND 1653996534\n    AND service_name = 'mysql'\nGROUP BY t\n\nORDER BY t\n",
           "refId": "A",
           "round": "0s",

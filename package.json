@@ -54,7 +54,7 @@
     "prettier": "^2.8.7",
     "replace-in-file-webpack-plugin": "^1.0.6",
     "sass": "1.63.2",
-    "sass-loader": "13.4.0",
+    "sass-loader": "13.3.1",
     "source-map-support": "^0.5.21",
     "style-loader": "3.3.3",
     "swc-loader": "^0.2.3",

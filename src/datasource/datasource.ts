@@ -411,15 +411,15 @@ export class CHDataSource
               result =[]
             }
 
-            let isTextExist = false;
-            let isValueExist = false;
+            let textField: string | null = null;
+            let valueField: string | null = null;
 
             sqlSeries.meta.forEach((col: any) => {
-              if (col.name === 'text') {
-                isTextExist = true;
+              if (col.name.toLowerCase().includes('text')) {
+                textField = col.name;
               }
-              if (col.name === 'value' ) {
-                isValueExist = true;
+              if (col.name.toLowerCase().includes('value')) {
+                valueField = col.name;
               }
             })
 
@@ -429,22 +429,22 @@ export class CHDataSource
               fields: []
             }
 
-            if (isTextExist && isValueExist) {
+            if (textField && valueField) {
               resultContent.fields.push({
                 name: 'text',
                 type: FieldType.string,
-                values: sqlSeries.series.map(item => item.text.toString()),
+                values: sqlSeries.series.map(item => item[textField!].toString()),
               })
               resultContent.fields.push({
                 name: 'value',
                 type: FieldType.string,
-                values: sqlSeries.series.map(item => item.value.toString()),
+                values: sqlSeries.series.map(item => item[valueField!].toString()),
               })
-            } else if (isTextExist) {
+            } else if (textField) {
               resultContent.fields.push({
                 name: 'text',
                 type: FieldType.string,
-                values: sqlSeries.series.map(item => item.text),
+                values: sqlSeries.series.map(item => item[textField!]),
               })
             } else {
               const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');
@@ -550,15 +550,15 @@ export class CHDataSource
             result =[]
           }
 
-          let isTextExist = false;
-          let isValueExist = false;
+          let textField: string | null = null;
+          let valueField: string | null = null;
 
           sqlSeries.meta.forEach((col: any) => {
-            if (col.name === 'text') {
-              isTextExist = true;
+            if (col.name.toLowerCase().includes('text')) {
+              textField = col.name;
             }
-            if (col.name === 'value' ) {
-              isValueExist = true;
+            if (col.name.toLowerCase().includes('value')) {
+              valueField = col.name;
             }
           })
 
@@ -568,22 +568,22 @@ export class CHDataSource
             fields: []
           }
 
-          if (isTextExist && isValueExist) {
+          if (textField && valueField) {
             resultContent.fields.push({
               name: 'text',
               type: FieldType.string,
-              values: sqlSeries.series.map(item => item.text.toString()),
+              values: sqlSeries.series.map(item => item[textField!].toString()),
             })
             resultContent.fields.push({
               name: 'value',
               type: FieldType.string,
-              values: sqlSeries.series.map(item => item.value.toString()),
+              values: sqlSeries.series.map(item => item[valueField!].toString()),
             })
-          } else if (isTextExist) {
+          } else if (textField) {
             resultContent.fields.push({
               name: 'text',
               type: FieldType.string,
-              values: sqlSeries.series.map(item => item.text),
+              values: sqlSeries.series.map(item => item[textField!]),
             })
           } else {
             const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');

@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 3785,
+  "id": 9,
   "links": [],
   "panels": [
     {
@@ -31,7 +31,7 @@
       },
       "id": 3,
       "panels": [],
-      "title": "No repeat, no single quotes",
+      "title": "No repeat, no single quotes, shall works",
       "type": "row"
     },
     {
@@ -39,6 +39,7 @@
         "type": "vertamedia-clickhouse-datasource",
         "uid": "${datasource}"
       },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/712",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -86,7 +87,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.4.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "adHocFilters": [],
@@ -100,10 +101,12 @@
           "editorMode": "builder",
           "extrapolate": true,
           "format": "table",
+          "formattedQuery": "SELECT (${type})",
           "interval": "",
           "intervalFactor": 1,
+          "nullifySparse": false,
           "query": "SELECT (${type})",
-          "rawQuery": "/* grafana dashboard=Variable test 11.4, user=4 */\nSELECT ('foo','bar','baz')",
+          "rawQuery": "/* grafana dashboard='Variable test 11.4', user='1' */\nSELECT ('bar')",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
@@ -111,7 +114,7 @@
           "useWindowFuncForMacros": true
         }
       ],
-      "title": "No single quotes",
+      "title": "No repeat, No single quotes",
       "type": "table"
     },
     {
@@ -124,7 +127,7 @@
       },
       "id": 10,
       "panels": [],
-      "title": "No repeat, single quotes",
+      "title": "No repeat, single quotes, shall not work",
       "type": "row"
     },
     {
@@ -132,6 +135,7 @@
         "type": "vertamedia-clickhouse-datasource",
         "uid": "${datasource}"
       },
+      "description": "shall not work,  https://github.com/Altinity/clickhouse-grafana/issues/712",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -179,7 +183,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.4.0",
+      "pluginVersion": "11.6.1",
       "targets": [
         {
           "adHocFilters": [],
@@ -193,10 +197,12 @@
           "editorMode": "builder",
           "extrapolate": true,
           "format": "table",
+          "formattedQuery": "SELECT ('${type}')",
           "interval": "",
           "intervalFactor": 1,
+          "nullifySparse": false,
           "query": "SELECT ('${type}')",
-          "rawQuery": "/* grafana dashboard=Variable test 11.4, user=4 */\nSELECT (''foo','bar','baz'')",
+          "rawQuery": "/* grafana dashboard='Variable test 11.4', user='1' */\nSELECT (''bar'')",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
@@ -204,7 +210,7 @@
           "useWindowFuncForMacros": true
         }
       ],
-      "title": "No single quotes",
+      "title": "No repeat, single quotes",
       "type": "table"
     },
     {
@@ -217,7 +223,7 @@
       },
       "id": 7,
       "panels": [],
-      "title": "Repeat, single quotes",
+      "title": "Repeat, single quotes, shall not work",
       "type": "row"
     },
     {
@@ -225,6 +231,7 @@
         "type": "vertamedia-clickhouse-datasource",
         "uid": "${datasource}"
       },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/712",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -272,7 +279,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.4.0",
+      "pluginVersion": "11.6.1",
       "repeat": "type",
       "repeatDirection": "h",
       "targets": [
@@ -288,10 +295,12 @@
           "editorMode": "builder",
           "extrapolate": true,
           "format": "table",
+          "formattedQuery": "SELECT ('${type}')",
           "interval": "",
           "intervalFactor": 1,
+          "nullifySparse": false,
           "query": "SELECT ('${type}')",
-          "rawQuery": "/* grafana dashboard=Variable test 11.4, user=4 */\nSELECT (''foo','bar','baz'')",
+          "rawQuery": "/* grafana dashboard='Variable test 11.4', user='1' */\nSELECT (''bar'')",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
@@ -299,7 +308,7 @@
           "useWindowFuncForMacros": true
         }
       ],
-      "title": "$type",
+      "title": "repeat, $type",
       "type": "table"
     },
     {
@@ -312,7 +321,7 @@
       },
       "id": 4,
       "panels": [],
-      "title": "Repeat, no single quotes",
+      "title": "Repeat, no single quotes, shall works",
       "type": "row"
     },
     {
@@ -320,6 +329,7 @@
         "type": "vertamedia-clickhouse-datasource",
         "uid": "${datasource}"
       },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/712",
       "fieldConfig": {
         "defaults": {
           "color": {
@@ -367,7 +377,7 @@
         },
         "showHeader": true
       },
-      "pluginVersion": "11.4.0",
+      "pluginVersion": "11.6.1",
       "repeat": "type",
       "repeatDirection": "h",
       "targets": [
@@ -383,10 +393,12 @@
           "editorMode": "builder",
           "extrapolate": true,
           "format": "table",
+          "formattedQuery": "SELECT (${type})",
           "interval": "",
           "intervalFactor": 1,
+          "nullifySparse": false,
           "query": "SELECT (${type})",
-          "rawQuery": "/* grafana dashboard=Variable test 11.4, user=4 */\nSELECT (baz)",
+          "rawQuery": "/* grafana dashboard='Variable test 11.4', user='1' */\nSELECT ('bar')",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
@@ -394,13 +406,13 @@
           "useWindowFuncForMacros": true
         }
       ],
-      "title": "$type",
+      "title": "repeat, $type",
       "type": "table"
     }
   ],
   "preload": false,
   "refresh": "",
-  "schemaVersion": 40,
+  "schemaVersion": 41,
   "tags": [],
   "templating": {
     "list": [
@@ -456,8 +468,7 @@
   },
   "timepicker": {},
   "timezone": "browser",
-  "title": "Variable test 11.4",
+  "title": "issue 712 variable repeat test",
   "uid": "ceak279mxrim8d",
-  "version": 5,
-  "weekStart": ""
+  "version": 20250503
 }

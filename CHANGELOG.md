@@ -1,4 +1,4 @@
-# 3.4.0 (not released yet)
+# 3.4.0 (2025-05-03)
 ## Enhancements:
 * add query editor with syntax highlight and error handling to template variables UI, fix https://github.com/Altinity/clickhouse-grafana/issues/614
 * move query parsing code to golang-only, now we use WASM on frontend, fix https://github.com/Altinity/clickhouse-grafana/issues/688

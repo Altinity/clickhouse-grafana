@@ -129,8 +129,8 @@ class Locators:
     @property
     def new_folder_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR,
-                                   f"[data-testid='data-testid alert-rule new-folder-button']")
+        return driver.find_element(SelectBy.XPATH,
+                                   f"//*[./text()='New folder']/../../button")
 
     @property
     def new_folder_name_textfield(self):

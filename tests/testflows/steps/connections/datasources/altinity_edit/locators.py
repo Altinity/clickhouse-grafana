@@ -96,7 +96,7 @@ class Locators:
     def compression_type_input(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR,
-                                   "[id = 'react-select-3-input']")
+                                   "[data-test-id='use-compression-switch']")
 
     @property
     def ca_cert_textfield(self):

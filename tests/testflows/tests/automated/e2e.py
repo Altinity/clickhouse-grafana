@@ -112,7 +112,7 @@ def mixed_data_sources(self):
 
     with Then("I go to panel edit the first time"):
         with delay():
-            dashboard.open_panel(panel_name='Panel Title')
+            dashboard.open_panel(panel_name='New panel')
 
     with Then("I check queries the first time"):
         check_queries()
@@ -123,7 +123,7 @@ def mixed_data_sources(self):
 
     with Then("I go to panel edit the second time"):
         with delay():
-            dashboard.open_panel(panel_name='Panel Title')
+            dashboard.open_panel(panel_name='New panel')
 
     with Then("I check queries the second time"):
         check_queries()

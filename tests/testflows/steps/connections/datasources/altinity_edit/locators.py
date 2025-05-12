@@ -21,14 +21,16 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[for='basic-settings-default']")
 
-    def access_dropdown(self, value="Server"):
+    @property
+    def browser_access_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[class*='input-wrapper width-20 gf-form-input']")
+        return driver.find_element(SelectBy.XPATH, f"//label[contains(text(), 'Browser')]/../input")
 
-    def choose_access_type(self):
+    @property
+    def server_access_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[id='react-select-2-input']")
-
+        return driver.find_element(SelectBy.XPATH, f"//label[contains(text(), 'Server')]/../input")
+        
     @property
     def save_and_test_button(self):
         driver: WebDriver = current().context.driver
@@ -94,7 +96,7 @@ class Locators:
     def compression_type_input(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR,
-                                   "[id = 'react-select-3-input']")
+                                   "[data-test-id='use-compression-switch']")
 
     @property
     def ca_cert_textfield(self):

@@ -97,8 +97,10 @@ def click_access_dropdown(self):
 def choose_access_type_in_access_dropdown(self, access_type):
     """Choose access type in access dropdown."""
 
-    locators.choose_access_type().send_keys(access_type)
-    locators.choose_access_type().send_keys(Keys.ENTER)
+    if access_type == "Browser":
+        locators.browser_access_button.click()
+    elif access_type == "Server":
+        locators.server_access_button.click()
 
 
 @TestStep(When)

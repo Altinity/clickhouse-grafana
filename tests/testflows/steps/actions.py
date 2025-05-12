@@ -219,10 +219,6 @@ def create_new_altinity_datasource(
 
             if not (access_type is None):
                 with delay():
-                    with By("clicking access dropdown"):
-                        datasources_altinity_edit.click_access_dropdown()
-
-                with delay():
                     with And("choosing access type in dropdown"):
                         datasources_altinity_edit.choose_access_type_in_access_dropdown(access_type=access_type)
 

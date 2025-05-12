@@ -156,7 +156,7 @@ class Locators:
     @property
     def variable_type_dropdown(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//input[contains(@id, 'variable-select-input-Select variable type')]")
+        return driver.find_element(SelectBy.XPATH, f"//input[contains(@id, 'variable-select-input-Variable')]")
 
     @property
     def include_all_options_checkbox(self):

@@ -23,7 +23,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/elazarl/goproxy v1.7.2 // indirect
 	github.com/fatih/color v1.18.0 // indirect
-	github.com/getkin/kin-openapi v0.130.0 // indirect
+	github.com/getkin/kin-openapi v0.131.0 // indirect
 	github.com/go-logr/logr v1.4.2 // indirect
 	github.com/go-logr/stdr v1.2.2 // indirect
 	github.com/go-openapi/jsonpointer v0.21.1 // indirect

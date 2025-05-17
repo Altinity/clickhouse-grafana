@@ -2,7 +2,7 @@ import _, { curry, each } from 'lodash';
 import SqlSeries from './sql-series/sql_series';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
-import './backend2.js';
+import './backend_gopher.js';
 
 import {
   AnnotationEvent,

@@ -192,7 +192,7 @@ services:
     command: |
       bash -xec '
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \
-        npm run build:wasm &&
+        npm run build:gopherjs &&
         mkdir -p instrumented &&
         npm run create_instrumented && 
         cp -R -n src/* instrumented/ &&

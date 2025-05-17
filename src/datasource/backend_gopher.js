@@ -1,7 +1,7 @@
-"use strict";
+
 (function() {
 
-var $goVersion = "go1.19";
+var $goVersion = "go1.19.13";
 Error.stackTraceLimit = Infinity;
 
 var $NaN = NaN;
@@ -19337,7 +19337,7 @@ $packages["time"] = (function() {
 		start = ((lo < 0 || lo >= tx.$length) ? ($throwRuntimeError("index out of range"), undefined) : tx.$array[tx.$offset + lo]).when;
 		isDST = zone$3.isDST;
 		if ((lo === (tx.$length - 1 >> 0)) && !(l.extend === "")) {
-			_tuple = tzset(l.extend, end, sec);
+			_tuple = tzset(l.extend, start, sec);
 			ename = _tuple[0];
 			eoffset = _tuple[1];
 			estart = _tuple[2];
@@ -19407,8 +19407,8 @@ $packages["time"] = (function() {
 		return false;
 	};
 	Location.prototype.firstZoneUsed = function() { return this.$val.firstZoneUsed(); };
-	tzset = function(s, initEnd, sec) {
-		var _tmp, _tmp$1, _tmp$10, _tmp$11, _tmp$12, _tmp$13, _tmp$14, _tmp$15, _tmp$16, _tmp$17, _tmp$18, _tmp$19, _tmp$2, _tmp$20, _tmp$21, _tmp$22, _tmp$23, _tmp$24, _tmp$25, _tmp$26, _tmp$27, _tmp$28, _tmp$29, _tmp$3, _tmp$30, _tmp$31, _tmp$32, _tmp$33, _tmp$34, _tmp$35, _tmp$36, _tmp$37, _tmp$38, _tmp$39, _tmp$4, _tmp$40, _tmp$41, _tmp$42, _tmp$43, _tmp$44, _tmp$45, _tmp$46, _tmp$47, _tmp$48, _tmp$49, _tmp$5, _tmp$50, _tmp$51, _tmp$52, _tmp$53, _tmp$54, _tmp$55, _tmp$56, _tmp$57, _tmp$58, _tmp$59, _tmp$6, _tmp$60, _tmp$61, _tmp$62, _tmp$63, _tmp$64, _tmp$65, _tmp$66, _tmp$67, _tmp$68, _tmp$69, _tmp$7, _tmp$8, _tmp$9, _tuple, _tuple$1, _tuple$2, _tuple$3, _tuple$4, _tuple$5, _tuple$6, abs, d, dstIsDST, dstName, dstOffset, end, endRule, endSec, initEnd, isDST, name, offset, ok, s, sec, start, startRule, startSec, stdIsDST, stdName, stdOffset, x$1, x$2, x$3, x$4, x$5, x$6, yday, year, ysec;
+	tzset = function(s, lastTxSec, sec) {
+		var _tmp, _tmp$1, _tmp$10, _tmp$11, _tmp$12, _tmp$13, _tmp$14, _tmp$15, _tmp$16, _tmp$17, _tmp$18, _tmp$19, _tmp$2, _tmp$20, _tmp$21, _tmp$22, _tmp$23, _tmp$24, _tmp$25, _tmp$26, _tmp$27, _tmp$28, _tmp$29, _tmp$3, _tmp$30, _tmp$31, _tmp$32, _tmp$33, _tmp$34, _tmp$35, _tmp$36, _tmp$37, _tmp$38, _tmp$39, _tmp$4, _tmp$40, _tmp$41, _tmp$42, _tmp$43, _tmp$44, _tmp$45, _tmp$46, _tmp$47, _tmp$48, _tmp$49, _tmp$5, _tmp$50, _tmp$51, _tmp$52, _tmp$53, _tmp$54, _tmp$55, _tmp$56, _tmp$57, _tmp$58, _tmp$59, _tmp$6, _tmp$60, _tmp$61, _tmp$62, _tmp$63, _tmp$64, _tmp$65, _tmp$66, _tmp$67, _tmp$68, _tmp$69, _tmp$7, _tmp$8, _tmp$9, _tuple, _tuple$1, _tuple$2, _tuple$3, _tuple$4, _tuple$5, _tuple$6, abs, d, dstIsDST, dstName, dstOffset, end, endRule, endSec, isDST, lastTxSec, name, offset, ok, s, sec, start, startRule, startSec, stdIsDST, stdName, stdOffset, x$1, x$2, x$3, x$4, x$5, x$6, yday, year, ysec;
 		name = "";
 		offset = 0;
 		start = new $Int64(0, 0);
@@ -19452,7 +19452,7 @@ $packages["time"] = (function() {
 		if ((s.length === 0) || (s.charCodeAt(0) === 44)) {
 			_tmp$10 = stdName;
 			_tmp$11 = stdOffset;
-			_tmp$12 = initEnd;
+			_tmp$12 = lastTxSec;
 			_tmp$13 = new $Int64(2147483647, 4294967295);
 			_tmp$14 = false;
 			_tmp$15 = true;
@@ -24918,6 +24918,21 @@ $packages["internal/poll"] = (function() {
 	$pkg.$init = $init;
 	return $pkg;
 })();
+$packages["internal/safefilepath"] = (function() {
+	var $pkg = {}, $init, errors, runtime, errInvalidPath;
+	errors = $packages["errors"];
+	runtime = $packages["runtime"];
+	$init = function() {
+		$pkg.$init = function() {};
+		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
+		$r = errors.$init(); /* */ $s = 1; case 1: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = runtime.$init(); /* */ $s = 2; case 2: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		errInvalidPath = errors.New("invalid path");
+		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
+	};
+	$pkg.$init = $init;
+	return $pkg;
+})();
 $packages["internal/syscall/execenv"] = (function() {
 	var $pkg = {}, $init, syscall;
 	syscall = $packages["syscall"];
@@ -25152,12 +25167,13 @@ $packages["io/fs"] = (function() {
 	return $pkg;
 })();
 $packages["os"] = (function() {
-	var $pkg = {}, $init, errors, js, itoa, oserror, poll, execenv, unix, testlog, io, fs, runtime, sort, sync, atomic, syscall, time, fileStat, File, rawConn, file, unixDirent, LinkError, onlyWriter, timeout, SyscallError, dirInfo, readdirMode, sliceType, sliceType$1, sliceType$2, ptrType, ptrType$1, ptrType$2, ptrType$3, ptrType$5, ptrType$6, sliceType$4, ptrType$7, ptrType$8, ptrType$9, funcType, ptrType$17, ptrType$18, sliceType$7, sliceType$8, funcType$2, funcType$3, ptrType$19, ptrType$20, errPatternHasSeparator, errWriteAtInAppendMode, lstat, dirBufPool, testingForceReadDirLstat, _r, _r$1, _r$2, lstatNolog, fillFileStatFromSys, Lstat, newRawConn, init, basename, runtime_args, init$1, NewFile, newFile, epipecheck, newUnixDirent, sigpipe, syscallMode, ignoringEINTR, genericReadFrom, errNoDeadline, errDeadlineExceeded, IsNotExist, underlyingErrorIs, underlyingError, direntIno, direntReclen, direntNamlen, direntType, readInt, readIntBE, readIntLE;
+	var $pkg = {}, $init, errors, js, itoa, oserror, poll, safefilepath, execenv, unix, testlog, io, fs, runtime, sort, sync, atomic, syscall, time, fileStat, File, rawConn, file, unixDirent, LinkError, onlyWriter, timeout, SyscallError, dirInfo, readdirMode, sliceType, sliceType$1, sliceType$2, ptrType, ptrType$1, ptrType$2, ptrType$3, ptrType$5, ptrType$6, sliceType$4, ptrType$7, ptrType$8, ptrType$9, funcType, ptrType$17, ptrType$18, sliceType$7, sliceType$8, funcType$2, funcType$3, ptrType$19, ptrType$20, errPatternHasSeparator, errWriteAtInAppendMode, lstat, dirBufPool, testingForceReadDirLstat, _r, _r$1, _r$2, lstatNolog, fillFileStatFromSys, Lstat, newRawConn, init, basename, runtime_args, init$1, NewFile, newFile, epipecheck, newUnixDirent, sigpipe, syscallMode, ignoringEINTR, genericReadFrom, errNoDeadline, errDeadlineExceeded, IsNotExist, underlyingErrorIs, underlyingError, direntIno, direntReclen, direntNamlen, direntType, readInt, readIntBE, readIntLE;
 	errors = $packages["errors"];
 	js = $packages["github.com/gopherjs/gopherjs/js"];
 	itoa = $packages["internal/itoa"];
 	oserror = $packages["internal/oserror"];
 	poll = $packages["internal/poll"];
+	safefilepath = $packages["internal/safefilepath"];
 	execenv = $packages["internal/syscall/execenv"];
 	unix = $packages["internal/syscall/unix"];
 	testlog = $packages["internal/testlog"];
@@ -26721,17 +26737,18 @@ $packages["os"] = (function() {
 		$r = itoa.$init(); /* */ $s = 3; case 3: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = oserror.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = poll.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = execenv.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = unix.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = testlog.$init(); /* */ $s = 8; case 8: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = io.$init(); /* */ $s = 9; case 9: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = fs.$init(); /* */ $s = 10; case 10: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = runtime.$init(); /* */ $s = 11; case 11: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = sort.$init(); /* */ $s = 12; case 12: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = sync.$init(); /* */ $s = 13; case 13: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = atomic.$init(); /* */ $s = 14; case 14: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = syscall.$init(); /* */ $s = 15; case 15: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		$r = time.$init(); /* */ $s = 16; case 16: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = safefilepath.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = execenv.$init(); /* */ $s = 7; case 7: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = unix.$init(); /* */ $s = 8; case 8: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = testlog.$init(); /* */ $s = 9; case 9: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = io.$init(); /* */ $s = 10; case 10: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = fs.$init(); /* */ $s = 11; case 11: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = runtime.$init(); /* */ $s = 12; case 12: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = sort.$init(); /* */ $s = 13; case 13: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = sync.$init(); /* */ $s = 14; case 14: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = atomic.$init(); /* */ $s = 15; case 15: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = syscall.$init(); /* */ $s = 16; case 16: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		$r = time.$init(); /* */ $s = 17; case 17: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$pkg.Args = sliceType.nil;
 		testingForceReadDirLstat = false;
 		errPatternHasSeparator = errors.New("pattern contains path separator");
@@ -26748,11 +26765,11 @@ $packages["os"] = (function() {
 			buf = $makeSlice(sliceType$2, 8192);
 			return (buf$24ptr || (buf$24ptr = new ptrType(function() { return buf; }, function($v) { buf = $v; })));
 		}));
-		_r = NewFile(0, "/dev/stdin"); /* */ $s = 17; case 17: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		_r = NewFile(0, "/dev/stdin"); /* */ $s = 18; case 18: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		$pkg.Stdin = _r;
-		_r$1 = NewFile(1, "/dev/stdout"); /* */ $s = 18; case 18: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		_r$1 = NewFile(1, "/dev/stdout"); /* */ $s = 19; case 19: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
 		$pkg.Stdout = _r$1;
-		_r$2 = NewFile(2, "/dev/stderr"); /* */ $s = 19; case 19: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+		_r$2 = NewFile(2, "/dev/stderr"); /* */ $s = 20; case 20: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
 		$pkg.Stderr = _r$2;
 		init();
 		init$1();
@@ -40355,7 +40372,7 @@ $packages["github.com/dlclark/regexp2"] = (function() {
 	return $pkg;
 })();
 $packages["regexp/syntax"] = (function() {
-	var $pkg = {}, $init, sort, strconv, strings, unicode, utf8, Regexp, Op, Prog, InstOp, EmptyOp, Inst, Error, ErrorCode, Flags, parser, charGroup, ranges, patchList, frag, compiler, sliceType, sliceType$1, sliceType$2, sliceType$3, ptrType, sliceType$4, arrayType, arrayType$1, ptrType$1, sliceType$5, ptrType$2, ptrType$3, ptrType$4, sliceType$6, ptrType$5, ptrType$6, ptrType$7, mapType, ptrType$8, instOpNames, code1, code2, code3, perlGroup, code4, code5, code6, code7, code8, code9, code10, code11, code12, code13, code14, code15, code16, code17, posixGroup, anyTable, _Op_index_0, anyRuneNotNL, anyRune, simplify1, writeRegexp, escape, IsWordChar, bw, dumpProg, u32, dumpInst, minFoldRune, repeatIsValid, cleanAlt, literalRegexp, Parse, parse, isValidCaptureName, isCharClass, matchRune, mergeCharClass, unicodeTable, cleanClass, appendLiteral, appendRange, appendFoldedRange, appendClass, appendFoldedClass, appendNegatedClass, appendTable, appendNegatedTable, negateClass, checkUTF8, nextRune, isalnum, unhex, makePatchList, Compile;
+	var $pkg = {}, $init, sort, strconv, strings, unicode, utf8, Regexp, Op, Prog, InstOp, EmptyOp, Inst, Error, ErrorCode, Flags, parser, charGroup, ranges, patchList, frag, compiler, sliceType, sliceType$1, sliceType$2, sliceType$3, ptrType, sliceType$4, arrayType, arrayType$1, ptrType$1, sliceType$5, ptrType$2, ptrType$3, ptrType$4, sliceType$6, ptrType$5, ptrType$6, ptrType$7, mapType, mapType$1, ptrType$8, instOpNames, code1, code2, code3, perlGroup, code4, code5, code6, code7, code8, code9, code10, code11, code12, code13, code14, code15, code16, code17, posixGroup, anyTable, _Op_index_0, anyRuneNotNL, anyRune, simplify1, writeRegexp, escape, IsWordChar, bw, dumpProg, u32, dumpInst, minFoldRune, repeatIsValid, cleanAlt, literalRegexp, Parse, parse, isValidCaptureName, isCharClass, matchRune, mergeCharClass, unicodeTable, cleanClass, appendLiteral, appendRange, appendFoldedRange, appendClass, appendFoldedClass, appendNegatedClass, appendTable, appendNegatedTable, negateClass, checkUTF8, nextRune, isalnum, unhex, makePatchList, Compile;
 	sort = $packages["sort"];
 	strconv = $packages["strconv"];
 	strings = $packages["strings"];
@@ -40428,7 +40445,7 @@ $packages["regexp/syntax"] = (function() {
 	});
 	ErrorCode = $pkg.ErrorCode = $newType(8, $kindString, "syntax.ErrorCode", true, "regexp/syntax", true, null);
 	Flags = $pkg.Flags = $newType(2, $kindUint16, "syntax.Flags", true, "regexp/syntax", true, null);
-	parser = $pkg.parser = $newType(0, $kindStruct, "syntax.parser", true, "regexp/syntax", false, function(flags_, stack_, free_, numCap_, wholeRegexp_, tmpClass_, numRegexp_, height_) {
+	parser = $pkg.parser = $newType(0, $kindStruct, "syntax.parser", true, "regexp/syntax", false, function(flags_, stack_, free_, numCap_, wholeRegexp_, tmpClass_, numRegexp_, numRunes_, repeats_, height_, size_) {
 		this.$val = this;
 		if (arguments.length === 0) {
 			this.flags = 0;
@@ -40438,7 +40455,10 @@ $packages["regexp/syntax"] = (function() {
 			this.wholeRegexp = "";
 			this.tmpClass = sliceType$1.nil;
 			this.numRegexp = 0;
+			this.numRunes = 0;
+			this.repeats = new $Int64(0, 0);
 			this.height = false;
+			this.size = false;
 			return;
 		}
 		this.flags = flags_;
@@ -40448,7 +40468,10 @@ $packages["regexp/syntax"] = (function() {
 		this.wholeRegexp = wholeRegexp_;
 		this.tmpClass = tmpClass_;
 		this.numRegexp = numRegexp_;
+		this.numRunes = numRunes_;
+		this.repeats = repeats_;
 		this.height = height_;
+		this.size = size_;
 	});
 	charGroup = $pkg.charGroup = $newType(0, $kindStruct, "syntax.charGroup", true, "regexp/syntax", false, function(sign_, class$1_) {
 		this.$val = this;
@@ -40516,6 +40539,7 @@ $packages["regexp/syntax"] = (function() {
 	ptrType$6 = $ptrType(Error);
 	ptrType$7 = $ptrType(parser);
 	mapType = $mapType(ptrType, $Int);
+	mapType$1 = $mapType(ptrType, $Int64);
 	ptrType$8 = $ptrType(compiler);
 	Regexp.ptr.prototype.Simplify = function() {
 		var _1, _i, _ref, i, i$1, i$2, i$3, nre, nre$1, nre2, nsub, prefix, re, sub, sub$1, sub$2, suffix, x, x$1;
@@ -41228,6 +41252,116 @@ $packages["regexp/syntax"] = (function() {
 		p.free = re;
 	};
 	parser.prototype.reuse = function(re) { return this.$val.reuse(re); };
+	parser.ptr.prototype.checkLimits = function(re) {
+		var p, re;
+		p = this;
+		if (p.numRunes > 33554432) {
+			$panic(new ErrorCode("regexp/syntax: internal error"));
+		}
+		p.checkSize(re);
+		p.checkHeight(re);
+	};
+	parser.prototype.checkLimits = function(re) { return this.$val.checkLimits(re); };
+	parser.ptr.prototype.checkSize = function(re) {
+		var _i, _ref, n, p, re, re$1, x, x$1, x$2, x$3, x$4, x$5;
+		p = this;
+		if (p.size === false) {
+			if ((x = p.repeats, (x.$high === 0 && x.$low === 0))) {
+				p.repeats = new $Int64(0, 1);
+			}
+			if (re.Op === 17) {
+				n = re.Max;
+				if (n === -1) {
+					n = re.Min;
+				}
+				if (n <= 0) {
+					n = 1;
+				}
+				if ((x$1 = (new $Int64(0, n)), x$2 = $div64(new $Int64(0, 3355443), p.repeats, false), (x$1.$high > x$2.$high || (x$1.$high === x$2.$high && x$1.$low > x$2.$low)))) {
+					p.repeats = new $Int64(0, 3355443);
+				} else {
+					p.repeats = $mul64(p.repeats, ((new $Int64(0, n))));
+				}
+			}
+			if ((x$3 = (new $Int64(0, p.numRegexp)), x$4 = $div64(new $Int64(0, 3355443), p.repeats, false), (x$3.$high < x$4.$high || (x$3.$high === x$4.$high && x$3.$low < x$4.$low)))) {
+				return;
+			}
+			p.size = new $global.Map();
+			_ref = p.stack;
+			_i = 0;
+			while (true) {
+				if (!(_i < _ref.$length)) { break; }
+				re$1 = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+				p.checkSize(re$1);
+				_i++;
+			}
+		}
+		if ((x$5 = p.calcSize(re, true), (x$5.$high > 0 || (x$5.$high === 0 && x$5.$low > 3355443)))) {
+			$panic(new ErrorCode("regexp/syntax: internal error"));
+		}
+	};
+	parser.prototype.checkSize = function(re) { return this.$val.checkSize(re); };
+	parser.ptr.prototype.calcSize = function(re, force) {
+		var _1, _entry, _i, _i$1, _key, _ref, _ref$1, _tuple, force, ok, p, re, size, size$1, sub, sub$1, sub$2, x, x$1, x$10, x$11, x$2, x$3, x$4, x$5, x$6, x$7, x$8, x$9;
+		p = this;
+		if (!force) {
+			_tuple = (_entry = $mapIndex(p.size,ptrType.keyFor(re)), _entry !== undefined ? [_entry.v, true] : [new $Int64(0, 0), false]);
+			size = _tuple[0];
+			ok = _tuple[1];
+			if (ok) {
+				return size;
+			}
+		}
+		size$1 = new $Int64(0, 0);
+		switch (0) { default:
+			_1 = re.Op;
+			if (_1 === (3)) {
+				size$1 = (new $Int64(0, re.Rune.$length));
+			} else if ((_1 === (13)) || (_1 === (14))) {
+				size$1 = (x = p.calcSize((x$1 = re.Sub, (0 >= x$1.$length ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + 0])), false), new $Int64(0 + x.$high, 2 + x.$low));
+			} else if ((_1 === (15)) || (_1 === (16))) {
+				size$1 = (x$2 = p.calcSize((x$3 = re.Sub, (0 >= x$3.$length ? ($throwRuntimeError("index out of range"), undefined) : x$3.$array[x$3.$offset + 0])), false), new $Int64(0 + x$2.$high, 1 + x$2.$low));
+			} else if (_1 === (18)) {
+				_ref = re.Sub;
+				_i = 0;
+				while (true) {
+					if (!(_i < _ref.$length)) { break; }
+					sub = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
+					size$1 = (x$4 = p.calcSize(sub, false), new $Int64(size$1.$high + x$4.$high, size$1.$low + x$4.$low));
+					_i++;
+				}
+			} else if (_1 === (19)) {
+				_ref$1 = re.Sub;
+				_i$1 = 0;
+				while (true) {
+					if (!(_i$1 < _ref$1.$length)) { break; }
+					sub$1 = ((_i$1 < 0 || _i$1 >= _ref$1.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref$1.$array[_ref$1.$offset + _i$1]);
+					size$1 = (x$5 = p.calcSize(sub$1, false), new $Int64(size$1.$high + x$5.$high, size$1.$low + x$5.$low));
+					_i$1++;
+				}
+				if (re.Sub.$length > 1) {
+					size$1 = (x$6 = (x$7 = (new $Int64(0, re.Sub.$length)), new $Int64(x$7.$high - 0, x$7.$low - 1)), new $Int64(size$1.$high + x$6.$high, size$1.$low + x$6.$low));
+				}
+			} else if (_1 === (17)) {
+				sub$2 = p.calcSize((x$8 = re.Sub, (0 >= x$8.$length ? ($throwRuntimeError("index out of range"), undefined) : x$8.$array[x$8.$offset + 0])), false);
+				if (re.Max === -1) {
+					if (re.Min === 0) {
+						size$1 = new $Int64(0 + sub$2.$high, 2 + sub$2.$low);
+					} else {
+						size$1 = (x$9 = $mul64((new $Int64(0, re.Min)), sub$2), new $Int64(0 + x$9.$high, 1 + x$9.$low));
+					}
+					break;
+				}
+				size$1 = (x$10 = $mul64((new $Int64(0, re.Max)), sub$2), x$11 = (new $Int64(0, (re.Max - re.Min >> 0))), new $Int64(x$10.$high + x$11.$high, x$10.$low + x$11.$low));
+			}
+		}
+		if ((size$1.$high < 0 || (size$1.$high === 0 && size$1.$low < 1))) {
+			size$1 = new $Int64(0, 1);
+		}
+		_key = re; (p.size || $throwRuntimeError("assignment to entry in nil map")).set(ptrType.keyFor(_key), { k: _key, v: size$1 });
+		return size$1;
+	};
+	parser.prototype.calcSize = function(re, force) { return this.$val.calcSize(re, force); };
 	parser.ptr.prototype.checkHeight = function(re) {
 		var _i, _ref, p, re, re$1;
 		p = this;
@@ -41280,6 +41414,7 @@ $packages["regexp/syntax"] = (function() {
 	parser.ptr.prototype.push = function(re) {
 		var p, re, x, x$1, x$10, x$11, x$12, x$13, x$14, x$15, x$16, x$17, x$2, x$3, x$4, x$5, x$6, x$7, x$8, x$9;
 		p = this;
+		p.numRunes = p.numRunes + (re.Rune.$length) >> 0;
 		if ((re.Op === 4) && (re.Rune.$length === 2) && ((x = re.Rune, (0 >= x.$length ? ($throwRuntimeError("index out of range"), undefined) : x.$array[x.$offset + 0])) === (x$1 = re.Rune, (1 >= x$1.$length ? ($throwRuntimeError("index out of range"), undefined) : x$1.$array[x$1.$offset + 1])))) {
 			if (p.maybeConcat((x$16 = re.Rune, (0 >= x$16.$length ? ($throwRuntimeError("index out of range"), undefined) : x$16.$array[x$16.$offset + 0])), (p.flags & ~1) << 16 >>> 16)) {
 				return ptrType.nil;
@@ -41298,7 +41433,7 @@ $packages["regexp/syntax"] = (function() {
 			p.maybeConcat(-1, 0);
 		}
 		p.stack = $append(p.stack, re);
-		p.checkHeight(re);
+		p.checkLimits(re);
 		return re;
 	};
 	parser.prototype.push = function(re) { return this.$val.push(re); };
@@ -41392,7 +41527,7 @@ $packages["regexp/syntax"] = (function() {
 		re.Sub = $subslice(new sliceType$4(re.Sub0), 0, 1);
 		(x$2 = re.Sub, (0 >= x$2.$length ? ($throwRuntimeError("index out of range"), undefined) : x$2.$array[x$2.$offset + 0] = sub));
 		(x$3 = p.stack, x$4 = n - 1 >> 0, ((x$4 < 0 || x$4 >= x$3.$length) ? ($throwRuntimeError("index out of range"), undefined) : x$3.$array[x$3.$offset + x$4] = re));
-		p.checkHeight(re);
+		p.checkLimits(re);
 		if ((op === 17) && (min >= 2 || max >= 2) && !repeatIsValid(re, 1000)) {
 			return ["", new Error.ptr("invalid repeat count", $substring(before, 0, (before.length - after.length >> 0)))];
 		}
@@ -41589,6 +41724,7 @@ $packages["regexp/syntax"] = (function() {
 				while (true) {
 					if (!(j < i)) { break; }
 					((j < 0 || j >= sub.$length) ? ($throwRuntimeError("index out of range"), undefined) : sub.$array[sub.$offset + j] = p.removeLeadingString(((j < 0 || j >= sub.$length) ? ($throwRuntimeError("index out of range"), undefined) : sub.$array[sub.$offset + j]), str.$length));
+					p.checkLimits(((j < 0 || j >= sub.$length) ? ($throwRuntimeError("index out of range"), undefined) : sub.$array[sub.$offset + j]));
 					j = j + (1) >> 0;
 				}
 				_r = p.collapse($subslice(sub, start, i), 19); /* */ $s = 7; case 7: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
@@ -41633,6 +41769,7 @@ $packages["regexp/syntax"] = (function() {
 					if (!(j$1 < i$1)) { break; }
 					reuse = !((j$1 === start));
 					((j$1 < 0 || j$1 >= sub.$length) ? ($throwRuntimeError("index out of range"), undefined) : sub.$array[sub.$offset + j$1] = p.removeLeadingRegexp(((j$1 < 0 || j$1 >= sub.$length) ? ($throwRuntimeError("index out of range"), undefined) : sub.$array[sub.$offset + j$1]), reuse));
+					p.checkLimits(((j$1 < 0 || j$1 >= sub.$length) ? ($throwRuntimeError("index out of range"), undefined) : sub.$array[sub.$offset + j$1]));
 					j$1 = j$1 + (1) >> 0;
 				}
 				_r$1 = p.collapse($subslice(sub, start, i$1), 19); /* */ $s = 14; case 14: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
@@ -41842,6 +41979,8 @@ $packages["regexp/syntax"] = (function() {
 			r = $recover();
 			_1 = r;
 			if ($interfaceIsEqual(_1, $ifaceNil)) {
+			} else if ($interfaceIsEqual(_1, new ErrorCode(("regexp/syntax: internal error")))) {
+				err[0] = new Error.ptr("regexp/syntax: internal error", s[0]);
 			} else if ($interfaceIsEqual(_1, new ErrorCode(("expression nests too deeply")))) {
 				err[0] = new Error.ptr("expression nests too deeply", s[0]);
 			} else {
@@ -41869,7 +42008,7 @@ $packages["regexp/syntax"] = (function() {
 			$24r$1 = [_, err[0]];
 			$s = 6; case 6: return $24r$1;
 		/* } */ case 2:
-		p = new parser.ptr(0, sliceType$4.nil, ptrType.nil, 0, "", sliceType$1.nil, 0, false);
+		p = new parser.ptr(0, sliceType$4.nil, ptrType.nil, 0, "", sliceType$1.nil, 0, 0, new $Int64(0, 0), false, false);
 		c = 0;
 		op = 0;
 		lastRepeat = "";
@@ -43874,7 +44013,7 @@ $packages["regexp/syntax"] = (function() {
 	ptrType$5.methods = [{prop: "op", name: "op", pkg: "regexp/syntax", typ: $funcType([], [InstOp], false)}, {prop: "MatchRune", name: "MatchRune", pkg: "", typ: $funcType([$Int32], [$Bool], false)}, {prop: "MatchRunePos", name: "MatchRunePos", pkg: "", typ: $funcType([$Int32], [$Int], false)}, {prop: "MatchEmptyWidth", name: "MatchEmptyWidth", pkg: "", typ: $funcType([$Int32, $Int32], [$Bool], false)}, {prop: "String", name: "String", pkg: "", typ: $funcType([], [$String], false)}];
 	ptrType$6.methods = [{prop: "Error", name: "Error", pkg: "", typ: $funcType([], [$String], false)}];
 	ErrorCode.methods = [{prop: "String", name: "String", pkg: "", typ: $funcType([], [$String], false)}];
-	ptrType$7.methods = [{prop: "newRegexp", name: "newRegexp", pkg: "regexp/syntax", typ: $funcType([Op], [ptrType], false)}, {prop: "reuse", name: "reuse", pkg: "regexp/syntax", typ: $funcType([ptrType], [], false)}, {prop: "checkHeight", name: "checkHeight", pkg: "regexp/syntax", typ: $funcType([ptrType], [], false)}, {prop: "calcHeight", name: "calcHeight", pkg: "regexp/syntax", typ: $funcType([ptrType, $Bool], [$Int], false)}, {prop: "push", name: "push", pkg: "regexp/syntax", typ: $funcType([ptrType], [ptrType], false)}, {prop: "maybeConcat", name: "maybeConcat", pkg: "regexp/syntax", typ: $funcType([$Int32, Flags], [$Bool], false)}, {prop: "literal", name: "literal", pkg: "regexp/syntax", typ: $funcType([$Int32], [], false)}, {prop: "op", name: "op", pkg: "regexp/syntax", typ: $funcType([Op], [ptrType], false)}, {prop: "repeat", name: "repeat", pkg: "regexp/syntax", typ: $funcType([Op, $Int, $Int, $String, $String, $String], [$String, $error], false)}, {prop: "concat", name: "concat", pkg: "regexp/syntax", typ: $funcType([], [ptrType], false)}, {prop: "alternate", name: "alternate", pkg: "regexp/syntax", typ: $funcType([], [ptrType], false)}, {prop: "collapse", name: "collapse", pkg: "regexp/syntax", typ: $funcType([sliceType$4, Op], [ptrType], false)}, {prop: "factor", name: "factor", pkg: "regexp/syntax", typ: $funcType([sliceType$4], [sliceType$4], false)}, {prop: "leadingString", name: "leadingString", pkg: "regexp/syntax", typ: $funcType([ptrType], [sliceType$1, Flags], false)}, {prop: "removeLeadingString", name: "removeLeadingString", pkg: "regexp/syntax", typ: $funcType([ptrType, $Int], [ptrType], false)}, {prop: "leadingRegexp", name: "leadingRegexp", pkg: "regexp/syntax", typ: $funcType([ptrType], [ptrType], false)}, {prop: "removeLeadingRegexp", name: "removeLeadingRegexp", pkg: "regexp/syntax", typ: $funcType([ptrType, $Bool], [ptrType], false)}, {prop: "parseRepeat", name: "parseRepeat", pkg: "regexp/syntax", typ: $funcType([$String], [$Int, $Int, $String, $Bool], false)}, {prop: "parsePerlFlags", name: "parsePerlFlags", pkg: "regexp/syntax", typ: $funcType([$String], [$String, $error], false)}, {prop: "parseInt", name: "parseInt", pkg: "regexp/syntax", typ: $funcType([$String], [$Int, $String, $Bool], false)}, {prop: "parseVerticalBar", name: "parseVerticalBar", pkg: "regexp/syntax", typ: $funcType([], [$error], false)}, {prop: "swapVerticalBar", name: "swapVerticalBar", pkg: "regexp/syntax", typ: $funcType([], [$Bool], false)}, {prop: "parseRightParen", name: "parseRightParen", pkg: "regexp/syntax", typ: $funcType([], [$error], false)}, {prop: "parseEscape", name: "parseEscape", pkg: "regexp/syntax", typ: $funcType([$String], [$Int32, $String, $error], false)}, {prop: "parseClassChar", name: "parseClassChar", pkg: "regexp/syntax", typ: $funcType([$String, $String], [$Int32, $String, $error], false)}, {prop: "parsePerlClassEscape", name: "parsePerlClassEscape", pkg: "regexp/syntax", typ: $funcType([$String, sliceType$1], [sliceType$1, $String], false)}, {prop: "parseNamedClass", name: "parseNamedClass", pkg: "regexp/syntax", typ: $funcType([$String, sliceType$1], [sliceType$1, $String, $error], false)}, {prop: "appendGroup", name: "appendGroup", pkg: "regexp/syntax", typ: $funcType([sliceType$1, charGroup], [sliceType$1], false)}, {prop: "parseUnicodeClass", name: "parseUnicodeClass", pkg: "regexp/syntax", typ: $funcType([$String, sliceType$1], [sliceType$1, $String, $error], false)}, {prop: "parseClass", name: "parseClass", pkg: "regexp/syntax", typ: $funcType([$String], [$String, $error], false)}];
+	ptrType$7.methods = [{prop: "newRegexp", name: "newRegexp", pkg: "regexp/syntax", typ: $funcType([Op], [ptrType], false)}, {prop: "reuse", name: "reuse", pkg: "regexp/syntax", typ: $funcType([ptrType], [], false)}, {prop: "checkLimits", name: "checkLimits", pkg: "regexp/syntax", typ: $funcType([ptrType], [], false)}, {prop: "checkSize", name: "checkSize", pkg: "regexp/syntax", typ: $funcType([ptrType], [], false)}, {prop: "calcSize", name: "calcSize", pkg: "regexp/syntax", typ: $funcType([ptrType, $Bool], [$Int64], false)}, {prop: "checkHeight", name: "checkHeight", pkg: "regexp/syntax", typ: $funcType([ptrType], [], false)}, {prop: "calcHeight", name: "calcHeight", pkg: "regexp/syntax", typ: $funcType([ptrType, $Bool], [$Int], false)}, {prop: "push", name: "push", pkg: "regexp/syntax", typ: $funcType([ptrType], [ptrType], false)}, {prop: "maybeConcat", name: "maybeConcat", pkg: "regexp/syntax", typ: $funcType([$Int32, Flags], [$Bool], false)}, {prop: "literal", name: "literal", pkg: "regexp/syntax", typ: $funcType([$Int32], [], false)}, {prop: "op", name: "op", pkg: "regexp/syntax", typ: $funcType([Op], [ptrType], false)}, {prop: "repeat", name: "repeat", pkg: "regexp/syntax", typ: $funcType([Op, $Int, $Int, $String, $String, $String], [$String, $error], false)}, {prop: "concat", name: "concat", pkg: "regexp/syntax", typ: $funcType([], [ptrType], false)}, {prop: "alternate", name: "alternate", pkg: "regexp/syntax", typ: $funcType([], [ptrType], false)}, {prop: "collapse", name: "collapse", pkg: "regexp/syntax", typ: $funcType([sliceType$4, Op], [ptrType], false)}, {prop: "factor", name: "factor", pkg: "regexp/syntax", typ: $funcType([sliceType$4], [sliceType$4], false)}, {prop: "leadingString", name: "leadingString", pkg: "regexp/syntax", typ: $funcType([ptrType], [sliceType$1, Flags], false)}, {prop: "removeLeadingString", name: "removeLeadingString", pkg: "regexp/syntax", typ: $funcType([ptrType, $Int], [ptrType], false)}, {prop: "leadingRegexp", name: "leadingRegexp", pkg: "regexp/syntax", typ: $funcType([ptrType], [ptrType], false)}, {prop: "removeLeadingRegexp", name: "removeLeadingRegexp", pkg: "regexp/syntax", typ: $funcType([ptrType, $Bool], [ptrType], false)}, {prop: "parseRepeat", name: "parseRepeat", pkg: "regexp/syntax", typ: $funcType([$String], [$Int, $Int, $String, $Bool], false)}, {prop: "parsePerlFlags", name: "parsePerlFlags", pkg: "regexp/syntax", typ: $funcType([$String], [$String, $error], false)}, {prop: "parseInt", name: "parseInt", pkg: "regexp/syntax", typ: $funcType([$String], [$Int, $String, $Bool], false)}, {prop: "parseVerticalBar", name: "parseVerticalBar", pkg: "regexp/syntax", typ: $funcType([], [$error], false)}, {prop: "swapVerticalBar", name: "swapVerticalBar", pkg: "regexp/syntax", typ: $funcType([], [$Bool], false)}, {prop: "parseRightParen", name: "parseRightParen", pkg: "regexp/syntax", typ: $funcType([], [$error], false)}, {prop: "parseEscape", name: "parseEscape", pkg: "regexp/syntax", typ: $funcType([$String], [$Int32, $String, $error], false)}, {prop: "parseClassChar", name: "parseClassChar", pkg: "regexp/syntax", typ: $funcType([$String, $String], [$Int32, $String, $error], false)}, {prop: "parsePerlClassEscape", name: "parsePerlClassEscape", pkg: "regexp/syntax", typ: $funcType([$String, sliceType$1], [sliceType$1, $String], false)}, {prop: "parseNamedClass", name: "parseNamedClass", pkg: "regexp/syntax", typ: $funcType([$String, sliceType$1], [sliceType$1, $String, $error], false)}, {prop: "appendGroup", name: "appendGroup", pkg: "regexp/syntax", typ: $funcType([sliceType$1, charGroup], [sliceType$1], false)}, {prop: "parseUnicodeClass", name: "parseUnicodeClass", pkg: "regexp/syntax", typ: $funcType([$String, sliceType$1], [sliceType$1, $String, $error], false)}, {prop: "parseClass", name: "parseClass", pkg: "regexp/syntax", typ: $funcType([$String], [$String, $error], false)}];
 	ranges.methods = [{prop: "Less", name: "Less", pkg: "", typ: $funcType([$Int, $Int], [$Bool], false)}, {prop: "Len", name: "Len", pkg: "", typ: $funcType([], [$Int], false)}, {prop: "Swap", name: "Swap", pkg: "", typ: $funcType([$Int, $Int], [], false)}];
 	patchList.methods = [{prop: "patch", name: "patch", pkg: "regexp/syntax", typ: $funcType([ptrType$4, $Uint32], [], false)}, {prop: "append", name: "append", pkg: "regexp/syntax", typ: $funcType([ptrType$4, patchList], [patchList], false)}];
 	ptrType$8.methods = [{prop: "init", name: "init", pkg: "regexp/syntax", typ: $funcType([], [], false)}, {prop: "compile", name: "compile", pkg: "regexp/syntax", typ: $funcType([ptrType], [frag], false)}, {prop: "inst", name: "inst", pkg: "regexp/syntax", typ: $funcType([InstOp], [frag], false)}, {prop: "nop", name: "nop", pkg: "regexp/syntax", typ: $funcType([], [frag], false)}, {prop: "fail", name: "fail", pkg: "regexp/syntax", typ: $funcType([], [frag], false)}, {prop: "cap", name: "cap", pkg: "regexp/syntax", typ: $funcType([$Uint32], [frag], false)}, {prop: "cat", name: "cat", pkg: "regexp/syntax", typ: $funcType([frag, frag], [frag], false)}, {prop: "alt", name: "alt", pkg: "regexp/syntax", typ: $funcType([frag, frag], [frag], false)}, {prop: "quest", name: "quest", pkg: "regexp/syntax", typ: $funcType([frag, $Bool], [frag], false)}, {prop: "loop", name: "loop", pkg: "regexp/syntax", typ: $funcType([frag, $Bool], [frag], false)}, {prop: "star", name: "star", pkg: "regexp/syntax", typ: $funcType([frag, $Bool], [frag], false)}, {prop: "plus", name: "plus", pkg: "regexp/syntax", typ: $funcType([frag, $Bool], [frag], false)}, {prop: "empty", name: "empty", pkg: "regexp/syntax", typ: $funcType([EmptyOp], [frag], false)}, {prop: "rune", name: "rune", pkg: "regexp/syntax", typ: $funcType([sliceType$1, Flags], [frag], false)}];
@@ -43882,7 +44021,7 @@ $packages["regexp/syntax"] = (function() {
 	Prog.init("", [{prop: "Inst", name: "Inst", embedded: false, exported: true, typ: sliceType$6, tag: ""}, {prop: "Start", name: "Start", embedded: false, exported: true, typ: $Int, tag: ""}, {prop: "NumCap", name: "NumCap", embedded: false, exported: true, typ: $Int, tag: ""}]);
 	Inst.init("", [{prop: "Op", name: "Op", embedded: false, exported: true, typ: InstOp, tag: ""}, {prop: "Out", name: "Out", embedded: false, exported: true, typ: $Uint32, tag: ""}, {prop: "Arg", name: "Arg", embedded: false, exported: true, typ: $Uint32, tag: ""}, {prop: "Rune", name: "Rune", embedded: false, exported: true, typ: sliceType$1, tag: ""}]);
 	Error.init("", [{prop: "Code", name: "Code", embedded: false, exported: true, typ: ErrorCode, tag: ""}, {prop: "Expr", name: "Expr", embedded: false, exported: true, typ: $String, tag: ""}]);
-	parser.init("regexp/syntax", [{prop: "flags", name: "flags", embedded: false, exported: false, typ: Flags, tag: ""}, {prop: "stack", name: "stack", embedded: false, exported: false, typ: sliceType$4, tag: ""}, {prop: "free", name: "free", embedded: false, exported: false, typ: ptrType, tag: ""}, {prop: "numCap", name: "numCap", embedded: false, exported: false, typ: $Int, tag: ""}, {prop: "wholeRegexp", name: "wholeRegexp", embedded: false, exported: false, typ: $String, tag: ""}, {prop: "tmpClass", name: "tmpClass", embedded: false, exported: false, typ: sliceType$1, tag: ""}, {prop: "numRegexp", name: "numRegexp", embedded: false, exported: false, typ: $Int, tag: ""}, {prop: "height", name: "height", embedded: false, exported: false, typ: mapType, tag: ""}]);
+	parser.init("regexp/syntax", [{prop: "flags", name: "flags", embedded: false, exported: false, typ: Flags, tag: ""}, {prop: "stack", name: "stack", embedded: false, exported: false, typ: sliceType$4, tag: ""}, {prop: "free", name: "free", embedded: false, exported: false, typ: ptrType, tag: ""}, {prop: "numCap", name: "numCap", embedded: false, exported: false, typ: $Int, tag: ""}, {prop: "wholeRegexp", name: "wholeRegexp", embedded: false, exported: false, typ: $String, tag: ""}, {prop: "tmpClass", name: "tmpClass", embedded: false, exported: false, typ: sliceType$1, tag: ""}, {prop: "numRegexp", name: "numRegexp", embedded: false, exported: false, typ: $Int, tag: ""}, {prop: "numRunes", name: "numRunes", embedded: false, exported: false, typ: $Int, tag: ""}, {prop: "repeats", name: "repeats", embedded: false, exported: false, typ: $Int64, tag: ""}, {prop: "height", name: "height", embedded: false, exported: false, typ: mapType, tag: ""}, {prop: "size", name: "size", embedded: false, exported: false, typ: mapType$1, tag: ""}]);
 	charGroup.init("regexp/syntax", [{prop: "sign", name: "sign", embedded: false, exported: false, typ: $Int, tag: ""}, {prop: "class$1", name: "class", embedded: false, exported: false, typ: sliceType$1, tag: ""}]);
 	ranges.init("regexp/syntax", [{prop: "p", name: "p", embedded: false, exported: false, typ: ptrType$2, tag: ""}]);
 	patchList.init("regexp/syntax", [{prop: "head", name: "head", embedded: false, exported: false, typ: $Uint32, tag: ""}, {prop: "tail", name: "tail", embedded: false, exported: false, typ: $Uint32, tag: ""}]);

@@ -1,4 +1,4 @@
-"use strict";
+// "use strict";
 (function() {
 
 var $goVersion = "go1.19.13";
@@ -50633,7 +50633,7 @@ $packages["github.com/altinity/clickhouse-grafana/pkg/eval"] = (function() {
 	return $pkg;
 })();
 $packages["main"] = (function() {
-	var $pkg = {}, $init, fmt, eval$1, js, regexp, strings, time, AdhocFilter, Target, QueryRequest, sliceType, sliceType$1, sliceType$2, mapType, ptrType, structType, ptrType$1, ptrType$2, parseTargets, applyAdhocFiltersJS, createQueryJS, findGroupByProperties, replaceTimeFiltersJS, getAstPropertyJS, main;
+	var $pkg = {}, $init, fmt, eval$1, js, regexp, strings, time, AdhocFilter, Target, QueryRequest, sliceType, sliceType$1, sliceType$2, mapType, ptrType, structType, ptrType$1, parseTargets, applyAdhocFiltersWasm, findGroupByProperties, createQueryWasm, replaceTimeFiltersWasm, getAstPropertyWasm, main;
 	fmt = $packages["fmt"];
 	eval$1 = $packages["github.com/altinity/clickhouse-grafana/pkg/eval"];
 	js = $packages["github.com/gopherjs/gopherjs/js"];
@@ -50662,17 +50662,22 @@ $packages["main"] = (function() {
 		this.Database = Database_;
 		this.Table = Table_;
 	});
-	QueryRequest = $pkg.QueryRequest = $newType(0, $kindStruct, "main.QueryRequest", true, "main", true, function(RefId_, RuleUid_, RawQuery_, Query_, Format_, DateTimeType_, DateTimeField_, DateColDataType_, Interval_, Database_, Table_, MaxDataPoints_, FrontendDatasource_, UseWindowFuncForMacros_, TimeRange_) {
+	QueryRequest = $pkg.QueryRequest = $newType(0, $kindStruct, "main.QueryRequest", true, "main", true, function(RefId_, RuleUid_, RawQuery_, Query_, DateTimeCol_, DateCol_, DateTimeType_, Extrapolate_, SkipComments_, AddMetadata_, Format_, Round_, IntervalFactor_, Interval_, Database_, Table_, MaxDataPoints_, FrontendDatasource_, UseWindowFuncForMacros_, TimeRange_) {
 		this.$val = this;
 		if (arguments.length === 0) {
 			this.RefId = "";
 			this.RuleUid = "";
 			this.RawQuery = false;
 			this.Query = "";
-			this.Format = "";
+			this.DateTimeCol = "";
+			this.DateCol = "";
 			this.DateTimeType = "";
-			this.DateTimeField = "";
-			this.DateColDataType = "";
+			this.Extrapolate = false;
+			this.SkipComments = false;
+			this.AddMetadata = false;
+			this.Format = "";
+			this.Round = "";
+			this.IntervalFactor = 0;
 			this.Interval = "";
 			this.Database = "";
 			this.Table = "";
@@ -50686,10 +50691,15 @@ $packages["main"] = (function() {
 		this.RuleUid = RuleUid_;
 		this.RawQuery = RawQuery_;
 		this.Query = Query_;
-		this.Format = Format_;
+		this.DateTimeCol = DateTimeCol_;
+		this.DateCol = DateCol_;
 		this.DateTimeType = DateTimeType_;
-		this.DateTimeField = DateTimeField_;
-		this.DateColDataType = DateColDataType_;
+		this.Extrapolate = Extrapolate_;
+		this.SkipComments = SkipComments_;
+		this.AddMetadata = AddMetadata_;
+		this.Format = Format_;
+		this.Round = Round_;
+		this.IntervalFactor = IntervalFactor_;
 		this.Interval = Interval_;
 		this.Database = Database_;
 		this.Table = Table_;
@@ -50704,8 +50714,7 @@ $packages["main"] = (function() {
 	mapType = $mapType($String, $emptyInterface);
 	ptrType = $ptrType(eval$1.EvalAST);
 	structType = $structType("", [{prop: "From", name: "From", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "To", name: "To", embedded: false, exported: true, typ: $String, tag: ""}]);
-	ptrType$1 = $ptrType(QueryRequest);
-	ptrType$2 = $ptrType(time.Location);
+	ptrType$1 = $ptrType(time.Location);
 	parseTargets = function(from, defaultDatabase, defaultTable) {
 		var {_1, _r, _tmp, _tmp$1, defaultDatabase, defaultTable, from, parts, targetDatabase, targetTable, $s, $r, $c} = $restore(this, {from, defaultDatabase, defaultTable});
 		/* */ $s = $s || 0; s: while (true) { switch ($s) { case 0:
@@ -50740,8 +50749,8 @@ $packages["main"] = (function() {
 		$s = -1; return [targetDatabase, targetTable];
 		/* */ } return; } var $f = {$blk: parseTargets, $c: true, $r, _1, _r, _tmp, _tmp$1, defaultDatabase, defaultTable, from, parts, targetDatabase, targetTable, $s};return $f;
 	};
-	applyAdhocFiltersJS = function(this$1, args) {
-		var {$24r, _1, _entry, _entry$1, _entry$2, _entry$3, _i, _key, _r, _r$1, _r$10, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _r$8, _r$9, _ref, _ref$1, _tuple, _tuple$1, _tuple$2, adhocConditions, adhocFilters, adhocFiltersJS, args, ast, condition, err, escaped, escaped$1, filter, filter$1, i, jsObj, newQuery, nextAst, ok, operator, parts, query, scanner, str, target, targetDatabase, targetJS, targetTable, this$1, topQueryAst, updatedWhereArr, v, v$1, v$2, value, whereArr, whereAst, x, $s, $r, $c} = $restore(this, {this$1, args});
+	applyAdhocFiltersWasm = function(this$1, args) {
+		var {$24r, _1, _entry, _entry$1, _entry$2, _entry$3, _i, _key, _r, _r$1, _r$10, _r$11, _r$12, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _r$8, _r$9, _ref, _ref$1, _tuple, _tuple$1, _tuple$2, adhocConditions, adhocFilters, adhocFiltersJS, args, ast, combinedCondition, condition, err, escaped, escaped$1, filter, filter$1, i, jsObj, nextAst, ok, operator, parts, query, renderedCondition, scanner, str, target, targetDatabase, targetJS, targetTable, this$1, topQueryAst, v, v$1, v$2, value, whereAst, x, $s, $r, $c} = $restore(this, {this$1, args});
 		/* */ $s = $s || 0; s: while (true) { switch ($s) { case 0:
 		jsObj = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]);
 		query = $internalize(jsObj.query, $String);
@@ -50752,7 +50761,7 @@ $packages["main"] = (function() {
 		while (true) {
 			if (!(i < $parseInt(adhocFiltersJS.length))) { break; }
 			filter = adhocFiltersJS[i];
-			AdhocFilter.copy(((i < 0 || i >= adhocFilters.$length) ? ($throwRuntimeError("index out of range"), undefined) : adhocFilters.$array[adhocFilters.$offset + i]), new AdhocFilter.ptr($internalize(filter.key, $String), $internalize(filter.operator, $String), $internalize(filter.value, $emptyInterface)));
+			AdhocFilter.copy(((i < 0 || i >= adhocFilters.$length) ? ($throwRuntimeError("index out of range"), undefined) : adhocFilters.$array[adhocFilters.$offset + i]), new AdhocFilter.ptr($internalize(filter.key, $String), $internalize(filter.operator, $String), new $String($internalize(filter.value, $String))));
 			i = i + (1) >> 0;
 		}
 		target = new Target.ptr($internalize(targetJS.database, $String), $internalize(targetJS.table, $String));
@@ -50861,146 +50870,167 @@ $packages["main"] = (function() {
 				_i++;
 			$s = 9; continue;
 			case 10:
-			if (adhocConditions.$length > 0) {
+			/* */ if (!strings.Contains(query, "$adhoc")) { $s = 25; continue; }
+			/* */ $s = 26; continue;
+			/* if (!strings.Contains(query, "$adhoc")) { */ case 25:
 				whereAst = $assertType((_entry$3 = $mapIndex(ast.Obj,$String.keyFor("where")), _entry$3 !== undefined ? _entry$3.v : $ifaceNil), ptrType);
-				if ((whereAst.Arr.$length === 0) && ((whereAst.Obj ? whereAst.Obj.size : 0) === 0)) {
-					whereAst.Arr = $append(whereAst.Arr, new $String(strings.Join(adhocConditions, " AND ")));
-				} else {
-					whereArr = whereAst.Arr;
-					updatedWhereArr = $makeSlice(sliceType, 0, (whereArr.$length + 2 >> 0));
-					updatedWhereArr = $append(updatedWhereArr, new $String("("));
-					updatedWhereArr = $appendSlice(updatedWhereArr, whereArr);
-					updatedWhereArr = $append(updatedWhereArr, new $String(")"));
-					updatedWhereArr = $append(updatedWhereArr, new $String("AND"));
-					updatedWhereArr = $append(updatedWhereArr, new $String("("));
-					updatedWhereArr = $append(updatedWhereArr, new $String(strings.Join(adhocConditions, " AND ")));
-					updatedWhereArr = $append(updatedWhereArr, new $String(")"));
-					whereAst.Arr = updatedWhereArr;
+				/* */ if (adhocConditions.$length > 0) { $s = 27; continue; }
+				/* */ $s = 28; continue;
+				/* if (adhocConditions.$length > 0) { */ case 27:
+					combinedCondition = strings.Join(adhocConditions, " AND ");
+					/* */ if (whereAst.Arr.$length > 0) { $s = 29; continue; }
+					/* */ $s = 30; continue;
+					/* if (whereAst.Arr.$length > 0) { */ case 29:
+						_r$10 = fmt.Sprintf("(%s)", new sliceType([new $String(combinedCondition)])); /* */ $s = 32; case 32: if($c) { $c = false; _r$10 = _r$10.$blk(); } if (_r$10 && _r$10.$blk !== undefined) { break s; }
+						whereAst.Arr = $append(whereAst.Arr, new $String("AND"), new $String(_r$10));
+						$s = 31; continue;
+					/* } else { */ case 30:
+						whereAst.Arr = $append(whereAst.Arr, new $String(combinedCondition));
+					/* } */ case 31:
+				/* } */ case 28:
+				_r$11 = eval$1.PrintAST(topQueryAst, " "); /* */ $s = 33; case 33: if($c) { $c = false; _r$11 = _r$11.$blk(); } if (_r$11 && _r$11.$blk !== undefined) { break s; }
+				query = _r$11;
+			/* } */ case 26:
+		/* } */ case 7:
+		/* */ if (strings.Contains(query, "$adhoc")) { $s = 34; continue; }
+		/* */ $s = 35; continue;
+		/* if (strings.Contains(query, "$adhoc")) { */ case 34:
+			renderedCondition = "1";
+			/* */ if (adhocConditions.$length > 0) { $s = 36; continue; }
+			/* */ $s = 37; continue;
+			/* if (adhocConditions.$length > 0) { */ case 36:
+				_r$12 = fmt.Sprintf("(%s)", new sliceType([new $String(strings.Join(adhocConditions, " AND "))])); /* */ $s = 38; case 38: if($c) { $c = false; _r$12 = _r$12.$blk(); } if (_r$12 && _r$12.$blk !== undefined) { break s; }
+				renderedCondition = _r$12;
+			/* } */ case 37:
+			query = strings.ReplaceAll(query, "$adhoc", renderedCondition);
+		/* } */ case 35:
+		$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "query", v: new $String(query) }]));
+		/* */ } return; } var $f = {$blk: applyAdhocFiltersWasm, $c: true, $r, $24r, _1, _entry, _entry$1, _entry$2, _entry$3, _i, _key, _r, _r$1, _r$10, _r$11, _r$12, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _r$8, _r$9, _ref, _ref$1, _tuple, _tuple$1, _tuple$2, adhocConditions, adhocFilters, adhocFiltersJS, args, ast, combinedCondition, condition, err, escaped, escaped$1, filter, filter$1, i, jsObj, nextAst, ok, operator, parts, query, renderedCondition, scanner, str, target, targetDatabase, targetJS, targetTable, this$1, topQueryAst, v, v$1, v$2, value, whereAst, x, $s};return $f;
+	};
+	findGroupByProperties = function(ast) {
+		var _entry, _entry$1, _entry$2, _i, _key, _keys, _ref, _ref$1, _ref$2, _size, _tuple, _tuple$1, _tuple$2, ast, exists, exists$1, from, obj, ok, prop, properties, subAST, subProperties, subProperties$1, v, v$1, v$2, v$3;
+		_tuple = (_entry = $mapIndex(ast.Obj,$String.keyFor("group by")), _entry !== undefined ? [_entry.v, true] : [$ifaceNil, false]);
+		prop = _tuple[0];
+		exists = _tuple[1];
+		if (exists) {
+			_ref = prop;
+			if ($assertType(_ref, ptrType, true)[1]) {
+				v = _ref.$val;
+				properties = $makeSlice(sliceType, v.Arr.$length);
+				$copySlice(properties, v.Arr);
+				return properties;
+			} else if ($assertType(_ref, sliceType, true)[1]) {
+				v$1 = _ref.$val;
+				return v$1;
+			} else {
+				v$2 = _ref;
+				return new sliceType([v$2]);
+			}
+		}
+		_tuple$1 = (_entry$1 = $mapIndex(ast.Obj,$String.keyFor("from")), _entry$1 !== undefined ? [_entry$1.v, true] : [$ifaceNil, false]);
+		from = _tuple$1[0];
+		exists$1 = _tuple$1[1];
+		if (exists$1) {
+			_ref$1 = from;
+			if ($assertType(_ref$1, ptrType, true)[1]) {
+				v$3 = _ref$1.$val;
+				subProperties = findGroupByProperties(v$3);
+				if (subProperties.$length > 0) {
+					return subProperties;
 				}
 			}
-		/* } */ case 7:
-		_r$10 = eval$1.PrintAST(topQueryAst, " "); /* */ $s = 25; case 25: if($c) { $c = false; _r$10 = _r$10.$blk(); } if (_r$10 && _r$10.$blk !== undefined) { break s; }
-		newQuery = _r$10;
-		$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "query", v: new $String(newQuery) }]));
-		/* */ } return; } var $f = {$blk: applyAdhocFiltersJS, $c: true, $r, $24r, _1, _entry, _entry$1, _entry$2, _entry$3, _i, _key, _r, _r$1, _r$10, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _r$8, _r$9, _ref, _ref$1, _tuple, _tuple$1, _tuple$2, adhocConditions, adhocFilters, adhocFiltersJS, args, ast, condition, err, escaped, escaped$1, filter, filter$1, i, jsObj, newQuery, nextAst, ok, operator, parts, query, scanner, str, target, targetDatabase, targetJS, targetTable, this$1, topQueryAst, updatedWhereArr, v, v$1, v$2, value, whereArr, whereAst, x, $s};return $f;
+		}
+		_ref$2 = ast.Obj;
+		_i = 0;
+		_keys = _ref$2 ? _ref$2.keys() : undefined;
+		_size = _ref$2 ? _ref$2.size : 0;
+		while (true) {
+			if (!(_i < _size)) { break; }
+			_key = _keys.next().value;
+			_entry$2 = _ref$2.get(_key);
+			if (_entry$2 === undefined) {
+				_i++;
+				continue;
+			}
+			obj = _entry$2.v;
+			_tuple$2 = $assertType(obj, ptrType, true);
+			subAST = _tuple$2[0];
+			ok = _tuple$2[1];
+			if (ok) {
+				subProperties$1 = findGroupByProperties(subAST);
+				if (subProperties$1.$length > 0) {
+					return subProperties$1;
+				}
+			}
+			_i++;
+		}
+		return new sliceType([]);
 	};
-	createQueryJS = function(this$1, args) {
-		var {$24r, $24r$1, $24r$2, $24r$3, _r, _r$1, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _tuple, _tuple$1, _tuple$2, _tuple$3, args, ast, err, evalQ, from, jsObj, properties, req, scanner, sql, this$1, to, $s, $r, $c} = $restore(this, {this$1, args});
+	createQueryWasm = function(this$1, args) {
+		var {$24r, $24r$1, _r, _r$1, _r$2, _r$3, _r$4, _r$5, _tuple, _tuple$1, _tuple$2, _tuple$3, args, ast, err, evalQ, from, jsObj, properties, reqData, scanner, sql, this$1, timeRange, to, $s, $r, $c} = $restore(this, {this$1, args});
 		/* */ $s = $s || 0; s: while (true) { switch ($s) { case 0:
-		req = [req];
+		if (!((args.$length === 1))) {
+			$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String("Invalid number of arguments. Expected query request object") }]));
+		}
 		jsObj = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]);
-		req[0] = new QueryRequest.ptr("", "", false, "", "", "", "", "", "", "", "", new $Int64(0, 0), false, false, new structType.ptr("", ""));
-		$global[$externalize("Object.assign", $String)]($externalize(req[0], ptrType$1), jsObj);
-		_r = time.Parse("2006-01-02T15:04:05Z07:00", req[0].TimeRange.From); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
+		reqData = new QueryRequest.ptr($internalize(jsObj.refId, $String), $internalize(jsObj.ruleUid, $String), !!(jsObj.rawQuery), $internalize(jsObj.query, $String), $internalize(jsObj.dateTimeColDataType, $String), $internalize(jsObj.dateColDataType, $String), $internalize(jsObj.dateTimeType, $String), !!(jsObj.extrapolate), !!(jsObj.skip_comments), !!(jsObj.add_metadata), $internalize(jsObj.format, $String), $internalize(jsObj.round, $String), $parseInt(jsObj.intervalFactor) >> 0, $internalize(jsObj.interval, $String), $internalize(jsObj.database, $String), $internalize(jsObj.table, $String), (new $Int64(0, ($parseInt(jsObj.maxDataPoints) >> 0))), !!(jsObj.frontendDatasource), !!(jsObj.useWindowFuncForMacros), new structType.ptr("", ""));
+		timeRange = jsObj.timeRange;
+		reqData.TimeRange.From = $internalize(timeRange.from, $String);
+		reqData.TimeRange.To = $internalize(timeRange.to, $String);
+		_r = time.Parse("2006-01-02T15:04:05Z07:00", reqData.TimeRange.From); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		_tuple = _r;
 		from = $clone(_tuple[0], time.Time);
 		err = _tuple[1];
-		/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 2; continue; }
-		/* */ $s = 3; continue;
-		/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 2:
-			_r$1 = fmt.Sprintf("Invalid from time: %v", new sliceType([err])); /* */ $s = 4; case 4: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
-			$24r = new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String(_r$1) }]));
-			$s = 5; case 5: return $24r;
-		/* } */ case 3:
-		_r$2 = time.Parse("2006-01-02T15:04:05Z07:00", req[0].TimeRange.To); /* */ $s = 6; case 6: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
-		_tuple$1 = _r$2;
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String("Invalid `$from` time") }]));
+		}
+		_r$1 = time.Parse("2006-01-02T15:04:05Z07:00", reqData.TimeRange.To); /* */ $s = 2; case 2: if($c) { $c = false; _r$1 = _r$1.$blk(); } if (_r$1 && _r$1.$blk !== undefined) { break s; }
+		_tuple$1 = _r$1;
 		to = $clone(_tuple$1[0], time.Time);
 		err = _tuple$1[1];
-		/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 7; continue; }
-		/* */ $s = 8; continue;
-		/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 7:
-			_r$3 = fmt.Sprintf("Invalid to time: %v", new sliceType([err])); /* */ $s = 9; case 9: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
-			$24r$1 = new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String(_r$3) }]));
-			$s = 10; case 10: return $24r$1;
-		/* } */ case 8:
-		evalQ = new eval$1.EvalQuery.ptr("", "", req[0].RawQuery, req[0].Query, req[0].DateColDataType, req[0].DateColDataType, req[0].DateTimeType, false, false, false, req[0].UseWindowFuncForMacros, req[0].Format, "", 0, req[0].Interval, 0, 0, req[0].Database, req[0].Table, new $Int64(0, 0), req[0].FrontendDatasource, $clone(from, time.Time), $clone(to, time.Time));
-		_r$4 = evalQ.ApplyMacrosAndTimeRangeToQuery(); /* */ $s = 11; case 11: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
-		_tuple$2 = _r$4;
+		if (!($interfaceIsEqual(err, $ifaceNil))) {
+			$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String("Invalid `$to` time") }]));
+		}
+		evalQ = new eval$1.EvalQuery.ptr(reqData.RefId, reqData.RuleUid, reqData.RawQuery, reqData.Query, reqData.DateTimeCol, reqData.DateCol, reqData.DateTimeType, reqData.Extrapolate, reqData.SkipComments, reqData.AddMetadata, reqData.UseWindowFuncForMacros, reqData.Format, reqData.Round, reqData.IntervalFactor, reqData.Interval, 0, 0, reqData.Database, reqData.Table, reqData.MaxDataPoints, reqData.FrontendDatasource, $clone(from, time.Time), $clone(to, time.Time));
+		_r$2 = evalQ.ApplyMacrosAndTimeRangeToQuery(); /* */ $s = 3; case 3: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
+		_tuple$2 = _r$2;
 		sql = _tuple$2[0];
 		err = _tuple$2[1];
-		/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 12; continue; }
-		/* */ $s = 13; continue;
-		/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 12:
-			_r$5 = fmt.Sprintf("Failed to apply macros: %v", new sliceType([err])); /* */ $s = 14; case 14: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
-			$24r$2 = new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String(_r$5) }]));
-			$s = 15; case 15: return $24r$2;
-		/* } */ case 13:
+		/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 4; continue; }
+		/* */ $s = 5; continue;
+		/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 4:
+			_r$3 = fmt.Sprintf("Failed to apply macros: %v", new sliceType([err])); /* */ $s = 6; case 6: if($c) { $c = false; _r$3 = _r$3.$blk(); } if (_r$3 && _r$3.$blk !== undefined) { break s; }
+			$24r = new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String(_r$3) }]));
+			$s = 7; case 7: return $24r;
+		/* } */ case 5:
 		scanner = $clone(eval$1.NewScanner(sql), eval$1.EvalQueryScanner);
-		_r$6 = scanner.ToAST(); /* */ $s = 16; case 16: if($c) { $c = false; _r$6 = _r$6.$blk(); } if (_r$6 && _r$6.$blk !== undefined) { break s; }
-		_tuple$3 = _r$6;
+		_r$4 = scanner.ToAST(); /* */ $s = 8; case 8: if($c) { $c = false; _r$4 = _r$4.$blk(); } if (_r$4 && _r$4.$blk !== undefined) { break s; }
+		_tuple$3 = _r$4;
 		ast = _tuple$3[0];
 		err = _tuple$3[1];
-		/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 17; continue; }
-		/* */ $s = 18; continue;
-		/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 17:
-			_r$7 = fmt.Sprintf("Failed to parse query: %v", new sliceType([err])); /* */ $s = 19; case 19: if($c) { $c = false; _r$7 = _r$7.$blk(); } if (_r$7 && _r$7.$blk !== undefined) { break s; }
-			$24r$3 = new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String(_r$7) }]));
-			$s = 20; case 20: return $24r$3;
-		/* } */ case 18:
+		/* */ if (!($interfaceIsEqual(err, $ifaceNil))) { $s = 9; continue; }
+		/* */ $s = 10; continue;
+		/* if (!($interfaceIsEqual(err, $ifaceNil))) { */ case 9:
+			_r$5 = fmt.Sprintf("Failed to parse query: %v", new sliceType([err])); /* */ $s = 11; case 11: if($c) { $c = false; _r$5 = _r$5.$blk(); } if (_r$5 && _r$5.$blk !== undefined) { break s; }
+			$24r$1 = new mapType($makeMap($String.keyFor, [{ k: "error", v: new $String(_r$5) }]));
+			$s = 12; case 12: return $24r$1;
+		/* } */ case 10:
 		properties = findGroupByProperties(ast);
 		$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "sql", v: new $String(sql) }, { k: "keys", v: properties }]));
-		/* */ } return; } var $f = {$blk: createQueryJS, $c: true, $r, $24r, $24r$1, $24r$2, $24r$3, _r, _r$1, _r$2, _r$3, _r$4, _r$5, _r$6, _r$7, _tuple, _tuple$1, _tuple$2, _tuple$3, args, ast, err, evalQ, from, jsObj, properties, req, scanner, sql, this$1, to, $s};return $f;
+		/* */ } return; } var $f = {$blk: createQueryWasm, $c: true, $r, $24r, $24r$1, _r, _r$1, _r$2, _r$3, _r$4, _r$5, _tuple, _tuple$1, _tuple$2, _tuple$3, args, ast, err, evalQ, from, jsObj, properties, reqData, scanner, sql, this$1, timeRange, to, $s};return $f;
 	};
-	findGroupByProperties = function(ast) {
-		var _entry, _entry$1, _entry$2, _i, _i$1, _key, _keys, _ref, _ref$1, _size, _tuple, _tuple$1, _tuple$2, ast, groupBy, groupByAst, item, nestedAst, nestedProperties, ok, ok$1, ok$2, properties, value;
-		properties = $makeSlice(sliceType, 0);
-		if (!(ast === ptrType.nil) && ast.HasOwnProperty("group by")) {
-			_tuple = $assertType((_entry = $mapIndex(ast.Obj,$String.keyFor("group by")), _entry !== undefined ? _entry.v : $ifaceNil), ptrType, true);
-			groupByAst = _tuple[0];
-			ok = _tuple[1];
-			if (ok && !(groupByAst.Arr === sliceType.nil)) {
-				_ref = groupByAst.Arr;
-				_i = 0;
-				while (true) {
-					if (!(_i < _ref.$length)) { break; }
-					item = ((_i < 0 || _i >= _ref.$length) ? ($throwRuntimeError("index out of range"), undefined) : _ref.$array[_ref.$offset + _i]);
-					properties = $append(properties, item);
-					_i++;
-				}
-			} else {
-				_tuple$1 = $assertType((_entry$1 = $mapIndex(ast.Obj,$String.keyFor("group by")), _entry$1 !== undefined ? _entry$1.v : $ifaceNil), sliceType, true);
-				groupBy = _tuple$1[0];
-				ok$1 = _tuple$1[1];
-				if (ok$1) {
-					properties = $appendSlice(properties, groupBy);
-				}
-			}
-		}
-		if (!(ast === ptrType.nil)) {
-			_ref$1 = ast.Obj;
-			_i$1 = 0;
-			_keys = _ref$1 ? _ref$1.keys() : undefined;
-			_size = _ref$1 ? _ref$1.size : 0;
-			while (true) {
-				if (!(_i$1 < _size)) { break; }
-				_key = _keys.next().value;
-				_entry$2 = _ref$1.get(_key);
-				if (_entry$2 === undefined) {
-					_i$1++;
-					continue;
-				}
-				value = _entry$2.v;
-				_tuple$2 = $assertType(value, ptrType, true);
-				nestedAst = _tuple$2[0];
-				ok$2 = _tuple$2[1];
-				if (ok$2) {
-					nestedProperties = findGroupByProperties(nestedAst);
-					properties = $appendSlice(properties, nestedProperties);
-				}
-				_i$1++;
-			}
-		}
-		return properties;
-	};
-	replaceTimeFiltersJS = function(this$1, args) {
-		var {_r, _r$1, _r$2, _tuple, _tuple$1, args, dateTimeType, err, evalQ, from, fromStr, jsObj, query, sql, this$1, timeRange, to, toStr, $s, $r, $c} = $restore(this, {this$1, args});
+	replaceTimeFiltersWasm = function(this$1, args) {
+		var {_r, _r$1, _r$2, _tuple, _tuple$1, args, dateTimeType, err, evalQ, from, fromStr, jsObj, query, reqData, sql, this$1, timeRange, to, toStr, $s, $r, $c} = $restore(this, {this$1, args});
 		/* */ $s = $s || 0; s: while (true) { switch ($s) { case 0:
 		jsObj = (0 >= args.$length ? ($throwRuntimeError("index out of range"), undefined) : args.$array[args.$offset + 0]);
-		query = $internalize(jsObj.query, $String);
-		dateTimeType = $internalize(jsObj.dateTimeType, $String);
+		reqData = new QueryRequest.ptr("", "", false, $internalize(jsObj.query, $String), "", "", $internalize(jsObj.dateTimeType, $String), false, false, false, "", "", 0, "", "", "", new $Int64(0, 0), false, false, new structType.ptr("", ""));
 		timeRange = jsObj.timeRange;
-		fromStr = $internalize(timeRange.from, $String);
-		toStr = $internalize(timeRange.to, $String);
+		reqData.TimeRange.From = $internalize(timeRange.from, $String);
+		reqData.TimeRange.To = $internalize(timeRange.to, $String);
+		query = reqData.Query;
+		dateTimeType = reqData.DateTimeType;
+		fromStr = reqData.TimeRange.From;
+		toStr = reqData.TimeRange.To;
 		_r = time.Parse("2006-01-02T15:04:05Z07:00", fromStr); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
 		_tuple = _r;
 		from = $clone(_tuple[0], time.Time);
@@ -51019,9 +51049,9 @@ $packages["main"] = (function() {
 		_r$2 = evalQ.ReplaceTimeFilters(evalQ.Query, 0); /* */ $s = 3; case 3: if($c) { $c = false; _r$2 = _r$2.$blk(); } if (_r$2 && _r$2.$blk !== undefined) { break s; }
 		sql = _r$2;
 		$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "sql", v: new $String(sql) }]));
-		/* */ } return; } var $f = {$blk: replaceTimeFiltersJS, $c: true, $r, _r, _r$1, _r$2, _tuple, _tuple$1, args, dateTimeType, err, evalQ, from, fromStr, jsObj, query, sql, this$1, timeRange, to, toStr, $s};return $f;
+		/* */ } return; } var $f = {$blk: replaceTimeFiltersWasm, $c: true, $r, _r, _r$1, _r$2, _tuple, _tuple$1, args, dateTimeType, err, evalQ, from, fromStr, jsObj, query, reqData, sql, this$1, timeRange, to, toStr, $s};return $f;
 	};
-	getAstPropertyJS = function(this$1, args) {
+	getAstPropertyWasm = function(this$1, args) {
 		var {$24r, _entry, _r, _r$1, _ref, _tuple, _tuple$1, args, ast, err, exists, prop, properties, properties$1, propertyName, query, scanner, this$1, v, v$1, v$2, v$3, $s, $r, $c} = $restore(this, {this$1, args});
 		/* */ $s = $s || 0; s: while (true) { switch ($s) { case 0:
 		if (!((args.$length === 2))) {
@@ -51067,23 +51097,17 @@ $packages["main"] = (function() {
 			}
 		}
 		$s = -1; return new mapType($makeMap($String.keyFor, [{ k: "properties", v: properties$1 }]));
-		/* */ } return; } var $f = {$blk: getAstPropertyJS, $c: true, $r, $24r, _entry, _r, _r$1, _ref, _tuple, _tuple$1, args, ast, err, exists, prop, properties, properties$1, propertyName, query, scanner, this$1, v, v$1, v$2, v$3, $s};return $f;
+		/* */ } return; } var $f = {$blk: getAstPropertyWasm, $c: true, $r, $24r, _entry, _r, _r$1, _ref, _tuple, _tuple$1, args, ast, err, exists, prop, properties, properties$1, propertyName, query, scanner, this$1, v, v$1, v$2, v$3, $s};return $f;
 	};
 	main = function() {
-		var {_r, _selection, $s, $r, $c} = $restore(this, {});
-		/* */ $s = $s || 0; s: while (true) { switch ($s) { case 0:
-		$global.applyAdhocFilters = js.MakeFunc(applyAdhocFiltersJS);
-		$global.createQuery = js.MakeFunc(createQueryJS);
-		$global.replaceTimeFilters = js.MakeFunc(replaceTimeFiltersJS);
-		$global.getAstProperty = js.MakeFunc(getAstPropertyJS);
-		_r = $select([]); /* */ $s = 1; case 1: if($c) { $c = false; _r = _r.$blk(); } if (_r && _r.$blk !== undefined) { break s; }
-		_selection = _r;
-		$s = -1; return;
-		/* */ } return; } var $f = {$blk: main, $c: true, $r, _r, _selection, $s};return $f;
+		$global.applyAdhocFilters = js.MakeFunc(applyAdhocFiltersWasm);
+		$global.createQuery = js.MakeFunc(createQueryWasm);
+		$global.replaceTimeFilters = js.MakeFunc(replaceTimeFiltersWasm);
+		$global.getAstProperty = js.MakeFunc(getAstPropertyWasm);
 	};
 	AdhocFilter.init("", [{prop: "Key", name: "Key", embedded: false, exported: true, typ: $String, tag: "json:\"key\""}, {prop: "Operator", name: "Operator", embedded: false, exported: true, typ: $String, tag: "json:\"operator\""}, {prop: "Value", name: "Value", embedded: false, exported: true, typ: $emptyInterface, tag: "json:\"value\""}]);
 	Target.init("", [{prop: "Database", name: "Database", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Table", name: "Table", embedded: false, exported: true, typ: $String, tag: ""}]);
-	QueryRequest.init("", [{prop: "RefId", name: "RefId", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "RuleUid", name: "RuleUid", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "RawQuery", name: "RawQuery", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "Query", name: "Query", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Format", name: "Format", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "DateTimeType", name: "DateTimeType", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "DateTimeField", name: "DateTimeField", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "DateColDataType", name: "DateColDataType", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Interval", name: "Interval", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Database", name: "Database", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Table", name: "Table", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "MaxDataPoints", name: "MaxDataPoints", embedded: false, exported: true, typ: $Int64, tag: ""}, {prop: "FrontendDatasource", name: "FrontendDatasource", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "UseWindowFuncForMacros", name: "UseWindowFuncForMacros", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "TimeRange", name: "TimeRange", embedded: false, exported: true, typ: structType, tag: ""}]);
+	QueryRequest.init("", [{prop: "RefId", name: "RefId", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "RuleUid", name: "RuleUid", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "RawQuery", name: "RawQuery", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "Query", name: "Query", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "DateTimeCol", name: "DateTimeCol", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "DateCol", name: "DateCol", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "DateTimeType", name: "DateTimeType", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Extrapolate", name: "Extrapolate", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "SkipComments", name: "SkipComments", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "AddMetadata", name: "AddMetadata", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "Format", name: "Format", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Round", name: "Round", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "IntervalFactor", name: "IntervalFactor", embedded: false, exported: true, typ: $Int, tag: ""}, {prop: "Interval", name: "Interval", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Database", name: "Database", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "Table", name: "Table", embedded: false, exported: true, typ: $String, tag: ""}, {prop: "MaxDataPoints", name: "MaxDataPoints", embedded: false, exported: true, typ: $Int64, tag: ""}, {prop: "FrontendDatasource", name: "FrontendDatasource", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "UseWindowFuncForMacros", name: "UseWindowFuncForMacros", embedded: false, exported: true, typ: $Bool, tag: ""}, {prop: "TimeRange", name: "TimeRange", embedded: false, exported: true, typ: structType, tag: ""}]);
 	$init = function() {
 		$pkg.$init = function() {};
 		/* */ var $f, $c = false, $s = 0, $r; if (this !== undefined && this.$blk !== undefined) { $f = this; $c = true; $s = $f.$s; $r = $f.$r; } s: while (true) { switch ($s) { case 0:
@@ -51093,12 +51117,10 @@ $packages["main"] = (function() {
 		$r = regexp.$init(); /* */ $s = 4; case 4: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = strings.$init(); /* */ $s = 5; case 5: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
 		$r = time.$init(); /* */ $s = 6; case 6: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
-		/* */ if ($pkg === $mainPkg) { $s = 7; continue; }
-		/* */ $s = 8; continue;
-		/* if ($pkg === $mainPkg) { */ case 7:
-			$r = main(); /* */ $s = 9; case 9: if($c) { $c = false; $r = $r.$blk(); } if ($r && $r.$blk !== undefined) { break s; }
+		if ($pkg === $mainPkg) {
+			main();
 			$mainFinished = true;
-		/* } */ case 8:
+		}
 		/* */ } return; } if ($f === undefined) { $f = { $blk: $init }; } $f.$s = $s; $f.$r = $r; return $f;
 	};
 	$pkg.$init = $init;

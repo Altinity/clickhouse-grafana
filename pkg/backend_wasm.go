@@ -2,11 +2,12 @@ package main
 
 import (
 	"fmt"
-	"github.com/altinity/clickhouse-grafana/pkg/eval"
 	"regexp"
 	"strings"
-	"syscall/js"
 	"time"
+
+	"github.com/altinity/clickhouse-grafana/pkg/eval"
+	"github.com/gopherjs/gopherjs/js"
 )
 
 type AdhocFilter struct {
@@ -46,8 +47,8 @@ func parseTargets(from string, defaultDatabase string, defaultTable string) (str
 	return targetDatabase, targetTable
 }
 
-// applyAdhocFiltersWasm is the WebAssembly-compatible function that processes adhoc filters
-func applyAdhocFiltersWasm(this js.Value, args []js.Value) interface{} {
+// applyAdhocFiltersWasm is the GopherJS-compatible function that processes adhoc filters
+func applyAdhocFiltersWasm(this *js.Object, args []*js.Object) interface{} {
 	jsObj := args[0]
 	query := jsObj.Get("query").String()
 	adhocFiltersJS := jsObj.Get("adhocFilters")
@@ -268,7 +269,7 @@ func findGroupByProperties(ast *eval.EvalAST) []interface{} {
 }
 
 // createQueryWasm is the WebAssembly-compatible function that processes query creation
-func createQueryWasm(this js.Value, args []js.Value) interface{} {
+func createQueryWasm(this *js.Object, args []*js.Object) interface{} {
 	// Validate input arguments
 	if len(args) != 1 {
 		return map[string]interface{}{
@@ -372,7 +373,7 @@ func createQueryWasm(this js.Value, args []js.Value) interface{} {
 }
 
 // replaceTimeFiltersWasm is the WebAssembly-compatible function that processes time filter replacements
-func replaceTimeFiltersWasm(this js.Value, args []js.Value) interface{} {
+func replaceTimeFiltersWasm(this *js.Object, args []*js.Object) interface{} {
 	jsObj := args[0]
 	reqData := QueryRequest{
 		Query:        jsObj.Get("query").String(),
@@ -424,7 +425,7 @@ func replaceTimeFiltersWasm(this js.Value, args []js.Value) interface{} {
 }
 
 // getAstPropertyWasm is the WebAssembly-compatible function that processes AST property requests
-func getAstPropertyWasm(this js.Value, args []js.Value) interface{} {
+func getAstPropertyWasm(this *js.Object, args []*js.Object) interface{} {
 	// Validate input arguments
 	if len(args) != 2 {
 		return map[string]interface{}{
@@ -480,15 +481,19 @@ func getAstPropertyWasm(this js.Value, args []js.Value) interface{} {
 }
 
 func main() {
-	// Create a channel to keep the program running
-	c := make(chan struct{}, 0)
+	// GopherJS automatically exports the main package to JavaScript
+	// so we just need to register our functions in the global scope
 
-	// Register all functions in the JavaScript global scope
-	js.Global().Set("applyAdhocFilters", js.FuncOf(applyAdhocFiltersWasm))
-	js.Global().Set("createQuery", js.FuncOf(createQueryWasm))
-	js.Global().Set("replaceTimeFilters", js.FuncOf(replaceTimeFiltersWasm))
-	js.Global().Set("getAstProperty", js.FuncOf(getAstPropertyWasm))
+	// // Register all functions in the JavaScript global scope
+	// js.Global.Set("applyAdhocFilters", applyAdhocFiltersWasm)
+	// js.Global.Set("createQuery", createQueryWasm)
+	// js.Global.Set("replaceTimeFilters", replaceTimeFiltersWasm)
+	// js.Global.Set("getAstProperty", getAstPropertyWasm)
 
-	// Wait indefinitely
-	<-c
+	js.Global.Set("applyAdhocFilters", js.MakeFunc(applyAdhocFiltersWasm))
+	js.Global.Set("createQuery", js.MakeFunc(createQueryWasm))
+	js.Global.Set("replaceTimeFilters", js.MakeFunc(replaceTimeFiltersWasm))
+	js.Global.Set("getAstProperty", js.MakeFunc(getAstPropertyWasm))
+
+	// GopherJS doesn't need the channel trick to keep the program running
 }

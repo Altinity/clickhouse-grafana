@@ -37,7 +37,7 @@ jobs:
           
       - name: Install GopherJS
         if: steps.check-for-backend.outputs.has-backend == 'true'
-        run: go install github.com/gopherjs/gopherjs@latest
+        run: go install github.com/gopherjs/gopherjs@v1.19.0-beta1
 
       - name: Install dependencies
         run: npm ci

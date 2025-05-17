@@ -3,13 +3,6 @@ import SqlSeries from './sql-series/sql_series';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
 import './backend2.js';
-// setTimeout(async () => {
-//   console.log('backend2 RRRRRRR', '123');
-
-//   const test =  require('./backend2.js');
-// // console.log(backend2);
-//   console.log('backend2 RRRRRRR', test);
-// }, 1000);
 
 import {
   AnnotationEvent,
@@ -63,7 +56,7 @@ export class CHDataSource
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
     this.pluginId = instanceSettings.meta.id
-    this.wasmModule = ClickHouseGopherJS.getInstance(instanceSettings.meta.id);
+    this.wasmModule = ClickHouseGopherJS.getInstance();
     this.uid = instanceSettings.uid;
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;

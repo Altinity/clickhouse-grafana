@@ -481,15 +481,6 @@ func getAstPropertyWasm(this *js.Object, args []*js.Object) interface{} {
 }
 
 func main() {
-	// GopherJS automatically exports the main package to JavaScript
-	// so we just need to register our functions in the global scope
-
-	// // Register all functions in the JavaScript global scope
-	// js.Global.Set("applyAdhocFilters", applyAdhocFiltersWasm)
-	// js.Global.Set("createQuery", createQueryWasm)
-	// js.Global.Set("replaceTimeFilters", replaceTimeFiltersWasm)
-	// js.Global.Set("getAstProperty", getAstPropertyWasm)
-
 	js.Global.Set("applyAdhocFilters", js.MakeFunc(applyAdhocFiltersWasm))
 	js.Global.Set("createQuery", js.MakeFunc(createQueryWasm))
 	js.Global.Set("replaceTimeFilters", js.MakeFunc(replaceTimeFiltersWasm))

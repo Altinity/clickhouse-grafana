@@ -9,15 +9,13 @@ declare global {
 
 export class ClickHouseGopherJS {
   private static instance: ClickHouseGopherJS;
-  private pluginId: string;
 
-  private constructor(pluginId: string) {
-    this.pluginId = pluginId;
+  private constructor() {
   }
 
-  static getInstance(pluginId: string): ClickHouseGopherJS {
+  static getInstance(): ClickHouseGopherJS {
     if (!ClickHouseGopherJS.instance) {
-      ClickHouseGopherJS.instance = new ClickHouseGopherJS(pluginId);
+      ClickHouseGopherJS.instance = new ClickHouseGopherJS();
     }
     return ClickHouseGopherJS.instance;
   }

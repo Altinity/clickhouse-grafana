@@ -56,10 +56,6 @@ venv/
 # aider
 .aider*
 
-# WASM
-src/static/*.wasm.*
-src/static/*.wasm
-
 # GopherJS generated files
 src/datasource/backend_gopher.js
 src/datasource/backend_gopher.js.map

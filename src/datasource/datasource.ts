@@ -2,6 +2,7 @@ import _, { curry, each } from 'lodash';
 import SqlSeries from './sql-series/sql_series';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
+import './backend_gopher.js';
 
 import {
   AnnotationEvent,
@@ -22,7 +23,7 @@ import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
-import { ClickHouseWasm } from './wasm';
+import { ClickHouseGopherJS } from './wasm';
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -34,7 +35,7 @@ export class CHDataSource
   responseParser: ResponseParser;
   options: any;
   pluginId: string;
-  wasmModule: ClickHouseWasm;
+  wasmModule: ClickHouseGopherJS;
   url: string;
   basicAuth: any;
   withCredentials: any;
@@ -55,7 +56,7 @@ export class CHDataSource
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
     this.pluginId = instanceSettings.meta.id
-    this.wasmModule = ClickHouseWasm.getInstance(instanceSettings.meta.id);
+    this.wasmModule = ClickHouseGopherJS.getInstance();
     this.uid = instanceSettings.uid;
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;

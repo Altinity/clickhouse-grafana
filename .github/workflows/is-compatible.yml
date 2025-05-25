@@ -11,9 +11,25 @@ jobs:
         with:
           node-version: '22'
           cache: 'npm'
-      - uses: acifani/setup-tinygo@v2
+      - name: Setup Go environment
+        uses: actions/setup-go@v5
         with:
-          tinygo-version: '0.37.0'
+          go-version: '1.24'
+          
+      - name: Setup Go 1.19 for GopherJS
+        run: |
+          # Download and install Go 1.19 for GopherJS in a separate location
+          wget -q https://go.dev/dl/go1.19.linux-amd64.tar.gz
+          sudo tar -C /usr/local -xzf go1.19.linux-amd64.tar.gz
+          sudo mv /usr/local/go /usr/local/go1.19
+          rm go1.19.linux-amd64.tar.gz
+          
+      - name: Install GopherJS
+        run: |
+          # Use Go 1.19 to install GopherJS
+          /usr/local/go1.19/bin/go install github.com/gopherjs/gopherjs@v1.19.0-beta1
+          # Make gopherjs available in PATH
+          sudo ln -sf $HOME/go/bin/gopherjs /usr/local/bin/gopherjs
       - name: Install dependencies
         run: npm ci
       - name: Build plugin

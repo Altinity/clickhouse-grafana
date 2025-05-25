@@ -60,6 +60,10 @@ venv/
 src/static/*.wasm.*
 src/static/*.wasm
 
+# GopherJS generated files
+src/datasource/backend_gopher.js
+src/datasource/backend_gopher.js.map
+
 # test temporary files
 tests/testflows/tmp/target/
 tests/testflows/assets/

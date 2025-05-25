@@ -140,6 +140,7 @@ services:
   frontend_builder:
     build:
       dockerfile: ./docker/builder/Dockerfile
+      target: frontend-builder
     environment:
       GOCACHE: "/go-cache"
       RUN_TESTS: "${RUN_TESTS:-.+}"
@@ -162,6 +163,7 @@ services:
   backend_builder:
     build:
       dockerfile: ./docker/builder/Dockerfile
+      target: backend-builder
     working_dir: /go/src/grafana-clickhouse
     environment:
       GOCACHE: "/go-cache"
@@ -184,6 +186,7 @@ services:
   frontend_coverage_builder:
     build:
       dockerfile: ./docker/builder/Dockerfile
+      target: frontend-builder
     working_dir: /grafana-clickhouse
     volumes:
       - ./:/grafana-clickhouse
@@ -203,6 +206,7 @@ services:
   frontend_coverage_generate:
     build:
       dockerfile: ./docker/builder/Dockerfile
+      target: frontend-builder
     working_dir: /grafana-clickhouse
     volumes:
       - ./:/grafana-clickhouse

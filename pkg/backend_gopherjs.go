@@ -47,8 +47,8 @@ func parseTargets(from string, defaultDatabase string, defaultTable string) (str
 	return targetDatabase, targetTable
 }
 
-// applyAdhocFiltersWasm is the GopherJS-compatible function that processes adhoc filters
-func applyAdhocFiltersWasm(this *js.Object, args []*js.Object) interface{} {
+// applyAdhocFiltersGopherJS is the GopherJS-compatible function that processes adhoc filters
+func applyAdhocFiltersGopherJS(this *js.Object, args []*js.Object) interface{} {
 	jsObj := args[0]
 	query := jsObj.Get("query").String()
 	adhocFiltersJS := jsObj.Get("adhocFilters")
@@ -268,8 +268,8 @@ func findGroupByProperties(ast *eval.EvalAST) []interface{} {
 	return []interface{}{}
 }
 
-// createQueryWasm is the WebAssembly-compatible function that processes query creation
-func createQueryWasm(this *js.Object, args []*js.Object) interface{} {
+// createQueryGopherJS is the GopherJS-compatible function that processes query creation
+func createQueryGopherJS(this *js.Object, args []*js.Object) interface{} {
 	// Validate input arguments
 	if len(args) != 1 {
 		return map[string]interface{}{
@@ -372,8 +372,8 @@ func createQueryWasm(this *js.Object, args []*js.Object) interface{} {
 	}
 }
 
-// replaceTimeFiltersWasm is the WebAssembly-compatible function that processes time filter replacements
-func replaceTimeFiltersWasm(this *js.Object, args []*js.Object) interface{} {
+// replaceTimeFiltersGopherJS is the GopherJS-compatible function that processes time filter replacements
+func replaceTimeFiltersGopherJS(this *js.Object, args []*js.Object) interface{} {
 	jsObj := args[0]
 	reqData := QueryRequest{
 		Query:        jsObj.Get("query").String(),
@@ -424,8 +424,8 @@ func replaceTimeFiltersWasm(this *js.Object, args []*js.Object) interface{} {
 	}
 }
 
-// getAstPropertyWasm is the WebAssembly-compatible function that processes AST property requests
-func getAstPropertyWasm(this *js.Object, args []*js.Object) interface{} {
+// getAstPropertyGopherJS is the WebAssembly-compatible function that processes AST property requests
+func getAstPropertyGopherJS(this *js.Object, args []*js.Object) interface{} {
 	// Validate input arguments
 	if len(args) != 2 {
 		return map[string]interface{}{
@@ -481,10 +481,10 @@ func getAstPropertyWasm(this *js.Object, args []*js.Object) interface{} {
 }
 
 func main() {
-	js.Global.Set("applyAdhocFilters", js.MakeFunc(applyAdhocFiltersWasm))
-	js.Global.Set("createQuery", js.MakeFunc(createQueryWasm))
-	js.Global.Set("replaceTimeFilters", js.MakeFunc(replaceTimeFiltersWasm))
-	js.Global.Set("getAstProperty", js.MakeFunc(getAstPropertyWasm))
+	js.Global.Set("applyAdhocFilters", js.MakeFunc(applyAdhocFiltersGopherJS))
+	js.Global.Set("createQuery", js.MakeFunc(createQueryGopherJS))
+	js.Global.Set("replaceTimeFilters", js.MakeFunc(replaceTimeFiltersGopherJS))
+	js.Global.Set("getAstProperty", js.MakeFunc(getAstPropertyGopherJS))
 
 	// GopherJS doesn't need the channel trick to keep the program running
 }

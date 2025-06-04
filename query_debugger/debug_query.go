@@ -82,7 +82,7 @@ func findGroupByProperties(ast *eval.EvalAST) []interface{} {
 	return []interface{}{}
 }
 
-// createQuery is the debug version of createQueryWasm
+// createQuery is the debug version of createQueryGopherJS
 func createQuery(reqData QueryRequest) map[string]interface{} {
 	// Parse time range
 	from, err := time.Parse(time.RFC3339, reqData.TimeRange.From)

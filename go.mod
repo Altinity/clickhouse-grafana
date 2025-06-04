@@ -5,6 +5,7 @@ go 1.24
 require (
 	github.com/andybalholm/brotli v1.1.1
 	github.com/dlclark/regexp2 v1.11.5
+	github.com/gopherjs/gopherjs v0.0.0-20181103185306-d547d1d9531e
 	github.com/grafana/grafana-plugin-sdk-go v0.274.0
 	github.com/klauspost/compress v1.18.0
 	github.com/stretchr/testify v1.10.0

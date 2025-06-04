@@ -19,7 +19,7 @@
     "build:test:frontend": "webpack -c ./webpack.config.instrumented.ts --env test",
     "build:frontend": "webpack -c ./.config/webpack/webpack.config.ts --env production",
     "build:backend": "docker compose run --rm backend_builder && chmod +rx ./dist",
-    "build:gopherjs": "gopherjs build -o ./src/datasource/backend_gopher.js ./pkg/backend_gopherjs.go && sed -i '1s/^\"use strict\";//' ./src/datasource/backend_gopher.js"
+    "build:gopherjs": "gopherjs build -o ./src/datasource/backend_gopher.js ./pkg/gopherjs/backend_gopherjs.go && sed -i '1s/^\"use strict\";//' ./src/datasource/backend_gopher.js"
   },
   "author": "Altinity",
   "license": "MIT",

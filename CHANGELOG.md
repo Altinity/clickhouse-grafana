@@ -1,3 +1,8 @@
+# 3.4.1 (2025-06-05)
+## Enhancements:
+* switch to gopherjs instead of wasm for process SQL with macros on browser
+
+
 # 3.4.0 (2025-05-03)
 ## Enhancements:
 * add query editor with syntax highlight and error handling to template variables UI, fix https://github.com/Altinity/clickhouse-grafana/issues/614

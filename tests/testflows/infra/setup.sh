@@ -14,7 +14,7 @@ sudo rm -rf /tmp/*
 echo "Install Python modules..."
 sudo apt-get clean
 sudo apt-get update
-sudo apt-get install -y python3.10-venv
+sudo apt-get install -y python3-venv
 
 echo "Create and activate Python virtual environment..."
 python3 -m venv venv

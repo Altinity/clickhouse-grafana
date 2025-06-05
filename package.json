@@ -1,6 +1,6 @@
 {
   "name": "altinity-clickhouse-grafana",
-  "version": "3.4.0",
+  "version": "3.4.1",
   "description": "Altinity grafana datasource for ClickHouse",
   "scripts": {
     "build": "npm run build:gopherjs && npm run build:frontend",

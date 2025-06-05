@@ -32,7 +32,7 @@ jobs:
         run: |
           go install -v github.com/gopherjs/gopherjs@v${GOPHERJS_VERSION}
           go env > $HOME/go_env && . $HOME/go_env && \
-          ln -sf "$GOPATH/bin/gopherjs" /usr/bin/gopherjs
+          sudo cp -l "$GOPATH/bin/gopherjs" /usr/bin/gopherjs
 
       - name: Install nodejs dependencies
         run: npm ci

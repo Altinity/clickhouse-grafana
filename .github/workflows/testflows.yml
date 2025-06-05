@@ -20,7 +20,8 @@ env:
 
 jobs:
   tests:
-    runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-system-ubuntu-22.04 ]
+    # runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-system-ubuntu-22.04 ]
+    runs-on: ubuntu-latest
 
     timeout-minutes: 60
     steps:

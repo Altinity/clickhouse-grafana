@@ -2,6 +2,7 @@ import _, { curry, each } from 'lodash';
 import SqlSeries from './sql-series/sql_series';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
+import './backend_gopher.js';
 
 import {
   AnnotationEvent,
@@ -22,7 +23,7 @@ import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
-import { ClickHouseWasm } from './wasm';
+import { ClickHouseGopherJS } from './wasm';
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -34,7 +35,7 @@ export class CHDataSource
   responseParser: ResponseParser;
   options: any;
   pluginId: string;
-  wasmModule: ClickHouseWasm;
+  gopherjsModule: ClickHouseGopherJS;
   url: string;
   basicAuth: any;
   withCredentials: any;
@@ -55,7 +56,7 @@ export class CHDataSource
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
     this.pluginId = instanceSettings.meta.id
-    this.wasmModule = ClickHouseWasm.getInstance(instanceSettings.meta.id);
+    this.gopherjsModule = ClickHouseGopherJS.getInstance();
     this.uid = instanceSettings.uid;
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;
@@ -200,7 +201,7 @@ export class CHDataSource
 
     const originalQuery = await this.createQuery(requestOptions, query);
     let select = await new Promise<any>((resolve) => {
-      this.wasmModule.getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select').then((result) => {
+      this.gopherjsModule.getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select').then((result) => {
         if (result && result.properties) {
           return resolve(result.properties);
         }
@@ -210,7 +211,7 @@ export class CHDataSource
     });
 
     let where = await new Promise<any>((resolve) => {
-      this.wasmModule.getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'where').then((result) => {
+      this.gopherjsModule.getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'where').then((result) => {
         if (result && result.properties) {
           return resolve(result.properties);
         }
@@ -690,7 +691,7 @@ export class CHDataSource
       let from = convertTimestamp(options.range.from);
       let to = convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = await this.wasmModule.replaceTimeFilters(interpolatedQuery, options.range, options.dateTimeType);
+      interpolatedQuery = await this.gopherjsModule.replaceTimeFilters(interpolatedQuery, options.range, options.dateTimeType);
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 
@@ -781,14 +782,14 @@ export class CHDataSource
           to: options.range.to.toISOString(), // Convert to Unix timestamp
         },
       };
-     const createQueryResult = await this.wasmModule.createQuery(queryData);
+     const createQueryResult = await this.gopherjsModule.createQuery(queryData);
       let { sql, error } = createQueryResult
 
       if (error) {
         throw new Error(error);
       }
 
-      let query = await this.wasmModule.applyAdhocFilters(sql || queryData.query, adhocFilters, target);
+      let query = await this.gopherjsModule.applyAdhocFilters(sql || queryData.query, adhocFilters, target);
 
       query = this.templateSrv.replace(
         conditionalTest(query, this.templateSrv),
@@ -816,7 +817,7 @@ export class CHDataSource
         interpolateQueryExpr
       );
       
-      const { properties } = await this.wasmModule.getAstProperty(interpolatedQuery, 'group by')
+      const { properties } = await this.gopherjsModule.getAstProperty(interpolatedQuery, 'group by')
 
       return { stmt: interpolatedQuery, keys: properties };
     } catch (error) {

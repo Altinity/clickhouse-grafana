@@ -93,6 +93,95 @@ type GetAstPropertyResponse struct {
 	Error      string        `json:"error,omitempty"`
 }
 
+// Batched request/response structures for optimization
+type ProcessQueryBatchRequest struct {
+	// Query creation fields
+	RefId                  string `json:"refId"`
+	RuleUid                string `json:"ruleUid"`
+	RawQuery               bool   `json:"rawQuery"`
+	Query                  string `json:"query"`
+	DateTimeColDataType    string `json:"dateTimeColDataType"`
+	DateColDataType        string `json:"dateColDataType"`
+	DateTimeType           string `json:"dateTimeType"`
+	Extrapolate            bool   `json:"extrapolate"`
+	SkipComments           bool   `json:"skip_comments"`
+	AddMetadata            bool   `json:"add_metadata"`
+	Format                 string `json:"format"`
+	Round                  string `json:"round"`
+	IntervalFactor         int    `json:"intervalFactor"`
+	Interval               string `json:"interval"`
+	Database               string `json:"database"`
+	Table                  string `json:"table"`
+	MaxDataPoints          int64  `json:"maxDataPoints"`
+	FrontendDatasource     bool   `json:"frontendDatasource"`
+	UseWindowFuncForMacros bool   `json:"useWindowFuncForMacros"`
+	TimeRange              struct {
+		From string `json:"from"`
+		To   string `json:"to"`
+	} `json:"timeRange"`
+	
+	// Adhoc filter fields
+	AdhocFilters []AdhocFilter `json:"adhocFilters"`
+	Target       Target        `json:"target"`
+	
+	// Properties to extract
+	ExtractProperties []string `json:"extractProperties"`
+}
+
+type ProcessQueryBatchResponse struct {
+	SQL        string                  `json:"sql"`
+	Keys       []interface{}           `json:"keys"`
+	Properties map[string][]interface{} `json:"properties"`
+	Error      string                  `json:"error,omitempty"`
+}
+
+type GetMultipleAstPropertiesRequest struct {
+	Query      string   `json:"query"`
+	Properties []string `json:"properties"`
+}
+
+type GetMultipleAstPropertiesResponse struct {
+	Properties map[string][]interface{} `json:"properties"`
+	Error      string                   `json:"error,omitempty"`
+}
+
+// Safer batched request/response for createQuery + applyAdhocFilters only
+type CreateQueryWithAdhocRequest struct {
+	// Query creation fields
+	RefId                  string `json:"refId"`
+	RuleUid                string `json:"ruleUid"`
+	RawQuery               bool   `json:"rawQuery"`
+	Query                  string `json:"query"`
+	DateTimeColDataType    string `json:"dateTimeColDataType"`
+	DateColDataType        string `json:"dateColDataType"`
+	DateTimeType           string `json:"dateTimeType"`
+	Extrapolate            bool   `json:"extrapolate"`
+	SkipComments           bool   `json:"skip_comments"`
+	AddMetadata            bool   `json:"add_metadata"`
+	Format                 string `json:"format"`
+	Round                  string `json:"round"`
+	IntervalFactor         int    `json:"intervalFactor"`
+	Interval               string `json:"interval"`
+	Database               string `json:"database"`
+	Table                  string `json:"table"`
+	MaxDataPoints          int64  `json:"maxDataPoints"`
+	FrontendDatasource     bool   `json:"frontendDatasource"`
+	UseWindowFuncForMacros bool   `json:"useWindowFuncForMacros"`
+	TimeRange              struct {
+		From string `json:"from"`
+		To   string `json:"to"`
+	} `json:"timeRange"`
+	
+	// Adhoc filter fields
+	AdhocFilters []AdhocFilter `json:"adhocFilters"`
+	Target       Target        `json:"target"`
+}
+
+type CreateQueryWithAdhocResponse struct {
+	SQL   string `json:"sql"`
+	Error string `json:"error,omitempty"`
+}
+
 // Helper function to parse targets
 func parseTargets(from string, defaultDatabase string, defaultTable string) (string, string) {
 	if len(from) == 0 {
@@ -531,6 +620,549 @@ func (ds *ClickHouseDatasource) handleGetAstProperty(ctx context.Context, req *b
 
 	// Return the result
 	response := GetAstPropertyResponse{Properties: properties}
+	body, _ := json.Marshal(response)
+	return sender.Send(&backend.CallResourceResponse{
+		Status: http.StatusOK,
+		Headers: map[string][]string{
+			"Content-Type": {"application/json"},
+		},
+		Body: body,
+	})
+}
+
+// handleProcessQueryBatch combines createQuery + applyAdhocFilters + property extraction for optimal performance
+func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
+	var request ProcessQueryBatchRequest
+	if err := json.Unmarshal(req.Body, &request); err != nil {
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusBadRequest,
+			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
+		})
+	}
+
+	// Step 1: Create Query (same as handleCreateQuery)
+	// Parse time range
+	from, err := time.Parse(time.RFC3339, request.TimeRange.From)
+	if err != nil {
+		response := ProcessQueryBatchResponse{Error: "Invalid `$from` time"}
+		body, _ := json.Marshal(response)
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusBadRequest,
+			Body:   body,
+		})
+	}
+
+	to, err := time.Parse(time.RFC3339, request.TimeRange.To)
+	if err != nil {
+		response := ProcessQueryBatchResponse{Error: "Invalid `$to` time"}
+		body, _ := json.Marshal(response)
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusBadRequest,
+			Body:   body,
+		})
+	}
+
+	// Create eval.EvalQuery
+	evalQ := eval.EvalQuery{
+		RefId:                  request.RefId,
+		RuleUid:                request.RuleUid,
+		RawQuery:               request.RawQuery,
+		Query:                  request.Query,
+		DateTimeCol:            request.DateTimeColDataType,
+		DateCol:                request.DateColDataType,
+		DateTimeType:           request.DateTimeType,
+		Extrapolate:            request.Extrapolate,
+		SkipComments:           request.SkipComments,
+		AddMetadata:            request.AddMetadata,
+		Format:                 request.Format,
+		Round:                  request.Round,
+		IntervalFactor:         request.IntervalFactor,
+		Interval:               request.Interval,
+		Database:               request.Database,
+		Table:                  request.Table,
+		MaxDataPoints:          request.MaxDataPoints,
+		From:                   from,
+		To:                     to,
+		FrontendDatasource:     request.FrontendDatasource,
+		UseWindowFuncForMacros: request.UseWindowFuncForMacros,
+	}
+
+	// Apply macros and get AST
+	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
+	if err != nil {
+		response := ProcessQueryBatchResponse{Error: fmt.Sprintf("Failed to apply macros: %v", err)}
+		body, _ := json.Marshal(response)
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusInternalServerError,
+			Body:   body,
+		})
+	}
+
+	scanner := eval.NewScanner(sql)
+	ast, err := scanner.ToAST()
+	if err != nil {
+		response := ProcessQueryBatchResponse{Error: fmt.Sprintf("Failed to parse query: %v", err)}
+		body, _ := json.Marshal(response)
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusInternalServerError,
+			Body:   body,
+		})
+	}
+
+	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
+	adhocFilters := request.AdhocFilters
+	target := request.Target
+	
+	if len(adhocFilters) > 0 {
+		adhocConditions := make([]string, 0)
+		topQueryAst := ast
+
+		// Navigate to the deepest FROM clause
+		for ast.HasOwnProperty("from") && ast.Obj["from"].(*eval.EvalAST).Arr == nil {
+			nextAst, ok := ast.Obj["from"].(*eval.EvalAST)
+			if !ok {
+				break
+			}
+			ast = nextAst
+		}
+
+		// Initialize WHERE clause if it doesn't exist
+		if !ast.HasOwnProperty("where") {
+			ast.Obj["where"] = &eval.EvalAST{
+				Obj: make(map[string]interface{}),
+				Arr: make([]interface{}, 0),
+			}
+		}
+
+		// Get target database and table
+		targetDatabase, targetTable := parseTargets(ast.Obj["from"].(*eval.EvalAST).Arr[0].(string), target.Database, target.Table)
+		if targetDatabase == "" && targetTable == "" {
+			response := ProcessQueryBatchResponse{Error: "FROM expression can't be parsed"}
+			body, _ := json.Marshal(response)
+			return sender.Send(&backend.CallResourceResponse{
+				Status: http.StatusInternalServerError,
+				Body:   body,
+			})
+		}
+
+		// Process each adhoc filter
+		for _, filter := range adhocFilters {
+			var parts []string
+			if strings.Contains(filter.Key, ".") {
+				parts = strings.Split(filter.Key, ".")
+			} else {
+				parts = []string{targetDatabase, targetTable, filter.Key}
+			}
+
+			// Add missing parts
+			if len(parts) == 1 {
+				parts = append([]string{targetTable}, parts...)
+			}
+			if len(parts) == 2 {
+				parts = append([]string{targetTable}, parts...)
+			}
+			if len(parts) < 3 {
+				continue
+			}
+
+			if targetDatabase != parts[0] || targetTable != parts[1] {
+				continue
+			}
+
+			// Convert operator
+			operator := filter.Operator
+			switch operator {
+			case "=~":
+				operator = "LIKE"
+			case "!~":
+				operator = "NOT LIKE"
+			}
+
+			// Format value with consistent quoting
+			var value string
+			switch v := filter.Value.(type) {
+			case float64:
+				value = fmt.Sprintf("%g", v)
+			case string:
+				// Don't quote if it's already a number or contains special SQL syntax
+				if regexp.MustCompile(`^\s*\d+(\.\d+)?\s*$`).MatchString(v) ||
+					strings.Contains(v, "'") ||
+					strings.Contains(v, ", ") {
+					value = v
+				} else {
+					// Escape single quotes in string values
+					escaped := strings.ReplaceAll(v, "'", "''")
+					value = fmt.Sprintf("'%s'", escaped)
+				}
+			default:
+				// For any other type, convert to string and escape quotes
+				str := fmt.Sprintf("%v", v)
+				escaped := strings.ReplaceAll(str, "'", "''")
+				value = fmt.Sprintf("'%s'", escaped)
+			}
+
+			// Build the condition with proper spacing
+			condition := fmt.Sprintf("%s %s %s", parts[2], operator, value)
+			adhocConditions = append(adhocConditions, condition)
+		}
+
+		// Handle conditions differently based on $adhoc presence
+		if !strings.Contains(sql, "$adhoc") {
+			// If no $adhoc, modify WHERE clause through AST
+			whereAst := ast.Obj["where"].(*eval.EvalAST)
+			if len(adhocConditions) > 0 {
+				combinedCondition := strings.Join(adhocConditions, " AND ")
+				if len(whereAst.Arr) > 0 {
+					// If WHERE has existing conditions, add with AND
+					whereAst.Arr = append(whereAst.Arr, "AND", fmt.Sprintf("(%s)", combinedCondition))
+				} else {
+					// If WHERE is empty, add without AND
+					whereAst.Arr = append(whereAst.Arr, combinedCondition)
+				}
+			}
+			sql = eval.PrintAST(topQueryAst, " ")
+		} else {
+			// Always handle $adhoc replacement, even for empty filters
+			renderedCondition := "1"
+			if len(adhocConditions) > 0 {
+				renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
+			}
+			sql = strings.ReplaceAll(sql, "$adhoc", renderedCondition)
+		}
+	}
+
+	// Step 3: Extract Properties (combined approach)
+	properties := make(map[string][]interface{})
+	
+	// Always extract group by for backward compatibility (keys field)
+	groupByProperties := findGroupByProperties(topQueryAst)
+	properties["group by"] = groupByProperties
+	
+	// Extract additional requested properties
+	for _, propName := range request.ExtractProperties {
+		if propName == "group by" {
+			continue // Already handled above
+		}
+		
+		if propName == "select" || propName == "where" {
+			// Re-parse the final SQL for these properties since they might have been modified
+			finalScanner := eval.NewScanner(sql)
+			finalAst, err := finalScanner.ToAST()
+			if err == nil {
+				if prop, exists := finalAst.Obj[propName]; exists {
+					switch v := prop.(type) {
+					case *eval.EvalAST:
+						propList := make([]interface{}, len(v.Arr))
+						copy(propList, v.Arr)
+						properties[propName] = propList
+					case []interface{}:
+						properties[propName] = v
+					default:
+						properties[propName] = []interface{}{v}
+					}
+				} else {
+					properties[propName] = []interface{}{}
+				}
+			}
+		} else {
+			// For other properties, use the original AST
+			if prop, exists := ast.Obj[propName]; exists {
+				switch v := prop.(type) {
+				case *eval.EvalAST:
+					propList := make([]interface{}, len(v.Arr))
+					copy(propList, v.Arr)
+					properties[propName] = propList
+				case []interface{}:
+					properties[propName] = v
+				default:
+					properties[propName] = []interface{}{v}
+				}
+			} else {
+				properties[propName] = []interface{}{}
+			}
+		}
+	}
+
+	// Return the batched result
+	response := ProcessQueryBatchResponse{
+		SQL:        sql,
+		Keys:       groupByProperties, // Maintain backward compatibility
+		Properties: properties,
+	}
+	body, _ := json.Marshal(response)
+	return sender.Send(&backend.CallResourceResponse{
+		Status: http.StatusOK,
+		Headers: map[string][]string{
+			"Content-Type": {"application/json"},
+		},
+		Body: body,
+	})
+}
+
+// handleGetMultipleAstProperties extracts multiple AST properties in one call for efficiency
+func (ds *ClickHouseDatasource) handleGetMultipleAstProperties(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
+	var request GetMultipleAstPropertiesRequest
+	if err := json.Unmarshal(req.Body, &request); err != nil {
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusBadRequest,
+			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
+		})
+	}
+
+	// Create scanner and parse AST
+	scanner := eval.NewScanner(request.Query)
+	ast, err := scanner.ToAST()
+	if err != nil {
+		response := GetMultipleAstPropertiesResponse{Error: fmt.Sprintf("Failed to parse query: %v", err)}
+		body, _ := json.Marshal(response)
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusInternalServerError,
+			Body:   body,
+		})
+	}
+
+	// Extract all requested properties
+	properties := make(map[string][]interface{})
+	
+	for _, propName := range request.Properties {
+		if propName == "group by" {
+			// Use the recursive function for group by
+			properties[propName] = findGroupByProperties(ast)
+		} else {
+			// Standard extraction for other properties
+			if prop, exists := ast.Obj[propName]; exists {
+				switch v := prop.(type) {
+				case *eval.EvalAST:
+					propList := make([]interface{}, len(v.Arr))
+					copy(propList, v.Arr)
+					properties[propName] = propList
+				case []interface{}:
+					properties[propName] = v
+				case map[string]interface{}:
+					properties[propName] = []interface{}{v}
+				default:
+					properties[propName] = []interface{}{v}
+				}
+			} else {
+				properties[propName] = []interface{}{}
+			}
+		}
+	}
+
+	// Return the result
+	response := GetMultipleAstPropertiesResponse{Properties: properties}
+	body, _ := json.Marshal(response)
+	return sender.Send(&backend.CallResourceResponse{
+		Status: http.StatusOK,
+		Headers: map[string][]string{
+			"Content-Type": {"application/json"},
+		},
+		Body: body,
+	})
+}
+
+// handleCreateQueryWithAdhoc safely batches createQuery + applyAdhocFilters without property extraction
+func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
+	var request CreateQueryWithAdhocRequest
+	if err := json.Unmarshal(req.Body, &request); err != nil {
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusBadRequest,
+			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
+		})
+	}
+
+	// Step 1: Create Query (same as handleCreateQuery)
+	// Parse time range
+	from, err := time.Parse(time.RFC3339, request.TimeRange.From)
+	if err != nil {
+		response := CreateQueryWithAdhocResponse{Error: "Invalid `$from` time"}
+		body, _ := json.Marshal(response)
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusBadRequest,
+			Body:   body,
+		})
+	}
+
+	to, err := time.Parse(time.RFC3339, request.TimeRange.To)
+	if err != nil {
+		response := CreateQueryWithAdhocResponse{Error: "Invalid `$to` time"}
+		body, _ := json.Marshal(response)
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusBadRequest,
+			Body:   body,
+		})
+	}
+
+	// Create eval.EvalQuery
+	evalQ := eval.EvalQuery{
+		RefId:                  request.RefId,
+		RuleUid:                request.RuleUid,
+		RawQuery:               request.RawQuery,
+		Query:                  request.Query,
+		DateTimeCol:            request.DateTimeColDataType,
+		DateCol:                request.DateColDataType,
+		DateTimeType:           request.DateTimeType,
+		Extrapolate:            request.Extrapolate,
+		SkipComments:           request.SkipComments,
+		AddMetadata:            request.AddMetadata,
+		Format:                 request.Format,
+		Round:                  request.Round,
+		IntervalFactor:         request.IntervalFactor,
+		Interval:               request.Interval,
+		Database:               request.Database,
+		Table:                  request.Table,
+		MaxDataPoints:          request.MaxDataPoints,
+		From:                   from,
+		To:                     to,
+		FrontendDatasource:     request.FrontendDatasource,
+		UseWindowFuncForMacros: request.UseWindowFuncForMacros,
+	}
+
+	// Apply macros and get AST
+	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
+	if err != nil {
+		response := CreateQueryWithAdhocResponse{Error: fmt.Sprintf("Failed to apply macros: %v", err)}
+		body, _ := json.Marshal(response)
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusInternalServerError,
+			Body:   body,
+		})
+	}
+
+	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
+	adhocFilters := request.AdhocFilters
+	target := request.Target
+	
+	if len(adhocFilters) > 0 {
+		adhocConditions := make([]string, 0)
+		scanner := eval.NewScanner(sql)
+		ast, err := scanner.ToAST()
+		topQueryAst := ast
+		if err != nil {
+			response := CreateQueryWithAdhocResponse{Error: fmt.Sprintf("Failed to parse query: %v", err)}
+			body, _ := json.Marshal(response)
+			return sender.Send(&backend.CallResourceResponse{
+				Status: http.StatusInternalServerError,
+				Body:   body,
+			})
+		}
+
+		// Navigate to the deepest FROM clause
+		for ast.HasOwnProperty("from") && ast.Obj["from"].(*eval.EvalAST).Arr == nil {
+			nextAst, ok := ast.Obj["from"].(*eval.EvalAST)
+			if !ok {
+				break
+			}
+			ast = nextAst
+		}
+
+		// Initialize WHERE clause if it doesn't exist
+		if !ast.HasOwnProperty("where") {
+			ast.Obj["where"] = &eval.EvalAST{
+				Obj: make(map[string]interface{}),
+				Arr: make([]interface{}, 0),
+			}
+		}
+
+		// Get target database and table
+		targetDatabase, targetTable := parseTargets(ast.Obj["from"].(*eval.EvalAST).Arr[0].(string), target.Database, target.Table)
+		if targetDatabase == "" && targetTable == "" {
+			response := CreateQueryWithAdhocResponse{Error: "FROM expression can't be parsed"}
+			body, _ := json.Marshal(response)
+			return sender.Send(&backend.CallResourceResponse{
+				Status: http.StatusInternalServerError,
+				Body:   body,
+			})
+		}
+
+		// Process each adhoc filter
+		for _, filter := range adhocFilters {
+			var parts []string
+			if strings.Contains(filter.Key, ".") {
+				parts = strings.Split(filter.Key, ".")
+			} else {
+				parts = []string{targetDatabase, targetTable, filter.Key}
+			}
+
+			// Add missing parts
+			if len(parts) == 1 {
+				parts = append([]string{targetTable}, parts...)
+			}
+			if len(parts) == 2 {
+				parts = append([]string{targetTable}, parts...)
+			}
+			if len(parts) < 3 {
+				continue
+			}
+
+			if targetDatabase != parts[0] || targetTable != parts[1] {
+				continue
+			}
+
+			// Convert operator
+			operator := filter.Operator
+			switch operator {
+			case "=~":
+				operator = "LIKE"
+			case "!~":
+				operator = "NOT LIKE"
+			}
+
+			// Format value with consistent quoting
+			var value string
+			switch v := filter.Value.(type) {
+			case float64:
+				value = fmt.Sprintf("%g", v)
+			case string:
+				// Don't quote if it's already a number or contains special SQL syntax
+				if regexp.MustCompile(`^\s*\d+(\.\d+)?\s*$`).MatchString(v) ||
+					strings.Contains(v, "'") ||
+					strings.Contains(v, ", ") {
+					value = v
+				} else {
+					// Escape single quotes in string values
+					escaped := strings.ReplaceAll(v, "'", "''")
+					value = fmt.Sprintf("'%s'", escaped)
+				}
+			default:
+				// For any other type, convert to string and escape quotes
+				str := fmt.Sprintf("%v", v)
+				escaped := strings.ReplaceAll(str, "'", "''")
+				value = fmt.Sprintf("'%s'", escaped)
+			}
+
+			// Build the condition with proper spacing
+			condition := fmt.Sprintf("%s %s %s", parts[2], operator, value)
+			adhocConditions = append(adhocConditions, condition)
+		}
+
+		// Handle conditions differently based on $adhoc presence
+		if !strings.Contains(sql, "$adhoc") {
+			// If no $adhoc, modify WHERE clause through AST
+			whereAst := ast.Obj["where"].(*eval.EvalAST)
+			if len(adhocConditions) > 0 {
+				combinedCondition := strings.Join(adhocConditions, " AND ")
+				if len(whereAst.Arr) > 0 {
+					// If WHERE has existing conditions, add with AND
+					whereAst.Arr = append(whereAst.Arr, "AND", fmt.Sprintf("(%s)", combinedCondition))
+				} else {
+					// If WHERE is empty, add without AND
+					whereAst.Arr = append(whereAst.Arr, combinedCondition)
+				}
+			}
+			sql = eval.PrintAST(topQueryAst, " ")
+		} else {
+			// Always handle $adhoc replacement, even for empty filters
+			renderedCondition := "1"
+			if len(adhocConditions) > 0 {
+				renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
+			}
+			sql = strings.ReplaceAll(sql, "$adhoc", renderedCondition)
+		}
+	}
+
+	// Return the result (no property extraction)
+	response := CreateQueryWithAdhocResponse{SQL: sql}
 	body, _ := json.Marshal(response)
 	return sender.Send(&backend.CallResourceResponse{
 		Status: http.StatusOK,

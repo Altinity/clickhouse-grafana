@@ -72,6 +72,42 @@ export class ClickHouseResourceClient {
     });
     return response.sql;
   }
+
+  // OPTIMIZED BATCHED METHODS
+
+  // SAFER: Only batches createQuery + applyAdhocFilters (no property extraction)
+  async createQueryWithAdhoc(queryData: any, adhocFilters: any[]): Promise<{
+    sql: string;
+    error?: string;
+  }> {
+    return this.callResource('createQueryWithAdhoc', {
+      ...queryData,
+      adhocFilters: adhocFilters || []
+    });
+  }
+
+  // AGGRESSIVE: Full batching including property extraction (use with caution due to template variable timing)
+  async processQueryBatch(queryData: any, adhocFilters: any[], extractProperties: string[] = []): Promise<{
+    sql: string;
+    keys: any[];
+    properties: { [key: string]: any[] };
+    error?: string;
+  }> {
+    return this.callResource('processQueryBatch', {
+      ...queryData,
+      adhocFilters: adhocFilters || [],
+      extractProperties: extractProperties || []
+    });
+  }
+
+  async getMultipleAstProperties(query: string, properties: string[]): Promise<{
+    properties: { [property: string]: any[] };
+  }> {
+    return this.callResource('getMultipleAstProperties', {
+      query,
+      properties
+    });
+  }
 }
 
 export default ClickHouseResourceClient;

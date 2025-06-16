@@ -172,6 +172,12 @@ func (ds *ClickHouseDatasource) CallResource(ctx context.Context, req *backend.C
 		return ds.handleGetAstProperty(ctx, req, sender)
 	case "replaceTimeFilters":
 		return ds.handleReplaceTimeFilters(ctx, req, sender)
+	case "processQueryBatch":
+		return ds.handleProcessQueryBatch(ctx, req, sender)
+	case "createQueryWithAdhoc":
+		return ds.handleCreateQueryWithAdhoc(ctx, req, sender)
+	case "getMultipleAstProperties":
+		return ds.handleGetMultipleAstProperties(ctx, req, sender)
 	default:
 		return sender.Send(&backend.CallResourceResponse{
 			Status: http.StatusNotFound,

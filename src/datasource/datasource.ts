@@ -201,25 +201,15 @@ export class CHDataSource
     const requestOptions = { ...options, range: this.options.range };
 
     const originalQuery = await this.createQuery(requestOptions, query);
-    let select = await new Promise<any>((resolve) => {
-      this.resourceClient.getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select').then((result) => {
-        if (result && result.properties) {
-          return resolve(result.properties);
-        }
-
-        resolve([]);
-      });
-    });
-
-    let where = await new Promise<any>((resolve) => {
-      this.resourceClient.getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'where').then((result) => {
-        if (result && result.properties) {
-          return resolve(result.properties);
-        }
-
-        resolve([]);
-      });
-    });
+    
+    // OPTIMIZED: Use batched AST property extraction to reduce 2 API calls to 1 call
+    const astResult = await this.resourceClient.getMultipleAstProperties(
+      originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '),
+      ['select', 'where']
+    );
+    
+    const select = astResult.properties.select || [];
+    const where = astResult.properties.where || [];
 
     const generateQueryForTraceID = (traceId, select) => {
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`;
@@ -783,15 +773,17 @@ export class CHDataSource
           to: options.range.to.toISOString(), // Convert to Unix timestamp
         },
       };
-     const createQueryResult = await this.resourceClient.createQuery(queryData);
-      let { sql, error } = createQueryResult
 
-      if (error) {
-        throw new Error(error);
+      // SAFE OPTIMIZATION: Batch createQuery + applyAdhocFilters (reduces 3->2 calls)
+      const queryResult = await this.resourceClient.createQueryWithAdhoc(queryData, adhocFilters);
+
+      if (queryResult.error) {
+        throw new Error(queryResult.error);
       }
 
-      let query = await this.resourceClient.applyAdhocFilters(sql || queryData.query, adhocFilters, target);
+      let query = queryResult.sql;
 
+      // Apply template variable replacements (these don't require backend processing)
       query = this.templateSrv.replace(
         conditionalTest(query, this.templateSrv),
         options.scopedVars,
@@ -817,8 +809,9 @@ export class CHDataSource
         scopedVars,
         interpolateQueryExpr
       );
-      
-      const { properties } = await this.resourceClient.getAstProperty(interpolatedQuery, 'group by')
+
+      // Extract GROUP BY properties from the FINAL query (after template replacement)
+      const { properties } = await this.resourceClient.getAstProperty(interpolatedQuery, 'group by');
 
       return { stmt: interpolatedQuery, keys: properties };
     } catch (error) {

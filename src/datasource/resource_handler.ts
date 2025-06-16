@@ -2,7 +2,7 @@ import { BackendSrv, getBackendSrv } from '@grafana/runtime';
 
 export class ClickHouseGopherJS {
   private static instance: ClickHouseGopherJS;
-  private datasourceUid: string = '';
+  private datasourceUid = '';
   private backendSrv: BackendSrv;
 
   private constructor() {

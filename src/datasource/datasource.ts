@@ -22,7 +22,7 @@ import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
-import { ClickHouseGopherJS } from './gopher_module';
+import { ClickHouseGopherJS } from './resource_handler';
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>

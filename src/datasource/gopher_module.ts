@@ -1,16 +1,12 @@
-declare global {
-  export interface Window {
-    createQuery: (data: any) => Promise<any>;
-    applyAdhocFilters: (data: any) => Promise<any>;
-    getAstProperty: (query: string, propertyName: string) => Promise<any>;
-    replaceTimeFilters: (data: any) => Promise<any>;
-  }
-}
+import { BackendSrv, getBackendSrv } from '@grafana/runtime';
 
 export class ClickHouseGopherJS {
   private static instance: ClickHouseGopherJS;
+  private datasourceUid: string = '';
+  private backendSrv: BackendSrv;
 
   private constructor() {
+    this.backendSrv = getBackendSrv();
   }
 
   static getInstance(): ClickHouseGopherJS {
@@ -20,34 +16,46 @@ export class ClickHouseGopherJS {
     return ClickHouseGopherJS.instance;
   }
 
-  private async ensureInitialized(): Promise<void> {
-    // No-op for GopherJS version
-    return;
+  setDatasourceUid(uid: string): void {
+    this.datasourceUid = uid;
+  }
+
+  private async callResource(path: string, data: any): Promise<any> {
+    if (!this.datasourceUid) {
+      throw new Error('Datasource UID not set. Call setDatasourceUid() first.');
+    }
+
+    const response = await this.backendSrv.fetch({
+      url: `/api/datasources/uid/${this.datasourceUid}/resources/${path}`,
+      method: 'POST',
+      data: data,
+    });
+
+    return response.data;
   }
 
   async createQuery(queryData: any): Promise<any> {
-    await this.ensureInitialized();
-    return window.createQuery(queryData);
+    return this.callResource('createQuery', queryData);
   }
 
   async applyAdhocFilters(query: string, adhocFilters: any, target: any): Promise<string> {
-    await this.ensureInitialized();
-    const res = await window.applyAdhocFilters({
+    const response = await this.callResource('applyAdhocFilters', {
       query,
       adhocFilters,
       target
     });
-    return res.query;
+    return response.query;
   }
 
   async getAstProperty(query: string, propertyName: string): Promise<any> {
-    await this.ensureInitialized();
-    return window.getAstProperty(query, propertyName);
+    return this.callResource('getAstProperty', {
+      query,
+      propertyName
+    });
   }
 
   async replaceTimeFilters(query: string, range: any, dateTimeType: string): Promise<string> {
-    await this.ensureInitialized();
-    const res = await window.replaceTimeFilters({
+    const response = await this.callResource('replaceTimeFilters', {
       query,
       timeRange: {
         from: range.from.toISOString(),
@@ -55,7 +63,7 @@ export class ClickHouseGopherJS {
       },
       dateTimeType
     });
-    return res.sql;
+    return response.sql;
   }
 }
 

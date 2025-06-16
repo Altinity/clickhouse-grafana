@@ -2,7 +2,6 @@ import _, { curry, each } from 'lodash';
 import SqlSeries from './sql-series/sql_series';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
-import './backend_gopher.js';
 
 import {
   AnnotationEvent,
@@ -58,6 +57,8 @@ export class CHDataSource
     this.pluginId = instanceSettings.meta.id
     this.gopherjsModule = ClickHouseGopherJS.getInstance();
     this.uid = instanceSettings.uid;
+    // Set the datasource UID for resource calls
+    this.gopherjsModule.setDatasourceUid(instanceSettings.uid);
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;
     this.withCredentials = instanceSettings.withCredentials;

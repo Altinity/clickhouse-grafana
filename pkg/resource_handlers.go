@@ -93,7 +93,7 @@ type GetAstPropertyResponse struct {
 	Error      string        `json:"error,omitempty"`
 }
 
-// Helper function to parse targets (from GopherJS implementation)
+// Helper function to parse targets
 func parseTargets(from string, defaultDatabase string, defaultTable string) (string, string) {
 	if len(from) == 0 {
 		return "", ""

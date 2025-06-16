@@ -1,7 +1,7 @@
 import { BackendSrv, getBackendSrv } from '@grafana/runtime';
 
-export class ClickHouseGopherJS {
-  private static instance: ClickHouseGopherJS;
+export class ClickHouseResourceClient {
+  private static instance: ClickHouseResourceClient;
   private datasourceUid = '';
   private backendSrv: BackendSrv;
 
@@ -9,11 +9,11 @@ export class ClickHouseGopherJS {
     this.backendSrv = getBackendSrv();
   }
 
-  static getInstance(): ClickHouseGopherJS {
-    if (!ClickHouseGopherJS.instance) {
-      ClickHouseGopherJS.instance = new ClickHouseGopherJS();
+  static getInstance(): ClickHouseResourceClient {
+    if (!ClickHouseResourceClient.instance) {
+      ClickHouseResourceClient.instance = new ClickHouseResourceClient();
     }
-    return ClickHouseGopherJS.instance;
+    return ClickHouseResourceClient.instance;
   }
 
   setDatasourceUid(uid: string): void {
@@ -74,4 +74,4 @@ export class ClickHouseGopherJS {
   }
 }
 
-export default ClickHouseGopherJS;
+export default ClickHouseResourceClient;

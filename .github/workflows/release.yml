@@ -12,8 +12,6 @@ jobs:
       # usage of GRAFANA_API_KEY is deprecated
       GRAFANA_API_KEY: ${{ secrets.GRAFANA_API_KEY }}
       GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
-      GOPHERJS_GOLANG_VERSION: 1.19
-      GOPHERJS_VERSION: 1.19.0-beta1
 
     steps:
       - uses: actions/checkout@v4
@@ -23,16 +21,6 @@ jobs:
           node-version: '22'
           cache: 'npm'
 
-      - name: Setup Gopherjs environment
-        uses: actions/setup-go@v5
-        with:
-          go-version: ${{ env.GOPHERJS_GOLANG_VERSION }}
-
-      - name: Setup Gopherjs
-        run: |
-          go install -v github.com/gopherjs/gopherjs@v${GOPHERJS_VERSION}
-          go env > $HOME/go_env && . $HOME/go_env && \
-          sudo cp -l "$GOPATH/bin/gopherjs" /usr/bin/gopherjs
 
       - name: Install nodejs dependencies
         run: npm ci

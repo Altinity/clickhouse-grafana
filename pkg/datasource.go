@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"net/http"
 	"github.com/altinity/clickhouse-grafana/pkg/eval"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
@@ -17,8 +18,9 @@ func GetDatasourceServeOpts() datasource.ServeOpts {
 	}
 
 	return datasource.ServeOpts{
-		QueryDataHandler:   ds,
-		CheckHealthHandler: ds,
+		QueryDataHandler:    ds,
+		CheckHealthHandler:  ds,
+		CallResourceHandler: ds,
 	}
 }
 
@@ -157,4 +159,29 @@ func (ds *ClickHouseDatasource) CheckHealth(
 		Status:  backend.HealthStatusOk,
 		Message: "OK",
 	}, nil
+}
+
+// CallResource handles resource calls from the frontend
+func (ds *ClickHouseDatasource) CallResource(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
+	switch req.Path {
+	case "createQuery":
+		return ds.handleCreateQuery(ctx, req, sender)
+	case "applyAdhocFilters":
+		return ds.handleApplyAdhocFilters(ctx, req, sender)
+	case "getAstProperty":
+		return ds.handleGetAstProperty(ctx, req, sender)
+	case "replaceTimeFilters":
+		return ds.handleReplaceTimeFilters(ctx, req, sender)
+	case "processQueryBatch":
+		return ds.handleProcessQueryBatch(ctx, req, sender)
+	case "createQueryWithAdhoc":
+		return ds.handleCreateQueryWithAdhoc(ctx, req, sender)
+	case "getMultipleAstProperties":
+		return ds.handleGetMultipleAstProperties(ctx, req, sender)
+	default:
+		return sender.Send(&backend.CallResourceResponse{
+			Status: http.StatusNotFound,
+			Body:   []byte(`{"error": "Resource not found"}`),
+		})
+	}
 }

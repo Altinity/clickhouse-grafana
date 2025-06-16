@@ -25,13 +25,20 @@ export class ClickHouseGopherJS {
       throw new Error('Datasource UID not set. Call setDatasourceUid() first.');
     }
 
-    const response = await this.backendSrv.fetch({
-      url: `/api/datasources/uid/${this.datasourceUid}/resources/${path}`,
-      method: 'POST',
-      data: data,
+    return new Promise((resolve, reject) => {
+      this.backendSrv.fetch({
+        url: `/api/datasources/uid/${this.datasourceUid}/resources/${path}`,
+        method: 'POST',
+        data: data,
+      }).subscribe(
+        (response) => {
+          resolve(response.data);
+        },
+        (error) => {
+          reject(error);
+        }
+      );
     });
-
-    return response.data;
   }
 
   async createQuery(queryData: any): Promise<any> {

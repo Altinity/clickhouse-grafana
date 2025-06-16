@@ -712,10 +712,10 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
 	adhocFilters := request.AdhocFilters
 	target := request.Target
+	topQueryAst := ast  // Store reference to original AST before navigation
 	
 	if len(adhocFilters) > 0 {
 		adhocConditions := make([]string, 0)
-		topQueryAst := ast
 
 		// Navigate to the deepest FROM clause
 		for ast.HasOwnProperty("from") && ast.Obj["from"].(*eval.EvalAST).Arr == nil {

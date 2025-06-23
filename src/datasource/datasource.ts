@@ -20,7 +20,7 @@ import { BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, Templ
 import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
-import { from, Observable } from 'rxjs';
+import { from } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
 import { ClickHouseResourceClient } from './resource_handler';
 
@@ -485,7 +485,7 @@ export class CHDataSource
   }
 
 
-  query(options: DataQueryRequest<CHQuery>): Observable<any> {
+  query(options: DataQueryRequest<CHQuery>): any {
     const queryProcessing = async () => {
       try {
         this.options = options;
@@ -497,10 +497,10 @@ export class CHDataSource
       }
     };
 
-    return from(queryProcessing());
+    return from(queryProcessing()) as any;
   }
 
-  queryVariables(options: DataQueryRequest<CHQuery>): Observable<any> {
+  queryVariables(options: DataQueryRequest<CHQuery>): any {
     const queryProcessing = async () => {
       this.options = options;
       const targets = options.targets.filter((target) => !target.hide && target?.query || typeof target === 'string');
@@ -603,7 +603,7 @@ export class CHDataSource
       });
     };
 
-    return from(queryProcessing());
+    return from(queryProcessing()) as any;
   }
 
   async createQuery(options: any, target: any) {

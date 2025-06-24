@@ -1,7 +1,10 @@
 # 3.4.2 (not released yet)
 ## Enhancements:
-* migrate from gopherjs to resource handlers for processing SQL with macros on browser
+* migrate from gopherjs to resource handlers for processing SQL with macros on backend
 
+# 3.4.1 (2025-06-05)
+## Enhancements:
+* switch to gopherjs instead of wasm for process SQL with macros on browser
 
 # 3.4.0 (2025-05-03)
 ## Enhancements:

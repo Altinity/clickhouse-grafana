@@ -1,7 +1,7 @@
 *.d.ts
 # outdated code
 v2/
-
+CLAUDE.md
 # Logs
 logs
 *.log

@@ -2,7 +2,6 @@ import _, { curry, each } from 'lodash';
 import SqlSeries from './sql-series/sql_series';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
-import './backend_gopher.js';
 
 import {
   AnnotationEvent,
@@ -21,9 +20,9 @@ import { BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, Templ
 import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
-import { from, Observable } from 'rxjs';
+import { from } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
-import { ClickHouseGopherJS } from './gopher_module';
+import { ClickHouseResourceClient } from './resource_handler';
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -35,7 +34,7 @@ export class CHDataSource
   responseParser: ResponseParser;
   options: any;
   pluginId: string;
-  gopherjsModule: ClickHouseGopherJS;
+  resourceClient: ClickHouseResourceClient;
   url: string;
   basicAuth: any;
   withCredentials: any;
@@ -56,8 +55,10 @@ export class CHDataSource
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
     this.pluginId = instanceSettings.meta.id
-    this.gopherjsModule = ClickHouseGopherJS.getInstance();
+    this.resourceClient = ClickHouseResourceClient.getInstance();
     this.uid = instanceSettings.uid;
+    // Set the datasource UID for resource calls
+    this.resourceClient.setDatasourceUid(instanceSettings.uid);
     this.url = instanceSettings.url!;
     this.basicAuth = instanceSettings.basicAuth;
     this.withCredentials = instanceSettings.withCredentials;
@@ -200,25 +201,15 @@ export class CHDataSource
     const requestOptions = { ...options, range: this.options.range };
 
     const originalQuery = await this.createQuery(requestOptions, query);
-    let select = await new Promise<any>((resolve) => {
-      this.gopherjsModule.getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'select').then((result) => {
-        if (result && result.properties) {
-          return resolve(result.properties);
-        }
-
-        resolve([]);
-      });
-    });
-
-    let where = await new Promise<any>((resolve) => {
-      this.gopherjsModule.getAstProperty(originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '), 'where').then((result) => {
-        if (result && result.properties) {
-          return resolve(result.properties);
-        }
-
-        resolve([]);
-      });
-    });
+    
+    // OPTIMIZED: Use batched AST property extraction to reduce 2 API calls to 1 call
+    const astResult = await this.resourceClient.getMultipleAstProperties(
+      originalQuery.stmt.replace(/\r\n|\r|\n/g, ' '),
+      ['select', 'where']
+    );
+    
+    const select = astResult.properties.select || [];
+    const where = astResult.properties.where || [];
 
     const generateQueryForTraceID = (traceId, select) => {
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`;
@@ -494,7 +485,7 @@ export class CHDataSource
   }
 
 
-  query(options: DataQueryRequest<CHQuery>): Observable<any> {
+  query(options: DataQueryRequest<CHQuery>): any {
     const queryProcessing = async () => {
       try {
         this.options = options;
@@ -506,10 +497,10 @@ export class CHDataSource
       }
     };
 
-    return from(queryProcessing());
+    return from(queryProcessing()) as any;
   }
 
-  queryVariables(options: DataQueryRequest<CHQuery>): Observable<any> {
+  queryVariables(options: DataQueryRequest<CHQuery>): any {
     const queryProcessing = async () => {
       this.options = options;
       const targets = options.targets.filter((target) => !target.hide && target?.query || typeof target === 'string');
@@ -612,7 +603,7 @@ export class CHDataSource
       });
     };
 
-    return from(queryProcessing());
+    return from(queryProcessing()) as any;
   }
 
   async createQuery(options: any, target: any) {
@@ -691,7 +682,7 @@ export class CHDataSource
       let from = convertTimestamp(options.range.from);
       let to = convertTimestamp(options.range.to);
       interpolatedQuery = interpolatedQuery.replace(/\$to/g, to.toString()).replace(/\$from/g, from.toString());
-      interpolatedQuery = await this.gopherjsModule.replaceTimeFilters(interpolatedQuery, options.range, options.dateTimeType);
+      interpolatedQuery = await this.resourceClient.replaceTimeFilters(interpolatedQuery, options.range, options.dateTimeType);
       interpolatedQuery = interpolatedQuery.replace(/\r\n|\r|\n/g, ' ');
     }
 
@@ -782,15 +773,17 @@ export class CHDataSource
           to: options.range.to.toISOString(), // Convert to Unix timestamp
         },
       };
-     const createQueryResult = await this.gopherjsModule.createQuery(queryData);
-      let { sql, error } = createQueryResult
 
-      if (error) {
-        throw new Error(error);
+      // SAFE OPTIMIZATION: Batch createQuery + applyAdhocFilters (reduces 3->2 calls)
+      const queryResult = await this.resourceClient.createQueryWithAdhoc(queryData, adhocFilters);
+
+      if (queryResult.error) {
+        throw new Error(queryResult.error);
       }
 
-      let query = await this.gopherjsModule.applyAdhocFilters(sql || queryData.query, adhocFilters, target);
+      let query = queryResult.sql;
 
+      // Apply template variable replacements (these don't require backend processing)
       query = this.templateSrv.replace(
         conditionalTest(query, this.templateSrv),
         options.scopedVars,
@@ -816,8 +809,9 @@ export class CHDataSource
         scopedVars,
         interpolateQueryExpr
       );
-      
-      const { properties } = await this.gopherjsModule.getAstProperty(interpolatedQuery, 'group by')
+
+      // Extract GROUP BY properties from the FINAL query (after template replacement)
+      const { properties } = await this.resourceClient.getAstProperty(interpolatedQuery, 'group by');
 
       return { stmt: interpolatedQuery, keys: properties };
     } catch (error) {

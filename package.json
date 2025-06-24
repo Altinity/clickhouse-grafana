@@ -3,8 +3,8 @@
   "version": "3.4.1",
   "description": "Altinity grafana datasource for ClickHouse",
   "scripts": {
-    "build": "npm run build:gopherjs && npm run build:frontend",
-    "dev": "npm run build:gopherjs && webpack -w -c ./.config/webpack/webpack.config.ts --env development",
+    "build": "npm run build:frontend",
+    "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
     "test": "jest",
     "test:coverage": "jest --coverage",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
@@ -18,8 +18,7 @@
     "create_instrumented": "npx nyc instrument --source-map --nycrc-path .nycrc ./src ./instrumented",
     "build:test:frontend": "webpack -c ./webpack.config.instrumented.ts --env test",
     "build:frontend": "webpack -c ./.config/webpack/webpack.config.ts --env production",
-    "build:backend": "docker compose run --rm backend_builder && chmod +rx ./dist",
-    "build:gopherjs": "gopherjs build -o ./src/datasource/backend_gopher.js ./pkg/gopherjs/backend_gopherjs.go && sed -i '1s/^\"use strict\";//' ./src/datasource/backend_gopher.js"
+    "build:backend": "docker compose run --rm backend_builder && chmod +rx ./dist"
   },
   "author": "Altinity",
   "license": "MIT",
@@ -81,7 +80,7 @@
     "pako": "^2.1.0",
     "react": "18.3.0",
     "react-dom": "18.3.0",
-    "rxjs": "^7.8.1",
+    "rxjs": "^7.8.2",
     "tslib": "2.5.3"
   },
   "packageManager": "npm@9.8.1"

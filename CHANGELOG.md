@@ -1,4 +1,4 @@
-# 3.4.2 (not released yet)
+# 3.4.2 (2025-06-24)
 ## Enhancements:
 * migrate from gopherjs to resource handlers for processing SQL with macros on backend
 

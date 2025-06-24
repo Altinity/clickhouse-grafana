@@ -1,6 +1,6 @@
 # 3.4.3 (2025-06-24)
 ## Enhancements:
-* umps [pbkdf2](https://github.com/crypto-browserify/pbkdf2) from 3.1.2 to 3.1.3, to fix CVE
+* upgrade [pbkdf2](https://github.com/crypto-browserify/pbkdf2) from 3.1.2 to 3.1.3, to fix CVE
 
 # 3.4.2 (2025-06-24)
 ## Enhancements:

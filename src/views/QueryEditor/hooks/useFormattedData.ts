@@ -4,7 +4,7 @@ import { useSystemDatabases } from './useSystemDatabases';
 import { useAutocompleteData } from './useAutocompletionData';
 import { useEffect, useState } from 'react';
 
-export const useFormattedData = (query: CHQuery, datasource: CHDataSource, options?: any): [string, string | null] => {
+export const useFormattedData = (query: CHQuery, datasource: CHDataSource, options?: any, onChange?: (query: CHQuery) => void): [string, string | null] => {
   useSystemDatabases(datasource);
   useAutocompleteData(datasource);
   const [formattedData, setFormattedData] = useState(query.query);
@@ -15,6 +15,10 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource, optio
         datasource.replace(datasource.options || options, query).then((replaced) => {
           setFormattedData(replaced.stmt);
           setError(null);
+          // Update rawQuery if it's different
+          if (onChange && replaced.stmt !== query.rawQuery) {
+            onChange({ ...query, rawQuery: replaced.stmt });
+          }
         }).catch((e) => {
           setFormattedData(query.query);
           setError(e.toString());
@@ -22,7 +26,7 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource, optio
       }
 
     // eslint-disable-next-line
-  }, [query, datasource.name, datasource.options, options, datasource.templateSrv]);
+  }, [query.query, datasource.name, datasource.options, options, datasource.templateSrv]);
 
   return [formattedData, error];
 };

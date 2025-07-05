@@ -4,8 +4,7 @@ import { DEFAULT_FORMAT, DEFAULT_INTERVAL_FACTOR, DEFAULT_ROUND, defaultQuery } 
 export const initializeQueryDefaults = (
   query: CHQuery,
   isAnnotationView: boolean,
-  datasource: any,
-  onChange: any
+  datasource: any
 ): CHQuery => {
   const initializedQuery = {
     ...query,
@@ -100,8 +99,6 @@ export const initializeQueryDefaults = (
     if (datasource.defaultValues.nullifySparse !== undefined && query.nullifySparse === undefined) {
       initializedQuery.nullifySparse = datasource.defaultValues.nullifySparse;
     }
-
-    onChange({ ...query, ...initializedQuery, initialized: true });
   }
 
   if (isAnnotationView) {
@@ -114,8 +111,7 @@ export const initializeQueryDefaults = (
 export const initializeQueryDefaultsForVariables = (
   query: CHQuery,
   isAnnotationView: boolean,
-  datasource: any,
-  onChange: any
+  datasource: any
 ): CHQuery => {
   const initializedQuery = {
     ...query,
@@ -210,8 +206,6 @@ export const initializeQueryDefaultsForVariables = (
     if (datasource.defaultValues.nullifySparse !== undefined && query.nullifySparse === undefined) {
       initializedQuery.nullifySparse = datasource.defaultValues.nullifySparse;
     }
-
-    onChange({ ...query, ...initializedQuery, initialized: true });
   }
 
   if (isAnnotationView) {

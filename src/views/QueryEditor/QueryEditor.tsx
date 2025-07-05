@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from 'react';
+import React, {useEffect, useState, useMemo} from 'react';
 import {CoreApp, QueryEditorProps} from '@grafana/data';
 import {CHDataSource} from '../../datasource/datasource';
 import {CHDataSourceOptions, CHQuery, DatasourceMode, EditorMode} from '../../types/types';
@@ -15,16 +15,22 @@ import {getAdhocFilters} from './helpers/getAdHocFilters';
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>): any {
   const { datasource, query, onChange, onRunQuery, data } = props;
   const isAnnotationView = !props.app;
-  const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
-  const [formattedData, error] = useFormattedData(initializedQuery, datasource, data?.request);
-
+  
+  // Memoize the initialized query to prevent recreating it on every render
+  const initializedQuery = useMemo(() => 
+    initializeQueryDefaults(query, isAnnotationView, datasource),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [query.refId, query.initialized, isAnnotationView, datasource.uid]
+  );
+  
+  // Handle initialization only when needed
   useEffect(() => {
-    if (formattedData !== initializedQuery.query) {
-      onChange({ ...initializedQuery, rawQuery: formattedData })
+    if (!query.initialized && datasource.defaultValues) {
+      onChange({ ...initializedQuery, initialized: true });
     }
-
-    // eslint-disable-next-line
-  }, [formattedData, initializedQuery.query]);
+  }, [query.initialized, datasource.defaultValues, initializedQuery, onChange]);
+  
+  const [formattedData, error] = useFormattedData(initializedQuery, datasource, data?.request, onChange);
 
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
   useQueryState(query, onChange, datasource);
@@ -95,17 +101,23 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
   };
 
   const isAnnotationView = false
-  const initializedQuery = initializeQueryDefaultsForVariables(processedQuery, isAnnotationView, datasource, onChange);
-  const [formattedData, error] = useFormattedData(initializedQuery, datasource);
-  const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
-
+  
+  // Memoize the initialized query to prevent recreating it on every render
+  const initializedQuery = useMemo(() => 
+    initializeQueryDefaultsForVariables(processedQuery, isAnnotationView, datasource),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [processedQuery.query, processedQuery.datasourceMode, isAnnotationView, datasource.uid]
+  );
+  
+  // Handle initialization only when needed
   useEffect(() => {
-    if (formattedData !== initializedQuery.query) {
-      onChange({ ...initializedQuery, rawQuery: formattedData })
+    if (!processedQuery.initialized && datasource.defaultValues) {
+      onChange({ ...initializedQuery, initialized: true });
     }
-
-    // eslint-disable-next-line
-  }, [formattedData, initializedQuery.query]);
+  }, [processedQuery.initialized, datasource.defaultValues, initializedQuery, onChange]);
+  
+  const [formattedData, error] = useFormattedData(initializedQuery, datasource, undefined, onChange);
+  const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
 
   useQueryState(query, onChange, datasource);
   const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });

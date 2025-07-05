@@ -1,4 +1,4 @@
-import React, {useEffect, useState, useMemo} from 'react';
+import React, {useEffect, useState, useMemo, useCallback} from 'react';
 import {CoreApp, QueryEditorProps} from '@grafana/data';
 import {CHDataSource} from '../../datasource/datasource';
 import {CHDataSourceOptions, CHQuery, DatasourceMode, EditorMode} from '../../types/types';
@@ -35,14 +35,14 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
   useQueryState(query, onChange, datasource);
 
-  const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });
-  const onFieldChange = (field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value });
-  const onTriggerQuery = () => onRunQuery();
+  const onSqlChange = useCallback((sql: string) => onChange({ ...initializedQuery, query: sql }), [onChange, initializedQuery]);
+  const onFieldChange = useCallback((field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value }), [onChange, initializedQuery]);
+  const onTriggerQuery = useCallback(() => onRunQuery(), [onRunQuery]);
 
   // @ts-ignore
-  const adHocFilters = getAdhocFilters(datasource?.name, query.datasource?.uid);
+  const adHocFilters = useMemo(() => getAdhocFilters(datasource?.name, query.datasource?.uid), [datasource?.name, query.datasource?.uid]);
   // @ts-ignore
-  const adHocFiltersKey = adHocFilters.map(({ key, operator, value }) => `${key}${operator}${value}`).join(',');
+  const adHocFiltersKey = useMemo(() => adHocFilters.map(({ key, operator, value }) => `${key}${operator}${value}`).join(','), [adHocFilters]);
   const areAdHocFiltersAvailable = !!adHocFilters.length;
 
   useEffect(() => {
@@ -120,14 +120,14 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
 
   useQueryState(query, onChange, datasource);
-  const onSqlChange = (sql: string) => onChange({ ...initializedQuery, query: sql });
-  const onFieldChange = (field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value });
-  const onTriggerQuery = () => onRunQuery();
+  const onSqlChange = useCallback((sql: string) => onChange({ ...initializedQuery, query: sql }), [onChange, initializedQuery]);
+  const onFieldChange = useCallback((field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value }), [onChange, initializedQuery]);
+  const onTriggerQuery = useCallback(() => onRunQuery(), [onRunQuery]);
 
   // @ts-ignore
-  const adHocFilters = getAdhocFilters(datasource?.name, query.datasource?.uid);
+  const adHocFilters = useMemo(() => getAdhocFilters(datasource?.name, query.datasource?.uid), [datasource?.name, query.datasource?.uid]);
   // @ts-ignore
-  const adHocFiltersKey = adHocFilters.map(({ key, operator, value }) => `${key}${operator}${value}`).join(',');
+  const adHocFiltersKey = useMemo(() => adHocFilters.map(({ key, operator, value }) => `${key}${operator}${value}`).join(','), [adHocFilters]);
   const areAdHocFiltersAvailable = !!adHocFilters.length;
 
   useEffect(() => {

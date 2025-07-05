@@ -59,15 +59,11 @@ export const useAutocompleteData = (datasource) => {
         const expiry = now.getTime() + 10 * 60 * 1000; // 10 minutes in milliseconds
 
         const groupByColor = (data) => {
-          const groupedData = {};
-          data.forEach((item) => {
+          return data.reduce((groupedData, item) => {
             const color = item.color;
-            if (!groupedData[color]) {
-              groupedData[color] = [];
-            }
-            groupedData[color].push(item.completion);
-          });
-          return groupedData;
+            (groupedData[color] ||= []).push(item.completion);
+            return groupedData;
+          }, {});
         };
 
         const groupedResult = groupByColor(result);

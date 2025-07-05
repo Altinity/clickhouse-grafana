@@ -21,7 +21,7 @@ import {
 } from './components';
 import {DatasourceMode} from "../../../../types/types";
 
-export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
+const QueryTextEditorComponent: React.FC<QueryTextEditorProps> = ({
   query,
   onSqlChange,
   onFieldChange,
@@ -116,3 +116,5 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
     </>
   );
 };
+
+export const QueryTextEditor = React.memo(QueryTextEditorComponent);

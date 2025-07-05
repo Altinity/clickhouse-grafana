@@ -16,7 +16,7 @@ const options = [
 ];
 
 // eslint-disable-next-line
-export const QueryBuilder = ({ query, onChange, datasource }: any) => {
+const QueryBuilderComponent = ({ query, onChange, datasource }: any) => {
   const [
     databases,
     tables,
@@ -203,4 +203,5 @@ export const QueryBuilder = ({ query, onChange, datasource }: any) => {
   );
 };
 
+export const QueryBuilder = React.memo(QueryBuilderComponent);
 export default QueryBuilder;

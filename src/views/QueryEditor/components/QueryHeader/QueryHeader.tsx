@@ -5,7 +5,7 @@ import { QueryHeaderProps } from './QueryHeader.types';
 import { findDifferences } from './helpers/findDifferences';
 import { QueryHeaderTabs } from './QueryHeader.constants';
 
-export const QueryHeader = ({
+const QueryHeaderComponent = ({
   editorMode,
   setEditorMode,
   isAnnotationView,
@@ -107,3 +107,5 @@ export const QueryHeader = ({
     </div>
   );
 };
+
+export const QueryHeader = React.memo(QueryHeaderComponent);

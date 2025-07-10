@@ -35,8 +35,8 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
   useQueryState(query, onChange, datasource);
 
-  const onSqlChange = useCallback((sql: string) => onChange({ ...initializedQuery, query: sql }), [onChange, initializedQuery]);
-  const onFieldChange = useCallback((field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value }), [onChange, initializedQuery]);
+  const onSqlChange = useCallback((sql: string) => onChange({ ...query, query: sql }), [onChange, query]);
+  const onFieldChange = useCallback((field: any) => onChange({ ...query, [field.fieldName]: field.value }), [onChange, query]);
   const onTriggerQuery = useCallback(() => onRunQuery(), [onRunQuery]);
 
   // @ts-ignore
@@ -47,7 +47,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   useEffect(() => {
     if (props.app !== CoreApp.Explore) {
-      onChange({ ...initializedQuery, adHocFilters: adHocFilters });
+      onChange({ ...query, adHocFilters: adHocFilters });
     }
 
     // eslint-disable-next-line
@@ -56,7 +56,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   return (
     <>
       <QueryHeader
-        query={initializedQuery}
+        query={query}
         datasource={datasource}
         editorMode={editorMode}
         setEditorMode={setEditorMode}
@@ -67,7 +67,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       {error ? <Alert title={error} elevated style={{ marginTop: '5px', marginBottom: '5px' }} /> : null}
       {editorMode === EditorMode.Builder && (
         <QueryBuilder
-          query={initializedQuery}
+          query={query}
           datasource={datasource}
           onChange={(items: CHQuery) => onChange({ ...items })}
           onRunQuery={onTriggerQuery}
@@ -75,9 +75,9 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
       )}
       {editorMode === EditorMode.SQL && (
         <QueryTextEditor
-          adhocFilters={initializedQuery.adHocFilters}
+          adhocFilters={query.adHocFilters}
           areAdHocFiltersAvailable={areAdHocFiltersAvailable}
-          query={initializedQuery}
+          query={query}
           onSqlChange={onSqlChange}
           onRunQuery={onTriggerQuery}
           onFieldChange={onFieldChange}
@@ -120,8 +120,8 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
   const [editorMode, setEditorMode] = useState(initializedQuery.editorMode || EditorMode.Builder);
 
   useQueryState(query, onChange, datasource);
-  const onSqlChange = useCallback((sql: string) => onChange({ ...initializedQuery, query: sql }), [onChange, initializedQuery]);
-  const onFieldChange = useCallback((field: any) => onChange({ ...initializedQuery, [field.fieldName]: field.value }), [onChange, initializedQuery]);
+  const onSqlChange = useCallback((sql: string) => onChange({ ...processedQuery, query: sql }), [onChange, processedQuery]);
+  const onFieldChange = useCallback((field: any) => onChange({ ...processedQuery, [field.fieldName]: field.value }), [onChange, processedQuery]);
   const onTriggerQuery = useCallback(() => onRunQuery(), [onRunQuery]);
 
   // @ts-ignore
@@ -132,7 +132,7 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
 
   useEffect(() => {
     if (props.app !== CoreApp.Explore) {
-      onChange({ ...initializedQuery, adHocFilters: adHocFilters });
+      onChange({ ...processedQuery, adHocFilters: adHocFilters });
     }
     // eslint-disable-next-line
   }, [props.app, adHocFiltersKey]);
@@ -140,7 +140,7 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
   return (
     <>
       <QueryHeader
-        query={initializedQuery}
+        query={processedQuery}
         datasource={datasource}
         editorMode={editorMode}
         setEditorMode={setEditorMode}
@@ -151,7 +151,7 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
       {error ? <Alert title={error} elevated style={{ marginTop: '5px', marginBottom: '5px' }} /> : null}
       {editorMode === EditorMode.Builder && (
         <QueryBuilder
-          query={initializedQuery}
+          query={processedQuery}
           datasource={datasource}
           onChange={(items: CHQuery) => onChange({ ...items })}
           onRunQuery={onTriggerQuery}
@@ -159,9 +159,9 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
       )}
       {editorMode === EditorMode.SQL && (
         <QueryTextEditor
-          adhocFilters={initializedQuery.adHocFilters}
+          adhocFilters={processedQuery.adHocFilters}
           areAdHocFiltersAvailable={areAdHocFiltersAvailable}
-          query={initializedQuery}
+          query={processedQuery}
           onSqlChange={onSqlChange}
           onRunQuery={onTriggerQuery}
           onFieldChange={onFieldChange}

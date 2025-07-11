@@ -113,25 +113,218 @@ export const clickhouseEscape = (value: any, variable: any): any => {
   }
 };
 
+/**
+ * Context-aware variable interpolation that detects concatenation patterns.
+ * 
+ * This function solves the variable concatenation issue (#797) while preserving
+ * the fix for repeated panel variables (#712).
+ * 
+ * @param query - The SQL query string containing variables
+ * @returns Function that interpolates variables based on context
+ * 
+ * **BEHAVIOR BY CONTEXT:**
+ * 
+ * 1. **Concatenation Context** (e.g., `$container.$namespace.svc`):
+ *    - Returns raw value without quotes: `containervalue.namespacevalue.svc`
+ *    - Fixes issue #797 where quotes broke SQL syntax
+ * 
+ * 2. **SQL Context** (e.g., `WHERE service IN ($service)`):
+ *    - Applies original quoting logic based on variable configuration
+ *    - Preserves fix for issue #712 (repeated panels)
+ * 
+ * 3. **Array Values**:
+ *    - Always uses original logic regardless of context
+ *    - Returns: `'val1','val2'` for arrays
+ * 
+ * **VARIABLE CONFIGURATION MATRIX:**
+ * ```
+ * | multi | includeAll | Context        | Result              |
+ * |-------|------------|----------------|---------------------|
+ * | undef | undef      | Concatenation  | value (no quotes)   |
+ * | undef | undef      | SQL/IN clause  | 'value' (quoted)    |
+ * | false | false      | Any            | value (no quotes)   |
+ * | true  | false      | Any            | 'val1','val2'       |
+ * ```
+ * 
+ * **EXAMPLES:**
+ * ```typescript
+ * // Concatenation - no quotes
+ * interpolateQueryExprWithContext('SELECT * FROM $db.$table')
+ * 
+ * // SQL context - quotes applied  
+ * interpolateQueryExprWithContext('WHERE name = $name')
+ * 
+ * // IN clause - quotes applied
+ * interpolateQueryExprWithContext('WHERE id IN ($ids)')
+ * ```
+ */
+export const interpolateQueryExprWithContext = (query: string) => {
+  return (value: any, variable: any) => {
+    // Check if this variable is part of a concatenation pattern
+    const isInConcatenation = detectConcatenationContext(query, variable.name);
+    
+    // If it's in a concatenation context and it's a simple value, don't add quotes
+    if (isInConcatenation && !Array.isArray(value)) {
+      return value;
+    }
+    
+    // Use the original logic for non-concatenation contexts or arrays
+    return interpolateQueryExpr(value, variable);
+  };
+};
+
+/**
+ * Detects if a variable is used in a concatenation pattern within a SQL query.
+ * 
+ * Identifies patterns where variables are connected with dots, indicating
+ * they should be treated as part of a larger identifier rather than quoted SQL values.
+ * 
+ * @param query - The SQL query string to analyze
+ * @param variableName - The variable name to check for concatenation usage
+ * @returns true if variable is used in concatenation, false otherwise
+ * 
+ * **DETECTED PATTERNS:**
+ * - `$variable.suffix` - Variable followed by dot
+ * - `prefix.$variable` - Variable preceded by dot  
+ * - `$var1.$var2` - Variable between other variables
+ * - `${variable}.suffix` - Braced variable syntax
+ * 
+ * **EXAMPLES:**
+ * ```typescript
+ * detectConcatenationContext('SELECT * FROM $db.$table', 'db')     // true
+ * detectConcatenationContext('WHERE name = $name', 'name')         // false
+ * detectConcatenationContext('FROM ${schema}.${table}', 'schema')  // true
+ * ```
+ */
+const detectConcatenationContext = (query: string, variableName: string): boolean => {
+  if (!query || !variableName) {
+    return false;
+  }
+  
+  // Look for patterns like: $variable. or .$variable or $variable1.$variable2
+  const patterns = [
+    new RegExp(`\\$\\{?${variableName}\\}?\\.`, 'g'),  // $variable. or ${variable}.
+    new RegExp(`\\.\\$\\{?${variableName}\\}?`, 'g'),  // .$variable or .${variable}
+    new RegExp(`\\$\\{?${variableName}\\}?\\.\\$`, 'g'), // $variable1.$variable2
+  ];
+  
+  return patterns.some(pattern => pattern.test(query));
+};
+
+/**
+ * Original variable interpolation function with issue #712 fix.
+ * 
+ * This function handles variable interpolation based on Grafana variable configuration.
+ * It was modified to fix repeated panel variables by adding quotes when multi/includeAll
+ * are undefined, but this caused issue #797 with concatenation patterns.
+ * 
+ * @param value - The variable value(s) to interpolate
+ * @param variable - Grafana variable configuration object
+ * @returns Interpolated string ready for SQL injection
+ * 
+ * **BEHAVIOR MATRIX:**
+ * ```
+ * | multi | includeAll | Array | Result              | Use Case           |
+ * |-------|------------|-------|---------------------|--------------------|  
+ * | undef | undef      | No    | 'value' (quoted)    | Repeated panels    |
+ * | false | false      | No    | value (raw)         | Explicit single    |
+ * | true  | false      | Yes   | 'val1','val2'       | Multi-select       |
+ * | Any   | Any        | Yes   | escaped,joined      | Arrays             |
+ * ```
+ * 
+ * **EXAMPLES:**
+ * ```typescript
+ * // Repeated panel variable (issue #712 fix)
+ * interpolateQueryExpr('mysql', {multi: undefined, includeAll: undefined})
+ * // → "'mysql'"
+ * 
+ * // Explicit single variable  
+ * interpolateQueryExpr('mysql', {multi: false, includeAll: false})
+ * // → "mysql"
+ * 
+ * // Multi-value variable
+ * interpolateQueryExpr(['val1', 'val2'], {multi: true, includeAll: false})
+ * // → "'val1','val2'"
+ * ```
+ * 
+ * **ISSUES:**
+ * - This function doesn't consider query context
+ * - Causes concatenation issues when multi/includeAll are undefined
+ * - Use `interpolateQueryExprWithContext` for context-aware interpolation
+ */
 export const interpolateQueryExpr = (value: any, variable: any) => {
-  // Repeated Single variable value
+  // Repeated Single variable value (issue #712 fix)
+  // When multi/includeAll are undefined, assume it's a repeated panel variable
+  // and add quotes to ensure proper SQL syntax in IN clauses
   if (variable.multi === undefined && variable.includeAll === undefined && !Array.isArray(value)) {
     return `'${value}'`;
   }
 
-  // Single variable value
+  // Single variable value (explicit configuration)
+  // When multi=false and includeAll=false, treat as raw value without quotes
   if (!variable.multi && !variable.includeAll && !Array.isArray(value)) {
     return value;
   }
+  
+  // Multi-value or complex variable handling
   if (!Array.isArray(value)) {
     return clickhouseEscape(value, variable);
   }
+  
+  // Array values - escape each element and join with commas
   let escapedValues = value.map(function (v) {
     return clickhouseEscape(v, variable);
   });
   return escapedValues.join(',');
 };
 
+/**
+ * Creates a context-aware interpolation function for a specific query.
+ * 
+ * This is a convenience wrapper around `interpolateQueryExprWithContext` that
+ * creates a function compatible with Grafana's `templateSrv.replace()` method.
+ * 
+ * @param query - The SQL query string that provides context for variable interpolation
+ * @returns Function compatible with Grafana's template service
+ * 
+ * **USAGE:**
+ * ```typescript
+ * // Create interpolation function for a specific query
+ * const interpolateFn = createContextAwareInterpolation(
+ *   'SELECT * FROM $database.$table WHERE service = $service'
+ * );
+ * 
+ * // Use with Grafana's template service
+ * this.templateSrv.replace(query, scopedVars, interpolateFn);
+ * ```
+ * 
+ * **BEHAVIOR:**
+ * - Variables in concatenation patterns (like `$database.$table`) won't be quoted
+ * - Variables in SQL contexts (like `service = $service`) will be quoted appropriately
+ * - Maintains all backward compatibility with existing variable configurations
+ * 
+ * **RECOMMENDED USAGE:**
+ * Replace all instances of `interpolateQueryExpr` with this context-aware version:
+ * ```typescript
+ * // OLD (can cause concatenation issues):
+ * templateSrv.replace(query, scopedVars, interpolateQueryExpr)
+ * 
+ * // NEW (context-aware, fixes concatenation):
+ * templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query))
+ * ```
+ */
+export const createContextAwareInterpolation = (query: string) => {
+  return (value: any, variable: any) => {
+    return interpolateQueryExprWithContext(query)(value, variable);
+  };
+};
+
+/**
+ * Converts various date formats to Unix timestamp.
+ * 
+ * @param date - Date in various formats (string, Date object, etc.)
+ * @returns Unix timestamp in seconds
+ */
 export const convertTimestamp = (date: any) => {
   if (isString(date)) {
     date = dateMath.parse(date, true);

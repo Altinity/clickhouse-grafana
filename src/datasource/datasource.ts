@@ -21,7 +21,7 @@ import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../ty
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from } from 'rxjs';
-import { adhocFilterVariable, conditionalTest, convertTimestamp, interpolateQueryExpr } from './helpers';
+import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation } from './helpers';
 import { ClickHouseResourceClient } from './resource_handler';
 
 export class CHDataSource
@@ -670,12 +670,13 @@ export class CHDataSource
           text: '',
         },
       };
-      query = this.templateSrv.replace(query, scopedVars, interpolateQueryExpr);
+      query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query));
     }
+    const conditionalQuery = conditionalTest(query, this.templateSrv);
     interpolatedQuery = this.templateSrv.replace(
-      conditionalTest(query, this.templateSrv),
+      conditionalQuery,
       scopedVars,
-      interpolateQueryExpr
+      createContextAwareInterpolation(conditionalQuery)
     );
 
     if (options && options.range) {
@@ -732,7 +733,7 @@ export class CHDataSource
           query: this.templateSrv.replace(
             conditionalTest(query.query, this.templateSrv),
             scopedVars,
-            interpolateQueryExpr
+            createContextAwareInterpolation(query.query)
           ),
         };
         return expandedQuery;
@@ -787,7 +788,7 @@ export class CHDataSource
       query = this.templateSrv.replace(
         conditionalTest(query, this.templateSrv),
         options.scopedVars,
-        interpolateQueryExpr
+        createContextAwareInterpolation(query)
       );
 
       const wildcardChar = '%';
@@ -801,13 +802,13 @@ export class CHDataSource
             text: '',
           },
         };
-        query = this.templateSrv.replace(query, scopedVars, interpolateQueryExpr);
+        query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query));
       }
 
       const interpolatedQuery = this.templateSrv.replace(
         conditionalTest(query, this.templateSrv),
         scopedVars,
-        interpolateQueryExpr
+        createContextAwareInterpolation(query)
       );
 
       // Extract GROUP BY properties from the FINAL query (after template replacement)

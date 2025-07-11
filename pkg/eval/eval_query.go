@@ -1509,7 +1509,7 @@ func (e *EvalAST) HasOwnProperty(key string) bool {
 func (e *EvalAST) pushObj(objName string, value interface{}) {
 	_, objExists := e.Obj[objName]
 	if !objExists {
-		e.Obj[objName] = EvalAST{}
+		e.Obj[objName] = &EvalAST{}
 	}
 	e.Obj[objName].(*EvalAST).push(value)
 }
@@ -1831,7 +1831,7 @@ func (s *EvalQueryScanner) parseJOIN(argument string) (string, error) {
 		}
 		source = &EvalAST{
 			Obj: map[string]interface{}{
-				"root": EvalAST{Arr: []interface{}{sourceStr}},
+				"root": &EvalAST{Arr: []interface{}{sourceStr}},
 			},
 		}
 	}

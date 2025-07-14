@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { LocalStorageManager } from '../../../utils/localStorageManager';
 
 // SQL query for autocompletion data
 const AUTOCOMPLETION_QUERY = `
@@ -43,20 +44,16 @@ export const useAutocompleteData = (datasource) => {
   useEffect(() => {
     const fetchData = async () => {
       const storageKey = `altinity_autocomplete_${datasource.uid}`;
-      const cachedData = localStorage.getItem(storageKey);
-      const now = new Date();
-
+      
+      // Try to get cached data using the LocalStorageManager
+      const cachedData = LocalStorageManager.getItem<any>(storageKey);
       if (cachedData) {
-        const { expiry, result } = JSON.parse(cachedData);
-        if (now.getTime() < expiry) {
-          setData(result);
-          return;
-        }
+        setData(cachedData);
+        return;
       }
 
       try {
         const result = await datasource.metricFindQuery(AUTOCOMPLETION_QUERY);
-        const expiry = now.getTime() + 10 * 60 * 1000; // 10 minutes in milliseconds
 
         const groupByColor = (data) => {
           const groupedData = {};
@@ -71,7 +68,9 @@ export const useAutocompleteData = (datasource) => {
         };
 
         const groupedResult = groupByColor(result);
-        localStorage.setItem(storageKey, JSON.stringify({ expiry, result: groupedResult }));
+        
+        // Store with 10 minute TTL using LocalStorageManager
+        LocalStorageManager.setItem(storageKey, groupedResult, 10);
 
         // @ts-ignore
         setData(groupedResult);
@@ -81,6 +80,9 @@ export const useAutocompleteData = (datasource) => {
       }
     };
 
+    // Perform cleanup of expired entries on component mount
+    LocalStorageManager.cleanupExpiredByPrefix('altinity_autocomplete_');
+    
     fetchData();
   }, [datasource]);
 

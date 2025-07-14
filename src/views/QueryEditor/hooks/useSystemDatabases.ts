@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { LocalStorageManager } from '../../../utils/localStorageManager';
 
 const GET_DATABASES_QUERY =
   'SELECT name FROM system.tables\n' +
@@ -14,28 +15,31 @@ export const useSystemDatabases = (datasource) => {
   useEffect(() => {
     const fetchData = async () => {
       const storageKey = `altinity_systemDatabases_${datasource.uid}`;
-      const cachedData = localStorage.getItem(storageKey);
-      const now = new Date();
-
+      
+      // Try to get cached data using the LocalStorageManager
+      const cachedData = LocalStorageManager.getItem<string[]>(storageKey);
       if (cachedData) {
-        const { expiry, result } = JSON.parse(cachedData);
-        if (now.getTime() < expiry) {
-          setData(result);
-          return;
-        }
+        setData(cachedData);
+        return;
       }
 
       try {
         const result = await datasource.metricFindQuery(GET_DATABASES_QUERY);
-        const expiry = now.getTime() + 10 * 60 * 1000;
-        localStorage.setItem(storageKey, JSON.stringify({ expiry, result: result.map((item) => item.text) }));
-        setData(result.map((item) => item.text));
+        const processedResult = result.map((item) => item.text);
+        
+        // Store with 10 minute TTL using LocalStorageManager
+        LocalStorageManager.setItem(storageKey, processedResult, 10);
+        
+        setData(processedResult);
       } catch (error) {
         setData([]);
         console.error('Failed to fetch data:', error);
       }
     };
 
+    // Perform cleanup of expired entries on component mount
+    LocalStorageManager.cleanupExpiredByPrefix('altinity_systemDatabases_');
+    
     fetchData();
   }, [datasource]);
 

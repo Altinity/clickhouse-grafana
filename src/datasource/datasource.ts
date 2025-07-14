@@ -23,6 +23,7 @@ import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation } from './helpers';
 import { ClickHouseResourceClient } from './resource_handler';
+import { LocalStorageManager } from '../utils/localStorageManager';
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
@@ -106,6 +107,31 @@ export class CHDataSource
     this.annotations = {
       QueryEditor: QueryEditor,
     };
+
+    // Perform global cleanup on initialization (run once per session)
+    this.performGlobalCleanup();
+  }
+
+  private performGlobalCleanup() {
+    // Use a session flag to ensure cleanup runs only once per browser session
+    const cleanupKey = 'altinity_cleanup_performed';
+    const cleanupPerformed = sessionStorage.getItem(cleanupKey);
+    
+    if (!cleanupPerformed) {
+      try {
+        // Cleanup all expired entries
+        const stats = LocalStorageManager.cleanupAllExpired();
+        
+        if (stats.removedKeys > 0) {
+          console.log(`Altinity Plugin: Cleaned up ${stats.removedKeys} expired localStorage entries`);
+        }
+        
+        // Mark cleanup as performed for this session
+        sessionStorage.setItem(cleanupKey, 'true');
+      } catch (error) {
+        console.error('Failed to perform localStorage cleanup:', error);
+      }
+    }
   }
 
   static _getRequestOptions(query: string, usePOST?: boolean, requestId?: string, options?: any) {

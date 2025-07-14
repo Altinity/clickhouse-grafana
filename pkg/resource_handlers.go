@@ -1048,12 +1048,12 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		}
 
 		// Navigate to the deepest FROM clause
-		for ast.HasOwnProperty("from") && ast.Obj["from"].(*eval.EvalAST).Arr == nil {
-			nextAst, ok := ast.Obj["from"].(*eval.EvalAST)
-			if !ok {
+		for ast.HasOwnProperty("from") {
+			fromObj, ok := ast.Obj["from"].(*eval.EvalAST)
+			if !ok || fromObj.Arr != nil {
 				break
 			}
-			ast = nextAst
+			ast = fromObj
 		}
 
 		// Initialize WHERE clause if it doesn't exist
@@ -1065,7 +1065,12 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		}
 
 		// Get target database and table
-		targetDatabase, targetTable := parseTargets(ast.Obj["from"].(*eval.EvalAST).Arr[0].(string), target.Database, target.Table)
+		var targetDatabase, targetTable string
+		if fromObj, ok := ast.Obj["from"].(*eval.EvalAST); ok && len(fromObj.Arr) > 0 {
+			if fromStr, ok := fromObj.Arr[0].(string); ok {
+				targetDatabase, targetTable = parseTargets(fromStr, target.Database, target.Table)
+			}
+		}
 		if targetDatabase == "" && targetTable == "" {
 			response := CreateQueryWithAdhocResponse{Error: "FROM expression can't be parsed"}
 			body, _ := json.Marshal(response)

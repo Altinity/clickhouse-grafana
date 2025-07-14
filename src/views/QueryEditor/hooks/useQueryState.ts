@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { LocalStorageManager } from '../../../utils/localStorageManager';
 import { EditorMode } from '../../../types/types';
 import {
   DEFAULT_DATE_TIME_TYPE,
@@ -15,11 +16,12 @@ export const useQueryState = (query, onChange, datasource) => {
 
   useEffect(() => {
     const accessKey = `dataStorage_${datasourceName}_${datasourceUid}_${refId}`;
-    // On component mount
-    const storedData = localStorage.getItem(accessKey);
+    
+    // On component mount - check for recent data
+    const storedData = LocalStorageManager.getItem<{ name: string; timestamp: number }>(accessKey);
     if (storedData) {
-      const { name, timestamp } = JSON.parse(storedData);
-      const currentTime = new Date().getTime();
+      const { name, timestamp } = storedData;
+      const currentTime = Date.now();
       const timeDifference = (currentTime - timestamp) / 1000; // Convert milliseconds to seconds
 
       if (timeDifference < 5) {
@@ -48,13 +50,21 @@ export const useQueryState = (query, onChange, datasource) => {
       }
     }
 
+    // Cleanup old query states on mount
+    LocalStorageManager.limitQueryStatesPerDatasource(datasourceUid);
+
     // On component unmount
     return () => {
       const dataToStore = {
         name: accessKey,
-        timestamp: new Date().getTime(),
+        timestamp: Date.now(),
       };
-      localStorage.setItem(accessKey, JSON.stringify(dataToStore));
+      
+      // Store with a 1 hour TTL (query states don't need to persist long)
+      LocalStorageManager.setItem(accessKey, dataToStore, 60);
+      
+      // Ensure we don't exceed the limit after storing
+      LocalStorageManager.limitQueryStatesPerDatasource(datasourceUid);
     };
     // eslint-disable-next-line
   }, []);

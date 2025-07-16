@@ -1,0 +1,491 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "datasource",
+          "uid": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Test dashboard for variable concatenation fix (Issue #797)",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 47,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "query": "-- Test concatenated variables (should work without quotes)\nSELECT \n  '$container.$selectednamespace.8090.svc' as concatenated_host,\n  '$container' as container_only,\n  '$selectednamespace' as namespace_only,\n  'Expected: containervalue.namespacevalue.8090.svc' as expected_result",
+          "refId": "A",
+          "table": "test_grafana"
+        }
+      ],
+      "title": "Variable Concatenation Test (Issue #797)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
+      "id": 2,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "-- Test variables in IN clause (should have quotes)\nSELECT \n  service_name,\n  count() as count\nFROM default.test_grafana \nWHERE service_name IN ($service_filter)\n  AND $timeFilter\nGROUP BY service_name\nORDER BY count DESC\nLIMIT 10",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "SELECT \n  service_name,\n  count() as count\nFROM default.test_grafana \nWHERE service_name IN ($service_filter)\nGROUP BY service_name\nORDER BY count DESC\n",
+          "rawQuery": "/* grafana dashboard='Variable Concatenation Test Dashboard', user='0' */\nSELECT \n  service_name,\n  count() as count\nFROM default.test_grafana \nWHERE service_name IN ('mysql')\nGROUP BY service_name\nORDER BY count DESC",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "test_grafana",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Variable in IN Clause Test",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 8
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "repeat": "repeated_service",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "formattedQuery": "-- Test repeated panel variables (Issue #712 - should have quotes)\nSELECT \n  service_name,\n  count() as count\nFROM default.test_grafana \nWHERE service_name IN (${repeated_service})\n  AND $timeFilter\nGROUP BY service_name\nORDER BY count DESC\nLIMIT 5",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "SELECT \n  count() as count\nFROM default.test_grafana \nWHERE service_name IN (${repeated_service})\nGROUP BY service_name\nORDER BY count DESC",
+          "rawQuery": "/* grafana dashboard='Variable Concatenation Test Dashboard', user='0' */\nSELECT \n  count() as count\nFROM default.test_grafana \nWHERE service_name IN ('mysql','clickhouse')\nGROUP BY service_name\nORDER BY count DESC",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_grafana",
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "Repeated Panel Test - ${repeated_service}",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 16
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "query": "-- Test user's original issue query pattern\nSELECT \n  1 as test_value,\n  '$container.$selectednamespace.8090.svc' as host_pattern,\n  CASE \n    WHEN position('$container.$selectednamespace.8090.svc', '.') > 0 \n    THEN 'SUCCESS: Concatenation worked - contains dots'\n    ELSE 'FAILED: Variables not properly concatenated'\n  END as status,\n  -- Simulate a real query that would use this pattern\n  concat('http://', '$container.$selectednamespace.8090.svc', '/metrics') as endpoint_url",
+          "refId": "A",
+          "table": "test_grafana"
+        }
+      ],
+      "title": "Original Issue Pattern Test",
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 41,
+  "tags": [
+    "test",
+    "variables",
+    "concatenation"
+  ],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "containervalue",
+          "value": "containervalue"
+        },
+        "description": "Container name for concatenation testing",
+        "includeAll": false,
+        "label": "Container",
+        "name": "container",
+        "options": [
+          {
+            "selected": true,
+            "text": "containervalue",
+            "value": "containervalue"
+          },
+          {
+            "selected": false,
+            "text": "myapp",
+            "value": "myapp"
+          },
+          {
+            "selected": false,
+            "text": "service",
+            "value": "service"
+          }
+        ],
+        "query": "containervalue,myapp,service",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "namespacevalue",
+          "value": "namespacevalue"
+        },
+        "description": "Namespace for concatenation testing",
+        "includeAll": false,
+        "label": "Selected Namespace",
+        "name": "selectednamespace",
+        "options": [
+          {
+            "selected": true,
+            "text": "namespacevalue",
+            "value": "namespacevalue"
+          },
+          {
+            "selected": false,
+            "text": "default",
+            "value": "default"
+          },
+          {
+            "selected": false,
+            "text": "production",
+            "value": "production"
+          }
+        ],
+        "query": "namespacevalue,default,production",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": [
+            "mysql"
+          ],
+          "value": [
+            "mysql"
+          ]
+        },
+        "description": "Service filter for IN clause testing",
+        "includeAll": true,
+        "label": "Service Filter",
+        "multi": true,
+        "name": "service_filter",
+        "options": [
+          {
+            "selected": false,
+            "text": "All",
+            "value": "$__all"
+          },
+          {
+            "selected": true,
+            "text": "mysql",
+            "value": "mysql"
+          },
+          {
+            "selected": false,
+            "text": "clickhouse",
+            "value": "clickhouse"
+          },
+          {
+            "selected": false,
+            "text": "postgres",
+            "value": "postgres"
+          }
+        ],
+        "query": "mysql,clickhouse,postgres",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": [
+            "mysql",
+            "clickhouse"
+          ],
+          "value": [
+            "mysql",
+            "clickhouse"
+          ]
+        },
+        "description": "Service for repeated panel testing (Issue #712)",
+        "includeAll": false,
+        "label": "Repeated Service",
+        "multi": true,
+        "name": "repeated_service",
+        "options": [
+          {
+            "selected": true,
+            "text": "mysql",
+            "value": "mysql"
+          },
+          {
+            "selected": true,
+            "text": "clickhouse",
+            "value": "clickhouse"
+          },
+          {
+            "selected": false,
+            "text": "postgres",
+            "value": "postgres"
+          }
+        ],
+        "query": "mysql,clickhouse,postgres",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Variable Concatenation Test Dashboard",
+  "uid": "variable-concat-test",
+  "version": 1
+}

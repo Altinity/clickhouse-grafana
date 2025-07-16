@@ -1,3 +1,9 @@
+# 3.4.4 (2025-07-16)
+## Fixes:
+* fix IN clause no longer works (3.4.x) with output of ARRAY JOIN, fix https://github.com/Altinity/clickhouse-grafana/issues/799
+* fix corner cases for template variable expansion, fix https://github.com/Altinity/clickhouse-grafana/issues/797
+
+
 # 3.4.3 (2025-06-24)
 ## Enhancements:
 * upgrade [pbkdf2](https://github.com/crypto-browserify/pbkdf2) from 3.1.2 to 3.1.3, to fix CVE

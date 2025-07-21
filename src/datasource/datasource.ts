@@ -791,7 +791,7 @@ export class CHDataSource
         format: target.format || 'time_series',
         round: target.round || '0s',
         intervalFactor: target.intervalFactor || 1,
-        interval: target.interval || options.interval || '30s',
+        interval: this.templateSrv.replace(target.interval || options.interval || '30s', options.scopedVars),
         database: target.database || 'default',
         table: target.table || '',
         maxDataPoints: options.maxDataPoints || 0,

@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LocalStorageManager } from '../../../utils/localStorageManager';
+import { IndexedDBManager } from '../../../utils/indexedDBManager';
 
 const GET_DATABASES_QUERY =
   'SELECT name FROM system.tables\n' +
@@ -16,19 +16,19 @@ export const useSystemDatabases = (datasource) => {
     const fetchData = async () => {
       const storageKey = `altinity_systemDatabases_${datasource.uid}`;
       
-      // Try to get cached data using the LocalStorageManager
-      const cachedData = LocalStorageManager.getItem<string[]>(storageKey);
-      if (cachedData) {
-        setData(cachedData);
-        return;
-      }
-
       try {
+        // Try to get cached data using the IndexedDBManager
+        const cachedData = await IndexedDBManager.getItem<string[]>(storageKey);
+        if (cachedData) {
+          setData(cachedData);
+          return;
+        }
+
         const result = await datasource.metricFindQuery(GET_DATABASES_QUERY);
         const processedResult = result.map((item) => item.text);
         
-        // Store with 10 minute TTL using LocalStorageManager
-        LocalStorageManager.setItem(storageKey, processedResult, 10);
+        // Store with 10 minute TTL using IndexedDBManager
+        await IndexedDBManager.setItem(storageKey, processedResult, 10);
         
         setData(processedResult);
       } catch (error) {
@@ -37,10 +37,18 @@ export const useSystemDatabases = (datasource) => {
       }
     };
 
-    // Perform cleanup of expired entries on component mount
-    LocalStorageManager.cleanupExpiredByPrefix('altinity_systemDatabases_');
+    const initializeData = async () => {
+      // Perform cleanup of expired entries on component mount
+      try {
+        await IndexedDBManager.cleanupExpiredByPrefix('altinity_systemDatabases_');
+      } catch (error) {
+        console.error('Failed to cleanup expired system databases data:', error);
+      }
+      
+      await fetchData();
+    };
     
-    fetchData();
+    initializeData();
   }, [datasource]);
 
   return data;

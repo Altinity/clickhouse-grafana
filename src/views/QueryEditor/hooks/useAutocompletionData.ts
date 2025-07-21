@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LocalStorageManager } from '../../../utils/localStorageManager';
+import { IndexedDBManager } from '../../../utils/indexedDBManager';
 
 // SQL query for autocompletion data
 const AUTOCOMPLETION_QUERY = `
@@ -45,14 +45,14 @@ export const useAutocompleteData = (datasource) => {
     const fetchData = async () => {
       const storageKey = `altinity_autocomplete_${datasource.uid}`;
       
-      // Try to get cached data using the LocalStorageManager
-      const cachedData = LocalStorageManager.getItem<any>(storageKey);
-      if (cachedData) {
-        setData(cachedData);
-        return;
-      }
-
       try {
+        // Try to get cached data using the IndexedDBManager
+        const cachedData = await IndexedDBManager.getItem<any>(storageKey);
+        if (cachedData) {
+          setData(cachedData);
+          return;
+        }
+
         const result = await datasource.metricFindQuery(AUTOCOMPLETION_QUERY);
 
         const groupByColor = (data) => {
@@ -69,21 +69,28 @@ export const useAutocompleteData = (datasource) => {
 
         const groupedResult = groupByColor(result);
         
-        // Store with 10 minute TTL using LocalStorageManager
-        LocalStorageManager.setItem(storageKey, groupedResult, 10);
+        // Store with 10 minute TTL using IndexedDBManager
+        await IndexedDBManager.setItem(storageKey, groupedResult, 10);
 
-        // @ts-ignore
-        setData(groupedResult);
+        setData(groupedResult as any);
       } catch (error) {
         setData([]);
         console.error('Failed to fetch autocomplete data:', error);
       }
     };
 
-    // Perform cleanup of expired entries on component mount
-    LocalStorageManager.cleanupExpiredByPrefix('altinity_autocomplete_');
+    const initializeData = async () => {
+      // Perform cleanup of expired entries on component mount
+      try {
+        await IndexedDBManager.cleanupExpiredByPrefix('altinity_autocomplete_');
+      } catch (error) {
+        console.error('Failed to cleanup expired autocomplete data:', error);
+      }
+      
+      await fetchData();
+    };
     
-    fetchData();
+    initializeData();
   }, [datasource]);
 
   return data;

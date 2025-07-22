@@ -1,5 +1,5 @@
 import { useEffect, useState } from 'react';
-import { LocalStorageManager } from '../../../utils/localStorageManager';
+import { IndexedDBManager } from '../../../utils/indexedDBManager';
 import { EditorMode } from '../../../types/types';
 import {
   DEFAULT_DATE_TIME_TYPE,
@@ -17,41 +17,49 @@ export const useQueryState = (query, onChange, datasource) => {
   useEffect(() => {
     const accessKey = `dataStorage_${datasourceName}_${datasourceUid}_${refId}`;
     
-    // On component mount - check for recent data
-    const storedData = LocalStorageManager.getItem<{ name: string; timestamp: number }>(accessKey);
-    if (storedData) {
-      const { name, timestamp } = storedData;
-      const currentTime = Date.now();
-      const timeDifference = (currentTime - timestamp) / 1000; // Convert milliseconds to seconds
+    const initializeQueryState = async () => {
+      try {
+        // On component mount - check for recent data
+        const storedData = await IndexedDBManager.getItem<{ name: string; timestamp: number }>(accessKey);
+        if (storedData) {
+          const { name, timestamp } = storedData;
+          const currentTime = Date.now();
+          const timeDifference = (currentTime - timestamp) / 1000; // Convert milliseconds to seconds
 
-      if (timeDifference < 5) {
-        if (name !== accessKey) {
-          const initialQuery = {
-            ...query,
-            format: DEFAULT_FORMAT,
-            extrapolate: true,
-            skip_comments: true,
-            add_metadata: true,
-            dateTimeType: DEFAULT_DATE_TIME_TYPE,
-            round: DEFAULT_ROUND,
-            intervalFactor: DEFAULT_INTERVAL_FACTOR,
-            interval: '',
-            query: defaultQuery,
-            formattedQuery: query.query,
-            editorMode: EditorMode.Builder,
-            database: undefined,
-            table: undefined,
-            dateColDataType: undefined,
-            dateTimeColDataType: undefined,
-          };
+          if (timeDifference < 5) {
+            if (name !== accessKey) {
+              const initialQuery = {
+                ...query,
+                format: DEFAULT_FORMAT,
+                extrapolate: true,
+                skip_comments: true,
+                add_metadata: true,
+                dateTimeType: DEFAULT_DATE_TIME_TYPE,
+                round: DEFAULT_ROUND,
+                intervalFactor: DEFAULT_INTERVAL_FACTOR,
+                interval: '',
+                query: defaultQuery,
+                formattedQuery: query.query,
+                editorMode: EditorMode.Builder,
+                database: undefined,
+                table: undefined,
+                dateColDataType: undefined,
+                dateTimeColDataType: undefined,
+              };
 
-          onChange(initialQuery);
+              onChange(initialQuery);
+            }
+          }
         }
-      }
-    }
 
-    // Cleanup old query states on mount
-    LocalStorageManager.limitQueryStatesPerDatasource(datasourceUid);
+        // Cleanup old query states on mount
+        await IndexedDBManager.limitQueryStatesPerDatasource(datasourceUid);
+      } catch (error) {
+        console.error('Failed to initialize query state:', error);
+      }
+    };
+
+    initializeQueryState();
 
     // On component unmount
     return () => {
@@ -61,10 +69,15 @@ export const useQueryState = (query, onChange, datasource) => {
       };
       
       // Store with a 1 hour TTL (query states don't need to persist long)
-      LocalStorageManager.setItem(accessKey, dataToStore, 60);
+      // Note: We can't await in cleanup function, so we handle errors silently
+      IndexedDBManager.setItem(accessKey, dataToStore, 60).catch((error) => {
+        console.error('Failed to store query state on unmount:', error);
+      });
       
       // Ensure we don't exceed the limit after storing
-      LocalStorageManager.limitQueryStatesPerDatasource(datasourceUid);
+      IndexedDBManager.limitQueryStatesPerDatasource(datasourceUid).catch((error) => {
+        console.error('Failed to limit query states on unmount:', error);
+      });
     };
     // eslint-disable-next-line
   }, []);

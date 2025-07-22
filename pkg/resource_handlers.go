@@ -1032,9 +1032,9 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
 	adhocFilters := request.AdhocFilters
 	target := request.Target
+	adhocConditions := make([]string, 0)
 	
 	if len(adhocFilters) > 0 {
-		adhocConditions := make([]string, 0)
 		scanner := eval.NewScanner(sql)
 		ast, err := scanner.ToAST()
 		topQueryAst := ast
@@ -1156,14 +1156,16 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 				}
 			}
 			sql = eval.PrintAST(topQueryAst, " ")
-		} else {
-			// Always handle $adhoc replacement, even for empty filters
-			renderedCondition := "1"
-			if len(adhocConditions) > 0 {
-				renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
-			}
-			sql = strings.ReplaceAll(sql, "$adhoc", renderedCondition)
 		}
+	}
+
+	// Always handle $adhoc replacement, even for empty filters
+	if strings.Contains(sql, "$adhoc") {
+		renderedCondition := "1"
+		if len(adhocConditions) > 0 {
+			renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
+		}
+		sql = strings.ReplaceAll(sql, "$adhoc", renderedCondition)
 	}
 
 	// Return the result (no property extraction)

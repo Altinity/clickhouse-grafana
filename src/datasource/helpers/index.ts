@@ -188,12 +188,17 @@ export const interpolateQueryExprWithContext = (query: string) => {
  * - `prefix.$variable` - Variable preceded by dot  
  * - `$var1.$var2` - Variable between other variables
  * - `${variable}.suffix` - Braced variable syntax
+ * - `'quoted'.$variable` - Quoted string followed by variable (issue #797)
+ * - `$variable.8090` - Variable followed by numbers
+ * - `$variable.identifier` - Variable followed by valid identifier
  * 
  * **EXAMPLES:**
  * ```typescript
- * detectConcatenationContext('SELECT * FROM $db.$table', 'db')     // true
- * detectConcatenationContext('WHERE name = $name', 'name')         // false
- * detectConcatenationContext('FROM ${schema}.${table}', 'schema')  // true
+ * detectConcatenationContext('SELECT * FROM $db.$table', 'db')           // true
+ * detectConcatenationContext('WHERE name = $name', 'name')               // false
+ * detectConcatenationContext('FROM ${schema}.${table}', 'schema')        // true
+ * detectConcatenationContext("= 'transcription'.$namespace", 'namespace') // true (issue #797)
+ * detectConcatenationContext('$container.8090.svc', 'container')         // true
  * ```
  */
 const detectConcatenationContext = (query: string, variableName: string): boolean => {
@@ -206,6 +211,10 @@ const detectConcatenationContext = (query: string, variableName: string): boolea
     new RegExp(`\\$\\{?${variableName}\\}?\\.`, 'g'),  // $variable. or ${variable}.
     new RegExp(`\\.\\$\\{?${variableName}\\}?`, 'g'),  // .$variable or .${variable}
     new RegExp(`\\$\\{?${variableName}\\}?\\.\\$`, 'g'), // $variable1.$variable2
+    // More precise patterns for partially replaced queries
+    new RegExp(`'[^']*'\\.\\$\\{?${variableName}\\}?`, 'g'), // 'quoted'.$variable (for issue #797)
+    new RegExp(`\\$\\{?${variableName}\\}?\\.\\d+`, 'g'), // $variable.8090 (numbers after variable)
+    new RegExp(`\\$\\{?${variableName}\\}?\\.[a-zA-Z_][a-zA-Z0-9_]*`, 'g'), // $variable.identifier (valid identifiers only)
   ];
   
   return patterns.some(pattern => pattern.test(query));
@@ -255,7 +264,7 @@ const detectConcatenationContext = (query: string, variableName: string): boolea
 export const interpolateQueryExpr = (value: any, variable: any) => {
   // Repeated Single variable value (issue #712 fix)
   // When multi/includeAll are undefined, assume it's a repeated panel variable
-  // and add quotes to ensure proper SQL syntax in IN clauses
+  // and add quotes to ensure proper SQL syntax in IN clausesd
   if (variable.multi === undefined && variable.includeAll === undefined && !Array.isArray(value)) {
     return `'${value}'`;
   }

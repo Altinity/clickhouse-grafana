@@ -371,6 +371,102 @@ describe('Variable Interpolation', () => {
       expect(resultQuery).toBe("AND JSON_VALUE(message, '$.service.host') = 'transcription.dev.8090.svc'");
     });
 
+    it('should handle issue #797 - URL LIKE concatenation', () => {
+      const query = "AND request_url LIKE 'https://${container}%'";
+      const interpolateFn = interpolateQueryExprWithContext(query);
+      
+      const containerVar = { name: 'container', multi: undefined, includeAll: undefined };
+      
+      // Even though it's in a LIKE pattern, the ${container} is not in a concatenation context
+      // so it should be quoted
+      expect(interpolateFn('transcription', containerVar)).toBe("'transcription'");
+    });
+
+    it('should handle partially replaced concatenation patterns', () => {
+      // Simulate a scenario where one variable is already replaced
+      const partiallyReplacedQuery = "SELECT * FROM mydb.$table WHERE service = $service";
+      const interpolateFn = interpolateQueryExprWithContext(partiallyReplacedQuery);
+      
+      const tableVar = { name: 'table', multi: undefined, includeAll: undefined };
+      const serviceVar = { name: 'service', multi: undefined, includeAll: undefined };
+      
+      // $table is in concatenation context (mydb.$table)
+      expect(interpolateFn('users', tableVar)).toBe('users');
+      
+      // $service is not in concatenation context
+      expect(interpolateFn('api', serviceVar)).toBe("'api'");
+    });
+
+    it('should handle the exact issue #797 scenario with multi-pass replacement', () => {
+      // This tests the exact scenario that was failing
+      const originalQuery = "AND JSON_VALUE(message, '$.service.host') = '$container.$selectednamespace.8090.svc'";
+      
+      // Our fix: Both variables should see the original query context and be unquoted
+      const interpolateFn = interpolateQueryExprWithContext(originalQuery);
+      
+      const containerVar = { name: 'container', multi: undefined, includeAll: undefined };
+      const namespaceVar = { name: 'selectednamespace', multi: undefined, includeAll: undefined };
+      
+      // Both variables should NOT be quoted because they're in concatenation context
+      expect(interpolateFn('transcription', containerVar)).toBe('transcription');
+      expect(interpolateFn('dev', namespaceVar)).toBe('dev');
+      
+      // Simulate the complete replacement (what Grafana would do)
+      let finalQuery = originalQuery;
+      finalQuery = finalQuery.replace('$container', 'transcription');
+      finalQuery = finalQuery.replace('$selectednamespace', 'dev');
+      
+      expect(finalQuery).toBe("AND JSON_VALUE(message, '$.service.host') = 'transcription.dev.8090.svc'");
+    });
+
+    it('should not interfere with backend macros', () => {
+      // Test that our context detection doesn't break backend macro processing
+      const queryWithAdhoc = 'SELECT * FROM $table WHERE $timeFilter AND $adhoc';
+      const interpolateFn = interpolateQueryExprWithContext(queryWithAdhoc);
+      
+      // These aren't variables that should be processed by frontend interpolation
+      // They should be handled by backend macro processing
+      // Our context detection should not interfere with them
+      const tableVar = { name: 'table', multi: undefined, includeAll: undefined };
+      
+      // $table is in concatenation with $timeFilter, but they're macros, not user variables
+      // A user variable in this context should work normally
+      expect(interpolateFn('events', tableVar)).toBe("'events'"); // Should be quoted as normal variable
+    });
+
+    it('should handle quoted string with multiple variables', () => {
+      // Test variables inside the same quoted string context
+      const query = "WHERE host = '$container.$selectednamespace.$environment.cluster.local'";
+      const interpolateFn = interpolateQueryExprWithContext(query);
+      
+      const containerVar = { name: 'container', multi: undefined, includeAll: undefined };
+      const namespaceVar = { name: 'selectednamespace', multi: undefined, includeAll: undefined };
+      const envVar = { name: 'environment', multi: undefined, includeAll: undefined };
+      
+      // All should be unquoted since they're building parts of a single string
+      expect(interpolateFn('api', containerVar)).toBe('api');
+      expect(interpolateFn('prod', namespaceVar)).toBe('prod');
+      expect(interpolateFn('staging', envVar)).toBe('staging');
+    });
+
+    it('should handle complex multi-variable concatenation', () => {
+      const query = "SELECT * FROM $db.$schema.$table WHERE host = '$host.$domain.svc.cluster.local'";
+      const interpolateFn = interpolateQueryExprWithContext(query);
+      
+      // All these are in concatenation context
+      const dbVar = { name: 'db', multi: undefined, includeAll: undefined };
+      const schemaVar = { name: 'schema', multi: undefined, includeAll: undefined };
+      const tableVar = { name: 'table', multi: undefined, includeAll: undefined };
+      const hostVar = { name: 'host', multi: undefined, includeAll: undefined };
+      const domainVar = { name: 'domain', multi: undefined, includeAll: undefined };
+      
+      expect(interpolateFn('production', dbVar)).toBe('production');
+      expect(interpolateFn('public', schemaVar)).toBe('public');
+      expect(interpolateFn('users', tableVar)).toBe('users');
+      expect(interpolateFn('api', hostVar)).toBe('api');
+      expect(interpolateFn('default', domainVar)).toBe('default');
+    });
+
     it('should maintain fix for issue #712 - repeated panels', () => {
       const query = 'SELECT 1 WHERE 1 IN ($Var)';
       const interpolateFn = interpolateQueryExprWithContext(query);

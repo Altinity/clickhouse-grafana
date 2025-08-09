@@ -182,7 +182,8 @@ export const interpolateQueryExprWithContext = (query: string, variables: any[] 
     if (isInConcatenation && !Array.isArray(value)) {
       return value;
     }
-    
+
+    console.log(isRepeated)
     // Use the original logic for non-concatenation contexts or arrays
     return interpolateQueryExpr(value, variable, isRepeated);
   };
@@ -288,11 +289,6 @@ export const interpolateQueryExpr = (value: any, variable: any, isRepeated?: boo
   // When multi=false and includeAll=false, treat as raw value without quotes
   if (variable.multi === false && variable.includeAll === false && !Array.isArray(value)) {
     return value;
-  }
-
-  // Behavior for backward compatibility
-  if (variable.multi === undefined && variable.includeAll === undefined && !Array.isArray(value)) {
-    return `'${value}'`;
   }
 
   // Multi-value or complex variable handling

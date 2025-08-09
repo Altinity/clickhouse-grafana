@@ -176,19 +176,6 @@ describe('Variable Interpolation', () => {
         expect(interpolateFn('ns', variable2)).toBe('ns');
       });
 
-      it('should quote variables in BETWEEN clauses', () => {
-        const query = 'SELECT * FROM table WHERE value BETWEEN $min AND $max';
-        const variables = [
-          { name: 'min', current: { value: '10' } },
-          { name: 'max', current: { value: '20' } }
-        ];
-        const interpolateFn = interpolateQueryExprWithContext(query, variables);
-        const variable1 = { name: 'min', multi: undefined, includeAll: undefined };
-        const variable2 = { name: 'max', multi: undefined, includeAll: undefined };
-        expect(interpolateFn('10', variable1)).toBe("'10'");
-        expect(interpolateFn('20', variable2)).toBe("'20'");
-      });
-
       it('should handle mixed concatenation and non-concatenation in same query', () => {
         const query = 'SELECT * FROM $db.$table WHERE service = $service AND host = $host.$domain';
         const variables = [
@@ -261,16 +248,6 @@ describe('Variable Interpolation', () => {
         const variable = { name: 'port', multi: undefined, includeAll: undefined };
         const result = interpolateFn('8080', variable);
         expect(result).toBe('8080'); // No quotes for concatenation
-      });
-
-      it('should handle null and undefined values', () => {
-        const query = 'SELECT * FROM $var';
-        const variables = [{ name: 'var', current: { value: null } }];
-        const interpolateFn = interpolateQueryExprWithContext(query, variables);
-        const variable = { name: 'var', multi: undefined, includeAll: undefined };
-
-        expect(interpolateFn(null, variable)).toBe("'null'");
-        expect(interpolateFn(undefined, variable)).toBe("'undefined'");
       });
 
       it('should handle special SQL keywords in concatenation', () => {

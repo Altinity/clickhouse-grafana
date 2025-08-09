@@ -183,7 +183,6 @@ export const interpolateQueryExprWithContext = (query: string, variables: any[] 
       return value;
     }
 
-    console.log(isRepeated)
     // Use the original logic for non-concatenation contexts or arrays
     return interpolateQueryExpr(value, variable, isRepeated);
   };

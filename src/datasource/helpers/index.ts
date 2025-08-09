@@ -166,7 +166,16 @@ export const interpolateQueryExprWithContext = (query: string, variables: any[] 
     const isInConcatenation = detectConcatenationContext(query, variable.name);
     let isRepeated = false;
     if (currentVariableValue && "current" in currentVariableValue) {
-      isRepeated = !(JSON.stringify(value) === JSON.stringify(currentVariableValue.current.value));
+      let currentValue = currentVariableValue.current.value;
+      
+      // Handle $__all case: when current.value is ["$__all"], extract all values from options
+      if (Array.isArray(currentValue) && currentValue.length === 1 && currentValue[0] === '$__all' && variable.options) {
+        currentValue = variable.options.map((opt: any) => opt.value);
+      } else if (typeof currentValue === 'string' && currentValue === '$__all' && variable.options) {
+        currentValue = variable.options.map((opt: any) => opt.value);
+      }
+      
+      isRepeated = !(JSON.stringify(value) === JSON.stringify(currentValue));
     }
 
     // If it's in a concatenation context and it's a simple value, don't add quotes

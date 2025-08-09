@@ -327,6 +327,83 @@ describe('Variable Interpolation', () => {
         expect(result).toBe("'$__all'"); // Should quote special Grafana value
       });
 
+      it('should handle $__all corner case with array value and options', () => {
+        const query = 'SELECT * FROM table WHERE service IN ($service)';
+        const variables = [{ 
+          name: 'service', 
+          current: { 
+            text: ['$__all'], 
+            value: ['$__all'] 
+          }
+        }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
+        const variable = { 
+          name: 'service', 
+          multi: true, 
+          includeAll: true,
+          options: [
+            { value: 'foo', text: 'foo', selected: false },
+            { value: 'bar', text: 'bar', selected: false },
+            { value: 'baz', text: 'baz', selected: false }
+          ]
+        };
+        
+        // When $__all is selected, any individual value should be treated as repeated
+        const result = interpolateFn('foo', variable);
+        expect(result).toBe("'foo'"); // Should be quoted as it's different from all options
+      });
+
+      it('should handle $__all corner case with string value and options', () => {
+        const query = 'SELECT * FROM table WHERE service IN ($service)';
+        const variables = [{ 
+          name: 'service', 
+          current: { 
+            text: '$__all', 
+            value: '$__all' 
+          }
+        }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
+        const variable = { 
+          name: 'service', 
+          multi: true, 
+          includeAll: true,
+          options: [
+            { value: 'foo', text: 'foo', selected: false },
+            { value: 'bar', text: 'bar', selected: false },
+            { value: 'baz', text: 'baz', selected: false }
+          ]
+        };
+        
+        // When $__all is selected, any individual value should be treated as repeated
+        const result = interpolateFn('foo', variable);
+        expect(result).toBe("'foo'"); // Should be quoted as it's different from all options
+      });
+
+      it('should handle $__all case when interpolated value matches all options', () => {
+        const query = 'SELECT * FROM table WHERE service IN ($service)';
+        const variables = [{ 
+          name: 'service', 
+          current: { 
+            text: ['$__all'], 
+            value: ['$__all'] 
+          }
+        }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
+        const variable = { 
+          name: 'service', 
+          multi: true, 
+          includeAll: true,
+          options: [
+            { value: 'foo', text: 'foo', selected: false },
+            { value: 'bar', text: 'bar', selected: false }
+          ]
+        };
+        
+        // When the interpolated value equals all option values, it should not be repeated
+        const result = interpolateFn(['foo', 'bar'], variable);
+        expect(result).toBe("'foo','bar'"); // Should use normal array handling
+      });
+
       it('should handle empty array values', () => {
         const query = 'SELECT * FROM table WHERE service IN ($service)';
         const variables = [{ name: 'service', current: { value: [] } }];

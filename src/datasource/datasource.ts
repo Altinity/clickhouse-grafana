@@ -698,13 +698,13 @@ export class CHDataSource
           text: '',
         },
       };
-      query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query));
+      query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
     }
     const conditionalQuery = conditionalTest(query, this.templateSrv);
     interpolatedQuery = this.templateSrv.replace(
       conditionalQuery,
       scopedVars,
-      createContextAwareInterpolation(conditionalQuery)
+      createContextAwareInterpolation(conditionalQuery, this.templateSrv.getVariables())
     );
 
     if (options && options.range) {
@@ -761,7 +761,7 @@ export class CHDataSource
           query: this.templateSrv.replace(
             conditionalTest(query.query, this.templateSrv),
             scopedVars,
-            createContextAwareInterpolation(query.query)
+            createContextAwareInterpolation(query.query, this.templateSrv.getVariables())
           ),
         };
         return expandedQuery;
@@ -816,7 +816,7 @@ export class CHDataSource
       query = this.templateSrv.replace(
         conditionalTest(query, this.templateSrv),
         options.scopedVars,
-        createContextAwareInterpolation(query)
+        createContextAwareInterpolation(query, this.templateSrv.getVariables())
       );
 
       const wildcardChar = '%';
@@ -830,13 +830,13 @@ export class CHDataSource
             text: '',
           },
         };
-        query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query));
+        query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
       }
 
       const interpolatedQuery = this.templateSrv.replace(
         conditionalTest(query, this.templateSrv),
         scopedVars,
-        createContextAwareInterpolation(query)
+        createContextAwareInterpolation(query, this.templateSrv.getVariables())
       );
 
       // Extract GROUP BY properties from the FINAL query (after template replacement)

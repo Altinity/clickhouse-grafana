@@ -38,7 +38,7 @@ jobs:
           python3
           -u ./regression.py --before=0.1 --after=0.1
           --log raw.log
-          -o classic
+          -o new-fails
 
       - name: Create code coverage for backend
         run: docker compose run --rm backend_coverage_generate

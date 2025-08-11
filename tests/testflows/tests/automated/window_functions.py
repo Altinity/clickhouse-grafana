@@ -18,10 +18,14 @@ from requirements.requirements import *
 def window_functions_outline(self, panel_name, panel_names, column=None):
     """Check that grafana plugin supports window functions."""
 
-    with When(f"I download data for {panel_name} panel{'' if column is None else ', ' + column + ' column'}"):
+    with When(
+        f"I download data for {panel_name} panel{'' if column is None else ', ' + column + ' column'}"
+    ):
         with When("I scroll down to the panel"):
             if panel_names.index(panel_name) != 0:
-                dashboard.scroll_to_panel(panel_name=panel_names[panel_names.index(panel_name) - 1])
+                dashboard.scroll_to_panel(
+                    panel_name=panel_names[panel_names.index(panel_name) - 1]
+                )
 
         with When(f"I open panel {panel_name}"):
             with delay():
@@ -30,9 +34,11 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
         with And("I click run query button"):
             with delay():
                 panel.click_run_query_button()
-        
+
         with Then("I check generated SQL contains running difference function"):
-            assert not ("runningDifference" in sql_editor.get_reformatted_query(query_name="A")), error()
+            assert not (
+                "runningDifference" in sql_editor.get_reformatted_query(query_name="A")
+            ), error()
 
         with When("I open Query inspector"):
             with delay(after=0.5):
@@ -59,17 +65,23 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
             with delay():
                 panel.click_back_to_dashboard_button()
 
-    with When(f"I download data for {panel_name} - without window functions panel{'' if column is None else ', ' + column + ' column'}"):
+    with When(
+        f"I download data for {panel_name} - without window functions panel{'' if column is None else ', ' + column + ' column'}"
+    ):
         with When(f"I open panel {panel_name} - without window functions"):
             with delay():
-                dashboard.open_panel(panel_name=f"{panel_name} - without window functions")
+                dashboard.open_panel(
+                    panel_name=f"{panel_name} - without window functions"
+                )
 
         with And("I click run query button"):
             with delay():
                 panel.click_run_query_button()
-                
+
         with Then("I check generated SQL contains running difference function"):
-            assert "runningDifference" in sql_editor.get_reformatted_query(query_name="A"), error()
+            assert "runningDifference" in sql_editor.get_reformatted_query(
+                query_name="A"
+            ), error()
 
         with When("I open Query inspector"):
             with delay(after=0.5):
@@ -99,25 +111,46 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
     with Then("I save two csv files"):
         with delay():
             with By("saving container id"):
-                r = self.context.cluster.command(None, "docker ps -a | grep '4444/tcp, 5900/tcp'")
+                r = self.context.cluster.command(
+                    None, "docker ps -a | grep '4444/tcp, 5900/tcp'"
+                )
                 container_id = r.output.split(" ")[0]
-                column_name = '' if column is None else '/column' + column[4]
+                column_name = "" if column is None else "/column" + column[4]
 
             with By("moving csv file from docker"):
-                r = self.context.cluster.command(None, f"rm -rf tests/automated/window_functions/{panel_name[1:]}{column_name}")
-                r = self.context.cluster.command(None, f"mkdir -p tests/automated/window_functions/{panel_name[1:]}{column_name}")
-                r = self.context.cluster.command(None, f"docker cp {container_id}:/home/seluser/Downloads/ tests/automated/window_functions/{panel_name[1:]}{column_name}")
-                r = self.context.cluster.command(None, f"docker exec {container_id} rm -rf /home/seluser/Downloads/")
+                r = self.context.cluster.command(
+                    None,
+                    f"rm -rf tests/automated/window_functions/{panel_name[1:]}{column_name}",
+                )
+                r = self.context.cluster.command(
+                    None,
+                    f"mkdir -p tests/automated/window_functions/{panel_name[1:]}{column_name}",
+                )
+                r = self.context.cluster.command(
+                    None,
+                    f"docker cp {container_id}:/home/seluser/Downloads/ tests/automated/window_functions/{panel_name[1:]}{column_name}",
+                )
+                r = self.context.cluster.command(
+                    None, f"docker exec {container_id} rm -rf /home/seluser/Downloads/"
+                )
 
     with Then("I compare two csv files"):
         with delay():
             with By("defining filenames"):
-                filename_with_window_functions = self.context.cluster.command(None, f"ls tests/automated/window_functions/{panel_name[1:]}{column_name}/Downloads/*{panel_name[1:]}-*").output[1:-1]
-                filename_without_window_functions = self.context.cluster.command(None, f"ls tests/automated/window_functions/{panel_name[1:]}{column_name}/Downloads/*{panel_name[1:]}\ *").output[1:-1]
+                filename_with_window_functions = self.context.cluster.command(
+                    None,
+                    f"ls tests/automated/window_functions/{panel_name[1:]}{column_name}/Downloads/*{panel_name[1:]}-*",
+                ).output[1:-1]
+                filename_without_window_functions = self.context.cluster.command(
+                    None,
+                    f"ls tests/automated/window_functions/{panel_name[1:]}{column_name}/Downloads/*{panel_name[1:]}\\ *",
+                ).output[1:-1]
 
             with By("getting values from files"):
                 with Step("without window functions"):
-                    file_without_window_functions = open(filename_without_window_functions)
+                    file_without_window_functions = open(
+                        filename_without_window_functions
+                    )
                     data_without_window_functions = []
                     for row in csv.reader(file_without_window_functions):
                         data_without_window_functions.append(row[1])
@@ -131,9 +164,24 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
                     file_with_window_functions.close()
 
             with By("calculating correlation between this values"):
-                data_without_window_functions = [0 if i == '' else float(i) for i in data_without_window_functions[1:]]
-                data_with_window_functions = [0 if i == '' else float(i) for i in data_with_window_functions[1:]]
-                simular_count = sum([1 if data_with_window_functions[i] == data_without_window_functions[i] else 0 for i in range(len(data_with_window_functions))])
+                data_without_window_functions = [
+                    0 if i == "" else float(i)
+                    for i in data_without_window_functions[1:]
+                ]
+                data_with_window_functions = [
+                    0 if i == "" else float(i) for i in data_with_window_functions[1:]
+                ]
+                simular_count = sum(
+                    [
+                        (
+                            1
+                            if data_with_window_functions[i]
+                            == data_without_window_functions[i]
+                            else 0
+                        )
+                        for i in range(len(data_with_window_functions))
+                    ]
+                )
                 correlation = simular_count / len(data_with_window_functions)
                 note(f"correlation for {panel_name}: {correlation}")
                 note(data_without_window_functions)
@@ -141,36 +189,43 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
                 assert len(data_without_window_functions) - simular_count <= 1, error()
                 assert correlation > 0.9, error()
 
+
 @TestFeature
 @Name("window functions")
 def feature(self):
     """Check that grafana plugin supports window functions."""
 
     panel_names = [
-        '$delta',
-        '$deltaColumns',
-        '$deltaColumnsAggregated',
-        '$increase',
-        '$increaseColumns',
-        '$increaseColumnsAggregated',
-        '$perSecond',
-        '$perSecondColumns',
-        '$perSecondColumnsAggregated',
-        '$rate',
-        '$rateColumns',
-        '$rateColumnsAggregated',
+        "$delta",
+        "$deltaColumns",
+        "$deltaColumnsAggregated",
+        "$increase",
+        "$increaseColumns",
+        "$increaseColumnsAggregated",
+        "$perSecond",
+        "$perSecondColumns",
+        "$perSecondColumnsAggregated",
+        "$rate",
+        "$rateColumns",
+        "$rateColumnsAggregated",
     ]
 
     with Given(f"I open dashboard window functions"):
-        ui.open_endpoint(endpoint='http://grafana:3000/d/de6482iletr0gc/window-functions')
+        ui.open_endpoint(
+            endpoint="http://grafana:3000/d/de6482iletr0gc/window-functions"
+        )
 
     for panel_name in panel_names:
         if "Columns" in panel_name:
             with Scenario(f"{panel_name} function first row"):
-                window_functions_outline(panel_name=panel_name, panel_names=panel_names, column="test1")
+                window_functions_outline(
+                    panel_name=panel_name, panel_names=panel_names, column="test1"
+                )
 
             with Scenario(f"{panel_name} function second row"):
-                window_functions_outline(panel_name=panel_name, panel_names=panel_names, column="test2")
+                window_functions_outline(
+                    panel_name=panel_name, panel_names=panel_names, column="test2"
+                )
         else:
             with Scenario(f"{panel_name} function"):
                 window_functions_outline(panel_name=panel_name, panel_names=panel_names)

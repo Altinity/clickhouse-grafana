@@ -1,0 +1,1473 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Optimized test dashboard for ClickHouse template variable interpolation with focused single-scenario panels, parameter reference guide, and security tests removed for safe testing.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": 41,
+  "links": [],
+  "panels": [
+    {
+      "description": "## Optimized Template Variable Test Dashboard\n\nThis dashboard provides focused testing for `interpolateQueryExprWithContext` function with single-scenario panels for easier debugging.\n\n**Key Improvements:**\n- 🔍 **Single-scenario panels** - Each panel tests one specific case\n- 📊 **Parameter reference guide** - Complete documentation of variable configurations\n- 🛡️ **Security tests removed** - Safe for all environments\n- 🏷️ **Parameter state badges** - Clear indicators of variable configuration used\n- 🎯 **Focused testing** - Easier to identify and fix issues\n\n**Panel Categories:**\n- **Panel #2:** Parameter combinations reference\n- **Panels #3-9:** Basic concatenation patterns (7 focused tests)\n- **Remaining panels:** Advanced concatenation, SQL contexts, edge cases, backend macros, complex scenarios, and repeat panel tests\n\n**How to Use:**\n- Check parameter state badges in panel titles\n- Compare expected vs actual behavior in each panel\n- Use Panel #2 reference for understanding variable configurations",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "code": {
+          "language": "plaintext",
+          "showLineNumbers": false,
+          "showMiniMap": false
+        },
+        "content": "",
+        "mode": "markdown"
+      },
+      "pluginVersion": "12.0.2",
+      "title": "📋 Optimized Test Dashboard - Focused & Safe Testing",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "Reference guide for all template variable parameter combinations and their expected behaviors in different contexts",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 6
+      },
+      "id": 100,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Variable Configuration' as config_type, 'multi Value' as multi_value, 'includeAll Value' as include_all_value, 'Context: Concatenation' as concat_behavior, 'Context: SQL Equals' as sql_equals_behavior, 'Context: SQL IN' as sql_in_behavior, 'Risk Level' as risk_level, 'Used In Tests' as used_in_tests UNION ALL SELECT 'Default Config', 'undefined', 'undefined', 'No quotes: db.table', 'Quoted: = \\'value\\'', 'Quoted: IN (\\'value\\')', 'MEDIUM - Context dependent', 'Most test panels' UNION ALL SELECT 'Explicit Single', 'false', 'false', 'No quotes: db.table', 'NEVER QUOTED: = value', 'NEVER QUOTED: IN (value)', 'HIGH - Never quotes user input!', 'Single-specific tests' UNION ALL SELECT 'Multi-Select', 'true', 'false', 'No quotes: db.table', 'CSV: = \\'a\\',\\'b\\'', 'CSV: IN (\\'a\\',\\'b\\')', 'LOW - Always proper format', 'Multi-value tests' UNION ALL SELECT 'Multi with All', 'true', 'true', 'No quotes: db.table', 'Special: May return $__all', 'Special: May return $__all', 'MEDIUM - Special $__all handling', 'All-option tests' UNION ALL SELECT 'Numeric Only', 'varies', 'varies', 'No quotes: api:8080', 'No quotes: = 123', 'No quotes: IN (1,2,3)', 'LOW - Numeric contexts safe', 'Numeric tests' UNION ALL SELECT '', '', '', '', '', '', '', '' UNION ALL SELECT 'Parameter States Used:', 'Panel Range', 'Description', 'Example Variable', 'Context Focus', 'Expected Behavior', 'Badge Color', 'Test Purpose' UNION ALL SELECT '[Default Config]', '#3-9, #17-23', 'Standard undefined config', 'test_default', 'Mixed contexts', 'Context-dependent quoting', '🟢 Green', 'Core functionality' UNION ALL SELECT '[Single Config]', '#10-16', 'Explicit single mode', 'test_single', 'Concatenation focus', 'Never quotes values', '🟡 Yellow', 'Edge case testing' UNION ALL SELECT '[Multi Config]', '#24-30', 'Multi-select mode', 'test_multi', 'SQL contexts', 'CSV format output', '🔵 Blue', 'Multi-value handling' UNION ALL SELECT '[Complex Mix]', '#31-47', 'Multiple configurations', 'Various', 'Advanced scenarios', 'Context-specific behavior', '🟠 Orange', 'Complex interactions' UNION ALL SELECT '[Critical #712]', '#47', 'Specific issue test', 'test_default', 'Repeat panel context', 'Must be quoted in SQL', '🔴 Red', 'Bug regression'",
+          "intervalFactor": 1,
+          "query": "-- Parameter Reference: This query demonstrates variable interpolation\n-- Check Query Inspector to see how variables are interpolated\n-- Variables used: $test_default, $test_single, $test_multi, $test_numeric\n\nSELECT \n  'Variable Configuration' as config_type,\n  'Concatenation Example' as concat_example,\n  'SQL Context Example' as sql_example,\n  'Risk Level' as risk_level\nFROM system.one\nWHERE 1=1\n\n-- Examples of different contexts:\n-- Concatenation (no quotes): FROM $test_default.$test_single  \n-- SQL context (quoted): WHERE name = $test_default\n-- Multi-value (CSV): WHERE id IN ($test_multi)\n-- Numeric (no quotes): WHERE port = $test_numeric",
+          "rawQuery": true,
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false
+        }
+      ],
+      "title": "📊 Variable Parameter Combinations Reference",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "[Default Config] Tests database.table concatenation pattern - should NOT be quoted. Check Query Inspector to see how $test_default.$test_single is interpolated.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 16
+      },
+      "id": 3,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT * FROM $test_default.$test_single WHERE 1=1 LIMIT 1",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "-- [Default Config] Database.Table Concatenation Test\n-- Pattern: $test_default.$test_single  \n-- Expected: database1.users (NO quotes)\n-- Check Query Inspector to see actual interpolation\n\nSELECT * FROM $test_default.$test_single \nWHERE 1=1\nLIMIT 1",
+          "rawQuery": "/* grafana dashboard='ClickHouse Template Variable Test Dashboard - Optimized', user='0' */\n\n\n\n\n\nSELECT * FROM one.users \nWHERE 1=1\nLIMIT 1",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "🟢 [Default Config] Database.Table Concatenation",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "[Single Config] Tests variable.suffix concatenation pattern - should NOT be quoted. Check Query Inspector to see how $test_single.suffix is interpolated.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 16
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT * FROM $test_single.suffix WHERE 1=1 LIMIT 1",
+          "intervalFactor": 1,
+          "query": "-- [Single Config] Variable.Suffix Concatenation Test\n-- Pattern: $test_single.suffix\n-- Expected: users.suffix (NO quotes) - Single config never quotes!\n-- Check Query Inspector to see actual interpolation\n\nSELECT * FROM $test_single.suffix \nWHERE 1=1\nLIMIT 1",
+          "rawQuery": true,
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false
+        }
+      ],
+      "title": "🟡 [Single Config] Variable.Suffix Concatenation",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "[Default Config] Tests prefix.variable concatenation pattern - should NOT be quoted",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 22
+      },
+      "id": 5,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Test Pattern' as pattern, 'Variable Config' as config, 'Expected Result' as expected UNION ALL SELECT 'prefix.$test_default', 'Default Config', 'prefix.database1 (no quotes)'",
+          "intervalFactor": 1,
+          "query": "SELECT \n  'Test Pattern' as pattern,\n  'Variable Config' as config,\n  'Expected Result' as expected\nUNION ALL\nSELECT \n  'prefix.$test_default',\n  'Default Config',\n  'prefix.database1 (no quotes)'",
+          "rawQuery": true,
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false
+        }
+      ],
+      "title": "🟢 [Default Config] Prefix.Variable Concatenation",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "[Default + Single] Tests variable.variable concatenation pattern - should NOT be quoted",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 22
+      },
+      "id": 6,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Test Pattern' as pattern, 'Variable Config' as config, 'Expected Result' as expected UNION ALL SELECT '$test_default.$test_single', 'Default + Single', 'database1.users (no quotes)'",
+          "intervalFactor": 1,
+          "query": "SELECT \n  'Test Pattern' as pattern,\n  'Variable Config' as config,\n  'Expected Result' as expected\nUNION ALL\nSELECT \n  '$test_default.$test_single',\n  'Default + Single',\n  'database1.users (no quotes)'",
+          "rawQuery": true,
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false
+        }
+      ],
+      "title": "🟢 [Default + Single] Var.Var Concatenation",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "Tests SQL contexts where variables SHOULD be quoted",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 28
+      },
+      "id": 101,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'SQL Context Tests' as category, '' as test_case, '' as pattern, '' as expected UNION ALL SELECT '', 'WHERE Equals', 'WHERE name = $test_default', 'Quoted' UNION ALL SELECT '', 'WHERE IN', 'WHERE id IN ($test_multi)', 'CSV format' UNION ALL SELECT '', 'LIKE Pattern', 'WHERE path LIKE \\'$test_default%\\'', 'Quoted' UNION ALL SELECT '', 'BETWEEN', 'WHERE val BETWEEN $test_numeric AND $test_numeric', 'May not quote' UNION ALL SELECT '', 'NOT IN', 'WHERE service NOT IN ($test_multi)', 'CSV format' UNION ALL SELECT '', 'Explicit Single', 'WHERE id = $test_single', 'Never quoted!' UNION ALL SELECT '', 'HAVING', 'HAVING count > $test_numeric', 'Context dependent'",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "-- [Default Config] SQL Context Patterns Test\n-- These patterns should quote variables (except single config)\n-- Check Query Inspector to see actual interpolation\n\nSELECT * FROM system.one \nWHERE name = $test_default  -- Should be quoted: 'database1'\n  AND id IN ($test_multi)    -- Should be CSV: 'api','web' \n  AND service = $test_single -- Single config: NEVER quoted!\n  AND port = $test_numeric   -- Numeric: no quotes\nLIMIT 1",
+          "rawQuery": "/* grafana dashboard='ClickHouse Template Variable Test Dashboard - Optimized', user='0' */\n\n\n\n\nSELECT * FROM system.one \nWHERE name = system  \n  AND id IN ('api','web')    \n  AND service = users \n  AND port = 8080,8081   \nLIMIT 1",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "⚠️ [Default Config] SQL Context Patterns - Variables SHOULD be quoted",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "Tests edge cases that can break queries",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 28
+      },
+      "id": 102,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Edge Case Tests' as category, '' as test_case, '' as pattern, '' as issue UNION ALL SELECT '', 'Empty Variable', 'WHERE name = $test_empty', 'Empty string handling' UNION ALL SELECT '', 'Null Variable', 'WHERE id = $test_null', 'Null handling' UNION ALL SELECT '', 'Dots in Value', 'FROM $test_dots.$test_single', 'Value: my.host.com' UNION ALL SELECT '', 'Empty Multi', 'WHERE id IN ($test_multi)', 'Empty () breaks SQL' UNION ALL SELECT '', 'Unicode Names', 'WHERE 名前 = $test_unicode', 'Unicode handling' UNION ALL SELECT '', 'Long Variable', '$test_very_long_variable_name_that_exceeds_normal_length', 'Long names' UNION ALL SELECT '', 'Regex Pattern', 'WHERE path REGEXP $test_regex', 'Pattern: /^prefix_.*/'",
+          "intervalFactor": 1,
+          "query": "SELECT \n  'Edge Case Tests' as category,\n  '' as test_case,\n  '' as pattern,\n  '' as issue\nUNION ALL\nSELECT '', 'Empty Variable', 'WHERE name = $test_empty', 'Empty string handling'\nUNION ALL\nSELECT '', 'Null Variable', 'WHERE id = $test_null', 'Null handling'\nUNION ALL\nSELECT '', 'Dots in Value', 'FROM $test_dots.$test_single', 'Value: my.host.com'\nUNION ALL\nSELECT '', 'Empty Multi', 'WHERE id IN ($test_multi)', 'Empty () breaks SQL'\nUNION ALL\nSELECT '', 'Unicode Names', 'WHERE 名前 = $test_unicode', 'Unicode handling'\nUNION ALL\nSELECT '', 'Long Variable', '$test_very_long_variable_name_that_exceeds_normal_length', 'Long names'\nUNION ALL\nSELECT '', 'Regex Pattern', 'WHERE path REGEXP $test_regex', 'Pattern: /^prefix_.*/'",
+          "rawQuery": true,
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false
+        }
+      ],
+      "title": "🚨 Edge Cases & Error Scenarios",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "[Braced Syntax] Tests ${var}.${var} braced concatenation pattern - should NOT be quoted",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 36
+      },
+      "id": 7,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Test Pattern' as pattern, 'Variable Config' as config, 'Expected Result' as expected UNION ALL SELECT '${test_default}.${test_single}', 'Braced Syntax', 'database1.users (no quotes)'",
+          "intervalFactor": 1,
+          "query": "SELECT \n  'Test Pattern' as pattern,\n  'Variable Config' as config,\n  'Expected Result' as expected\nUNION ALL\nSELECT \n  '${test_default}.${test_single}',\n  'Braced Syntax',\n  'database1.users (no quotes)'",
+          "rawQuery": true,
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false
+        }
+      ],
+      "title": "🟢 [Braced Syntax] ${var}.${var} Concatenation",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "[Multi-Config] Tests host:port concatenation pattern - should NOT be quoted",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 36
+      },
+      "id": 8,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Test Pattern' as pattern, 'Variable Config' as config, 'Expected Result' as expected UNION ALL SELECT '$test_default:$test_numeric', 'Default + Numeric', 'database1:8080,8081 (no quotes)'",
+          "intervalFactor": 1,
+          "query": "SELECT \n  'Test Pattern' as pattern,\n  'Variable Config' as config,\n  'Expected Result' as expected\nUNION ALL\nSELECT \n  '$test_default:$test_numeric',\n  'Default + Numeric',\n  'database1:8080,8081 (no quotes)'",
+          "rawQuery": true,
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false
+        }
+      ],
+      "title": "🔵 [Multi-Config] Host:Port Concatenation",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "Tests backend macro interference and partial replacements",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "blue"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 42
+      },
+      "id": 103,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Backend Macro Tests' as category, '' as test_case, '' as pattern, '' as note UNION ALL SELECT '', 'Table Macro Mix', 'SELECT * FROM $table WHERE $timeFilter', 'User var vs macro' UNION ALL SELECT '', 'Adhoc Mix', 'WHERE $adhoc AND service = $test_default', 'Macro + user var' UNION ALL SELECT '', 'Partial Replace', 'mydb.$test_single WHERE db = $test_default', 'One var replaced' UNION ALL SELECT '', 'Multi Replace', '$test_default.$test_single.$test_dangerous', 'Sequential replace' UNION ALL SELECT '', 'Rate Macro', 'SELECT $rate(value, EventTime) FROM $test_default.$test_single', 'Macro function'",
+          "intervalFactor": 1,
+          "query": "SELECT \n  'Backend Macro Tests' as category,\n  '' as test_case,\n  '' as pattern,\n  '' as note\nUNION ALL\nSELECT '', 'Table Macro Mix', 'SELECT * FROM $table WHERE $timeFilter', 'User var vs macro'\nUNION ALL\nSELECT '', 'Adhoc Mix', 'WHERE $adhoc AND service = $test_default', 'Macro + user var'\nUNION ALL\nSELECT '', 'Partial Replace', 'mydb.$test_single WHERE db = $test_default', 'One var replaced'\nUNION ALL\nSELECT '', 'Multi Replace', '$test_default.$test_single.$test_dangerous', 'Sequential replace'\nUNION ALL\nSELECT '', 'Rate Macro', 'SELECT $rate(value, EventTime) FROM $test_default.$test_single', 'Macro function'",
+          "rawQuery": true,
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false
+        }
+      ],
+      "title": "🔄 Backend Macros & Partial Replacements",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "Tests complex nested scenarios and multi-variable patterns",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 42
+      },
+      "id": 104,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Complex Scenarios' as category, '' as test_case, '' as pattern, '' as behavior UNION ALL SELECT '', 'Quoted Multi-Var', \"WHERE host = '$test_default.$test_single.$test_dangerous.local'\", 'All unquoted' UNION ALL SELECT '', 'Mixed Contexts', 'FROM $test_default.$test_single WHERE db = $test_default', 'Context differs' UNION ALL SELECT '', 'Nested Quotes', \"WHERE path = '/$test_default/$test_single' AND host = '$test_default'\", 'Quote contexts' UNION ALL SELECT '', 'Array Access', 'SELECT $test_array[$test_numeric]', 'Array pattern' UNION ALL SELECT '', 'Math Operations', 'WHERE value = $test_numeric + $test_numeric', 'Math context' UNION ALL SELECT '', 'Function Call', 'SELECT $test_func($test_default, $test_single)', 'Function args'",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "SELECT \n  'Complex Scenarios' as category,\n  '' as test_case,\n  '' as pattern,\n  '' as behavior\nUNION ALL\nSELECT '', 'Quoted Multi-Var', \"WHERE host = '$test_default.$test_single.$test_dangerous.local'\", 'All unquoted'\nUNION ALL\nSELECT '', 'Mixed Contexts', 'FROM $test_default.$test_single WHERE db = $test_default', 'Context differs'\nUNION ALL\nSELECT '', 'Nested Quotes', \"WHERE path = '/$test_default/$test_single' AND host = '$test_default'\", 'Quote contexts'\nUNION ALL\nSELECT '', 'Array Access', 'SELECT $test_array[$test_numeric]', 'Array pattern'\nUNION ALL\nSELECT '', 'Math Operations', 'WHERE value = $test_numeric + $test_numeric', 'Math context'\nUNION ALL\nSELECT '', 'Function Call', 'SELECT $test_func($test_default, $test_single)', 'Function args'",
+          "rawQuery": "/* grafana dashboard='ClickHouse Template Variable Test Dashboard - Optimized', user='0' */\nSELECT \n  'Complex Scenarios' as category,\n  '' as test_case,\n  '' as pattern,\n  '' as behavior\nUNION ALL\nSELECT '', 'Quoted Multi-Var', \"WHERE host = 'system.users.$test_dangerous.local'\", 'All unquoted'\nUNION ALL\nSELECT '', 'Mixed Contexts', 'FROM system.users WHERE db = system', 'Context differs'\nUNION ALL\nSELECT '', 'Nested Quotes', \"WHERE path = '/system/users' AND host = 'system'\", 'Quote contexts'\nUNION ALL\nSELECT '', 'Array Access', 'SELECT 'array_data'[8080,8081]', 'Array pattern'\nUNION ALL\nSELECT '', 'Math Operations', 'WHERE value = 8080,8081 + 8080,8081', 'Math context'\nUNION ALL\nSELECT '', 'Function Call', 'SELECT 'myFunction'(system, users)', 'Function args'",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "🧩 Complex Nested Scenarios",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "[Complex Mix] Tests URL path concatenation pattern - should NOT be quoted",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "orange"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 24,
+        "x": 0,
+        "y": 50
+      },
+      "id": 9,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Test Pattern' as pattern, 'Variable Config' as config, 'Expected Result' as expected UNION ALL SELECT 'https://$test_default/$test_single/api', 'Default + Single', 'https://database1/users/api (no quotes)'",
+          "intervalFactor": 1,
+          "query": "-- [Complex Mix] URL Path Concatenation Test\n-- Pattern: https://$test_default/$test_single/api\n-- Expected: https://database1/users/api (NO quotes)\n-- Check Query Inspector to see actual interpolation\n\nSELECT * FROM system.one \nWHERE url = 'https://$test_default/$test_single/api'\nLIMIT 1",
+          "rawQuery": true,
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false
+        }
+      ],
+      "title": "🟠 [Complex Mix] URL Path Concatenation",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "CRITICAL TEST: Repeat panel scenario (issue #712) - Variables with multi=undefined, includeAll=undefined should be quoted in SQL contexts",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "purple"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 24,
+        "x": 0,
+        "y": 56
+      },
+      "id": 105,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "repeat": "test_multi",
+      "repeatDirection": "h",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Repeat Panel Tests (Issue #712)' as category, 'Test Case' as test_case, 'Pattern' as pattern, 'Expected' as expected UNION ALL SELECT '', 'IN clause with default', 'WHERE service IN ($test_default)', 'Quoted: IN (\\'value\\')' UNION ALL SELECT '', 'Equals with default', 'WHERE service = $test_default', 'Quoted: = \\'value\\'' UNION ALL SELECT '', 'Concat with default', 'FROM $test_default.$test_single', 'No quotes: db.table' UNION ALL SELECT '', 'IN clause with single', 'WHERE id IN ($test_single)', 'Never quoted: IN (value)' UNION ALL SELECT '', 'Multi-value IN', 'WHERE id IN ($test_multi)', 'CSV: IN (\\'a\\',\\'b\\')' UNION ALL SELECT '', 'Original #712 case', 'WHERE service_name IN (${test_default})', 'Must be quoted!'",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "SELECT (${test_multi})",
+          "rawQuery": "/* grafana dashboard='ClickHouse Template Variable Test Dashboard - Optimized', user='0' */\nSELECT ('api')",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "🔁 Repeat Panel Tests (Issue #712)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "${datasource}"
+      },
+      "description": "Tests advanced concatenation patterns that were missing",
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "yellow"
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 64
+      },
+      "id": 10,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "12.0.2",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "system",
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "SELECT 'Advanced Concatenation' as category, '' as test_case, '' as pattern, '' as expected UNION ALL SELECT '', 'Numeric Suffix', '$test_single.8090', 'No quotes (bug test)' UNION ALL SELECT '', 'Port Pattern', '$test_default.8090.svc', 'No quotes' UNION ALL SELECT '', 'Identifier Suffix', '$test_single.identifier', 'No quotes' UNION ALL SELECT '', 'Quoted.Variable', \"'quoted'.$test_default\", 'No quotes (issue #797)' UNION ALL SELECT '', 'Multiple Dots', '$test_default..$test_single', 'No quotes' UNION ALL SELECT '', 'Three Level', '$test_default.$test_single.$test_dangerous', 'No quotes' UNION ALL SELECT '', 'Complex URL', '$test_protocol://$test_default:$test_numeric/$test_single', 'All unquoted'",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "SELECT \n  'Advanced Concatenation' as category,\n  '' as test_case,\n  '' as pattern,\n  '' as expected\nUNION ALL\nSELECT '', 'Numeric Suffix', '$test_single.8090', 'No quotes (bug test)'\nUNION ALL\nSELECT '', 'Port Pattern', '$test_default.8090.svc', 'No quotes'\nUNION ALL\nSELECT '', 'Identifier Suffix', '$test_single.identifier', 'No quotes'\nUNION ALL\nSELECT '', 'Multiple Dots', '$test_default..$test_single', 'No quotes'\nUNION ALL\nSELECT '', 'Three Level', '$test_default.$test_single.$test_dangerous', 'No quotes'\n",
+          "rawQuery": "/* grafana dashboard='ClickHouse Template Variable Test Dashboard - Optimized', user='0' */\nSELECT \n  'Advanced Concatenation' as category,\n  '' as test_case,\n  '' as pattern,\n  '' as expected\nUNION ALL\nSELECT '', 'Numeric Suffix', 'users.8090', 'No quotes (bug test)'\nUNION ALL\nSELECT '', 'Port Pattern', 'database1.8090.svc', 'No quotes'\nUNION ALL\nSELECT '', 'Identifier Suffix', 'users.identifier', 'No quotes'\nUNION ALL\nSELECT '', 'Multiple Dots', 'database1..users', 'No quotes'\nUNION ALL\nSELECT '', 'Three Level', 'database1.users.$test_dangerous', 'No quotes'",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "one",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "🔧 Advanced Concatenation Patterns (Edge Cases)",
+      "type": "table"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 41,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "current": {
+          "text": "ClickHouse",
+          "value": "ClickHouse"
+        },
+        "includeAll": false,
+        "name": "datasource",
+        "options": [],
+        "query": "vertamedia-clickhouse-datasource",
+        "refresh": 1,
+        "regex": "",
+        "type": "datasource"
+      },
+      {
+        "current": {
+          "text": "database1",
+          "value": "database1"
+        },
+        "description": "Default config: multi=undefined, includeAll=undefined. Should quote in SQL context, no quotes in concatenation.",
+        "includeAll": false,
+        "label": "Default Config",
+        "name": "test_default",
+        "options": [
+          {
+            "selected": true,
+            "text": "database1",
+            "value": "database1"
+          },
+          {
+            "selected": false,
+            "text": "my.db",
+            "value": "my.db"
+          },
+          {
+            "selected": false,
+            "text": "test_db",
+            "value": "test_db"
+          },
+          {
+            "selected": false,
+            "text": "prod",
+            "value": "prod"
+          }
+        ],
+        "query": "system, default, test",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "users",
+          "value": "users"
+        },
+        "description": "Explicit single: multi=false, includeAll=false. Never quotes values - DANGEROUS for user input!",
+        "includeAll": false,
+        "label": "Single (No Quotes)",
+        "name": "test_single",
+        "options": [
+          {
+            "selected": true,
+            "text": "users",
+            "value": "users"
+          },
+          {
+            "selected": false,
+            "text": "events",
+            "value": "events"
+          },
+          {
+            "selected": false,
+            "text": "logs_2024",
+            "value": "logs_2024"
+          },
+          {
+            "selected": false,
+            "text": "my table",
+            "value": "my table"
+          }
+        ],
+        "query": "users,events,logs_2024,my table",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": [
+            "api",
+            "web"
+          ],
+          "value": [
+            "api",
+            "web"
+          ]
+        },
+        "description": "Multi-select: multi=true, includeAll=false. Always returns CSV format.",
+        "includeAll": false,
+        "label": "Multi-Select",
+        "multi": true,
+        "name": "test_multi",
+        "options": [
+          {
+            "selected": true,
+            "text": "api",
+            "value": "api"
+          },
+          {
+            "selected": true,
+            "text": "web",
+            "value": "web"
+          },
+          {
+            "selected": false,
+            "text": "database",
+            "value": "database"
+          },
+          {
+            "selected": false,
+            "text": "cache",
+            "value": "cache"
+          }
+        ],
+        "query": "api,web,database,cache",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "All",
+          "value": "$__all"
+        },
+        "description": "Multi with All: multi=true, includeAll=true. Can return $__all special value.",
+        "includeAll": true,
+        "label": "Multi with All",
+        "multi": true,
+        "name": "test_multi_all",
+        "options": [
+          {
+            "selected": true,
+            "text": "All",
+            "value": "$__all"
+          },
+          {
+            "selected": false,
+            "text": "prod",
+            "value": "prod"
+          },
+          {
+            "selected": false,
+            "text": "staging",
+            "value": "staging"
+          },
+          {
+            "selected": false,
+            "text": "dev",
+            "value": "dev"
+          }
+        ],
+        "query": "prod,staging,dev",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": [
+            "8080",
+            "8081"
+          ],
+          "value": [
+            "8080",
+            "8081"
+          ]
+        },
+        "description": "Numeric values only. Should not be quoted when all options are numeric.",
+        "includeAll": false,
+        "label": "Numeric Values",
+        "multi": true,
+        "name": "test_numeric",
+        "options": [
+          {
+            "selected": true,
+            "text": "8080",
+            "value": "8080"
+          },
+          {
+            "selected": true,
+            "text": "8081",
+            "value": "8081"
+          },
+          {
+            "selected": false,
+            "text": "3306",
+            "value": "3306"
+          },
+          {
+            "selected": false,
+            "text": "5432",
+            "value": "5432"
+          }
+        ],
+        "query": "8080,8081,3306,5432",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "my.host.com",
+          "value": "my.host.com"
+        },
+        "description": "Values containing dots - tests concatenation detection with dots in values",
+        "includeAll": false,
+        "label": "Dots in Value",
+        "name": "test_dots",
+        "options": [
+          {
+            "selected": true,
+            "text": "my.host.com",
+            "value": "my.host.com"
+          },
+          {
+            "selected": false,
+            "text": "10.0.0.1",
+            "value": "10.0.0.1"
+          },
+          {
+            "selected": false,
+            "text": "service.namespace.svc",
+            "value": "service.namespace.svc"
+          }
+        ],
+        "query": "my.host.com,10.0.0.1,service.namespace.svc",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "",
+          "value": ""
+        },
+        "description": "Empty variable for testing empty string handling",
+        "label": "Empty Variable",
+        "name": "test_empty",
+        "options": [
+          {
+            "selected": true,
+            "text": "",
+            "value": ""
+          }
+        ],
+        "query": "",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "null",
+          "value": "null"
+        },
+        "description": "Testing null value handling",
+        "label": "Null Variable",
+        "name": "test_null",
+        "options": [
+          {
+            "selected": true,
+            "text": "null",
+            "value": "null"
+          }
+        ],
+        "query": "null",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "你好世界",
+          "value": "你好世界"
+        },
+        "description": "Unicode characters in variable names and values",
+        "label": "Unicode Variable",
+        "name": "test_unicode",
+        "options": [
+          {
+            "selected": true,
+            "text": "你好世界",
+            "value": "你好世界"
+          },
+          {
+            "selected": false,
+            "text": "🚀🌟",
+            "value": "🚀🌟"
+          },
+          {
+            "selected": false,
+            "text": "café",
+            "value": "café"
+          }
+        ],
+        "query": "你好世界,🚀🌟,café",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "very_long_value",
+          "value": "very_long_value"
+        },
+        "description": "Testing very long variable names",
+        "label": "Very Long Variable Name That Exceeds Normal Length",
+        "name": "test_very_long_variable_name_that_exceeds_normal_length",
+        "options": [
+          {
+            "selected": true,
+            "text": "very_long_value",
+            "value": "very_long_value"
+          }
+        ],
+        "query": "very_long_value",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "/^prefix_.*/",
+          "value": "/^prefix_.*/"
+        },
+        "description": "Regex patterns as values",
+        "label": "Regex Pattern",
+        "name": "test_regex",
+        "options": [
+          {
+            "selected": true,
+            "text": "/^prefix_.*/",
+            "value": "/^prefix_.*/"
+          },
+          {
+            "selected": false,
+            "text": ".*\\.log$",
+            "value": ".*\\.log$"
+          }
+        ],
+        "query": "/^prefix_.*/,.*\\.log$",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "http",
+          "value": "http"
+        },
+        "description": "Protocol variable for URL testing",
+        "label": "Protocol",
+        "name": "test_protocol",
+        "options": [
+          {
+            "selected": true,
+            "text": "http",
+            "value": "http"
+          },
+          {
+            "selected": false,
+            "text": "https",
+            "value": "https"
+          },
+          {
+            "selected": false,
+            "text": "tcp",
+            "value": "tcp"
+          }
+        ],
+        "query": "http,https,tcp",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "array_data",
+          "value": "array_data"
+        },
+        "description": "Array variable for array access testing",
+        "label": "Array Variable",
+        "name": "test_array",
+        "options": [
+          {
+            "selected": true,
+            "text": "array_data",
+            "value": "array_data"
+          }
+        ],
+        "query": "array_data",
+        "type": "custom"
+      },
+      {
+        "current": {
+          "text": "myFunction",
+          "value": "myFunction"
+        },
+        "description": "Function name variable",
+        "label": "Function Name",
+        "name": "test_func",
+        "options": [
+          {
+            "selected": true,
+            "text": "myFunction",
+            "value": "myFunction"
+          }
+        ],
+        "query": "myFunction",
+        "type": "custom"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "ClickHouse Template Variable Test Dashboard - Optimized",
+  "uid": "clickhouse-template-vars-test-optimized",
+  "version": 1
+}

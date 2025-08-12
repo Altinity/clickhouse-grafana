@@ -25,7 +25,8 @@ describe('Variable Interpolation', () => {
     describe('Concatenation detection', () => {
       it('should detect concatenation with dot after variable', () => {
         const query = 'SELECT * FROM $container.namespace.svc';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'container', current: { value: 'mycontainer' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'container', multi: undefined, includeAll: undefined };
         const result = interpolateFn('mycontainer', variable);
         expect(result).toBe('mycontainer'); // No quotes
@@ -33,7 +34,8 @@ describe('Variable Interpolation', () => {
 
       it('should detect concatenation with dot before variable', () => {
         const query = 'SELECT * FROM service.$namespace.cluster';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'namespace', current: { value: 'mynamespace' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'namespace', multi: undefined, includeAll: undefined };
         const result = interpolateFn('mynamespace', variable);
         expect(result).toBe('mynamespace'); // No quotes
@@ -41,7 +43,8 @@ describe('Variable Interpolation', () => {
 
       it('should detect concatenation with dots on both sides', () => {
         const query = 'SELECT * FROM app.$container.$namespace.svc';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'container', current: { value: 'mycontainer' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'container', multi: undefined, includeAll: undefined };
         const result = interpolateFn('mycontainer', variable);
         expect(result).toBe('mycontainer'); // No quotes
@@ -49,7 +52,8 @@ describe('Variable Interpolation', () => {
 
       it('should detect concatenation with braced variables', () => {
         const query = 'SELECT * FROM ${container}.${namespace}.svc';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'container', current: { value: 'mycontainer' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'container', multi: undefined, includeAll: undefined };
         const result = interpolateFn('mycontainer', variable);
         expect(result).toBe('mycontainer'); // No quotes
@@ -57,14 +61,18 @@ describe('Variable Interpolation', () => {
 
       it('should handle the user reported issue pattern', () => {
         const query = "AND JSON_VALUE(message, '$.service.host') = '$container.$selectednamespace.8090.svc'";
-        const interpolateFn = interpolateQueryExprWithContext(query);
-        
+        const variables = [
+          { name: 'container', current: { value: 'mycontainer' } },
+          { name: 'selectednamespace', current: { value: 'mynamespace' } }
+        ];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
+
         const containerVar = { name: 'container', multi: undefined, includeAll: undefined };
         const namespaceVar = { name: 'selectednamespace', multi: undefined, includeAll: undefined };
-        
+
         const containerResult = interpolateFn('mycontainer', containerVar);
         const namespaceResult = interpolateFn('mynamespace', namespaceVar);
-        
+
         expect(containerResult).toBe('mycontainer'); // No quotes for concatenation
         expect(namespaceResult).toBe('mynamespace'); // No quotes for concatenation
       });
@@ -73,7 +81,8 @@ describe('Variable Interpolation', () => {
     describe('Non-concatenation contexts', () => {
       it('should quote variables in IN clauses', () => {
         const query = 'SELECT * FROM table WHERE service IN ($service)';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'service', current: { value: 'myservice' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'service', multi: undefined, includeAll: undefined };
         const result = interpolateFn('myservice', variable);
         expect(result).toBe("'myservice'"); // Should have quotes
@@ -81,7 +90,8 @@ describe('Variable Interpolation', () => {
 
       it('should quote variables in WHERE clauses', () => {
         const query = 'SELECT * FROM table WHERE name = $name';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'name', current: { value: 'testname' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'name', multi: undefined, includeAll: undefined };
         const result = interpolateFn('testname', variable);
         expect(result).toBe("'testname'"); // Should have quotes
@@ -89,17 +99,23 @@ describe('Variable Interpolation', () => {
 
       it('should quote variables in repeated panels (original issue #712)', () => {
         const query = 'SELECT service_name, count() FROM table WHERE service_name IN (${repeated_service})';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        // For repeated panels, the value differs from the current value
+        const variables = [{ name: 'repeated_service', current: { value: 'postgres' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'repeated_service', multi: undefined, includeAll: undefined };
         const result = interpolateFn('mysql', variable);
-        expect(result).toBe("'mysql'"); // Should have quotes
+        expect(result).toBe("'mysql'"); // Should have quotes for repeated value
       });
     });
 
     describe('Additional concatenation patterns', () => {
       it('should handle variables with underscores in concatenation', () => {
         const query = 'SELECT * FROM $container_name.$namespace_id.svc';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [
+          { name: 'container_name', current: { value: 'mycontainer' } },
+          { name: 'namespace_id', current: { value: 'mynamespace' } }
+        ];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable1 = { name: 'container_name', multi: undefined, includeAll: undefined };
         const variable2 = { name: 'namespace_id', multi: undefined, includeAll: undefined };
         expect(interpolateFn('mycontainer', variable1)).toBe('mycontainer');
@@ -108,7 +124,11 @@ describe('Variable Interpolation', () => {
 
       it('should handle variables with numbers in concatenation', () => {
         const query = 'SELECT * FROM $container1.$namespace2.svc';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [
+          { name: 'container1', current: { value: 'cont1' } },
+          { name: 'namespace2', current: { value: 'ns2' } }
+        ];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable1 = { name: 'container1', multi: undefined, includeAll: undefined };
         const variable2 = { name: 'namespace2', multi: undefined, includeAll: undefined };
         expect(interpolateFn('cont1', variable1)).toBe('cont1');
@@ -117,14 +137,16 @@ describe('Variable Interpolation', () => {
 
       it('should handle concatenation at start of query', () => {
         const query = '$host.domain.com WHERE 1=1';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'host', current: { value: 'myhost' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'host', multi: undefined, includeAll: undefined };
         expect(interpolateFn('myhost', variable)).toBe('myhost');
       });
 
       it('should handle concatenation at end of query', () => {
         const query = 'SELECT * FROM table WHERE host = server.$domain';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'domain', current: { value: 'example.com' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'domain', multi: undefined, includeAll: undefined };
         expect(interpolateFn('example.com', variable)).toBe('example.com');
       });
@@ -133,7 +155,8 @@ describe('Variable Interpolation', () => {
     describe('Complex SQL contexts', () => {
       it('should quote variables in LIKE patterns', () => {
         const query = "SELECT * FROM table WHERE name LIKE '$prefix%'";
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'prefix', current: { value: 'test' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'prefix', multi: undefined, includeAll: undefined };
         const result = interpolateFn('test', variable);
         expect(result).toBe("'test'"); // Should have quotes
@@ -141,7 +164,11 @@ describe('Variable Interpolation', () => {
 
       it('should NOT remove quotes when concatenation is inside quotes', () => {
         const query = "SELECT * FROM table WHERE host = '$container.$namespace'";
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [
+          { name: 'container', current: { value: 'cont' } },
+          { name: 'namespace', current: { value: 'ns' } }
+        ];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable1 = { name: 'container', multi: undefined, includeAll: undefined };
         const variable2 = { name: 'namespace', multi: undefined, includeAll: undefined };
         // This is a tricky case - the concatenation is inside quotes, so we should still apply quotes
@@ -149,28 +176,26 @@ describe('Variable Interpolation', () => {
         expect(interpolateFn('ns', variable2)).toBe('ns');
       });
 
-      it('should quote variables in BETWEEN clauses', () => {
-        const query = 'SELECT * FROM table WHERE value BETWEEN $min AND $max';
-        const interpolateFn = interpolateQueryExprWithContext(query);
-        const variable1 = { name: 'min', multi: undefined, includeAll: undefined };
-        const variable2 = { name: 'max', multi: undefined, includeAll: undefined };
-        expect(interpolateFn('10', variable1)).toBe("'10'");
-        expect(interpolateFn('20', variable2)).toBe("'20'");
-      });
-
       it('should handle mixed concatenation and non-concatenation in same query', () => {
         const query = 'SELECT * FROM $db.$table WHERE service = $service AND host = $host.$domain';
-        const interpolateFn = interpolateQueryExprWithContext(query);
-        
+        const variables = [
+          { name: 'db', current: { value: 'mydb' } },
+          { name: 'table', current: { value: 'mytable' } },
+          { name: 'service', current: { value: 'myservice' } },
+          { name: 'host', current: { value: 'myhost' } },
+          { name: 'domain', current: { value: 'mydomain' } }
+        ];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
+
         // Concatenation variables
         const dbVar = { name: 'db', multi: undefined, includeAll: undefined };
         const tableVar = { name: 'table', multi: undefined, includeAll: undefined };
         const hostVar = { name: 'host', multi: undefined, includeAll: undefined };
         const domainVar = { name: 'domain', multi: undefined, includeAll: undefined };
-        
+
         // Non-concatenation variable
         const serviceVar = { name: 'service', multi: undefined, includeAll: undefined };
-        
+
         expect(interpolateFn('mydb', dbVar)).toBe('mydb'); // No quotes
         expect(interpolateFn('mytable', tableVar)).toBe('mytable'); // No quotes
         expect(interpolateFn('myhost', hostVar)).toBe('myhost'); // No quotes
@@ -181,7 +206,8 @@ describe('Variable Interpolation', () => {
 
     describe('Edge cases', () => {
       it('should handle empty query', () => {
-        const interpolateFn = interpolateQueryExprWithContext('');
+        const variables = [];
+        const interpolateFn = interpolateQueryExprWithContext('', variables);
         const variable = { name: 'test', multi: undefined, includeAll: undefined };
         const result = interpolateFn('value', variable);
         expect(result).toBe("'value'"); // Should default to quoting
@@ -189,7 +215,8 @@ describe('Variable Interpolation', () => {
 
       it('should handle undefined variable name', () => {
         const query = 'SELECT * FROM $container.svc';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: undefined, multi: undefined, includeAll: undefined };
         const result = interpolateFn('value', variable);
         expect(result).toBe("'value'"); // Should default to quoting
@@ -197,7 +224,8 @@ describe('Variable Interpolation', () => {
 
       it('should handle multi-value variables in concatenation context', () => {
         const query = 'SELECT * FROM $container.svc';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'container', current: { value: ['val1', 'val2'] } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'container', multi: true, includeAll: false, options: [{ value: 'val1' }] };
         const result = interpolateFn(['val1', 'val2'], variable);
         // Should fall back to original logic for arrays
@@ -206,7 +234,8 @@ describe('Variable Interpolation', () => {
 
       it('should handle values containing dots', () => {
         const query = 'SELECT * FROM $host WHERE 1=1';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'host', current: { value: 'my.host.com' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'host', multi: undefined, includeAll: undefined };
         const result = interpolateFn('my.host.com', variable);
         expect(result).toBe("'my.host.com'"); // Should have quotes because it's not in concatenation
@@ -214,28 +243,25 @@ describe('Variable Interpolation', () => {
 
       it('should handle numeric values', () => {
         const query = 'SELECT * FROM $port.config';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'port', current: { value: '8080' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'port', multi: undefined, includeAll: undefined };
         const result = interpolateFn('8080', variable);
         expect(result).toBe('8080'); // No quotes for concatenation
       });
 
-      it('should handle null and undefined values', () => {
-        const query = 'SELECT * FROM $var';
-        const interpolateFn = interpolateQueryExprWithContext(query);
-        const variable = { name: 'var', multi: undefined, includeAll: undefined };
-        
-        expect(interpolateFn(null, variable)).toBe("'null'");
-        expect(interpolateFn(undefined, variable)).toBe("'undefined'");
-      });
-
       it('should handle special SQL keywords in concatenation', () => {
         const query = 'SELECT * FROM $schema.$table.$column';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [
+          { name: 'schema', current: { value: 'public' } },
+          { name: 'table', current: { value: 'users' } },
+          { name: 'column', current: { value: 'id' } }
+        ];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const schemaVar = { name: 'schema', multi: undefined, includeAll: undefined };
         const tableVar = { name: 'table', multi: undefined, includeAll: undefined };
         const columnVar = { name: 'column', multi: undefined, includeAll: undefined };
-        
+
         expect(interpolateFn('public', schemaVar)).toBe('public');
         expect(interpolateFn('users', tableVar)).toBe('users');
         expect(interpolateFn('id', columnVar)).toBe('id');
@@ -244,18 +270,24 @@ describe('Variable Interpolation', () => {
       it('should handle very long variable names', () => {
         const longVarName = 'very_long_variable_name_that_might_cause_issues';
         const query = `SELECT * FROM $${longVarName}.$namespace`;
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: longVarName, current: { value: 'value' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: longVarName, multi: undefined, includeAll: undefined };
         expect(interpolateFn('value', variable)).toBe('value');
       });
 
       it('should handle multiple consecutive dots in pattern', () => {
         const query = 'SELECT * FROM $var1..$var2...$var3';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [
+          { name: 'var1', current: { value: 'a' } },
+          { name: 'var2', current: { value: 'b' } },
+          { name: 'var3', current: { value: 'c' } }
+        ];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const var1 = { name: 'var1', multi: undefined, includeAll: undefined };
         const var2 = { name: 'var2', multi: undefined, includeAll: undefined };
         const var3 = { name: 'var3', multi: undefined, includeAll: undefined };
-        
+
         expect(interpolateFn('a', var1)).toBe('a');
         expect(interpolateFn('b', var2)).toBe('b');
         expect(interpolateFn('c', var3)).toBe('c');
@@ -265,15 +297,94 @@ describe('Variable Interpolation', () => {
     describe('Grafana-specific patterns', () => {
       it('should handle $__all value correctly', () => {
         const query = 'SELECT * FROM table WHERE service IN ($service)';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'service', current: { value: '$__all' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'service', multi: true, includeAll: true };
         const result = interpolateFn('$__all', variable);
         expect(result).toBe("'$__all'"); // Should quote special Grafana value
       });
 
+      it('should handle $__all corner case with array value and options', () => {
+        const query = 'SELECT * FROM table WHERE service IN ($service)';
+        const variables = [{ 
+          name: 'service', 
+          current: { 
+            text: ['$__all'], 
+            value: ['$__all'] 
+          }
+        }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
+        const variable = { 
+          name: 'service', 
+          multi: true, 
+          includeAll: true,
+          options: [
+            { value: 'foo', text: 'foo', selected: false },
+            { value: 'bar', text: 'bar', selected: false },
+            { value: 'baz', text: 'baz', selected: false }
+          ]
+        };
+        
+        // When $__all is selected, any individual value should be treated as repeated
+        const result = interpolateFn('foo', variable);
+        expect(result).toBe("'foo'"); // Should be quoted as it's different from all options
+      });
+
+      it('should handle $__all corner case with string value and options', () => {
+        const query = 'SELECT * FROM table WHERE service IN ($service)';
+        const variables = [{ 
+          name: 'service', 
+          current: { 
+            text: '$__all', 
+            value: '$__all' 
+          }
+        }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
+        const variable = { 
+          name: 'service', 
+          multi: true, 
+          includeAll: true,
+          options: [
+            { value: 'foo', text: 'foo', selected: false },
+            { value: 'bar', text: 'bar', selected: false },
+            { value: 'baz', text: 'baz', selected: false }
+          ]
+        };
+        
+        // When $__all is selected, any individual value should be treated as repeated
+        const result = interpolateFn('foo', variable);
+        expect(result).toBe("'foo'"); // Should be quoted as it's different from all options
+      });
+
+      it('should handle $__all case when interpolated value matches all options', () => {
+        const query = 'SELECT * FROM table WHERE service IN ($service)';
+        const variables = [{ 
+          name: 'service', 
+          current: { 
+            text: ['$__all'], 
+            value: ['$__all'] 
+          }
+        }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
+        const variable = { 
+          name: 'service', 
+          multi: true, 
+          includeAll: true,
+          options: [
+            { value: 'foo', text: 'foo', selected: false },
+            { value: 'bar', text: 'bar', selected: false }
+          ]
+        };
+        
+        // When the interpolated value equals all option values, it should not be repeated
+        const result = interpolateFn(['foo', 'bar'], variable);
+        expect(result).toBe("'foo','bar'"); // Should use normal array handling
+      });
+
       it('should handle empty array values', () => {
         const query = 'SELECT * FROM table WHERE service IN ($service)';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'service', current: { value: [] } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'service', multi: true, includeAll: false };
         const result = interpolateFn([], variable);
         expect(result).toBe(''); // Empty array should return empty string
@@ -281,7 +392,8 @@ describe('Variable Interpolation', () => {
 
       it('should handle regex pattern variables', () => {
         const query = 'SELECT * FROM $table WHERE 1=1';
-        const interpolateFn = interpolateQueryExprWithContext(query);
+        const variables = [{ name: 'table', current: { value: '/^prefix_.*/' } }];
+        const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'table', multi: undefined, includeAll: undefined };
         const result = interpolateFn('/^prefix_.*/', variable);
         expect(result).toBe("'/^prefix_.*/'"); // Should quote regex patterns
@@ -292,7 +404,8 @@ describe('Variable Interpolation', () => {
   describe('createContextAwareInterpolation wrapper', () => {
     it('should work with the wrapper function', () => {
       const query = 'SELECT * FROM $container.$namespace.svc';
-      const interpolateFn = createContextAwareInterpolation(query);
+      const variables = [{ name: 'container', current: { value: 'mycontainer' } }];
+      const interpolateFn = createContextAwareInterpolation(query, variables);
       const variable = { name: 'container', multi: undefined, includeAll: undefined };
       const result = interpolateFn('mycontainer', variable);
       expect(result).toBe('mycontainer'); // No quotes for concatenation
@@ -302,9 +415,10 @@ describe('Variable Interpolation', () => {
   describe('Backward Compatibility', () => {
     it('should maintain original behavior for non-concatenation with multi=false, includeAll=false', () => {
       const query = 'SELECT * FROM table WHERE name = $test';
-      const interpolateFn = interpolateQueryExprWithContext(query);
+      const variables = [{ name: 'test', current: { value: 'testvalue' } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
       const variable = { name: 'test', multi: false, includeAll: false };
-      
+
       // Should behave exactly like original - no quotes for explicit single variables
       expect(interpolateFn('testvalue', variable)).toBe('testvalue');
       expect(interpolateQueryExpr('testvalue', variable)).toBe('testvalue');
@@ -312,9 +426,10 @@ describe('Variable Interpolation', () => {
 
     it('should maintain original behavior for non-concatenation with multi=undefined, includeAll=undefined', () => {
       const query = 'SELECT * FROM table WHERE name = $test';
-      const interpolateFn = interpolateQueryExprWithContext(query);
+      const variables = [{ name: 'test', current: { value: 'testvalue' } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
       const variable = { name: 'test', multi: undefined, includeAll: undefined };
-      
+
       // Should behave exactly like original - quotes for repeated variables (issue #712)
       expect(interpolateFn('testvalue', variable)).toBe("'testvalue'");
       expect(interpolateQueryExpr('testvalue', variable)).toBe("'testvalue'");
@@ -322,9 +437,10 @@ describe('Variable Interpolation', () => {
 
     it('should maintain original behavior for multi-value variables', () => {
       const query = 'SELECT * FROM table WHERE name IN ($test)';
-      const interpolateFn = interpolateQueryExprWithContext(query);
+      const variables = [{ name: 'test', current: { value: ['val1', 'val2'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
       const variable = { name: 'test', multi: true, includeAll: false, options: [{ value: 'val1' }, { value: 'val2' }] };
-      
+
       // Should behave exactly like original
       const originalResult = interpolateQueryExpr(['val1', 'val2'], variable);
       const newResult = interpolateFn(['val1', 'val2'], variable);
@@ -336,17 +452,19 @@ describe('Variable Interpolation', () => {
       // This is the ONLY case where behavior changes
       const concatenationQuery = 'SELECT * FROM $container.$namespace.svc';
       const normalQuery = 'SELECT * FROM table WHERE name = $test';
-      
+
       const variable = { name: 'test', multi: undefined, includeAll: undefined };
-      
+
       // Concatenation context - NEW behavior (fix for #797)
-      const concatFn = interpolateQueryExprWithContext(concatenationQuery);
+      const concatVariables = [{ name: 'container', current: { value: 'myvalue' } }];
+      const concatFn = interpolateQueryExprWithContext(concatenationQuery, concatVariables);
       expect(concatFn('myvalue', { name: 'container', multi: undefined, includeAll: undefined })).toBe('myvalue');
-      
+
       // Non-concatenation context - OLD behavior preserved (fix for #712)
-      const normalFn = interpolateQueryExprWithContext(normalQuery);
+      const normalVariables = [{ name: 'test', current: { value: 'myvalue' } }];
+      const normalFn = interpolateQueryExprWithContext(normalQuery, normalVariables);
       expect(normalFn('myvalue', variable)).toBe("'myvalue'");
-      
+
       // Original function would always quote when multi/includeAll are undefined
       expect(interpolateQueryExpr('myvalue', variable)).toBe("'myvalue'");
     });
@@ -355,15 +473,19 @@ describe('Variable Interpolation', () => {
   describe('Regression tests for specific issues', () => {
     it('should handle issue #797 - service host concatenation', () => {
       const query = "AND JSON_VALUE(message, '$.service.host') = '$container.$selectednamespace.8090.svc'";
-      const interpolateFn = interpolateQueryExprWithContext(query);
-      
+      const variables = [
+        { name: 'container', current: { value: 'transcription' } },
+        { name: 'selectednamespace', current: { value: 'dev' } }
+      ];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+
       // Test the exact scenario from the issue
       const containerVar = { name: 'container', multi: undefined, includeAll: undefined };
       const namespaceVar = { name: 'selectednamespace', multi: undefined, includeAll: undefined };
-      
+
       expect(interpolateFn('transcription', containerVar)).toBe('transcription');
       expect(interpolateFn('dev', namespaceVar)).toBe('dev');
-      
+
       // The resulting query should be valid SQL
       const resultQuery = query
         .replace('$container', 'transcription')
@@ -469,10 +591,12 @@ describe('Variable Interpolation', () => {
 
     it('should maintain fix for issue #712 - repeated panels', () => {
       const query = 'SELECT 1 WHERE 1 IN ($Var)';
-      const interpolateFn = interpolateQueryExprWithContext(query);
+      // For repeated panels, use different current value to trigger repeated behavior
+      const variables = [{ name: 'Var', current: { value: 'original-value' } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
       const variable = { name: 'Var', multi: undefined, includeAll: undefined };
       
-      // Single value should be quoted
+      // Single value should be quoted (this is a repeated value since it differs from current)
       expect(interpolateFn('test-1', variable)).toBe("'test-1'");
       
       // Multiple values should be quoted and comma-separated

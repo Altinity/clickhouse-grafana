@@ -158,18 +158,33 @@ export const clickhouseEscape = (value: any, variable: any): any => {
  * interpolateQueryExprWithContext('WHERE id IN ($ids)')
  * ```
  */
-export const interpolateQueryExprWithContext = (query: string) => {
+export const interpolateQueryExprWithContext = (query: string, variables: any[] = []) => {
   return (value: any, variable: any) => {
     // Check if this variable is part of a concatenation pattern
+    const currentVariableValue = variables.find(v => v.name === variable.name)
+
     const isInConcatenation = detectConcatenationContext(query, variable.name);
-    
+    let isRepeated = false;
+    if (currentVariableValue && "current" in currentVariableValue) {
+      let currentValue = currentVariableValue.current.value;
+      
+      // Handle $__all case: when current.value is ["$__all"], extract all values from options
+      if (Array.isArray(currentValue) && currentValue.length === 1 && currentValue[0] === '$__all' && variable.options) {
+        currentValue = variable.options.map((opt: any) => opt.value);
+      } else if (typeof currentValue === 'string' && currentValue === '$__all' && variable.options) {
+        currentValue = variable.options.map((opt: any) => opt.value);
+      }
+      
+      isRepeated = !(JSON.stringify(value) === JSON.stringify(currentValue));
+    }
+
     // If it's in a concatenation context and it's a simple value, don't add quotes
     if (isInConcatenation && !Array.isArray(value)) {
       return value;
     }
-    
+
     // Use the original logic for non-concatenation contexts or arrays
-    return interpolateQueryExpr(value, variable);
+    return interpolateQueryExpr(value, variable, isRepeated);
   };
 };
 
@@ -261,20 +276,20 @@ const detectConcatenationContext = (query: string, variableName: string): boolea
  * - Causes concatenation issues when multi/includeAll are undefined
  * - Use `interpolateQueryExprWithContext` for context-aware interpolation
  */
-export const interpolateQueryExpr = (value: any, variable: any) => {
+export const interpolateQueryExpr = (value: any, variable: any, isRepeated?: boolean) => {
   // Repeated Single variable value (issue #712 fix)
   // When multi/includeAll are undefined, assume it's a repeated panel variable
-  // and add quotes to ensure proper SQL syntax in IN clausesd
-  if (variable.multi === undefined && variable.includeAll === undefined && !Array.isArray(value)) {
+  // and add quotes to ensure proper SQL syntax in IN clauses
+  if (isRepeated && !Array.isArray(value)) {
     return `'${value}'`;
   }
 
   // Single variable value (explicit configuration)
   // When multi=false and includeAll=false, treat as raw value without quotes
-  if (!variable.multi && !variable.includeAll && !Array.isArray(value)) {
+  if (variable.multi === false && variable.includeAll === false && !Array.isArray(value)) {
     return value;
   }
-  
+
   // Multi-value or complex variable handling
   if (!Array.isArray(value)) {
     return clickhouseEscape(value, variable);
@@ -322,9 +337,9 @@ export const interpolateQueryExpr = (value: any, variable: any) => {
  * templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query))
  * ```
  */
-export const createContextAwareInterpolation = (query: string) => {
+export const createContextAwareInterpolation = (query: string, variables: any[] = []) => {
   return (value: any, variable: any) => {
-    return interpolateQueryExprWithContext(query)(value, variable);
+    return interpolateQueryExprWithContext(query, variables)(value, variable);
   };
 };
 

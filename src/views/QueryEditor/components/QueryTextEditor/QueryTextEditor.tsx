@@ -31,6 +31,7 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
   isAnnotationView,
   adhocFilters,
   areAdHocFiltersAvailable,
+  autocompleteData,
 }) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
   const handlers = useQueryHandlers({ onFieldChange, query });
@@ -47,6 +48,7 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
         onSqlChange={onSqlChange}
         query={query}
         onRunQuery={onRunQuery}
+        autocompleteData={autocompleteData}
       />
       <AdhocFilterTags
         adhocFilters={adhocFilters}

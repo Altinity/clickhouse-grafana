@@ -1,5 +1,7 @@
 import { useEffect, useState } from 'react';
 import { IndexedDBManager } from '../../../utils/indexedDBManager';
+import { isPermissionError, getPermissionErrorMessage, PermissionErrorContext } from '../../../utils/clickhouseErrorHandling';
+import { useNotifications } from '../../../contexts/NotificationContext';
 
 // SQL query for autocompletion data
 const AUTOCOMPLETION_QUERY = `
@@ -39,17 +41,34 @@ FROM (
 `;
 
 export const useAutocompleteData = (datasource) => {
-  const [data, setData] = useState<null | any[]>(null);
+  const [data, setData] = useState<null | any>(null);
+  const { setNotification, clearNotification } = useNotifications();
+  
+  const notificationKey = `autocomplete-permission-error-${datasource.uid}`;
 
   useEffect(() => {
     const fetchData = async () => {
       const storageKey = `altinity_autocomplete_${datasource.uid}`;
+      const permissionErrorKey = `altinity_autocomplete_permission_error_${datasource.uid}`;
       
       try {
+        // Check if we have a cached permission error
+        const cachedPermissionError = await IndexedDBManager.getItem<boolean>(permissionErrorKey);
+        if (cachedPermissionError) {
+          setNotification(
+            notificationKey,
+            'warning',
+            getPermissionErrorMessage(PermissionErrorContext.AUTOCOMPLETE, datasource.uid)
+          );
+          setData({});
+          return;
+        }
+        
         // Try to get cached data using the IndexedDBManager
         const cachedData = await IndexedDBManager.getItem<any>(storageKey);
         if (cachedData) {
           setData(cachedData);
+          clearNotification(notificationKey);
           return;
         }
 
@@ -73,9 +92,22 @@ export const useAutocompleteData = (datasource) => {
         await IndexedDBManager.setItem(storageKey, groupedResult, 10);
 
         setData(groupedResult as any);
-      } catch (error) {
-        setData([]);
-        console.error('Failed to fetch autocomplete data:', error);
+        clearNotification(notificationKey);
+      } catch (error: any) {
+        if (isPermissionError(error)) {
+          // Permission error - return empty data gracefully
+          const message = getPermissionErrorMessage(PermissionErrorContext.AUTOCOMPLETE, datasource.uid);
+          console.info(message);
+          setNotification(notificationKey, 'warning', message);
+          setData({});
+          // Cache the permission error state to avoid repeated attempts
+          await IndexedDBManager.setItem(permissionErrorKey, true, 10);
+        } else {
+          // Other errors - log and return empty
+          console.error('Failed to fetch autocomplete data:', error);
+          setData({});
+          clearNotification(notificationKey);
+        }
       }
     };
 
@@ -91,7 +123,7 @@ export const useAutocompleteData = (datasource) => {
     };
     
     initializeData();
-  }, [datasource]);
+  }, [datasource, setNotification, clearNotification, notificationKey]);
 
-  return data;
+  return { data };
 };

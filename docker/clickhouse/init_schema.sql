@@ -1,3 +1,20 @@
+-- Create limited user for testing issue #813
+-- This user has access to default database tables but no system tables
+-- This simulates production environments where users have restricted permissions
+
+-- Drop user if exists (for clean re-runs)
+DROP USER IF EXISTS grafana_limited;
+
+-- Create user with no system table access
+CREATE USER grafana_limited IDENTIFIED BY 'grafana_limited_password';
+GRANT USAGE ON *.* TO grafana_limited;
+GRANT SELECT ON default.* TO grafana_limited;
+
+-- Show grants for verification
+SELECT 'Grants for grafana_limited:' as info;
+SHOW GRANTS FOR grafana_limited;
+
+-- Create test tables
 DROP TABLE IF EXISTS default.test_grafana;
 CREATE TABLE IF NOT EXISTS default.test_grafana
 (

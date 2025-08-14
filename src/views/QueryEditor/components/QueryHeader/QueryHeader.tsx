@@ -1,9 +1,11 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Label, Modal, RadioButtonGroup } from '@grafana/ui';
+import {Button, Label, Modal, RadioButtonGroup, Badge} from '@grafana/ui';
 import { EditorMode } from '../../../../types/types';
 import { QueryHeaderProps } from './QueryHeader.types';
 import { findDifferences } from './helpers/findDifferences';
 import { QueryHeaderTabs } from './QueryHeader.constants';
+import { useNotifications } from '../../../../contexts/NotificationContext';
+
 
 export const QueryHeader = ({
   editorMode,
@@ -16,6 +18,10 @@ export const QueryHeader = ({
 }: QueryHeaderProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [differences, setDifferences] = useState<any[]>([]);
+  const { hasNotification } = useNotifications();
+  
+  const autocompleteErrorKey = `autocomplete-permission-error-${datasource.uid}`;
+  const hasAutocompleteError = hasNotification(autocompleteErrorKey);
 
   const onEditorModeChange = (editorMode: EditorMode) => {
     setEditorMode(editorMode);
@@ -73,6 +79,15 @@ export const QueryHeader = ({
           ) : null}
         </>
       ) : null}
+      {hasAutocompleteError && editorMode === EditorMode.SQL && (
+        <div style={{ marginLeft: '10px', display: 'flex', alignItems: 'center' }}>
+          <Badge 
+            text="Autocomplete unavailable - insufficient permissions to access system tables"
+            color="red"
+            icon="exclamation-triangle"
+          />
+        </div>
+      )}
       <Modal
         title={'Confirmation'}
         isOpen={modalOpen}

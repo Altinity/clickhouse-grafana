@@ -2,14 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { initiateEditor, LANGUAGE_ID, THEME_NAME } from './editor/initiateEditor';
 import { CodeEditor } from '@grafana/ui';
 import { useSystemDatabases } from '../../hooks/useSystemDatabases';
-import { useAutocompleteData } from '../../hooks/useAutocompletionData';
 import { MONACO_EDITOR_OPTIONS } from '../../../constants';
 import { DatasourceMode } from '../../../../types/types';
 
-export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: any) => {
+export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource, autocompleteData }: any) => {
   const [initialized, setInitialized] = useState(false);
   const [updatedSQLQuery, setUpdatedSQLQuery] = useState(query.query);
-  const autocompletionData = useAutocompleteData(datasource);
   const databasesData = useSystemDatabases(datasource);
 
   useEffect(() => {
@@ -22,7 +20,7 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: an
   }, [updatedSQLQuery]);
 
   useEffect(() => {
-    if (!autocompletionData || !databasesData || !initialized) {
+    if (!autocompleteData || !databasesData || !initialized) {
       return;
     }
 
@@ -33,14 +31,14 @@ export const SQLCodeEditor = ({ query, onSqlChange, onRunQuery, datasource }: an
       datasource.templateSrv.getVariables().map((item) => `${item.name}`),
       // @ts-ignore
       window.monaco,
-      autocompletionData,
+      autocompleteData,
       databasesData
     );
     setTimeout(() => {
       // @ts-ignore
       window.monaco.editor.setTheme(THEME_NAME);
     }, 20);
-  }, [autocompletionData, databasesData, initialized, datasource.templateSrv]);
+  }, [autocompleteData, databasesData, initialized, datasource.templateSrv]);
 
   // Only run query on blur for non-variable mode
   const handleBlur = (updatedQuery) => {

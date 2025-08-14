@@ -1,0 +1,17 @@
+apiVersion: 1
+
+datasources:
+  - name: clickhouse-limited
+    type: vertamedia-clickhouse-datasource
+    access: proxy
+    url: http://clickhouse:8123
+    basicAuth: true
+    secureJsonData:
+      basicAuthPassword: "grafana_limited_password"
+    basicAuthUser: "grafana_limited"
+    editable: true
+    jsonData:
+      addCorsHeader: true
+      usePOST: true
+      # This datasource has NO access to system tables
+      # Used for testing issue #813 - graceful handling of permission errors

@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from 'react';
-import { Button, Label, Modal, RadioButtonGroup } from '@grafana/ui';
+import {Button, Label, Modal, RadioButtonGroup, Badge} from '@grafana/ui';
 import { EditorMode } from '../../../../types/types';
 import { QueryHeaderProps } from './QueryHeader.types';
 import { findDifferences } from './helpers/findDifferences';
 import { QueryHeaderTabs } from './QueryHeader.constants';
+
 
 export const QueryHeader = ({
   editorMode,
@@ -13,6 +14,7 @@ export const QueryHeader = ({
   datasource,
   query,
   onChange,
+  hasAutocompleteError,
 }: QueryHeaderProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [differences, setDifferences] = useState<any[]>([]);
@@ -73,6 +75,15 @@ export const QueryHeader = ({
           ) : null}
         </>
       ) : null}
+      {hasAutocompleteError && editorMode === EditorMode.SQL && (
+        <div style={{ marginLeft: '10px', display: 'flex', alignItems: 'center' }}>
+          <Badge 
+            text="Autocomplete unavailable - insufficient permissions to access system tables"
+            color="red"
+            icon="exclamation-triangle"
+          />
+        </div>
+      )}
       <Modal
         title={'Confirmation'}
         isOpen={modalOpen}

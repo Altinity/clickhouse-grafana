@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { IndexedDBManager } from '../../../utils/indexedDBManager';
+import { isPermissionError, getPermissionErrorMessage, PermissionErrorContext } from '../../../utils/clickhouseErrorHandling';
 
 const GET_DATABASES_QUERY =
   'SELECT name FROM system.tables\n' +
@@ -31,9 +32,18 @@ export const useSystemDatabases = (datasource) => {
         await IndexedDBManager.setItem(storageKey, processedResult, 10);
         
         setData(processedResult);
-      } catch (error) {
-        setData([]);
-        console.error('Failed to fetch data:', error);
+      } catch (error: any) {
+        if (isPermissionError(error)) {
+          // Permission error - return empty array gracefully
+          console.info(getPermissionErrorMessage(PermissionErrorContext.SYSTEM_DATABASES, datasource.uid));
+          setData([]);
+          // Cache the empty result to avoid repeated permission errors
+          await IndexedDBManager.setItem(storageKey, [], 10);
+        } else {
+          // Other errors - log and return empty
+          console.error('Failed to fetch system databases:', error);
+          setData([]);
+        }
       }
     };
 

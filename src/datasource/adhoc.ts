@@ -1,3 +1,5 @@
+import { isPermissionError, getPermissionErrorMessage, PermissionErrorContext } from '../utils/clickhouseErrorHandling';
+
 export const DEFAULT_VALUES_QUERY = 'SELECT DISTINCT {field} AS value FROM {database}.{table} LIMIT 300';
 export default class AdHocFilter {
   tagKeys: any[];
@@ -37,6 +39,15 @@ export default class AdHocFilter {
     }
     return this.datasource.metricFindQuery(q).then(function (response: any) {
       return self.processTagKeysResponse(response);
+    }).catch(function (error: any) {
+      if (isPermissionError(error)) {
+        // Permission error - return empty array gracefully
+        console.info(getPermissionErrorMessage(PermissionErrorContext.ADHOC_KEYS));
+        self.tagKeys = [];
+        return [];
+      }
+      // Re-throw non-permission errors
+      throw error;
     });
   }
 
@@ -103,7 +114,11 @@ export default class AdHocFilter {
           return true;
         })
         .catch((error: any) => {
-          console.error(error);
+          if (isPermissionError(error)) {
+            console.info(getPermissionErrorMessage(PermissionErrorContext.ADHOC_VALUES));
+          } else {
+            console.error('Failed to fetch tag values:', error);
+          }
           return false;
         });
 

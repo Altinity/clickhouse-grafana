@@ -71,6 +71,7 @@ export interface QueryTextEditorProps {
   isAnnotationView: boolean;
   adhocFilters: AdhocFilter[];
   areAdHocFiltersAvailable: boolean;
+  autocompleteData?: any;
 }
 
 export interface QueryHandlersProps {

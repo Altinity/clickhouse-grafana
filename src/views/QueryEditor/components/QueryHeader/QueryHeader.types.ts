@@ -9,4 +9,5 @@ export interface QueryHeaderProps {
   onTriggerQuery: () => void;
   datasource: CHDataSource;
   onChange: any;
+  hasAutocompleteError: boolean;
 }

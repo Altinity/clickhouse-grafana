@@ -8,6 +8,7 @@ import {QueryBuilder} from './components/QueryBuilder/QueryBuilder';
 import {Alert} from '@grafana/ui';
 import {useQueryState} from './hooks/useQueryState';
 import {useFormattedData} from './hooks/useFormattedData';
+import {useAutocompleteData} from './hooks/useAutocompletionData';
 import {initializeQueryDefaults, initializeQueryDefaultsForVariables} from './helpers/initializeQueryDefaults';
 import './QueryEditor.css';
 import {getAdhocFilters} from './helpers/getAdHocFilters';
@@ -17,6 +18,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const isAnnotationView = !props.app;
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource, data?.request);
+  const { data: autocompleteData, hasPermissionError } = useAutocompleteData(datasource);
 
   useEffect(() => {
     if (formattedData !== initializedQuery.query) {
@@ -57,6 +59,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
         isAnnotationView={isAnnotationView}
         onTriggerQuery={onTriggerQuery}
         onChange={onChange}
+        hasAutocompleteError={hasPermissionError}
       />
       {error ? <Alert title={error} elevated style={{ marginTop: '5px', marginBottom: '5px' }} /> : null}
       {editorMode === EditorMode.Builder && (
@@ -78,6 +81,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
           formattedData={formattedData}
           datasource={datasource}
           isAnnotationView={isAnnotationView}
+          autocompleteData={autocompleteData}
         />
       )}
     </>
@@ -135,6 +139,7 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
         isAnnotationView={isAnnotationView}
         onTriggerQuery={onTriggerQuery}
         onChange={onChange}
+        hasAutocompleteError={false}
       />
       {error ? <Alert title={error} elevated style={{ marginTop: '5px', marginBottom: '5px' }} /> : null}
       {editorMode === EditorMode.Builder && (

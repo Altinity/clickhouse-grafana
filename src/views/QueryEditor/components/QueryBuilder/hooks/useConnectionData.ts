@@ -1,5 +1,11 @@
 import { useCallback, useEffect, useState } from 'react';
 import { TimestampFormat } from '../../../../../types/types';
+import { 
+  isPermissionError, 
+  getPermissionErrorMessage, 
+  PermissionErrorContext, 
+  PermissionErrorContextType 
+} from '../../../../../utils/clickhouseErrorHandling';
 
 export const useConnectionData = (query, datasource) => {
   const [databases, setDatabases] = useState([]);
@@ -123,25 +129,63 @@ export const useConnectionData = (query, datasource) => {
   );
 
   const querySegment = useCallback(
-    (type: any) => {
+    async (type: any) => {
       let query = buildExploreQuery(type);
-      return datasource.metricFindQuery(query);
+      try {
+        return await datasource.metricFindQuery(query);
+      } catch (error: any) {
+        if (isPermissionError(error)) {
+          // Map query type to appropriate context
+          let context: PermissionErrorContextType;
+          switch (type) {
+            case 'DATABASES':
+              context = PermissionErrorContext.DATABASES;
+              break;
+            case 'TABLES':
+              context = PermissionErrorContext.TABLES;
+              break;
+            case 'DATE':
+            case TimestampFormat.DateTime:
+            case TimestampFormat.DateTime64:
+              context = PermissionErrorContext.COLUMNS;
+              break;
+            default:
+              context = PermissionErrorContext.QUERY_BUILDER;
+          }
+          
+          // Permission error - return empty array gracefully
+          console.info(getPermissionErrorMessage(context));
+          return [];
+        }
+        // Re-throw non-permission errors
+        throw error;
+      }
     },
     [buildExploreQuery, datasource]
   );
 
   useEffect(() => {
     (async () => {
-      const databases = await querySegment('DATABASES');
-      setDatabases(databases.map((item: any) => ({ label: item.text, value: item.text })));
+      try {
+        const databases = await querySegment('DATABASES');
+        setDatabases(databases.map((item: any) => ({ label: item.text, value: item.text })));
+      } catch (error) {
+        console.error('Failed to fetch databases:', error);
+        setDatabases([]);
+      }
     })();
   }, [querySegment]);
 
   useEffect(() => {
     if (selectedDatabase) {
       (async () => {
-        const tables = await querySegment('TABLES');
-        setTables(tables.map((item: any) => ({ label: item.text, value: item.text })));
+        try {
+          const tables = await querySegment('TABLES');
+          setTables(tables.map((item: any) => ({ label: item.text, value: item.text })));
+        } catch (error) {
+          console.error('Failed to fetch tables:', error);
+          setTables([]);
+        }
       })();
     }
   }, [selectedDatabase, querySegment]);
@@ -149,8 +193,13 @@ export const useConnectionData = (query, datasource) => {
   useEffect(() => {
     if (!!selectedDatabase || !!selectedTable || !!selectedDateTimeType) {
       (async () => {
-        const timestampColumns = await querySegment(selectedDateTimeType);
-        setTimestampColumns(timestampColumns.map((item: any) => ({ label: item.text, value: item.text })));
+        try {
+          const timestampColumns = await querySegment(selectedDateTimeType);
+          setTimestampColumns(timestampColumns.map((item: any) => ({ label: item.text, value: item.text })));
+        } catch (error) {
+          console.error('Failed to fetch timestamp columns:', error);
+          setTimestampColumns([]);
+        }
       })();
     }
   }, [selectedTable, selectedDatabase, selectedDateTimeType, querySegment]);
@@ -158,8 +207,13 @@ export const useConnectionData = (query, datasource) => {
   useEffect(() => {
     if (!!selectedDatabase || !!selectedTable) {
       (async () => {
-        const dateColumns = await querySegment('DATE');
-        setdateColumns(dateColumns.map((item: any) => ({ label: item.text, value: item.text })));
+        try {
+          const dateColumns = await querySegment('DATE');
+          setdateColumns(dateColumns.map((item: any) => ({ label: item.text, value: item.text })));
+        } catch (error) {
+          console.error('Failed to fetch date columns:', error);
+          setdateColumns([]);
+        }
       })();
     }
   }, [selectedTable, selectedDatabase, querySegment]);

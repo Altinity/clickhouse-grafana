@@ -18,7 +18,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const isAnnotationView = !props.app;
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource, data?.request);
-  const { data: autocompleteData } = useAutocompleteData(datasource);
+  const { data: autocompleteData, hasPermissionError } = useAutocompleteData(datasource);
 
   useEffect(() => {
     if (formattedData !== initializedQuery.query) {
@@ -59,6 +59,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
         isAnnotationView={isAnnotationView}
         onTriggerQuery={onTriggerQuery}
         onChange={onChange}
+        hasAutocompleteError={hasPermissionError}
       />
       {error ? <Alert title={error} elevated style={{ marginTop: '5px', marginBottom: '5px' }} /> : null}
       {editorMode === EditorMode.Builder && (
@@ -138,6 +139,7 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
         isAnnotationView={isAnnotationView}
         onTriggerQuery={onTriggerQuery}
         onChange={onChange}
+        hasAutocompleteError={false}
       />
       {error ? <Alert title={error} elevated style={{ marginTop: '5px', marginBottom: '5px' }} /> : null}
       {editorMode === EditorMode.Builder && (

@@ -4,7 +4,6 @@ import { EditorMode } from '../../../../types/types';
 import { QueryHeaderProps } from './QueryHeader.types';
 import { findDifferences } from './helpers/findDifferences';
 import { QueryHeaderTabs } from './QueryHeader.constants';
-import { useNotifications } from '../../../../contexts/NotificationContext';
 
 
 export const QueryHeader = ({
@@ -15,13 +14,10 @@ export const QueryHeader = ({
   datasource,
   query,
   onChange,
+  hasAutocompleteError,
 }: QueryHeaderProps) => {
   const [modalOpen, setModalOpen] = useState(false);
   const [differences, setDifferences] = useState<any[]>([]);
-  const { hasNotification } = useNotifications();
-  
-  const autocompleteErrorKey = `autocomplete-permission-error-${datasource.uid}`;
-  const hasAutocompleteError = hasNotification(autocompleteErrorKey);
 
   const onEditorModeChange = (editorMode: EditorMode) => {
     setEditorMode(editorMode);

@@ -291,7 +291,7 @@ func (q *EvalQuery) escapeIdentifier(identifier string) string {
 }
 
 func (q *EvalQuery) escapeTableIdentifier(identifier string) string {
-	if regexp.MustCompile(`^[a-zA-Z][0-9a-zA-Z_]+$`).MatchString(identifier) {
+	if regexp.MustCompile(`^[$a-zA-Z][0-9a-zA-Z_]+$`).MatchString(identifier) {
 		return identifier
 	} else {
 		return "`" + strings.Replace(identifier, "`", "\\`", -1) + "`"

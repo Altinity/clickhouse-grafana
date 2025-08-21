@@ -14,10 +14,13 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource, optio
       if ((datasource.options || options) && datasource.templateSrv) {
         datasource.replace(datasource.options || options, query).then((replaced) => {
           setFormattedData(replaced.stmt);
+
           setError(null);
         }).catch((e) => {
           setFormattedData(query.query);
-          setError(e.toString());
+          // Display the error we received from backend
+          const errorStr = e.data?.error || e.toString();
+          setError(errorStr);
         })
       }
 

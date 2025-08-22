@@ -803,6 +803,13 @@ export class CHDataSource
         },
       };
 
+      // Apply template variable replacements (these don't require backend processing)
+      queryData.query = this.templateSrv.replace(
+        conditionalTest(queryData.query, this.templateSrv),
+        options.scopedVars,
+        createContextAwareInterpolation(queryData.query, this.templateSrv.getVariables())
+      );
+
       // SAFE OPTIMIZATION: Batch createQuery + applyAdhocFilters (reduces 3->2 calls)
       const queryResult = await this.resourceClient.createQueryWithAdhoc(queryData, adhocFilters);
 

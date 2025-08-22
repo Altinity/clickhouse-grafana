@@ -12,6 +12,7 @@ import {useAutocompleteData} from './hooks/useAutocompletionData';
 import {initializeQueryDefaults, initializeQueryDefaultsForVariables} from './helpers/initializeQueryDefaults';
 import './QueryEditor.css';
 import {getAdhocFilters} from './helpers/getAdHocFilters';
+import {detectVariableMacroIntersections, createVariableMacroConflictWarning} from './helpers/detectVariableMacroIntersections';
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>): any {
   const { datasource, query, onChange, onRunQuery, data } = props;
@@ -41,6 +42,10 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const adHocFiltersKey = adHocFilters.map(({ key, operator, value }) => `${key}${operator}${value}`).join(',');
   const areAdHocFiltersAvailable = !!adHocFilters.length;
 
+  // Detect variable/macro name conflicts
+  const variableMacroConflicts = detectVariableMacroIntersections();
+  const conflictWarning = createVariableMacroConflictWarning(variableMacroConflicts);
+
   useEffect(() => {
     if (props.app !== CoreApp.Explore) {
       onChange({ ...initializedQuery, adHocFilters: adHocFilters });
@@ -62,6 +67,16 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
         hasAutocompleteError={hasPermissionError}
       />
       {error ? <Alert title={error} elevated style={{ marginTop: '5px', marginBottom: '5px' }} /> : null}
+      {conflictWarning ? (
+        <Alert 
+          title="Variable/Macro Name Conflict Warning" 
+          severity="warning" 
+          elevated 
+          style={{ marginTop: '5px', marginBottom: '5px' }}
+        >
+          {conflictWarning}
+        </Alert>
+      ) : null}
       {editorMode === EditorMode.Builder && (
         <QueryBuilder
           query={initializedQuery}
@@ -122,6 +137,10 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
   const adHocFiltersKey = adHocFilters.map(({ key, operator, value }) => `${key}${operator}${value}`).join(',');
   const areAdHocFiltersAvailable = !!adHocFilters.length;
 
+  // Detect variable/macro name conflicts
+  const variableMacroConflicts = detectVariableMacroIntersections();
+  const conflictWarning = createVariableMacroConflictWarning(variableMacroConflicts);
+
   useEffect(() => {
     if (props.app !== CoreApp.Explore) {
       onChange({ ...initializedQuery, adHocFilters: adHocFilters });
@@ -142,6 +161,16 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
         hasAutocompleteError={false}
       />
       {error ? <Alert title={error} elevated style={{ marginTop: '5px', marginBottom: '5px' }} /> : null}
+      {conflictWarning ? (
+        <Alert 
+          title="Variable/Macro Name Conflict Warning" 
+          severity="warning" 
+          elevated 
+          style={{ marginTop: '5px', marginBottom: '5px' }}
+        >
+          {conflictWarning}
+        </Alert>
+      ) : null}
       {editorMode === EditorMode.Builder && (
         <QueryBuilder
           query={initializedQuery}

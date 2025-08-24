@@ -11,10 +11,9 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource, optio
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-      if ((datasource.options || options) && datasource.templateSrv) {
+    if ((datasource.options || options) && datasource.templateSrv) {
         datasource.replace(datasource.options || options, query).then((replaced) => {
           setFormattedData(replaced.stmt);
-
           setError(null);
         }).catch((e) => {
           setFormattedData(query.query);
@@ -22,6 +21,9 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource, optio
           const errorStr = e.data?.error || e.toString();
           setError(errorStr);
         })
+      } else {
+        // Only set error if datasource is genuinely missing required properties
+        setError('No datasource is defined or datasource not fully initialized. Please try to force reload');
       }
 
     // eslint-disable-next-line

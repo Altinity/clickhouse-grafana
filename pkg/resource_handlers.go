@@ -273,29 +273,7 @@ func (ds *ClickHouseDatasource) handleCreateQuery(ctx context.Context, req *back
 	}
 
 	// Create eval.EvalQuery
-	evalQ := eval.EvalQuery{
-		RefId:                  request.RefId,
-		RuleUid:                request.RuleUid,
-		RawQuery:               request.RawQuery,
-		Query:                  request.Query,
-		DateTimeCol:            request.DateTimeColDataType,
-		DateCol:                request.DateColDataType,
-		DateTimeType:           request.DateTimeType,
-		Extrapolate:            request.Extrapolate,
-		SkipComments:           request.SkipComments,
-		AddMetadata:            request.AddMetadata,
-		Format:                 request.Format,
-		Round:                  request.Round,
-		IntervalFactor:         request.IntervalFactor,
-		Interval:               request.Interval,
-		Database:               request.Database,
-		Table:                  request.Table,
-		MaxDataPoints:          request.MaxDataPoints,
-		From:                   from,
-		To:                     to,
-		FrontendDatasource:     request.FrontendDatasource,
-		UseWindowFuncForMacros: request.UseWindowFuncForMacros,
-	}
+	evalQ := helpers.NewEvalQuery(request, from, to)
 
 	// Apply macros and get AST
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
@@ -571,29 +549,7 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 	}
 
 	// Create eval.EvalQuery
-	evalQ := eval.EvalQuery{
-		RefId:                  request.RefId,
-		RuleUid:                request.RuleUid,
-		RawQuery:               request.RawQuery,
-		Query:                  request.Query,
-		DateTimeCol:            request.DateTimeColDataType,
-		DateCol:                request.DateColDataType,
-		DateTimeType:           request.DateTimeType,
-		Extrapolate:            request.Extrapolate,
-		SkipComments:           request.SkipComments,
-		AddMetadata:            request.AddMetadata,
-		Format:                 request.Format,
-		Round:                  request.Round,
-		IntervalFactor:         request.IntervalFactor,
-		Interval:               request.Interval,
-		Database:               request.Database,
-		Table:                  request.Table,
-		MaxDataPoints:          request.MaxDataPoints,
-		From:                   from,
-		To:                     to,
-		FrontendDatasource:     request.FrontendDatasource,
-		UseWindowFuncForMacros: request.UseWindowFuncForMacros,
-	}
+	evalQ := helpers.NewEvalQuery(request, from, to)
 
 	// Apply macros and get AST
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
@@ -990,29 +946,7 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 	}
 
 	// Create eval.EvalQuery
-	evalQ := eval.EvalQuery{
-		RefId:                  request.RefId,
-		RuleUid:                request.RuleUid,
-		RawQuery:               request.RawQuery,
-		Query:                  request.Query,
-		DateTimeCol:            request.DateTimeColDataType,
-		DateCol:                request.DateColDataType,
-		DateTimeType:           request.DateTimeType,
-		Extrapolate:            request.Extrapolate,
-		SkipComments:           request.SkipComments,
-		AddMetadata:            request.AddMetadata,
-		Format:                 request.Format,
-		Round:                  request.Round,
-		IntervalFactor:         request.IntervalFactor,
-		Interval:               request.Interval,
-		Database:               request.Database,
-		Table:                  request.Table,
-		MaxDataPoints:          request.MaxDataPoints,
-		From:                   from,
-		To:                     to,
-		FrontendDatasource:     request.FrontendDatasource,
-		UseWindowFuncForMacros: request.UseWindowFuncForMacros,
-	}
+	evalQ := helpers.NewEvalQuery(request, from, to)
 
 	// Apply macros and get AST
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()

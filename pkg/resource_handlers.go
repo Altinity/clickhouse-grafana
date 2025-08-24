@@ -5,21 +5,16 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
 	"github.com/altinity/clickhouse-grafana/pkg/eval"
+	"github.com/altinity/clickhouse-grafana/pkg/helpers"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 
 // Request/Response structures for resource handlers
 
-type AdhocFilter struct {
-	Key      string      `json:"key"`
-	Operator string      `json:"operator"`
-	Value    interface{} `json:"value"`
-}
 
 type Target struct {
 	Database string `json:"database"`
@@ -27,9 +22,9 @@ type Target struct {
 }
 
 type ApplyAdhocFiltersRequest struct {
-	Query        string        `json:"query"`
-	AdhocFilters []AdhocFilter `json:"adhocFilters"`
-	Target       Target        `json:"target"`
+	Query        string               `json:"query"`
+	AdhocFilters []helpers.AdhocFilter `json:"adhocFilters"`
+	Target       Target               `json:"target"`
 }
 
 type ApplyAdhocFiltersResponse struct {
@@ -121,7 +116,7 @@ type ProcessQueryBatchRequest struct {
 	} `json:"timeRange"`
 
 	// Adhoc filter fields
-	AdhocFilters []AdhocFilter `json:"adhocFilters"`
+	AdhocFilters []helpers.AdhocFilter `json:"adhocFilters"`
 	Target       Target        `json:"target"`
 
 	// Properties to extract
@@ -173,7 +168,7 @@ type CreateQueryWithAdhocRequest struct {
 	} `json:"timeRange"`
 
 	// Adhoc filter fields
-	AdhocFilters []AdhocFilter `json:"adhocFilters"`
+	AdhocFilters []helpers.AdhocFilter `json:"adhocFilters"`
 	Target       Target        `json:"target"`
 }
 
@@ -255,105 +250,24 @@ func findGroupByProperties(ast *eval.EvalAST) []interface{} {
 	return []interface{}{}
 }
 
-// processAdhocFilters extracts the common logic for processing adhoc filters
-// Returns a slice of SQL condition strings that can be used in WHERE clauses
-func processAdhocFilters(adhocFilters []AdhocFilter, targetDatabase, targetTable string) []string {
-	var adhocConditions []string
 
-	// Process each adhoc filter
-	for _, filter := range adhocFilters {
-		var parts []string
-		if strings.Contains(filter.Key, ".") {
-			parts = strings.Split(filter.Key, ".")
-		} else {
-			parts = []string{targetDatabase, targetTable, filter.Key}
-		}
-
-		// Add missing parts
-		if len(parts) == 1 {
-			parts = append([]string{targetTable}, parts...)
-		}
-		if len(parts) == 2 {
-			parts = append([]string{targetTable}, parts...)
-		}
-		if len(parts) < 3 {
-			continue
-		}
-
-		if targetDatabase != parts[0] || targetTable != parts[1] {
-			continue
-		}
-
-		// Convert operator
-		operator := filter.Operator
-		switch operator {
-		case "=~":
-			operator = "LIKE"
-		case "!~":
-			operator = "NOT LIKE"
-		}
-
-		// Format value with consistent quoting
-		var value string
-		switch v := filter.Value.(type) {
-		case float64:
-			value = fmt.Sprintf("%g", v)
-		case string:
-			// Don't quote if it's already a number or contains special SQL syntax
-			if regexp.MustCompile(`^\s*\d+(\.\d+)?\s*$`).MatchString(v) ||
-				strings.Contains(v, "'") ||
-				strings.Contains(v, ", ") {
-				value = v
-			} else {
-				// Escape single quotes in string values
-				escaped := strings.ReplaceAll(v, "'", "''")
-				value = fmt.Sprintf("'%s'", escaped)
-			}
-		default:
-			// For any other type, convert to string and escape quotes
-			str := fmt.Sprintf("%v", v)
-			escaped := strings.ReplaceAll(str, "'", "''")
-			value = fmt.Sprintf("'%s'", escaped)
-		}
-
-		// Build the condition with proper spacing
-		condition := fmt.Sprintf("%s %s %s", parts[2], operator, value)
-		adhocConditions = append(adhocConditions, condition)
-	}
-
-	return adhocConditions
-}
 
 // handleCreateQuery processes query creation with macro expansion and time range handling
 func (ds *ClickHouseDatasource) handleCreateQuery(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	var request CreateQueryRequest
-	if err := json.Unmarshal(req.Body, &request); err != nil {
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
-		})
+	request, ok := helpers.UnmarshalRequest[CreateQueryRequest](req, sender)
+	if !ok {
+		return nil
 	}
 
-	// Parse time range
+	// Parse time range using helper function
 	hasAdhocMacro := strings.Contains(request.Query, "$adhoc")
-	from, err := time.Parse(time.RFC3339, request.TimeRange.From)
+	from, to, err := helpers.ParseTimeRange(helpers.TimeRangeStruct(request.TimeRange))
 	if err != nil {
 		return sendUniversalErrorResponse(sender, ErrorContext{
 			ErrorType:     ErrorTypeTimeRange,
 			OriginalSQL:   request.Query,
 			HasAdhocMacro: hasAdhocMacro,
-			OriginalError: fmt.Errorf("Invalid `$from` time: %v", err),
-			Handler:       "handleCreateQuery",
-		}, http.StatusBadRequest)
-	}
-
-	to, err := time.Parse(time.RFC3339, request.TimeRange.To)
-	if err != nil {
-		return sendUniversalErrorResponse(sender, ErrorContext{
-			ErrorType:     ErrorTypeTimeRange,
-			OriginalSQL:   request.Query,
-			HasAdhocMacro: hasAdhocMacro,
-			OriginalError: fmt.Errorf("Invalid `$to` time: %v", err),
+			OriginalError: fmt.Errorf("Invalid time range: %v", err),
 			Handler:       "handleCreateQuery",
 		}, http.StatusBadRequest)
 	}
@@ -411,29 +325,18 @@ func (ds *ClickHouseDatasource) handleCreateQuery(ctx context.Context, req *back
 	// Use the recursive function to find GROUP BY properties at any level
 	properties := findGroupByProperties(ast)
 
-	// Return the result
-	response := CreateQueryResponse{
+	// Return the result using utility function
+	return helpers.SendSuccessResponse(sender, CreateQueryResponse{
 		SQL:  sql,
 		Keys: properties,
-	}
-	body, _ := json.Marshal(response)
-	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
 	})
 }
 
 // handleApplyAdhocFilters processes adhoc filters by parsing SQL queries and applying filter conditions
 func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	var request ApplyAdhocFiltersRequest
-	if err := json.Unmarshal(req.Body, &request); err != nil {
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
-		})
+	request, ok := helpers.UnmarshalRequest[ApplyAdhocFiltersRequest](req, sender)
+	if !ok {
+		return nil
 	}
 
 	query := request.Query
@@ -489,7 +392,7 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 		}
 
 		// Process adhoc filters using shared utility function
-		adhocConditions = processAdhocFilters(adhocFilters, targetDatabase, targetTable)
+		adhocConditions = helpers.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(query, "$adhoc") {
@@ -518,16 +421,8 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 		query = strings.ReplaceAll(query, "$adhoc", renderedCondition)
 	}
 
-	// Return the result
-	response := ApplyAdhocFiltersResponse{Query: query}
-	body, _ := json.Marshal(response)
-	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
-	})
+	// Return the result using utility function
+	return helpers.SendSuccessResponse(sender, ApplyAdhocFiltersResponse{Query: query})
 }
 
 // handleReplaceTimeFilters replaces time-related macros in queries
@@ -586,12 +481,9 @@ func (ds *ClickHouseDatasource) handleReplaceTimeFilters(ctx context.Context, re
 
 // handleGetAstProperty extracts properties from SQL AST (like GROUP BY clauses)
 func (ds *ClickHouseDatasource) handleGetAstProperty(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	var request GetAstPropertyRequest
-	if err := json.Unmarshal(req.Body, &request); err != nil {
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
-		})
+	request, ok := helpers.UnmarshalRequest[GetAstPropertyRequest](req, sender)
+	if !ok {
+		return nil
 	}
 
 	// Create scanner and parse AST
@@ -642,16 +534,8 @@ func (ds *ClickHouseDatasource) handleGetAstProperty(ctx context.Context, req *b
 		}
 	}
 
-	// Return the result
-	response := GetAstPropertyResponse{Properties: properties}
-	body, _ := json.Marshal(response)
-	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
-	})
+	// Return the result using utility function
+	return helpers.SendSuccessResponse(sender, GetAstPropertyResponse{Properties: properties})
 }
 
 // handleProcessQueryBatch combines createQuery + applyAdhocFilters + property extraction for optimal performance
@@ -770,7 +654,7 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 		}
 
 		// Process adhoc filters using shared utility function
-		adhocConditions := processAdhocFilters(adhocFilters, targetDatabase, targetTable)
+		adhocConditions = helpers.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(sql, "$adhoc") {
@@ -867,12 +751,9 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 
 // handleGetMultipleAstProperties extracts multiple AST properties in one call for efficiency
 func (ds *ClickHouseDatasource) handleGetMultipleAstProperties(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	var request GetMultipleAstPropertiesRequest
-	if err := json.Unmarshal(req.Body, &request); err != nil {
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
-		})
+	request, ok := helpers.UnmarshalRequest[GetMultipleAstPropertiesRequest](req, sender)
+	if !ok {
+		return nil
 	}
 
 	// Create scanner and parse AST
@@ -916,15 +797,7 @@ func (ds *ClickHouseDatasource) handleGetMultipleAstProperties(ctx context.Conte
 	}
 
 	// Return the result
-	response := GetMultipleAstPropertiesResponse{Properties: properties}
-	body, _ := json.Marshal(response)
-	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
-	})
+	return helpers.SendSuccessResponse(sender, GetMultipleAstPropertiesResponse{Properties: properties})
 }
 
 // ErrorType represents different categories of errors
@@ -1214,7 +1087,7 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		}
 
 		// Process adhoc filters using shared utility function
-		adhocConditions = processAdhocFilters(adhocFilters, targetDatabase, targetTable)
+		adhocConditions = helpers.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(sql, "$adhoc") {

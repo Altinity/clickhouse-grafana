@@ -1130,15 +1130,6 @@ func sendUniversalErrorResponse(sender backend.CallResourceResponseSender, ctx E
 	})
 }
 
-// Legacy function for backward compatibility
-func checkUnreplacedMacros(sql string, originalErr error) string {
-	unreplacedMacros := findUnreplacedMacros(sql)
-	if len(unreplacedMacros) > 0 {
-		return fmt.Sprintf("%v [Warning: Query contains unreplaced macros: %s - this usually means query processing failed before macro replacement could complete]",
-			originalErr, strings.Join(unreplacedMacros, ", "))
-	}
-	return originalErr.Error()
-}
 
 // handleCreateQueryWithAdhoc safely batches createQuery + applyAdhocFilters without property extraction
 func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {

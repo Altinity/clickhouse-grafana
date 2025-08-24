@@ -113,25 +113,3 @@ export function getPermissionErrorMessage(
   return baseMessage;
 }
 
-/**
- * Handles a permission error by logging it appropriately and returning a safe default value
- * @param error - The error to handle
- * @param context - The context where the error occurred
- * @param datasourceId - Optional datasource identifier
- * @param defaultValue - The default value to return (default: [])
- * @returns The default value
- */
-export function handlePermissionError<T = any[]>(
-  error: any,
-  context: PermissionErrorContextType,
-  datasourceId?: string,
-  defaultValue: T = [] as any
-): T {
-  if (isPermissionError(error)) {
-    console.info(getPermissionErrorMessage(context, datasourceId));
-    return defaultValue;
-  }
-  
-  // If it's not a permission error, re-throw it
-  throw error;
-}

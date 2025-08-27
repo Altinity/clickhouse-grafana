@@ -8,8 +8,10 @@ import (
 	"strings"
 	"time"
 
+	"github.com/altinity/clickhouse-grafana/pkg/adhoc"
 	"github.com/altinity/clickhouse-grafana/pkg/eval"
-	"github.com/altinity/clickhouse-grafana/pkg/helpers"
+	"github.com/altinity/clickhouse-grafana/pkg/requests"
+	"github.com/altinity/clickhouse-grafana/pkg/timeutils"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 
@@ -23,7 +25,7 @@ type Target struct {
 
 type ApplyAdhocFiltersRequest struct {
 	Query        string               `json:"query"`
-	AdhocFilters []helpers.AdhocFilter `json:"adhocFilters"`
+	AdhocFilters []adhoc.AdhocFilter `json:"adhocFilters"`
 	Target       Target               `json:"target"`
 }
 
@@ -116,7 +118,7 @@ type ProcessQueryBatchRequest struct {
 	} `json:"timeRange"`
 
 	// Adhoc filter fields
-	AdhocFilters []helpers.AdhocFilter `json:"adhocFilters"`
+	AdhocFilters []adhoc.AdhocFilter `json:"adhocFilters"`
 	Target       Target        `json:"target"`
 
 	// Properties to extract
@@ -168,7 +170,7 @@ type CreateQueryWithAdhocRequest struct {
 	} `json:"timeRange"`
 
 	// Adhoc filter fields
-	AdhocFilters []helpers.AdhocFilter `json:"adhocFilters"`
+	AdhocFilters []adhoc.AdhocFilter `json:"adhocFilters"`
 	Target       Target        `json:"target"`
 }
 
@@ -254,14 +256,14 @@ func findGroupByProperties(ast *eval.EvalAST) []interface{} {
 
 // handleCreateQuery processes query creation with macro expansion and time range handling
 func (ds *ClickHouseDatasource) handleCreateQuery(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	request, ok := helpers.UnmarshalRequest[CreateQueryRequest](req, sender)
+	request, ok := requests.UnmarshalRequest[CreateQueryRequest](req, sender)
 	if !ok {
 		return nil
 	}
 
 	// Parse time range using helper function
 	hasAdhocMacro := strings.Contains(request.Query, "$adhoc")
-	from, to, err := helpers.ParseTimeRange(helpers.TimeRangeStruct(request.TimeRange))
+	from, to, err := timeutils.ParseTimeRange(timeutils.TimeRangeStruct(request.TimeRange))
 	if err != nil {
 		return sendUniversalErrorResponse(sender, ErrorContext{
 			ErrorType:     ErrorTypeTimeRange,
@@ -273,7 +275,7 @@ func (ds *ClickHouseDatasource) handleCreateQuery(ctx context.Context, req *back
 	}
 
 	// Create eval.EvalQuery
-	evalQ := helpers.NewEvalQuery(request, from, to)
+	evalQ := eval.NewEvalQuery(request, from, to)
 
 	// Apply macros and get AST
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
@@ -304,7 +306,7 @@ func (ds *ClickHouseDatasource) handleCreateQuery(ctx context.Context, req *back
 	properties := findGroupByProperties(ast)
 
 	// Return the result using utility function
-	return helpers.SendSuccessResponse(sender, CreateQueryResponse{
+	return requests.SendSuccessResponse(sender, CreateQueryResponse{
 		SQL:  sql,
 		Keys: properties,
 	})
@@ -312,7 +314,7 @@ func (ds *ClickHouseDatasource) handleCreateQuery(ctx context.Context, req *back
 
 // handleApplyAdhocFilters processes adhoc filters by parsing SQL queries and applying filter conditions
 func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	request, ok := helpers.UnmarshalRequest[ApplyAdhocFiltersRequest](req, sender)
+	request, ok := requests.UnmarshalRequest[ApplyAdhocFiltersRequest](req, sender)
 	if !ok {
 		return nil
 	}
@@ -370,7 +372,7 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 		}
 
 		// Process adhoc filters using shared utility function
-		adhocConditions = helpers.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
+		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(query, "$adhoc") {
@@ -400,7 +402,7 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 	}
 
 	// Return the result using utility function
-	return helpers.SendSuccessResponse(sender, ApplyAdhocFiltersResponse{Query: query})
+	return requests.SendSuccessResponse(sender, ApplyAdhocFiltersResponse{Query: query})
 }
 
 // handleReplaceTimeFilters replaces time-related macros in queries
@@ -459,7 +461,7 @@ func (ds *ClickHouseDatasource) handleReplaceTimeFilters(ctx context.Context, re
 
 // handleGetAstProperty extracts properties from SQL AST (like GROUP BY clauses)
 func (ds *ClickHouseDatasource) handleGetAstProperty(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	request, ok := helpers.UnmarshalRequest[GetAstPropertyRequest](req, sender)
+	request, ok := requests.UnmarshalRequest[GetAstPropertyRequest](req, sender)
 	if !ok {
 		return nil
 	}
@@ -513,7 +515,7 @@ func (ds *ClickHouseDatasource) handleGetAstProperty(ctx context.Context, req *b
 	}
 
 	// Return the result using utility function
-	return helpers.SendSuccessResponse(sender, GetAstPropertyResponse{Properties: properties})
+	return requests.SendSuccessResponse(sender, GetAstPropertyResponse{Properties: properties})
 }
 
 // handleProcessQueryBatch combines createQuery + applyAdhocFilters + property extraction for optimal performance
@@ -549,7 +551,7 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 	}
 
 	// Create eval.EvalQuery
-	evalQ := helpers.NewEvalQuery(request, from, to)
+	evalQ := eval.NewEvalQuery(request, from, to)
 
 	// Apply macros and get AST
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
@@ -610,7 +612,7 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 		}
 
 		// Process adhoc filters using shared utility function
-		adhocConditions = helpers.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
+		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(sql, "$adhoc") {
@@ -707,7 +709,7 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 
 // handleGetMultipleAstProperties extracts multiple AST properties in one call for efficiency
 func (ds *ClickHouseDatasource) handleGetMultipleAstProperties(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	request, ok := helpers.UnmarshalRequest[GetMultipleAstPropertiesRequest](req, sender)
+	request, ok := requests.UnmarshalRequest[GetMultipleAstPropertiesRequest](req, sender)
 	if !ok {
 		return nil
 	}
@@ -753,7 +755,7 @@ func (ds *ClickHouseDatasource) handleGetMultipleAstProperties(ctx context.Conte
 	}
 
 	// Return the result
-	return helpers.SendSuccessResponse(sender, GetMultipleAstPropertiesResponse{Properties: properties})
+	return requests.SendSuccessResponse(sender, GetMultipleAstPropertiesResponse{Properties: properties})
 }
 
 // ErrorType represents different categories of errors
@@ -946,7 +948,7 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 	}
 
 	// Create eval.EvalQuery
-	evalQ := helpers.NewEvalQuery(request, from, to)
+	evalQ := eval.NewEvalQuery(request, from, to)
 
 	// Apply macros and get AST
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
@@ -1021,7 +1023,7 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		}
 
 		// Process adhoc filters using shared utility function
-		adhocConditions = helpers.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
+		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(sql, "$adhoc") {

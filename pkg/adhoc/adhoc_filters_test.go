@@ -43,7 +43,7 @@ func TestProcessAdhocFilters_KeyParsing(t *testing.T) {
 			targetDatabase: "system",
 			targetTable:    "query_log",
 			expectedParts:  []string{"query_log", "query_log", "error"}, // Note: prepends targetTable
-			shouldProcess:  false, // Won't match because first part is "query_log", not "system"
+			shouldProcess:  false,                                       // Won't match because first part is "query_log", not "system"
 		},
 		{
 			name:           "SinglePartWithDot",
@@ -51,7 +51,7 @@ func TestProcessAdhocFilters_KeyParsing(t *testing.T) {
 			targetDatabase: "system",
 			targetTable:    "query_log",
 			expectedParts:  []string{"error.level", "query_log", "error.level"}, // Split creates ["error", "level"] -> len=2, prepends targetTable
-			shouldProcess:  false, // First part is "error", not "system"
+			shouldProcess:  false,                                               // First part is "error", not "system"
 		},
 		{
 			name:           "MultipleDots",
@@ -59,7 +59,7 @@ func TestProcessAdhocFilters_KeyParsing(t *testing.T) {
 			targetDatabase: "db",
 			targetTable:    "schema",
 			expectedParts:  []string{"db", "schema", "table"}, // Takes first 3 parts
-			shouldProcess:  true, // Matches: db==db AND schema==schema, uses "table" as column
+			shouldProcess:  true,                              // Matches: db==db AND schema==schema, uses "table" as column
 		},
 		{
 			name:           "EmptyPartsInKey",
@@ -151,7 +151,7 @@ func TestProcessAdhocFilters_DatabaseTableMatching(t *testing.T) {
 		{
 			name: "MultipleFiltersMixed",
 			filters: []AdhocFilter{
-				{Key: "system.query_log.error", Operator: "=", Value: "test1"}, // Match
+				{Key: "system.query_log.error", Operator: "=", Value: "test1"},  // Match
 				{Key: "default.query_log.error", Operator: "=", Value: "test2"}, // Wrong DB
 				{Key: "system.users.name", Operator: "=", Value: "test3"},       // Wrong table
 				{Key: "system.query_log.duration", Operator: ">", Value: 100},   // Match
@@ -165,7 +165,7 @@ func TestProcessAdhocFilters_DatabaseTableMatching(t *testing.T) {
 		{
 			name: "InsufficientParts",
 			filters: []AdhocFilter{
-				{Key: "", Operator: "=", Value: "test"}, // Empty key -> [system, query_log, ""] -> matches but empty column
+				{Key: "", Operator: "=", Value: "test"},  // Empty key -> [system, query_log, ""] -> matches but empty column
 				{Key: ".", Operator: "=", Value: "test"}, // Single dot -> ["", ""] -> len=2 -> [query_log, "", ""] -> query_log != system, skipped
 			},
 			targetDatabase: "system",
@@ -255,7 +255,7 @@ func TestProcessAdhocFilters_EdgeCases(t *testing.T) {
 
 // Helper function to check if a condition contains a specific column name
 func containsColumn(condition, column string) bool {
-	// Simple check - in real SQL condition like "error = 'test'", 
+	// Simple check - in real SQL condition like "error = 'test'",
 	// the column should be at the beginning
 	return len(condition) > len(column) && condition[:len(column)] == column
 }

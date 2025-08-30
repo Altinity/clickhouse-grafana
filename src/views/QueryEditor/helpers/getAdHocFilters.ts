@@ -28,7 +28,7 @@ export const getAdhocFilters = (datasourceName, datasourceUid: any) => {
     }
     
     // Now compare resolved UIDs
-    if (variableUid === datasourceUid) {
+    if (variableUid === datasourceUid || variableUid === datasourceName) {
       filters = filters.concat(variable.filters);
     }
   }

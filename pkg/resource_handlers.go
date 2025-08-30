@@ -5,21 +5,18 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
-	"regexp"
 	"strings"
 	"time"
 
+	"github.com/altinity/clickhouse-grafana/pkg/adhoc"
 	"github.com/altinity/clickhouse-grafana/pkg/eval"
+	"github.com/altinity/clickhouse-grafana/pkg/requests"
+	"github.com/altinity/clickhouse-grafana/pkg/timeutils"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 )
 
 // Request/Response structures for resource handlers
 
-type AdhocFilter struct {
-	Key      string      `json:"key"`
-	Operator string      `json:"operator"`
-	Value    interface{} `json:"value"`
-}
 
 type Target struct {
 	Database string `json:"database"`
@@ -27,9 +24,9 @@ type Target struct {
 }
 
 type ApplyAdhocFiltersRequest struct {
-	Query        string        `json:"query"`
-	AdhocFilters []AdhocFilter `json:"adhocFilters"`
-	Target       Target        `json:"target"`
+	Query        string               `json:"query"`
+	AdhocFilters []adhoc.AdhocFilter `json:"adhocFilters"`
+	Target       Target               `json:"target"`
 }
 
 type ApplyAdhocFiltersResponse struct {
@@ -119,20 +116,20 @@ type ProcessQueryBatchRequest struct {
 		From string `json:"from"`
 		To   string `json:"to"`
 	} `json:"timeRange"`
-	
+
 	// Adhoc filter fields
-	AdhocFilters []AdhocFilter `json:"adhocFilters"`
+	AdhocFilters []adhoc.AdhocFilter `json:"adhocFilters"`
 	Target       Target        `json:"target"`
-	
+
 	// Properties to extract
 	ExtractProperties []string `json:"extractProperties"`
 }
 
 type ProcessQueryBatchResponse struct {
-	SQL        string                  `json:"sql"`
-	Keys       []interface{}           `json:"keys"`
+	SQL        string                   `json:"sql"`
+	Keys       []interface{}            `json:"keys"`
 	Properties map[string][]interface{} `json:"properties"`
-	Error      string                  `json:"error,omitempty"`
+	Error      string                   `json:"error,omitempty"`
 }
 
 type GetMultipleAstPropertiesRequest struct {
@@ -171,9 +168,9 @@ type CreateQueryWithAdhocRequest struct {
 		From string `json:"from"`
 		To   string `json:"to"`
 	} `json:"timeRange"`
-	
+
 	// Adhoc filter fields
-	AdhocFilters []AdhocFilter `json:"adhocFilters"`
+	AdhocFilters []adhoc.AdhocFilter `json:"adhocFilters"`
 	Target       Target        `json:"target"`
 }
 
@@ -255,110 +252,71 @@ func findGroupByProperties(ast *eval.EvalAST) []interface{} {
 	return []interface{}{}
 }
 
+
+
 // handleCreateQuery processes query creation with macro expansion and time range handling
 func (ds *ClickHouseDatasource) handleCreateQuery(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	var request CreateQueryRequest
-	if err := json.Unmarshal(req.Body, &request); err != nil {
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
-		})
+	request, ok := requests.UnmarshalRequest[CreateQueryRequest](req, sender)
+	if !ok {
+		return nil
 	}
 
-	// Parse time range
-	from, err := time.Parse(time.RFC3339, request.TimeRange.From)
+	// Parse time range using helper function
+	hasAdhocMacro := strings.Contains(request.Query, "$adhoc")
+	from, to, err := timeutils.ParseTimeRange(timeutils.TimeRangeStruct(request.TimeRange))
 	if err != nil {
-		response := CreateQueryResponse{Error: "Invalid `$from` time"}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   body,
-		})
-	}
-
-	to, err := time.Parse(time.RFC3339, request.TimeRange.To)
-	if err != nil {
-		response := CreateQueryResponse{Error: "Invalid `$to` time"}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   body,
-		})
+		return sendUniversalErrorResponse(sender, ErrorContext{
+			ErrorType:     ErrorTypeTimeRange,
+			OriginalSQL:   request.Query,
+			HasAdhocMacro: hasAdhocMacro,
+			OriginalError: fmt.Errorf("Invalid time range: %v", err),
+			Handler:       "handleCreateQuery",
+		}, http.StatusBadRequest)
 	}
 
 	// Create eval.EvalQuery
-	evalQ := eval.EvalQuery{
-		RefId:                  request.RefId,
-		RuleUid:                request.RuleUid,
-		RawQuery:               request.RawQuery,
-		Query:                  request.Query,
-		DateTimeCol:            request.DateTimeColDataType,
-		DateCol:                request.DateColDataType,
-		DateTimeType:           request.DateTimeType,
-		Extrapolate:            request.Extrapolate,
-		SkipComments:           request.SkipComments,
-		AddMetadata:            request.AddMetadata,
-		Format:                 request.Format,
-		Round:                  request.Round,
-		IntervalFactor:         request.IntervalFactor,
-		Interval:               request.Interval,
-		Database:               request.Database,
-		Table:                  request.Table,
-		MaxDataPoints:          request.MaxDataPoints,
-		From:                   from,
-		To:                     to,
-		FrontendDatasource:     request.FrontendDatasource,
-		UseWindowFuncForMacros: request.UseWindowFuncForMacros,
-	}
+	evalQ := eval.NewEvalQuery(request, from, to)
 
 	// Apply macros and get AST
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
 	if err != nil {
-		response := CreateQueryResponse{Error: fmt.Sprintf("Failed to apply macros: %v", err)}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusInternalServerError,
-			Body:   body,
-		})
+		return sendUniversalErrorResponse(sender, ErrorContext{
+			ErrorType:     ErrorTypeMacroExpansion,
+			OriginalSQL:   request.Query,
+			HasAdhocMacro: hasAdhocMacro,
+			OriginalError: fmt.Errorf("Failed to apply macros: %v", err),
+			Handler:       "handleCreateQuery",
+		}, http.StatusInternalServerError)
 	}
 
 	scanner := eval.NewScanner(sql)
 	ast, err := scanner.ToAST()
 	if err != nil {
-		response := CreateQueryResponse{Error: fmt.Sprintf("Failed to parse query: %v", err)}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusInternalServerError,
-			Body:   body,
-		})
+		return sendUniversalErrorResponse(sender, ErrorContext{
+			ErrorType:     ErrorTypeQueryParsing,
+			OriginalSQL:   request.Query,
+			ProcessedSQL:  sql,
+			HasAdhocMacro: hasAdhocMacro,
+			OriginalError: err,
+			Handler:       "handleCreateQuery",
+		}, http.StatusInternalServerError)
 	}
 
 	// Use the recursive function to find GROUP BY properties at any level
 	properties := findGroupByProperties(ast)
 
-	// Return the result
-	response := CreateQueryResponse{
+	// Return the result using utility function
+	return requests.SendSuccessResponse(sender, CreateQueryResponse{
 		SQL:  sql,
 		Keys: properties,
-	}
-	body, _ := json.Marshal(response)
-	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
 	})
 }
 
 // handleApplyAdhocFilters processes adhoc filters by parsing SQL queries and applying filter conditions
 func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	var request ApplyAdhocFiltersRequest
-	if err := json.Unmarshal(req.Body, &request); err != nil {
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
-		})
+	request, ok := requests.UnmarshalRequest[ApplyAdhocFiltersRequest](req, sender)
+	if !ok {
+		return nil
 	}
 
 	query := request.Query
@@ -366,17 +324,20 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 	target := request.Target
 
 	// Process the query
+	hasAdhocMacro := strings.Contains(query, "$adhoc")
 	adhocConditions := make([]string, 0)
 	scanner := eval.NewScanner(query)
 	ast, err := scanner.ToAST()
 	topQueryAst := ast
 	if err != nil {
-		response := ApplyAdhocFiltersResponse{Error: fmt.Sprintf("Failed to parse query: %v", err)}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusInternalServerError,
-			Body:   body,
-		})
+		return sendUniversalErrorResponse(sender, ErrorContext{
+			ErrorType:     ErrorTypeQueryParsing,
+			OriginalSQL:   query,
+			HasAdhocMacro: hasAdhocMacro,
+			AdhocFilters:  []interface{}{adhocFilters},
+			OriginalError: err,
+			Handler:       "handleApplyAdhocFilters",
+		}, http.StatusInternalServerError)
 	}
 
 	if len(adhocFilters) > 0 {
@@ -400,74 +361,18 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 		// Get target database and table
 		targetDatabase, targetTable := parseTargets(ast.Obj["from"].(*eval.EvalAST).Arr[0].(string), target.Database, target.Table)
 		if targetDatabase == "" && targetTable == "" {
-			response := ApplyAdhocFiltersResponse{Error: "FROM expression can't be parsed"}
-			body, _ := json.Marshal(response)
-			return sender.Send(&backend.CallResourceResponse{
-				Status: http.StatusInternalServerError,
-				Body:   body,
-			})
+			return sendUniversalErrorResponse(sender, ErrorContext{
+				ErrorType:     ErrorTypeFromClause,
+				OriginalSQL:   query,
+				HasAdhocMacro: hasAdhocMacro,
+				AdhocFilters:  []interface{}{adhocFilters},
+				OriginalError: fmt.Errorf("FROM expression can't be parsed - unable to determine target database and table"),
+				Handler:       "handleApplyAdhocFilters",
+			}, http.StatusInternalServerError)
 		}
 
-		// Process each adhoc filter
-		for _, filter := range adhocFilters {
-			var parts []string
-			if strings.Contains(filter.Key, ".") {
-				parts = strings.Split(filter.Key, ".")
-			} else {
-				parts = []string{targetDatabase, targetTable, filter.Key}
-			}
-
-			// Add missing parts
-			if len(parts) == 1 {
-				parts = append([]string{targetTable}, parts...)
-			}
-			if len(parts) == 2 {
-				parts = append([]string{targetTable}, parts...)
-			}
-			if len(parts) < 3 {
-				continue
-			}
-
-			if targetDatabase != parts[0] || targetTable != parts[1] {
-				continue
-			}
-
-			// Convert operator
-			operator := filter.Operator
-			switch operator {
-			case "=~":
-				operator = "LIKE"
-			case "!~":
-				operator = "NOT LIKE"
-			}
-
-			// Format value with consistent quoting
-			var value string
-			switch v := filter.Value.(type) {
-			case float64:
-				value = fmt.Sprintf("%g", v)
-			case string:
-				// Don't quote if it's already a number or contains special SQL syntax
-				if regexp.MustCompile(`^\s*\d+(\.\d+)?\s*$`).MatchString(v) ||
-					strings.Contains(v, "'") ||
-					strings.Contains(v, ", ") {
-					value = v
-				} else {
-					// Escape single quotes in string values
-					escaped := strings.ReplaceAll(v, "'", "''")
-					value = fmt.Sprintf("'%s'", escaped)
-				}
-			default:
-				// For any other type, convert to string and escape quotes
-				str := fmt.Sprintf("%v", v)
-				escaped := strings.ReplaceAll(str, "'", "''")
-				value = fmt.Sprintf("'%s'", escaped)
-			}
-
-			// Build the condition with proper spacing
-			condition := fmt.Sprintf("%s %s %s", parts[2], operator, value)
-			adhocConditions = append(adhocConditions, condition)
-		}
+		// Process adhoc filters using shared utility function
+		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(query, "$adhoc") {
@@ -496,16 +401,8 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 		query = strings.ReplaceAll(query, "$adhoc", renderedCondition)
 	}
 
-	// Return the result
-	response := ApplyAdhocFiltersResponse{Query: query}
-	body, _ := json.Marshal(response)
-	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
-	})
+	// Return the result using utility function
+	return requests.SendSuccessResponse(sender, ApplyAdhocFiltersResponse{Query: query})
 }
 
 // handleReplaceTimeFilters replaces time-related macros in queries
@@ -564,24 +461,23 @@ func (ds *ClickHouseDatasource) handleReplaceTimeFilters(ctx context.Context, re
 
 // handleGetAstProperty extracts properties from SQL AST (like GROUP BY clauses)
 func (ds *ClickHouseDatasource) handleGetAstProperty(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	var request GetAstPropertyRequest
-	if err := json.Unmarshal(req.Body, &request); err != nil {
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
-		})
+	request, ok := requests.UnmarshalRequest[GetAstPropertyRequest](req, sender)
+	if !ok {
+		return nil
 	}
 
 	// Create scanner and parse AST
+	hasAdhocMacro := strings.Contains(request.Query, "$adhoc")
 	scanner := eval.NewScanner(request.Query)
 	ast, err := scanner.ToAST()
 	if err != nil {
-		response := GetAstPropertyResponse{Error: fmt.Sprintf("Failed to parse query: %v", err)}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusInternalServerError,
-			Body:   body,
-		})
+		return sendUniversalErrorResponse(sender, ErrorContext{
+			ErrorType:     ErrorTypeAstExtraction,
+			OriginalSQL:   request.Query,
+			HasAdhocMacro: hasAdhocMacro,
+			OriginalError: err,
+			Handler:       "handleGetAstProperty",
+		}, http.StatusInternalServerError)
 	}
 
 	// Use the recursive function if we're looking for group by
@@ -618,16 +514,8 @@ func (ds *ClickHouseDatasource) handleGetAstProperty(ctx context.Context, req *b
 		}
 	}
 
-	// Return the result
-	response := GetAstPropertyResponse{Properties: properties}
-	body, _ := json.Marshal(response)
-	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
-	})
+	// Return the result using utility function
+	return requests.SendSuccessResponse(sender, GetAstPropertyResponse{Properties: properties})
 }
 
 // handleProcessQueryBatch combines createQuery + applyAdhocFilters + property extraction for optimal performance
@@ -663,29 +551,7 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 	}
 
 	// Create eval.EvalQuery
-	evalQ := eval.EvalQuery{
-		RefId:                  request.RefId,
-		RuleUid:                request.RuleUid,
-		RawQuery:               request.RawQuery,
-		Query:                  request.Query,
-		DateTimeCol:            request.DateTimeColDataType,
-		DateCol:                request.DateColDataType,
-		DateTimeType:           request.DateTimeType,
-		Extrapolate:            request.Extrapolate,
-		SkipComments:           request.SkipComments,
-		AddMetadata:            request.AddMetadata,
-		Format:                 request.Format,
-		Round:                  request.Round,
-		IntervalFactor:         request.IntervalFactor,
-		Interval:               request.Interval,
-		Database:               request.Database,
-		Table:                  request.Table,
-		MaxDataPoints:          request.MaxDataPoints,
-		From:                   from,
-		To:                     to,
-		FrontendDatasource:     request.FrontendDatasource,
-		UseWindowFuncForMacros: request.UseWindowFuncForMacros,
-	}
+	evalQ := eval.NewEvalQuery(request, from, to)
 
 	// Apply macros and get AST
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
@@ -712,8 +578,8 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
 	adhocFilters := request.AdhocFilters
 	target := request.Target
-	topQueryAst := ast  // Store reference to original AST before navigation
-	
+	topQueryAst := ast // Store reference to original AST before navigation
+
 	if len(adhocFilters) > 0 {
 		adhocConditions := make([]string, 0)
 
@@ -745,66 +611,8 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 			})
 		}
 
-		// Process each adhoc filter
-		for _, filter := range adhocFilters {
-			var parts []string
-			if strings.Contains(filter.Key, ".") {
-				parts = strings.Split(filter.Key, ".")
-			} else {
-				parts = []string{targetDatabase, targetTable, filter.Key}
-			}
-
-			// Add missing parts
-			if len(parts) == 1 {
-				parts = append([]string{targetTable}, parts...)
-			}
-			if len(parts) == 2 {
-				parts = append([]string{targetTable}, parts...)
-			}
-			if len(parts) < 3 {
-				continue
-			}
-
-			if targetDatabase != parts[0] || targetTable != parts[1] {
-				continue
-			}
-
-			// Convert operator
-			operator := filter.Operator
-			switch operator {
-			case "=~":
-				operator = "LIKE"
-			case "!~":
-				operator = "NOT LIKE"
-			}
-
-			// Format value with consistent quoting
-			var value string
-			switch v := filter.Value.(type) {
-			case float64:
-				value = fmt.Sprintf("%g", v)
-			case string:
-				// Don't quote if it's already a number or contains special SQL syntax
-				if regexp.MustCompile(`^\s*\d+(\.\d+)?\s*$`).MatchString(v) ||
-					strings.Contains(v, "'") ||
-					strings.Contains(v, ", ") {
-					value = v
-				} else {
-					// Escape single quotes in string values
-					escaped := strings.ReplaceAll(v, "'", "''")
-					value = fmt.Sprintf("'%s'", escaped)
-				}
-			default:
-				// For any other type, convert to string and escape quotes
-				str := fmt.Sprintf("%v", v)
-				escaped := strings.ReplaceAll(str, "'", "''")
-				value = fmt.Sprintf("'%s'", escaped)
-			}
-
-			// Build the condition with proper spacing
-			condition := fmt.Sprintf("%s %s %s", parts[2], operator, value)
-			adhocConditions = append(adhocConditions, condition)
-		}
+		// Process adhoc filters using shared utility function
+		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(sql, "$adhoc") {
@@ -833,17 +641,17 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 
 	// Step 3: Extract Properties (combined approach)
 	properties := make(map[string][]interface{})
-	
+
 	// Always extract group by for backward compatibility (keys field)
 	groupByProperties := findGroupByProperties(topQueryAst)
 	properties["group by"] = groupByProperties
-	
+
 	// Extract additional requested properties
 	for _, propName := range request.ExtractProperties {
 		if propName == "group by" {
 			continue // Already handled above
 		}
-		
+
 		if propName == "select" || propName == "where" {
 			// Re-parse the final SQL for these properties since they might have been modified
 			finalScanner := eval.NewScanner(sql)
@@ -901,12 +709,9 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 
 // handleGetMultipleAstProperties extracts multiple AST properties in one call for efficiency
 func (ds *ClickHouseDatasource) handleGetMultipleAstProperties(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
-	var request GetMultipleAstPropertiesRequest
-	if err := json.Unmarshal(req.Body, &request); err != nil {
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   []byte(fmt.Sprintf(`{"error": "Invalid request: %v"}`, err)),
-		})
+	request, ok := requests.UnmarshalRequest[GetMultipleAstPropertiesRequest](req, sender)
+	if !ok {
+		return nil
 	}
 
 	// Create scanner and parse AST
@@ -923,7 +728,7 @@ func (ds *ClickHouseDatasource) handleGetMultipleAstProperties(ctx context.Conte
 
 	// Extract all requested properties
 	properties := make(map[string][]interface{})
-	
+
 	for _, propName := range request.Properties {
 		if propName == "group by" {
 			// Use the recursive function for group by
@@ -950,16 +755,165 @@ func (ds *ClickHouseDatasource) handleGetMultipleAstProperties(ctx context.Conte
 	}
 
 	// Return the result
-	response := GetMultipleAstPropertiesResponse{Properties: properties}
+	return requests.SendSuccessResponse(sender, GetMultipleAstPropertiesResponse{Properties: properties})
+}
+
+// ErrorType represents different categories of errors
+type ErrorType string
+
+const (
+	ErrorTypeTimeRange      ErrorType = "TIME_RANGE"
+	ErrorTypeMacroExpansion ErrorType = "MACRO_EXPANSION"
+	ErrorTypeQueryParsing   ErrorType = "QUERY_PARSING"
+	ErrorTypeFromClause     ErrorType = "FROM_CLAUSE"
+	ErrorTypeAdhocFilters   ErrorType = "ADHOC_FILTERS"
+	ErrorTypeAstExtraction  ErrorType = "AST_EXTRACTION"
+	ErrorTypeGeneral        ErrorType = "GENERAL"
+)
+
+// ErrorContext contains information about the error context
+type ErrorContext struct {
+	ErrorType     ErrorType
+	OriginalSQL   string
+	ProcessedSQL  string
+	HasAdhocMacro bool
+	AdhocFilters  []interface{}
+	OriginalError error
+	Handler       string
+}
+
+// createUniversalErrorResponse creates a comprehensive error response with fallback macro replacement
+func createUniversalErrorResponse(ctx ErrorContext) (map[string]interface{}, string) {
+	// First, handle macro replacement if needed
+	processedSQL := ctx.ProcessedSQL
+	if processedSQL == "" {
+		processedSQL = ctx.OriginalSQL
+	}
+
+	// Always replace $adhoc with fallback if present and not already handled
+	if ctx.HasAdhocMacro && strings.Contains(processedSQL, "$adhoc") {
+		processedSQL = strings.ReplaceAll(processedSQL, "$adhoc", "1")
+		backend.Logger.Warn("Universal error handler replaced $adhoc with '1' as fallback",
+			"handler", ctx.Handler,
+			"error_type", string(ctx.ErrorType),
+			"original_error", ctx.OriginalError)
+	}
+
+	// Generate appropriate error message based on context
+	var errorMsg string
+	var shouldReturnSQL bool
+
+	switch ctx.ErrorType {
+	case ErrorTypeTimeRange:
+		errorMsg = fmt.Sprintf("Time range processing failed: %v. Please check your time range configuration.", ctx.OriginalError)
+
+	case ErrorTypeMacroExpansion:
+		unreplacedMacros := findUnreplacedMacros(processedSQL)
+		if len(unreplacedMacros) > 0 {
+			errorMsg = fmt.Sprintf("Macro expansion failed: %v. Found unreplaced macros: %s. Verify your query syntax and macro usage.",
+				ctx.OriginalError, strings.Join(unreplacedMacros, ", "))
+		} else {
+			errorMsg = fmt.Sprintf("Macro expansion failed: %v. Please check your macro syntax.", ctx.OriginalError)
+		}
+
+	case ErrorTypeQueryParsing:
+		if ctx.HasAdhocMacro {
+			shouldReturnSQL = true
+			errorMsg = fmt.Sprintf("Query parsing failed for adhoc filter processing: %v. "+
+				"The $adhoc macro has been replaced with '1' as a fallback. "+
+				"To use adhoc filters, ensure your query has a simple structure with a clear FROM clause. "+
+				"Complex queries (subqueries, CTEs, multiple JOINs) may not be supported for adhoc filtering.", ctx.OriginalError)
+		} else {
+			unreplacedMacros := findUnreplacedMacros(processedSQL)
+			if len(unreplacedMacros) > 0 {
+				errorMsg = fmt.Sprintf("Query parsing failed: %v. Found unreplaced macros: %s. "+
+					"Check your query syntax and ensure all macros are properly formatted.",
+					ctx.OriginalError, strings.Join(unreplacedMacros, ", "))
+			} else {
+				errorMsg = fmt.Sprintf("Query parsing failed: %v. Please check your SQL syntax.", ctx.OriginalError)
+			}
+		}
+
+	case ErrorTypeFromClause:
+		if ctx.HasAdhocMacro {
+			shouldReturnSQL = true
+			errorMsg = fmt.Sprintf("Cannot determine target table from FROM clause: %v. "+
+				"The $adhoc macro has been replaced with '1' as a fallback. "+
+				"Complex FROM clauses (subqueries, CTEs, multiple JOINs) are not supported for adhoc filters. "+
+				"Consider simplifying your query or using a direct table reference.", ctx.OriginalError)
+		} else {
+			errorMsg = fmt.Sprintf("FROM clause parsing failed: %v. "+
+				"Ensure your FROM clause uses a simple table reference.", ctx.OriginalError)
+		}
+
+	case ErrorTypeAdhocFilters:
+		errorMsg = fmt.Sprintf("Adhoc filter processing failed: %v. "+
+			"Check your adhoc filter configuration and ensure they match your query's table structure.", ctx.OriginalError)
+
+	case ErrorTypeAstExtraction:
+		errorMsg = fmt.Sprintf("AST property extraction failed: %v. "+
+			"This may indicate a complex query structure that cannot be analyzed automatically.", ctx.OriginalError)
+
+	default: // ErrorTypeGeneral
+		unreplacedMacros := findUnreplacedMacros(processedSQL)
+		if len(unreplacedMacros) > 0 {
+			errorMsg = fmt.Sprintf("%v [Warning: Query contains unreplaced macros: %s]",
+				ctx.OriginalError, strings.Join(unreplacedMacros, ", "))
+		} else {
+			errorMsg = ctx.OriginalError.Error()
+		}
+	}
+
+	// Build response
+	response := map[string]interface{}{
+		"error": errorMsg,
+	}
+
+	// Include processed SQL if it should be returned (for cases with fallback replacements)
+	if shouldReturnSQL && processedSQL != ctx.OriginalSQL {
+		response["sql"] = processedSQL
+	}
+
+	return response, processedSQL
+}
+
+// findUnreplacedMacros identifies unreplaced macros in SQL
+func findUnreplacedMacros(sql string) []string {
+	macroChecks := map[string]string{
+		"$adhoc":      "ad-hoc filter replacement failed",
+		"$timeFilter": "time filter macro not replaced",
+		"$timeSeries": "time series macro not replaced",
+		"$table":      "table macro not replaced",
+		"$from":       "from time macro not replaced",
+		"$to":         "to time macro not replaced",
+		"$interval":   "interval macro not replaced",
+		"$rate":       "rate macro not replaced",
+		"$columns":    "columns macro not replaced",
+	}
+
+	var unreplacedMacros []string
+	for macro, description := range macroChecks {
+		if strings.Contains(sql, macro) {
+			unreplacedMacros = append(unreplacedMacros, fmt.Sprintf("%s (%s)", macro, description))
+		}
+	}
+	return unreplacedMacros
+}
+
+// sendUniversalErrorResponse sends a standardized error response
+func sendUniversalErrorResponse(sender backend.CallResourceResponseSender, ctx ErrorContext, httpStatus int) error {
+	response, _ := createUniversalErrorResponse(ctx)
 	body, _ := json.Marshal(response)
+
 	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
+		Status: httpStatus,
 		Headers: map[string][]string{
 			"Content-Type": {"application/json"},
 		},
 		Body: body,
 	})
 }
+
 
 // handleCreateQueryWithAdhoc safely batches createQuery + applyAdhocFilters without property extraction
 func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
@@ -975,76 +929,62 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 	// Parse time range
 	from, err := time.Parse(time.RFC3339, request.TimeRange.From)
 	if err != nil {
-		response := CreateQueryWithAdhocResponse{Error: "Invalid `$from` time"}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   body,
-		})
+		return sendUniversalErrorResponse(sender, ErrorContext{
+			ErrorType:     ErrorTypeTimeRange,
+			OriginalSQL:   request.Query,
+			OriginalError: fmt.Errorf("Invalid `$from` time: %v", err),
+			Handler:       "handleCreateQueryWithAdhoc",
+		}, http.StatusBadRequest)
 	}
 
 	to, err := time.Parse(time.RFC3339, request.TimeRange.To)
 	if err != nil {
-		response := CreateQueryWithAdhocResponse{Error: "Invalid `$to` time"}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   body,
-		})
+		return sendUniversalErrorResponse(sender, ErrorContext{
+			ErrorType:     ErrorTypeTimeRange,
+			OriginalSQL:   request.Query,
+			OriginalError: fmt.Errorf("Invalid `$to` time: %v", err),
+			Handler:       "handleCreateQueryWithAdhoc",
+		}, http.StatusBadRequest)
 	}
 
 	// Create eval.EvalQuery
-	evalQ := eval.EvalQuery{
-		RefId:                  request.RefId,
-		RuleUid:                request.RuleUid,
-		RawQuery:               request.RawQuery,
-		Query:                  request.Query,
-		DateTimeCol:            request.DateTimeColDataType,
-		DateCol:                request.DateColDataType,
-		DateTimeType:           request.DateTimeType,
-		Extrapolate:            request.Extrapolate,
-		SkipComments:           request.SkipComments,
-		AddMetadata:            request.AddMetadata,
-		Format:                 request.Format,
-		Round:                  request.Round,
-		IntervalFactor:         request.IntervalFactor,
-		Interval:               request.Interval,
-		Database:               request.Database,
-		Table:                  request.Table,
-		MaxDataPoints:          request.MaxDataPoints,
-		From:                   from,
-		To:                     to,
-		FrontendDatasource:     request.FrontendDatasource,
-		UseWindowFuncForMacros: request.UseWindowFuncForMacros,
-	}
+	evalQ := eval.NewEvalQuery(request, from, to)
 
 	// Apply macros and get AST
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
+	hasAdhocMacro := strings.Contains(sql, "$adhoc")
 	if err != nil {
-		response := CreateQueryWithAdhocResponse{Error: fmt.Sprintf("Failed to apply macros: %v", err)}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusInternalServerError,
-			Body:   body,
-		})
+		return sendUniversalErrorResponse(sender, ErrorContext{
+			ErrorType:     ErrorTypeMacroExpansion,
+			OriginalSQL:   request.Query,
+			HasAdhocMacro: hasAdhocMacro,
+			OriginalError: fmt.Errorf("Failed to apply macros: %v", err),
+			Handler:       "handleCreateQueryWithAdhoc",
+		}, http.StatusInternalServerError)
 	}
 
 	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
 	adhocFilters := request.AdhocFilters
 	target := request.Target
 	adhocConditions := make([]string, 0)
-	
+
+	// Check if query contains $adhoc upfront for better error handling
+	var targetDatabase, targetTable string
+
 	if len(adhocFilters) > 0 {
 		scanner := eval.NewScanner(sql)
 		ast, err := scanner.ToAST()
 		topQueryAst := ast
 		if err != nil {
-			response := CreateQueryWithAdhocResponse{Error: fmt.Sprintf("Failed to parse query: %v", err)}
-			body, _ := json.Marshal(response)
-			return sender.Send(&backend.CallResourceResponse{
-				Status: http.StatusInternalServerError,
-				Body:   body,
-			})
+			return sendUniversalErrorResponse(sender, ErrorContext{
+				ErrorType:     ErrorTypeQueryParsing,
+				OriginalSQL:   request.Query,
+				ProcessedSQL:  sql,
+				HasAdhocMacro: hasAdhocMacro,
+				AdhocFilters:  []interface{}{adhocFilters},
+				OriginalError: err,
+				Handler:       "handleCreateQueryWithAdhoc",
+			}, http.StatusInternalServerError)
 		}
 
 		// Navigate to the deepest FROM clause
@@ -1065,81 +1005,25 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		}
 
 		// Get target database and table
-		var targetDatabase, targetTable string
 		if fromObj, ok := ast.Obj["from"].(*eval.EvalAST); ok && len(fromObj.Arr) > 0 {
 			if fromStr, ok := fromObj.Arr[0].(string); ok {
 				targetDatabase, targetTable = parseTargets(fromStr, target.Database, target.Table)
 			}
 		}
 		if targetDatabase == "" && targetTable == "" {
-			response := CreateQueryWithAdhocResponse{Error: "FROM expression can't be parsed"}
-			body, _ := json.Marshal(response)
-			return sender.Send(&backend.CallResourceResponse{
-				Status: http.StatusInternalServerError,
-				Body:   body,
-			})
+			return sendUniversalErrorResponse(sender, ErrorContext{
+				ErrorType:     ErrorTypeFromClause,
+				OriginalSQL:   request.Query,
+				ProcessedSQL:  sql,
+				HasAdhocMacro: hasAdhocMacro,
+				AdhocFilters:  []interface{}{adhocFilters},
+				OriginalError: fmt.Errorf("FROM expression can't be parsed - unable to determine target database and table"),
+				Handler:       "handleCreateQueryWithAdhoc",
+			}, http.StatusInternalServerError)
 		}
 
-		// Process each adhoc filter
-		for _, filter := range adhocFilters {
-			var parts []string
-			if strings.Contains(filter.Key, ".") {
-				parts = strings.Split(filter.Key, ".")
-			} else {
-				parts = []string{targetDatabase, targetTable, filter.Key}
-			}
-
-			// Add missing parts
-			if len(parts) == 1 {
-				parts = append([]string{targetTable}, parts...)
-			}
-			if len(parts) == 2 {
-				parts = append([]string{targetTable}, parts...)
-			}
-			if len(parts) < 3 {
-				continue
-			}
-
-			if targetDatabase != parts[0] || targetTable != parts[1] {
-				continue
-			}
-
-			// Convert operator
-			operator := filter.Operator
-			switch operator {
-			case "=~":
-				operator = "LIKE"
-			case "!~":
-				operator = "NOT LIKE"
-			}
-
-			// Format value with consistent quoting
-			var value string
-			switch v := filter.Value.(type) {
-			case float64:
-				value = fmt.Sprintf("%g", v)
-			case string:
-				// Don't quote if it's already a number or contains special SQL syntax
-				if regexp.MustCompile(`^\s*\d+(\.\d+)?\s*$`).MatchString(v) ||
-					strings.Contains(v, "'") ||
-					strings.Contains(v, ", ") {
-					value = v
-				} else {
-					// Escape single quotes in string values
-					escaped := strings.ReplaceAll(v, "'", "''")
-					value = fmt.Sprintf("'%s'", escaped)
-				}
-			default:
-				// For any other type, convert to string and escape quotes
-				str := fmt.Sprintf("%v", v)
-				escaped := strings.ReplaceAll(str, "'", "''")
-				value = fmt.Sprintf("'%s'", escaped)
-			}
-
-			// Build the condition with proper spacing
-			condition := fmt.Sprintf("%s %s %s", parts[2], operator, value)
-			adhocConditions = append(adhocConditions, condition)
-		}
+		// Process adhoc filters using shared utility function
+		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(sql, "$adhoc") {
@@ -1164,6 +1048,21 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		renderedCondition := "1"
 		if len(adhocConditions) > 0 {
 			renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
+			backend.Logger.Debug("$adhoc macro replaced with filter conditions",
+				"conditions", renderedCondition,
+				"filter_count", len(adhocConditions),
+				"configured_filters", len(adhocFilters))
+		} else if len(adhocFilters) > 0 {
+			// We had adhoc filters configured but none matched the query table
+			backend.Logger.Warn("$adhoc macro replaced with '1' - adhoc filters configured but none matched the query table",
+				"configured_filter_count", len(adhocFilters),
+				"target_database", targetDatabase,
+				"target_table", targetTable,
+				"original_query", request.Query)
+		} else {
+			// No adhoc filters configured at all
+			backend.Logger.Debug("$adhoc macro replaced with '1' - no adhoc filters configured",
+				"original_query", request.Query)
 		}
 		sql = strings.ReplaceAll(sql, "$adhoc", renderedCondition)
 	}

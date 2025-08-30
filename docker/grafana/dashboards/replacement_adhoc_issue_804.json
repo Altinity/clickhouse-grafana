@@ -106,8 +106,8 @@
           "interval": "",
           "intervalFactor": 1,
           "nullifySparse": false,
-          "query": "SELECT * FROM $table WHERE $timeFilter AND $adhoc",
-          "rawQuery": "/* grafana dashboard='Plugin test adhoc replacement #804', user=0 */\nSELECT * FROM default.oses WHERE event_date >= toDate(1756492197) AND event_date <= toDate(1756513797) AND event_time >= toDateTime(1756492197) AND event_time <= toDateTime(1756513797) AND (OS = 'os1')",
+          "query": "SELECT * FROM $table WHERE $adhoc",
+          "rawQuery": "/* grafana dashboard='Plugin test adhoc replacement #804', user=1 */\nSELECT * FROM default.oses WHERE (OS = 'os2')",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
@@ -175,6 +175,6 @@
   "timepicker": {},
   "timezone": "browser",
   "title": "Plugin test adhoc replacement #804",
-  "uid": "nDwac10nz",
+  "uid": "plugin-adhoc-issue-804",
   "version": 1
 }

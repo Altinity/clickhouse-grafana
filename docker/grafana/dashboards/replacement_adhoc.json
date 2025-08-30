@@ -18,7 +18,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 20,
+  "id": 48,
   "links": [],
   "panels": [
     {
@@ -91,7 +91,7 @@
           "adHocValuesQuery": "",
           "add_metadata": true,
           "contextWindowSize": "10",
-          "database": "system",
+          "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
             "uid": "clickhouse"
@@ -107,16 +107,16 @@
           "intervalFactor": 1,
           "nullifySparse": false,
           "query": "SELECT * FROM $table WHERE $timeFilter AND $adhoc",
-          "rawQuery": "/* grafana dashboard='Plugin test adhoc replacement', user=0 */\nSELECT * FROM system.query_log WHERE event_date >= toDate(1756117558) AND event_date <= toDate(1756139158) AND event_time >= toDateTime(1756117558) AND event_time <= toDateTime(1756139158) AND 1",
+          "rawQuery": "/* grafana dashboard='Plugin test adhoc replacement #804', user=0 */\nSELECT * FROM default.oses WHERE event_date >= toDate(1756492197) AND event_date <= toDate(1756513797) AND event_time >= toDateTime(1756492197) AND event_time <= toDateTime(1756513797) AND (OS = 'os1')",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
           "skip_comments": true,
-          "table": "query_log",
+          "table": "oses",
           "useWindowFuncForMacros": true
         }
       ],
-      "title": "New panel",
+      "title": "Datasource with 2 adhoc variables, one imported and another one added manually with correct UID",
       "type": "table"
     }
   ],
@@ -144,6 +144,26 @@
           }
         ],
         "name": "query0",
+        "type": "adhoc"
+      },
+      {
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "P7E099F39B84EA795"
+        },
+        "filters": [
+          {
+            "condition": "",
+            "key": "default.oses.OS",
+            "keyLabel": "default.oses.OS",
+            "operator": "=",
+            "value": "os1",
+            "valueLabels": [
+              "os1"
+            ]
+          }
+        ],
+        "name": "query1",
         "type": "adhoc"
       }
     ]

@@ -211,8 +211,16 @@ export class CHDataSource
             resolve(null);
           }
         },
-        (e) => {
-          reject(e);
+        (error) => {
+          // Enhance error with more context information
+          const enhancedError = {
+            ...error,
+            originalError: error,
+            query: query,
+            requestId: requestId
+          };
+
+          reject(enhancedError);
         }
       );
     });
@@ -507,7 +515,23 @@ export class CHDataSource
 
     const responses = await Promise.all(
       queries.map((query) => this.seriesQuery(query.stmt, query.requestId))
-    );
+    ).catch(error => {
+      // Enhance error message with more details if available
+      if (error?.data?.exception) {
+        // ClickHouse exception in data.exception field
+        throw new Error(`Query execution failed: ${error.data.exception}`);
+      } else if (error?.data?.message) {
+        // Generic message in data.message field
+        throw new Error(`Query execution failed: ${error.data.message}`);
+      } else if (error?.status && error?.statusText) {
+        // HTTP status with optional response body
+        const responseDetails = error?.data ? 
+          (typeof error.data === 'string' ? error.data : JSON.stringify(error.data)) : '';
+        throw new Error(`Query execution failed: HTTP ${error.status} ${error.statusText}${responseDetails ? ': ' + responseDetails : ''}`);
+      } else {
+        throw error;
+      }
+    });
 
     return this.processQueryResponse(responses, options, queries)
   }

@@ -1,3 +1,17 @@
+# 3.4.5 (2025-08-30)
+## Enhancements:
+* switch from LocalStorage to IndexedDB for cache Auto-complete data, fix https://github.com/Altinity/clickhouse-grafana/issues/802
+* add more informative error message when clickhouse connection user doesn't have access to system.* tables, fix https://github.com/Altinity/clickhouse-grafana/issues/813
+* add more informative error message bubble for SQL and HTTP errors, fix https://github.com/Altinity/clickhouse-grafana/issues/821
+
+## Fixes:
+* fix corner cases for ahdoc filters when adhoc use datasource from other template variable, fix https://github.com/Altinity/clickhouse-grafana/issues/805, affected 3.4.0+
+* fix corner cases when adhoc filters didn't replace, fix https://github.com/Altinity/clickhouse-grafana/issues/804, affected 3.4.0+
+* fix corner cases when template variables have same name with macros like `$table`, add more informative warning message, fix https://github.com/Altinity/clickhouse-grafana/issues/815, affected 3.4.0+
+* refactoring SQL parsing to properly replace template variable values like `LIMIT $limit`, fix https://github.com/Altinity/clickhouse-grafana/issues/810, affected 3.4.0+
+* fix error when template variable name ignored in step field, fix https://github.com/Altinity/clickhouse-grafana/issues/803, affected 3.4.0+
+* fix error for template variable wrong expansion, fix https://github.com/Altinity/clickhouse-grafana/issues/797, affected 3.4.0+
+
 # 3.4.4 (2025-07-16)
 ## Fixes:
 * fix IN clause no longer works (3.4.x) with output of ARRAY JOIN, fix https://github.com/Altinity/clickhouse-grafana/issues/799

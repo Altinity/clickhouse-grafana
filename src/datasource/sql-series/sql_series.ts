@@ -148,7 +148,7 @@ export default class SqlSeries {
     return toTimeSeries(extrapolate, nullifySparse, self);
   };
 
-  toTraces = (): any => {
-    return toTraces(this.series, this.meta);
+  toTraces = (tracesToMetrics?: any): any => {
+    return toTraces(this.series, this.meta, tracesToMetrics);
   };
 }

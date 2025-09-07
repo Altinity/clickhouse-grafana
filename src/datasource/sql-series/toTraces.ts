@@ -1,5 +1,7 @@
 import { _toFieldType, convertTimezonedDateToUnixTimestamp, Field } from './sql_series';
-import { FieldType } from '@grafana/data';
+import { FieldType, DataLink } from '@grafana/data';
+import { TraceToMetricsOptions } from '../../types/types';
+import { TraceToMetricsLinkBuilder } from '../trace-to-metrics/linkBuilder';
 
 interface TraceData {
   fields: Field[];
@@ -18,14 +20,20 @@ interface Trace {
   serviceTags: object[];
 }
 
-export const toTraces = (series: Trace[], meta: any): TraceData[] => {
+export const toTraces = (series: Trace[], meta: any, tracesToMetrics?: TraceToMetricsOptions): TraceData[] => {
   function transformTraceData(inputData: Trace[]): TraceData[] {
     let timeCol = meta.find((item) => item.name === 'startTime');
     let timeColType = _toFieldType(timeCol.type || '');
 
+    // Initialize link builder if trace-to-metrics is configured
+    let linkBuilder: TraceToMetricsLinkBuilder | undefined;
+    if (tracesToMetrics?.enabled && tracesToMetrics?.datasourceUid) {
+      linkBuilder = new TraceToMetricsLinkBuilder(tracesToMetrics);
+    }
+
     const fields: { [key: string]: Field } = {
       traceID: { name: 'traceID', type: 'string', values: [], config: {} },
-      spanID: { name: 'spanID', type: 'string', values: [], config: {} },
+      spanID: { name: 'spanID', type: 'string', values: [], config: { links: [] } },
       operationName: { name: 'operationName', type: 'string', values: [], config: {} },
       parentSpanID: { name: 'parentSpanID', type: 'string', values: [], config: {} },
       serviceName: { name: 'serviceName', type: 'string', values: [], config: {} },
@@ -35,7 +43,10 @@ export const toTraces = (series: Trace[], meta: any): TraceData[] => {
       serviceTags: { name: 'serviceTags', type: 'number', values: [], config: {} },
     };
 
-    inputData.forEach((span) => {
+    // Store all span data for link generation
+    const spanDataList: any[] = [];
+
+    inputData.forEach((span, index) => {
       const isTimeWithTimezone = timeColType?.fieldType === FieldType.time;
 
       let startTimeProcessed;
@@ -50,12 +61,43 @@ export const toTraces = (series: Trace[], meta: any): TraceData[] => {
       fields.serviceName.values.push(span.serviceName);
       fields.startTime.values.push(isTimeWithTimezone ? startTimeProcessed : parseInt(span.startTime.toString(), 10));
       fields.duration.values.push(parseInt(span.duration.toString(), 10));
-      fields.tags.values.push(Object.entries(span.tags).map(([key, value]) => ({ key: key, value: value })));
-      fields.serviceTags.values.push(
-        Object.entries(span.serviceTags).map(([key, value]) => ({ key: key, value: value }))
-      );
-      // Handle other fields if required
+      
+      // Convert tags to the expected format
+      const tagsObj = Object.entries(span.tags).map(([key, value]) => ({ key: key, value: value }));
+      const serviceTagsObj = Object.entries(span.serviceTags).map(([key, value]) => ({ key: key, value: value }));
+      
+      fields.tags.values.push(tagsObj);
+      fields.serviceTags.values.push(serviceTagsObj);
+      
+      // Store span data for link generation
+      spanDataList.push({
+        traceID: span.traceID,
+        spanID: span.spanID,
+        parentSpanID: span.parentSpanID,
+        serviceName: span.serviceName,
+        operationName: span.operationName,
+        startTime: isTimeWithTimezone ? startTimeProcessed : parseInt(span.startTime.toString(), 10),
+        duration: parseInt(span.duration.toString(), 10),
+        tags: span.tags,
+        serviceTags: span.serviceTags,
+      });
     });
+
+    // Generate DataLinks for each span if trace-to-metrics is configured
+    if (linkBuilder) {
+      const spanLinks: DataLink[][] = [];
+      
+      spanDataList.forEach((spanData) => {
+        const links = linkBuilder!.buildLinks(spanData);
+        spanLinks.push(links);
+      });
+
+      // Attach links to the spanID field
+      if (spanLinks.length > 0 && spanLinks.some(links => links.length > 0)) {
+        // Store links per span value
+        fields.spanID.config.links = spanLinks;
+      }
+    }
 
     return [
       {

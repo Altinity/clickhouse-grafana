@@ -52,6 +52,7 @@ export class CHDataSource
   adHocHideTableNames: boolean;
   uid: string;
   datasourceMode?: DatasourceMode;
+  tracesToMetrics?: CHDataSourceOptions['tracesToMetrics'];
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
@@ -73,6 +74,7 @@ export class CHDataSource
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
     this.xClickHouseSSLCertificateAuth = instanceSettings.jsonData.xClickHouseSSLCertificateAuth || false;
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
+    this.tracesToMetrics = instanceSettings.jsonData.tracesToMetrics;
     if (instanceSettings.jsonData.useDefaultConfiguration) {
       this.defaultValues = {
         dateTime: {
@@ -427,7 +429,7 @@ export class CHDataSource
               result.push(data);
             });
           } else if (target.format === 'traces') {
-            result = sqlSeries.toTraces();
+            result = sqlSeries.toTraces(this.tracesToMetrics);
           } else if (target.format === 'flamegraph') {
             result = sqlSeries.toFlamegraph();
           } else if (target.format === 'logs') {

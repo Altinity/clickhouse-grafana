@@ -10,19 +10,42 @@ import (
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
 )
 
+// TraceToMetricsTag represents a mapping from span attribute to metric label
+type TraceToMetricsTag struct {
+	Key   string `json:"key"`
+	Value string `json:"value,omitempty"`
+}
+
+// TraceToMetricsQuery represents a predefined query template
+type TraceToMetricsQuery struct {
+	Name  string `json:"name"`
+	Query string `json:"query"`
+}
+
+// TraceToMetricsOptions contains configuration for trace to metrics linking
+type TraceToMetricsOptions struct {
+	Enabled            bool                  `json:"enabled,omitempty"`
+	DatasourceUID      string                `json:"datasourceUid,omitempty"`
+	SpanStartTimeShift string                `json:"spanStartTimeShift,omitempty"`
+	SpanEndTimeShift   string                `json:"spanEndTimeShift,omitempty"`
+	Tags               []TraceToMetricsTag   `json:"tags,omitempty"`
+	Queries            []TraceToMetricsQuery `json:"queries,omitempty"`
+}
+
 type DatasourceSettings struct {
 	Instance backend.DataSourceInstanceSettings
 
-	AddCorsHeader                 bool   `json:"addCorsHeader"`
-	DefaultDatabase               string `json:"defaultDatabase"`
-	UsePost                       bool   `json:"usePOST"`
-	UseYandexCloudAuthorization   bool   `json:"useYandexCloudAuthorization"`
-	XHeaderKey                    string `json:"xHeaderKey,omitempty"`
-	XHeaderUser                   string `json:"xHeaderUser,omitempty"`
-	XClickHouseSSLCertificateAuth bool   `json:"xClickHouseSSLCertificateAuth,omitempty"`
-	UseCompression                bool   `json:"useCompression,omitempty"`
-	CompressionType               string `json:"compressionType,omitempty"`
-	TLSSkipVerify                 bool   `json:"tlsSkipVerify"`
+	AddCorsHeader                 bool                   `json:"addCorsHeader"`
+	DefaultDatabase               string                 `json:"defaultDatabase"`
+	UsePost                       bool                   `json:"usePOST"`
+	UseYandexCloudAuthorization   bool                   `json:"useYandexCloudAuthorization"`
+	XHeaderKey                    string                 `json:"xHeaderKey,omitempty"`
+	XHeaderUser                   string                 `json:"xHeaderUser,omitempty"`
+	XClickHouseSSLCertificateAuth bool                   `json:"xClickHouseSSLCertificateAuth,omitempty"`
+	UseCompression                bool                   `json:"useCompression,omitempty"`
+	CompressionType               string                 `json:"compressionType,omitempty"`
+	TLSSkipVerify                 bool                   `json:"tlsSkipVerify"`
+	TracesToMetrics               *TraceToMetricsOptions `json:"tracesToMetrics,omitempty"`
 
 	CustomHeaders map[string]string `json:"-,omitempty"`
 }

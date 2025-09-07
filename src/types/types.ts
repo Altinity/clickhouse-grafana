@@ -62,6 +62,28 @@ export interface CHQuery extends DataQuery {
 }
 
 /**
+ * Configuration for trace to metrics linking
+ */
+export interface TraceToMetricsTag {
+  key: string;    // Span attribute name (e.g., 'service.name', 'http.method')
+  value?: string; // Optional mapped metric label name (e.g., 'service_name')
+}
+
+export interface TraceToMetricsQuery {
+  name: string;   // Display name for the query
+  query: string;  // Query template with $__tags placeholder
+}
+
+export interface TraceToMetricsOptions {
+  enabled?: boolean;
+  datasourceUid?: string;          // Target metrics datasource UID
+  spanStartTimeShift?: string;     // Time shift before span start (e.g., '-5m')
+  spanEndTimeShift?: string;       // Time shift after span end (e.g., '5m')
+  tags?: TraceToMetricsTag[];      // Tag mappings from span attributes to metrics labels
+  queries?: TraceToMetricsQuery[]; // Predefined query templates
+}
+
+/**
  * These are options configured for each DataSource instance
  */
 export interface CHDataSourceOptions extends DataSourceJsonData {
@@ -90,6 +112,7 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   contextWindowSize?: string;
   useWindowFuncForMacros?: boolean;
   nullifySparse?: boolean;
+  tracesToMetrics?: TraceToMetricsOptions;
 }
 
 /**

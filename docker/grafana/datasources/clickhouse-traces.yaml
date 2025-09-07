@@ -1,0 +1,48 @@
+apiVersion: 1
+
+datasources:
+  - name: ClickHouse Traces
+    type: vertamedia-clickhouse-datasource
+    access: proxy
+    url: http://clickhouse:8123
+    uid: clickhouse-traces
+    isDefault: false
+    editable: true
+    basicAuth: false
+    jsonData:
+      defaultDatabase: default
+      port: 8123
+      server: clickhouse
+      username: default
+      tlsSkipVerify: true
+      addCorsHeader: false
+      usePOST: false
+      useYandexCloudAuthorization: false
+      xClickHouseSSLCertificateAuth: false
+      useCompression: false
+      tracesToMetrics:
+        enabled: true
+        datasourceUid: clickhouse-metrics
+        spanStartTimeShift: "-5m"
+        spanEndTimeShift: "5m"
+        tags:
+          - key: "service.name"
+            value: "service_name"
+          - key: "http.method"
+            value: "http_method"
+          - key: "http.status_code"
+            value: "http_status_code"
+          - key: "operation"
+            value: "operation_name"
+          - key: "cluster"
+          - key: "namespace"
+          - key: "pod"
+        queries:
+          - name: "Request Rate"
+            query: "SELECT toStartOfMinute(timestamp) as time, count() as requests FROM metrics WHERE $__timeFilter(timestamp) AND $__tags GROUP BY time ORDER BY time"
+          - name: "Error Rate"
+            query: "SELECT toStartOfMinute(timestamp) as time, countIf(http_status_code >= 400) / count() * 100 as error_rate FROM metrics WHERE $__timeFilter(timestamp) AND $__tags GROUP BY time ORDER BY time"
+          - name: "P95 Latency"
+            query: "SELECT toStartOfMinute(timestamp) as time, quantile(0.95)(duration_ms) as p95_latency FROM metrics WHERE $__timeFilter(timestamp) AND $__tags GROUP BY time ORDER BY time"
+    secureJsonData:
+      password: ""

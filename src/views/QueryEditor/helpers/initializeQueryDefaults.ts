@@ -2,11 +2,14 @@ import { CHQuery, EditorMode, TimestampFormat } from '../../../types/types';
 import { DEFAULT_FORMAT, DEFAULT_INTERVAL_FACTOR, DEFAULT_ROUND, defaultQuery } from '../../constants';
 
 export const initializeQueryDefaults = (
-  query: CHQuery,
+  query: CHQuery & { expr?: string },
   isAnnotationView: boolean,
   datasource: any,
   onChange: any
 ): CHQuery => {
+  // Handle expr field from trace-to-metrics links
+  const actualQuery = query.expr || query.query || defaultQuery;
+  
   const initializedQuery = {
     ...query,
     format: query.format || DEFAULT_FORMAT,
@@ -20,9 +23,9 @@ export const initializeQueryDefaults = (
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,
     interval: query.interval || '',
     adHocFilters: query.adHocFilters || [],
-    query: query.query || defaultQuery,
-    formattedQuery: query.formattedQuery || query.query,
-    editorMode: query.database && query.table ? EditorMode.SQL : EditorMode.Builder,
+    query: actualQuery,
+    formattedQuery: query.formattedQuery || actualQuery,
+    editorMode: query.expr ? EditorMode.SQL : (query.database && query.table ? EditorMode.SQL : EditorMode.Builder),
     contextWindowSize: query.contextWindowSize || '10',
     adHocValuesQuery: query.adHocValuesQuery || '',
   };
@@ -112,11 +115,14 @@ export const initializeQueryDefaults = (
 };
 
 export const initializeQueryDefaultsForVariables = (
-  query: CHQuery,
+  query: CHQuery & { expr?: string },
   isAnnotationView: boolean,
   datasource: any,
   onChange: any
 ): CHQuery => {
+  // Handle expr field from trace-to-metrics links
+  const actualQuery = query.expr || query.query || defaultQuery;
+  
   const initializedQuery = {
     ...query,
     format: query.format || DEFAULT_FORMAT,
@@ -131,9 +137,9 @@ export const initializeQueryDefaultsForVariables = (
     intervalFactor: query.intervalFactor || DEFAULT_INTERVAL_FACTOR,
     interval: query.interval || '',
     adHocFilters: query.adHocFilters || [],
-    query: query.query || defaultQuery,
-    formattedQuery: query.formattedQuery || query.query,
-    editorMode: query.database && query.table ? EditorMode.SQL : EditorMode.Builder,
+    query: actualQuery,
+    formattedQuery: query.formattedQuery || actualQuery,
+    editorMode: query.expr ? EditorMode.SQL : (query.database && query.table ? EditorMode.SQL : EditorMode.Builder),
     contextWindowSize: query.contextWindowSize || '10',
     adHocValuesQuery: query.adHocValuesQuery || '',
   };

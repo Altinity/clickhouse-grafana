@@ -21,6 +21,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const [formattedData, error] = useFormattedData(initializedQuery, datasource, data?.request);
   const { data: autocompleteData, hasPermissionError } = useAutocompleteData(datasource);
 
+  console.log(props)
   useEffect(() => {
     if (formattedData !== initializedQuery.query) {
       onChange({ ...initializedQuery, rawQuery: formattedData })

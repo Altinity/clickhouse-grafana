@@ -1,7 +1,6 @@
 import React, { FormEvent, useState } from 'react';
 import {
   Button,
-  Collapse,
   Field,
   InlineField,
   InlineSwitch,
@@ -19,7 +18,6 @@ export function TraceToMetrics(props: Props) {
   const { jsonData } = options;
   const tracesToMetrics = jsonData.tracesToMetrics || {};
   
-  const [isOpen, setIsOpen] = useState(false);
   const [tags, setTags] = useState<TraceToMetricsTag[]>(tracesToMetrics.tags || []);
   const [queries, setQueries] = useState<TraceToMetricsQuery[]>(tracesToMetrics.queries || []);
 
@@ -91,13 +89,9 @@ export function TraceToMetrics(props: Props) {
   };
 
   return (
-    <div className="gf-form-group">
-      <Collapse
-        label="Trace to metrics"
-        isOpen={isOpen}
-        onToggle={() => setIsOpen(!isOpen)}
-        collapsible
-      >
+    <>
+      <h3 className="page-heading">Trace to Metrics</h3>
+      <div className="gf-form-group">
         <InlineField
           label="Enable trace to metrics"
           labelWidth={32}
@@ -158,21 +152,19 @@ export function TraceToMetrics(props: Props) {
             <Field label="Tag mappings" description="Map span attributes to metric labels">
               <div>
                 {tags.map((tag, index) => (
-                  <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: 8 }}>
+                  <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: 8, gap: 8 }}>
                     <Input
                       value={tag.key}
                       onChange={(e) => updateTag(index, 'key', e.currentTarget.value)}
                       placeholder="Span attribute (e.g., service.name)"
                       width={30}
-                      style={{ marginRight: 8 }}
                     />
-                    <Label style={{ margin: '0 8px' }}>→</Label>
+                    <Label style={{ margin: 0, minWidth: 20, textAlign: 'center' }}>→</Label>
                     <Input
                       value={tag.value || ''}
                       onChange={(e) => updateTag(index, 'value', e.currentTarget.value)}
                       placeholder="Metric label (optional)"
                       width={30}
-                      style={{ marginRight: 8 }}
                     />
                     <IconButton
                       name="trash-alt"
@@ -186,6 +178,7 @@ export function TraceToMetrics(props: Props) {
                   size="sm"
                   icon="plus"
                   onClick={addTag}
+                  style={{ marginTop: 8 }}
                 >
                   Add tag mapping
                 </Button>
@@ -195,26 +188,23 @@ export function TraceToMetrics(props: Props) {
             <Field label="Query templates" description="Define query templates with $__tags placeholder">
               <div>
                 {queries.map((query, index) => (
-                  <div key={index} style={{ marginBottom: 16, padding: 8, border: '1px solid rgba(204, 204, 220, 0.15)', borderRadius: 4 }}>
-                    <div style={{ marginBottom: 8 }}>
-                      <Input
-                        value={query.name}
-                        onChange={(e) => updateQuery(index, 'name', e.currentTarget.value)}
-                        placeholder="Query name"
-                        width={40}
-                      />
-                      <IconButton
-                        name="trash-alt"
-                        tooltip="Remove query"
-                        onClick={() => removeQuery(index)}
-                        style={{ float: 'right' }}
-                      />
-                    </div>
+                  <div key={index} style={{ display: 'flex', alignItems: 'center', marginBottom: 8, gap: 8 }}>
+                    <Input
+                      value={query.name}
+                      onChange={(e) => updateQuery(index, 'name', e.currentTarget.value)}
+                      placeholder="Query name"
+                      width={25}
+                    />
                     <Input
                       value={query.query}
                       onChange={(e) => updateQuery(index, 'query', e.currentTarget.value)}
                       placeholder="SELECT count() FROM metrics WHERE $__tags"
-                      width={80}
+                      style={{ flex: 1 }}
+                    />
+                    <IconButton
+                      name="trash-alt"
+                      tooltip="Remove query"
+                      onClick={() => removeQuery(index)}
                     />
                   </div>
                 ))}
@@ -223,6 +213,7 @@ export function TraceToMetrics(props: Props) {
                   size="sm"
                   icon="plus"
                   onClick={addQuery}
+                  style={{ marginTop: 8 }}
                 >
                   Add query template
                 </Button>
@@ -230,7 +221,7 @@ export function TraceToMetrics(props: Props) {
             </Field>
           </>
         )}
-      </Collapse>
-    </div>
+      </div>
+    </>
   );
 }

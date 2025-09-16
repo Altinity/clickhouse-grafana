@@ -94,14 +94,14 @@ export function getPermissionErrorMessage(
   datasourceId?: string
 ): string {
   const messages: Record<PermissionErrorContextType, string> = {
-    [PermissionErrorContext.ADHOC_KEYS]: 'System.columns table inaccessible - ad-hoc filters disabled',
-    [PermissionErrorContext.ADHOC_VALUES]: 'System.columns table inaccessible - cannot fetch tag values',
-    [PermissionErrorContext.AUTOCOMPLETE]: 'System tables inaccessible - autocomplete disabled',
-    [PermissionErrorContext.DATABASES]: 'System table access denied for DATABASES query - returning empty result',
-    [PermissionErrorContext.TABLES]: 'System table access denied for TABLES query - returning empty result',
-    [PermissionErrorContext.COLUMNS]: 'System table access denied for COLUMNS query - returning empty result',
-    [PermissionErrorContext.QUERY_BUILDER]: 'System table access denied - returning empty result',
-    [PermissionErrorContext.SYSTEM_DATABASES]: 'System tables inaccessible - system database list disabled',
+    [PermissionErrorContext.ADHOC_KEYS]: 'ClickHouse system.columns table inaccessible - ad-hoc filters disabled',
+    [PermissionErrorContext.ADHOC_VALUES]: 'ClickHouse system.columns table inaccessible - cannot fetch tag values',
+    [PermissionErrorContext.AUTOCOMPLETE]: 'ClickHouse system tables inaccessible - autocomplete disabled',
+    [PermissionErrorContext.DATABASES]: 'ClickHouse system table access denied for DATABASES query - returning empty result',
+    [PermissionErrorContext.TABLES]: 'ClickHouse system table access denied for TABLES query - returning empty result',
+    [PermissionErrorContext.COLUMNS]: 'ClickHouse system table access denied for COLUMNS query - returning empty result',
+    [PermissionErrorContext.QUERY_BUILDER]: 'ClickHouse system table access denied - returning empty result',
+    [PermissionErrorContext.SYSTEM_DATABASES]: 'ClickHouse system tables inaccessible - system database list disabled',
   };
 
   const baseMessage = messages[context] || 'Permission denied - returning empty result';

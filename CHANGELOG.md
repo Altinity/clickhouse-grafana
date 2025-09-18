@@ -1,3 +1,7 @@
+# 3.4.6 (2025-09-18)
+## Fixes:
+* fix grafana team review comments, fix https://github.com/Altinity/clickhouse-grafana/issues/824, https://github.com/Altinity/clickhouse-grafana/issues/825
+
 # 3.4.5 (2025-08-30)
 ## Enhancements:
 * switch from LocalStorage to IndexedDB for cache Auto-complete data, fix https://github.com/Altinity/clickhouse-grafana/issues/802

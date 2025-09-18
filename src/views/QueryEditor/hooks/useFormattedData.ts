@@ -11,20 +11,30 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource, optio
   const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    if ((datasource.options || options) && datasource.templateSrv) {
-        datasource.replace(datasource.options || options, query).then((replaced) => {
-          setFormattedData(replaced.stmt);
-          setError(null);
-        }).catch((e) => {
-          setFormattedData(query.query);
-          // Display the error we received from backend
-          const errorStr = e.data?.error || e.toString();
-          setError(errorStr);
-        })
-      } else {
-        // Only set error if datasource is genuinely missing required properties
-        setError('No datasource is defined or datasource not fully initialized. Please try to force reload');
-      }
+    // Determine if we're in a context where template replacement is possible
+    const hasExecutionContext = (datasource.options?.range || options?.range);
+    const hasTemplateService = !!datasource.templateSrv;
+
+    if (hasExecutionContext && hasTemplateService) {
+      // Normal dashboard mode - perform replacement
+      datasource.replace(datasource.options || options, query).then((replaced) => {
+        setFormattedData(replaced.stmt);
+        setError(null);
+      }).catch((e) => {
+        setFormattedData(query.query);
+        const errorStr = e.data?.error || e.toString();
+        setError(errorStr);
+      });
+    } else if (hasTemplateService) {
+      // Alerts/Explore mode - no execution context yet
+      // This is EXPECTED behavior, not an error
+      setFormattedData(query.query);
+      setError(null);
+    } else {
+      // Critical error - no template service available
+      setFormattedData(query.query);
+      setError('Grafana template service unavailable. Please refresh the page.');
+    }
 
     // eslint-disable-next-line
   }, [query, datasource.name, datasource.options, options, datasource.templateSrv]);

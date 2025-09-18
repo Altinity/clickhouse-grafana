@@ -23,7 +23,7 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
 
   useEffect(() => {
     if (formattedData !== initializedQuery.query) {
-      onChange({ ...initializedQuery, rawQuery: formattedData })
+      onChange({ ...initializedQuery, formattedQuery: formattedData })
     }
 
     // eslint-disable-next-line
@@ -120,7 +120,7 @@ export function QueryEditorVariable(props: QueryEditorProps<CHDataSource, CHQuer
 
   useEffect(() => {
     if (formattedData !== initializedQuery.query) {
-      onChange({ ...initializedQuery, rawQuery: formattedData })
+      onChange({ ...initializedQuery, formattedQuery: formattedData })
     }
 
     // eslint-disable-next-line

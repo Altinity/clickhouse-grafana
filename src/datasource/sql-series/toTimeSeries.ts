@@ -1,6 +1,8 @@
 import { each, isArray } from 'lodash';
 import { _toFieldType, convertTimezonedDateToUTC } from './sql_series';
-import { FieldType } from '@grafana/data';
+import { FieldType, DataLink } from '@grafana/data';
+import { LinkBuilderFactory, TimeSeriesLinkBuilder, TimeSeriesLinkContext } from '../datalinks';
+import { DataLinksConfig } from '../../types/types';
 
 const _formatValue = (value: any) => {
   if (value === null) {
@@ -88,11 +90,21 @@ const _pushDatapoint = (metrics: any, timestamp: number, key: string, value: num
   metrics[key].push([_formatValue(value), timestamp]);
 };
 
-export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): any => {
+export const toTimeSeries = (
+  extrapolate = true,
+  nullifySparse = false,
+  self,
+  dataLinksConfig?: DataLinksConfig
+): any => {
   let timeSeries: any[] = [];
   if (self.series.length === 0) {
     return timeSeries;
   }
+
+  // Initialize link builder if config is provided
+  const linkBuilder = dataLinksConfig
+    ? LinkBuilderFactory.getBuilder<TimeSeriesLinkContext>('time_series', dataLinksConfig)
+    : null;
 
   let metrics: { [key: string]: any[] } = {};
   // timeCol have to be the first column always
@@ -166,11 +178,50 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
   each(metrics, function (dataPoints, seriesName) {
     const processedDataPoints = (extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints).filter(item => (typeof item[0] === 'number' || item[0] === null) && item[1]);
 
+    // Extract labels from GROUP BY keys
+    const labels: Record<string, string> = {};
+    keyColumns.forEach((key: string) => {
+      // Get the first row's value for this key (all rows in same series have same key values)
+      const firstRow = self.series.find((row: any) => {
+        const metricKey = keyColumns.map((name: string) => {
+          const val = row[name];
+          if (typeof val === 'undefined') {
+            return undefined;
+          }
+          if (typeof val === 'object') {
+            return JSON.stringify(val);
+          }
+          return String(val);
+        }).join(', ');
+        return metricKey === seriesName || row[key] !== undefined;
+      });
+
+      if (firstRow && firstRow[key] !== undefined) {
+        labels[key] = String(firstRow[key]);
+      }
+    });
+
+    // Build data links for value field
+    let valueFieldLinks: DataLink[] = [];
+
+    if (linkBuilder && processedDataPoints.length > 0) {
+      // Use first data point for link context (per-field links)
+      const firstPoint = processedDataPoints[0];
+      const context = TimeSeriesLinkBuilder.createContext(
+        seriesName,
+        firstPoint[1], // timestamp
+        firstPoint[0], // value
+        labels
+      );
+
+      valueFieldLinks = linkBuilder.buildLinks(context);
+    }
+
     timeSeries.push({
       length: processedDataPoints.length,
       fields: [
         { config: { links: []}, name: 'time', type: 'time', values: processedDataPoints.map((v: any) => v[1])},
-        { config: { links: []}, name: seriesName, values: processedDataPoints.map((v: any) => v[0])},
+        { config: { links: valueFieldLinks }, name: seriesName, values: processedDataPoints.map((v: any) => v[0])},
       ],
       refId: seriesName && self.refId ? `${self.refId} - ${seriesName}` : undefined
     })

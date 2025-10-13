@@ -1,7 +1,8 @@
 import { _toFieldType, convertTimezonedDateToUnixTimestamp, Field } from './sql_series';
 import { FieldType, DataLink } from '@grafana/data';
-import { TraceToMetricsOptions } from '../../types/types';
+import { TraceToMetricsOptions, DataLinksConfig } from '../../types/types';
 import { TraceToMetricsLinkBuilder } from '../trace-to-metrics/linkBuilder';
+import { LinkBuilderFactory, TracesLinkBuilder, TracesLinkContext } from '../datalinks';
 
 interface TraceData {
   fields: Field[];
@@ -20,15 +21,31 @@ interface Trace {
   serviceTags: object[];
 }
 
-export const toTraces = (series: Trace[], meta: any, tracesToMetrics?: TraceToMetricsOptions): TraceData[] => {
+export const toTraces = (
+  series: Trace[],
+  meta: any,
+  tracesToMetrics?: TraceToMetricsOptions,
+  dataLinksConfig?: DataLinksConfig
+): TraceData[] => {
   function transformTraceData(inputData: Trace[]): TraceData[] {
     let timeCol = meta.find((item) => item.name === 'startTime');
     let timeColType = _toFieldType(timeCol.type || '');
 
-    // Initialize link builder if trace-to-metrics is configured
-    let linkBuilder: TraceToMetricsLinkBuilder | undefined;
-    if (tracesToMetrics?.enabled && tracesToMetrics?.datasourceUid) {
+    // Initialize link builder - prefer new system, fall back to old
+    let linkBuilder: TraceToMetricsLinkBuilder | any = undefined;
+    let useNewSystem = false;
+
+    if (dataLinksConfig) {
+      // Use new centralized system
+      const newBuilder = LinkBuilderFactory.getBuilder<TracesLinkContext>('traces', dataLinksConfig);
+      if (newBuilder) {
+        linkBuilder = newBuilder;
+        useNewSystem = true;
+      }
+    } else if (tracesToMetrics?.enabled && tracesToMetrics?.datasourceUid) {
+      // Fall back to old trace-to-metrics system for backward compatibility
       linkBuilder = new TraceToMetricsLinkBuilder(tracesToMetrics);
+      useNewSystem = false;
     }
 
     const fields: { [key: string]: Field } = {
@@ -83,13 +100,21 @@ export const toTraces = (series: Trace[], meta: any, tracesToMetrics?: TraceToMe
       });
     });
 
-    // Generate DataLinks for each span if trace-to-metrics is configured
+    // Generate DataLinks for each span
     if (linkBuilder) {
       const spanLinks: DataLink[][] = [];
-      
+
       spanDataList.forEach((spanData) => {
-        const links = linkBuilder!.buildLinks(spanData);
-        spanLinks.push(links);
+        // If using new system, create proper context
+        if (useNewSystem) {
+          const context = TracesLinkBuilder.createContext(spanData);
+          const links = linkBuilder.buildLinks(context);
+          spanLinks.push(links);
+        } else {
+          // Old system (backward compatibility)
+          const links = linkBuilder.buildLinks(spanData);
+          spanLinks.push(links);
+        }
       });
 
       // Attach links to the spanID field

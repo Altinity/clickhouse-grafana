@@ -1,6 +1,8 @@
-import {createDataFrame, DataFrame, DataFrameType, FieldType} from '@grafana/data';
+import {createDataFrame, DataFrame, DataFrameType, FieldType, DataLink} from '@grafana/data';
 import {each, find, omitBy, pickBy} from 'lodash';
 import {convertTimezonedDateToUTC} from './sql_series';
+import { LinkBuilderFactory, LogsLinkBuilder, LogsLinkContext } from '../datalinks';
+import { DataLinksConfig } from '../../types/types';
 
 export const transformObject = (obj) => {
   // Check if the input is an object and not null
@@ -83,12 +85,17 @@ const _toFieldType = (type: string, index?: number): FieldType | Object => {
   return FieldType.string;
 };
 
-export const toLogs = (self: any): DataFrame[] => {
+export const toLogs = (self: any, dataLinksConfig?: DataLinksConfig): DataFrame[] => {
   const reservedFields = ['severity', 'level', 'id'];
 
   if (self.series.length === 0) {
     return [];
   }
+
+  // Initialize link builder if config is provided
+  const linkBuilder = dataLinksConfig
+    ? LinkBuilderFactory.getBuilder<LogsLinkContext>('logs', dataLinksConfig)
+    : null;
 
   let types: { [key: string]: any } = {};
   let labelFields: any[] = [];
@@ -155,34 +162,56 @@ export const toLogs = (self: any): DataFrame[] => {
     });
   });
 
+  // Build data links for log entries
+  const bodyFieldLinks: DataLink[] = [];
+
+  if (linkBuilder) {
+    self.series.forEach((logEntry: any, index: number) => {
+      const context = LogsLinkBuilder.createContext(
+        logEntry,
+        labelFieldsList[index] || {}
+      );
+
+      const links = linkBuilder.buildLinks(context);
+      bodyFieldLinks.push(...links);
+    });
+  }
+
   const result = createDataFrame({
     fields: [
       dataObjectValues[timestampKey]?.values.length && {
         name: 'timestamp',
         type: FieldType.time,
         values: dataObjectValues[timestampKey]?.values,
+        config: { links: [] }
       },
       (dataObjectValues['level']?.values?.length || dataObjectValues['severity']?.values?.length) && {
         name: 'severity',
         type: (dataObjectValues['level'] || dataObjectValues['severity'])?.type,
         values: (dataObjectValues['level'] || dataObjectValues['severity'])?.values,
+        config: { links: [] }
       },
       dataObjectValues[messageField] && {
         name: 'body',
         type: dataObjectValues[messageField].type,
         values: dataObjectValues[messageField].values,
-        config: { filterable: false }
+        config: {
+          filterable: false,
+          links: bodyFieldLinks  // Attach data links to body field
+        }
       },
       labelFieldsList.length && {
         name: 'labels',
         values: labelFieldsList,
         type: FieldType.other,
+        config: { links: [] }
       },
       dataObjectValues['id']?.values?.length &&
       {
         name: 'id',
         type: (dataObjectValues['id'])?.type,
         values: (dataObjectValues['id'])?.values,
+        config: { links: [] }
       },
     ].filter(Boolean),
     meta: {

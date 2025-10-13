@@ -17,7 +17,7 @@ import {
 } from '@grafana/data';
 import { BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
-import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
+import {CHDataSourceOptions, CHQuery, DataLinksConfig, DatasourceMode, DEFAULT_QUERY} from '../types/types';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from } from 'rxjs';
@@ -53,6 +53,7 @@ export class CHDataSource
   uid: string;
   datasourceMode?: DatasourceMode;
   tracesToMetrics?: CHDataSourceOptions['tracesToMetrics'];
+  dataLinks?: DataLinksConfig;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
@@ -75,6 +76,10 @@ export class CHDataSource
     this.xClickHouseSSLCertificateAuth = instanceSettings.jsonData.xClickHouseSSLCertificateAuth || false;
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
     this.tracesToMetrics = instanceSettings.jsonData.tracesToMetrics;
+
+    // Initialize data links config with migration from old tracesToMetrics
+    this.dataLinks = this.migrateDataLinksConfig(instanceSettings.jsonData);
+
     if (instanceSettings.jsonData.useDefaultConfiguration) {
       this.defaultValues = {
         dateTime: {
@@ -120,22 +125,69 @@ export class CHDataSource
     // Use a session flag to ensure cleanup runs only once per browser session
     const cleanupKey = 'altinity_cleanup_performed';
     const cleanupPerformed = sessionStorage.getItem(cleanupKey);
-    
+
     if (!cleanupPerformed) {
       try {
         // Cleanup all expired entries
         const stats = await IndexedDBManager.cleanupAllExpired();
-        
+
         if (stats.removedKeys > 0) {
           console.log(`Altinity Plugin: Cleaned up ${stats.removedKeys} expired IndexedDB entries`);
         }
-        
+
         // Mark cleanup as performed for this session
         sessionStorage.setItem(cleanupKey, 'true');
       } catch (error) {
         console.error('Failed to perform IndexedDB cleanup:', error);
       }
     }
+  }
+
+  /**
+   * Migrate data links configuration from old tracesToMetrics to new centralized system
+   * Provides backward compatibility while supporting new configuration
+   */
+  private migrateDataLinksConfig(jsonData: CHDataSourceOptions): DataLinksConfig | undefined {
+    // If new dataLinks config exists, use it directly
+    if (jsonData.dataLinks) {
+      return jsonData.dataLinks;
+    }
+
+    // If old tracesToMetrics config exists, migrate it
+    if (jsonData.tracesToMetrics?.enabled && jsonData.tracesToMetrics?.datasourceUid) {
+      const oldConfig = jsonData.tracesToMetrics;
+
+      // Create new config from old tracesToMetrics
+      const migratedConfig: DataLinksConfig = {
+        enabled: oldConfig.enabled || false,
+        targetDatasourceUid: oldConfig.datasourceUid || '',
+        timeShift: (oldConfig.spanStartTimeShift || oldConfig.spanEndTimeShift) ? {
+          start: oldConfig.spanStartTimeShift || '-5m',
+          end: oldConfig.spanEndTimeShift || '5m'
+        } : undefined,
+        fieldMappings: oldConfig.tags?.map(tag => ({
+          sourceField: tag.key,
+          targetField: tag.value,
+          useInQuery: true
+        })),
+        queryTemplates: oldConfig.queries?.map(q => ({
+          name: q.name,
+          query: q.query
+        })),
+        // Enable only for traces format by default
+        formats: {
+          traces: {
+            enabled: true
+          }
+        }
+      };
+
+      console.log('Migrated tracesToMetrics config to dataLinks:', migratedConfig);
+      return migratedConfig;
+    }
+
+    // No config to migrate
+    return undefined;
   }
 
   static _getRequestOptions(query: string, usePOST?: boolean, requestId?: string, options?: any) {
@@ -304,6 +356,7 @@ export class CHDataSource
         refId: 'FORWARD',
         series: response.data,
         meta: response.meta,
+        dataLinksConfig: this.dataLinks,
       });
 
       return { data: sqlSeries.toLogs() };
@@ -352,6 +405,7 @@ export class CHDataSource
         refId: options?.direction,
         series: response.data,
         meta: response.meta,
+        dataLinksConfig: this.dataLinks,
       });
 
       return { data: sqlSeries.toLogs() };
@@ -422,6 +476,7 @@ export class CHDataSource
         tillNow: options.rangeRaw?.to === 'now',
         from: convertTimestamp(options.range.from),
         to: convertTimestamp(options.range.to),
+        dataLinksConfig: this.dataLinks,
       });
 
           if (target.format === 'table') {
@@ -590,6 +645,7 @@ export class CHDataSource
             tillNow: options.rangeRaw?.to === 'now',
             from: convertTimestamp(options.range.from),
             to: convertTimestamp(options.range.to),
+            dataLinksConfig: this.dataLinks,
           });
 
           if (sqlSeries.meta.length === 0) {

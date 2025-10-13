@@ -6,6 +6,7 @@ import { toTimeSeries } from './toTimeSeries';
 import { toTraces } from './toTraces';
 import { DateTime } from 'luxon';
 import { FieldType } from '@grafana/data';
+import { DataLinksConfig } from '../../types/types';
 
 export interface Field {
   name: string;
@@ -113,6 +114,7 @@ export default class SqlSeries {
   tillNow: any;
   from: any;
   to: any;
+  dataLinksConfig?: DataLinksConfig;
 
   /** @ngInject */
   constructor(options: any) {
@@ -123,6 +125,7 @@ export default class SqlSeries {
     this.from = options.from;
     this.to = options.to;
     this.keys = options.keys || [];
+    this.dataLinksConfig = options.dataLinksConfig;
   }
 
   toAnnotation = (input: any, meta: any): any[] => {
@@ -130,12 +133,12 @@ export default class SqlSeries {
   };
 
   toFlamegraph = (): any => {
-    return toFlamegraph(this.series);
+    return toFlamegraph(this.series, this.dataLinksConfig);
   };
 
   toLogs = (): any => {
     const self = this;
-    return toLogs(self);
+    return toLogs(self, this.dataLinksConfig);
   };
 
   toTable = (): any => {
@@ -145,10 +148,10 @@ export default class SqlSeries {
 
   toTimeSeries = (extrapolate = true, nullifySparse = false): any => {
     let self = this;
-    return toTimeSeries(extrapolate, nullifySparse, self);
+    return toTimeSeries(extrapolate, nullifySparse, self, this.dataLinksConfig);
   };
 
   toTraces = (tracesToMetrics?: any): any => {
-    return toTraces(this.series, this.meta, tracesToMetrics);
+    return toTraces(this.series, this.meta, tracesToMetrics, this.dataLinksConfig);
   };
 }

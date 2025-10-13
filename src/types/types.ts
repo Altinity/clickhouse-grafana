@@ -63,6 +63,7 @@ export interface CHQuery extends DataQuery {
 
 /**
  * Configuration for trace to metrics linking
+ * @deprecated Use DataLinksConfig for new implementations
  */
 export interface TraceToMetricsTag {
   key: string;    // Span attribute name (e.g., 'service.name', 'http.method')
@@ -81,6 +82,56 @@ export interface TraceToMetricsOptions {
   spanEndTimeShift?: string;       // Time shift after span end (e.g., '5m')
   tags?: TraceToMetricsTag[];      // Tag mappings from span attributes to metrics labels
   queries?: TraceToMetricsQuery[]; // Predefined query templates
+}
+
+/**
+ * Centralized Data Links Configuration (NEW)
+ * Supports all formats: time_series, logs, traces, flamegraph, table
+ */
+export interface DataLinksConfig {
+  enabled: boolean;
+  targetDatasourceUid: string;
+  targetDatasourceName?: string;
+  timeShift?: {
+    start: string;
+    end: string;
+  };
+  fieldMappings?: Array<{
+    sourceField: string;
+    targetField?: string;
+    useInQuery?: boolean;
+  }>;
+  queryTemplates?: Array<{
+    name: string;
+    query: string;
+    format?: string;
+  }>;
+  formats?: {
+    time_series?: FormatLinksConfig;
+    logs?: FormatLinksConfig;
+    traces?: FormatLinksConfig;
+    flamegraph?: FormatLinksConfig;
+    table?: FormatLinksConfig;
+  };
+}
+
+export interface FormatLinksConfig {
+  enabled?: boolean;
+  linkFields?: string[];
+  fieldMappings?: Array<{
+    sourceField: string;
+    targetField?: string;
+    useInQuery?: boolean;
+  }>;
+  queryTemplates?: Array<{
+    name: string;
+    query: string;
+    format?: string;
+  }>;
+  timeShift?: {
+    start: string;
+    end: string;
+  };
 }
 
 /**
@@ -112,7 +163,10 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   contextWindowSize?: string;
   useWindowFuncForMacros?: boolean;
   nullifySparse?: boolean;
-  tracesToMetrics?: TraceToMetricsOptions;
+
+  // Data Links Configuration
+  tracesToMetrics?: TraceToMetricsOptions; // @deprecated Use dataLinks for new implementations
+  dataLinks?: DataLinksConfig;              // NEW: Centralized data links for all formats
 }
 
 /**

@@ -14,11 +14,11 @@ import steps.ui as ui
 def select_input_query(self, query_name):
     """Select input query using ctrl + a on textarea."""
 
-    locators.input_in_sql_editor.send_keys(Keys.CONTROL, 'a')
+    locators.input_in_sql_editor.send_keys(Keys.CONTROL, "a")
 
 
 @TestStep(When)
-def enter_sql_editor_input(self, query, query_name='A'):
+def enter_sql_editor_input(self, query, query_name="A"):
     """Enter SQL request into sql editor input field."""
 
     with By("selecting input string"):
@@ -27,7 +27,7 @@ def enter_sql_editor_input(self, query, query_name='A'):
 
     with By("entering request"):
         with delay():
-            locators.input_in_sql_editor.send_keys(query + ' ')
+            locators.input_in_sql_editor.send_keys(query + " ")
             locators.input_in_sql_editor.send_keys(Keys.ENTER)
 
 
@@ -78,12 +78,12 @@ def enter_date_column(self, date_column):
 
 @TestStep(When)
 def setup_query_settings_for_variable(
-        self,
-        database="default",
-        table="test_grafana",
-        column_timestamp_type="DateTime",
-        timestamp_column="event_time",
-        date_column=""
+    self,
+    database="default",
+    table="test_grafana",
+    column_timestamp_type="DateTime",
+    timestamp_column="event_time",
+    date_column="",
 ):
     """Setup all macro in Query Settings."""
 
@@ -110,6 +110,7 @@ def click_go_to_query_button(self):
 
     locators.go_to_query_button.click()
 
+
 @TestStep(When)
 def click_show_generated_sql_button(self):
     """Click Show generated SQL button."""
@@ -123,18 +124,21 @@ def get_reformatted_query(self):
 
     return locators.reformatted_query.text
 
+
 @TestStep(When)
 def get_values_preview(self):
     """Get values preview."""
 
     return locators.values_preview.text
 
+
 @TestStep(When)
 def wait_panel_menu_button(self, panel_name):
     """Wait panel menu button for panel."""
 
     ui.wait_for_element_to_be_present(
-        select_type=SelectBy.CSS_SELECTOR, element=f"[data-testid='data-testid Panel menu {panel_name}']"
+        select_type=SelectBy.CSS_SELECTOR,
+        element=f"[data-testid='data-testid Panel menu {panel_name}']",
     )
 
 
@@ -145,12 +149,12 @@ def enter_variable_name(self, variable_name):
     locators.variable_name_textfield.clear()
     locators.variable_name_textfield.send_keys(variable_name)
     locators.variable_name_textfield.send_keys(Keys.ENTER)
-    
+
 
 @TestStep(When)
 def create_variable_for_dashboard(self, datasource_name, query):
     """Create variable for dashboard."""
-    
+
     with When("I click edit button"):
         with delay():
             click_edit_button()
@@ -203,7 +207,9 @@ def click_menu_button_for_panel(self, panel_name):
 def move_cursor_to_menu_button(self, panel_name):
     """Move cursor to menu button, this makes menu button be visible."""
 
-    ActionChains(self.context.driver).move_to_element(locators.menu_button_for_panel(panel_name=panel_name)).perform()
+    ActionChains(self.context.driver).move_to_element(
+        locators.menu_button_for_panel(panel_name=panel_name)
+    ).perform()
 
 
 @TestStep(When)
@@ -211,7 +217,8 @@ def wait_edit_button_in_panel_menu(self):
     """Wait edit button in dropdown menu for panel."""
 
     ui.wait_for_element_to_be_clickable(
-        select_type=SelectBy.CSS_SELECTOR, element="[data-testid='data-testid Panel menu item Edit']"
+        select_type=SelectBy.CSS_SELECTOR,
+        element="[data-testid='data-testid Panel menu item Edit']",
     )
 
 
@@ -239,7 +246,9 @@ def scroll_to_panel(self, panel_name):
     """Scroll until panel is presented."""
 
     driver = self.context.driver
-    driver.execute_script("arguments[0].scrollIntoView();", locators.panel(panel_name=panel_name))
+    driver.execute_script(
+        "arguments[0].scrollIntoView();", locators.panel(panel_name=panel_name)
+    )
 
 
 @TestStep(When)
@@ -270,14 +279,17 @@ def edit_panel(self, panel_name):
 def wait_panel(self, panel_name):
     """Wait panel to be loaded."""
     ui.wait_for_element_to_be_visible(
-        select_type=SelectBy.CSS_SELECTOR, element=f"[data-testid='data-testid Panel header {panel_name}']"
+        select_type=SelectBy.CSS_SELECTOR,
+        element=f"[data-testid='data-testid Panel header {panel_name}']",
     )
 
 
 @TestStep(When)
 def take_panel_screenshot(self, panel_name, screenshot_name):
     """Take screenshot for panel."""
-    locators.panel(panel_name=f'{panel_name}').screenshot(f'./screenshots/{screenshot_name}.png')
+    locators.panel(panel_name=f"{panel_name}").screenshot(
+        f"./screenshots/{screenshot_name}.png"
+    )
 
 
 @TestStep(When)
@@ -291,7 +303,9 @@ def change_title_for_dashboard(self, dashboard_name):
     """Change title for dashboard in saving menu."""
     locators.save_dashboard_title(grafana_version=self.context.grafana_version).clear()
 
-    locators.save_dashboard_title(grafana_version=self.context.grafana_version).send_keys(dashboard_name)
+    locators.save_dashboard_title(
+        grafana_version=self.context.grafana_version
+    ).send_keys(dashboard_name)
 
 
 @TestStep(When)
@@ -362,7 +376,7 @@ def enter_variable_query(self, query):
 @TestStep(When)
 def select_datasource(self, datasource_name):
     """Select datasource."""
-    
+
     locators.select_data_source_dropdown.send_keys(datasource_name)
     locators.select_data_source_dropdown.send_keys(Keys.ENTER)
 
@@ -384,11 +398,13 @@ def click_apply_variable(self):
     """Click apply button in variable settings."""
     locators.apply_variable_button.click()
 
+
 @TestStep(When)
 def click_edit_button(self):
     """Click edit button."""
 
     locators.edit_button.click()
+
 
 @TestStep(When)
 def enter_variable_type(self, variable_type):
@@ -398,8 +414,11 @@ def enter_variable_type(self, variable_type):
     locators.variable_type_dropdown.send_keys(variable_type)
     locators.variable_type_dropdown.send_keys(Keys.ENTER)
 
+
 @TestStep(When)
-def create_new_variable(self, datasource_name, variable_type, query=None, run_query=False):
+def create_new_variable(
+    self, datasource_name, variable_type, query=None, run_query=False
+):
     """Create new variable."""
 
     with By("clicking edit button"):
@@ -437,7 +456,6 @@ def create_new_variable(self, datasource_name, variable_type, query=None, run_qu
                 click_run_query_button()
 
 
-
 @TestStep(Then)
 def check_panel_exists(self, panel_name):
     """Check dashboard contains panel."""
@@ -472,7 +490,9 @@ def open_new_dashboard_endpoint(self, endpoint=None):
 def add_visualization(self):
     """Add visualization for dashboard."""
 
-    if (self.context.grafana_version is None) or (int(self.context.grafana_version.split(".")[0]) > 10):
+    if (self.context.grafana_version is None) or (
+        int(self.context.grafana_version.split(".")[0]) > 10
+    ):
         with delay():
             with By("clicking edit button"):
                 click_edit_button()
@@ -512,6 +532,7 @@ def time_range_apply_field(self):
 
     locators.time_range_apply_field.click()
 
+
 @TestStep(When)
 def click_exit_edit_button(self):
     """Click exit edit button."""
@@ -525,6 +546,7 @@ def click_discard_changes_confirmation_button(self):
 
     locators.discard_changes_confirmation_button.click()
 
+
 @TestStep(When)
 def discard_changes_for_dashboard(self):
     """Discard changes for panel."""
@@ -533,9 +555,10 @@ def discard_changes_for_dashboard(self):
         with delay():
             click_exit_edit_button()
 
-    with By("clicking discard changes confirmation"):
-        with delay():
-            click_discard_changes_confirmation_button()
+    # with By("clicking discard changes confirmation"):
+    #     with delay():
+    #         click_discard_changes_confirmation_button()
+
 
 @TestStep(When)
 def change_time_range_selector_for_dashboard(from_time, to_time):
@@ -557,7 +580,9 @@ def change_time_range_selector_for_dashboard(from_time, to_time):
 def double_click_on_panel(self):
     """Double-click on panel to change time range"""
 
-    ActionChains(self.context.driver).double_click(locators.visualization).click(locators.visualization).perform()
+    ActionChains(self.context.driver).double_click(locators.visualization).click(
+        locators.visualization
+    ).perform()
 
 
 @TestStep(When)
@@ -565,7 +590,9 @@ def check_green_alert_for_panel(self):
     """Check that panel title contains green alert."""
     with By("checking green alert exists"):
         try:
-            assert 'path d="M12 20.86a2.75' in locators.alert_for_panel.get_attribute('innerHTML')
+            assert 'path d="M12 20.86a2.75' in locators.alert_for_panel.get_attribute(
+                "innerHTML"
+            )
             return True
 
         except:
@@ -577,7 +604,9 @@ def check_red_alert_for_panel(self):
     """Check that panel title contains red alert."""
     with By("checking reg alert exists"):
         try:
-            assert 'path d="M18.17' in locators.alert_for_panel.get_attribute('innerHTML')
+            assert 'path d="M18.17' in locators.alert_for_panel.get_attribute(
+                "innerHTML"
+            )
             return True
 
         except:

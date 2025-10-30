@@ -239,11 +239,8 @@ class Locators:
     @property
     def save_rule_and_exit_button(self):
         driver: WebDriver = current().context.driver
-        # return driver.find_element(
-        #     SelectBy.XPATH, f"//button[.//text()='Save rule and exit']"
-        # )
         return driver.find_element(
-          SelectBy.CSS_SELECTOR, f'button[data-testid="save-rule"]'
+            SelectBy.XPATH, f"//button[@data-testid='save-rule' and contains(normalize-space(.), 'Save')]"
         )
 
 

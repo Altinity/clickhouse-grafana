@@ -22,24 +22,58 @@ import steps.connections.datasources.altinity_edit.view as datasources_altinity_
 @TestStep(Then)
 def compare_screenshots(self, screenshot_name_1, screenshot_name_2):
     """Check that screenshots are similar."""
-    image_1 = Image.open(os.path.join(self.context.project_root_dir, 'tests', 'testflows', 'screenshots', f"{screenshot_name_1}.png"))
-    image_2 = Image.open(os.path.join(self.context.project_root_dir, 'tests', 'testflows', 'screenshots', f"{screenshot_name_2}.png"))
+    image_1 = Image.open(
+        os.path.join(
+            self.context.project_root_dir,
+            "tests",
+            "testflows",
+            "screenshots",
+            f"{screenshot_name_1}.png",
+        )
+    )
+    image_2 = Image.open(
+        os.path.join(
+            self.context.project_root_dir,
+            "tests",
+            "testflows",
+            "screenshots",
+            f"{screenshot_name_2}.png",
+        )
+    )
     return image_1 == image_2
 
 
 @TestStep(Then)
 def compare_screenshots_percent(self, screenshot_name_1, screenshot_name_2):
     """Check that screenshots are similar."""
-    image_1 = Image.open(os.path.join(self.context.project_root_dir, 'tests', 'testflows', 'screenshots', f"{screenshot_name_1}.png"))
-    image_2 = Image.open(os.path.join(self.context.project_root_dir, 'tests', 'testflows', 'screenshots', f"{screenshot_name_2}.png"))
+    image_1 = Image.open(
+        os.path.join(
+            self.context.project_root_dir,
+            "tests",
+            "testflows",
+            "screenshots",
+            f"{screenshot_name_1}.png",
+        )
+    )
+    image_2 = Image.open(
+        os.path.join(
+            self.context.project_root_dir,
+            "tests",
+            "testflows",
+            "screenshots",
+            f"{screenshot_name_2}.png",
+        )
+    )
     difference = np.array(image_1) == np.array(image_2)
     overlap = 0
     for i in difference:
         for j in i:
             for k in j:
                 overlap += k
-    note(f"overlap percent: {overlap/(difference.shape[0] * difference.shape[1] * difference.shape[2])}")
-    return overlap/(difference.shape[0] * difference.shape[1] * difference.shape[2])
+    note(
+        f"overlap percent: {overlap/(difference.shape[0] * difference.shape[1] * difference.shape[2])}"
+    )
+    return overlap / (difference.shape[0] * difference.shape[1] * difference.shape[2])
 
 
 @TestStep(Given)
@@ -77,17 +111,25 @@ def create_dashboard(self, dashboard_name, open_it=True, finally_save_dashboard=
 
 def distance(a, b):
     """Distance between two points."""
-    return ((a[0] - b[0])**2 + (a[1]-b[1])**2)**(1/2)
+    return ((a[0] - b[0]) ** 2 + (a[1] - b[1]) ** 2) ** (1 / 2)
 
 
 @TestStep(Then)
 def check_screenshot(self, screenshot_name):
     """Check that graph is valid."""
     with By("opening image"):
-        image = Image.open(os.path.join(self.context.project_root_dir, 'tests', 'testflows', 'screenshots', f"{screenshot_name}.png"))
+        image = Image.open(
+            os.path.join(
+                self.context.project_root_dir,
+                "tests",
+                "testflows",
+                "screenshots",
+                f"{screenshot_name}.png",
+            )
+        )
 
     with By("processing image"):
-        red, green, blue, _ = image.split()
+        red, green, blue = image.split()
         threshold = 10
         im = green.point(lambda x: 255 if x > threshold else 0)
         threshold = 120
@@ -110,14 +152,18 @@ def check_screenshot(self, screenshot_name):
         img = cv.cvtColor(np.array(segmented_4), cv.COLOR_RGBA2BGR)
         hsv = cv.cvtColor(img, cv.COLOR_BGR2HSV)
         thresh = cv.inRange(img, hsv_min, hsv_max)
-        contours0, hierarchy = cv.findContours(thresh.copy(), cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE)
+        contours0, hierarchy = cv.findContours(
+            thresh.copy(), cv.RETR_TREE, cv.CHAIN_APPROX_SIMPLE
+        )
         boxes = []
 
         for cnt in contours0:
             rect = cv.minAreaRect(cnt)
             box = cv.boxPoints(rect)
             box = np.int0(box)
-            if (distance(box[0], box[1]) / distance(box[1], box[2]) > 10) or distance(box[0], box[1]) / distance(box[1], box[2]) < 1 / 10:
+            if (distance(box[0], box[1]) / distance(box[1], box[2]) > 10) or distance(
+                box[0], box[1]
+            ) / distance(box[1], box[2]) < 1 / 10:
                 boxes.append(box)
 
     return len(boxes) == 1
@@ -127,10 +173,18 @@ def check_screenshot(self, screenshot_name):
 def check_screenshot_contains_green(self, screenshot_name, expected_green_pixels=3000):
     """Check that graph is valid."""
     with By("opening image"):
-        image = Image.open(os.path.join(self.context.project_root_dir, 'tests', 'testflows', 'screenshots', f"{screenshot_name}.png"))
+        image = Image.open(
+            os.path.join(
+                self.context.project_root_dir,
+                "tests",
+                "testflows",
+                "screenshots",
+                f"{screenshot_name}.png",
+            )
+        )
 
     with By("processing image"):
-        red, green, blue, _ = image.split()
+        red, green, blue = image.split()
         threshold = 100
         gr = green.point(lambda x: 255 if x > threshold else 0)
 
@@ -140,43 +194,43 @@ def check_screenshot_contains_green(self, screenshot_name, expected_green_pixels
 
 @TestStep(Given)
 def create_new_altinity_datasource(
-        self,
-        datasource_name,
-        url,
-        default=False,
-        successful_connection=True,
-        access_type=None,
-        basic_auth=False,
-        username="default",
-        password="",
-        use_yandex_cloud_authorization=False,
-        yandex_cloud_username="demo",
-        yandex_cloud_password="demo",
-        with_credentials=False,
-        tls_client_auth=False,
-        server_name=None,
-        client_cert=None,
-        client_key=None,
-        with_ca_cert=False,
-        ca_cert=None,
-        skip_tls_verify=False,
-        forward_oauth_identity=False,
-        default_database=None,
-        add_cors_flag=False,
-        use_post_method=False,
-        use_compression=False,
-        use_default_values=False,
-        default_column_timestamp_type=None,
-        default_datetime_field=None,
-        default_timestamp_field=None,
-        default_float_field=None,
-        default_timestamp_64_3_field=None,
-        default_timestamp_64_6_field=None,
-        default_timestamp_64_9_field=None,
-        default_datetime64_field=None,
-        default_date_field=None,
-        default_context_window=None,
-        configure_adhoc_filter_request=None,
+    self,
+    datasource_name,
+    url,
+    default=False,
+    successful_connection=True,
+    access_type=None,
+    basic_auth=False,
+    username="default",
+    password="",
+    use_yandex_cloud_authorization=False,
+    yandex_cloud_username="demo",
+    yandex_cloud_password="demo",
+    with_credentials=False,
+    tls_client_auth=False,
+    server_name=None,
+    client_cert=None,
+    client_key=None,
+    with_ca_cert=False,
+    ca_cert=None,
+    skip_tls_verify=False,
+    forward_oauth_identity=False,
+    default_database=None,
+    add_cors_flag=False,
+    use_post_method=False,
+    use_compression=False,
+    use_default_values=False,
+    default_column_timestamp_type=None,
+    default_datetime_field=None,
+    default_timestamp_field=None,
+    default_float_field=None,
+    default_timestamp_64_3_field=None,
+    default_timestamp_64_6_field=None,
+    default_timestamp_64_9_field=None,
+    default_datetime64_field=None,
+    default_date_field=None,
+    default_context_window=None,
+    configure_adhoc_filter_request=None,
 ):
     """Create new datasource.
 
@@ -220,7 +274,9 @@ def create_new_altinity_datasource(
             if not (access_type is None):
                 with delay():
                     with And("choosing access type in dropdown"):
-                        datasources_altinity_edit.choose_access_type_in_access_dropdown(access_type=access_type)
+                        datasources_altinity_edit.choose_access_type_in_access_dropdown(
+                            access_type=access_type
+                        )
 
             if basic_auth:
                 with delay():
@@ -228,10 +284,14 @@ def create_new_altinity_datasource(
                         datasources_altinity_edit.click_basic_auth_toggle()
                 with delay():
                     with By("entering username"):
-                        datasources_altinity_edit.enter_clickhouse_username(username=username)
+                        datasources_altinity_edit.enter_clickhouse_username(
+                            username=username
+                        )
                 with delay():
                     with By("entering password"):
-                        datasources_altinity_edit.enter_clickhouse_password(password=password)
+                        datasources_altinity_edit.enter_clickhouse_password(
+                            password=password
+                        )
 
             if use_yandex_cloud_authorization:
                 with delay():
@@ -239,10 +299,14 @@ def create_new_altinity_datasource(
                         datasources_altinity_edit.click_use_yandex_cloud_authorization_toggle()
                 with delay():
                     with By("entering Yandex.Cloud username"):
-                        datasources_altinity_edit.enter_clickhouse_yandex_cloud_username(username=yandex_cloud_username)
+                        datasources_altinity_edit.enter_clickhouse_yandex_cloud_username(
+                            username=yandex_cloud_username
+                        )
                 with delay():
                     with By("entering Yandex.Cloud password"):
-                        datasources_altinity_edit.enter_clickhouse_yandex_cloud_password(password=yandex_cloud_password)
+                        datasources_altinity_edit.enter_clickhouse_yandex_cloud_password(
+                            password=yandex_cloud_password
+                        )
 
             if tls_client_auth:
                 with delay():
@@ -250,13 +314,19 @@ def create_new_altinity_datasource(
                         datasources_altinity_edit.click_tls_client_auth_toggle()
                 with delay():
                     with By("entering server name"):
-                        datasources_altinity_edit.enter_server_name(server_name=server_name)
+                        datasources_altinity_edit.enter_server_name(
+                            server_name=server_name
+                        )
                 with delay():
                     with By("entering Client Cert"):
-                        datasources_altinity_edit.enter_client_cert(client_cert=client_cert)
+                        datasources_altinity_edit.enter_client_cert(
+                            client_cert=client_cert
+                        )
                 with delay():
                     with By("entering Client Key"):
-                        datasources_altinity_edit.enter_client_key(client_key=client_key)
+                        datasources_altinity_edit.enter_client_key(
+                            client_key=client_key
+                        )
 
             if with_ca_cert:
                 with delay():
@@ -281,10 +351,12 @@ def create_new_altinity_datasource(
                     with By("clicking add CORS flag toggle"):
                         datasources_altinity_edit.click_add_cors_flag_to_request_toggle()
 
-            if not(default_database is None):
+            if not (default_database is None):
                 with delay():
                     with By("entering default database"):
-                        datasources_altinity_edit.enter_default_database(database_name=default_database)
+                        datasources_altinity_edit.enter_default_database(
+                            database_name=default_database
+                        )
 
             if use_compression:
                 with delay():
@@ -292,16 +364,22 @@ def create_new_altinity_datasource(
                         datasources_altinity_edit.click_use_compression_toggle()
                 with delay():
                     with By("enter compression type"):
-                        datasources_altinity_edit.enter_compression_type(compression_type='gzip')
+                        datasources_altinity_edit.enter_compression_type(
+                            compression_type="gzip"
+                        )
 
             with delay(before=0.5):
                 with And("entering datasource name"):
-                    datasources_altinity_edit.enter_name_into_name_field(datasource_name=datasource_name)
+                    datasources_altinity_edit.enter_name_into_name_field(
+                        datasource_name=datasource_name
+                    )
 
             if not (configure_adhoc_filter_request is None):
                 with delay():
                     with By("entering configure adhoc filter request"):
-                        datasources_altinity_edit.enter_configure_adhoc_filter_request(adhoc_request=configure_adhoc_filter_request)
+                        datasources_altinity_edit.enter_configure_adhoc_filter_request(
+                            adhoc_request=configure_adhoc_filter_request
+                        )
 
             with delay():
                 with By("clicking save and test button"):
@@ -313,62 +391,73 @@ def create_new_altinity_datasource(
                         datasources_altinity_edit.click_use_default_values_toggle()
 
                 with delay():
-                    if not(default_column_timestamp_type is None):
+                    if not (default_column_timestamp_type is None):
                         with By("setting up default timestamp type"):
-                            datasources_altinity_edit.enter_column_timestamp_type(column_timestamp_type=default_column_timestamp_type)
+                            datasources_altinity_edit.enter_column_timestamp_type(
+                                column_timestamp_type=default_column_timestamp_type
+                            )
 
                 with delay():
                     if not (default_datetime_field is None):
                         with By("setting up default datetime field"):
                             datasources_altinity_edit.enter_datetime_field(
-                                datetime=default_datetime_field)
+                                datetime=default_datetime_field
+                            )
 
                 with delay():
                     if not (default_timestamp_field is None):
                         with By("setting up default timestamp field"):
                             datasources_altinity_edit.enter_timestamp_field(
-                                timestamp=default_timestamp_field)
+                                timestamp=default_timestamp_field
+                            )
 
                 with delay():
                     if not (default_datetime64_field is None):
                         with By("setting up default datetime64 field"):
                             datasources_altinity_edit.enter_datetime64_field(
-                                datetime64=default_datetime64_field)
+                                datetime64=default_datetime64_field
+                            )
                 with delay():
                     if not (default_float_field is None):
                         with By("setting up default float field"):
                             datasources_altinity_edit.enter_float_field(
-                                float=default_float_field)
+                                float=default_float_field
+                            )
 
                 with delay():
                     if not (default_timestamp_64_3_field is None):
                         with By("setting up default Timestamp64(3) field"):
                             datasources_altinity_edit.enter_timestamp_64_3_field(
-                                timestamp_64_3=default_timestamp_64_3_field)
+                                timestamp_64_3=default_timestamp_64_3_field
+                            )
 
                 with delay():
                     if not (default_timestamp_64_6_field is None):
                         with By("setting up default Timestamp64(6) field"):
                             datasources_altinity_edit.enter_timestamp_64_6_field(
-                                timestamp_64_6=default_timestamp_64_6_field)
+                                timestamp_64_6=default_timestamp_64_6_field
+                            )
 
                 with delay():
                     if not (default_timestamp_64_9_field is None):
                         with By("setting up default Timestamp64(9) field"):
                             datasources_altinity_edit.enter_timestamp_64_9_field(
-                                timestamp_64_9=default_timestamp_64_9_field)
+                                timestamp_64_9=default_timestamp_64_9_field
+                            )
 
                 with delay():
                     if not (default_date_field is None):
                         with By("setting up default date field"):
                             datasources_altinity_edit.enter_date_field(
-                                date=default_date_field)
+                                date=default_date_field
+                            )
 
                 with delay():
                     if not (default_context_window is None):
                         with By("setting up default context window"):
                             datasources_altinity_edit.enter_context_window_field(
-                                context_window=default_context_window)
+                                context_window=default_context_window
+                            )
 
                 with delay():
                     with By("clicking save and test button"):
@@ -376,10 +465,14 @@ def create_new_altinity_datasource(
 
             if successful_connection:
                 with And("checking save and test button returns green alert"):
-                    assert datasources_altinity_edit.check_alert_success() is True, error()
+                    assert (
+                        datasources_altinity_edit.check_alert_success() is True
+                    ), error()
             else:
                 with And("checking save and test button returns red alert"):
-                    assert datasources_altinity_edit.check_alert_not_success() is True, error()
+                    assert (
+                        datasources_altinity_edit.check_alert_not_success() is True
+                    ), error()
         yield
     finally:
         with Finally("I delete datasource"):
@@ -388,7 +481,9 @@ def create_new_altinity_datasource(
                     datasources.open_connections_datasources_endpoint()
             with delay():
                 with And(f"opening datasource setup view for {datasource_name}"):
-                    datasources.click_datasource_in_datasources_view(datasource_name=datasource_name)
+                    datasources.click_datasource_in_datasources_view(
+                        datasource_name=datasource_name
+                    )
             with delay():
                 with And("clicking delete button"):
                     datasources_altinity_edit.click_delete_datasource()
@@ -399,12 +494,12 @@ def create_new_altinity_datasource(
 
 @TestStep(When)
 def setup_legacy_alerts(
-        self,
-        alert_name="test_alert",
-        evaluate_every='10s',
-        evaluate_for='10s',
-        param_value='0',
-        new=True,
+    self,
+    alert_name="test_alert",
+    evaluate_every="10s",
+    evaluate_for="10s",
+    param_value="0",
+    new=True,
 ):
     with When("I go to alerts tab"):
         with delay():
@@ -434,14 +529,14 @@ def setup_legacy_alerts(
 
 @TestStep(When)
 def setup_unified_alerts(
-        self,
-        alert_folder_name="test_alert_folder",
-        alert_group_name="test_alert_group",
-        alert_name="test_alert",
-        pending_period="10s",
-        alert_interval="10s",
-        threshold_value='0',
-        new=True,
+    self,
+    alert_folder_name="test_alert_folder",
+    alert_group_name="test_alert_group",
+    alert_name="test_alert",
+    pending_period="10s",
+    alert_interval="10s",
+    threshold_value="0",
+    new=True,
 ):
     with When("I go to alerts tab"):
         with delay():
@@ -484,11 +579,15 @@ def setup_unified_alerts(
 
         with By("entering new evaluation group name"):
             with delay():
-                alert_rules.enter_new_evaluation_group_name_textfield(group_name=alert_group_name)
+                alert_rules.enter_new_evaluation_group_name_textfield(
+                    group_name=alert_group_name
+                )
 
         with By("entering new evaluation group interval"):
             with delay():
-                alert_rules.enter_new_evaluation_group_interval_textfield(interval=alert_interval)
+                alert_rules.enter_new_evaluation_group_interval_textfield(
+                    interval=alert_interval
+                )
 
         with By("clicking create button"):
             with delay():
@@ -500,7 +599,9 @@ def setup_unified_alerts(
 
     with And("I enter contact point"):
         with delay():
-            alert_rules.enter_contact_point_textfield(contact_point="grafana-default-email")
+            alert_rules.enter_contact_point_textfield(
+                contact_point="grafana-default-email"
+            )
 
     with And("I click save rule and exit button"):
         with delay():
@@ -509,13 +610,13 @@ def setup_unified_alerts(
 
 @TestStep(When)
 def setup_query_settings(
-        self,
-        query_name="A",
-        database="default",
-        table="test_alerts",
-        column_timestamp_type="DateTime",
-        timestamp_column="EventTime",
-        date_column="EventDate"
+    self,
+    query_name="A",
+    database="default",
+    table="test_alerts",
+    column_timestamp_type="DateTime",
+    timestamp_column="EventTime",
+    date_column="EventDate",
 ):
     """Setup all macro in Query Settings."""
 
@@ -529,12 +630,18 @@ def setup_query_settings(
 
     with When("I setup column timestamp type"):
         with delay():
-            query_settings.enter_column_timestamp_type(query_name=query_name, column_timestamp_type=column_timestamp_type)
+            query_settings.enter_column_timestamp_type(
+                query_name=query_name, column_timestamp_type=column_timestamp_type
+            )
 
     with When("I setup timestamp column"):
         with delay():
-            query_settings.enter_timestamp_column(query_name=query_name, timestamp_column=timestamp_column)
+            query_settings.enter_timestamp_column(
+                query_name=query_name, timestamp_column=timestamp_column
+            )
 
     with When("I setup date column"):
         with delay():
-            query_settings.enter_date_column(query_name=query_name, date_column=date_column)
+            query_settings.enter_date_column(
+                query_name=query_name, date_column=date_column
+            )

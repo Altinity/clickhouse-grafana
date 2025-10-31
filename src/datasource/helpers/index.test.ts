@@ -153,13 +153,13 @@ describe('Variable Interpolation', () => {
     });
 
     describe('Complex SQL contexts', () => {
-      it('should quote variables in LIKE patterns', () => {
+      it('should NOT quote variables already inside LIKE string literals (issue #827)', () => {
         const query = "SELECT * FROM table WHERE name LIKE '$prefix%'";
         const variables = [{ name: 'prefix', current: { value: 'test' } }];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'prefix', multi: undefined, includeAll: undefined };
         const result = interpolateFn('test', variable);
-        expect(result).toBe("'test'"); // Should have quotes
+        expect(result).toBe('test'); // Should NOT have quotes - already in string literal
       });
 
       it('should NOT remove quotes when concatenation is inside quotes', () => {
@@ -493,15 +493,15 @@ describe('Variable Interpolation', () => {
       expect(resultQuery).toBe("AND JSON_VALUE(message, '$.service.host') = 'transcription.dev.8090.svc'");
     });
 
-    it('should handle issue #797 - URL LIKE concatenation', () => {
+    it('should handle issue #797 - URL LIKE pattern with variable in string literal', () => {
       const query = "AND request_url LIKE 'https://${container}%'";
       const interpolateFn = interpolateQueryExprWithContext(query);
-      
+
       const containerVar = { name: 'container', multi: undefined, includeAll: undefined };
-      
-      // Even though it's in a LIKE pattern, the ${container} is not in a concatenation context
-      // so it should be quoted
-      expect(interpolateFn('transcription', containerVar)).toBe("'transcription'");
+
+      // Variable is inside a string literal, so it should NOT be quoted
+      // This is the same fix as #827
+      expect(interpolateFn('transcription', containerVar)).toBe('transcription');
     });
 
     it('should handle partially replaced concatenation patterns', () => {
@@ -595,13 +595,30 @@ describe('Variable Interpolation', () => {
       const variables = [{ name: 'Var', current: { value: 'original-value' } }];
       const interpolateFn = interpolateQueryExprWithContext(query, variables);
       const variable = { name: 'Var', multi: undefined, includeAll: undefined };
-      
+
       // Single value should be quoted (this is a repeated value since it differs from current)
       expect(interpolateFn('test-1', variable)).toBe("'test-1'");
-      
+
       // Multiple values should be quoted and comma-separated
       const multiVar = { name: 'Var', multi: true, includeAll: false };
       expect(interpolateFn(['test-1', 'test-2'], multiVar)).toBe("'test-1','test-2'");
+    });
+
+    it('should fix issue #827 - double quotes in LIKE clause', () => {
+      // The exact scenario from issue #827
+      const query = "SELECT $timeSeries AS t, host, avg(usage_user) FROM $table WHERE host LIKE '${host_prefix}%'";
+      const variables = [{ name: 'host_prefix', current: { value: 'telegraf-' } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'host_prefix', multi: undefined, includeAll: undefined };
+
+      // Should NOT add quotes because it's already inside a string literal
+      expect(interpolateFn('telegraf-', variable)).toBe('telegraf-');
+
+      // The resulting query should be: WHERE host LIKE 'telegraf-%'
+      // NOT: WHERE host LIKE ''telegraf-'%' (double quotes bug)
+      const resultQuery = query.replace('${host_prefix}', 'telegraf-');
+      expect(resultQuery).toContain("WHERE host LIKE 'telegraf-%'");
+      expect(resultQuery).not.toContain("''telegraf-'");
     });
   });
 });

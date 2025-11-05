@@ -190,23 +190,25 @@ export const interpolateQueryExprWithContext = (query: string, variables: any[] 
 
 /**
  * Detects if a variable is used in a concatenation pattern within a SQL query.
- * 
- * Identifies patterns where variables are connected with dots, indicating
- * they should be treated as part of a larger identifier rather than quoted SQL values.
- * 
+ *
+ * Identifies patterns where variables are connected with dots or inside string literals,
+ * indicating they should be treated as part of a larger identifier rather than quoted SQL values.
+ *
  * @param query - The SQL query string to analyze
  * @param variableName - The variable name to check for concatenation usage
  * @returns true if variable is used in concatenation, false otherwise
- * 
+ *
  * **DETECTED PATTERNS:**
  * - `$variable.suffix` - Variable followed by dot
- * - `prefix.$variable` - Variable preceded by dot  
+ * - `prefix.$variable` - Variable preceded by dot
  * - `$var1.$var2` - Variable between other variables
  * - `${variable}.suffix` - Braced variable syntax
  * - `'quoted'.$variable` - Quoted string followed by variable (issue #797)
  * - `$variable.8090` - Variable followed by numbers
  * - `$variable.identifier` - Variable followed by valid identifier
- * 
+ * - `'prefix$variable'` - Variable inside single-quoted string (issue #827)
+ * - `"prefix$variable"` - Variable inside double-quoted string (issue #827)
+ *
  * **EXAMPLES:**
  * ```typescript
  * detectConcatenationContext('SELECT * FROM $db.$table', 'db')           // true
@@ -214,13 +216,14 @@ export const interpolateQueryExprWithContext = (query: string, variables: any[] 
  * detectConcatenationContext('FROM ${schema}.${table}', 'schema')        // true
  * detectConcatenationContext("= 'transcription'.$namespace", 'namespace') // true (issue #797)
  * detectConcatenationContext('$container.8090.svc', 'container')         // true
+ * detectConcatenationContext("WHERE host LIKE '${prefix}%'", 'prefix')   // true (issue #827)
  * ```
  */
 const detectConcatenationContext = (query: string, variableName: string): boolean => {
   if (!query || !variableName) {
     return false;
   }
-  
+
   // Look for patterns like: $variable. or .$variable or $variable1.$variable2
   const patterns = [
     new RegExp(`\\$\\{?${variableName}\\}?\\.`, 'g'),  // $variable. or ${variable}.
@@ -230,8 +233,11 @@ const detectConcatenationContext = (query: string, variableName: string): boolea
     new RegExp(`'[^']*'\\.\\$\\{?${variableName}\\}?`, 'g'), // 'quoted'.$variable (for issue #797)
     new RegExp(`\\$\\{?${variableName}\\}?\\.\\d+`, 'g'), // $variable.8090 (numbers after variable)
     new RegExp(`\\$\\{?${variableName}\\}?\\.[a-zA-Z_][a-zA-Z0-9_]*`, 'g'), // $variable.identifier (valid identifiers only)
+    // Variables inside string literals (for issue #827)
+    new RegExp(`'[^']*\\$\\{?${variableName}\\}?[^']*'`, 'g'), // 'text$variable' or '$variabletext'
+    new RegExp(`"[^"]*\\$\\{?${variableName}\\}?[^"]*"`, 'g'), // "text$variable" or "$variabletext"
   ];
-  
+
   return patterns.some(pattern => pattern.test(query));
 };
 

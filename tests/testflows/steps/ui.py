@@ -41,7 +41,9 @@ def append_session(self, suite_name, session_id):
 
 
 @TestStep(Given)
-def create_local_chrome_driver(self, browser, local_webdriver_path, common_options, is_no_sandbox, is_headless):
+def create_local_chrome_driver(
+    self, browser, local_webdriver_path, common_options, is_no_sandbox, is_headless
+):
     """Create a local Chrome driver instance."""
 
     with When("I set the local chrome options"):
@@ -60,7 +62,9 @@ def create_local_chrome_driver(self, browser, local_webdriver_path, common_optio
                 "download.directory_upgrade": True,
                 "profile.default_content_settings.popups": 0,
                 "download.default_directory": default_download_directory,
-                "profile.default_content_setting_values.automatic_downloads": 1
+                "profile.default_content_setting_values.automatic_downloads": 1,
+                "profile.default_content_setting_values.notifications": 2,
+                "profile.default_content_setting_values.popups": 0,
             },
         )
         if is_no_sandbox:
@@ -77,7 +81,9 @@ def create_local_chrome_driver(self, browser, local_webdriver_path, common_optio
 
 
 @TestStep(Given)
-def create_remote_chrome_driver(self, browser, hub_url, common_options, timeout, suite=None):
+def create_remote_chrome_driver(
+    self, browser, hub_url, common_options, timeout, suite=None
+):
     """Create a remote Chrome driver instance."""
 
     with When("I set the remote chrome options"):
@@ -89,11 +95,15 @@ def create_remote_chrome_driver(self, browser, hub_url, common_options, timeout,
         remote_chrome_prefs = {
             "credentials_enable_service": False,
             "profile.password_manager_enabled": False,
+            "profile.default_content_setting_values.notifications": 2,
+            "profile.default_content_setting_values.popups": 0,
         }
         remote_chrome_options.add_argument("--disable-notifications")
         remote_chrome_options.add_experimental_option("prefs", remote_chrome_prefs)
         remote_chrome_options.set_capability("browserName", browser)
-        remote_chrome_options.add_experimental_option("excludeSwitches", ["enable-automation"])
+        remote_chrome_options.add_experimental_option(
+            "excludeSwitches", ["enable-automation"]
+        )
         remote_chrome_options.add_experimental_option("useAutomationExtension", False)
         remote_chrome_options.set_capability("se:recordVideo", "true")
         remote_chrome_options.set_capability("se:screenResolution", "2000x1200")

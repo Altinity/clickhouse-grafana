@@ -1,3 +1,7 @@
+# 3.4.7 (2025-11-10)
+## Fixes:
+* fix quoting corner cases, fix https://github.com/Altinity/clickhouse-grafana/issues/829
+
 # 3.4.6 (2025-09-18)
 ## Fixes:
 * fix grafana team review comments, fix https://github.com/Altinity/clickhouse-grafana/issues/824, https://github.com/Altinity/clickhouse-grafana/issues/825

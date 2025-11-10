@@ -114,48 +114,44 @@ export const clickhouseEscape = (value: any, variable: any): any => {
 };
 
 /**
- * Context-aware variable interpolation that detects concatenation patterns.
- * 
- * This function solves the variable concatenation issue (#797) while preserving
- * the fix for repeated panel variables (#712).
- * 
+ * Context-aware variable interpolation with smart array formatting.
+ *
+ * This function solves multiple issues by detecting SQL context:
+ * - #797: Variable concatenation (e.g., `$container.$namespace.svc`)
+ * - #712: Repeated panel variables
+ * - #829: Array functions (e.g., `arrayIntersect($var, col)`)
+ *
  * @param query - The SQL query string containing variables
  * @returns Function that interpolates variables based on context
- * 
- * **BEHAVIOR BY CONTEXT:**
- * 
+ *
+ * **BEHAVIOR BY CONTEXT (Priority Order):**
+ *
  * 1. **Concatenation Context** (e.g., `$container.$namespace.svc`):
  *    - Returns raw value without quotes: `containervalue.namespacevalue.svc`
- *    - Fixes issue #797 where quotes broke SQL syntax
- * 
- * 2. **SQL Context** (e.g., `WHERE service IN ($service)`):
- *    - Applies original quoting logic based on variable configuration
- *    - Preserves fix for issue #712 (repeated panels)
- * 
- * 3. **Array Values**:
- *    - Always uses original logic regardless of context
- *    - Returns: `'val1','val2'` for arrays
- * 
- * **VARIABLE CONFIGURATION MATRIX:**
- * ```
- * | multi | includeAll | Context        | Result              |
- * |-------|------------|----------------|---------------------|
- * | undef | undef      | Concatenation  | value (no quotes)   |
- * | undef | undef      | SQL/IN clause  | 'value' (quoted)    |
- * | false | false      | Any            | value (no quotes)   |
- * | true  | false      | Any            | 'val1','val2'       |
- * ```
- * 
+ *    - Fixes issue #797
+ *
+ * 2. **IN Clause / tuple() Context** (e.g., `WHERE id IN ($var)`):
+ *    - Returns comma format WITHOUT brackets: `'val1','val2'`
+ *    - Works with: IN, NOT IN, GLOBAL IN, tuple()
+ *
+ * 3. **Array Function Context** (default for arrays):
+ *    - Returns ClickHouse array literal WITH brackets: `['val1','val2']`
+ *    - Works with: arrayIntersect, hasAny, hasAll, etc.
+ *    - Fixes issue #829
+ *
  * **EXAMPLES:**
  * ```typescript
  * // Concatenation - no quotes
  * interpolateQueryExprWithContext('SELECT * FROM $db.$table')
- * 
- * // SQL context - quotes applied  
- * interpolateQueryExprWithContext('WHERE name = $name')
- * 
- * // IN clause - quotes applied
+ * // → db.table
+ *
+ * // IN clause - comma format
  * interpolateQueryExprWithContext('WHERE id IN ($ids)')
+ * // → 'val1','val2'
+ *
+ * // Array function - array literal format
+ * interpolateQueryExprWithContext('SELECT arrayIntersect($tags, col)')
+ * // → ['val1','val2']
  * ```
  */
 export const interpolateQueryExprWithContext = (query: string, variables: any[] = []) => {
@@ -164,28 +160,90 @@ export const interpolateQueryExprWithContext = (query: string, variables: any[] 
     const currentVariableValue = variables.find(v => v.name === variable.name)
 
     const isInConcatenation = detectConcatenationContext(query, variable.name);
+    const needsComma = needsCommaFormat(query, variable.name);
+
     let isRepeated = false;
     if (currentVariableValue && "current" in currentVariableValue) {
       let currentValue = currentVariableValue.current.value;
-      
+
       // Handle $__all case: when current.value is ["$__all"], extract all values from options
       if (Array.isArray(currentValue) && currentValue.length === 1 && currentValue[0] === '$__all' && variable.options) {
         currentValue = variable.options.map((opt: any) => opt.value);
       } else if (typeof currentValue === 'string' && currentValue === '$__all' && variable.options) {
         currentValue = variable.options.map((opt: any) => opt.value);
       }
-      
+
       isRepeated = !(JSON.stringify(value) === JSON.stringify(currentValue));
     }
 
-    // If it's in a concatenation context and it's a simple value, don't add quotes
+    // Priority 1: Concatenation context - no quotes for simple values
     if (isInConcatenation && !Array.isArray(value)) {
       return value;
     }
 
-    // Use the original logic for non-concatenation contexts or arrays
+    // Priority 2: Arrays in IN clause / tuple() - use comma format without brackets
+    if (needsComma && Array.isArray(value)) {
+      return interpolateQueryExpr(value, variable, isRepeated);  // Returns: 'val1','val2'
+    }
+
+    // Priority 3: Arrays in any other context (array functions) - use ClickHouse array literal
+    if (Array.isArray(value)) {
+      return clickhouseEscape(value, variable);  // Returns: ['val1','val2']
+    }
+
+    // Default: use original logic for single values
     return interpolateQueryExpr(value, variable, isRepeated);
   };
+};
+
+/**
+ * Detects if a variable needs comma-separated format (without array brackets).
+ *
+ * Identifies SQL contexts where array variables should be formatted as 'val1','val2'
+ * instead of the ClickHouse array literal format ['val1','val2'].
+ *
+ * @param query - The SQL query string to analyze
+ * @param variableName - The variable name to check
+ * @returns true if variable needs comma format (no brackets), false otherwise
+ *
+ * **DETECTED PATTERNS:**
+ * - `IN ($var)` - Standard IN clause
+ * - `NOT IN ($var)` - Negated IN clause
+ * - `GLOBAL IN ($var)` - Distributed query IN clause
+ * - `GLOBAL NOT IN ($var)` - Distributed query negated IN
+ * - `tuple($var)` - Tuple construction
+ *
+ * **EXAMPLES:**
+ * ```typescript
+ * needsCommaFormat('WHERE id IN ($var)', 'var')              // true → 'val1','val2'
+ * needsCommaFormat('WHERE id NOT IN ($var)', 'var')          // true → 'val1','val2'
+ * needsCommaFormat('WHERE id GLOBAL IN ($var)', 'var')       // true → 'val1','val2'
+ * needsCommaFormat('SELECT tuple($var)', 'var')              // true → 'val1','val2'
+ * needsCommaFormat('SELECT arrayIntersect($var, col)', 'var') // false → ['val1','val2']
+ * needsCommaFormat('SELECT hasAny($var, tags)', 'var')        // false → ['val1','val2']
+ * ```
+ */
+const needsCommaFormat = (query: string, variableName: string): boolean => {
+  if (!query || !variableName) {
+    return false;
+  }
+
+  // Match IN clause variations and tuple function
+  // Pattern breakdown:
+  // - (?:NOT\s+)? - optional NOT keyword
+  // - (?:GLOBAL\s+)? - optional GLOBAL keyword
+  // - IN\s*\(\s* - IN followed by opening paren
+  // - \$\{?variableName\}? - variable with optional braces
+  // - \s*\) - closing paren
+  // OR
+  // - \btuple\s*\( - tuple function call
+  const pattern = new RegExp(
+    `(?:NOT\\s+)?(?:GLOBAL\\s+)?IN\\s*\\(\\s*\\$\\{?${variableName}\\}?\\s*\\)|` +
+    `\\btuple\\s*\\(\\s*\\$\\{?${variableName}\\}?`,
+    'i'
+  );
+
+  return pattern.test(query);
 };
 
 /**

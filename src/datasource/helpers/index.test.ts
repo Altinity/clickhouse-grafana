@@ -228,8 +228,8 @@ describe('Variable Interpolation', () => {
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'container', multi: true, includeAll: false, options: [{ value: 'val1' }] };
         const result = interpolateFn(['val1', 'val2'], variable);
-        // Should fall back to original logic for arrays
-        expect(result).toBe("'val1','val2'");
+        // Arrays don't make sense in concatenation, so falls back to array literal format
+        expect(result).toBe("['val1', 'val2']");
       });
 
       it('should handle values containing dots', () => {
@@ -398,6 +398,117 @@ describe('Variable Interpolation', () => {
         const result = interpolateFn('/^prefix_.*/', variable);
         expect(result).toBe("'/^prefix_.*/'"); // Should quote regex patterns
       });
+    });
+  });
+
+  describe('Array function vs IN clause detection (Issue #829)', () => {
+    it('should format arrays WITH brackets for arrayIntersect', () => {
+      const query = 'SELECT arrayIntersect($tags, col) FROM table';
+      const variables = [{ name: 'tags', current: { value: ['k01', 'k02', 'k03'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'tags', multi: true, includeAll: false, options: [{ value: 'k01' }] };
+      const result = interpolateFn(['k01', 'k02', 'k03'], variable);
+      expect(result).toBe("['k01', 'k02', 'k03']"); // WITH brackets
+    });
+
+    it('should format arrays WITH brackets for hasAny', () => {
+      const query = 'SELECT * FROM table WHERE hasAny(tags, $var)';
+      const variables = [{ name: 'var', current: { value: ['a', 'b'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'var', multi: true, includeAll: false, options: [{ value: 'a' }] };
+      const result = interpolateFn(['a', 'b'], variable);
+      expect(result).toBe("['a', 'b']"); // WITH brackets
+    });
+
+    it('should format arrays WITHOUT brackets for IN clause', () => {
+      const query = 'SELECT * FROM table WHERE name IN ($names)';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'"); // WITHOUT brackets
+    });
+
+    it('should format arrays WITHOUT brackets for NOT IN clause', () => {
+      const query = 'SELECT * FROM table WHERE name NOT IN ($names)';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'"); // WITHOUT brackets
+    });
+
+    it('should format arrays WITHOUT brackets for GLOBAL IN clause', () => {
+      const query = 'SELECT * FROM table WHERE name GLOBAL IN ($names)';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'"); // WITHOUT brackets
+    });
+
+    it('should format arrays WITHOUT brackets for tuple', () => {
+      const query = 'SELECT tuple($var) FROM table';
+      const variables = [{ name: 'var', current: { value: ['a', 'b'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'var', multi: true, includeAll: false, options: [{ value: 'a' }] };
+      const result = interpolateFn(['a', 'b'], variable);
+      expect(result).toBe("'a','b'"); // WITHOUT brackets
+    });
+
+    it('should handle mixed IN clause and array function in same query', () => {
+      const query = 'SELECT * FROM table WHERE name IN ($names) AND arrayIntersect($tags, col) = []';
+      const variables = [
+        { name: 'names', current: { value: ['alice', 'bob'] } },
+        { name: 'tags', current: { value: ['a', 'b'] } }
+      ];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const namesVar = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const tagsVar = { name: 'tags', multi: true, includeAll: false, options: [{ value: 'a' }] };
+
+      expect(interpolateFn(['alice', 'bob'], namesVar)).toBe("'alice','bob'"); // SQL IN format
+      expect(interpolateFn(['a', 'b'], tagsVar)).toBe("['a', 'b']"); // Array format
+    });
+
+    it('should handle issue #829 exact scenario from PROD', () => {
+      const query = `
+        SELECT
+          arrayIntersect($list_var, f_tags)[1] AS f_label,
+          sum(f_bytes)
+        FROM table
+        WHERE hasAny($list_var, f_tags)
+          AND f_host IN ($host_list)
+      `;
+      const variables = [
+        { name: 'list_var', current: { value: ['k01', 'k02', 'k03'] } },
+        { name: 'host_list', current: { value: ['h01', 'h02'] } }
+      ];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const listVar = { name: 'list_var', multi: true, includeAll: false, options: [{ value: 'k01' }] };
+      const hostVar = { name: 'host_list', multi: true, includeAll: false, options: [{ value: 'h01' }] };
+
+      // Array functions should get brackets
+      expect(interpolateFn(['k01', 'k02', 'k03'], listVar)).toBe("['k01', 'k02', 'k03']");
+      // IN clause should NOT get brackets
+      expect(interpolateFn(['h01', 'h02'], hostVar)).toBe("'h01','h02'");
+    });
+
+    it('should work with PREWHERE IN clause', () => {
+      const query = 'SELECT * FROM table PREWHERE name IN ($names)';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'"); // WITHOUT brackets
+    });
+
+    it('should work with HAVING IN clause', () => {
+      const query = 'SELECT count(*) FROM table GROUP BY name HAVING name IN ($names)';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'"); // WITHOUT brackets
     });
   });
 

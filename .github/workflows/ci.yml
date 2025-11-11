@@ -48,6 +48,11 @@ jobs:
       - name: Build frontend
         run: npm run build
 
+      - name: check GOCOVERDIR before
+        run: |
+          mkdir -p ./coverage/
+          ls -la ./coverage/
+
       - name: Test backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
         uses: magefile/mage-action@v3
@@ -57,7 +62,7 @@ jobs:
           version: latest
           args: coverage
 
-      - name: check GOCOVERDIR
+      - name: check GOCOVERDIR after
         run: |
           ls -la ./coverage/
           cat ./coverage/backend.txt

@@ -1,8 +1,0 @@
-{
-  "extends": "./.config/.eslintrc",
-  "rules": {
-    "object-curly-newline": ["error", {
-      "ObjectPattern": { "multiline": true, "minProperties": 10 }
-    }]
-  }
-}

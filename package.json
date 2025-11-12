@@ -9,7 +9,7 @@
     "test:coverage": "jest --coverage",
     "test:ci": "jest --passWithNoTests --maxWorkers 4",
     "typecheck": "tsc --noEmit",
-    "lint": "eslint --cache --ignore-path ./.gitignore --ext .ts,.tsx .",
+    "lint": "eslint --cache .",
     "lint:fix": "npm run lint -- --fix",
     "e2e": "npm exec cypress install && npm exec grafana-e2e run",
     "e2e:update": "npm exec cypress install && npm exec grafana-e2e run --update-screenshots",
@@ -68,10 +68,9 @@
     "node": ">=16"
   },
   "dependencies": {
-    "@grafana/data": "11.5.2",
-    "@grafana/runtime": "11.5.2",
-    "@grafana/ui": "11.5.2",
-    "browserify-fs": "^1.0.0",
+    "@grafana/data": "11.6.7",
+    "@grafana/runtime": "11.6.7",
+    "@grafana/ui": "11.6.7",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "fs": "^0.0.1-security",

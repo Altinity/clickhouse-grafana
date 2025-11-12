@@ -194,13 +194,6 @@ const config = async (env): Promise<Configuration> => {
     ],
 
     resolve: {
-      alias: {
-        // Map 'node:' scheme to standard module names
-        'node:crypto': 'crypto-browserify',
-        'node:fs': 'browserify-fs', // Note: fs is not fully supported in the browser
-        'node:util': 'util/',
-        // Add other aliases as needed
-      },
       extensions: ['.js', '.jsx', '.ts', '.tsx'],
       // handle resolving "rootDir" paths
       modules: [path.resolve(process.cwd(), 'src'), 'node_modules'],

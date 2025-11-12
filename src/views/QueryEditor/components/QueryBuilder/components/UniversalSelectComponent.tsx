@@ -35,6 +35,7 @@ export const UniversalSelectField: React.FC<UniversalSelectFieldProps> = ({
         value: value,
         label: value,
       };
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setCustomOptions(
         [...customOptions, customValue].filter((option) => option.label !== undefined && option.label.trim() !== '')
       );

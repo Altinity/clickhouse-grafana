@@ -28,6 +28,7 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource, optio
     } else if (hasTemplateService) {
       // Alerts/Explore mode - no execution context yet
       // This is EXPECTED behavior, not an error
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormattedData(query.query);
       setError(null);
     } else {

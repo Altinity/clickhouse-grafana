@@ -26,6 +26,7 @@ export const DefaultValues = ({ jsonData, newOptions, onSwitchToggle, onFieldCha
   useEffect(() => {
     const doRequest = async () => {
       if (
+        // eslint-disable-next-line react-hooks/immutability
         newOptions.version === 1 ||
         !jsonData.useDefaultConfiguration ||
         (!jsonData.dataSourceUrl.startsWith('http://') && !jsonData.dataSourceUrl.startsWith('https://'))

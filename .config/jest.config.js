@@ -34,6 +34,7 @@ module.exports = {
             decorators: false,
             dynamicImport: true,
           },
+          target: 'es2022',
         },
       },
     ],

@@ -68,10 +68,9 @@
     "node": ">=16"
   },
   "dependencies": {
-    "@grafana/data": "11.5.2",
-    "@grafana/runtime": "11.5.2",
-    "@grafana/ui": "11.5.2",
-    "browserify-fs": "^1.0.0",
+    "@grafana/data": "11.6.7",
+    "@grafana/runtime": "11.6.7",
+    "@grafana/ui": "11.6.7",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "fs": "^0.0.1-security",

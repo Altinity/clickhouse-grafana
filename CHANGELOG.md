@@ -1,3 +1,8 @@
+# 3.4.8 (2025-11-12)
+## Enhancements:
+* switch to go 1.25
+* fix all security transitive dependencies
+
 # 3.4.7 (2025-11-10)
 ## Fixes:
 * fix quoting corner cases, fix https://github.com/Altinity/clickhouse-grafana/issues/829

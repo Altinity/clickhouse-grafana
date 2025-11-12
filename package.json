@@ -1,6 +1,6 @@
 {
   "name": "altinity-clickhouse-grafana",
-  "version": "3.4.7",
+  "version": "3.4.8",
   "description": "Altinity grafana datasource for ClickHouse",
   "scripts": {
     "build": "npm run build:frontend",
@@ -35,7 +35,7 @@
     "@testing-library/react": "^16.0.1",
     "@types/jest": "^29.5.0",
     "@types/lodash": "^4.14.194",
-    "@types/luxon": "^3.4.7",
+    "@types/luxon": "^3.4.8",
     "@types/node": "^18.15.11",
     "@types/pako": "^2.0.3",
     "copy-webpack-plugin": "^11.0.0",

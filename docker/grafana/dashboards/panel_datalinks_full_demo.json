@@ -1,0 +1,526 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Comprehensive demonstration of panel-level data links feature across all supported formats",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 1,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "text",
+        "uid": "-- Mixed --"
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 100,
+      "options": {
+        "code": {
+          "language": "markdown",
+          "showLineNumbers": false
+        },
+        "content": "# 🔗 Panel-Level Data Links - Full Demo Dashboard\n\n**Interactive Demonstration**: Click on any visualization below to see data links in action!\n\n## 📊 What's Demonstrated\n\n| Format | Panel | Action | Result |\n|--------|-------|--------|---------|\n| **Time Series** | Service Events → | Click data point | View detailed events in table |\n| **Logs** | Application Logs → | Click log entry | Navigate to metrics or event table |\n| **Traces** | OpenTelemetry Traces → | Click span | Analyze query performance |\n| **Table** | Service Statistics → | Click cell | Drill into event timeline |\n| **Flamegraph** | Query Stack → | Click function | Find queries using this function |\n\n**To view configuration**: Edit any panel → Query tab → Expand \"Data Links\" at bottom",
+        "mode": "markdown"
+      },
+      "transparent": true,
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "description": "Click any data point to view detailed event records in table format",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 5
+      },
+      "id": 1,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "targets": [
+        {
+          "database": "default",
+          "datasource": "clickhouse",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "time_series",
+          "query": "SELECT $timeSeries as t, service_name, count() FROM $table \nWHERE $timeFilter \nGROUP BY t, service_name ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "table": "test_grafana",
+          "dataLinks": {
+            "enabled": true,
+            "targetDatasourceUid": "clickhouse",
+            "targetDatasourceName": "clickhouse",
+            "timeShift": {
+              "start": "-5m",
+              "end": "5m"
+            },
+            "fieldMappings": [
+              {
+                "sourceField": "service_name",
+                "targetField": "service",
+                "useInQuery": true
+              }
+            ],
+            "queryTemplates": [
+              {
+                "name": "View Event Details (Table)",
+                "query": "SELECT event_time, service_name, from_user, country FROM test_grafana WHERE service_name = '${service}' AND $timeFilter ORDER BY event_time DESC LIMIT 100"
+              },
+              {
+                "name": "View Logs for Service",
+                "query": "SELECT event_time, content, level FROM test_logs WHERE $timeFilter ORDER BY event_time DESC LIMIT 100"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "1️⃣ Time Series: Service Event Count (Click → View Details)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "description": "Click any log entry to navigate to related metrics or events",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 14
+      },
+      "id": 2,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "targets": [
+        {
+          "database": "default",
+          "datasource": "clickhouse",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "logs",
+          "query": "SELECT \n    event_time as timestamp,\n    content as message,\n    level,\n    label,\n    toString(id) as log_id\nFROM test_logs\nWHERE $timeFilter\nORDER BY event_time DESC\nLIMIT 100",
+          "refId": "A",
+          "table": "test_logs",
+          "dataLinks": {
+            "enabled": true,
+            "targetDatasourceUid": "clickhouse",
+            "targetDatasourceName": "clickhouse",
+            "timeShift": {
+              "start": "-2m",
+              "end": "2m"
+            },
+            "fieldMappings": [
+              {
+                "sourceField": "level",
+                "targetField": "log_level",
+                "useInQuery": true
+              },
+              {
+                "sourceField": "label",
+                "targetField": "log_label",
+                "useInQuery": true
+              }
+            ],
+            "queryTemplates": [
+              {
+                "name": "View Service Metrics",
+                "query": "SELECT $timeSeries as t, service_name, count() FROM test_grafana WHERE $timeFilter GROUP BY t, service_name ORDER BY t"
+              },
+              {
+                "name": "Similar Logs (Same Level)",
+                "query": "SELECT event_time, content, label FROM test_logs WHERE level = '${log_level}' AND $timeFilter ORDER BY event_time DESC LIMIT 50"
+              },
+              {
+                "name": "All Events in Timeframe",
+                "query": "SELECT event_time, service_name, from_user, country FROM test_grafana WHERE $timeFilter ORDER BY event_time DESC LIMIT 100"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "2️⃣ Logs: Application Logs (Click → Navigate)",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "description": "ClickHouse OpenTelemetry traces. Click span to analyze performance. NOTE: May be empty if no traces collected yet.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 24
+      },
+      "id": 3,
+      "options": {
+        "spanFilters": {
+          "criticalPathOnly": false,
+          "matchesOnly": false
+        }
+      },
+      "targets": [
+        {
+          "database": "system",
+          "datasource": "clickhouse",
+          "dateColDataType": "finish_date",
+          "dateTimeColDataType": "intDiv(finish_time_us,1000000)",
+          "dateTimeType": "TIMESTAMP",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "traces",
+          "query": "SELECT\n    trace_id AS traceID,\n    span_id AS spanID,\n    operation_name AS operationName,\n    parent_span_id AS parentSpanID,\n    'clickhouse' AS serviceName,\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\n    intDiv(start_time_us,1000) AS startTime,\n    attribute AS tags,\n    map('hostName',hostname) AS serviceTags\nFROM $table\nWHERE $timeFilter\nORDER BY traceID, startTime",
+          "refId": "A",
+          "round": "0s",
+          "table": "opentelemetry_span_log",
+          "dataLinks": {
+            "enabled": true,
+            "targetDatasourceUid": "clickhouse",
+            "targetDatasourceName": "clickhouse",
+            "timeShift": {
+              "start": "-10m",
+              "end": "10m"
+            },
+            "fieldMappings": [
+              {
+                "sourceField": "serviceName",
+                "targetField": "service",
+                "useInQuery": true
+              },
+              {
+                "sourceField": "operationName",
+                "targetField": "operation",
+                "useInQuery": true
+              }
+            ],
+            "queryTemplates": [
+              {
+                "name": "Query Performance Timeline",
+                "query": "SELECT toStartOfMinute(event_time) as t, count() as queries, avg(query_duration_ms) as avg_ms FROM system.query_log WHERE $timeFilter AND type = 'QueryFinish' GROUP BY t ORDER BY t"
+              },
+              {
+                "name": "Most Active Tables",
+                "query": "SELECT database, table, count() as queries FROM system.query_log WHERE $timeFilter AND type = 'QueryFinish' AND database != 'system' GROUP BY database, table ORDER BY queries DESC LIMIT 10"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "3️⃣ Traces: OpenTelemetry Spans (Click → Performance)",
+      "type": "traces"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "description": "Service statistics. Click any cell to drill down into detailed events.",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": null
+              }
+            ]
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "total_events"
+            },
+            "properties": [
+              {
+                "id": "custom.cellOptions",
+                "value": {
+                  "type": "color-background"
+                }
+              },
+              {
+                "id": "color",
+                "value": {
+                  "mode": "continuous-GrYlRd"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 24,
+        "x": 0,
+        "y": 34
+      },
+      "id": 4,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "targets": [
+        {
+          "database": "default",
+          "datasource": "clickhouse",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "table",
+          "query": "SELECT \n    service_name,\n    from_user,\n    country,\n    count() as total_events,\n    min(event_time) as first_seen,\n    max(event_time) as last_seen\nFROM $table\nWHERE $timeFilter\nGROUP BY service_name, from_user, country\nORDER BY total_events DESC\nLIMIT 30",
+          "refId": "A",
+          "round": "0s",
+          "table": "test_grafana",
+          "dataLinks": {
+            "enabled": true,
+            "targetDatasourceUid": "clickhouse",
+            "targetDatasourceName": "clickhouse",
+            "timeShift": {
+              "start": "-1h",
+              "end": "0h"
+            },
+            "fieldMappings": [
+              {
+                "sourceField": "service_name",
+                "targetField": "service",
+                "useInQuery": true
+              },
+              {
+                "sourceField": "from_user",
+                "targetField": "user",
+                "useInQuery": true
+              },
+              {
+                "sourceField": "country",
+                "targetField": "geo",
+                "useInQuery": true
+              }
+            ],
+            "queryTemplates": [
+              {
+                "name": "Event Timeline (Detailed)",
+                "query": "SELECT event_time, service_name, from_user, country, too_big_value FROM test_grafana WHERE service_name = '${service}' AND from_user = '${user}' AND country = '${geo}' AND $timeFilter ORDER BY event_time DESC LIMIT 200"
+              },
+              {
+                "name": "Hourly Distribution",
+                "query": "SELECT toStartOfHour(event_time) as hour, count() as events FROM test_grafana WHERE service_name = '${service}' AND from_user = '${user}' AND $timeFilter GROUP BY hour ORDER BY hour"
+              },
+              {
+                "name": "Compare Users",
+                "query": "SELECT from_user, count() as events FROM test_grafana WHERE service_name = '${service}' AND $timeFilter GROUP BY from_user ORDER BY events DESC"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "4️⃣ Table: Service Statistics (Click → Drill Down)",
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "description": "Query execution flamegraph. Click function to find related queries. Requires trace collection enabled.",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 11,
+        "w": 24,
+        "x": 0,
+        "y": 44
+      },
+      "id": 5,
+      "options": {},
+      "targets": [
+        {
+          "database": "system",
+          "datasource": "clickhouse",
+          "dateColDataType": "event_date",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "flamegraph",
+          "query": "SELECT\n  (arrayMap(\n    x -> if(addressToSymbol(x) != '', demangle(addressToSymbol(x)), 'unknown'),\n    arrayJoin(\n      arrayPopFront(\n      arrayMap(\n        x -> arraySlice(reverse(trace), 1, x),\n        range(length(trace) - 1)\n      )\n      )\n    )\n  ) AS trace_level)[-1] AS label,\n  count() AS value,\n  length(trace_level) AS level,\n  countIf(length(trace)-2 = length(trace_level)) AS self\nFROM $table\nWHERE trace_type='Real' AND $timeFilter \nGROUP BY trace_level\nORDER BY trace_level,level \nSETTINGS allow_introspection_functions=1",
+          "refId": "A",
+          "round": "0s",
+          "table": "trace_log",
+          "dataLinks": {
+            "enabled": true,
+            "targetDatasourceUid": "clickhouse",
+            "targetDatasourceName": "clickhouse",
+            "timeShift": {
+              "start": "-30m",
+              "end": "0m"
+            },
+            "fieldMappings": [
+              {
+                "sourceField": "label",
+                "targetField": "func",
+                "useInQuery": true
+              }
+            ],
+            "queryTemplates": [
+              {
+                "name": "Find Queries Using Function",
+                "query": "SELECT event_time, query_id, type, query_duration_ms FROM system.query_log WHERE $timeFilter AND query_id IN (SELECT DISTINCT query_id FROM system.trace_log WHERE $timeFilter AND arrayExists(x -> addressToSymbol(x) LIKE '%${func}%', trace)) ORDER BY event_time DESC LIMIT 20"
+              },
+              {
+                "name": "Function Call Frequency",
+                "query": "SELECT toStartOfMinute(event_time) as t, count() as calls FROM system.trace_log WHERE $timeFilter AND arrayExists(x -> addressToSymbol(x) LIKE '%${func}%', trace) GROUP BY t ORDER BY t"
+              }
+            ]
+          }
+        }
+      ],
+      "title": "5️⃣ Flamegraph: Query Stack (Click → Find Queries)",
+      "type": "flamegraph"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 40,
+  "tags": ["datalinks", "demo", "panel-level"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Panel-Level Data Links - Full Demo",
+  "uid": "panel_datalinks_full_demo",
+  "version": 1,
+  "weekStart": ""
+}

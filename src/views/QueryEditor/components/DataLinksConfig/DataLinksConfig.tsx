@@ -98,30 +98,86 @@ export function DataLinksConfig(props: Props) {
     updateDataLinks({ queryTemplates: templates });
   };
 
-  // Only show for traces format
-  const isTracesFormat = query.format === 'traces';
+  // Show for formats that support data links
+  const supportedFormats = ['time_series', 'logs', 'traces', 'flamegraph', 'table'];
+  const isFormatSupported = supportedFormats.includes(query.format);
 
-  if (!isTracesFormat) {
+  if (!isFormatSupported) {
     return null;
   }
+
+  // Format-specific helper text
+  const getFormatHelperText = () => {
+    switch (query.format) {
+      case 'time_series':
+        return 'Configure links for data points in time series. Links appear when clicking on the graph.';
+      case 'logs':
+        return 'Configure links for log entries. Links appear in the log line context menu.';
+      case 'traces':
+        return 'Configure links for trace spans. Links appear when clicking on spans.';
+      case 'flamegraph':
+        return 'Configure links for flamegraph nodes. Links appear when clicking on function names.';
+      case 'table':
+        return 'Configure links for table cells. Links appear when clicking on cell values.';
+      default:
+        return 'Configure data links for this visualization.';
+    }
+  };
+
+  const getFormatExamples = () => {
+    switch (query.format) {
+      case 'time_series':
+        return {
+          fieldMapping: 'e.g., server_name, cluster',
+          queryExample: 'SELECT * FROM logs WHERE host = \'${server_name}\' AND $timeFilter'
+        };
+      case 'logs':
+        return {
+          fieldMapping: 'e.g., trace_id, service_name',
+          queryExample: 'SELECT * FROM traces WHERE traceID = \'${trace_id}\''
+        };
+      case 'traces':
+        return {
+          fieldMapping: 'e.g., service.name, http.method',
+          queryExample: 'SELECT count() FROM metrics WHERE $__tags AND $timeFilter'
+        };
+      case 'flamegraph':
+        return {
+          fieldMapping: 'e.g., function_name, level',
+          queryExample: 'SELECT * FROM traces WHERE operationName = \'${function_name}\''
+        };
+      case 'table':
+        return {
+          fieldMapping: 'e.g., user_id, session_id',
+          queryExample: 'SELECT * FROM events WHERE user_id = \'${user_id}\' AND $timeFilter'
+        };
+      default:
+        return {
+          fieldMapping: 'e.g., field_name',
+          queryExample: 'SELECT * FROM table WHERE field = \'${field_name}\''
+        };
+    }
+  };
+
+  const formatExamples = getFormatExamples();
 
   return (
     <div style={{ marginTop: '8px', marginBottom: '8px' }}>
       <Collapse
-        label="Data Links (Trace to Metrics)"
+        label="Data Links"
         isOpen={isOpen}
         onToggle={() => setIsOpen(!isOpen)}
         collapsible
       >
         <div style={{ padding: '8px 0' }}>
           <Alert title="Panel-level configuration" severity="info" style={{ marginBottom: '16px' }}>
-            Configure data links for this panel. This overrides datasource-level settings.
+            {getFormatHelperText()}
           </Alert>
 
           <InlineField
             label="Enable data links"
             labelWidth={24}
-            tooltip="Enable linking from traces to metrics"
+            tooltip="Enable navigation links from this visualization to other panels/datasources"
           >
             <InlineSwitch
               value={dataLinks?.enabled || false}
@@ -134,7 +190,7 @@ export function DataLinksConfig(props: Props) {
               <InlineField
                 label="Target datasource"
                 labelWidth={24}
-                tooltip="Datasource to link to (usually a metrics datasource)"
+                tooltip="Datasource to link to (can be same or different datasource)"
               >
                 <Select
                   width={40}
@@ -173,7 +229,7 @@ export function DataLinksConfig(props: Props) {
 
               <Field
                 label="Field mappings"
-                description="Map span attributes to metric labels (e.g., service.name → service)"
+                description={`Map fields to query variables (${formatExamples.fieldMapping})`}
               >
                 <div>
                   {(dataLinks?.fieldMappings || []).map((mapping, index) => (
@@ -184,14 +240,14 @@ export function DataLinksConfig(props: Props) {
                       <Input
                         value={mapping.sourceField}
                         onChange={(e) => updateFieldMapping(index, 'sourceField', e.currentTarget.value)}
-                        placeholder="Span attribute (e.g., service.name)"
+                        placeholder={`Source field (${formatExamples.fieldMapping.split(',')[0].trim()})`}
                         width={30}
                       />
                       <Label style={{ margin: 0, minWidth: 20, textAlign: 'center' }}>→</Label>
                       <Input
                         value={mapping.targetField || ''}
                         onChange={(e) => updateFieldMapping(index, 'targetField', e.currentTarget.value)}
-                        placeholder="Metric label (optional)"
+                        placeholder="Target variable (optional)"
                         width={30}
                       />
                       <IconButton
@@ -209,7 +265,7 @@ export function DataLinksConfig(props: Props) {
 
               <Field
                 label="Query templates"
-                description="Define query templates with $__tags placeholder for span attributes"
+                description="Define query templates with $__tags placeholder for field mappings"
               >
                 <div>
                   {(dataLinks?.queryTemplates || []).map((template, index) => (
@@ -220,13 +276,13 @@ export function DataLinksConfig(props: Props) {
                       <Input
                         value={template.name}
                         onChange={(e) => updateQueryTemplate(index, 'name', e.currentTarget.value)}
-                        placeholder="Query name (e.g., Request Rate)"
+                        placeholder="Query name"
                         width={25}
                       />
                       <Input
                         value={template.query}
                         onChange={(e) => updateQueryTemplate(index, 'query', e.currentTarget.value)}
-                        placeholder="SELECT count() FROM metrics WHERE $__tags"
+                        placeholder={formatExamples.queryExample}
                         style={{ flex: 1 }}
                       />
                       <IconButton

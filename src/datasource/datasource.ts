@@ -52,7 +52,6 @@ export class CHDataSource
   adHocHideTableNames: boolean;
   uid: string;
   datasourceMode?: DatasourceMode;
-  tracesToMetrics?: CHDataSourceOptions['tracesToMetrics'];
   dataLinks?: DataLinksConfig;
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
@@ -75,10 +74,9 @@ export class CHDataSource
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
     this.xClickHouseSSLCertificateAuth = instanceSettings.jsonData.xClickHouseSSLCertificateAuth || false;
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
-    this.tracesToMetrics = instanceSettings.jsonData.tracesToMetrics;
 
-    // Initialize data links config with migration from old tracesToMetrics
-    this.dataLinks = this.migrateDataLinksConfig(instanceSettings.jsonData);
+    // Initialize datasource-level data links config (used as fallback)
+    this.dataLinks = instanceSettings.jsonData.dataLinks;
 
     if (instanceSettings.jsonData.useDefaultConfiguration) {
       this.defaultValues = {
@@ -141,53 +139,6 @@ export class CHDataSource
         console.error('Failed to perform IndexedDB cleanup:', error);
       }
     }
-  }
-
-  /**
-   * Migrate data links configuration from old tracesToMetrics to new centralized system
-   * Provides backward compatibility while supporting new configuration
-   */
-  private migrateDataLinksConfig(jsonData: CHDataSourceOptions): DataLinksConfig | undefined {
-    // If new dataLinks config exists, use it directly
-    if (jsonData.dataLinks) {
-      return jsonData.dataLinks;
-    }
-
-    // If old tracesToMetrics config exists, migrate it
-    if (jsonData.tracesToMetrics?.enabled && jsonData.tracesToMetrics?.datasourceUid) {
-      const oldConfig = jsonData.tracesToMetrics;
-
-      // Create new config from old tracesToMetrics
-      const migratedConfig: DataLinksConfig = {
-        enabled: oldConfig.enabled || false,
-        targetDatasourceUid: oldConfig.datasourceUid || '',
-        timeShift: (oldConfig.spanStartTimeShift || oldConfig.spanEndTimeShift) ? {
-          start: oldConfig.spanStartTimeShift || '-5m',
-          end: oldConfig.spanEndTimeShift || '5m'
-        } : undefined,
-        fieldMappings: oldConfig.tags?.map(tag => ({
-          sourceField: tag.key,
-          targetField: tag.value,
-          useInQuery: true
-        })),
-        queryTemplates: oldConfig.queries?.map(q => ({
-          name: q.name,
-          query: q.query
-        })),
-        // Enable only for traces format by default
-        formats: {
-          traces: {
-            enabled: true
-          }
-        }
-      };
-
-      console.log('Migrated tracesToMetrics config to dataLinks:', migratedConfig);
-      return migratedConfig;
-    }
-
-    // No config to migrate
-    return undefined;
   }
 
   static _getRequestOptions(query: string, usePOST?: boolean, requestId?: string, options?: any) {
@@ -352,11 +303,14 @@ export class CHDataSource
         throw new Error('No response for traceId log context query');
       }
 
+      // Use panel-level dataLinks if configured, otherwise fall back to datasource-level
+      const effectiveDataLinks = query?.dataLinks || this.dataLinks;
+
       let sqlSeries = new SqlSeries({
         refId: 'FORWARD',
         series: response.data,
         meta: response.meta,
-        dataLinksConfig: this.dataLinks,
+        dataLinksConfig: effectiveDataLinks,
       });
 
       return { data: sqlSeries.toLogs() };
@@ -401,11 +355,14 @@ export class CHDataSource
         throw new Error('No response for log context query');
       }
 
+      // Use panel-level dataLinks if configured, otherwise fall back to datasource-level
+      const effectiveDataLinks = query?.dataLinks || this.dataLinks;
+
       let sqlSeries = new SqlSeries({
         refId: options?.direction,
         series: response.data,
         meta: response.meta,
-        dataLinksConfig: this.dataLinks,
+        dataLinksConfig: effectiveDataLinks,
       });
 
       return { data: sqlSeries.toLogs() };
@@ -468,6 +425,9 @@ export class CHDataSource
         return;
       }
 
+      // Use panel-level dataLinks if configured, otherwise fall back to datasource-level
+      const effectiveDataLinks = target.dataLinks || this.dataLinks;
+
       let sqlSeries = new SqlSeries({
         refId: target.refId,
         series: response.data,
@@ -476,7 +436,7 @@ export class CHDataSource
         tillNow: options.rangeRaw?.to === 'now',
         from: convertTimestamp(options.range.from),
         to: convertTimestamp(options.range.to),
-        dataLinksConfig: this.dataLinks,
+        dataLinksConfig: effectiveDataLinks,
       });
 
           if (target.format === 'table') {
@@ -484,7 +444,7 @@ export class CHDataSource
               result.push(data);
             });
           } else if (target.format === 'traces') {
-            result = sqlSeries.toTraces(this.tracesToMetrics);
+            result = sqlSeries.toTraces();
           } else if (target.format === 'flamegraph') {
             result = sqlSeries.toFlamegraph();
           } else if (target.format === 'logs') {
@@ -637,6 +597,9 @@ export class CHDataSource
             return;
           }
 
+          // Use panel-level dataLinks if configured, otherwise fall back to datasource-level
+          const effectiveDataLinks = target.dataLinks || this.dataLinks;
+
           let sqlSeries = new SqlSeries({
             refId: target.refId,
             series: response.data,
@@ -645,7 +608,7 @@ export class CHDataSource
             tillNow: options.rangeRaw?.to === 'now',
             from: convertTimestamp(options.range.from),
             to: convertTimestamp(options.range.to),
-            dataLinksConfig: this.dataLinks,
+            dataLinksConfig: effectiveDataLinks,
           });
 
           if (sqlSeries.meta.length === 0) {

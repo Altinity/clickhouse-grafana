@@ -1,10 +1,11 @@
 import React, {useEffect, useState} from 'react';
-import {CoreApp, QueryEditorProps} from '@grafana/data';
+import {CoreApp, QueryEditorProps, SelectableValue} from '@grafana/data';
 import {CHDataSource} from '../../datasource/datasource';
 import {CHDataSourceOptions, CHQuery, DatasourceMode, EditorMode} from '../../types/types';
 import {QueryHeader} from './components/QueryHeader/QueryHeader';
 import {QueryTextEditor} from './components/QueryTextEditor/QueryTextEditor';
 import {QueryBuilder} from './components/QueryBuilder/QueryBuilder';
+import {DataLinksConfig} from './components/DataLinksConfig/DataLinksConfig';
 import {Alert} from '@grafana/ui';
 import {useQueryState} from './hooks/useQueryState';
 import {useFormattedData} from './hooks/useFormattedData';
@@ -13,6 +14,7 @@ import {initializeQueryDefaults, initializeQueryDefaultsForVariables} from './he
 import './QueryEditor.css';
 import {getAdhocFilters} from './helpers/getAdHocFilters';
 import {detectVariableMacroIntersections, createVariableMacroConflictWarning} from './helpers/detectVariableMacroIntersections';
+import {getDataSourceSrv} from '@grafana/runtime';
 
 export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDataSourceOptions>): any {
   const { datasource, query, onChange, onRunQuery, data } = props;
@@ -20,8 +22,28 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
   const initializedQuery = initializeQueryDefaults(query, isAnnotationView, datasource, onChange);
   const [formattedData, error] = useFormattedData(initializedQuery, datasource, data?.request);
   const { data: autocompleteData, hasPermissionError } = useAutocompleteData(datasource);
+  const [availableDatasources, setAvailableDatasources] = useState<Array<SelectableValue<string>>>([]);
 
   console.log(props)
+
+  // Fetch available datasources for DataLinksConfig
+  useEffect(() => {
+    const fetchDatasources = async () => {
+      try {
+        const datasources = await getDataSourceSrv().getList();
+        const options = datasources.map(ds => ({
+          label: ds.name,
+          value: ds.uid,
+          description: ds.type,
+        }));
+        setAvailableDatasources(options);
+      } catch (error) {
+        console.error('Failed to fetch datasources:', error);
+      }
+    };
+    fetchDatasources();
+  }, []);
+
   useEffect(() => {
     if (formattedData !== initializedQuery.query) {
       onChange({ ...initializedQuery, rawQuery: formattedData })
@@ -87,18 +109,25 @@ export function QueryEditor(props: QueryEditorProps<CHDataSource, CHQuery, CHDat
         />
       )}
       {editorMode === EditorMode.SQL && (
-        <QueryTextEditor
-          adhocFilters={initializedQuery.adHocFilters}
-          areAdHocFiltersAvailable={areAdHocFiltersAvailable}
-          query={initializedQuery}
-          onSqlChange={onSqlChange}
-          onRunQuery={onTriggerQuery}
-          onFieldChange={onFieldChange}
-          formattedData={formattedData}
-          datasource={datasource}
-          isAnnotationView={isAnnotationView}
-          autocompleteData={autocompleteData}
-        />
+        <>
+          <QueryTextEditor
+            adhocFilters={initializedQuery.adHocFilters}
+            areAdHocFiltersAvailable={areAdHocFiltersAvailable}
+            query={initializedQuery}
+            onSqlChange={onSqlChange}
+            onRunQuery={onTriggerQuery}
+            onFieldChange={onFieldChange}
+            formattedData={formattedData}
+            datasource={datasource}
+            isAnnotationView={isAnnotationView}
+            autocompleteData={autocompleteData}
+          />
+          <DataLinksConfig
+            query={initializedQuery}
+            onChange={onChange}
+            datasources={availableDatasources}
+          />
+        </>
       )}
     </>
   );

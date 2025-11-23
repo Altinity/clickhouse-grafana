@@ -59,33 +59,14 @@ export interface CHQuery extends DataQuery {
   useWindowFuncForMacros?: boolean;
   showHelp: boolean;
   showFormattedSQL: boolean;
+
+  // Panel-level data links configuration (NEW)
+  // Overrides datasource-level configuration
+  dataLinks?: DataLinksConfig;
 }
 
 /**
- * Configuration for trace to metrics linking
- * @deprecated Use DataLinksConfig for new implementations
- */
-export interface TraceToMetricsTag {
-  key: string;    // Span attribute name (e.g., 'service.name', 'http.method')
-  value?: string; // Optional mapped metric label name (e.g., 'service_name')
-}
-
-export interface TraceToMetricsQuery {
-  name: string;   // Display name for the query
-  query: string;  // Query template with $__tags placeholder
-}
-
-export interface TraceToMetricsOptions {
-  enabled?: boolean;
-  datasourceUid?: string;          // Target metrics datasource UID
-  spanStartTimeShift?: string;     // Time shift before span start (e.g., '-5m')
-  spanEndTimeShift?: string;       // Time shift after span end (e.g., '5m')
-  tags?: TraceToMetricsTag[];      // Tag mappings from span attributes to metrics labels
-  queries?: TraceToMetricsQuery[]; // Predefined query templates
-}
-
-/**
- * Centralized Data Links Configuration (NEW)
+ * Centralized Data Links Configuration
  * Supports all formats: time_series, logs, traces, flamegraph, table
  */
 export interface DataLinksConfig {
@@ -164,9 +145,8 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   useWindowFuncForMacros?: boolean;
   nullifySparse?: boolean;
 
-  // Data Links Configuration
-  tracesToMetrics?: TraceToMetricsOptions; // @deprecated Use dataLinks for new implementations
-  dataLinks?: DataLinksConfig;              // NEW: Centralized data links for all formats
+  // Data Links Configuration (datasource-level - used as fallback)
+  dataLinks?: DataLinksConfig;
 }
 
 /**

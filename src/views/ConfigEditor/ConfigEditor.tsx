@@ -4,7 +4,6 @@ import { DataSourcePluginOptionsEditorProps, onUpdateDatasourceJsonDataOption, S
 import { CHDataSourceOptions } from '../../types/types';
 import _ from 'lodash';
 import { DefaultValues } from './FormParts/DefaultValues/DefaultValues';
-import { TraceToMetrics } from './FormParts/TraceToMetrics';
 import { LANGUAGE_ID } from '../QueryEditor/components/QueryTextEditor/editor/initiateEditor';
 import { MONACO_EDITOR_OPTIONS } from '../constants';
 import { COMPRESSION_TYPE_OPTIONS } from './constants';
@@ -242,7 +241,6 @@ export function ConfigEditor(props: Props) {
           />
         </InlineField>
       </div>
-      <TraceToMetrics {...props} />
     </>
   );
 }

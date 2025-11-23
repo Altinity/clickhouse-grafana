@@ -1,7 +1,6 @@
 import { _toFieldType, convertTimezonedDateToUnixTimestamp, Field } from './sql_series';
 import { FieldType, DataLink } from '@grafana/data';
-import { TraceToMetricsOptions, DataLinksConfig } from '../../types/types';
-import { TraceToMetricsLinkBuilder } from '../trace-to-metrics/linkBuilder';
+import { DataLinksConfig } from '../../types/types';
 import { LinkBuilderFactory, TracesLinkBuilder, TracesLinkContext } from '../datalinks';
 
 interface TraceData {
@@ -24,28 +23,17 @@ interface Trace {
 export const toTraces = (
   series: Trace[],
   meta: any,
-  tracesToMetrics?: TraceToMetricsOptions,
   dataLinksConfig?: DataLinksConfig
 ): TraceData[] => {
   function transformTraceData(inputData: Trace[]): TraceData[] {
     let timeCol = meta.find((item) => item.name === 'startTime');
     let timeColType = _toFieldType(timeCol.type || '');
 
-    // Initialize link builder - prefer new system, fall back to old
-    let linkBuilder: TraceToMetricsLinkBuilder | any = undefined;
-    let useNewSystem = false;
+    // Initialize link builder if dataLinksConfig is provided
+    let linkBuilder: any = undefined;
 
     if (dataLinksConfig) {
-      // Use new centralized system
-      const newBuilder = LinkBuilderFactory.getBuilder<TracesLinkContext>('traces', dataLinksConfig);
-      if (newBuilder) {
-        linkBuilder = newBuilder;
-        useNewSystem = true;
-      }
-    } else if (tracesToMetrics?.enabled && tracesToMetrics?.datasourceUid) {
-      // Fall back to old trace-to-metrics system for backward compatibility
-      linkBuilder = new TraceToMetricsLinkBuilder(tracesToMetrics);
-      useNewSystem = false;
+      linkBuilder = LinkBuilderFactory.getBuilder<TracesLinkContext>('traces', dataLinksConfig);
     }
 
     const fields: { [key: string]: Field } = {
@@ -105,16 +93,9 @@ export const toTraces = (
       const spanLinks: DataLink[][] = [];
 
       spanDataList.forEach((spanData) => {
-        // If using new system, create proper context
-        if (useNewSystem) {
-          const context = TracesLinkBuilder.createContext(spanData);
-          const links = linkBuilder.buildLinks(context);
-          spanLinks.push(links);
-        } else {
-          // Old system (backward compatibility)
-          const links = linkBuilder.buildLinks(spanData);
-          spanLinks.push(links);
-        }
+        const context = TracesLinkBuilder.createContext(spanData);
+        const links = linkBuilder.buildLinks(context);
+        spanLinks.push(links);
       });
 
       // Attach links to the spanID field

@@ -311,6 +311,7 @@ export class CHDataSource
         series: response.data,
         meta: response.meta,
         dataLinksConfig: effectiveDataLinks,
+        sourceQuery: query,
       });
 
       return { data: sqlSeries.toLogs() };
@@ -363,6 +364,7 @@ export class CHDataSource
         series: response.data,
         meta: response.meta,
         dataLinksConfig: effectiveDataLinks,
+        sourceQuery: query,
       });
 
       return { data: sqlSeries.toLogs() };
@@ -437,6 +439,7 @@ export class CHDataSource
         from: convertTimestamp(options.range.from),
         to: convertTimestamp(options.range.to),
         dataLinksConfig: effectiveDataLinks,
+        sourceQuery: target, // Pass original query for field copying in data links
       });
 
           if (target.format === 'table') {
@@ -609,6 +612,7 @@ export class CHDataSource
             from: convertTimestamp(options.range.from),
             to: convertTimestamp(options.range.to),
             dataLinksConfig: effectiveDataLinks,
+            sourceQuery: target,
           });
 
           if (sqlSeries.meta.length === 0) {

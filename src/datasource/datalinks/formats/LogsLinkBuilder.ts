@@ -7,8 +7,8 @@ import { DataLinksConfig, LogsLinkContext } from '../types';
  * Generates links for log entries to traces or metrics
  */
 export class LogsLinkBuilder extends BaseLinkBuilder<LogsLinkContext> {
-  constructor(config: DataLinksConfig) {
-    super(config, 'logs');
+  constructor(config: DataLinksConfig, sourceQuery?: any) {
+    super(config, 'logs', sourceQuery);
   }
 
   /**
@@ -16,24 +16,38 @@ export class LogsLinkBuilder extends BaseLinkBuilder<LogsLinkContext> {
    */
   public buildLinks(context: LogsLinkContext): DataLink[] {
     if (!this.isEnabled()) {
+      console.log('[LogsLinkBuilder] buildLinks: disabled');
       return [];
     }
 
     const links: DataLink[] = [];
     const templates = this.getQueryTemplates();
 
+    console.log('[LogsLinkBuilder] buildLinks: templates count =', templates.length);
+
     if (templates.length > 0) {
       // Use configured query templates
-      templates.forEach((template) => {
+      templates.forEach((template, index) => {
+        console.log(`[LogsLinkBuilder] Processing template ${index}: ${template.name}`);
+
         // Only include trace links if trace_id exists
         if (template.name.toLowerCase().includes('trace') && !context.traceId) {
+          console.log(`[LogsLinkBuilder] Skipping trace link (no traceId): ${template.name}`);
           return;
         }
 
         const link = this.buildDataLink(template, context);
-        links.push(link);
+        console.log(`[LogsLinkBuilder] Created link ${index}: ${template.name}`, link);
+
+        if (link) {
+          links.push(link);
+          console.log(`[LogsLinkBuilder] Added link to array, current length: ${links.length}`);
+        } else {
+          console.error(`[LogsLinkBuilder] link is null/undefined!`);
+        }
       });
     } else {
+      console.log('[LogsLinkBuilder] No templates, using defaults');
       // Build default links based on available data
       if (context.traceId) {
         links.push(this.buildTraceLink(context));
@@ -45,6 +59,7 @@ export class LogsLinkBuilder extends BaseLinkBuilder<LogsLinkContext> {
       }
     }
 
+    console.log('[LogsLinkBuilder] buildLinks: returning', links.length,links, 'links');
     return links;
   }
 
@@ -80,6 +95,12 @@ ORDER BY startTime
             uid: this.config.targetDatasourceUid,
             type: 'vertamedia-clickhouse-datasource',
           },
+          // ClickHouse-specific fields
+          datasourceMode: 'Datasource',
+          extrapolate: true,
+          adHocFilters: [],
+          rawQuery: query,
+          editorMode: 'sql',
         },
         datasourceUid: this.config.targetDatasourceUid,
         datasourceName: this.config.targetDatasourceName || 'ClickHouse',
@@ -117,6 +138,11 @@ ORDER BY time
 
     return 'View Related Metrics';
   }
+
+  // Note: We use the base buildDataLink from BaseLinkBuilder
+  // which interpolates actual values from the context
+  // This is correct for logs because Grafana's internal data links
+  // don't support ${__data.fields.*} placeholders for per-row interpolation
 
   /**
    * Create link context from log entry

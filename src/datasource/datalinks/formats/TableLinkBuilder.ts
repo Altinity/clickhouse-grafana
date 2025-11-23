@@ -7,8 +7,8 @@ import { DataLinksConfig, TableLinkContext } from '../types';
  * Generates links for table cells/rows
  */
 export class TableLinkBuilder extends BaseLinkBuilder<TableLinkContext> {
-  constructor(config: DataLinksConfig) {
-    super(config, 'table');
+  constructor(config: DataLinksConfig, sourceQuery?: any) {
+    super(config, 'table', sourceQuery);
   }
 
   /**

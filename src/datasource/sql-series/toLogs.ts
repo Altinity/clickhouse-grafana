@@ -94,7 +94,7 @@ export const toLogs = (self: any, dataLinksConfig?: DataLinksConfig): DataFrame[
 
   // Initialize link builder if config is provided
   const linkBuilder = dataLinksConfig
-    ? LinkBuilderFactory.getBuilder<LogsLinkContext>('logs', dataLinksConfig)
+    ? LinkBuilderFactory.getBuilder<LogsLinkContext>('logs', dataLinksConfig, self.sourceQuery)
     : null;
 
   let types: { [key: string]: any } = {};
@@ -162,19 +162,28 @@ export const toLogs = (self: any, dataLinksConfig?: DataLinksConfig): DataFrame[
     });
   });
 
-  // Build data links for log entries
+  // Build data links with actual values from first log entry
+  // Note: For logs, we need to use actual values, not Grafana field placeholders
+  // because internal data links don't support field interpolation
   const bodyFieldLinks: DataLink[] = [];
 
-  if (linkBuilder) {
-    self.series.forEach((logEntry: any, index: number) => {
-      const context = LogsLinkBuilder.createContext(
-        logEntry,
-        labelFieldsList[index] || {}
-      );
+  if (linkBuilder && self.series.length > 0) {
+    console.log('[toLogs] Building data links, series count:', self.series.length);
 
-      const links = linkBuilder.buildLinks(context);
-      bodyFieldLinks.push(...links);
-    });
+    // Use first log entry to create links with real values
+    const sampleContext = LogsLinkBuilder.createContext(
+      self.series[0],
+      labelFieldsList[0] || {}
+    );
+
+    console.log('[toLogs] Sample context:', sampleContext);
+
+    // Build links with actual values (not placeholders)
+    // LogsLinkBuilder will use BaseLinkBuilder's interpolateQuery which fills in values
+    const links = linkBuilder.buildLinks(sampleContext);
+    console.log('[toLogs] Built links:', links.length, links);
+
+    bodyFieldLinks.push(...links);
   }
 
   const result = createDataFrame({

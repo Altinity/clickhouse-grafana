@@ -26,10 +26,12 @@ export abstract class BaseLinkBuilder<TContext extends LinkContext = LinkContext
   protected config: DataLinksConfig;
   protected formatConfig?: FormatConfig;
   protected formatName: string;
+  protected sourceQuery?: any; // Original CHQuery to copy fields from
 
-  constructor(config: DataLinksConfig, formatName: string) {
+  constructor(config: DataLinksConfig, formatName: string, sourceQuery?: any) {
     this.config = config;
     this.formatName = formatName;
+    this.sourceQuery = sourceQuery;
 
     // Get format-specific config if it exists
     if (config.formats && config.formats[formatName as keyof typeof config.formats]) {
@@ -105,20 +107,39 @@ export abstract class BaseLinkBuilder<TContext extends LinkContext = LinkContext
       ? calculateTimeRange(context.timestamp, this.getTimeShift().start, this.getTimeShift().end)
       : undefined;
 
+    // Copy fields from source query if available
+    const copiedFields = this.sourceQuery ? {
+      database: this.sourceQuery.database,
+      table: this.sourceQuery.table,
+      dateTimeType: this.sourceQuery.dateTimeType,
+      dateColDataType: this.sourceQuery.dateColDataType,
+      dateTimeColDataType: this.sourceQuery.dateTimeColDataType,
+      round: this.sourceQuery.round,
+      skip_comments: this.sourceQuery.skip_comments,
+    } : {};
+
     return {
-      title: template.name,
+      title: template.name || '',
       url: '', // Empty for internal links
       internal: {
         query: {
           refId: 'A',
-          query: interpolatedQuery,
+          query: interpolatedQuery || '',
           format: template.format || 'table',
           datasource: {
-            uid: this.config.targetDatasourceUid,
+            uid: this.config.targetDatasourceUid || '',
             type: 'vertamedia-clickhouse-datasource',
           },
+          // ClickHouse-specific fields required for proper query execution in Explore
+          datasourceMode: 'Datasource',
+          extrapolate: true,
+          adHocFilters: [],
+          rawQuery: interpolatedQuery || '',
+          editorMode: 'sql',
+          // Copy fields from source query
+          ...copiedFields,
         },
-        datasourceUid: this.config.targetDatasourceUid,
+        datasourceUid: this.config.targetDatasourceUid || '',
         datasourceName: this.config.targetDatasourceName || 'ClickHouse',
         ...(timeRange && { range: timeRange }),
       },

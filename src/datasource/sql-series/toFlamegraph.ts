@@ -10,7 +10,7 @@ interface FlamegraphData {
   self: number;
 }
 
-export const toFlamegraph = (inputSeries, dataLinksConfig?: DataLinksConfig): any => {
+export const toFlamegraph = (inputSeries, dataLinksConfig?: DataLinksConfig, sourceQuery?: any): any => {
   // interface Field {
   //   name: string;
   //   type: string;
@@ -40,7 +40,7 @@ export const toFlamegraph = (inputSeries, dataLinksConfig?: DataLinksConfig): an
   function transformTraceData(inputData: FlamegraphData[], config?: DataLinksConfig): any {
     // Initialize link builder if config is provided
     const linkBuilder = config
-      ? LinkBuilderFactory.getBuilder<FlamegraphLinkContext>('flamegraph', config)
+      ? LinkBuilderFactory.getBuilder<FlamegraphLinkContext>('flamegraph', config, sourceQuery)
       : null;
 
     const sortedData = inputData.filter((item) => {

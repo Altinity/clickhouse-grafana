@@ -23,11 +23,13 @@ export class LinkBuilderFactory {
    *
    * @param format - The format type (time_series, logs, traces, etc.)
    * @param config - Data links configuration
+   * @param sourceQuery - Optional source CHQuery to copy fields from
    * @returns Link builder instance or null if disabled/invalid
    */
   public static getBuilder<TContext extends LinkContext = LinkContext>(
     format: SupportedFormat,
-    config: DataLinksConfig
+    config: DataLinksConfig,
+    sourceQuery?: any
   ): LinkBuilder<TContext> | null {
     // Validate configuration
     if (!validateConfig(config)) {
@@ -52,23 +54,23 @@ export class LinkBuilderFactory {
 
     switch (format) {
       case 'time_series':
-        builder = new TimeSeriesLinkBuilder(config);
+        builder = new TimeSeriesLinkBuilder(config, sourceQuery);
         break;
 
       case 'logs':
-        builder = new LogsLinkBuilder(config);
+        builder = new LogsLinkBuilder(config, sourceQuery);
         break;
 
       case 'traces':
-        builder = new TracesLinkBuilder(config);
+        builder = new TracesLinkBuilder(config, sourceQuery);
         break;
 
       case 'flamegraph':
-        builder = new FlamegraphLinkBuilder(config);
+        builder = new FlamegraphLinkBuilder(config, sourceQuery);
         break;
 
       case 'table':
-        builder = new TableLinkBuilder(config);
+        builder = new TableLinkBuilder(config, sourceQuery);
         break;
 
       default:

@@ -8,8 +8,8 @@ import { extractLabelsFromSeriesName } from '../utils';
  * Generates links for time series data points
  */
 export class TimeSeriesLinkBuilder extends BaseLinkBuilder<TimeSeriesLinkContext> {
-  constructor(config: DataLinksConfig) {
-    super(config, 'time_series');
+  constructor(config: DataLinksConfig, sourceQuery?: any) {
+    super(config, 'time_series', sourceQuery);
   }
 
   /**

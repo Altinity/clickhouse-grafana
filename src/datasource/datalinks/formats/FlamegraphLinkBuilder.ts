@@ -7,8 +7,8 @@ import { DataLinksConfig, FlamegraphLinkContext } from '../types';
  * Generates links for flame graph nodes
  */
 export class FlamegraphLinkBuilder extends BaseLinkBuilder<FlamegraphLinkContext> {
-  constructor(config: DataLinksConfig) {
-    super(config, 'flamegraph');
+  constructor(config: DataLinksConfig, sourceQuery?: any) {
+    super(config, 'flamegraph', sourceQuery);
   }
 
   /**

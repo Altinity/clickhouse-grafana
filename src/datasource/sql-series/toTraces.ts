@@ -1,5 +1,5 @@
 import { _toFieldType, convertTimezonedDateToUnixTimestamp, Field } from './sql_series';
-import { FieldType, DataLink } from '@grafana/data';
+import { FieldType } from '@grafana/data';
 import { DataLinksConfig } from '../../types/types';
 import { LinkBuilderFactory, TracesLinkBuilder, TracesLinkContext } from '../datalinks';
 
@@ -23,7 +23,8 @@ interface Trace {
 export const toTraces = (
   series: Trace[],
   meta: any,
-  dataLinksConfig?: DataLinksConfig
+  dataLinksConfig?: DataLinksConfig,
+  sourceQuery?: any
 ): TraceData[] => {
   function transformTraceData(inputData: Trace[]): TraceData[] {
     let timeCol = meta.find((item) => item.name === 'startTime');
@@ -33,7 +34,7 @@ export const toTraces = (
     let linkBuilder: any = undefined;
 
     if (dataLinksConfig) {
-      linkBuilder = LinkBuilderFactory.getBuilder<TracesLinkContext>('traces', dataLinksConfig);
+      linkBuilder = LinkBuilderFactory.getBuilder<TracesLinkContext>('traces', dataLinksConfig, sourceQuery);
     }
 
     const fields: { [key: string]: Field } = {
@@ -88,19 +89,15 @@ export const toTraces = (
       });
     });
 
-    // Generate DataLinks for each span
-    if (linkBuilder) {
-      const spanLinks: DataLink[][] = [];
+    // Generate DataLinks template from first span
+    // Similar to time series, we create template links once and Grafana interpolates per-span
+    if (linkBuilder && spanDataList.length > 0) {
+      const sampleSpan = spanDataList[0];
+      const context = TracesLinkBuilder.createContext(sampleSpan);
+      const spanLinks = linkBuilder.buildLinks(context);
 
-      spanDataList.forEach((spanData) => {
-        const context = TracesLinkBuilder.createContext(spanData);
-        const links = linkBuilder.buildLinks(context);
-        spanLinks.push(links);
-      });
-
-      // Attach links to the spanID field
-      if (spanLinks.length > 0 && spanLinks.some(links => links.length > 0)) {
-        // Store links per span value
+      // Attach template links to the spanID field
+      if (spanLinks.length > 0) {
         fields.spanID.config.links = spanLinks;
       }
     }

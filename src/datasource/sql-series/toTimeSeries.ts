@@ -103,7 +103,7 @@ export const toTimeSeries = (
 
   // Initialize link builder if config is provided
   const linkBuilder = dataLinksConfig
-    ? LinkBuilderFactory.getBuilder<TimeSeriesLinkContext>('time_series', dataLinksConfig)
+    ? LinkBuilderFactory.getBuilder<TimeSeriesLinkContext>('time_series', dataLinksConfig, self.sourceQuery)
     : null;
 
   let metrics: { [key: string]: any[] } = {};

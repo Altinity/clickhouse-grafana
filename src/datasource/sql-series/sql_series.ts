@@ -115,6 +115,7 @@ export default class SqlSeries {
   from: any;
   to: any;
   dataLinksConfig?: DataLinksConfig;
+  sourceQuery?: any; // Original CHQuery object for copying fields to data links
 
   /** @ngInject */
   constructor(options: any) {
@@ -126,6 +127,7 @@ export default class SqlSeries {
     this.to = options.to;
     this.keys = options.keys || [];
     this.dataLinksConfig = options.dataLinksConfig;
+    this.sourceQuery = options.sourceQuery;
   }
 
   toAnnotation = (input: any, meta: any): any[] => {
@@ -133,7 +135,7 @@ export default class SqlSeries {
   };
 
   toFlamegraph = (): any => {
-    return toFlamegraph(this.series, this.dataLinksConfig);
+    return toFlamegraph(this.series, this.dataLinksConfig, this.sourceQuery);
   };
 
   toLogs = (): any => {
@@ -152,6 +154,6 @@ export default class SqlSeries {
   };
 
   toTraces = (): any => {
-    return toTraces(this.series, this.meta, this.dataLinksConfig);
+    return toTraces(this.series, this.meta, this.dataLinksConfig, this.sourceQuery);
   };
 }

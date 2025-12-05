@@ -8,6 +8,17 @@ Initially plugin developed by Vertamedia, maintaned by Altinity since 2020.
 
 ## Quick start
 
+### ClickHouse 25.8+ setup notes for plugin version before 3.4.9
+New ClickHouse version change default behavior for output_format_json_quote_64bit_integers=0, 
+which not allows to read generated JSON in JavaScript, look details in https://github.com/ClickHouse/ClickHouse/issues/86553
+To properly works old version Altinity clickhouse datasource plugin for Grafana use following config
+`/etc/clickhouse-server/users.d/output_format_json_quote_64bit_integers.xml`
+```xml
+<clickhouse><profiles><default>
+  <output_format_json_quote_64bit_integers>1</output_format_json_quote_64bit_integers>
+</default></profiles></clickhouse>
+```
+
 ### Grafana 10+ setup notes for plugin version before 3.0.0
 
 Old versions of Altinity ClickHouse datasource plugin for Grafana written in Angular. So you can watch warning like 

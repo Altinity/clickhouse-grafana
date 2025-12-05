@@ -117,7 +117,7 @@ services:
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
 
     environment:
-      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,https://github.com/Altinity/clickhouse-grafana/releases/download/v${CLICKHOUSE_PLUGIN_VERSION:-3.4.2}/vertamedia-clickhouse-datasource-${CLICKHOUSE_PLUGIN_VERSION:-3.4.2}.zip;vertamedia-clickhouse-datasource"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,https://github.com/Altinity/clickhouse-grafana/releases/download/v${CLICKHOUSE_PLUGIN_VERSION:-3.4.8}/vertamedia-clickhouse-datasource-${CLICKHOUSE_PLUGIN_VERSION:-3.4.2}.zip;vertamedia-clickhouse-datasource"
       GF_LOG_LEVEL: debug
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}

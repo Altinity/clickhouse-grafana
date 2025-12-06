@@ -8,6 +8,17 @@ Initially plugin developed by Vertamedia, maintaned by Altinity since 2020.
 
 ## Quick start
 
+### setup notes for plugin version 3.4.9+
+Because we added `output_format_json_quote_64bit_integers=1` to any browser request from plugin,
+if your user which you use for connection have readonly=1, change it to readonly=2, for example
+`/etc/clickhouse-server/users.d/readonly.xml`
+```xml
+<clickhouse><profiles><default>
+  <readonly>2</readonly>
+</default></profiles></clickhouse>
+```
+
+
 ### ClickHouse 25.8+ setup notes for plugin version before 3.4.9
 New ClickHouse version change default behavior for output_format_json_quote_64bit_integers=0, 
 which not allows to read generated JSON in JavaScript, look details in https://github.com/ClickHouse/ClickHouse/issues/86553

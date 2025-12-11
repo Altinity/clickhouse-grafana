@@ -43,8 +43,7 @@ class Locators:
     @property
     def hide_time_info_toggle(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH,
-                                   f'//label[@for="option-none-timeseries-tooltip.mode"]')
+        return driver.find_element(SelectBy.CSS_SELECTOR, "#hide-time-info-switch + label")
 
     @property
     def relative_time_info(self):

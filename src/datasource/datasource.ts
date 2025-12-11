@@ -151,7 +151,7 @@ export class CHDataSource
       params.push('query=' + encodeURIComponent(query));
     }
     // https://github.com/Altinity/clickhouse-grafana/issues/832, https://github.com/ClickHouse/ClickHouse/issues/86553
-    params.push('output_format_json_quote_64bit_integers=1');
+    // params.push('output_format_json_quote_64bit_integers=1');
     if (options.defaultDatabase) {
       params.push('database=' + options.defaultDatabase);
     }

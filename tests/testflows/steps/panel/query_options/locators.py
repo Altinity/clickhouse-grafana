@@ -21,7 +21,7 @@ class Locators:
     def interval_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[@class="css-1t8vb7c"]')
+                                   "//label[contains(., 'Interval')]/following-sibling::span[1]")
 
     @property
     def min_interval_textfield(self):

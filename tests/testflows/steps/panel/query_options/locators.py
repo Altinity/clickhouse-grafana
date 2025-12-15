@@ -21,7 +21,7 @@ class Locators:
     def interval_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[@class="css-1t8vb7c"]')
+                                   "//label[contains(., 'Interval')]/following-sibling::span[1]")
 
     @property
     def min_interval_textfield(self):
@@ -43,8 +43,7 @@ class Locators:
     @property
     def hide_time_info_toggle(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH,
-                                   f'//div[@class="css-1n85obj"]//label[@for="hide-time-info-switch"]')
+        return driver.find_element(SelectBy.CSS_SELECTOR, "#hide-time-info-switch + label")
 
     @property
     def relative_time_info(self):

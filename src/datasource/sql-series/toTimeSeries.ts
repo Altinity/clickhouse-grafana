@@ -1,14 +1,36 @@
 import { each, isArray } from 'lodash';
 import { _toFieldType, convertTimezonedDateToUTC } from './sql_series';
 import { FieldType } from '@grafana/data';
+import { formatNumericValue, is64BitIntegerType, extractValueTypeFromArrayTuple } from './bigIntUtils';
 
-const _formatValue = (value: any) => {
+/**
+ * Formats a value for time series data.
+ *
+ * For 64-bit integer types (UInt64/Int64):
+ * - Values within safe integer range → number
+ * - Values outside safe range → string (to preserve precision)
+ *
+ * For Array(Tuple(...)) types (from $columns macro):
+ * - Extracts the value type from the tuple and applies appropriate formatting
+ *
+ * For other types:
+ * - Converts to number if possible, otherwise keeps as-is
+ */
+const _formatValue = (value: any, chType?: string) => {
   if (value === null) {
     return value;
   }
 
   if (typeof value === 'object') {
     return JSON.stringify(value);
+  }
+
+  // For 64-bit integer types, use safe formatting to preserve precision
+  // This also handles Array(Tuple(String, UInt64)) patterns via is64BitIntegerType
+  if (chType && is64BitIntegerType(chType)) {
+    // Extract the actual value type for Array(Tuple(...)) patterns
+    const actualType = extractValueTypeFromArrayTuple(chType);
+    return formatNumericValue(value, actualType);
   }
 
   let numeric = Number(value);
@@ -68,7 +90,7 @@ const extrapolateDataPoints = (datapoints: any, self) => {
   return datapoints;
 };
 
-const _pushDatapoint = (metrics: any, timestamp: number, key: string, value: number, nullifySparse: boolean) => {
+const _pushDatapoint = (metrics: any, timestamp: number, key: string, value: number, nullifySparse: boolean, chType?: string) => {
   if (!metrics[key]) {
     metrics[key] = [];
 
@@ -85,7 +107,7 @@ const _pushDatapoint = (metrics: any, timestamp: number, key: string, value: num
     }
   }
 
-  metrics[key].push([_formatValue(value), timestamp]);
+  metrics[key].push([_formatValue(value, chType), timestamp]);
 };
 
 export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): any => {
@@ -102,8 +124,15 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
   let keyColumns = self.keys.filter((name: string) => {
     return name !== timeCol.name;
   });
+
+  // Build lookup for ClickHouse types by column name
+  const chTypeByName: { [key: string]: string } = {};
+  each(self.meta, function (col: any) {
+    chTypeByName[col.name] = col.type;
+  });
+
   each(self.series, function (row) {
-    let t = _formatValue(row[timeCol.name]);
+    let t = _formatValue(row[timeCol.name], timeCol.type);
     /* Build composite key (categories) from GROUP BY */
     let metricKey: any = null;
 
@@ -143,6 +172,7 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
       if ((self.keys.length === 0 && timeCol.name === key) || self.keys.indexOf(key) >= 0) {
         return;
       }
+      const originalKey = key;
       /* If composite key is specified, e.g. 'category1',
        * use it instead of the metric name, e.g. count() */
       if (metricKey) {
@@ -155,16 +185,17 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
       if (isArray(val)) {
         /* Expand groupArray into multiple timeseries */
         each(val, function (arr) {
-          _pushDatapoint(metrics, t, arr[0], arr[1], nullifySparse);
+          _pushDatapoint(metrics, t, arr[0], arr[1], nullifySparse, chTypeByName[originalKey]);
         });
       } else {
-        _pushDatapoint(metrics, t, key, val, nullifySparse);
+        _pushDatapoint(metrics, t, key, val, nullifySparse, chTypeByName[originalKey]);
       }
     });
   });
 
   each(metrics, function (dataPoints, seriesName) {
-    const processedDataPoints = (extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints).filter(item => (typeof item[0] === 'number' || item[0] === null) && item[1]);
+    // Filter: allow numbers, strings (for big integers), and nulls
+    const processedDataPoints = (extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints).filter(item => (typeof item[0] === 'number' || typeof item[0] === 'string' || item[0] === null) && item[1]);
 
     timeSeries.push({
       length: processedDataPoints.length,

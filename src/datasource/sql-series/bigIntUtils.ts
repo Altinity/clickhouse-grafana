@@ -57,7 +57,18 @@ export const isSafeInteger = (value: string | number): boolean => {
 };
 
 /**
- * Check if a ClickHouse type is a 64-bit integer type.
+ * Check if a ClickHouse type can potentially exceed JavaScript's safe integer range.
+ *
+ * Types that need special handling:
+ * - UInt64: 0 to 18,446,744,073,709,551,615 (can exceed 2^53-1)
+ * - Int64: -9,223,372,036,854,775,808 to 9,223,372,036,854,775,807 (can exceed ±2^53-1)
+ * - Decimal64/Decimal128: Fixed-point, can have large integer parts
+ *
+ * Types that DON'T need special handling:
+ * - Float64: JS Number IS IEEE 754 double, so no precision loss
+ * - DateTime64: Represents time, handled separately
+ * - UInt32/Int32 and smaller: Always within safe range
+ *
  * Also handles nested types like Array(Tuple(String, UInt64)) by extracting the value type.
  */
 export const is64BitIntegerType = (chType: string): boolean => {
@@ -71,8 +82,20 @@ export const is64BitIntegerType = (chType: string): boolean => {
     type = type.slice('Nullable('.length, -1);
   }
 
-  // Direct match
+  // Handle LowCardinality wrapper
+  if (type.startsWith('LowCardinality(')) {
+    type = type.slice('LowCardinality('.length, -1);
+  }
+
+  // Direct match for 64-bit integer types
   if (type === 'UInt64' || type === 'Int64') {
+    return true;
+  }
+
+  // Decimal64 and Decimal128 can have values exceeding safe integer range
+  // Decimal64(S) has up to 18 digits, Decimal128(S) has up to 38 digits
+  // Note: Decimal32 max is ~4 billion, which is safe
+  if (type.startsWith('Decimal64') || type.startsWith('Decimal128')) {
     return true;
   }
 
@@ -82,6 +105,12 @@ export const is64BitIntegerType = (chType: string): boolean => {
   if (arrayTupleMatch) {
     const valueType = arrayTupleMatch[1];
     return valueType === 'UInt64' || valueType === 'Int64';
+  }
+
+  // Check for Array(Tuple(..., Decimal...)) pattern
+  const arrayTupleDecimalMatch = type.match(/^Array\(Tuple\([^,]+,\s*(Decimal(?:64|128)[^)]*)\)\)$/);
+  if (arrayTupleDecimalMatch) {
+    return true;
   }
 
   return false;

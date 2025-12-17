@@ -62,6 +62,24 @@ describe('bigIntUtils', () => {
       expect(is64BitIntegerType('Nullable(Int64)')).toBe(true);
     });
 
+    it('should return true for LowCardinality(UInt64)', () => {
+      expect(is64BitIntegerType('LowCardinality(UInt64)')).toBe(true);
+    });
+
+    it('should return true for Decimal64', () => {
+      expect(is64BitIntegerType('Decimal64(2)')).toBe(true);
+      expect(is64BitIntegerType('Decimal64(18)')).toBe(true);
+    });
+
+    it('should return true for Decimal128', () => {
+      expect(is64BitIntegerType('Decimal128(2)')).toBe(true);
+      expect(is64BitIntegerType('Decimal128(38)')).toBe(true);
+    });
+
+    it('should return true for Nullable(Decimal64)', () => {
+      expect(is64BitIntegerType('Nullable(Decimal64(2))')).toBe(true);
+    });
+
     it('should return false for UInt32', () => {
       expect(is64BitIntegerType('UInt32')).toBe(false);
     });
@@ -70,8 +88,12 @@ describe('bigIntUtils', () => {
       expect(is64BitIntegerType('Int32')).toBe(false);
     });
 
-    it('should return false for Float64', () => {
+    it('should return false for Float64 (JS Number IS float64)', () => {
       expect(is64BitIntegerType('Float64')).toBe(false);
+    });
+
+    it('should return false for Decimal32 (max ~4 billion is safe)', () => {
+      expect(is64BitIntegerType('Decimal32(2)')).toBe(false);
     });
 
     it('should return false for String', () => {
@@ -82,6 +104,15 @@ describe('bigIntUtils', () => {
       expect(is64BitIntegerType('')).toBe(false);
       expect(is64BitIntegerType(null as any)).toBe(false);
       expect(is64BitIntegerType(undefined as any)).toBe(false);
+    });
+
+    it('should return true for Array(Tuple(String, UInt64))', () => {
+      expect(is64BitIntegerType('Array(Tuple(String, UInt64))')).toBe(true);
+      expect(is64BitIntegerType('Array(Tuple(String, Int64))')).toBe(true);
+    });
+
+    it('should return false for Array(Tuple(String, UInt32))', () => {
+      expect(is64BitIntegerType('Array(Tuple(String, UInt32))')).toBe(false);
     });
   });
 

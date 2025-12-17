@@ -90,17 +90,13 @@ func NewDataFieldByType(fieldName, fieldType string) *data.Field {
 			return data.NewField(fieldName, nil, []time.Time{})
 		}
 
-		if isNullable {
-			return data.NewField(fieldName, nil, []*uint64{})
-		} else {
-			return data.NewField(fieldName, nil, []uint64{})
-		}
+		// Use string fields for UInt64 to preserve precision for values > 2^53-1
+		// See: https://github.com/Altinity/clickhouse-grafana/issues/832
+		return newStringField(fieldName, isNullable)
 	case "Int64":
-		if isNullable {
-			return data.NewField(fieldName, nil, []*int64{})
-		} else {
-			return data.NewField(fieldName, nil, []int64{})
-		}
+		// Use string fields for Int64 to preserve precision for values outside ±2^53-1
+		// See: https://github.com/Altinity/clickhouse-grafana/issues/832
+		return newStringField(fieldName, isNullable)
 	default:
 		if strings.HasPrefix(fieldType, "Decimal") {
 			return newFloat64Field(fieldName, isNullable)
@@ -194,7 +190,17 @@ func parseMapValue(value interface{}, isNullable bool) Value {
 
 func parseUInt64Value(value interface{}, isNullable bool) Value {
 	if value != nil {
-		ui64v, err := strconv.ParseUint(fmt.Sprintf("%v", value), 10, 64)
+		var ui64v uint64
+		var err error
+
+		// Handle json.Number type which preserves precision for large integers
+		// See: https://github.com/Altinity/clickhouse-grafana/issues/832
+		switch v := value.(type) {
+		case json.Number:
+			ui64v, err = strconv.ParseUint(string(v), 10, 64)
+		default:
+			ui64v, err = strconv.ParseUint(fmt.Sprintf("%v", value), 10, 64)
+		}
 
 		if err == nil {
 			if isNullable {
@@ -213,7 +219,17 @@ func parseUInt64Value(value interface{}, isNullable bool) Value {
 
 func parseInt64Value(value interface{}, isNullable bool) Value {
 	if value != nil {
-		i64v, err := strconv.ParseInt(fmt.Sprintf("%v", value), 10, 64)
+		var i64v int64
+		var err error
+
+		// Handle json.Number type which preserves precision for large integers
+		// See: https://github.com/Altinity/clickhouse-grafana/issues/832
+		switch v := value.(type) {
+		case json.Number:
+			i64v, err = strconv.ParseInt(string(v), 10, 64)
+		default:
+			i64v, err = strconv.ParseInt(fmt.Sprintf("%v", value), 10, 64)
+		}
 
 		if err == nil {
 			if isNullable {
@@ -228,6 +244,44 @@ func parseInt64Value(value interface{}, isNullable bool) Value {
 		return nil
 	} else {
 		return int64(0)
+	}
+}
+
+// parseUInt64AsStringValue returns UInt64 values as strings to preserve precision for values > 2^53-1
+// See: https://github.com/Altinity/clickhouse-grafana/issues/832
+func parseUInt64AsStringValue(value interface{}, isNullable bool) Value {
+	if value == nil {
+		if isNullable {
+			return nil
+		}
+		return "0"
+	}
+
+	// Handle json.Number type which preserves precision for large integers
+	switch v := value.(type) {
+	case json.Number:
+		return parseStringValue(string(v), isNullable)
+	default:
+		return parseStringValue(fmt.Sprintf("%v", value), isNullable)
+	}
+}
+
+// parseInt64AsStringValue returns Int64 values as strings to preserve precision for values outside ±2^53-1
+// See: https://github.com/Altinity/clickhouse-grafana/issues/832
+func parseInt64AsStringValue(value interface{}, isNullable bool) Value {
+	if value == nil {
+		if isNullable {
+			return nil
+		}
+		return "0"
+	}
+
+	// Handle json.Number type which preserves precision for large integers
+	switch v := value.(type) {
+	case json.Number:
+		return parseStringValue(string(v), isNullable)
+	default:
+		return parseStringValue(fmt.Sprintf("%v", value), isNullable)
 	}
 }
 
@@ -294,12 +348,16 @@ func ParseValue(fieldName string, fieldType string, tz *time.Location, value int
 				return parseTimestampValue(value, isNullable)
 			}
 
-			return parseUInt64Value(value, isNullable)
+			// Return as string to preserve precision for values > 2^53-1
+			// See: https://github.com/Altinity/clickhouse-grafana/issues/832
+			return parseUInt64AsStringValue(value, isNullable)
 		case "Int64":
 			if fieldName == "t" {
 				return parseTimestampValue(value, isNullable)
 			}
-			return parseInt64Value(value, isNullable)
+			// Return as string to preserve precision for values outside ±2^53-1
+			// See: https://github.com/Altinity/clickhouse-grafana/issues/832
+			return parseInt64AsStringValue(value, isNullable)
 		default:
 			if strings.HasPrefix(fieldType, "Decimal") {
 				return parseFloatValue(value, isNullable)

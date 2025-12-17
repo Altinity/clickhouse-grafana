@@ -288,6 +288,64 @@ describe('sql-series. toTable unit tests', () => {
 
     expect(toTable(input)).toEqual(expectedOutput);
   });
+
+  // Issue #832: UInt64 precision tests
+  // Note: Go backend now sends UInt64/Int64 as strings to preserve precision
+  it('should preserve UInt64 values as strings', () => {
+    const input = {
+      series: [{ id: '1234567890', value: '9007199254740991' }],
+      meta: [
+        { name: 'id', type: 'UInt64' },
+        { name: 'value', type: 'UInt64' },
+      ],
+    };
+
+    const result = toTable(input);
+    // UInt64 values are kept as strings to preserve precision
+    expect(result[0].rows[0][0]).toBe('1234567890');
+    expect(result[0].rows[0][1]).toBe('9007199254740991');
+  });
+
+  it('should preserve precision for large UInt64 values as strings', () => {
+    const input = {
+      series: [{ id: '11189782786942380395' }],
+      meta: [{ name: 'id', type: 'UInt64' }],
+    };
+
+    const result = toTable(input);
+    // Value exceeds MAX_SAFE_INTEGER, should remain as string
+    expect(result[0].rows[0][0]).toBe('11189782786942380395');
+  });
+
+  it('should preserve precision for Nullable(UInt64) values', () => {
+    const input = {
+      series: [
+        { id: '11189782786942380395' },
+        { id: null },
+        { id: '123' },
+      ],
+      meta: [{ name: 'id', type: 'Nullable(UInt64)' }],
+    };
+
+    const result = toTable(input);
+    expect(result[0].rows[0][0]).toBe('11189782786942380395'); // String preserved
+    expect(result[0].rows[1][0]).toBeNull(); // Null preserved
+    expect(result[0].rows[2][0]).toBe('123'); // String preserved
+  });
+
+  it('should preserve precision for Int64 values', () => {
+    const input = {
+      series: [
+        { value: '-9223372036854775808' }, // Min Int64
+        { value: '-123' },
+      ],
+      meta: [{ name: 'value', type: 'Int64' }],
+    };
+
+    const result = toTable(input);
+    expect(result[0].rows[0][0]).toBe('-9223372036854775808'); // String preserved
+    expect(result[0].rows[1][0]).toBe('-123'); // String preserved
+  });
 });
 
 describe('sql-series. toTimeSeries unit tests', () => {
@@ -373,6 +431,108 @@ describe('sql-series. toTimeSeries unit tests', () => {
 
     const result = toTimeSeries(false, true, selfMock);
     expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 2000]}, {"config": {"links": []}, "name": "value", "values": [null, 20]}], "length": 2, "refId": undefined}]);
+  });
+
+  // Issue #832: UInt64 precision tests for time series
+  it('should preserve precision for safe UInt64 values in time series', () => {
+    const input = {
+      series: [
+        { time: 1000, value: '1234567890' },
+        { time: 2000, value: '9007199254740991' }, // MAX_SAFE_INTEGER
+      ],
+      meta: [
+        { name: 'time', type: 'UInt32' },
+        { name: 'value', type: 'UInt64' },
+      ],
+      keys: [],
+      from: 0,
+      to: 3000,
+      tillNow: false,
+    };
+
+    const result = toTimeSeries(false, false, input);
+    expect(result[0].fields[1].values[0]).toBe(1234567890); // Safe integer -> number
+    expect(result[0].fields[1].values[1]).toBe(9007199254740991); // MAX_SAFE_INTEGER -> number
+  });
+
+  it('should preserve precision for unsafe UInt64 values as strings in time series', () => {
+    const input = {
+      series: [
+        { time: 1000, value: '11189782786942380395' }, // Issue #832 value
+        { time: 2000, value: '18446744073709551615' }, // Max UInt64
+      ],
+      meta: [
+        { name: 'time', type: 'UInt32' },
+        { name: 'value', type: 'UInt64' },
+      ],
+      keys: [],
+      from: 0,
+      to: 3000,
+      tillNow: false,
+    };
+
+    const result = toTimeSeries(false, false, input);
+    // Unsafe integers should be kept as strings to preserve precision
+    expect(result[0].fields[1].values[0]).toBe('11189782786942380395');
+    expect(result[0].fields[1].values[1]).toBe('18446744073709551615');
+  });
+
+  it('should handle Array(Tuple(String, UInt64)) from $columns macro', () => {
+    const input = {
+      series: [
+        { time: 1000, requests: [['Chrome', '11189782786942380395'], ['Firefox', '123']] },
+        { time: 2000, requests: [['Chrome', '9007199254740992'], ['Firefox', '456']] },
+      ],
+      meta: [
+        { name: 'time', type: 'UInt32' },
+        { name: 'requests', type: 'Array(Tuple(String, UInt64))' },
+      ],
+      keys: [],
+      from: 0,
+      to: 3000,
+      tillNow: false,
+    };
+
+    const result = toTimeSeries(false, false, input);
+
+    // Should have separate series for Chrome and Firefox
+    expect(result.length).toBe(2);
+
+    // Find Chrome series
+    const chromeSeries = result.find((s: any) => s.fields[1].name === 'Chrome');
+    expect(chromeSeries).toBeDefined();
+    // Large UInt64 should be string, small should be number
+    expect(chromeSeries.fields[1].values[0]).toBe('11189782786942380395');
+    expect(chromeSeries.fields[1].values[1]).toBe('9007199254740992'); // Just above MAX_SAFE_INTEGER
+
+    // Find Firefox series
+    const firefoxSeries = result.find((s: any) => s.fields[1].name === 'Firefox');
+    expect(firefoxSeries).toBeDefined();
+    expect(firefoxSeries.fields[1].values[0]).toBe(123); // Safe integer -> number
+    expect(firefoxSeries.fields[1].values[1]).toBe(456); // Safe integer -> number
+  });
+
+  it('should handle Nullable(UInt64) in time series', () => {
+    const input = {
+      series: [
+        { time: 1000, value: '11189782786942380395' },
+        { time: 2000, value: null },
+        { time: 3000, value: '42' },
+      ],
+      meta: [
+        { name: 'time', type: 'UInt32' },
+        { name: 'value', type: 'Nullable(UInt64)' },
+      ],
+      keys: [],
+      from: 0,
+      to: 4000,
+      tillNow: false,
+    };
+
+    const result = toTimeSeries(false, false, input);
+    expect(result[0].fields[1].values[0]).toBe('11189782786942380395'); // Large -> string
+    expect(result[0].fields[1].values[1]).toBe(null); // Null preserved
+    expect(result[0].fields[1].values[2]).toBe(42); // Safe -> number
   });
 });
 

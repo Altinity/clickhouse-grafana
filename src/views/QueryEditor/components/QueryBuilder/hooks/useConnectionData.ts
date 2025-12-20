@@ -131,6 +131,9 @@ export const useConnectionData = (query, datasource) => {
   const querySegment = useCallback(
     async (type: any) => {
       let query = buildExploreQuery(type);
+      if (!query) {
+        return [];
+      }
       try {
         return await datasource.metricFindQuery(query);
       } catch (error: any) {
@@ -191,7 +194,7 @@ export const useConnectionData = (query, datasource) => {
   }, [selectedDatabase, querySegment]);
 
   useEffect(() => {
-    if (!!selectedDatabase || !!selectedTable || !!selectedDateTimeType) {
+    if (selectedDatabase && selectedTable && selectedDateTimeType) {
       (async () => {
         try {
           const timestampColumns = await querySegment(selectedDateTimeType);
@@ -205,7 +208,7 @@ export const useConnectionData = (query, datasource) => {
   }, [selectedTable, selectedDatabase, selectedDateTimeType, querySegment]);
 
   useEffect(() => {
-    if (!!selectedDatabase || !!selectedTable) {
+    if (selectedDatabase && selectedTable) {
       (async () => {
         try {
           const dateColumns = await querySegment('DATE');

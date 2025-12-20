@@ -542,7 +542,7 @@ export class CHDataSource
     const queryProcessing = async () => {
       try {
         this.options = options;
-        const targets = options.targets.filter((target) => !target.hide && target.query);
+        const targets = options.targets.filter((target) => !target.hide && target.query?.trim());
         return await this.executeQueries(targets, options);
       } catch (error) {
         console.error('Query processing failed:', error);
@@ -556,7 +556,7 @@ export class CHDataSource
   queryVariables(options: DataQueryRequest<CHQuery>): any {
     const queryProcessing = async () => {
       this.options = options;
-      const targets = options.targets.filter((target) => !target.hide && target?.query || typeof target === 'string');
+      const targets = options.targets.filter((target) => !target.hide && (target?.query?.trim() || typeof target === 'string'));
       const queries = await Promise.all(targets.map(async (target) => {
         return this.createQuery(options, (typeof target === 'string') ? {query: target, datasourceMode: DatasourceMode.Variable} : target)
       }));

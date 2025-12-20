@@ -132,7 +132,7 @@ def open_dashboard(self, dashboard_name):
 
     with When("I go to dashboards view"):
         with delay():
-            open_dashboards_view()
+            open_dashboards_view(wait_dashboard_name=dashboard_name)
 
     with When("I find dashboard"):
         with delay(after=0.5):

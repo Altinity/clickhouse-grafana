@@ -228,17 +228,22 @@ const needsCommaFormat = (query: string, variableName: string): boolean => {
     return false;
   }
 
-  // Match IN clause variations and tuple function
+  // Match IN clause variations (both parentheses and square brackets) and tuple function
   // Pattern breakdown:
   // - (?:NOT\s+)? - optional NOT keyword
   // - (?:GLOBAL\s+)? - optional GLOBAL keyword
-  // - IN\s*\(\s* - IN followed by opening paren
+  // - IN\s*\(\s* or IN\s*\[\s* - IN followed by opening paren or bracket
   // - \$\{?variableName\}? - variable with optional braces
-  // - \s*\) - closing paren
+  // - \s*\) or \s*\] - closing paren or bracket
   // OR
   // - \btuple\s*\( - tuple function call
+  // Using separate patterns to ensure matching brackets (not mixed like "IN ($var]")
   const pattern = new RegExp(
+    // IN with parentheses: IN ($var), NOT IN ($var), GLOBAL IN ($var)
     `(?:NOT\\s+)?(?:GLOBAL\\s+)?IN\\s*\\(\\s*\\$\\{?${variableName}\\}?\\s*\\)|` +
+    // IN with square brackets: IN [$var], NOT IN [$var], GLOBAL IN [$var]
+    `(?:NOT\\s+)?(?:GLOBAL\\s+)?IN\\s*\\[\\s*\\$\\{?${variableName}\\}?\\s*\\]|` +
+    // tuple function
     `\\btuple\\s*\\(\\s*\\$\\{?${variableName}\\}?`,
     'i'
   );

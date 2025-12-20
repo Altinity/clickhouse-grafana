@@ -512,6 +512,108 @@ describe('Variable Interpolation', () => {
     });
   });
 
+  describe('Square bracket IN clause support (Issue #838)', () => {
+    it('should format arrays WITHOUT brackets for IN [$var]', () => {
+      const query = 'SELECT * FROM table WHERE name IN [$names]';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'"); // WITHOUT brackets - user provides them
+    });
+
+    it('should format arrays WITHOUT brackets for NOT IN [$var]', () => {
+      const query = 'SELECT * FROM table WHERE name NOT IN [$names]';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'");
+    });
+
+    it('should format arrays WITHOUT brackets for GLOBAL IN [$var]', () => {
+      const query = 'SELECT * FROM table WHERE name GLOBAL IN [$names]';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'");
+    });
+
+    it('should format arrays WITHOUT brackets for GLOBAL NOT IN [$var]', () => {
+      const query = 'SELECT * FROM table WHERE name GLOBAL NOT IN [$names]';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'");
+    });
+
+    it('should handle numeric arrays in square brackets', () => {
+      const query = 'SELECT * FROM table WHERE id IN [$ids]';
+      const variables = [{ name: 'ids', current: { value: [1, 2, 3] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'ids', multi: true, includeAll: false, options: [{ value: 1 }] };
+      const result = interpolateFn([1, 2, 3], variable);
+      expect(result).toBe('1,2,3');
+    });
+
+    it('should handle braced variable syntax in square brackets', () => {
+      const query = 'SELECT * FROM table WHERE name IN [${names}]';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'");
+    });
+
+    it('should NOT match mixed brackets IN ($var] - should use array format', () => {
+      // This is invalid SQL, should fall through to array format
+      const query = 'SELECT * FROM table WHERE name IN ($names]';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      // Should return array format since mixed brackets don't match
+      expect(result).toBe("['alice', 'bob']");
+    });
+
+    it('should handle mixed IN clause types in same query', () => {
+      const query = 'WHERE id IN [$ids] AND name IN ($names) AND hasAny($tags, col)';
+      const variables = [
+        { name: 'ids', current: { value: [1, 2] } },
+        { name: 'names', current: { value: ['a', 'b'] } },
+        { name: 'tags', current: { value: ['t1', 't2'] } }
+      ];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+
+      // IN [$ids] - square brackets
+      expect(interpolateFn([1, 2], { name: 'ids', multi: true, includeAll: false, options: [{ value: 1 }] })).toBe('1,2');
+      // IN ($names) - parentheses
+      expect(interpolateFn(['a', 'b'], { name: 'names', multi: true, includeAll: false, options: [{ value: 'a' }] })).toBe("'a','b'");
+      // hasAny($tags) - array function
+      expect(interpolateFn(['t1', 't2'], { name: 'tags', multi: true, includeAll: false, options: [{ value: 't1' }] })).toBe("['t1', 't2']");
+    });
+
+    it('should handle spaces around variable in square brackets', () => {
+      const query = 'SELECT * FROM table WHERE name IN [ $names ]';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'");
+    });
+
+    it('should be case insensitive for IN keyword with square brackets', () => {
+      const query = 'SELECT * FROM table WHERE name in [$names]';
+      const variables = [{ name: 'names', current: { value: ['alice', 'bob'] } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'names', multi: true, includeAll: false, options: [{ value: 'alice' }] };
+      const result = interpolateFn(['alice', 'bob'], variable);
+      expect(result).toBe("'alice','bob'");
+    });
+  });
+
   describe('createContextAwareInterpolation wrapper', () => {
     it('should work with the wrapper function', () => {
       const query = 'SELECT * FROM $container.$namespace.svc';

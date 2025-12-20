@@ -710,6 +710,9 @@ export class CHDataSource
   }
 
   async metricFindQuery(query: string, options?: any) {
+    if (!query || !query.trim()) {
+      return [];
+    }
     let interpolatedQuery: string;
     const wildcardChar = '%';
     const searchFilterVariableName = '__searchFilter';

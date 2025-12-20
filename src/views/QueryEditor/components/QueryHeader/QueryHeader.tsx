@@ -21,6 +21,7 @@ export const QueryHeader = ({
 
   const onEditorModeChange = (editorMode: EditorMode) => {
     setEditorMode(editorMode);
+    onChange({ ...query, editorMode });
   };
 
   useEffect(() => {
@@ -58,7 +59,7 @@ export const QueryHeader = ({
             size={'sm'}
             icon="arrow-right"
             style={{ marginLeft: '10px' }}
-            onClick={() => setEditorMode(EditorMode.SQL)}
+            onClick={() => onEditorModeChange(EditorMode.SQL)}
           >
             Go to Query
           </Button>

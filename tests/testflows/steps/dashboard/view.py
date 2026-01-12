@@ -204,8 +204,26 @@ def click_menu_button_for_panel(self, panel_name):
 
 
 @TestStep(When)
+def move_cursor_to_panel_header(self, panel_name):
+    """Move cursor to panel header, this makes menu button be visible."""
+
+    ActionChains(self.context.driver).move_to_element(
+        locators.panel(panel_name=panel_name)
+    ).perform()
+
+
+@TestStep(When)
 def move_cursor_to_menu_button(self, panel_name):
     """Move cursor to menu button, this makes menu button be visible."""
+
+    # First hover over panel header to make menu button visible in Grafana 11+
+    move_cursor_to_panel_header(panel_name=panel_name)
+
+    # Wait for the menu button to appear
+    ui.wait_for_element_to_be_present(
+        select_type=SelectBy.CSS_SELECTOR,
+        element=f"[data-testid='data-testid Panel menu {panel_name}']",
+    )
 
     ActionChains(self.context.driver).move_to_element(
         locators.menu_button_for_panel(panel_name=panel_name)
@@ -254,6 +272,9 @@ def scroll_to_panel(self, panel_name):
 @TestStep(When)
 def open_dropdown_menu_for_panel(self, panel_name):
     """Open dropdown menu for panel."""
+
+    with By("waiting for panel to be visible"):
+        wait_panel(panel_name=panel_name)
 
     with By("moving cursor to menu button"):
         with delay():

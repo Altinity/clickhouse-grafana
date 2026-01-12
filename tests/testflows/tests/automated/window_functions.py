@@ -111,8 +111,9 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
     with Then("I save two csv files"):
         with delay():
             with By("saving container id"):
+                # Match selenium container - supports both selenium (5900) and seleniarm (7900) images
                 r = self.context.cluster.command(
-                    None, "docker ps -a | grep '4444/tcp, 5900/tcp'"
+                    None, "docker ps -a | grep -E '4444/tcp.*(5900|7900)/tcp'"
                 )
                 container_id = r.output.split(" ")[0]
                 column_name = "" if column is None else "/column" + column[4]

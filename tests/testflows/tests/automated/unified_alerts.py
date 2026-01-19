@@ -18,11 +18,6 @@ from requirements.requirements import *
 
 
 @TestScenario
-@XFail(
-    "Grafana bug: expression query fields (type, reducer, conditions) are stripped "
-    "when creating alerts from panel. See https://github.com/grafana/grafana/issues/107476 "
-    "and PR #112794 which introduced the regression."
-)
 def check_red_alert(self):
     """Check that grafana plugin supports red unified alerts."""
 
@@ -81,11 +76,6 @@ def check_red_alert(self):
 
 
 @TestScenario
-@XFail(
-    "Grafana bug: expression query fields (type, reducer, conditions) are stripped "
-    "when creating alerts from panel. See https://github.com/grafana/grafana/issues/107476 "
-    "and PR #112794 which introduced the regression."
-)
 def check_green_alert(self):
     """Check that grafana plugin supports green unified alerts."""
 

@@ -37,6 +37,12 @@ ffails = {
     "/Grafana Datasource Plugin For Clickhouse/sql editor/hash exclamation comment/":
         (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
     ,
+    "/Grafana Datasource Plugin For Clickhouse/unified alerts/check red alert":
+        (XFail, "Grafana bug: expression query fields stripped. See https://github.com/grafana/grafana/issues/107476")
+    ,
+    "/Grafana Datasource Plugin For Clickhouse/unified alerts/check green alert":
+        (XFail, "Grafana bug: expression query fields stripped. See https://github.com/grafana/grafana/issues/107476")
+    ,
 }
 
 xfails = {

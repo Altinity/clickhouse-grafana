@@ -11,41 +11,6 @@ import steps.ui as ui
 
 
 @TestStep(When)
-def open_alerting_list_endpoint(self, endpoint=None):
-    """Open alerting list view."""
-    if endpoint is None:
-        endpoint = f"{self.context.endpoint}alerting/list"
-
-    ui.open_endpoint(endpoint=endpoint)
-
-
-@TestStep(When)
-def open_new_alert_rule_endpoint(self, endpoint=None):
-    """Open new alert rule view directly."""
-    if endpoint is None:
-        endpoint = f"{self.context.endpoint}alerting/new/alerting"
-
-    ui.open_endpoint(endpoint=endpoint)
-
-
-@TestStep(When)
-def select_datasource_in_alert(self, datasource_name):
-    """Select datasource in alert rule query."""
-    driver = current().context.driver
-    # Click on datasource selector
-    datasource_selector = driver.find_element(
-        SelectBy.CSS_SELECTOR, '[data-testid="data-testid datasource-picker select container"]'
-    )
-    datasource_selector.click()
-    # Type datasource name and select
-    input_field = driver.find_element(
-        SelectBy.CSS_SELECTOR, '[data-testid="data-testid datasource-picker select container"] input'
-    )
-    input_field.send_keys(datasource_name)
-    input_field.send_keys(Keys.ENTER)
-
-
-@TestStep(When)
 def click_new_alert_rule_button(self):
     """Click new alert rule button."""
 

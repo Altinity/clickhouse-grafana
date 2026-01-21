@@ -136,7 +136,7 @@ class Locators:
     @property
     def values_preview(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//*[./text()='Preview of values']/../div")
+        return driver.find_element(SelectBy.XPATH, f"//*[contains(text(), 'Preview of values')]/../div")
 
     @property
     def query_field_for_variable(self):

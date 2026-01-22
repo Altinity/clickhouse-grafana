@@ -1,7 +1,7 @@
 ARG grafana_version=latest
-ARG grafana_image=grafana
+ARG grafana_image=grafana/grafana
 
-FROM grafana/${grafana_image}:${grafana_version}
+FROM ${grafana_image}:${grafana_version}
 
 # Make it as simple as possible to access the grafana instance for development purposes
 # Do NOT enable these settings in a public facing / production grafana instance

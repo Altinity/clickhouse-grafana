@@ -82,13 +82,13 @@ services:
 
   grafana_legacy_alerts:
     profiles: [ test ]
-    image: ${GRAFANA_IMAGE:-grafana/grafana}:${GRAFANA_VERSION:-10.4.3}
+    image: grafana/grafana:10.4.3
     user: root
     build:
       context: ./.config
       args:
-        grafana_image: ${GRAFANA_IMAGE:-grafana}
-        grafana_version: ${GRAFANA_VERSION:-latest}
+        grafana_image: grafana
+        grafana_version: 10.4.3
     volumes:
       - ./dist/:/var/lib/grafana/plugins/vertamedia-clickhouse-datasource/
       - ./docker/grafana/provisioning/:/etc/grafana/provisioning/

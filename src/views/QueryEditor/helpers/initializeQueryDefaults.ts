@@ -22,7 +22,7 @@ export const initializeQueryDefaults = (
     adHocFilters: query.adHocFilters || [],
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
-    editorMode: query.database && query.table ? EditorMode.SQL : EditorMode.Builder,
+    editorMode: query.editorMode ?? (query.database && query.table ? EditorMode.SQL : EditorMode.Builder),
     contextWindowSize: query.contextWindowSize || '10',
     adHocValuesQuery: query.adHocValuesQuery || '',
   };
@@ -133,7 +133,7 @@ export const initializeQueryDefaultsForVariables = (
     adHocFilters: query.adHocFilters || [],
     query: query.query || defaultQuery,
     formattedQuery: query.formattedQuery || query.query,
-    editorMode: query.database && query.table ? EditorMode.SQL : EditorMode.Builder,
+    editorMode: query.editorMode ?? (query.database && query.table ? EditorMode.SQL : EditorMode.Builder),
     contextWindowSize: query.contextWindowSize || '10',
     adHocValuesQuery: query.adHocValuesQuery || '',
   };

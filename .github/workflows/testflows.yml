@@ -11,6 +11,7 @@ on:
       - "*"
 
 env:
+  GRAFANA_VERSION: "12.4.0-20977568970"
   testflows_logs: |
     ./testflows_logs/*
   code_coverage: |

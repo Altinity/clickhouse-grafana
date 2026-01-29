@@ -40,7 +40,7 @@ export const useQueryState = (query, onChange, datasource) => {
                 interval: '',
                 query: defaultQuery,
                 formattedQuery: query.query,
-                editorMode: EditorMode.Builder,
+                editorMode: query.editorMode ?? EditorMode.Builder,
                 database: undefined,
                 table: undefined,
                 dateColDataType: undefined,

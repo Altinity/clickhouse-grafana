@@ -69,7 +69,72 @@ func fetchTimeZoneFromFieldType(fieldType string, tzFromServer *time.Location) *
 	}
 }
 
+// maxSafeInteger is JavaScript's Number.MAX_SAFE_INTEGER (2^53 - 1)
+const maxSafeInteger uint64 = 9007199254740991
+
+// minSafeIntegerAbs is the absolute value of JavaScript's Number.MIN_SAFE_INTEGER
+const minSafeIntegerAbs uint64 = 9007199254740991
+
+// IsValueSafeForFloat64 checks if a value can be safely represented as float64 without precision loss.
+// Returns true if the value is within JavaScript's safe integer range.
+func IsValueSafeForFloat64(value interface{}, fieldType string) bool {
+	if value == nil {
+		return true
+	}
+
+	// Get the string representation
+	var strVal string
+	switch v := value.(type) {
+	case json.Number:
+		strVal = string(v)
+	case string:
+		strVal = v
+	default:
+		strVal = fmt.Sprintf("%v", value)
+	}
+
+	// Normalize the type
+	normalizedType := fieldType
+	if strings.HasPrefix(normalizedType, "LowCardinality(") {
+		normalizedType = strings.TrimSuffix(strings.TrimPrefix(normalizedType, "LowCardinality("), ")")
+	}
+	if strings.HasPrefix(normalizedType, "Nullable(") {
+		normalizedType = strings.TrimSuffix(strings.TrimPrefix(normalizedType, "Nullable("), ")")
+	}
+
+	switch normalizedType {
+	case "UInt64":
+		ui64, err := strconv.ParseUint(strVal, 10, 64)
+		if err != nil {
+			return true // Can't parse, assume safe
+		}
+		return ui64 <= maxSafeInteger
+	case "Int64":
+		i64, err := strconv.ParseInt(strVal, 10, 64)
+		if err != nil {
+			return true // Can't parse, assume safe
+		}
+		if i64 < 0 {
+			return uint64(-i64) <= minSafeIntegerAbs
+		}
+		return uint64(i64) <= maxSafeInteger
+	default:
+		return true
+	}
+}
+
+// NewDataFieldByType creates a data field with appropriate type.
+// For UInt64/Int64, defaults to string to preserve precision.
+// Use NewDataFieldByTypeOptimized for dynamic type selection based on actual values.
 func NewDataFieldByType(fieldName, fieldType string) *data.Field {
+	return NewDataFieldByTypeOptimized(fieldName, fieldType, true)
+}
+
+// NewDataFieldByTypeOptimized creates a data field with appropriate type.
+// For UInt64/Int64, uses needsStringPrecision to decide between string (true) or float64 (false).
+// This allows for optimal type selection: use float64 when all values are safe (for alerts),
+// or string when precision must be preserved (for large integers).
+func NewDataFieldByTypeOptimized(fieldName, fieldType string, needsStringPrecision bool) *data.Field {
 
 	if strings.HasPrefix(fieldType, "LowCardinality") {
 		fieldType = strings.TrimSuffix(strings.TrimPrefix(fieldType, "LowCardinality("), ")")
@@ -90,13 +155,19 @@ func NewDataFieldByType(fieldName, fieldType string) *data.Field {
 			return data.NewField(fieldName, nil, []time.Time{})
 		}
 
-		// Use string fields for UInt64 to preserve precision for values > 2^53-1
+		// Use string for precision preservation, or float64 for Grafana alert compatibility
 		// See: https://github.com/Altinity/clickhouse-grafana/issues/832
-		return newStringField(fieldName, isNullable)
+		if needsStringPrecision {
+			return newStringField(fieldName, isNullable)
+		}
+		return newFloat64Field(fieldName, isNullable)
 	case "Int64":
-		// Use string fields for Int64 to preserve precision for values outside ±2^53-1
+		// Use string for precision preservation, or float64 for Grafana alert compatibility
 		// See: https://github.com/Altinity/clickhouse-grafana/issues/832
-		return newStringField(fieldName, isNullable)
+		if needsStringPrecision {
+			return newStringField(fieldName, isNullable)
+		}
+		return newFloat64Field(fieldName, isNullable)
 	default:
 		if strings.HasPrefix(fieldType, "Decimal") {
 			return newFloat64Field(fieldName, isNullable)
@@ -285,6 +356,72 @@ func parseInt64AsStringValue(value interface{}, isNullable bool) Value {
 	}
 }
 
+// parseUInt64AsFloat64Value returns UInt64 values as float64 for Grafana alert compatibility.
+// Note: precision may be lost for values > 2^53-1.
+func parseUInt64AsFloat64Value(value interface{}, isNullable bool) Value {
+	if value == nil {
+		if isNullable {
+			return nil
+		}
+		return 0.0
+	}
+
+	var strVal string
+	switch v := value.(type) {
+	case json.Number:
+		strVal = string(v)
+	default:
+		strVal = fmt.Sprintf("%v", value)
+	}
+
+	ui64, err := strconv.ParseUint(strVal, 10, 64)
+	if err != nil {
+		if isNullable {
+			return nil
+		}
+		return 0.0
+	}
+
+	fv := float64(ui64)
+	if isNullable {
+		return &fv
+	}
+	return fv
+}
+
+// parseInt64AsFloat64Value returns Int64 values as float64 for Grafana alert compatibility.
+// Note: precision may be lost for values outside ±2^53-1.
+func parseInt64AsFloat64Value(value interface{}, isNullable bool) Value {
+	if value == nil {
+		if isNullable {
+			return nil
+		}
+		return 0.0
+	}
+
+	var strVal string
+	switch v := value.(type) {
+	case json.Number:
+		strVal = string(v)
+	default:
+		strVal = fmt.Sprintf("%v", value)
+	}
+
+	i64, err := strconv.ParseInt(strVal, 10, 64)
+	if err != nil {
+		if isNullable {
+			return nil
+		}
+		return 0.0
+	}
+
+	fv := float64(i64)
+	if isNullable {
+		return &fv
+	}
+	return fv
+}
+
 func parseTimestampValue(value interface{}, isNullable bool) Value {
 	if value != nil {
 		strValue := fmt.Sprintf("%v", value)
@@ -328,11 +465,19 @@ func parseDateTimeValue(value interface{}, layout string, timezone *time.Locatio
 	}
 }
 
+// ParseValue parses a value with default behavior (string for UInt64/Int64 to preserve precision).
 func ParseValue(fieldName string, fieldType string, tz *time.Location, value interface{}, isNullable bool) Value {
+	return ParseValueOptimized(fieldName, fieldType, tz, value, isNullable, true)
+}
+
+// ParseValueOptimized parses a value with configurable precision handling for UInt64/Int64.
+// When needsStringPrecision is true, UInt64/Int64 values are returned as strings.
+// When needsStringPrecision is false, UInt64/Int64 values are returned as float64 (for alert compatibility).
+func ParseValueOptimized(fieldName string, fieldType string, tz *time.Location, value interface{}, isNullable bool, needsStringPrecision bool) Value {
 	if strings.HasPrefix(fieldType, "Nullable") {
-		return ParseValue(fieldName, strings.TrimSuffix(strings.TrimPrefix(fieldType, "Nullable("), ")"), tz, value, true)
+		return ParseValueOptimized(fieldName, strings.TrimSuffix(strings.TrimPrefix(fieldType, "Nullable("), ")"), tz, value, true, needsStringPrecision)
 	} else if strings.HasPrefix(fieldType, "LowCardinality") {
-		return ParseValue(fieldName, strings.TrimSuffix(strings.TrimPrefix(fieldType, "LowCardinality("), ")"), tz, value, isNullable)
+		return ParseValueOptimized(fieldName, strings.TrimSuffix(strings.TrimPrefix(fieldType, "LowCardinality("), ")"), tz, value, isNullable, needsStringPrecision)
 	} else if strings.HasPrefix(fieldType, "Map(") && strings.HasSuffix(fieldType, ")") {
 		return parseMapValue(value, isNullable)
 	} else {
@@ -348,16 +493,22 @@ func ParseValue(fieldName string, fieldType string, tz *time.Location, value int
 				return parseTimestampValue(value, isNullable)
 			}
 
-			// Return as string to preserve precision for values > 2^53-1
+			// Return as string to preserve precision, or float64 for alert compatibility
 			// See: https://github.com/Altinity/clickhouse-grafana/issues/832
-			return parseUInt64AsStringValue(value, isNullable)
+			if needsStringPrecision {
+				return parseUInt64AsStringValue(value, isNullable)
+			}
+			return parseUInt64AsFloat64Value(value, isNullable)
 		case "Int64":
 			if fieldName == "t" {
 				return parseTimestampValue(value, isNullable)
 			}
-			// Return as string to preserve precision for values outside ±2^53-1
+			// Return as string to preserve precision, or float64 for alert compatibility
 			// See: https://github.com/Altinity/clickhouse-grafana/issues/832
-			return parseInt64AsStringValue(value, isNullable)
+			if needsStringPrecision {
+				return parseInt64AsStringValue(value, isNullable)
+			}
+			return parseInt64AsFloat64Value(value, isNullable)
 		default:
 			if strings.HasPrefix(fieldType, "Decimal") {
 				return parseFloatValue(value, isNullable)

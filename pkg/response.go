@@ -72,6 +72,10 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 	timestampFieldType := r.Meta[timeStampFieldIdx].Type
 
 	timeZonesMap, metaTypes := r.analyzeResponseMeta(fetchTZ)
+
+	// Analyze which UInt64/Int64 columns need string precision
+	needsStringPrecision := r.analyzeColumnPrecisionNeeds(metaTypes)
+
 	// 1 value field + 1 timestamp field
 	hasMultipleTimeSeries := (len(r.Meta) - len(labelFieldsMap)) > 2
 
@@ -98,7 +102,7 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 					if hasMultipleTimeSeries {
 						frameName += ", " + fieldName
 					}
-					r.createFrameIfNotExistsAndAddPoint(query, framesMap, frameName, timeStampDataFieldMap, timestampFieldName, valueDataFieldMap, fieldName, metaTypes[fieldName], timestampValue, timeZonesMap, fieldValue)
+					r.createFrameIfNotExistsAndAddPoint(query, framesMap, frameName, timeStampDataFieldMap, timestampFieldName, valueDataFieldMap, fieldName, metaTypes[fieldName], timestampValue, timeZonesMap, fieldValue, needsStringPrecision)
 					valueDataFieldMap[frameName].Labels = frameLabels
 				}
 			}
@@ -132,7 +136,7 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 										}
 										r.createFrameIfNotExistsAndAddPoint(
 											query, framesMap, tsNameString, timeStampDataFieldMap, timestampFieldName, valueDataFieldMap,
-											fieldName, valueType, timestampValue, timeZonesMap, tuple[1],
+											fieldName, valueType, timestampValue, timeZonesMap, tuple[1], needsStringPrecision,
 										)
 
 									default:
@@ -147,7 +151,7 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 
 					} else {
 						frameName := fieldName
-						r.createFrameIfNotExistsAndAddPoint(query, framesMap, frameName, timeStampDataFieldMap, timestampFieldName, valueDataFieldMap, fieldName, metaTypes[fieldName], timestampValue, timeZonesMap, fieldValue)
+						r.createFrameIfNotExistsAndAddPoint(query, framesMap, frameName, timeStampDataFieldMap, timestampFieldName, valueDataFieldMap, fieldName, metaTypes[fieldName], timestampValue, timeZonesMap, fieldValue, needsStringPrecision)
 					}
 				}
 			}
@@ -173,10 +177,61 @@ func (r *Response) analyzeResponseMeta(fetchTZ FetchTZFunc) (map[string]*time.Lo
 	return timeZonesMap, metaTypes
 }
 
-func (r *Response) createFrameIfNotExistsAndAddPoint(query *Query, framesMap map[string]*data.Frame, frameName string, timeStampDataFieldMap map[string]*data.Field, timestampFieldName string, valueDataFieldMap map[string]*data.Field, fieldName string, fieldType string, timestampValue time.Time, timeZonesMap map[string]*time.Location, fieldValue interface{}) {
+// analyzeColumnPrecisionNeeds scans all data to determine which UInt64/Int64 columns
+// contain values that exceed JavaScript's safe integer range.
+// Returns a map of fieldName -> needsStringPrecision.
+// If ALL values in a column are safe for float64, needsStringPrecision is false (better for Grafana alerts).
+// If ANY value exceeds the safe range, needsStringPrecision is true (preserves precision).
+func (r *Response) analyzeColumnPrecisionNeeds(metaTypes map[string]string) map[string]bool {
+	needsStringPrecision := map[string]bool{}
+
+	// Initialize all columns to false (assume safe for float64)
+	for fieldName, fieldType := range metaTypes {
+		normalizedType := fieldType
+		if strings.HasPrefix(normalizedType, "LowCardinality(") {
+			normalizedType = strings.TrimSuffix(strings.TrimPrefix(normalizedType, "LowCardinality("), ")")
+		}
+		if strings.HasPrefix(normalizedType, "Nullable(") {
+			normalizedType = strings.TrimSuffix(strings.TrimPrefix(normalizedType, "Nullable("), ")")
+		}
+		if normalizedType == "UInt64" || normalizedType == "Int64" {
+			needsStringPrecision[fieldName] = false
+		}
+	}
+
+	// Scan data to find any unsafe values
+	for _, row := range r.Data {
+		for fieldName, fieldValue := range row {
+			// Skip if already marked as needing string precision
+			if needsString, exists := needsStringPrecision[fieldName]; exists && needsString {
+				continue
+			}
+
+			fieldType, exists := metaTypes[fieldName]
+			if !exists {
+				continue
+			}
+
+			// Check if this value is safe for float64
+			if !IsValueSafeForFloat64(fieldValue, fieldType) {
+				needsStringPrecision[fieldName] = true
+			}
+		}
+	}
+
+	return needsStringPrecision
+}
+
+func (r *Response) createFrameIfNotExistsAndAddPoint(query *Query, framesMap map[string]*data.Frame, frameName string, timeStampDataFieldMap map[string]*data.Field, timestampFieldName string, valueDataFieldMap map[string]*data.Field, fieldName string, fieldType string, timestampValue time.Time, timeZonesMap map[string]*time.Location, fieldValue interface{}, needsStringPrecision map[string]bool) {
+	// Determine if this field needs string precision
+	needsString := false
+	if val, exists := needsStringPrecision[fieldName]; exists {
+		needsString = val
+	}
+
 	if _, frameExists := framesMap[frameName]; !frameExists {
 		timeStampDataFieldMap[frameName] = data.NewField(timestampFieldName, nil, []time.Time{})
-		valueDataFieldMap[frameName] = NewDataFieldByType(frameName, fieldType)
+		valueDataFieldMap[frameName] = NewDataFieldByTypeOptimized(frameName, fieldType, needsString)
 		framesMap[frameName] = data.NewFrame(
 			"",
 			timeStampDataFieldMap[frameName],
@@ -186,7 +241,7 @@ func (r *Response) createFrameIfNotExistsAndAddPoint(query *Query, framesMap map
 		framesMap[frameName].RefID = query.RefId
 	}
 	timeStampDataFieldMap[frameName].Append(timestampValue)
-	valueDataFieldMap[frameName].Append(ParseValue(fieldName, fieldType, timeZonesMap[fieldName], fieldValue, false))
+	valueDataFieldMap[frameName].Append(ParseValueOptimized(fieldName, fieldType, timeZonesMap[fieldName], fieldValue, false, needsString))
 }
 
 func (r *Response) generateFrameNameByLabels(row map[string]interface{}, metaTypes map[string]string, labelFieldsMap map[string]int) string {
@@ -222,16 +277,28 @@ func (r *Response) generateFrameLabelsByLabels(row map[string]interface{}, metaT
 
 func (r *Response) toFramesTable(query *Query, fetchTZ FetchTZFunc) (data.Frames, error) {
 	timeZonesMap, metaTypes := r.analyzeResponseMeta(fetchTZ)
+
+	// Analyze which UInt64/Int64 columns need string precision
+	needsStringPrecision := r.analyzeColumnPrecisionNeeds(metaTypes)
+
 	framesMap := map[string]*data.Frame{}
 	frames := data.Frames{}
 	for _, field := range r.Meta {
-		framesMap[field.Name] = data.NewFrame(field.Name, NewDataFieldByType(field.Name, field.Type))
+		needsString := false
+		if val, exists := needsStringPrecision[field.Name]; exists {
+			needsString = val
+		}
+		framesMap[field.Name] = data.NewFrame(field.Name, NewDataFieldByTypeOptimized(field.Name, field.Type, needsString))
 		framesMap[field.Name].RefID = query.RefId
 	}
 	for _, row := range r.Data {
 		for fieldName, fieldValue := range row {
-			framesMap[fieldName].Fields[0].Append(ParseValue(
-				fieldName, metaTypes[fieldName], timeZonesMap[fieldName], fieldValue, false,
+			needsString := false
+			if val, exists := needsStringPrecision[fieldName]; exists {
+				needsString = val
+			}
+			framesMap[fieldName].Fields[0].Append(ParseValueOptimized(
+				fieldName, metaTypes[fieldName], timeZonesMap[fieldName], fieldValue, false, needsString,
 			))
 		}
 	}

@@ -1,0 +1,71 @@
+{
+  "annotations": {
+    "list": []
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "description": "Exact reproduction from issue #832\n\nQuery: SELECT 11189782786942380395 AS v\n\nExpected: 11189782786942380395\nBug shows: 11189782786942380000",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "fields": "",
+          "reducer": ["sum"],
+          "show": false
+        },
+        "showHeader": true
+      },
+      "pluginVersion": "10.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "clickhouse"
+          },
+          "format": "table",
+          "query": "SELECT 11189782786942380395 AS v",
+          "rawQuery": "SELECT 11189782786942380395 AS v",
+          "refId": "A"
+        }
+      ],
+      "title": "Issue #832 Reproduction: SELECT 11189782786942380395 AS v",
+      "type": "table"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": ["test", "uint64", "issue-832"],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Test UInt64 Precision (Issue #832)",
+  "uid": "test-uint64-precision-832",
+  "version": 1,
+  "weekStart": ""
+}

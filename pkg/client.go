@@ -152,7 +152,12 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 	}
 
 	var jsonResp = &Response{ctx: ctx}
-	err = json.Unmarshal(body, jsonResp)
+	// Use json.Decoder with UseNumber() to preserve precision for large integers (UInt64/Int64)
+	// Without this, json.Unmarshal converts numbers to float64, losing precision for values > 2^53
+	// See: https://github.com/Altinity/clickhouse-grafana/issues/832
+	decoder := json.NewDecoder(bytes.NewReader(body))
+	decoder.UseNumber()
+	err = decoder.Decode(jsonResp)
 	if err != nil {
 		return onErr(fmt.Errorf("unable to parse json %s. Error: %w", body, err))
 	}

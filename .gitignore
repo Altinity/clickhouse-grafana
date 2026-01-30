@@ -58,6 +58,7 @@ e2e-results/
 
 # virtual environment
 venv/
+.venv/
 
 # GopherJS generated files
 # src/datasource/backend_gopher.js

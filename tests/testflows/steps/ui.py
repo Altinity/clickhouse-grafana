@@ -228,6 +228,13 @@ def wait_for_element_to_be_clickable(
     if poll_frequency is None:
         poll_frequency = 1
 
+    # Dismiss any alert that might be blocking
+    try:
+        alert = driver.switch_to.alert
+        alert.accept()
+    except:
+        pass
+
     wait = WebDriverWait(driver, timeout, poll_frequency)
     wait.until(EC.element_to_be_clickable((select_type, element)))
 
@@ -276,8 +283,10 @@ def open_endpoint(self, endpoint):
 
     with By("saving coverage"):
         save_coverage()
-    with By("dismissing any alert if present"):
+    with By("dismissing any alert if present before navigation"):
         dismiss_alert_if_present()
     with By("opening endpoint"):
         driver = self.context.driver
         driver.get(endpoint)
+    with By("dismissing any alert if present after navigation"):
+        dismiss_alert_if_present()

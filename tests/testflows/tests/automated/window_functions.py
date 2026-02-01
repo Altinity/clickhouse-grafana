@@ -140,11 +140,11 @@ def window_functions_outline(self, panel_name, panel_names, column=None):
                 filename_with_window_functions = self.context.cluster.command(
                     None,
                     f"ls -1 tests/automated/window_functions/{panel_name[1:]}{column_name}/Downloads/*{panel_name[1:]}-*",
-                ).output.strip()
+                ).output.strip("\"' \n\r")
                 filename_without_window_functions = self.context.cluster.command(
                     None,
                     f"ls -1 tests/automated/window_functions/{panel_name[1:]}{column_name}/Downloads/*{panel_name[1:]}\\ *",
-                ).output.strip()
+                ).output.strip("\"' \n")
 
             with By("getting values from files"):
                 with Step("without window functions"):

@@ -260,11 +260,24 @@ def save_coverage(self):
             file.close()
 
 @TestStep(When)
+def dismiss_alert_if_present(self):
+    """Dismiss any alert that might be present."""
+    driver = self.context.driver
+    try:
+        alert = driver.switch_to.alert
+        alert.accept()
+    except:
+        pass
+
+
+@TestStep(When)
 def open_endpoint(self, endpoint):
     """Open the given endpoint."""
 
     with By("saving coverage"):
         save_coverage()
+    with By("dismissing any alert if present"):
+        dismiss_alert_if_present()
     with By("opening endpoint"):
         driver = self.context.driver
         driver.get(endpoint)

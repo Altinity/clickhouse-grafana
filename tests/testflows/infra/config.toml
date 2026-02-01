@@ -1,6 +1,24 @@
 [docker]
 configs = [
-    "selenium/standalone-chrome:4.18.1-20240224", '{"browserName": "chrome", "se:recordVideo": "true"}'
+  "seleniarm/standalone-chromium:latest",
+  '''
+  {
+      "browserName": "chrome",
+      "se:recordVideo": "true"
+  }
+  ''',
+
+  "selenium/standalone-firefox:latest",
+  '''
+  {
+      "browserName": "firefox",
+      "se:recordVideo": "true"
+  }
+  '''
 ]
+
+host-config-keys = ["Dns", "DnsOptions", "DnsSearch", "ExtraHosts", "NetworkMode", "ShmSize"]
+
 url = "http://127.0.0.1:2375"
-video-image = "selenium/video:ffmpeg-6.1-20240402"
+video-image = "selenium/video:latest"
+auto-remove = false

@@ -129,7 +129,7 @@ def check_screenshot(self, screenshot_name):
         )
 
     with By("processing image"):
-        red, green, blue = image.split()
+        red, green, blue = image.split()[:3]
         threshold = 10
         im = green.point(lambda x: 255 if x > threshold else 0)
         threshold = 120
@@ -184,7 +184,7 @@ def check_screenshot_contains_green(self, screenshot_name, expected_green_pixels
         )
 
     with By("processing image"):
-        red, green, blue = image.split()
+        red, green, blue = image.split()[:3]
         threshold = 100
         gr = green.point(lambda x: 255 if x > threshold else 0)
 

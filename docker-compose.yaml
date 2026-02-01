@@ -276,17 +276,25 @@ services:
 
   selenium-standalone:
     profiles: [ test ]
-    image: selenium/standalone-docker:4.38.0
+    image: selenium/standalone-docker:4.40.0
     container_name: selenium-docker
     #    user: root
     links:
       - grafana
       - grafana_legacy_alerts
+    environment:
+      # - SE_LOG_LEVEL=ALL
+      - SE_ENABLE_TRACING=false
+      - SE_ENABLE_TLS=false
+      - SE_HTTPS_CERTIFICATE=
+      - SE_HTTPS_PRIVATE_KEY=
+      - SE_JAVA_SSL_TRUST_STORE=
+      - SE_JAVA_SSL_TRUST_STORE_PASSWORD=
     ports:
       - "4444:4444"
     volumes:
       - /dev/shm:/dev/shm
-      - ./tests/testflows/infra/config.toml:/opt/bin/config.toml
+      - ./tests/testflows/infra/config.toml:/opt/selenium/docker.toml
       - ./tests/testflows/tmp/target:/opt/selenium/assets
       - /var/run/docker.sock:/var/run/docker.sock
     #    privileged: true
@@ -294,5 +302,6 @@ services:
       - grafana
       - trickster
       - grafana_legacy_alerts
+
 volumes:
   node_modules:

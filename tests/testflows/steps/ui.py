@@ -110,7 +110,7 @@ def create_remote_chrome_driver(
 
         start_time = time.time()
 
-    with And("try to create a remote webdriver instance"):
+    with And(f"try to create a remote webdriver instance {hub_url}"):
         while True:
             try:
                 return selenium_webdriver.Remote(command_executor=hub_url, options=remote_chrome_options)

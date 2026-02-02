@@ -130,11 +130,15 @@ export const clickhouseEscape = (value: any, variable: any): any => {
  *    - Returns raw value without quotes: `containervalue.namespacevalue.svc`
  *    - Fixes issue #797
  *
- * 2. **IN Clause / tuple() Context** (e.g., `WHERE id IN ($var)`):
+ * 2. **IN Clause / tuple() Context for arrays** (e.g., `WHERE id IN ($var)`):
  *    - Returns comma format WITHOUT brackets: `'val1','val2'`
  *    - Works with: IN, NOT IN, GLOBAL IN, tuple()
  *
- * 3. **Array Function Context** (default for arrays):
+ * 3. **IN Clause / tuple() Context for single values** (e.g., `WHERE id IN ($var)`):
+ *    - Returns quoted value: `'val1'`
+ *    - Fixes issue #847
+ *
+ * 4. **Array Function Context** (default for arrays):
  *    - Returns ClickHouse array literal WITH brackets: `['val1','val2']`
  *    - Works with: arrayIntersect, hasAny, hasAll, etc.
  *    - Fixes issue #829
@@ -186,7 +190,12 @@ export const interpolateQueryExprWithContext = (query: string, variables: any[] 
       return interpolateQueryExpr(value, variable, isRepeated);  // Returns: 'val1','val2'
     }
 
-    // Priority 3: Arrays in any other context (array functions) - use ClickHouse array literal
+    // Priority 3: Single values in IN clause / tuple() - need quotes (fix for issue #847)
+    if (needsComma && !Array.isArray(value)) {
+      return clickhouseEscape(value, variable);  // Returns: 'val1'
+    }
+
+    // Priority 4: Arrays in any other context (array functions) - use ClickHouse array literal
     if (Array.isArray(value)) {
       return clickhouseEscape(value, variable);  // Returns: ['val1','val2']
     }

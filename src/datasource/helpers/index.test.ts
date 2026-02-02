@@ -833,5 +833,37 @@ describe('Variable Interpolation', () => {
       expect(resultQuery).toContain("WHERE host LIKE 'telegraf-%'");
       expect(resultQuery).not.toContain("''telegraf-'");
     });
+
+    it('should fix issue #847 - single value in IN clause with multi=false needs quotes', () => {
+      // Issue #847: $conditionalTest(AND cte2_tenant in ($Tenant), $Tenant)
+      // After expansion: AND cte2_tenant in ($Tenant)
+      // Variable $Tenant has multi=false, includeAll=false (query variable default)
+      // The value must be quoted in the IN clause
+      const query = 'SELECT * FROM cte2 WHERE cte2_tenant in ($Tenant)';
+      const variables = [{ name: 'Tenant', current: { value: 'tenant1' } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'Tenant', multi: false, includeAll: false };
+
+      // Priority 3 in interpolateQueryExprWithContext detects IN clause and quotes the value
+      expect(interpolateFn('tenant1', variable)).toBe("'tenant1'");
+    });
+
+    it('should fix issue #847 - NOT IN clause also needs quotes for single values', () => {
+      const query = 'SELECT * FROM table WHERE id NOT IN ($var)';
+      const variables = [{ name: 'var', current: { value: 'value1' } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'var', multi: false, includeAll: false };
+
+      expect(interpolateFn('value1', variable)).toBe("'value1'");
+    });
+
+    it('should fix issue #847 - GLOBAL IN clause also needs quotes for single values', () => {
+      const query = 'SELECT * FROM table WHERE id GLOBAL IN ($var)';
+      const variables = [{ name: 'var', current: { value: 'value1' } }];
+      const interpolateFn = interpolateQueryExprWithContext(query, variables);
+      const variable = { name: 'var', multi: false, includeAll: false };
+
+      expect(interpolateFn('value1', variable)).toBe("'value1'");
+    });
   });
 });

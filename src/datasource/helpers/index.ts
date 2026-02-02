@@ -181,7 +181,9 @@ export const interpolateQueryExprWithContext = (query: string, variables: any[] 
     }
 
     // Priority 1: Concatenation context - no quotes for simple values
-    if (isInConcatenation && !Array.isArray(value)) {
+    // BUT: if also in IN clause (needsComma), IN clause takes precedence (fix for issue #847)
+    // This prevents false positives where concatenation regex matches across unrelated quotes
+    if (isInConcatenation && !needsComma && !Array.isArray(value)) {
       return value;
     }
 
@@ -310,49 +312,60 @@ const detectConcatenationContext = (query: string, variableName: string): boolea
     new RegExp(`"[^"]*\\$\\{?${variableName}\\}?[^"]*"`, 'g'), // "text$variable" or "$variabletext"
   ];
 
-  return patterns.some(pattern => pattern.test(query));
+  for (const pattern of patterns) {
+    if (pattern.test(query)) {
+      return true;
+    }
+  }
+
+  return false;
 };
 
 /**
- * Original variable interpolation function with issue #712 fix.
- * 
- * This function handles variable interpolation based on Grafana variable configuration.
- * It was modified to fix repeated panel variables by adding quotes when multi/includeAll
- * are undefined, but this caused issue #797 with concatenation patterns.
- * 
+ * Variable interpolation function for SQL value escaping.
+ *
+ * This function handles variable interpolation by properly quoting string values
+ * for safe SQL usage. All string values are quoted for SQL safety.
+ *
+ * **IMPORTANT:** For context-aware interpolation (e.g., detecting when raw values
+ * are needed for identifiers like table names), use `interpolateQueryExprWithContext`.
+ *
  * @param value - The variable value(s) to interpolate
  * @param variable - Grafana variable configuration object
- * @returns Interpolated string ready for SQL injection
- * 
- * **BEHAVIOR MATRIX:**
+ * @param isRepeated - Whether this is a repeated panel variable (issue #712)
+ * @returns Interpolated string ready for SQL
+ *
+ * **BEHAVIOR:**
  * ```
- * | multi | includeAll | Array | Result              | Use Case           |
- * |-------|------------|-------|---------------------|--------------------|  
- * | undef | undef      | No    | 'value' (quoted)    | Repeated panels    |
- * | false | false      | No    | value (raw)         | Explicit single    |
- * | true  | false      | Yes   | 'val1','val2'       | Multi-select       |
- * | Any   | Any        | Yes   | escaped,joined      | Arrays             |
+ * | Value Type | multi  | includeAll | isRepeated | Result           | Use Case           |
+ * |------------|--------|------------|------------|------------------|--------------------|
+ * | string     | false  | false      | false      | value (raw)      | Identifiers        |
+ * | string     | any    | any        | true       | 'value' (quoted) | Repeated panels    |
+ * | string     | undef  | undef      | false      | 'value' (quoted) | Default values     |
+ * | array      | any    | any        | any        | 'val1','val2'    | Multi-select       |
  * ```
- * 
+ *
  * **EXAMPLES:**
  * ```typescript
- * // Repeated panel variable (issue #712 fix)
+ * // Single value with multi=false - raw value for identifiers (table names, etc.)
+ * interpolateQueryExpr('mytable', {multi: false, includeAll: false})
+ * // → "mytable"
+ *
+ * // Single value with undefined multi - quoted for SQL safety
  * interpolateQueryExpr('mysql', {multi: undefined, includeAll: undefined})
  * // → "'mysql'"
- * 
- * // Explicit single variable  
- * interpolateQueryExpr('mysql', {multi: false, includeAll: false})
- * // → "mysql"
- * 
+ *
+ * // Repeated panel variable (issue #712 fix)
+ * interpolateQueryExpr('mysql', {multi: undefined}, true)
+ * // → "'mysql'"
+ *
  * // Multi-value variable
  * interpolateQueryExpr(['val1', 'val2'], {multi: true, includeAll: false})
  * // → "'val1','val2'"
  * ```
- * 
- * **ISSUES:**
- * - This function doesn't consider query context
- * - Causes concatenation issues when multi/includeAll are undefined
- * - Use `interpolateQueryExprWithContext` for context-aware interpolation
+ *
+ * **NOTE:** For IN clause contexts where single values need quoting even with multi=false,
+ * use `interpolateQueryExprWithContext` which handles this via Priority 3 (fix for issue #847)
  */
 export const interpolateQueryExpr = (value: any, variable: any, isRepeated?: boolean) => {
   // Repeated Single variable value (issue #712 fix)
@@ -362,17 +375,18 @@ export const interpolateQueryExpr = (value: any, variable: any, isRepeated?: boo
     return `'${value}'`;
   }
 
-  // Single variable value (explicit configuration)
-  // When multi=false and includeAll=false, treat as raw value without quotes
+  // Single value with multi=false and includeAll=false - return raw value
+  // This is used for identifier contexts (table names, column names, etc.)
+  // For IN clause contexts, interpolateQueryExprWithContext handles quoting via Priority 3
   if (variable.multi === false && variable.includeAll === false && !Array.isArray(value)) {
     return value;
   }
 
-  // Multi-value or complex variable handling
+  // Single value handling - quote for SQL safety (when multi/includeAll are undefined or true)
   if (!Array.isArray(value)) {
     return clickhouseEscape(value, variable);
   }
-  
+
   // Array values - escape each element and join with commas
   let escapedValues = value.map(function (v) {
     return clickhouseEscape(v, variable);

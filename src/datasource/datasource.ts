@@ -783,13 +783,15 @@ export class CHDataSource
     let expandedQueries = queries;
     if (queries && queries.length > 0) {
       expandedQueries = queries.map((query: any) => {
+        // Important: use transformed query for context-aware interpolation (fix for issue #847)
+        const transformedQuery = conditionalTest(query.query, this.templateSrv);
         const expandedQuery = {
           ...query,
           datasource: this.getRef(),
           query: this.templateSrv.replace(
-            conditionalTest(query.query, this.templateSrv),
+            transformedQuery,
             scopedVars,
-            createContextAwareInterpolation(query.query, this.templateSrv.getVariables())
+            createContextAwareInterpolation(transformedQuery, this.templateSrv.getVariables())
           ),
         };
         return expandedQuery;
@@ -832,10 +834,13 @@ export class CHDataSource
       };
 
       // Apply template variable replacements (these don't require backend processing)
+      // Important: use transformed query for context-aware interpolation (fix for issue #847)
+      const transformedQuery = conditionalTest(queryData.query, this.templateSrv);
+
       queryData.query = this.templateSrv.replace(
-        conditionalTest(queryData.query, this.templateSrv),
+        transformedQuery,
         options.scopedVars,
-        createContextAwareInterpolation(queryData.query, this.templateSrv.getVariables())
+        createContextAwareInterpolation(transformedQuery, this.templateSrv.getVariables())
       );
 
       // SAFE OPTIMIZATION: Batch createQuery + applyAdhocFilters (reduces 3->2 calls)
@@ -848,10 +853,12 @@ export class CHDataSource
       let query = queryResult.sql;
 
       // Apply template variable replacements (these don't require backend processing)
+      // Important: use transformed query for context-aware interpolation (fix for issue #847)
+      const transformedQueryAfterBackend = conditionalTest(query, this.templateSrv);
       query = this.templateSrv.replace(
-        conditionalTest(query, this.templateSrv),
+        transformedQueryAfterBackend,
         options.scopedVars,
-        createContextAwareInterpolation(query, this.templateSrv.getVariables())
+        createContextAwareInterpolation(transformedQueryAfterBackend, this.templateSrv.getVariables())
       );
 
       const wildcardChar = '%';
@@ -868,10 +875,12 @@ export class CHDataSource
         query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
       }
 
+      // Important: use transformed query for context-aware interpolation (fix for issue #847)
+      const finalTransformedQuery = conditionalTest(query, this.templateSrv);
       const interpolatedQuery = this.templateSrv.replace(
-        conditionalTest(query, this.templateSrv),
+        finalTransformedQuery,
         scopedVars,
-        createContextAwareInterpolation(query, this.templateSrv.getVariables())
+        createContextAwareInterpolation(finalTransformedQuery, this.templateSrv.getVariables())
       );
 
       // Extract GROUP BY properties from the FINAL query (after template replacement)

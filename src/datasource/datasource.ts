@@ -15,7 +15,7 @@ import {
   QueryFilterOptions,
   TypedVariableModel, VariableSupportType,
 } from '@grafana/data';
-import { BackendSrv, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
+import { BackendSrv, config, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
 import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
@@ -829,6 +829,8 @@ export class CHDataSource
           from: options.range.from.toISOString(), // Convert to Unix timestamp
           to: options.range.to.toISOString(), // Convert to Unix timestamp
         },
+        // Pass actual user login for metadata (fix for issue #836)
+        metadataUserLogin: config.bootData?.user?.login || '',
       };
 
       // Apply template variable replacements (these don't require backend processing)

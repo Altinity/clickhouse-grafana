@@ -5,6 +5,7 @@
 * fix single quotes missing in `$conditionalTest` macro, fix https://github.com/Altinity/clickhouse-grafana/issues/847
 * fix sending empty query `FORMAT JSON` on new dashboard creation, fix https://github.com/Altinity/clickhouse-grafana/issues/837
 * fix saving editor mode state (SQL Editor / Query Settings) between dashboard reloads, fix https://github.com/Altinity/clickhouse-grafana/issues/835
+* fix absent user data in datasource settings, fix https://github.com/Altinity/clickhouse-grafana/issues/836
 
 # 3.4.8 (2025-11-12)
 ## Enhancements:

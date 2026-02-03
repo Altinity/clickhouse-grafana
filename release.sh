@@ -15,7 +15,7 @@ docker compose run --rm frontend_builder
 docker compose run --rm backend_builder
 sudo dos2unix ./dist/*
 sudo chmod +rx ./dist
-sudo chmod +rx -R ./dist/altinity-clickhouse-plugin*
+sudo chmod -R +rx ./dist/altinity-clickhouse-plugin*
 docker compose run --rm plugin_signer
 git add .
 git diff-index --quiet HEAD || git commit -s -m "prepare to new release, $(grep current_version .bumpversion.cfg)"

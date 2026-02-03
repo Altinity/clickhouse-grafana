@@ -1,3 +1,11 @@
+# 3.4.9 (2026-02-03)
+## Fixes:
+* fix UInt64 values rounded on JS side due to JSON parsing precision loss, add `output_format_json_quote_64bit_integers=1` setting, fix https://github.com/Altinity/clickhouse-grafana/issues/832, related to https://github.com/ClickHouse/ClickHouse/issues/86553
+* fix `WHERE id IN [$multi_value_template_variable]` producing double brackets `[[xxx,yyy,zzz]]` instead of `[xxx,yyy,zzz]`, fix https://github.com/Altinity/clickhouse-grafana/issues/838
+* fix single quotes missing in `$conditionalTest` macro, fix https://github.com/Altinity/clickhouse-grafana/issues/847
+* fix sending empty query `FORMAT JSON` on new dashboard creation, fix https://github.com/Altinity/clickhouse-grafana/issues/837
+* fix saving editor mode state (SQL Editor / Query Settings) between dashboard reloads, fix https://github.com/Altinity/clickhouse-grafana/issues/835
+
 # 3.4.8 (2025-11-12)
 ## Enhancements:
 * switch to go 1.25

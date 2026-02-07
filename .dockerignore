@@ -7,3 +7,6 @@ instrumented
 node_modules
 venv
 coverage
+.claude*
+.qwen*
+.opencode*

@@ -10,7 +10,6 @@ import {useQueryState} from './hooks/useQueryState';
 import {useFormattedData} from './hooks/useFormattedData';
 import {useAutocompleteData} from './hooks/useAutocompletionData';
 import {initializeQueryDefaults, initializeQueryDefaultsForVariables} from './helpers/initializeQueryDefaults';
-import './QueryEditor.css';
 import {getAdhocFilters} from './helpers/getAdHocFilters';
 import {detectVariableMacroIntersections, createVariableMacroConflictWarning} from './helpers/detectVariableMacroIntersections';
 

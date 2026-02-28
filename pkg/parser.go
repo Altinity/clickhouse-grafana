@@ -207,7 +207,20 @@ func newStringField(fieldName string, isNullable bool) *data.Field {
 
 func parseFloatValue(value interface{}, isNullable bool) Value {
 	if value != nil {
-		fv := reflect.ValueOf(value).Float()
+		var fv float64
+		switch v := value.(type) {
+		case json.Number:
+			var err error
+			fv, err = v.Float64()
+			if err != nil {
+				if isNullable {
+					return nil
+				}
+				return 0.0
+			}
+		default:
+			fv = reflect.ValueOf(value).Float()
+		}
 		if isNullable {
 			return &fv
 		} else {

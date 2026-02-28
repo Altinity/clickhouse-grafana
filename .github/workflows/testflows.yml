@@ -55,6 +55,7 @@ jobs:
       - name: Report coverage
         uses: coverallsapp/github-action@v2
         with:
+          fail-on-error: false
           parallel: false
           files: tests/testflows/coverage/lcov.info go_coverage/coverage.txt
 

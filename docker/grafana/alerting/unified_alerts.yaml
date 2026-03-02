@@ -83,6 +83,83 @@ groups:
       annotations: {}
       labels: {}
       isPaused: false
+    - title: reproduce_issue_859_float64_alert
+      uid: reproduce_issue_859
+      editable: true
+      condition: B
+      data:
+        - refId: A
+          relativeTimeRange:
+            from: 600
+            to: 0
+          # clickhouse-x-auth-http
+          datasourceUid: P3B5EB012C49EA995
+          model:
+            database: default
+            dateColDataType: ""
+            dateLoading: false
+            dateTimeColDataType: event_time
+            dateTimeType: DATETIME
+            datetimeLoading: false
+            extrapolate: true
+            format: time_series
+            formattedQuery: "SELECT $timeSeries as t, service_name, round((count() / max(too_big_value)) * 100, 2) AS percent FROM $table WHERE $timeFilter GROUP BY t, service_name ORDER BY t, service_name"
+            interval: ""
+            intervalFactor: 1
+            intervalMs: 1000
+            maxDataPoints: 43200
+            query: |
+                SELECT
+                    $timeSeries as t,
+                    service_name,
+                    round((count() / max(too_big_value)) * 100, 2) AS percent
+                FROM $table
+                WHERE $timeFilter
+                GROUP BY t, service_name
+                ORDER BY t, service_name
+            rawQuery: true
+            refId: A
+            round: 0s
+            skip_comments: true
+            add_metadata: true
+            table: test_grafana
+            tableLoading: false
+        - refId: B
+          datasourceUid: __expr__
+          model:
+            conditions:
+                - evaluator:
+                    params:
+                        - 0
+                        - 0
+                    type: gt
+                  operator:
+                    type: and
+                  query:
+                    params:
+                        - A
+                  reducer:
+                    params: []
+                    type: max
+                  type: query
+            datasource:
+                name: Expression
+                type: __expr__
+                uid: __expr__
+            expression: ""
+            hide: false
+            intervalMs: 1000
+            maxDataPoints: 43200
+            refId: B
+            type: classic_conditions
+      noDataState: NoData
+      execErrState: Error
+      for: 5m
+      annotations:
+        description: "Reproduces #859: round() returns Float64, service_name is LowCardinality(String). Before fix: panic in parseFloatValue due to json.Number from UseNumber()."
+      labels:
+        issue: "859"
+      isPaused: false
     - title: test_unified_x509
       uid: test_unified_x509
       editable: true

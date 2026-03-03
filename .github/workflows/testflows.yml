@@ -1,5 +1,4 @@
 name: Run testflows tests
-run-name: ${{ github.actor }} is running Altinity Grafana Plugin testflows tests
 
 on:
   push:
@@ -9,6 +8,9 @@ on:
   pull_request:
     branches:
       - "*"
+
+permissions:
+  contents: read
 
 env:
   GRAFANA_VERSION: "12.4.0-20977568970"
@@ -23,13 +25,14 @@ jobs:
   tests:
     # runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-system-ubuntu-22.04 ]
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
 
     timeout-minutes: 60
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: ${{ inputs.ref }}
 
       - name: Setup
         run: tests/testflows/infra/setup.sh

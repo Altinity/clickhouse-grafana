@@ -35,14 +35,28 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - group: group-a
-            suite: "window_functions,macros"
-          - group: group-b
-            suite: "data_source_setup,adhoc_macro,unified_alerts"
-          - group: group-c
-            suite: "sql_editor,query_options,template_variables_editor"
-          - group: group-d
-            suite: "e2e,functions,legacy_alerts"
+          - group: window-functions
+            suite: "window_functions"
+          - group: sql-editor
+            suite: "sql_editor"
+          - group: data-source-setup
+            suite: "data_source_setup"
+          - group: e2e
+            suite: "e2e"
+          - group: query-options
+            suite: "query_options"
+          - group: functions
+            suite: "functions"
+          - group: macros
+            suite: "macros"
+          - group: adhoc-macro
+            suite: "adhoc_macro"
+          - group: unified-alerts
+            suite: "unified_alerts"
+          - group: template-variables-editor
+            suite: "template_variables_editor"
+          - group: legacy-alerts
+            suite: "legacy_alerts"
 
     steps:
       - name: Checkout

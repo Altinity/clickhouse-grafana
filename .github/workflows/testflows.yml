@@ -25,6 +25,20 @@ jobs:
     runs-on: ubuntu-latest
 
     timeout-minutes: 60
+
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - group: group-a
+            suite: "window_functions,macros"
+          - group: group-b
+            suite: "data_source_setup,adhoc_macro,unified_alerts"
+          - group: group-c
+            suite: "sql_editor,query_options,template_variables_editor"
+          - group: group-d
+            suite: "e2e,functions,legacy_alerts"
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -34,10 +48,19 @@ jobs:
       - name: Setup
         run: tests/testflows/infra/setup.sh
 
-      - name: Run Altinity Grafana Plugin tests
+      - name: Cache pip packages
+        uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip-${{ hashFiles('tests/testflows/requirements.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-pip-
+
+      - name: Run Altinity Grafana Plugin tests (${{ matrix.group }})
         run: cd ./tests/testflows/ &&
           python3
           -u ./regression.py --before=0.1 --after=0.1
+          --suite ${{ matrix.suite }}
           --log raw.log
           -o new-fails
 
@@ -51,27 +74,37 @@ jobs:
         if: always()
         run: tests/testflows/infra/create-report.sh
 
-
       - name: Report coverage
         uses: coverallsapp/github-action@v2
         with:
-          parallel: false
+          parallel: true
+          flag-name: ${{ matrix.group }}
           files: tests/testflows/coverage/lcov.info go_coverage/coverage.txt
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: testflows-logs
+          name: testflows-logs-${{ matrix.group }}
           path: ${{ env.testflows_logs}}
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: code-coverage
+          name: code-coverage-${{ matrix.group }}
           path: ${{ env.code_coverage}}
 
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: selenium-logs
+          name: selenium-logs-${{ matrix.group }}
           path: ${{ env.selenium_logs}}
+
+  coverage-finalize:
+    needs: tests
+    if: always()
+    runs-on: ubuntu-latest
+    steps:
+      - name: Finalize Coveralls
+        uses: coverallsapp/github-action@v2
+        with:
+          parallel-finished: true

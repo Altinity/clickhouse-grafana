@@ -29,6 +29,13 @@ def argparser(parser):
         help="delay after steps",
         default=0
     )
+    parser.add_argument(
+        "--suite",
+        metavar="suite",
+        type=str,
+        help="comma-separated list of test suites to run (default: all)",
+        default=None
+    )
 
 ffails = {
     "/Grafana Datasource Plugin For Clickhouse/sql editor/hash comment/":
@@ -71,7 +78,7 @@ grafana_version = ""
     RQ_SRS_Plugin_DockerComposeEnvironment("1.0"),
     RQ_SRS_Plugin_VersionCompatibility("1.0")
 )
-def regression(self, before, after):
+def regression(self, before, after, suite=None):
     self.context.browser = "chrome"
     self.context.local = False
     self.context.global_wait_time = 30
@@ -79,6 +86,12 @@ def regression(self, before, after):
     self.context.before = before
     self.context.after = after
     self.context.server_name = "test.example.com"
+
+    suites = set(suite.split(",")) if suite else None
+
+    def should_run(suite_name):
+        """Check if a suite should run."""
+        return suites is None or suite_name in suites
 
     project_root_dir = os.path.join(current_dir(), "..", "..")
     self.context.project_root_dir = project_root_dir
@@ -114,33 +127,39 @@ def regression(self, before, after):
         with Given("I login in grafana"):
             login.login()
 
+    main_suites = [
+        ("window_functions", "testflows.tests.automated.window_functions"),
+        ("sql_editor", "testflows.tests.automated.sql_editor"),
+        ("data_source_setup", "testflows.tests.automated.data_source_setup"),
+        ("e2e", "testflows.tests.automated.e2e"),
+        ("query_options", "testflows.tests.automated.query_options"),
+        ("functions", "testflows.tests.automated.functions"),
+        ("macros", "testflows.tests.automated.macros"),
+        ("adhoc_macro", "testflows.tests.automated.adhoc_macro"),
+        ("unified_alerts", "testflows.tests.automated.unified_alerts"),
+        ("template_variables_editor", "testflows.tests.automated.template_variables_editor"),
+    ]
+
     self.context.grafana_version = None
-    Feature(run=load("testflows.tests.automated.window_functions", "feature"))
-    Feature(run=load("testflows.tests.automated.sql_editor", "feature"))
-    Feature(run=load("testflows.tests.automated.data_source_setup", "feature"))
-    Feature(run=load("testflows.tests.automated.e2e", "feature"))
-    Feature(run=load("testflows.tests.automated.query_options", "feature"))
-    Feature(run=load("testflows.tests.automated.functions", "feature"))
-    Feature(run=load("testflows.tests.automated.macros", "feature"))
-    Feature(run=load("testflows.tests.automated.adhoc_macro", "feature"))
-    Feature(run=load("testflows.tests.automated.unified_alerts", "feature"))
-    Feature(run=load("testflows.tests.automated.template_variables_editor", "feature"))
+    for suite_name, module_path in main_suites:
+        if should_run(suite_name):
+            Feature(run=load(module_path, "feature"))
 
+    if should_run("legacy_alerts"):
+        self.context.grafana_version = "10.4.3"
+        with Given("I define endpoint with grafana version that contains legacy alerts"):
+            self.context.endpoint = define("self.context.endpoint", "http://grafana_legacy_alerts:3000/")
 
-    self.context.grafana_version = "10.4.3"
-    with Given("I define endpoint with grafana version that contains legacy alerts"):
-        self.context.endpoint = define("self.context.endpoint", "http://grafana_legacy_alerts:3000/")
+        with And("I wait for grafana to be started"):
+            for attempt in retries(delay=10, timeout=50):
+                with attempt:
+                    ui.open_endpoint(endpoint=self.context.endpoint)
 
-    with And("I wait for grafana to be started"):
-        for attempt in retries(delay=10, timeout=50):
-            with attempt:
-                ui.open_endpoint(endpoint=self.context.endpoint)
+        with delay():
+            with Given("I login in grafana"):
+                login.login()
 
-    with delay():
-        with Given("I login in grafana"):
-            login.login()
-
-    Feature(run=load("testflows.tests.automated.legacy_alerts", "feature"))
+        Feature(run=load("testflows.tests.automated.legacy_alerts", "feature"))
 
 
 if main():

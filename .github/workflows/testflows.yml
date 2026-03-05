@@ -16,8 +16,6 @@ env:
   GRAFANA_VERSION: "12.4.0-20977568970"
   testflows_logs: |
     ./testflows_logs/*
-  code_coverage: |
-    ./code_coverage/*
   selenium_logs: |
     ./selenium_logs/*
 
@@ -81,22 +79,19 @@ jobs:
           --log raw.log
           -o short
 
-      - name: Create code coverage for backend
-        run: docker compose run --rm backend_coverage_generate
-
-      - name: Create code coverage for frontend
-        run: docker compose run --rm frontend_coverage_generate
-
       - name: Create reports
         if: always()
         run: tests/testflows/infra/create-report.sh
 
-      - name: Report coverage
-        uses: coverallsapp/github-action@v2
+      - name: Upload raw coverage data
+        if: always()
+        uses: actions/upload-artifact@v4
         with:
-          parallel: true
-          flag-name: ${{ matrix.group }}
-          files: tests/testflows/coverage/lcov.info go_coverage/coverage.txt
+          name: raw-coverage-${{ matrix.group }}
+          path: |
+            go_coverage/raw/
+            tests/testflows/coverage/raw/
+          if-no-files-found: ignore
 
       - uses: actions/upload-artifact@v4
         if: always()
@@ -107,21 +102,80 @@ jobs:
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: code-coverage-${{ matrix.group }}
-          path: ${{ env.code_coverage}}
-
-      - uses: actions/upload-artifact@v4
-        if: always()
-        with:
           name: selenium-logs-${{ matrix.group }}
           path: ${{ env.selenium_logs}}
 
-  coverage-finalize:
+  coverage:
     needs: tests
     if: always()
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+
     steps:
-      - name: Finalize Coveralls
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Go
+        uses: actions/setup-go@v5
+        with:
+          go-version-file: go.mod
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: npm
+
+      - name: Install Node dependencies
+        run: npm ci
+
+      - name: Download all raw coverage artifacts
+        uses: actions/download-artifact@v4
+        with:
+          pattern: raw-coverage-*
+          path: raw-coverage
+
+      - name: Merge and generate backend coverage
+        run: |
+          mkdir -p go_coverage/raw
+          for dir in raw-coverage/*/go_coverage/raw/; do
+            cp -r "$dir"* go_coverage/raw/ 2>/dev/null || true
+          done
+          if ls go_coverage/raw/cov* 1>/dev/null 2>&1; then
+            go tool covdata textfmt -i=go_coverage/raw -o=go_coverage/coverage.txt
+            go tool cover -html=go_coverage/coverage.txt -o=go_coverage/coverage.html
+          else
+            echo "No backend coverage data found"
+          fi
+
+      - name: Merge and generate frontend coverage
+        run: |
+          mkdir -p .nyc_output
+          for dir in raw-coverage/*/tests/testflows/coverage/raw/; do
+            cp -r "$dir"* .nyc_output/ 2>/dev/null || true
+          done
+          if ls .nyc_output/* 1>/dev/null 2>&1; then
+            if [ -f coverage/coverage-final.json ]; then
+              cp coverage/coverage-final.json .nyc_output/
+            fi
+            npx nyc report --reporter html --reporter=lcov --report-dir=./tests/testflows/coverage
+          else
+            echo "No frontend coverage data found"
+          fi
+
+      - name: Report coverage to Coveralls
         uses: coverallsapp/github-action@v2
         with:
-          parallel-finished: true
+          files: tests/testflows/coverage/lcov.info go_coverage/coverage.txt
+
+      - name: Upload coverage reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: code-coverage
+          path: |
+            go_coverage/coverage.html
+            go_coverage/coverage.txt
+            tests/testflows/coverage/
+          if-no-files-found: ignore

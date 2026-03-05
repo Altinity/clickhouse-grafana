@@ -1,6 +1,9 @@
 name: Latest Grafana API compatibility check
 on: [pull_request]
 
+permissions:
+  contents: read
+
 jobs:
   compatibilitycheck:
     runs-on: ubuntu-latest

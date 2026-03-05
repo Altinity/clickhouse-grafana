@@ -220,7 +220,7 @@ export function ConfigEditor(props: Props) {
         <InlineField
           label="Configure AdHoc Filters request"
           labelWidth={32}
-          tooltip="To be able to configure request properfly please use macroses {field} {database} {table}"
+          tooltip="To be able to configure request properly please use macroses {field} {database} {table}"
         >
           <div style={{ position: 'relative', minWidth: '600px' }}>
             <CodeEditor

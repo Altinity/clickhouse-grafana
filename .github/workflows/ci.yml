@@ -10,9 +10,15 @@ on:
       - master
       - main
 
+permissions:
+  contents: read
+
 jobs:
   build:
     runs-on: ubuntu-latest
+    permissions:
+      contents: read
+      checks: write
     steps:
       - uses: actions/checkout@v4
       - name: Setup Node.js environment
@@ -66,6 +72,7 @@ jobs:
         if: steps.check-for-backend.outputs.has-backend == 'true'
         uses: coverallsapp/github-action@v2
         with:
+          fail-on-error: false
           file: ./coverage/backend.out
           format: golang
 

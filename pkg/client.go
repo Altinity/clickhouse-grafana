@@ -3,8 +3,6 @@ package main
 import (
 	"bytes"
 	"context"
-	"crypto/tls"
-	"crypto/x509"
 	"encoding/json"
 	"errors"
 	"fmt"
@@ -42,8 +40,6 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 		return onErr(fmt.Errorf("unable to parse clickhouse datasource url: %w", err))
 	}
 
-	httpClient := &http.Client{}
-	tlsConfig := &tls.Config{}
 	var req *http.Request
 	if client.settings.UsePost {
 		req, err = http.NewRequest("POST", datasourceUrl.String(), bytes.NewBufferString(query))
@@ -87,48 +83,43 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 		}
 	}
 
-	tlsCACert, tlsCACertExists := client.settings.Instance.DecryptedSecureJSONData["tlsCACert"]
-	tlsClientCert, tlsClientCertExists := client.settings.Instance.DecryptedSecureJSONData["tlsClientCert"]
-	tlsClientKey, tlsClientKeyExists := client.settings.Instance.DecryptedSecureJSONData["tlsClientKey"]
-
-	if tlsCACertExists {
-		rootCA := x509.NewCertPool()
-		ok := rootCA.AppendCertsFromPEM([]byte(tlsCACert))
-		if !ok {
-			return onErr(errors.New(fmt.Sprintf("invalid tlsCACert: %s", tlsCACert)))
-		}
-		tlsConfig.RootCAs = rootCA
-	}
-	if tlsClientCertExists != tlsClientKeyExists {
-		return onErr(errors.New("please setup both tlsClientCert and tlsClientKey"))
-	}
-	if tlsClientCertExists && tlsClientKeyExists {
-		clientKeyPair, err := tls.X509KeyPair([]byte(tlsClientCert), []byte(tlsClientKey))
-		if err != nil {
-			return onErr(err)
-		}
-		tlsConfig.Certificates = append(tlsConfig.Certificates, clientKeyPair)
-	}
-	if client.settings.TLSSkipVerify {
-		tlsConfig.InsecureSkipVerify = true
-	}
-
-	httpClient.Transport = &http.Transport{TLSClientConfig: tlsConfig}
 	req = req.WithContext(ctx)
-	resp, err := httpClient.Do(req)
+	if client.settings.HTTPClient == nil {
+		return onErr(errors.New("http client is not initialized"))
+	}
+	resp, err := client.settings.HTTPClient.Do(req)
 	if err != nil {
 		return onErr(err)
 	}
+	defer func() {
+		if closeErr := resp.Body.Close(); closeErr != nil {
+			backend.Logger.Warn(fmt.Sprintf("unable to close response body: %v", closeErr))
+		}
+	}()
 
 	var reader io.Reader
+	closeEncodedReader := func() {}
 	switch resp.Header.Get("Content-Encoding") {
 	case "gzip":
-		reader, err = gzip.NewReader(resp.Body)
+		gzipReader, gzipErr := gzip.NewReader(resp.Body)
+		reader = gzipReader
+		err = gzipErr
 		if err != nil {
 			return onErr(fmt.Errorf("error creating GZIP reader: %v", err))
 		}
+		closeEncodedReader = func() {
+			if closeErr := gzipReader.Close(); closeErr != nil {
+				backend.Logger.Warn(fmt.Sprintf("unable to close gzip reader: %v", closeErr))
+			}
+		}
 	case "deflate":
-		reader = flate.NewReader(resp.Body)
+		flateReader := flate.NewReader(resp.Body)
+		reader = flateReader
+		closeEncodedReader = func() {
+			if closeErr := flateReader.Close(); closeErr != nil {
+				backend.Logger.Warn(fmt.Sprintf("unable to close deflate reader: %v", closeErr))
+			}
+		}
 	case "br":
 		reader = brotli.NewReader(resp.Body)
 	case "zstd":
@@ -136,11 +127,12 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 		if zstdErr != nil {
 			return onErr(fmt.Errorf("error creating ZSTD reader: %v", zstdErr))
 		}
-		defer decoder.Close()
 		reader = decoder.IOReadCloser()
+		closeEncodedReader = decoder.Close
 	default:
 		reader = resp.Body
 	}
+	defer closeEncodedReader()
 
 	body, err := io.ReadAll(reader)
 	if err != nil {

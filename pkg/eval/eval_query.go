@@ -254,12 +254,14 @@ func (q *EvalQuery) replace(query string) (string, error) {
 		table = q.escapeTableIdentifier(q.Database) + "." + table
 	}
 
-	myRound, err := q.convertInterval(q.Round, q.IntervalFactor, false)
-	if err != nil {
-		return "", err
-	}
+	var myRound int
 	if q.Round == "$step" {
 		myRound = q.IntervalSec
+	} else {
+		myRound, err = q.convertInterval(q.Round, q.IntervalFactor, false)
+		if err != nil {
+			return "", err
+		}
 	}
 	from := q.convertTimestamp(q.round(q.From, myRound))
 	to := q.convertTimestamp(q.round(q.To, myRound))

@@ -147,7 +147,13 @@ def regression(self, before, after, suite=None):
 
     if should_run("legacy_alerts"):
         self.context.grafana_version = "10.4.3"
-        with Given("I define endpoint with grafana version that contains legacy alerts"):
+        with Given("I start grafana_legacy_alerts service"):
+            self.context.cluster.command(
+                None,
+                f"set -o pipefail && {self.context.cluster.docker_compose} up -d grafana_legacy_alerts 2>&1 | tee",
+                timeout=120,
+            )
+        with And("I define endpoint with grafana version that contains legacy alerts"):
             self.context.endpoint = define("self.context.endpoint", "http://grafana_legacy_alerts:3000/")
 
         with And("I wait for grafana to be started"):

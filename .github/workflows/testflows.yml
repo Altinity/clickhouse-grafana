@@ -79,7 +79,7 @@ jobs:
           -u ./regression.py --before=0.1 --after=0.1
           --suite ${{ matrix.suite }}
           --log raw.log
-          -o new-fails
+          -o short
 
       - name: Create code coverage for backend
         run: docker compose run --rm backend_coverage_generate

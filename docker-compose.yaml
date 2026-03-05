@@ -281,7 +281,6 @@ services:
     #    user: root
     links:
       - grafana
-      - grafana_legacy_alerts
     environment:
       # - SE_LOG_LEVEL=ALL
       - SE_ENABLE_TRACING=false
@@ -301,7 +300,6 @@ services:
     depends_on:
       - grafana
       - trickster
-      - grafana_legacy_alerts
 
 volumes:
   node_modules:

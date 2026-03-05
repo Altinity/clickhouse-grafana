@@ -37,8 +37,12 @@ jobs:
             suite: "window_functions"
           - group: sql-editor
             suite: "sql_editor"
-          - group: data-source-setup
-            suite: "data_source_setup"
+          - group: data-source-setup-connection
+            suite: "data_source_setup_connection"
+          - group: data-source-setup-settings
+            suite: "data_source_setup_settings"
+          - group: data-source-setup-defaults
+            suite: "data_source_setup_defaults"
           - group: e2e
             suite: "e2e"
           - group: query-options

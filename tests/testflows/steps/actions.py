@@ -1,6 +1,7 @@
 import os
 import cv2 as cv
 import numpy as np
+import requests as http_requests
 from PIL import Image
 from PIL import ImageFilter
 
@@ -8,6 +9,7 @@ from testflows.core import *
 from steps.delay import delay
 from testflows.asserts import error
 
+import steps.ui as ui
 import steps.panel.view as panel
 import steps.dashboard.view as dashboard
 import steps.dashboards.view as dashboards
@@ -17,6 +19,13 @@ import steps.connections.datasources.new.view as datasources_new
 import steps.alerting.alert_rules.new.view as alert_rules
 import steps.alerting.alert_rules_legacy.new.view as alert_rules_legacy
 import steps.connections.datasources.altinity_edit.view as datasources_altinity_edit
+
+
+def _get_host_endpoint(endpoint):
+    """Convert Docker network endpoint to host-accessible endpoint for API calls."""
+    return (endpoint
+            .replace("grafana_legacy_alerts:3000", "localhost:3002")
+            .replace("grafana:3000", "localhost:3000"))
 
 
 @TestStep(Then)
@@ -79,34 +88,52 @@ def compare_screenshots_percent(self, screenshot_name_1, screenshot_name_2):
 @TestStep(Given)
 def create_dashboard(self, dashboard_name, open_it=True, finally_save_dashboard=True):
     """Create new dashboard named {dashboard_name} and open it."""
+    host_endpoint = _get_host_endpoint(self.context.endpoint)
+    dashboard_uid = None
+
     try:
-        for attempt in retries(delay=10, timeout=120):
-            with attempt:
-                with When("I open new dashboard view"):
-                    with delay():
-                        dashboard.open_new_dashboard_endpoint()
+        with When("I create dashboard via API"):
+            payload = {
+                "dashboard": {
+                    "title": dashboard_name,
+                    "panels": [],
+                    "schemaVersion": 39,
+                },
+                "overwrite": True,
+            }
+            for attempt in retries(delay=2, timeout=30):
+                with attempt:
+                    resp = http_requests.post(
+                        f"{host_endpoint}api/dashboards/db",
+                        json=payload,
+                        auth=("admin", "admin"),
+                        timeout=10,
+                    )
+                    assert resp.status_code == 200, error(
+                        f"Failed to create dashboard: {resp.text}"
+                    )
+                    dashboard_uid = resp.json()["uid"]
+                    dashboard_url = resp.json()["url"]
 
-                with And("I save new dashboard"):
-                    with delay():
-                        dashboard.saving_dashboard(dashboard_name=dashboard_name)
+        if open_it:
+            with And("I open the dashboard in the browser"):
+                with delay():
+                    ui.open_endpoint(
+                        endpoint=f"{self.context.endpoint}{dashboard_url.lstrip('/')}"
+                    )
 
-                with Then("I check dashboard created"):
-                    with delay():
-                        dashboards.check_dashboard_exists(dashboard_name=dashboard_name)
-
-                if open_it:
-                    with Then("I open dashboard"):
-                        with delay():
-                            dashboards.open_dashboard(dashboard_name=dashboard_name)
         yield
     finally:
-        if finally_save_dashboard:
-            with Finally("I save changes for dashboard"):
-                with delay(after=0.5):
-                    panel.save_dashboard()
-
-        with Finally(f"I delete dashboard {dashboard_name}"):
-            dashboards.delete_dashboard(dashboard_name=dashboard_name)
+        if dashboard_uid:
+            with Finally(f"I delete dashboard {dashboard_name} via API"):
+                try:
+                    http_requests.delete(
+                        f"{host_endpoint}api/dashboards/uid/{dashboard_uid}",
+                        auth=("admin", "admin"),
+                        timeout=10,
+                    )
+                except Exception:
+                    pass
 
 
 def distance(a, b):
@@ -475,21 +502,23 @@ def create_new_altinity_datasource(
                     ), error()
         yield
     finally:
-        with Finally("I delete datasource"):
-            with delay():
-                with By("opening datasources view"):
-                    datasources.open_connections_datasources_endpoint()
-            with delay():
-                with And(f"opening datasource setup view for {datasource_name}"):
-                    datasources.click_datasource_in_datasources_view(
-                        datasource_name=datasource_name
+        with Finally("I delete datasource via API"):
+            try:
+                host_endpoint = _get_host_endpoint(self.context.endpoint)
+                resp = http_requests.get(
+                    f"{host_endpoint}api/datasources/name/{datasource_name}",
+                    auth=("admin", "admin"),
+                    timeout=10,
+                )
+                if resp.status_code == 200:
+                    ds_id = resp.json()["id"]
+                    http_requests.delete(
+                        f"{host_endpoint}api/datasources/{ds_id}",
+                        auth=("admin", "admin"),
+                        timeout=10,
                     )
-            with delay():
-                with And("clicking delete button"):
-                    datasources_altinity_edit.click_delete_datasource()
-            with delay():
-                with And("clicking delete button in confirmation modal dialog"):
-                    datasources_altinity_edit.click_confirm_delete_datasource()
+            except Exception:
+                pass
 
 
 @TestStep(When)

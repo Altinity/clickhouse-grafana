@@ -284,6 +284,7 @@ services:
       - grafana_legacy_alerts
     environment:
       # - SE_LOG_LEVEL=ALL
+      - SE_NODE_SESSION_TIMEOUT=86400
       - SE_ENABLE_TRACING=false
       - SE_ENABLE_TLS=false
       - SE_HTTPS_CERTIFICATE=

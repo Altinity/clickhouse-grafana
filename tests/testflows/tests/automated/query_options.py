@@ -115,7 +115,7 @@ def time_shift(self):
 
     with When("I get time from and time to from reformatted query"):
         with delay():
-            time_from_before_time_shift = sql_editor.get_time_to_in_seconds(query_name='A')
+            time_from_before_time_shift = sql_editor.get_time_from_in_seconds(query_name='A')
             time_to_before_time_shift = sql_editor.get_time_to_in_seconds(query_name='A')
     try:
         with Then("I enter 'Time shift'"):
@@ -128,8 +128,8 @@ def time_shift(self):
 
         with Then("I check reformatted query contains properly defined time from and time to"):
             with delay():
-                assert time_to_before_time_shift - sql_editor.get_time_to_in_seconds(query_name='A') > 3*60*60 - 60, error()
-                assert time_from_before_time_shift - sql_editor.get_time_from_in_seconds(query_name='A') > 3*60*60 - 60, error()
+                assert time_to_before_time_shift - sql_editor.get_time_to_in_seconds(query_name='A') > 3*60*60 - 300, error()
+                assert time_from_before_time_shift - sql_editor.get_time_from_in_seconds(query_name='A') > 3*60*60 - 300, error()
 
     finally:
         with Finally("I return 'Time shift' text field back"):

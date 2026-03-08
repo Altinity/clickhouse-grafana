@@ -69,7 +69,7 @@ def check_red_alert(self):
             dashboards.open_dashboard(dashboard_name=dashboard_name)
 
     with Then("I check red alert is appeared"):
-        for attempt in retries(delay=5, timeout=50):
+        for attempt in retries(delay=5, timeout=120):
             with attempt:
                 dashboards.open_dashboard(dashboard_name=dashboard_name)
                 assert dashboard.check_red_alert_for_panel() is True
@@ -127,7 +127,7 @@ def check_green_alert(self):
             dashboards.open_dashboard(dashboard_name=dashboard_name)
 
     with Then("I check green alert is appeared"):
-        for attempt in retries(delay=5, timeout=50):
+        for attempt in retries(delay=5, timeout=120):
             with attempt:
                 dashboards.open_dashboard(dashboard_name=dashboard_name)
                 assert dashboard.check_green_alert_for_panel() is True

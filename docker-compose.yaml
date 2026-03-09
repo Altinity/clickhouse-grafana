@@ -269,7 +269,7 @@ services:
     working_dir: /grafana-clickhouse
     volumes:
       - ./:/grafana-clickhouse
-      # for speedup npm install
+      # for speedup npm instal l
       - "node_modules:/grafana-clickhouse/node_modules"
     command: |
       npm run sign

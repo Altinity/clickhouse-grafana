@@ -253,6 +253,20 @@ def wait_for_element_to_be_present(self, select_type=None, element=None):
 
 
 @TestStep(When)
+def take_failure_screenshot(self, name="failure"):
+    """Take a screenshot for debugging test failures."""
+    try:
+        driver = self.context.driver
+        screenshot_dir = os.path.join(current_dir(), "..", "screenshots")
+        os.makedirs(screenshot_dir, exist_ok=True)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        file_path = os.path.join(screenshot_dir, f"{name}_{timestamp}.png")
+        driver.save_screenshot(file_path)
+    except Exception:
+        pass
+
+
+@TestStep(When)
 def save_coverage(self):
     """Save coverage before refreshing the page."""
     driver = self.context.driver

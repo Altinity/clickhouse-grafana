@@ -8,6 +8,7 @@ from steps.panel.query_options.locators import locators
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By as SelectBy
+from selenium.common.exceptions import TimeoutException
 
 
 @TestStep(When)
@@ -132,12 +133,13 @@ def check_relative_time_info_exists(self):
     """Check that relative time info exists."""
     with By(f"checking relative time info text is displayed"):
         try:
-            ui.wait_for_element_to_be_present(
+            ui.wait_for_element_to_be_visible(
                 select_type=SelectBy.XPATH,
-                element=f'//*[@data-testid="title-items-container"]//*[contains(@class, "panel-header-item")]'
+                element=f'//*[@data-testid="title-items-container"]//*[contains(@class, "panel-header-item")]',
+                timeout=15
             )
             return True
-        except:
+        except TimeoutException:
             return False
 
 
@@ -146,10 +148,11 @@ def check_time_shift_info_exists(self):
     """Check that time shift info exists."""
     with By(f"checking shift info text is displayed"):
         try:
-            ui.wait_for_element_to_be_present(
+            ui.wait_for_element_to_be_visible(
                 select_type=SelectBy.XPATH,
-                element=f'//*[@data-testid="title-items-container"]//*[contains(@class, "panel-header-item")]'
+                element=f'//*[@data-testid="title-items-container"]//*[contains(@class, "panel-header-item")]',
+                timeout=15
             )
             return True
-        except:
+        except TimeoutException:
             return False

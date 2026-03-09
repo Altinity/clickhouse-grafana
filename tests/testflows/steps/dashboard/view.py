@@ -590,24 +590,18 @@ def check_green_alert_for_panel(self):
     """Check that panel title contains green alert."""
     with By("checking green alert exists"):
         try:
-            assert 'path d="M12 20.86a2.75' in locators.alert_for_panel.get_attribute(
-                "innerHTML"
-            )
+            locators.green_alert_for_panel
             return True
-
-        except:
+        except NoSuchElementException:
             return False
 
 
 @TestStep(When)
 def check_red_alert_for_panel(self):
     """Check that panel title contains red alert."""
-    with By("checking reg alert exists"):
+    with By("checking red alert exists"):
         try:
-            assert 'path d="M18.17' in locators.alert_for_panel.get_attribute(
-                "innerHTML"
-            )
+            locators.red_alert_for_panel
             return True
-
-        except:
+        except NoSuchElementException:
             return False

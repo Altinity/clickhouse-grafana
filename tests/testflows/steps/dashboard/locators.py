@@ -196,7 +196,7 @@ class Locators:
     @property
     def green_alert_for_panel(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//path[contains(@d,'M12')]")
+        return driver.find_element(SelectBy.XPATH, f"//path[contains(@d,'M12 20.86a2.75')]")
 
     @property
     def red_alert_for_panel(self):

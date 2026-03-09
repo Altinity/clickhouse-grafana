@@ -267,6 +267,25 @@ def take_failure_screenshot(self, name="failure"):
 
 
 @TestStep(When)
+def dump_element_html(self, name="debug", elements=None):
+    """Dump innerHTML of elements to a file for debugging."""
+    try:
+        debug_dir = os.path.join(current_dir(), "..", "screenshots")
+        os.makedirs(debug_dir, exist_ok=True)
+        timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S")
+        file_path = os.path.join(debug_dir, f"{name}_{timestamp}.txt")
+        with open(file_path, "w", encoding="utf-8") as f:
+            if elements:
+                for i, el in enumerate(elements):
+                    f.write(f"--- Element {i} ---\n")
+                    f.write(f"outerHTML: {el.get_attribute('outerHTML')}\n\n")
+            else:
+                f.write("No elements provided\n")
+    except Exception:
+        pass
+
+
+@TestStep(When)
 def save_coverage(self):
     """Save coverage before refreshing the page."""
     driver = self.context.driver

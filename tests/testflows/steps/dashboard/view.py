@@ -590,10 +590,12 @@ def check_green_alert_for_panel(self):
     """Check that panel title contains green alert."""
     with By("checking green alert exists"):
         try:
-            assert 'path d="M12 20.86a2.75' in locators.alert_for_panel.get_attribute(
-                "innerHTML"
-            )
-            return True
+            for el in locators.all_alert_for_panel:
+                if 'path d="M12 20.86a2.75' in el.get_attribute("innerHTML"):
+                    return True
+            ui.take_failure_screenshot(name="check_green_alert_failed")
+            ui.dump_element_html(name="green_alert_debug", elements=locators.all_alert_for_panel)
+            return False
         except Exception:
             ui.take_failure_screenshot(name="check_green_alert_failed")
             return False
@@ -604,10 +606,12 @@ def check_red_alert_for_panel(self):
     """Check that panel title contains red alert."""
     with By("checking red alert exists"):
         try:
-            assert 'path d="M18.17' in locators.alert_for_panel.get_attribute(
-                "innerHTML"
-            )
-            return True
+            for el in locators.all_alert_for_panel:
+                if 'path d="M18.17' in el.get_attribute("innerHTML"):
+                    return True
+            ui.take_failure_screenshot(name="check_red_alert_failed")
+            ui.dump_element_html(name="red_alert_debug", elements=locators.all_alert_for_panel)
+            return False
         except Exception:
             ui.take_failure_screenshot(name="check_red_alert_failed")
             return False

@@ -209,6 +209,11 @@ class Locators:
         return driver.find_element(SelectBy.XPATH, f"//span[contains(@class,'panel-header-item')]")
 
     @property
+    def all_alert_for_panel(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_elements(SelectBy.XPATH, f"//span[contains(@class,'panel-header-item')]")
+
+    @property
     def exit_edit_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Exit edit mode button']")

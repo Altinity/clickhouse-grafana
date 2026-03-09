@@ -182,6 +182,9 @@ def webdriver(
             with Finally("clean up UI.driver"):
                 driver.close()
                 driver.quit()
+                # Wait for selenium video container to finalize recording
+                # (write moov atom to MP4) before docker compose down kills it
+                time.sleep(5)
 
 
 @TestStep(Given)

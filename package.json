@@ -47,7 +47,7 @@
     "identity-obj-proxy": "^3.0.0",
     "istanbul": "^0.4.5",
     "jest": "^29.7.0",
-    "jest-environment-jsdom": "^29.5.0",
+    "jest-environment-jsdom": "^30.2.0",
     "node-polyfill-webpack-plugin": "^4.1.0",
     "nyc": "^17.1.0",
     "prettier": "^2.8.7",
@@ -60,7 +60,7 @@
     "ts-node": "^10.9.2",
     "tsconfig-paths": "^4.2.0",
     "typescript": "^5.2.0",
-    "webpack": "^5.94.0",
+    "webpack": "^5.105.0",
     "webpack-cli": "^5.1.4",
     "webpack-livereload-plugin": "^3.0.2"
   },

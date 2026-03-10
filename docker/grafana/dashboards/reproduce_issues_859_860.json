@@ -1,0 +1,58 @@
+{
+  "annotations": { "list": [] },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "clickhouse"
+      },
+      "description": "Reproduces #859: round() returns Float64, service_name is LowCardinality(String) label. Before fix: panic: reflect.Value.Float on string Value in parseFloatValue (json.Number from UseNumber).",
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "drawStyle": "line", "lineWidth": 1, "pointSize": 5, "showPoints": "auto" }
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 12, "w": 24, "x": 0, "y": 0 },
+      "id": 1,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "clickhouse" },
+          "database": "default",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "format": "time_series",
+          "table": "test_grafana",
+          "query": "SELECT\n    $timeSeries as t,\n    service_name,\n    round((count() / max(too_big_value)) * 100, 2) AS percent\nFROM $table\nWHERE $timeFilter\nGROUP BY t, service_name\nORDER BY t, service_name",
+          "rawQuery": "SELECT\n    (intDiv(toUInt32(event_time), 20) * 20) * 1000 as t,\n    service_name,\n    round((count() / max(too_big_value)) * 100, 2) AS percent\nFROM default.test_grafana\nWHERE event_time >= toDateTime(1700000000) AND event_time <= toDateTime(1700100000)\nGROUP BY t, service_name\nORDER BY t, service_name",
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true
+        }
+      ],
+      "title": "#859: round() Float64 + String label - parseFloatValue panic",
+      "type": "timeseries"
+    }
+  ],
+  "refresh": "",
+  "schemaVersion": 39,
+  "tags": ["test", "issue-859", "issue-860"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Reproduce Issues #859 #860 - parseFloatValue panic",
+  "uid": "reproduce-issues-859-860",
+  "version": 1,
+  "weekStart": ""
+}

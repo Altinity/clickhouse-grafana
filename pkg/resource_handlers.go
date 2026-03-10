@@ -17,16 +17,15 @@ import (
 
 // Request/Response structures for resource handlers
 
-
 type Target struct {
 	Database string `json:"database"`
 	Table    string `json:"table"`
 }
 
 type ApplyAdhocFiltersRequest struct {
-	Query        string               `json:"query"`
+	Query        string              `json:"query"`
 	AdhocFilters []adhoc.AdhocFilter `json:"adhocFilters"`
-	Target       Target               `json:"target"`
+	Target       Target              `json:"target"`
 }
 
 type ApplyAdhocFiltersResponse struct {
@@ -54,6 +53,7 @@ type CreateQueryRequest struct {
 	MaxDataPoints          int64  `json:"maxDataPoints"`
 	FrontendDatasource     bool   `json:"frontendDatasource"`
 	UseWindowFuncForMacros bool   `json:"useWindowFuncForMacros"`
+	MetadataUserLogin      string `json:"metadataUserLogin"`
 	TimeRange              struct {
 		From string `json:"from"`
 		To   string `json:"to"`
@@ -112,6 +112,7 @@ type ProcessQueryBatchRequest struct {
 	MaxDataPoints          int64  `json:"maxDataPoints"`
 	FrontendDatasource     bool   `json:"frontendDatasource"`
 	UseWindowFuncForMacros bool   `json:"useWindowFuncForMacros"`
+	MetadataUserLogin      string `json:"metadataUserLogin"`
 	TimeRange              struct {
 		From string `json:"from"`
 		To   string `json:"to"`
@@ -119,7 +120,7 @@ type ProcessQueryBatchRequest struct {
 
 	// Adhoc filter fields
 	AdhocFilters []adhoc.AdhocFilter `json:"adhocFilters"`
-	Target       Target        `json:"target"`
+	Target       Target              `json:"target"`
 
 	// Properties to extract
 	ExtractProperties []string `json:"extractProperties"`
@@ -164,6 +165,7 @@ type CreateQueryWithAdhocRequest struct {
 	MaxDataPoints          int64  `json:"maxDataPoints"`
 	FrontendDatasource     bool   `json:"frontendDatasource"`
 	UseWindowFuncForMacros bool   `json:"useWindowFuncForMacros"`
+	MetadataUserLogin      string `json:"metadataUserLogin"`
 	TimeRange              struct {
 		From string `json:"from"`
 		To   string `json:"to"`
@@ -171,7 +173,7 @@ type CreateQueryWithAdhocRequest struct {
 
 	// Adhoc filter fields
 	AdhocFilters []adhoc.AdhocFilter `json:"adhocFilters"`
-	Target       Target        `json:"target"`
+	Target       Target              `json:"target"`
 }
 
 type CreateQueryWithAdhocResponse struct {
@@ -251,8 +253,6 @@ func findGroupByProperties(ast *eval.EvalAST) []interface{} {
 	// Return empty slice if nothing found
 	return []interface{}{}
 }
-
-
 
 // handleCreateQuery processes query creation with macro expansion and time range handling
 func (ds *ClickHouseDatasource) handleCreateQuery(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {
@@ -913,7 +913,6 @@ func sendUniversalErrorResponse(sender backend.CallResourceResponseSender, ctx E
 		Body: body,
 	})
 }
-
 
 // handleCreateQueryWithAdhoc safely batches createQuery + applyAdhocFilters without property extraction
 func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, req *backend.CallResourceRequest, sender backend.CallResourceResponseSender) error {

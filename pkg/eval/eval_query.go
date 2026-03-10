@@ -2442,5 +2442,6 @@ func NewEvalQuery(request interface{}, from, to time.Time) EvalQuery {
 		To:                     to,
 		FrontendDatasource:     v.FieldByName("FrontendDatasource").Bool(),
 		UseWindowFuncForMacros: v.FieldByName("UseWindowFuncForMacros").Bool(),
+		MetadataUserLogin:      v.FieldByName("MetadataUserLogin").String(),
 	}
 }

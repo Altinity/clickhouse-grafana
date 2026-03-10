@@ -259,12 +259,15 @@ def save_coverage(self):
     with By("executing 'return JSON.stringify(window.__coverage__);' in chrome console"):
         coverage_info = driver.execute_script('return JSON.stringify(window.__coverage__);')
 
-    if not(coverage_info is None):
+    # Skip empty payloads and always write into tests/testflows/coverage/raw
+    if coverage_info not in (None, "null"):
         with By("saving coverage into the file"):
-            timestamp = datetime.datetime.timestamp(datetime.datetime.now())
-            file = open(f"coverage/raw/coverage{timestamp}.json", 'w')
-            file.write(coverage_info)
-            file.close()
+            coverage_dir = os.path.join(current_dir(), "..", "coverage", "raw")
+            os.makedirs(coverage_dir, exist_ok=True)
+            timestamp = datetime.datetime.now().strftime("%Y%m%d%H%M%S%f")
+            file_path = os.path.join(coverage_dir, f"coverage{timestamp}.json")
+            with open(file_path, "w", encoding="utf-8") as file:
+                file.write(coverage_info)
 
 @TestStep(When)
 def dismiss_alert_if_present(self):

@@ -1,6 +1,14 @@
 import React from 'react';
+import { css } from '@emotion/css';
 import { TagsInput } from '@grafana/ui';
 import { AdhocFilterTagsProps, AdhocFilter } from '../../types';
+
+const tagsInputClassName = css({
+  margin: '5px 0',
+  '> div': {
+    display: 'none',
+  },
+});
 
 export const AdhocFilterTags: React.FC<AdhocFilterTagsProps> = ({ 
   adhocFilters, 
@@ -13,7 +21,7 @@ export const AdhocFilterTags: React.FC<AdhocFilterTagsProps> = ({
 
   return (
     <TagsInput
-      className="adhoc-filters-tags"
+      className={tagsInputClassName}
       tags={adhocFilters.map((filter: AdhocFilter) => 
         `${filter.key} ${filter.operator} ${filter.value}`
       )}

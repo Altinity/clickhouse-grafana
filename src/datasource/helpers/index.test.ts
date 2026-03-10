@@ -1,4 +1,4 @@
-import { interpolateQueryExpr, interpolateQueryExprWithContext, createContextAwareInterpolation } from './index';
+import { interpolateQueryExpr, interpolateQueryExprWithContext, createContextAwareInterpolation, conditionalTest } from './index';
 
 describe('Variable Interpolation', () => {
   describe('interpolateQueryExpr (original)', () => {
@@ -864,6 +864,153 @@ describe('Variable Interpolation', () => {
       const variable = { name: 'var', multi: false, includeAll: false };
 
       expect(interpolateFn('value1', variable)).toBe("'value1'");
+    });
+  });
+});
+
+describe('conditionalTest', () => {
+  const createTemplateSrv = (variables: any[]) => ({
+    getVariables: () => variables,
+  });
+
+  describe('2-parameter format: $conditionalTest(SQL_if, $var)', () => {
+    it('should include SQL_if when variable has a value', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name = '$service_name', $service_name)";
+      const templateSrv = createTemplateSrv([
+        { name: 'service_name', type: 'query', current: { value: 'postgresql' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain("AND service_name = '$service_name'");
+      expect(result).not.toContain('$conditionalTest');
+    });
+
+    it('should remove macro when variable is $__all', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name = '$service_name', $service_name)";
+      const templateSrv = createTemplateSrv([
+        { name: 'service_name', type: 'query', current: { value: '$__all' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).not.toContain('AND service_name');
+      expect(result).not.toContain('$conditionalTest');
+    });
+
+    it('should remove macro when textbox variable is empty', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND name = '$name', $name)";
+      const templateSrv = createTemplateSrv([
+        { name: 'name', type: 'textbox', current: { value: '' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).not.toContain('AND name');
+      expect(result).not.toContain('$conditionalTest');
+    });
+  });
+
+  describe('3-parameter format: $conditionalTest(SQL_if, SQL_else, $var) - issue #869', () => {
+    it('should use SQL_if when variable has a specific value', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN ($service_name), AND service_name IN ('mysql'), $service_name)";
+      const templateSrv = createTemplateSrv([
+        { name: 'service_name', type: 'query', current: { value: 'postgresql' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain("AND service_name IN ($service_name)");
+      expect(result).not.toContain("AND service_name IN ('mysql')");
+      expect(result).not.toContain('$conditionalTest');
+    });
+
+    it('should use SQL_else when variable is $__all', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN ($service_name), AND service_name IN ('mysql'), $service_name)";
+      const templateSrv = createTemplateSrv([
+        { name: 'service_name', type: 'query', current: { value: '$__all' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain("AND service_name IN ('mysql')");
+      expect(result).not.toContain('AND service_name IN ($service_name)');
+      expect(result).not.toContain('$conditionalTest');
+    });
+
+    it('should use SQL_else when variable is $__all as array', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN ($service_name), AND 1=1, $service_name)";
+      const templateSrv = createTemplateSrv([
+        { name: 'service_name', type: 'query', current: { value: ['$__all'] } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('AND 1=1');
+      expect(result).not.toContain('AND service_name IN ($service_name)');
+    });
+
+    it('should use SQL_else when textbox variable is empty', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND name = '$name', AND name IS NOT NULL, $name)";
+      const templateSrv = createTemplateSrv([
+        { name: 'name', type: 'textbox', current: { value: '' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('AND name IS NOT NULL');
+      expect(result).not.toContain("AND name = '$name'");
+    });
+
+    it('should use SQL_else when custom variable is null', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND status = $status, AND status > 0, $status)";
+      const templateSrv = createTemplateSrv([
+        { name: 'status', type: 'custom', current: { value: null } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('AND status > 0');
+      expect(result).not.toContain('AND status = $status');
+    });
+
+    it('should use SQL_else when multi-value variable is empty array', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND host IN ($hosts), AND host = 'default', $hosts)";
+      const templateSrv = createTemplateSrv([
+        { name: 'hosts', type: 'query', current: { value: [] } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain("AND host = 'default'");
+      expect(result).not.toContain('AND host IN ($hosts)');
+    });
+
+    it('should handle nested parentheses in SQL_if expression', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND service_name IN (toUpper($service_name)), AND 1=1, $service_name)";
+      const templateSrv = createTemplateSrv([
+        { name: 'service_name', type: 'query', current: { value: 'postgresql' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('AND service_name IN (toUpper($service_name))');
+      expect(result).not.toContain('AND 1=1');
+    });
+
+    it('should handle nested parentheses in SQL_else expression', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND name = $name, AND name IN (SELECT name FROM defaults), $name)";
+      const templateSrv = createTemplateSrv([
+        { name: 'name', type: 'textbox', current: { value: '' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('AND name IN (SELECT name FROM defaults)');
+      expect(result).not.toContain('AND name = $name');
+    });
+
+    it('should throw error when last parameter is not a variable', () => {
+      const query = "SELECT * FROM table WHERE $conditionalTest(AND a=1, AND b=2, notavar)";
+      const templateSrv = createTemplateSrv([]);
+      expect(() => conditionalTest(query, templateSrv as any)).toThrow('last parameter must be a variable');
+    });
+
+    it('should throw error when variable is not found', () => {
+      const query = "SELECT * FROM table WHERE $conditionalTest(AND a=1, AND b=2, $nonexistent)";
+      const templateSrv = createTemplateSrv([]);
+      expect(() => conditionalTest(query, templateSrv as any)).toThrow('cannot find referenced variable');
+    });
+
+    it('should handle multiple 3-param conditionalTest macros in one query', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND svc IN ($svc), AND 1=1, $svc) $conditionalTest(AND host = '$host', AND host IS NOT NULL, $host)";
+      const templateSrv = createTemplateSrv([
+        { name: 'svc', type: 'query', current: { value: 'postgresql' } },
+        { name: 'host', type: 'textbox', current: { value: '' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('AND svc IN ($svc)');
+      expect(result).toContain('AND host IS NOT NULL');
+      expect(result).not.toContain('AND 1=1');
+      expect(result).not.toContain("AND host = '$host'");
     });
   });
 });

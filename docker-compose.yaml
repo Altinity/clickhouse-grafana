@@ -147,12 +147,9 @@ services:
       CGO_ENABLED: "0"
     working_dir: /grafana-clickhouse
     volumes:
-      - ./.go-cache:/go/pkg/mod
-      - ./.go-cache:/root/go/pkg/mod
-      - ./.go-cache:/go-cache
       - ./:/grafana-clickhouse
       # for speedup npm install under WSL
-      # - "node_modules:/grafana-clickhouse/node_modules"
+      - "node_modules:/grafana-clickhouse/node_modules"
     command: |
       bash -xec '
         if [[ "3" == `ls -la ./node_modules/ | wc -l` ]]; then npm install; fi && \

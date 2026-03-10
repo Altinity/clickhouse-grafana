@@ -1,6 +1,6 @@
 [docker]
 configs = [
-  "seleniarm/standalone-chromium:latest",
+  "selenium/standalone-chromium:latest",
   '''
   {
       "browserName": "chrome",
@@ -22,3 +22,4 @@ host-config-keys = ["Dns", "DnsOptions", "DnsSearch", "ExtraHosts", "NetworkMode
 url = "http://127.0.0.1:2375"
 video-image = "selenium/video:latest"
 auto-remove = false
+env = ["SE_NODE_SESSION_TIMEOUT=86400"]

@@ -1,11 +1,11 @@
-<img align=right style="width: 5em;" src="https://github.com/user-attachments/assets/1e97270f-7925-4cc2-8791-8d0cc77fe512">
+<img alt="altinity logo" align=right style="width: 5em;" src="https://github.com/user-attachments/assets/1e97270f-7925-4cc2-8791-8d0cc77fe512">
 
 <br>
 
 
 # 🧪 Running Altinity grafana plugin testflows tests locally
 
-## 👣 Steps to follow
+## 👣 Install requirements on Linux
 * Install docker compose.
 ```bash
 curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo gpg --dearmor --yes -o /etc/apt/keyrings/docker.gpg
@@ -13,9 +13,21 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.
 sudo apt-get update
 sudo apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin 
 ```
-* Install required python packages:
-  
-  `pip install -r tests/testflows/requirements.txt`
+## Install requirements on MacOS
+```bash
+brew install python3
+brew install orbstack
+orb start
+```
+
+## Prepare python environment
+* Install required python packages: 
+
+```bash
+pytnon -m venv .venv
+soure .venv/bin/activate
+pip install -r tests/testflows/requirements.txt`
+```
 
 * Stop applications that use the following ports:
    - 8123, 9000, 5432, 3306, 3000, 3001, 8480, 4444

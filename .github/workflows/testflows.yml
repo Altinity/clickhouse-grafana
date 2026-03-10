@@ -55,6 +55,8 @@ jobs:
             suite: "template_variables_editor"
           - group: legacy-alerts
             suite: "legacy_alerts"
+          - group: conditional-test
+            suite: "conditional_test"
 
     steps:
       - name: Checkout

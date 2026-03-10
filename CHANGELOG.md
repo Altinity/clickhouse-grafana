@@ -1,3 +1,12 @@
+# 3.4.10 (2026-03-10)
+## Fixes:
+* fix panic when Grafana executes alert evaluation or when plotting time series using Math Operation, fix https://github.com/Altinity/clickhouse-grafana/issues/859, fix https://github.com/Altinity/clickhouse-grafana/issues/860
+* fix `$conditionalTest` macro with 3 parameters (else branch) producing wrong results, fix https://github.com/Altinity/clickhouse-grafana/issues/869
+* fix `$step` macro not being expanded, fix https://github.com/Altinity/clickhouse-grafana/issues/864
+
+## Enhancements:
+* fix all security transitive dependencies
+
 # 3.4.9 (2026-02-03)
 ## Fixes:
 * fix UInt64 values rounded on JS side due to JSON parsing precision loss, add `output_format_json_quote_64bit_integers=1` setting, fix https://github.com/Altinity/clickhouse-grafana/issues/832, related to https://github.com/ClickHouse/ClickHouse/issues/86553

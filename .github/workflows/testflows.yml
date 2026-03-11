@@ -13,7 +13,7 @@ permissions:
   contents: read
 
 env:
-  GRAFANA_VERSION: ${{ '12.4.0-20977568970' }}
+#  GRAFANA_VERSION: ${{ '12.4.0-20977568970' }}
   testflows_logs: |
     ./testflows_logs/*
   selenium_logs: |
@@ -60,13 +60,13 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup
         run: tests/testflows/infra/setup.sh
 
       - name: Cache pip packages
-        uses: actions/cache@v4
+        uses: actions/cache@v5
         with:
           path: ~/.cache/pip
           key: ${{ runner.os }}-pip-${{ hashFiles('tests/testflows/requirements.txt') }}
@@ -87,7 +87,7 @@ jobs:
 
       - name: Upload raw coverage data
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: raw-coverage-${{ matrix.group }}
           path: |
@@ -95,13 +95,13 @@ jobs:
             tests/testflows/coverage/raw/
           if-no-files-found: ignore
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: testflows-logs-${{ matrix.group }}
           path: ${{ env.testflows_logs}}
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v7
         if: always()
         with:
           name: selenium-logs-${{ matrix.group }}
@@ -116,15 +116,15 @@ jobs:
 
     steps:
       - name: Checkout
-        uses: actions/checkout@v4
+        uses: actions/checkout@v6
 
       - name: Setup Go
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
         with:
           go-version-file: go.mod
 
       - name: Setup Node.js
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v6
         with:
           node-version: 20
           cache: npm
@@ -133,7 +133,7 @@ jobs:
         run: npm ci
 
       - name: Download all raw coverage artifacts
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v7
         with:
           pattern: raw-coverage-*
           path: raw-coverage
@@ -173,7 +173,7 @@ jobs:
 
       - name: Upload coverage reports
         if: always()
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: code-coverage
           path: |

@@ -81,5 +81,9 @@
     "rxjs": "^7.8.2",
     "tslib": "2.5.3"
   },
-  "packageManager": "npm@9.8.1"
+  "packageManager": "npm@9.8.1",
+  "overrides": {
+    "serialize-javascript": "^7.0.4",
+    "immutable": "^5.1.5"
+  }
 }

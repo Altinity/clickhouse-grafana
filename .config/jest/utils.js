@@ -23,6 +23,7 @@ const grafanaESModules = [
   'react-colorful',
   'rxjs',
   'uuid',
+  'marked',
 ];
 
 module.exports = {

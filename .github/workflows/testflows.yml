@@ -57,6 +57,8 @@ jobs:
             suite: "legacy_alerts"
           - group: conditional-test
             suite: "conditional_test"
+          - group: search-filter
+            suite: "search_filter"
 
     steps:
       - name: Checkout

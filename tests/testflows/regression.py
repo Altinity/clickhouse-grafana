@@ -139,6 +139,7 @@ def regression(self, before, after, suite=None):
         ("unified_alerts", "testflows.tests.automated.unified_alerts"),
         ("template_variables_editor", "testflows.tests.automated.template_variables_editor"),
         ("conditional_test", "testflows.tests.automated.conditional_test"),
+        ("search_filter", "testflows.tests.automated.search_filter"),
     ]
 
     self.context.grafana_version = None

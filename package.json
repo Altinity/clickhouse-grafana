@@ -73,7 +73,6 @@
     "@grafana/ui": "12.4.1",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
-    "fs": "^0.0.1-security",
     "luxon": "^3.7.2",
     "pako": "^2.1.0",
     "react": "19.2.4",

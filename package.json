@@ -85,6 +85,7 @@
     "serialize-javascript": "^7.0.4",
     "immutable": "^5.1.5",
     "react": "$react",
-    "react-dom": "$react-dom"
+    "react-dom": "$react-dom",
+    "flatted": "3.3.3"
   }
 }

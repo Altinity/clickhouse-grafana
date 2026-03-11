@@ -806,6 +806,25 @@ export class CHDataSource
 
   async replace(options: DataQueryRequest<CHQuery>, target: CHQuery): Promise<any> {
     try {
+      // Handle $__searchFilter early - add to scopedVars BEFORE any template replacement or backend calls.
+      // With VariableSupportType.Custom, Grafana doesn't pass searchFilter in DataQueryRequest,
+      // so we ensure $__searchFilter is replaced with '%' (return all values, Grafana filters client-side).
+      // If scopedVars already contains __searchFilter (e.g. from Grafana), append '%' wildcard.
+      const wildcardChar = '%';
+      if (target.query?.indexOf('__searchFilter') !== -1) {
+        const existingSearchFilter = options.scopedVars?.__searchFilter?.value;
+        const searchFilterValue = existingSearchFilter
+          ? `${existingSearchFilter}${wildcardChar}`
+          : `${wildcardChar}`;
+        options = {
+          ...options,
+          scopedVars: {
+            ...options.scopedVars,
+            __searchFilter: { value: searchFilterValue, text: '' },
+          },
+        };
+      }
+
       const adhocFilters = getAdhocFilters(this.adHocFilter?.datasource?.name, this.uid);
       const queryData = {
         frontendDatasource: true,
@@ -863,25 +882,20 @@ export class CHDataSource
         createContextAwareInterpolation(transformedQueryAfterBackend, this.templateSrv.getVariables())
       );
 
-      const wildcardChar = '%';
-      const searchFilterVariableName = '__searchFilter';
-      let scopedVars = {};
-      if (query?.indexOf(searchFilterVariableName) !== -1) {
-        const searchFilterValue = `${wildcardChar}`;
-        scopedVars = {
-          __searchFilter: {
-            value: searchFilterValue,
-            text: '',
-          },
+      // Note: $__searchFilter is already handled at the top of replace() via options.scopedVars,
+      // so it should be replaced by templateSrv.replace above. Safety fallback for edge cases:
+      if (query?.indexOf('__searchFilter') !== -1) {
+        const fallbackScopedVars = {
+          __searchFilter: { value: '%', text: '' },
         };
-        query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
+        query = this.templateSrv.replace(query, fallbackScopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
       }
 
       // Important: use transformed query for context-aware interpolation (fix for issue #847)
       const finalTransformedQuery = conditionalTest(query, this.templateSrv);
       const interpolatedQuery = this.templateSrv.replace(
         finalTransformedQuery,
-        scopedVars,
+        options.scopedVars,
         createContextAwareInterpolation(finalTransformedQuery, this.templateSrv.getVariables())
       );
 

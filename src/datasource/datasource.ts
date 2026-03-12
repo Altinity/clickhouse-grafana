@@ -783,16 +783,27 @@ export class CHDataSource
     let expandedQueries = queries;
     if (queries && queries.length > 0) {
       expandedQueries = queries.map((query: any) => {
+        // Protect $adhoc macro from templateSrv.replace() (same fix as in replace())
+        const adhocPlaceholder = '__ADHOC_MACRO_PLACEHOLDER__';
+        const hasAdhocMacro = query.query?.includes('$adhoc');
+        let queryText = query.query;
+        if (hasAdhocMacro) {
+          queryText = queryText.replace(/\$adhoc/g, adhocPlaceholder);
+        }
         // Important: use transformed query for context-aware interpolation (fix for issue #847)
-        const transformedQuery = conditionalTest(query.query, this.templateSrv);
+        const transformedQuery = conditionalTest(queryText, this.templateSrv);
+        let replacedQuery = this.templateSrv.replace(
+          transformedQuery,
+          scopedVars,
+          createContextAwareInterpolation(transformedQuery, this.templateSrv.getVariables())
+        );
+        if (hasAdhocMacro) {
+          replacedQuery = replacedQuery.replace(new RegExp(adhocPlaceholder, 'g'), '$adhoc');
+        }
         const expandedQuery = {
           ...query,
           datasource: this.getRef(),
-          query: this.templateSrv.replace(
-            transformedQuery,
-            scopedVars,
-            createContextAwareInterpolation(transformedQuery, this.templateSrv.getVariables())
-          ),
+          query: replacedQuery,
         };
         return expandedQuery;
       });
@@ -854,6 +865,16 @@ export class CHDataSource
         metadataUserLogin: config.bootData?.user?.login || '',
       };
 
+      // Protect $adhoc macro from templateSrv.replace() — when the Grafana adhoc variable
+      // is named "adhoc", templateSrv treats $adhoc as a template variable and replaces it
+      // with a quoted string literal instead of letting the backend handle it as a plugin macro.
+      // Fix for issue #422 regression: use a placeholder that templateSrv won't match.
+      const adhocPlaceholder = '__ADHOC_MACRO_PLACEHOLDER__';
+      const hasAdhocMacro = queryData.query.includes('$adhoc');
+      if (hasAdhocMacro) {
+        queryData.query = queryData.query.replace(/\$adhoc/g, adhocPlaceholder);
+      }
+
       // Apply template variable replacements (these don't require backend processing)
       // Important: use transformed query for context-aware interpolation (fix for issue #847)
       const transformedQuery = conditionalTest(queryData.query, this.templateSrv);
@@ -863,6 +884,11 @@ export class CHDataSource
         options.scopedVars,
         createContextAwareInterpolation(transformedQuery, this.templateSrv.getVariables())
       );
+
+      // Restore $adhoc macro before sending to backend for proper processing
+      if (hasAdhocMacro) {
+        queryData.query = queryData.query.replace(new RegExp(adhocPlaceholder, 'g'), '$adhoc');
+      }
 
       // SAFE OPTIMIZATION: Batch createQuery + applyAdhocFilters (reduces 3->2 calls)
       const queryResult = await this.resourceClient.createQueryWithAdhoc(queryData, adhocFilters);

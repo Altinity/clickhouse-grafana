@@ -139,6 +139,70 @@ describe('$adhoc Macro Replacement (Issue #804)', () => {
     });
   });
 
+  describe('$adhoc macro protection from templateSrv.replace (issue #422 regression)', () => {
+    // Simulate the placeholder protection logic from datasource.ts:replace()
+    const adhocPlaceholder = '__ADHOC_MACRO_PLACEHOLDER__';
+
+    const simulateTemplateSrvReplace = (query: string): string => {
+      // Simulate what Grafana's templateSrv.replace does when there's an adhoc variable
+      // named "adhoc" — it replaces $adhoc with the rendered filter as a quoted string
+      return query.replace(/\$adhoc/g, "'default.test_grafana.service_name=\"mysql\"'");
+    };
+
+    const protectAndRestore = (query: string): string => {
+      const hasAdhocMacro = query.includes('$adhoc');
+      if (hasAdhocMacro) {
+        query = query.replace(/\$adhoc/g, adhocPlaceholder);
+      }
+      // Simulate templateSrv.replace — should NOT touch the placeholder
+      query = simulateTemplateSrvReplace(query);
+      // Restore $adhoc macro
+      if (hasAdhocMacro) {
+        query = query.replace(new RegExp(adhocPlaceholder, 'g'), '$adhoc');
+      }
+      return query;
+    };
+
+    it('should protect $adhoc from being replaced by templateSrv when adhoc variable exists', () => {
+      const query = `SELECT $timeSeries as t, sum(too_big_value) * 8 / $interval AS B
+FROM $table
+WHERE event_time BETWEEN $from AND $to AND $adhoc
+GROUP BY t
+ORDER BY t WITH FILL STEP ($interval*1000*5)`;
+
+      const result = protectAndRestore(query);
+
+      // $adhoc must survive templateSrv.replace intact
+      expect(result).toContain('$adhoc');
+      // Must NOT contain the quoted string that templateSrv would produce
+      expect(result).not.toContain("'default.test_grafana.service_name");
+    });
+
+    it('should not leave placeholder in output', () => {
+      const query = 'SELECT * FROM events WHERE $adhoc';
+      const result = protectAndRestore(query);
+
+      expect(result).not.toContain(adhocPlaceholder);
+      expect(result).toContain('$adhoc');
+    });
+
+    it('should protect multiple $adhoc occurrences', () => {
+      const query = 'SELECT * FROM t1 WHERE $adhoc UNION SELECT * FROM t2 WHERE $adhoc';
+      const result = protectAndRestore(query);
+
+      expect(result).not.toContain(adhocPlaceholder);
+      expect(result).not.toContain("'default.test_grafana");
+      // Both $adhoc macros should be preserved
+      expect((result.match(/\$adhoc/g) || []).length).toBe(2);
+    });
+
+    it('should not affect queries without $adhoc', () => {
+      const query = 'SELECT * FROM events WHERE status = 1';
+      const result = protectAndRestore(query);
+      expect(result).toBe(query);
+    });
+  });
+
   describe('edge cases', () => {
     it('should handle $adhoc at different positions in the query', () => {
       const testCases = [

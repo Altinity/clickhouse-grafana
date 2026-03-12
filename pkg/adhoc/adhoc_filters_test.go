@@ -1,6 +1,7 @@
 package adhoc
 
 import (
+	"strings"
 	"testing"
 )
 
@@ -250,6 +251,95 @@ func TestProcessAdhocFilters_EdgeCases(t *testing.T) {
 					tt.name, tt.expectedCount, len(result), tt.description)
 			}
 		})
+	}
+}
+
+// TestProcessAdhocFilters_ConditionFormat verifies that adhoc conditions are raw SQL
+// expressions (not wrapped in quotes). This is the backend counterpart of the fix for
+// issue #422 regression where $adhoc was replaced by templateSrv with a quoted string.
+func TestProcessAdhocFilters_ConditionFormat(t *testing.T) {
+	tests := []struct {
+		name              string
+		filters           []AdhocFilter
+		targetDatabase    string
+		targetTable       string
+		expectedCondition string
+	}{
+		{
+			name: "StringValue_NoExtraQuotes",
+			filters: []AdhocFilter{
+				{Key: "default.test_grafana.service_name", Operator: "=", Value: "mysql"},
+			},
+			targetDatabase:    "default",
+			targetTable:       "test_grafana",
+			expectedCondition: "service_name = 'mysql'",
+		},
+		{
+			name: "NumericValue_NoQuotes",
+			filters: []AdhocFilter{
+				{Key: "default.test_grafana.status", Operator: ">", Value: float64(200)},
+			},
+			targetDatabase:    "default",
+			targetTable:       "test_grafana",
+			expectedCondition: "status > 200",
+		},
+		{
+			name: "LikeOperator",
+			filters: []AdhocFilter{
+				{Key: "default.test_grafana.service_name", Operator: "=~", Value: "mysql%"},
+			},
+			targetDatabase:    "default",
+			targetTable:       "test_grafana",
+			expectedCondition: "service_name LIKE 'mysql%'",
+		},
+		{
+			name: "SimpleColumnName_MatchesTarget",
+			filters: []AdhocFilter{
+				{Key: "service_name", Operator: "=", Value: "mysql"},
+			},
+			targetDatabase:    "default",
+			targetTable:       "test_grafana",
+			expectedCondition: "service_name = 'mysql'",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			result := ProcessAdhocFilters(tt.filters, tt.targetDatabase, tt.targetTable)
+			if len(result) != 1 {
+				t.Fatalf("Expected 1 condition, got %d: %v", len(result), result)
+			}
+			if result[0] != tt.expectedCondition {
+				t.Errorf("Expected condition %q, got %q", tt.expectedCondition, result[0])
+			}
+		})
+	}
+}
+
+// TestAdhocReplacementInQuery verifies the full $adhoc macro replacement flow
+// as it happens in resource_handlers.go — conditions must be raw SQL, not quoted strings.
+func TestAdhocReplacementInQuery(t *testing.T) {
+	filters := []AdhocFilter{
+		{Key: "default.test_grafana.service_name", Operator: "=", Value: "mysql"},
+	}
+	conditions := ProcessAdhocFilters(filters, "default", "test_grafana")
+
+	// Simulate $adhoc replacement from resource_handlers.go
+	query := "SELECT t, sum(v) FROM default.test_grafana WHERE event_time BETWEEN 1 AND 2 AND $adhoc GROUP BY t ORDER BY t WITH FILL STEP(15000)"
+	renderedCondition := "1"
+	if len(conditions) > 0 {
+		renderedCondition = "(" + strings.Join(conditions, " AND ") + ")"
+	}
+	result := strings.ReplaceAll(query, "$adhoc", renderedCondition)
+
+	expected := "SELECT t, sum(v) FROM default.test_grafana WHERE event_time BETWEEN 1 AND 2 AND (service_name = 'mysql') GROUP BY t ORDER BY t WITH FILL STEP(15000)"
+	if result != expected {
+		t.Errorf("Unexpected query result.\nExpected: %s\nGot:      %s", expected, result)
+	}
+
+	// Must NOT contain the broken quoted format that templateSrv would produce
+	if strings.Contains(result, "'default.test_grafana.service_name") {
+		t.Error("Query contains quoted fully-qualified filter — this is the bug from issue #422 regression")
 	}
 }
 

@@ -414,7 +414,7 @@ describe('sql-series. toTimeSeries unit tests', () => {
     selfMock.tillNow = false;
 
     const result = toTimeSeries(true, true, selfMock);
-    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 1000]}, {"config": {"links": []}, "name": "A", "values": [1000, 10]}], "length": 2, "refId": undefined}, {"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 1000, 2000, 2000]}, {"config": {"links": []}, "name": "B", "values": [null, null, 2000, 20]}], "length": 4, "refId": undefined}])
+    expect(result).toEqual([{"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000]}, {"config": {"links": []}, "name": "A", "values": [10]}], "length": 1, "refId": undefined}, {"fields": [{"config": {"links": []}, "name": "time", "type": "time", "values": [1000, 2000]}, {"config": {"links": []}, "name": "B", "values": [null, 20]}], "length": 2, "refId": undefined}])
   });
 
 
@@ -533,6 +533,87 @@ describe('sql-series. toTimeSeries unit tests', () => {
     expect(result[0].fields[1].values[0]).toBe('11189782786942380395'); // Large -> string
     expect(result[0].fields[1].values[1]).toBe(null); // Null preserved
     expect(result[0].fields[1].values[2]).toBe(42); // Safe -> number
+  });
+
+  it('should not leak DateTime time column into data values when keys are present (issue #500 lttb regression)', () => {
+    // Reproduces the bug where $lttb queries with 3 fields (DateTime time, String category, numeric value)
+    // would leak the time column as a string data value, breaking visualization.
+    // The root cause was that the time column was only skipped when keys.length === 0,
+    // but when GROUP BY keys existed (e.g. category), the time column was processed as data.
+    // Before the issue #832 fix, the string filter accidentally removed these leaked values.
+    // After #832 allowed strings through the filter, the leaked DateTime strings broke charts.
+    const input = {
+      series: [
+        { event_time: '2024-01-15 10:00:00', category: 'web', requests: 150 },
+        { event_time: '2024-01-15 10:00:00', category: 'api', requests: 300 },
+        { event_time: '2024-01-15 11:00:00', category: 'web', requests: 200 },
+        { event_time: '2024-01-15 11:00:00', category: 'api', requests: 350 },
+      ],
+      meta: [
+        { name: 'event_time', type: 'DateTime' },
+        { name: 'category', type: 'String' },
+        { name: 'requests', type: 'Float64' },
+      ],
+      keys: ['category'],
+      refId: 'A',
+      tillNow: false,
+    };
+
+    const result = toTimeSeries(false, false, input);
+
+    // Should have 2 series: web and api
+    expect(result.length).toBe(2);
+
+    // Each series should only contain numeric request values, NOT DateTime strings
+    result.forEach((series: any) => {
+      const values = series.fields[1].values;
+      values.forEach((v: any) => {
+        // Values must be numbers or null, never DateTime strings like "2024-01-15 10:00:00"
+        expect(v === null || typeof v === 'number').toBe(true);
+      });
+    });
+
+    // Verify actual data values
+    const webSeries = result.find((s: any) => s.fields[1].name === 'web');
+    const apiSeries = result.find((s: any) => s.fields[1].name === 'api');
+    expect(webSeries).toBeDefined();
+    expect(apiSeries).toBeDefined();
+    expect(webSeries!.fields[1].values).toEqual([150, 200]);
+    expect(apiSeries!.fields[1].values).toEqual([300, 350]);
+  });
+
+  it('should not leak UInt32 time column into data values when keys are present', () => {
+    // Same issue but with numeric (UInt32) timestamp instead of DateTime string.
+    // The time column value should not appear as a data point even when it is numeric.
+    const input = {
+      series: [
+        { t: 1705312800, category: 'web', value: 100 },
+        { t: 1705312800, category: 'api', value: 200 },
+        { t: 1705316400, category: 'web', value: 150 },
+        { t: 1705316400, category: 'api', value: 250 },
+      ],
+      meta: [
+        { name: 't', type: 'UInt32' },
+        { name: 'category', type: 'String' },
+        { name: 'value', type: 'Float64' },
+      ],
+      keys: ['category'],
+      refId: 'A',
+      tillNow: false,
+    };
+
+    const result = toTimeSeries(false, false, input);
+    expect(result.length).toBe(2);
+
+    const webSeries = result.find((s: any) => s.fields[1].name === 'web');
+    const apiSeries = result.find((s: any) => s.fields[1].name === 'api');
+    expect(webSeries).toBeDefined();
+    expect(apiSeries).toBeDefined();
+    // Only 'value' column data, no 't' column leaking
+    expect(webSeries!.fields[1].values).toEqual([100, 150]);
+    expect(apiSeries!.fields[1].values).toEqual([200, 250]);
+    expect(webSeries!.fields[0].values).toEqual([1705312800, 1705316400]);
+    expect(apiSeries!.fields[0].values).toEqual([1705312800, 1705316400]);
   });
 });
 

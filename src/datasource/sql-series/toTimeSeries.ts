@@ -133,6 +133,16 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
 
   each(self.series, function (row) {
     let t = _formatValue(row[timeCol.name], timeCol.type);
+
+    // Convert DateTime string timestamps to UTC ISO format for Grafana
+    // _toFieldType returns an object {fieldType, timezone} for DateTime('TZ'),
+    // or plain FieldType.time for DateTime without timezone
+    if (timeColType?.fieldType === FieldType.time) {
+      t = convertTimezonedDateToUTC(t, timeColType.timezone);
+    } else if (timeColType === FieldType.time && typeof t === 'string' && isNaN(Number(t))) {
+      t = convertTimezonedDateToUTC(t, 'UTC');
+    }
+
     /* Build composite key (categories) from GROUP BY */
     let metricKey: any = null;
 
@@ -169,7 +179,7 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
     /* For each metric-value pair in row, construct a datapoint */
     each(row, function (val, key) {
       /* Skip timestamp and GROUP BY keys */
-      if ((self.keys.length === 0 && timeCol.name === key) || self.keys.indexOf(key) >= 0) {
+      if (timeCol.name === key || self.keys.indexOf(key) >= 0) {
         return;
       }
       const originalKey = key;
@@ -177,9 +187,6 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
        * use it instead of the metric name, e.g. count() */
       if (metricKey) {
         key = metricKey;
-      }
-      if (timeColType?.fieldType === FieldType.time) {
-        t = convertTimezonedDateToUTC(t, timeColType.timezone);
       }
 
       if (isArray(val)) {

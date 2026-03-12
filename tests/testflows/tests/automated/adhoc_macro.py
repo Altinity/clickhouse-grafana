@@ -106,6 +106,107 @@ def adhoc_macro_outline(self, dashboard_name, expected_adhoc_values, adhoc_label
                 dashboard.discard_changes_for_dashboard()
 
 
+@TestOutline
+def adhoc_dashboard_check_outline(self, dashboard_name, panels):
+    """Check that adhoc dashboard panels show correct generated SQL and display data."""
+
+    with Given(f"I open dashboard {dashboard_name}"):
+        dashboards.open_dashboard(dashboard_name=dashboard_name)
+
+    for panel_name, expected_sql_fragments in panels:
+        try:
+            with When(f"I open panel '{panel_name}'"):
+                with delay():
+                    dashboard.open_panel(panel_name=panel_name)
+
+            with And("I open SQL editor for query A"):
+                with delay():
+                    panel.go_to_sql_editor(query_name='A')
+
+            with And("I ensure Show generated SQL is enabled"):
+                with delay():
+                    try:
+                        reformatted_query = sql_editor.get_reformatted_query(query_name='A')
+                    except:
+                        sql_editor.click_show_generated_sql_button(query_name='A')
+
+            with Then("I check generated SQL contains expected fragments"):
+                with delay():
+                    reformatted_query = sql_editor.get_reformatted_query(query_name='A')
+                    note(f"Generated SQL: {reformatted_query}")
+                    for fragment in expected_sql_fragments:
+                        assert fragment in reformatted_query, error()
+
+            with When("I click on the visualization to refresh data"):
+                with delay():
+                    panel.click_on_the_visualization()
+
+            with Then("I check visualization is loaded"):
+                with delay():
+                    panel.wait_visualization()
+
+        finally:
+            with Finally(f"I discard changes for panel '{panel_name}'"):
+                with delay(after=0.5):
+                    panel.click_back_to_dashboard_button()
+
+            with And("I discard changes for dashboard"):
+                with delay():
+                    dashboard.discard_changes_for_dashboard()
+
+            with And(f"I reopen dashboard {dashboard_name}"):
+                dashboards.open_dashboard(dashboard_name=dashboard_name)
+
+
+@TestScenario
+def adhoc_from_template_variable_issue_805(self):
+    """Check that adhoc dashboard 'Adhoc from template variable issue 805' shows correct SQL and data."""
+
+    adhoc_dashboard_check_outline(
+        dashboard_name="Adhoc from template variable issue 805",
+        panels=[
+            ("Datasource from Variable is used", ["SELECT", "FROM", "default.oses", "OSName", "Linux"]),
+            ("Hardcoded Datasource", ["SELECT", "FROM", "default.oses"]),
+        ],
+    )
+
+
+@TestScenario
+def adhoc_hide_table_names_issue_456(self):
+    """Check that adhoc dashboard 'AdHoc with Hiding table name' shows correct SQL and data."""
+
+    adhoc_dashboard_check_outline(
+        dashboard_name="AdHoc with Hiding table name",
+        panels=[
+            ("AdHoc with Hide Table name", ["SELECT", "FROM", "default.test_grafana", "service_name", "mysql"]),
+        ],
+    )
+
+
+@TestScenario
+def adhoc_order_by_with_fill_issue_422(self):
+    """Check that adhoc dashboard 'adhoc + ORDER BY WITH FILL' shows correct SQL and data."""
+
+    adhoc_dashboard_check_outline(
+        dashboard_name="adhoc + ORDER BY WITH FILL",
+        panels=[
+            ("WITH FILL + Adhoc filter", ["SELECT", "FROM", "default.test_grafana", "WITH FILL", "service_name", "mysql"]),
+        ],
+    )
+
+
+@TestScenario
+def adhoc_variable_text_select_in_issue_421(self):
+    """Check that adhoc dashboard '$adhoc + ${variable:text} formatting' shows correct SQL and data."""
+
+    adhoc_dashboard_check_outline(
+        dashboard_name="$adhoc + ${variable:text} formatting",
+        panels=[
+            ("variable formatting $variable::text and adhoc", ["SELECT", "FROM", "default.test_grafana", "country", "NL"]),
+        ],
+    )
+
+
 @TestScenario
 def default_adhoc(self):
     """Check that grafana plugin supports setting up adhoc filter in datasource setup."""

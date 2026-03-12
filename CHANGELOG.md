@@ -1,11 +1,15 @@
-# 3.4.10 (2026-03-10)
+# 3.4.10 (2026-03-12)
 ## Fixes:
 * fix panic when Grafana executes alert evaluation or when plotting time series using Math Operation, fix https://github.com/Altinity/clickhouse-grafana/issues/859, fix https://github.com/Altinity/clickhouse-grafana/issues/860
 * fix `$conditionalTest` macro with 3 parameters (else branch) producing wrong results, fix https://github.com/Altinity/clickhouse-grafana/issues/869
 * fix `$step` macro not being expanded, fix https://github.com/Altinity/clickhouse-grafana/issues/864
+* fix `$__searchFilter` not working in template variable queries with `VariableSupportType.Custom`
+* fix regression when not displaying time series in format time + category + value, broken in 3.4.9, fix https://github.com/Altinity/clickhouse-grafana/issues/871
 
 ## Enhancements:
 * fix all security transitive dependencies
+* upgrade JS libraries to latest versions
+* update GitHub Actions to latest versions
 
 # 3.4.9 (2026-02-03)
 ## Fixes:

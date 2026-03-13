@@ -59,6 +59,8 @@ jobs:
             suite: "conditional_test"
           - group: search-filter
             suite: "search_filter"
+          - group: flamegraph-and-tracing
+            suite: "flamegraph_and_tracing"
 
     steps:
       - name: Checkout

@@ -73,3 +73,6 @@ tests/testflows/tests/automated/**/Downloads/*.csv
 # ai agents
 .aider*
 CLAUDE.md
+.claude/
+.agents/
+skills-lock.json

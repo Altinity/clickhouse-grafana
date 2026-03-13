@@ -291,7 +291,7 @@ describe('sql-series. toTable unit tests', () => {
 
   // Issue #832: UInt64 precision tests
   // Note: Go backend now sends UInt64/Int64 as strings to preserve precision
-  it('should preserve UInt64 values as strings', () => {
+  it('should convert safe UInt64 values to numbers', () => {
     const input = {
       series: [{ id: '1234567890', value: '9007199254740991' }],
       meta: [
@@ -301,9 +301,11 @@ describe('sql-series. toTable unit tests', () => {
     };
 
     const result = toTable(input);
-    // UInt64 values are kept as strings to preserve precision
-    expect(result[0].rows[0][0]).toBe('1234567890');
-    expect(result[0].rows[0][1]).toBe('9007199254740991');
+    // UInt64 values within safe integer range are converted to numbers
+    expect(result[0].rows[0][0]).toBe(1234567890);
+    expect(result[0].rows[0][1]).toBe(9007199254740991);
+    expect(result[0].columns[0].type).toBe('number');
+    expect(result[0].columns[1].type).toBe('number');
   });
 
   it('should preserve precision for large UInt64 values as strings', () => {

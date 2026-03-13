@@ -25,9 +25,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": null,
   "links": [],
-  "liveNow": false,
   "panels": [
     {
       "datasource": {
@@ -41,17 +39,22 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 0,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -59,6 +62,7 @@
               "type": "linear"
             },
             "showPoints": "auto",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -74,7 +78,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           }
@@ -92,24 +96,32 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.4.1",
       "targets": [
         {
+          "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "clickhouse_limited"
+            "uid": "clickhouse-limited"
           },
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
           "format": "time_series",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM default.test_grafana WHERE $timeFilter GROUP BY t ORDER BY t",
           "query": "SELECT $timeSeries as t, count() FROM default.test_grafana WHERE $timeFilter GROUP BY t ORDER BY t",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "table": "test_grafana"
         }
       ],
       "title": "Basic Query - No System Table Access Required",
@@ -128,7 +140,13 @@
           },
           "custom": {
             "align": "auto",
-            "displayMode": "auto"
+            "cellOptions": {
+              "type": "auto"
+            },
+            "footer": {
+              "reducers": []
+            },
+            "inspect": false
           },
           "mappings": [],
           "thresholds": {
@@ -136,7 +154,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           }
@@ -151,19 +169,25 @@
       },
       "id": 2,
       "options": {
+        "cellHeight": "sm",
         "showHeader": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "12.4.1",
       "targets": [
         {
+          "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "clickhouse_limited"
+            "uid": "clickhouse-limited"
           },
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
           "format": "table",
           "query": "SELECT service_name, country, count() as count FROM default.test_grafana GROUP BY service_name, country ORDER BY count DESC LIMIT 20",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "table": "test_grafana"
         }
       ],
       "title": "Table Query - Works Without System Tables",
@@ -181,17 +205,22 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "bars",
             "fillOpacity": 100,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -199,6 +228,7 @@
               "type": "linear"
             },
             "showPoints": "never",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -214,7 +244,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               }
             ]
           },
@@ -233,23 +263,31 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "multi",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.4.1",
       "targets": [
         {
+          "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "clickhouse_limited"
+            "uid": "clickhouse-limited"
           },
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
           "format": "time_series",
           "query": "SELECT $timeSeries as t, service_name, count() FROM default.test_grafana WHERE $timeFilter GROUP BY t, service_name ORDER BY t",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "table": "test_grafana"
         }
       ],
       "title": "Grouped Time Series - No System Access Needed",
@@ -261,6 +299,10 @@
         "uid": "clickhouse-limited"
       },
       "description": "Tests log panel functionality without system table access",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
       "gridPos": {
         "h": 8,
         "w": 12,
@@ -270,24 +312,33 @@
       "id": 4,
       "options": {
         "dedupStrategy": "none",
+        "enableInfiniteScrolling": false,
         "enableLogDetails": true,
         "prettifyLogMessage": false,
         "showCommonLabels": false,
+        "showControls": false,
         "showLabels": false,
         "showTime": true,
         "sortOrder": "Descending",
+        "unwrappedColumns": false,
         "wrapLogMessage": false
       },
+      "pluginVersion": "12.4.1",
       "targets": [
         {
+          "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "clickhouse_limited"
+            "uid": "clickhouse-limited"
           },
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
           "format": "logs",
           "query": "SELECT event_time as _time, content as _content, level as _level FROM default.test_logs WHERE $timeFilter ORDER BY _time DESC LIMIT 100",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "table": "test_logs"
         }
       ],
       "title": "Logs Panel - Works Without System Tables",
@@ -310,7 +361,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -334,22 +385,23 @@
         "graphMode": "area",
         "justifyMode": "auto",
         "orientation": "auto",
+        "percentChangeColorMode": "standard",
         "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
         },
+        "showPercentChange": false,
         "text": {},
-        "textMode": "auto"
+        "textMode": "auto",
+        "wideLayout": true
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "12.4.1",
       "targets": [
         {
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "clickhouse_limited"
+            "uid": "clickhouse-limited"
           },
           "format": "table",
           "query": "SELECT count() as total_records FROM default.test_grafana",
@@ -373,9 +425,9 @@
           },
           "custom": {
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             }
           },
           "mappings": [],
@@ -395,31 +447,51 @@
         "legend": {
           "displayMode": "list",
           "placement": "right",
+          "showLegend": true,
           "values": []
         },
         "pieType": "pie",
         "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": false
         },
+        "sort": "desc",
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.4.1",
       "targets": [
         {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "clickhouse_limited"
+            "uid": "clickhouse-limited"
           },
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
           "format": "table",
+          "formattedQuery": "/* grafana dashboard='Test Limited Permissions (Issue #813)', user=admin */\nSELECT service_name, count() as count FROM default.test_grafana GROUP BY service_name",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
           "query": "SELECT service_name, count() as count FROM default.test_grafana GROUP BY service_name",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "test_grafana",
+          "useWindowFuncForMacros": true
         }
       ],
       "title": "Services Distribution",
@@ -442,7 +514,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "yellow",
@@ -467,27 +539,55 @@
       "id": 7,
       "options": {
         "displayMode": "gradient",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
         "orientation": "horizontal",
         "reduceOptions": {
-          "values": false,
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": ""
+          "calcs": ["lastNotNull"],
+          "fields": "",
+          "values": true
         },
-        "showUnfilled": true
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
       },
-      "pluginVersion": "10.0.0",
+      "pluginVersion": "12.4.1",
       "targets": [
         {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "clickhouse_limited"
+            "uid": "clickhouse-limited"
           },
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": true,
           "format": "table",
+          "formattedQuery": "/* grafana dashboard='Test Limited Permissions (Issue #813)', user=admin */\nSELECT country, count() as count FROM default.test_grafana GROUP BY country ORDER BY count DESC LIMIT 10",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
           "query": "SELECT country, count() as count FROM default.test_grafana GROUP BY country ORDER BY count DESC LIMIT 10",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "round": "0s",
+          "skip_comments": true,
+          "table": "test_grafana",
+          "useWindowFuncForMacros": true
         }
       ],
       "title": "Top Countries",
@@ -505,17 +605,22 @@
             "mode": "palette-classic"
           },
           "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
             "axisLabel": "",
             "axisPlacement": "auto",
             "barAlignment": 0,
+            "barWidthFactor": 0.6,
             "drawStyle": "line",
             "fillOpacity": 10,
             "gradientMode": "none",
             "hideFrom": {
+              "legend": false,
               "tooltip": false,
-              "viz": false,
-              "legend": false
+              "viz": false
             },
+            "insertNulls": false,
             "lineInterpolation": "linear",
             "lineWidth": 1,
             "pointSize": 5,
@@ -523,6 +628,7 @@
               "type": "linear"
             },
             "showPoints": "never",
+            "showValues": false,
             "spanNulls": false,
             "stacking": {
               "group": "A",
@@ -538,7 +644,7 @@
             "steps": [
               {
                 "color": "green",
-                "value": null
+                "value": 0
               },
               {
                 "color": "red",
@@ -561,32 +667,40 @@
         "legend": {
           "calcs": [],
           "displayMode": "list",
-          "placement": "bottom"
+          "placement": "bottom",
+          "showLegend": true
         },
         "tooltip": {
+          "hideZeros": false,
           "mode": "single",
           "sort": "none"
         }
       },
+      "pluginVersion": "12.4.1",
       "targets": [
         {
+          "database": "default",
           "datasource": {
             "type": "vertamedia-clickhouse-datasource",
-            "uid": "clickhouse_limited"
+            "uid": "clickhouse-limited"
           },
+          "dateColDataType": "",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
           "format": "time_series",
           "query": "SELECT $timeSeries as t, count() FROM default.test_grafana WHERE $timeFilter AND service_name = 'mysql' GROUP BY t ORDER BY t",
           "rawQuery": true,
-          "refId": "A"
+          "refId": "A",
+          "table": "test_grafana"
         }
       ],
       "title": "Alert Query Test",
       "type": "timeseries"
     }
   ],
+  "preload": false,
   "refresh": "",
-  "schemaVersion": 38,
-  "style": "dark",
+  "schemaVersion": 42,
   "tags": ["test", "permissions", "issue-813"],
   "templating": {
     "list": []
@@ -596,7 +710,7 @@
     "to": "now"
   },
   "timepicker": {},
-  "timezone": "",
+  "timezone": "browser",
   "title": "Test Limited Permissions (Issue #813)",
   "uid": "test-limited-permissions",
   "version": 1,

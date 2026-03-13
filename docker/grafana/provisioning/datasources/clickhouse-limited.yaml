@@ -2,6 +2,7 @@ apiVersion: 1
 
 datasources:
   - name: clickhouse-limited
+    uid: clickhouse-limited
     type: vertamedia-clickhouse-datasource
     access: proxy
     url: http://clickhouse:8123

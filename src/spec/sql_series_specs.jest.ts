@@ -620,14 +620,14 @@ describe('sql-series. toTimeSeries unit tests', () => {
 describe('sql-series. toTraces unit tests', () => {
   const meta = [{ name: 'startTime', type: 'UInt32' }];
 
-  it('should transform trace data correctly', () => {
+  it('should group spans by traceID into separate DataFrames', () => {
     const inputData = [
       {
         traceID: '1',
         spanID: '1-1',
         parentSpanID: null,
         serviceName: 'serviceA',
-        startTime: 1633072800000, // Example timestamp
+        startTime: 1633072800000,
         duration: 100,
         operationName: 'operationA',
         tags: [{ key1: 'value1' }],
@@ -638,7 +638,7 @@ describe('sql-series. toTraces unit tests', () => {
         spanID: '2-1',
         parentSpanID: '1-1',
         serviceName: 'serviceB',
-        startTime: 1633072860000, // Example timestamp
+        startTime: 1633072860000,
         duration: 200,
         operationName: 'operationB',
         tags: [{ key2: 'value2' }],
@@ -648,17 +648,87 @@ describe('sql-series. toTraces unit tests', () => {
 
     const result = toTraces(inputData, meta);
 
+    // Two different traceIDs => two DataFrames
+    expect(result).toHaveLength(2);
+    expect(result[0].fields).toHaveLength(9);
+    expect(result[1].fields).toHaveLength(9);
+
+    const traceIDField0 = result[0].fields.find((field) => field.name === 'traceID');
+    expect(traceIDField0?.values).toEqual(['1']);
+
+    const traceIDField1 = result[1].fields.find((field) => field.name === 'traceID');
+    expect(traceIDField1?.values).toEqual(['2']);
+
+    const startTimeField0 = result[0].fields.find((field) => field.name === 'startTime');
+    expect(startTimeField0?.values).toEqual([1633072800000]);
+
+    const startTimeField1 = result[1].fields.find((field) => field.name === 'startTime');
+    expect(startTimeField1?.values).toEqual([1633072860000]);
+  });
+
+  it('should keep spans with the same traceID in one DataFrame', () => {
+    const inputData = [
+      {
+        traceID: '1',
+        spanID: '1-1',
+        parentSpanID: null,
+        serviceName: 'serviceA',
+        startTime: 1633072800000,
+        duration: 100,
+        operationName: 'operationA',
+        tags: [{ key1: 'value1' }],
+        serviceTags: [{ tag1: 'value1' }],
+      },
+      {
+        traceID: '1',
+        spanID: '1-2',
+        parentSpanID: '1-1',
+        serviceName: 'serviceA',
+        startTime: 1633072810000,
+        duration: 50,
+        operationName: 'operationB',
+        tags: [{ key2: 'value2' }],
+        serviceTags: [{ tag2: 'value2' }],
+      },
+    ];
+
+    const result = toTraces(inputData, meta);
+
+    // Same traceID => one DataFrame with two spans
     expect(result).toHaveLength(1);
-    expect(result[0].fields).toHaveLength(9); // Check number of fields
+    expect(result[0].length).toBe(2);
 
     const traceIDField = result[0].fields.find((field) => field.name === 'traceID');
-    expect(traceIDField?.values).toEqual(['1', '2']);
+    expect(traceIDField?.values).toEqual(['1', '1']);
 
-    const startTimeField = result[0].fields.find((field) => field.name === 'startTime');
-    expect(startTimeField?.values).toEqual([1633072800000, 1633072860000]); // Assuming no timezone conversion for simplicity
+    const spanIDField = result[0].fields.find((field) => field.name === 'spanID');
+    expect(spanIDField?.values).toEqual(['1-1', '1-2']);
+  });
 
-    const durationField = result[0].fields.find((field) => field.name === 'duration');
-    expect(durationField?.values).toEqual([100, 200]);
+  it('should convert spanID and parentSpanID to strings', () => {
+    const inputData = [
+      {
+        traceID: '1',
+        spanID: 11083600415587200000, // UInt64 from ClickHouse
+        parentSpanID: 0,
+        serviceName: 'serviceA',
+        startTime: 1633072800000,
+        duration: 100,
+        operationName: 'operationA',
+        tags: [],
+        serviceTags: [],
+      },
+    ];
+
+    const result = toTraces(inputData as any, meta);
+
+    const spanIDField = result[0].fields.find((field) => field.name === 'spanID');
+    expect(typeof spanIDField?.values[0]).toBe('string');
+    expect(spanIDField?.values[0]).toBe('11083600415587200000');
+
+    // parentSpanID=0 is falsy, should become null
+    const parentField = result[0].fields.find((field) => field.name === 'parentSpanID');
+    expect(parentField?.values[0]).toBeNull();
   });
 
   it('should handle optional parentSpanID correctly', () => {
@@ -691,7 +761,7 @@ describe('sql-series. toTraces unit tests', () => {
         spanID: '4-1',
         parentSpanID: null,
         serviceName: 'serviceD',
-        startTime: '2024-10-17 20:28:00.999', // Example timestamp
+        startTime: '2024-10-17 20:28:00.999',
         duration: 250,
         operationName: 'operationD',
         tags: [],
@@ -702,6 +772,6 @@ describe('sql-series. toTraces unit tests', () => {
     const result = toTraces(inputData, timezoneMeta);
 
     const startTimeField = result[0].fields.find((field) => field.name === 'startTime');
-    expect(startTimeField?.values).toEqual([1729196880999]); // Adjust based on actual conversion logic
+    expect(startTimeField?.values).toEqual([1729196880999]);
   });
 });

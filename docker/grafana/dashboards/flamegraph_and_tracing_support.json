@@ -23,6 +23,99 @@
   "links": [],
   "panels": [
     {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 0 },
+      "id": 10,
+      "title": "Traces",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "PFA2E00E697AAEA0A"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": { "type": "auto" },
+            "inspect": true
+          }
+        },
+        "overrides": [
+          {
+            "matcher": { "id": "byName", "options": "Trace ID" },
+            "properties": [
+              { "id": "custom.width", "value": 320 },
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "title": "View trace ${__value.raw}",
+                    "url": "/d/edimrzy0cijnkf/flamegraph-and-tracing-support?${__url_time_range}&var-trace_id=${__value.raw}"
+                  }
+                ]
+              }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Duration ms" },
+            "properties": [
+              { "id": "unit", "value": "ms" },
+              { "id": "custom.width", "value": 120 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Spans" },
+            "properties": [
+              { "id": "custom.width", "value": 80 }
+            ]
+          },
+          {
+            "matcher": { "id": "byName", "options": "Start Time" },
+            "properties": [
+              { "id": "unit", "value": "dateTimeFromNow" },
+              { "id": "custom.width", "value": 160 }
+            ]
+          }
+        ]
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 1 },
+      "id": 3,
+      "options": {
+        "showHeader": true,
+        "sortBy": [{ "desc": true, "displayName": "Duration ms" }]
+      },
+      "targets": [
+        {
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "PFA2E00E697AAEA0A"
+          },
+          "dateColDataType": "finish_date",
+          "dateTimeColDataType": "intDiv(finish_time_us,1000000)",
+          "dateTimeType": "TIMESTAMP",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "table",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT\r\n    trace_id AS `Trace ID`,\r\n    min(operation_name) AS `Operation`,\r\n    count() AS `Spans`,\r\n    intDiv(max(finish_time_us) - min(start_time_us), 1000) AS `Duration ms`,\r\n    intDiv(min(start_time_us), 1000) AS `Start Time`\r\nFROM $table\r\nWHERE $timeFilter\r\nGROUP BY trace_id\r\nORDER BY `Duration ms` DESC\r\nLIMIT 100",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": false,
+          "showHelp": false,
+          "skip_comments": false,
+          "step": "",
+          "table": "opentelemetry_span_log"
+        }
+      ],
+      "title": "Trace Search",
+      "type": "table"
+    },
+    {
       "datasource": {
         "type": "vertamedia-clickhouse-datasource",
         "uid": "PFA2E00E697AAEA0A"
@@ -31,12 +124,7 @@
         "defaults": {},
         "overrides": []
       },
-      "gridPos": {
-        "h": 8,
-        "w": 24,
-        "x": 0,
-        "y": 0
-      },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 9 },
       "id": 2,
       "links": [
         {
@@ -53,7 +141,6 @@
           "spanNameOperator": "="
         }
       },
-      "pluginVersion": "11.5.2",
       "targets": [
         {
           "add_metadata": true,
@@ -65,13 +152,12 @@
           "dateColDataType": "finish_date",
           "dateTimeColDataType": "intDiv(finish_time_us,1000000)",
           "dateTimeType": "TIMESTAMP",
-          "editorMode": "builder",
+          "editorMode": "sql",
           "extrapolate": false,
           "format": "traces",
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
-          "query": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    'clickhouse' AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map('hostName',hostname) AS serviceTags\r\nFROM\r\n   $table\r\nWHERE $timeFilter\r\nORDER BY traceID, startTime",
-          "rawQuery": "/* grafana dashboard=FlameGraph and Tracing support, user=1 */ SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    hostname AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us,1000) AS startTime,\r\n    attribute AS tags,\r\n    map() AS serviceTags\r\nFROM\r\n   system.opentelemetry_span_log\r\nWHERE finish_date >= toDate(1713432368) AND finish_date <= toDate(1713453968) AND intDiv(finish_time_us,1000000) >= 1713432368 AND intDiv(finish_time_us,1000000) <= 1713453968",
+          "query": "SELECT\r\n    trace_id AS traceID,\r\n    span_id AS spanID,\r\n    operation_name AS operationName,\r\n    parent_span_id AS parentSpanID,\r\n    'clickhouse' AS serviceName,\r\n    intDiv(finish_time_us - start_time_us, 1000) AS duration,\r\n    intDiv(start_time_us, 1000) AS startTime,\r\n    attribute AS tags,\r\n    map('hostName', hostname) AS serviceTags\r\nFROM $table\r\nWHERE $timeFilter\r\n    AND trace_id = '${trace_id}'\r\nORDER BY startTime",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": false,
@@ -81,8 +167,15 @@
           "table": "opentelemetry_span_log"
         }
       ],
-      "title": "Traces Example",
+      "title": "Trace Detail: ${trace_id}",
       "type": "traces"
+    },
+    {
+      "collapsed": false,
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 19 },
+      "id": 11,
+      "title": "FlameGraph",
+      "type": "row"
     },
     {
       "datasource": {
@@ -94,12 +187,7 @@
         "defaults": {},
         "overrides": []
       },
-      "gridPos": {
-        "h": 9,
-        "w": 24,
-        "x": 0,
-        "y": 8
-      },
+      "gridPos": { "h": 9, "w": 24, "x": 0, "y": 20 },
       "id": 1,
       "links": [
         {
@@ -118,7 +206,6 @@
         }
       ],
       "options": {},
-      "pluginVersion": "11.5.2",
       "targets": [
         {
           "adHocFilters": [],
@@ -140,7 +227,6 @@
           "interval": "",
           "intervalFactor": 1,
           "query": "SELECT\r\n  (arrayMap(\r\n    x -> if(addressToSymbol(x) != '', demangle(addressToSymbol(x)), 'unknown'),\r\n    arrayJoin(\r\n      arrayPopFront(\r\n      arrayMap(\r\n        x -> arraySlice(reverse(trace), 1, x),\r\n        range(length(trace) - 1)\r\n      )\r\n      )\r\n    )\r\n  ) AS trace_level)[-1] AS label,\r\n  count() AS value,\r\n  length(trace_level) AS level,\r\n  countIf(length(trace)-2 = length(trace_level)) AS self\r\nFROM $table\r\nWHERE trace_type='Real' AND $timeFilter \r\nGROUP BY trace_level\r\nORDER BY trace_level,level SETTINGS allow_introspection_functions=1",
-          "rawQuery": "/* grafana dashboard=FlameGraph and Tracing support, user=1 */ SELECT level, label, count() AS value, 0 self \r\nFROM system.trace_log \r\nARRAY JOIN arrayEnumerate(trace) AS level, \r\narrayMap(x -> demangle(addressToSymbol(x) ), trace) AS label \r\nWHERE trace_type='Real' AND event_date >= toDate(1713685956) AND event_date <= toDate(1713707556) AND event_time >= toDateTime(1713685956) AND event_time <= toDateTime(1713707556)\r\nGROUP BY ALL;",
           "refId": "A",
           "round": "0s",
           "showFormattedSQL": true,
@@ -160,7 +246,23 @@
   "schemaVersion": 40,
   "tags": [],
   "templating": {
-    "list": []
+    "list": [
+      {
+        "current": {},
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "PFA2E00E697AAEA0A"
+        },
+        "definition": "",
+        "includeAll": false,
+        "label": "Trace ID",
+        "name": "trace_id",
+        "query": "SELECT DISTINCT trace_id\r\nFROM system.opentelemetry_span_log\r\nWHERE parent_span_id = 0\r\n    AND finish_date >= toDate(now() - 60)\r\n    AND intDiv(finish_time_us, 1000000) >= toUInt32(now() - 60)\r\nORDER BY finish_time_us DESC\r\nLIMIT 100",
+        "refresh": 2,
+        "sort": 0,
+        "type": "query"
+      }
+    ]
   },
   "time": {
     "from": "now-1m",

@@ -61,6 +61,8 @@ jobs:
             suite: "search_filter"
           - group: flamegraph-and-tracing
             suite: "flamegraph_and_tracing"
+          - group: limited-access
+            suite: "limited_access"
 
     steps:
       - name: Checkout

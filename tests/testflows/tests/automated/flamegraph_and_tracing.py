@@ -10,7 +10,6 @@ from selenium.webdriver.common.keys import Keys
 import steps.ui as ui
 import steps.panel.view as panel
 import steps.dashboard.view as dashboard
-import steps.dashboards.view as dashboards
 
 
 @TestStep(Given)
@@ -212,6 +211,56 @@ def data_link_navigates_to_trace(self):
                     assert len(panels) > 0, error()
 
     with And("I check there are no error indicators on the panel"):
+        with delay():
+            error_elements = driver.find_elements(
+                SelectBy.XPATH,
+                "//*[contains(@data-testid, 'Panel status error')]"
+                " | //*[contains(@aria-label, 'Panel status error')]",
+            )
+            assert len(error_elements) == 0, error()
+
+
+@TestScenario
+def flamegraph_panel_is_not_empty(self):
+    """Check that the Flamegraph panel is not empty and renders flame graph data."""
+
+    with Given("I populate opentelemetry_span_log with trace data"):
+        populate_opentelemetry_span_log()
+
+    with When("I open the flamegraph and tracing dashboard"):
+        ui.open_endpoint(
+            endpoint=f"{self.context.endpoint}d/edimrzy0cijnkf/flamegraph-and-tracing-support?from=now-5m&to=now"
+        )
+
+    with And("I wait for the dashboard to load"):
+        for attempt in retries(delay=5, timeout=30):
+            with attempt:
+                with delay():
+                    assert dashboard.check_panel_exists(panel_name="Trace Search"), error()
+
+    with Then("I check the 'flamegraph example' panel exists"):
+        driver = self.context.driver
+        for attempt in retries(delay=5, timeout=30):
+            with attempt:
+                with delay():
+                    assert dashboard.check_panel_exists(panel_name="flamegraph example"), error()
+
+    with And("I check the flamegraph panel is not empty"):
+        for attempt in retries(delay=5, timeout=60):
+            with attempt:
+                with delay():
+                    # Flamegraph panel renders a flamegraph visualization type
+                    # Look for the flamegraph-specific elements on the page
+                    flamegraph_content = driver.find_elements(
+                        SelectBy.CSS_SELECTOR,
+                        "[data-testid='data-testid FlameGraph']"
+                        ", [class*='flame-graph']"
+                        ", [data-viz-panel-key] canvas"
+                        ", [role='table'][aria-label*='FlameGraph']",
+                    )
+                    assert len(flamegraph_content) > 0, error()
+
+    with And("I check there are no error indicators on the flamegraph panel"):
         with delay():
             error_elements = driver.find_elements(
                 SelectBy.XPATH,

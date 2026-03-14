@@ -2,7 +2,7 @@
 FROM ubuntu:latest AS frontend-builder
 LABEL maintainer="Altinity <support@altinity.com>"
 
-ARG NODEJS_VERSION=22
+ARG NODEJS_VERSION=24
 
 RUN apt update && apt install --no-install-recommends -y curl git gnupg2 software-properties-common && \
     curl -fsSL https://deb.nodesource.com/setup_${NODEJS_VERSION}.x | bash - && \
@@ -13,8 +13,8 @@ RUN apt update && apt install --no-install-recommends -y curl git gnupg2 softwar
 FROM ubuntu:latest AS backend-builder
 LABEL maintainer="Altinity <support@altinity.com>"
 
-ARG NODEJS_VERSION=22
-ARG GOLANG_VERSION=1.25
+ARG NODEJS_VERSION=24
+ARG GOLANG_VERSION=1.26
 
 RUN apt update && apt install --no-install-recommends -y curl git gnupg2 software-properties-common && \
     apt-key adv --keyserver keyserver.ubuntu.com --recv-keys 52B59B1571A79DBC054901C0F6BC817356A3D45E && \

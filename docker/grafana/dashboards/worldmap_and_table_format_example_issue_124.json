@@ -89,21 +89,34 @@
       "type": "table"
     },
     {
-      "circleMaxSize": 30,
-      "circleMinSize": 2,
-      "colors": [
-        "rgba(245, 54, 54, 0.9)",
-        "rgba(237, 129, 40, 0.89)",
-        "rgba(50, 172, 45, 0.97)",
-        "#B877D9"
-      ],
       "datasource": "clickhouse",
-      "decimals": 0,
       "description": "see https://github.com/Altinity/clickhouse-grafana/issues/124",
-      "esMetric": "Count",
       "fieldConfig": {
         "defaults": {
-          "custom": {}
+          "color": {
+            "mode": "thresholds"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "rgba(245, 54, 54, 0.9)",
+                "value": null
+              },
+              {
+                "color": "rgba(237, 129, 40, 0.89)",
+                "value": 0
+              },
+              {
+                "color": "rgba(50, 172, 45, 0.97)",
+                "value": 1000000
+              },
+              {
+                "color": "#B877D9",
+                "value": 1000000000
+              }
+            ]
+          }
         },
         "overrides": []
       },
@@ -113,24 +126,62 @@
         "x": 0,
         "y": 8
       },
-      "hideEmpty": false,
-      "hideZero": false,
       "id": 2,
-      "initialZoom": 1,
-      "locationData": "countries",
-      "mapCenter": "(0°, 0°)",
-      "mapCenterLatitude": 0,
-      "mapCenterLongitude": 0,
       "maxDataPoints": 1,
-      "mouseWheelZoom": false,
-      "showLegend": true,
-      "stickyLabels": false,
-      "tableQueryOptions": {
-        "geohashField": "geohash",
-        "latitudeField": "latitude",
-        "longitudeField": "longitude",
-        "metricField": "metric",
-        "queryType": "geohash"
+      "options": {
+        "basemap": {
+          "type": "default"
+        },
+        "controls": {
+          "mouseWheelZoom": false,
+          "showAttribution": true,
+          "showDebug": false,
+          "showMeasure": false,
+          "showScale": false,
+          "showZoom": true
+        },
+        "layers": [
+          {
+            "config": {
+              "showLegend": true,
+              "style": {
+                "color": {
+                  "fixed": "dark-green"
+                },
+                "opacity": 1,
+                "rotation": {
+                  "fixed": 0,
+                  "mode": "fixed"
+                },
+                "size": {
+                  "fixed": 5
+                },
+                "symbol": {
+                  "fixed": "img/icons/marker/circle.svg",
+                  "mode": "fixed"
+                }
+              }
+            },
+            "location": {
+              "gazetteer": "public/gazetteer/countries.json",
+              "lookup": "Field",
+              "mode": "lookup"
+            },
+            "name": "Layer 0",
+            "tooltip": true,
+            "type": "markers"
+          }
+        ],
+        "tooltip": {
+          "mode": "details"
+        },
+        "view": {
+          "allLayers": false,
+          "id": "zero",
+          "lat": 0,
+          "lon": 0,
+          "zoom": 1
+        }
       },
       "targets": [
         {
@@ -145,21 +196,26 @@
           "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
           "intervalFactor": 1,
           "query": "SELECT\n    $timeSeries as t,\n    country,\n    sum(too_big_value) AS value\nFROM $table\nWHERE $timeFilter\nGROUP BY t,country\nORDER BY t,country",
-          "rawQuery": "SELECT     (intDiv(toUInt32(event_time), 21600) * 21600) * 1000 as t,     country,     sum(too_big_value) AS value FROM default.test_grafana WHERE event_time >= toDateTime(1594094084) GROUP BY t,country ORDER BY t,country",
           "refId": "A",
           "round": "0s",
           "table": "test_grafana",
           "tableLoading": false
         }
       ],
-      "thresholds": "0,1000000,1000000000",
-      "timeFrom": null,
-      "timeShift": null,
+      "transformations": [
+        {
+          "id": "reduce",
+          "options": {
+            "includeTimeField": false,
+            "mode": "seriesToRows",
+            "reducers": [
+              "sum"
+            ]
+          }
+        }
+      ],
       "title": "World Map Example",
-      "type": "grafana-worldmap-panel",
-      "unitPlural": "",
-      "unitSingle": "",
-      "valueName": "total"
+      "type": "geomap"
     }
   ],
   "schemaVersion": 25,

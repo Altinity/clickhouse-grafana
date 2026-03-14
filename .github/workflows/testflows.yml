@@ -63,6 +63,8 @@ jobs:
             suite: "flamegraph_and_tracing"
           - group: limited-access
             suite: "limited_access"
+          - group: worldmap-and-table-format
+            suite: "worldmap_and_table_format"
 
     steps:
       - name: Checkout

@@ -1,15 +1,23 @@
-# 3.4.10 (2026-03-12)
+# 3.4.10 (2026-03-14)
 ## Fixes:
 * fix panic when Grafana executes alert evaluation or when plotting time series using Math Operation, fix https://github.com/Altinity/clickhouse-grafana/issues/859, fix https://github.com/Altinity/clickhouse-grafana/issues/860
 * fix `$conditionalTest` macro with 3 parameters (else branch) producing wrong results, fix https://github.com/Altinity/clickhouse-grafana/issues/869
 * fix `$step` macro not being expanded, fix https://github.com/Altinity/clickhouse-grafana/issues/864
 * fix `$__searchFilter` not working in template variable queries with `VariableSupportType.Custom`
 * fix regression when not displaying time series in format time + category + value, broken in 3.4.9, fix https://github.com/Altinity/clickhouse-grafana/issues/871
+* fix traces panel crash in Grafana >=10.2 caused by mixed-trace DataFrames breaking critical path computation, group spans by traceID into separate DataFrames
+* fix `$adhoc` macro being replaced by Grafana's `templateSrv.replace()` when an adhoc variable named "adhoc" exists, regression of https://github.com/Altinity/clickhouse-grafana/issues/422
+* fix worldmap panel broken in Grafana 12.x, migrate from deprecated `grafana-worldmap-panel` to native geomap type
+* fix UInt64 columns incorrectly typed as 'string' in `toTable` response format, now checks actual values with `isSafeInteger()` and types as 'number' when all values fit within JS safe integer range
+* fix spanID/parentSpanID conversion to strings to handle ClickHouse UInt64 values exceeding `Number.MAX_SAFE_INTEGER`
 
 ## Enhancements:
+* switch to go 1.26
 * fix all security transitive dependencies
 * upgrade JS libraries to latest versions
 * update GitHub Actions to latest versions
+* redesign flamegraph and tracing dashboard following the grafana/clickhouse-datasource pattern: Trace Search table with data links + single-trace Trace Detail panel with template variable
+* multiple improvements to e2e testflows coverage: worldmap, flamegraph, tracing, adhoc, limited_access, search_filter suites
 
 # 3.4.9 (2026-02-03)
 ## Fixes:

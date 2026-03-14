@@ -73,7 +73,16 @@ def worldmap_table_view_has_correct_data(self):
                     "[data-testid='data-testid toggle-table-view']",
                 )
                 if not toggle.is_selected():
-                    toggle.click()
+                    # Click via the label or use JS to avoid ElementClickInterceptedException
+                    # when the <label> overlays the <input> checkbox
+                    label = driver.find_elements(
+                        SelectBy.CSS_SELECTOR,
+                        "label[for='table-view']",
+                    )
+                    if label:
+                        label[0].click()
+                    else:
+                        driver.execute_script("arguments[0].click();", toggle)
 
     with Then("I check that the table has 'Field' and 'Total' columns"):
         for attempt in retries(delay=5, timeout=30):
@@ -128,13 +137,18 @@ def worldmap_geomap_has_markers(self):
         for attempt in retries(delay=5, timeout=60):
             with attempt:
                 with delay():
-                    # Geomap renders OpenLayers map with canvas elements
-                    map_canvases = driver.find_elements(
+                    # Geomap renders OpenLayers map — look for canvas elements
+                    # or the OpenLayers viewport / Navigable map container
+                    map_elements = driver.find_elements(
                         SelectBy.CSS_SELECTOR,
                         "[data-viz-panel-key] canvas"
-                        ", [aria-label='Navigable map'] canvas",
+                        ", [aria-label='Navigable map'] canvas"
+                        ", .ol-viewport canvas"
+                        ", .ol-layer canvas"
+                        ", [aria-label='Navigable map'] .ol-viewport"
+                        ", [aria-label='Navigable map']",
                     )
-                    assert len(map_canvases) > 0, error()
+                    assert len(map_elements) > 0, error()
 
     with And("I check there are no error indicators on the panel"):
         with delay():

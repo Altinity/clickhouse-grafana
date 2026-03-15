@@ -161,6 +161,18 @@ jobs:
             echo "No backend coverage data found"
           fi
 
+      - name: Normalize frontend coverage paths
+        run: |
+          for f in raw-coverage/*/tests/testflows/coverage/raw/*.json; do
+            [ -f "$f" ] || continue
+            jq '
+              with_entries(
+                .key |= sub("^/grafana-clickhouse/"; "") |
+                .value.path |= sub("^/grafana-clickhouse/"; "")
+              )
+            ' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+          done
+
       - name: Merge and generate frontend coverage
         run: |
           mkdir -p .nyc_output
@@ -171,10 +183,23 @@ jobs:
             if [ -f coverage/coverage-final.json ]; then
               cp coverage/coverage-final.json .nyc_output/
             fi
-            npx nyc report --reporter html --reporter=lcov --report-dir=./tests/testflows/coverage
+            npx nyc report --temp-dir .nyc_output --reporter html --reporter=lcov --report-dir=./tests/testflows/coverage
           else
             echo "No frontend coverage data found"
           fi
+
+      - name: Verify frontend coverage
+        run: |
+          if [ ! -s tests/testflows/coverage/lcov.info ]; then
+            echo "::error::lcov.info is empty or missing — frontend coverage was not generated"
+            exit 1
+          fi
+          echo "Frontend coverage generated successfully:"
+          grep '^SF:' tests/testflows/coverage/lcov.info | head
+          grep -c '^SF:src/' tests/testflows/coverage/lcov.info || {
+            echo "::error::No SF:src/ entries found in lcov.info"
+            exit 1
+          }
 
       - name: Report coverage to Coveralls
         uses: coverallsapp/github-action@v2

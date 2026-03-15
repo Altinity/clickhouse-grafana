@@ -669,19 +669,3 @@ def check_default_context_window_100(self):
 
 
 
-@TestFeature
-@Requirements(
-    RQ_SRS_Plugin_DataSourceSetupView("1.0"),
-    RQ_SRS_Plugin_DataSourceSetupView_DataSourceName("1.0"),
-    RQ_SRS_Plugin_DataSourceSetupView_SaveAndTestButton("1.0"),
-    RQ_SRS_Plugin_Dashboards("1.0"),
-    RQ_SRS_Plugin_Panels("1.0"),
-    RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection_ServerAccess("1.0"),
-    RQ_SRS_Plugin_DataSourceSetupView_HTTPConnection("1.0"),
-)
-@Name("data source setup")
-def feature(self):
-    """Check that Plugin supports Grafana dashboards."""
-
-    for scenario in loads(current_module(), Scenario):
-        scenario()

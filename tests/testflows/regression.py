@@ -130,7 +130,8 @@ def regression(self, before, after, suite=None):
     main_suites = [
         ("window_functions", "testflows.tests.automated.window_functions"),
         ("sql_editor", "testflows.tests.automated.sql_editor"),
-        ("data_source_setup", "testflows.tests.automated.data_source_setup"),
+        ("data_source_setup_connections", "testflows.tests.automated.data_source_setup_connections"),
+        ("data_source_setup_defaults", "testflows.tests.automated.data_source_setup_defaults"),
         ("e2e", "testflows.tests.automated.e2e"),
         ("query_options", "testflows.tests.automated.query_options"),
         ("functions", "testflows.tests.automated.functions"),

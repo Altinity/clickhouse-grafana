@@ -173,9 +173,20 @@ class Cluster(object):
                         self._bash[id] = shell
         finally:
             self.command(None, f"{self.docker_compose} down -v --remove-orphans", timeout=timeout)
-            return self.command(None, f"docker volume prune -f", timeout=timeout)
+            if os.environ.get("GITHUB_ACTIONS") != "true":
+                return self.command(None, f"docker volume prune -f", timeout=timeout)
+            else:
+                debug("GH optimized mode: skipping docker volume prune")
 
     def up(self, timeout=30 * 60):
+        gh_actions = os.environ.get("GITHUB_ACTIONS") == "true"
+        skip_builders = os.environ.get("SKIP_BUILDERS") == "1"
+
+        if gh_actions:
+            note("GH optimized mode: skipping pre-up docker compose down and volume prune")
+        if skip_builders:
+            note("SKIP_BUILDERS=1: pre-built artifacts will be used, skipping coverage builders")
+
         with Given("I set all the necessary environment variables"):
             os.environ["TEST_COMPOSE_HTTP_TIMEOUT"] = "300"
             os.environ["TEST_CONFIGS_DIR"] = self.configs_dir
@@ -196,15 +207,18 @@ class Cluster(object):
                         )
                         if cmd.exitcode != 0:
                             continue
-                    with And("executing docker compose down just in case it is up"):
-                        cmd = self.command(
-                            None,
-                            f"set -o pipefail && {self.docker_compose} down 2>&1 | tee",
-                            exitcode=None,
-                            timeout=timeout,
-                        )
-                        if cmd.exitcode != 0:
-                            continue
+                    if not gh_actions:
+                        with And("executing docker compose down just in case it is up"):
+                            cmd = self.command(
+                                None,
+                                f"set -o pipefail && {self.docker_compose} down 2>&1 | tee",
+                                exitcode=None,
+                                timeout=timeout,
+                            )
+                            if cmd.exitcode != 0:
+                                continue
+                    else:
+                        debug("GH optimized mode: skipping pre-up docker compose down")
                     with And("executing docker compose up"):
                         with By("executing mkdir node_modules"):
                             cmd = self.command(
@@ -218,18 +232,21 @@ class Cluster(object):
                                 f"""set -o pipefail && mkdir -p "{os.path.join(current_dir(), '..')}/coverage/raw" 2>&1 | tee""",
                                 timeout=timeout,
                             )
-                        with By("executing docker compose run frontend builder"):
-                            cmd = self.command(
-                                None,
-                                f"set -o pipefail && docker compose run --rm frontend_coverage_builder 2>&1 | tee",
-                                timeout=timeout,
-                            )
-                        with By("executing docker compose run backend builder"):
-                            cmd = self.command(
-                                None,
-                                f"set -o pipefail && docker compose run --rm backend_coverage_builder 2>&1 | tee",
-                                timeout=timeout,
-                            )
+                        if not skip_builders:
+                            with By("executing docker compose run frontend builder"):
+                                cmd = self.command(
+                                    None,
+                                    f"set -o pipefail && docker compose run --rm frontend_coverage_builder 2>&1 | tee",
+                                    timeout=timeout,
+                                )
+                            with By("executing docker compose run backend builder"):
+                                cmd = self.command(
+                                    None,
+                                    f"set -o pipefail && docker compose run --rm backend_coverage_builder 2>&1 | tee",
+                                    timeout=timeout,
+                                )
+                        else:
+                            debug("SKIP_BUILDERS=1: skipping frontend_coverage_builder and backend_coverage_builder")
                         with By("executing docker compose up"):
                             env_file = os.path.join(current_dir(), "..", "infra", "env_file")
                             cmd = self.command(

@@ -20,7 +20,68 @@ env:
     ./selenium_logs/*
 
 jobs:
+  prepare-frontend-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache npm
+        uses: actions/cache@v5
+        with:
+          path: .npm-cache
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Build frontend with coverage instrumentation
+        run: |
+          mkdir -p node_modules .npm-cache tests/testflows/coverage/raw
+          docker compose run --rm \
+            -v "$(pwd)/.npm-cache:/root/.npm" \
+            frontend_coverage_builder
+
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-frontend
+          path: dist/
+
+  prepare-backend-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache Go modules and build cache
+        uses: actions/cache@v5
+        with:
+          path: .go-cache
+          key: ${{ runner.os }}-go-cache-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cache-
+
+      - name: Build backend with coverage
+        run: |
+          mkdir -p .go-cache go_coverage/raw
+          docker compose run --rm backend_coverage_builder
+
+      - name: Upload backend build
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-backend
+          path: |
+            dist/
+            go_coverage/
+
   tests:
+    needs: [prepare-frontend-build, prepare-backend-build]
     # runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-system-ubuntu-22.04 ]
     runs-on: ubuntu-latest
     permissions:
@@ -28,6 +89,9 @@ jobs:
       checks: write
 
     timeout-minutes: 60
+
+    env:
+      SKIP_BUILDERS: "1"
 
     strategy:
       fail-fast: false
@@ -37,8 +101,10 @@ jobs:
             suite: "window_functions"
           - group: sql-editor
             suite: "sql_editor"
-          - group: data-source-setup
-            suite: "data_source_setup"
+          - group: data-source-setup-connections
+            suite: "data_source_setup_connections"
+          - group: data-source-setup-defaults
+            suite: "data_source_setup_defaults"
           - group: e2e
             suite: "e2e"
           - group: query-options
@@ -69,6 +135,21 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Download frontend build
+        uses: actions/download-artifact@v7
+        with:
+          name: build-frontend
+          path: dist/
+
+      - name: Download backend build
+        uses: actions/download-artifact@v7
+        with:
+          name: build-backend
+          path: .
+
+      - name: Restore executable permissions on backend binaries
+        run: chmod +x dist/altinity-clickhouse-plugin*
 
       - name: Setup
         run: tests/testflows/infra/setup.sh
@@ -159,6 +240,18 @@ jobs:
             echo "No backend coverage data found"
           fi
 
+      - name: Normalize frontend coverage paths
+        run: |
+          for f in raw-coverage/*/tests/testflows/coverage/raw/*.json; do
+            [ -f "$f" ] || continue
+            jq '
+              with_entries(
+                .key |= sub("^/grafana-clickhouse/"; "") |
+                .value.path |= sub("^/grafana-clickhouse/"; "")
+              )
+            ' "$f" > "$f.tmp" && mv "$f.tmp" "$f"
+          done
+
       - name: Merge and generate frontend coverage
         run: |
           mkdir -p .nyc_output
@@ -169,10 +262,23 @@ jobs:
             if [ -f coverage/coverage-final.json ]; then
               cp coverage/coverage-final.json .nyc_output/
             fi
-            npx nyc report --reporter html --reporter=lcov --report-dir=./tests/testflows/coverage
+            npx nyc report --temp-dir .nyc_output --reporter html --reporter=lcov --report-dir=./tests/testflows/coverage
           else
             echo "No frontend coverage data found"
           fi
+
+      - name: Verify frontend coverage
+        run: |
+          if [ ! -s tests/testflows/coverage/lcov.info ]; then
+            echo "::error::lcov.info is empty or missing — frontend coverage was not generated"
+            exit 1
+          fi
+          echo "Frontend coverage generated successfully:"
+          grep '^SF:' tests/testflows/coverage/lcov.info | head
+          grep -c '^SF:src/' tests/testflows/coverage/lcov.info || {
+            echo "::error::No SF:src/ entries found in lcov.info"
+            exit 1
+          }
 
       - name: Report coverage to Coveralls
         uses: coverallsapp/github-action@v2

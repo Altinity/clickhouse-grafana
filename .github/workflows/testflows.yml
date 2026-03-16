@@ -148,6 +148,9 @@ jobs:
           name: build-backend
           path: .
 
+      - name: Restore executable permissions on backend binaries
+        run: chmod +x dist/altinity-clickhouse-plugin*
+
       - name: Setup
         run: tests/testflows/infra/setup.sh
 

@@ -140,7 +140,7 @@ jobs:
         uses: actions/download-artifact@v7
         with:
           name: build-frontend
-          path: .
+          path: dist/
 
       - name: Download backend build
         uses: actions/download-artifact@v7

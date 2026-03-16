@@ -20,7 +20,68 @@ env:
     ./selenium_logs/*
 
 jobs:
+  prepare-frontend-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache npm
+        uses: actions/cache@v5
+        with:
+          path: .npm-cache
+          key: ${{ runner.os }}-npm-${{ hashFiles('package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Build frontend with coverage instrumentation
+        run: |
+          mkdir -p node_modules .npm-cache tests/testflows/coverage/raw
+          docker compose run --rm \
+            -v "$(pwd)/.npm-cache:/root/.npm" \
+            frontend_coverage_builder
+
+      - name: Upload frontend build
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-frontend
+          path: dist/
+
+  prepare-backend-build:
+    runs-on: ubuntu-latest
+    permissions:
+      contents: read
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Cache Go modules and build cache
+        uses: actions/cache@v5
+        with:
+          path: .go-cache
+          key: ${{ runner.os }}-go-cache-${{ hashFiles('go.sum') }}
+          restore-keys: |
+            ${{ runner.os }}-go-cache-
+
+      - name: Build backend with coverage
+        run: |
+          mkdir -p .go-cache go_coverage/raw
+          docker compose run --rm backend_coverage_builder
+
+      - name: Upload backend build
+        uses: actions/upload-artifact@v7
+        with:
+          name: build-backend
+          path: |
+            dist/
+            go_coverage/
+
   tests:
+    needs: [prepare-frontend-build, prepare-backend-build]
     # runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-system-ubuntu-22.04 ]
     runs-on: ubuntu-latest
     permissions:
@@ -28,6 +89,9 @@ jobs:
       checks: write
 
     timeout-minutes: 60
+
+    env:
+      SKIP_BUILDERS: "1"
 
     strategy:
       fail-fast: false
@@ -71,6 +135,18 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v6
+
+      - name: Download frontend build
+        uses: actions/download-artifact@v7
+        with:
+          name: build-frontend
+          path: .
+
+      - name: Download backend build
+        uses: actions/download-artifact@v7
+        with:
+          name: build-backend
+          path: .
 
       - name: Setup
         run: tests/testflows/infra/setup.sh

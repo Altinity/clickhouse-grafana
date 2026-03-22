@@ -8,5 +8,7 @@ export * from './Switches/ExtrapolationSwitch';
 export * from './Switches/MetadataSwitch';
 export * from './Switches/NullifySparseSwitch';
 export * from './Switches/SkipCommentsSwitch';
+export * from './Switches/StreamingSwitch';
 export * from './Switches/UseWindowFunctionSwitch';
+export * from './Inputs/StreamingIntervalInput';
 export * from './Toolbar/ToolbarButtons';

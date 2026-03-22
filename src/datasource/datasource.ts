@@ -9,18 +9,20 @@ import {
   DataSourceInstanceSettings,
   DataSourceWithLogsContextSupport,
   DataSourceWithToggleableQueryFiltersSupport, FieldType,
+  LiveChannelScope,
   LogRowContextOptions,
+  StreamingFrameAction,
   LogRowContextQueryDirection,
   LogRowModel,
   QueryFilterOptions,
   TypedVariableModel, VariableSupportType,
 } from '@grafana/data';
-import { BackendSrv, config, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
+import { BackendSrv, config, DataSourceWithBackend, getBackendSrv, getGrafanaLiveSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
 import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
-import { from } from 'rxjs';
+import { from, merge, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation } from './helpers';
 import { ClickHouseResourceClient } from './resource_handler';
 import { IndexedDBManager } from '../utils/indexedDBManager';
@@ -539,11 +541,138 @@ export class CHDataSource
 
 
   query(options: DataQueryRequest<CHQuery>): any {
+    this.options = options;
+    const targets = options.targets.filter((target) => !target.hide && target.query?.trim());
+
+    // Split targets into streaming and regular queries
+    const streamingTargets = targets.filter((t) => t.streaming);
+    const regularTargets = targets.filter((t) => !t.streaming);
+
+    // Handle streaming targets via Grafana Live
+    if (streamingTargets.length > 0) {
+      const streamingObservables = streamingTargets.map((target) => {
+        const interval = this.templateSrv.replace(target.interval || options.interval || '30s', options.scopedVars);
+        const streamData = {
+          refId: target.refId,
+          rawQuery: false,
+          query: target.query,
+          dateTimeColDataType: target.dateTimeColDataType || '',
+          dateColDataType: target.dateColDataType || '',
+          dateTimeType: target.dateTimeType || 'DATETIME',
+          extrapolate: target.extrapolate || false,
+          skip_comments: target.skip_comments || false,
+          add_metadata: target.add_metadata || false,
+          useWindowFuncForMacros: target.useWindowFuncForMacros || false,
+          format: target.format || 'time_series',
+          round: target.round || '0s',
+          intervalFactor: target.intervalFactor || 1,
+          interval: interval,
+          database: target.database || 'default',
+          table: target.table || '',
+          maxDataPoints: options.maxDataPoints || 0,
+          streamingInterval: target.streamingInterval || 5000,
+          timeRange: {
+            from: options.range.from.toISOString(),
+            to: options.range.to.toISOString(),
+          },
+        };
+
+        console.log(
+          `[streaming] SUBSCRIBE | refId=${target.refId} | channel=ds/${this.uid}/stream/${target.refId}/${streamData.streamingInterval}/...`,
+          '\n  query:', target.query?.substring(0, 100),
+          '\n  interval:', interval,
+          '\n  streamingInterval:', target.streamingInterval || 5000, 'ms',
+          '\n  timeRange:', options.range.from.toISOString(), '→', options.range.to.toISOString(),
+          '\n  maxDataPoints:', options.maxDataPoints,
+        );
+
+        const liveStream = getGrafanaLiveSrv().getDataStream({
+          addr: {
+            scope: LiveChannelScope.DataSource,
+            namespace: this.uid,
+            path: `stream/${target.refId}/${streamData.streamingInterval}/${encodeURIComponent(target.query || '')}`,
+            data: streamData,
+          },
+          buffer: {
+            action: StreamingFrameAction.Append,
+            maxLength: options.maxDataPoints || 1000,
+          },
+        });
+
+        // Wrap in a new Observable to add logging (avoids rxjs version mismatch with .pipe())
+        return new Observable((subscriber) => {
+          const sub = liveStream.subscribe({
+            next: (response: any) => {
+              const frames = response.data || [];
+              const state = response.state || 'unknown';
+              const details = frames.map((f: any, i: number) => {
+                const fields = f.fields || [];
+                const fieldNames = fields.map((field: any) => field.name).join(', ');
+                const rows = f.length || 0;
+                let timeRange = '';
+                const timeField = fields.find((field: any) =>
+                  field.name?.toLowerCase().includes('time') || field.name === 't'
+                );
+                if (timeField && timeField.values && timeField.values.length > 0) {
+                  const first = new Date(timeField.values[0]).toISOString();
+                  const last = new Date(timeField.values[timeField.values.length - 1]).toISOString();
+                  timeRange = ` | dataRange: ${first} → ${last}`;
+                }
+
+                // Show last 5 data rows
+                let dataPreview = '';
+                if (rows > 0 && fields.length > 0) {
+                  const previewStart = Math.max(0, rows - 5);
+                  const previewRows = [];
+                  for (let r = previewStart; r < rows; r++) {
+                    const rowValues = fields.map((field: any) => {
+                      const val = field.values?.[r];
+                      if (val instanceof Date || (typeof val === 'number' && field.name?.toLowerCase().includes('time'))) {
+                        return new Date(val).toISOString();
+                      }
+                      return val;
+                    });
+                    previewRows.push(`    [${r}] ${rowValues.join(' | ')}`);
+                  }
+                  dataPreview = `\n    --- last ${rows - previewStart} of ${rows} rows ---\n${previewRows.join('\n')}`;
+                }
+
+                return `  frame[${i}]: ${rows} rows | fields: [${fieldNames}]${timeRange}${dataPreview}`;
+              });
+              console.log(
+                `[streaming] DATA | ${new Date().toISOString()} | refId=${target.refId} | state=${state} | frames=${frames.length}\n${details.join('\n')}`,
+              );
+              subscriber.next(response);
+            },
+            error: (err: any) => {
+              console.error(`[streaming] ERROR | refId=${target.refId}`, err);
+              subscriber.error(err);
+            },
+            complete: () => {
+              console.log(`[streaming] COMPLETE | refId=${target.refId}`);
+              subscriber.complete();
+            },
+          });
+          return () => {
+            console.log(`[streaming] UNSUBSCRIBE | refId=${target.refId}`);
+            sub.unsubscribe();
+          };
+        });
+      });
+
+      if (regularTargets.length > 0) {
+        // Merge streaming observables with regular query results
+        const regularObservable = from(this.executeQueries(regularTargets, options));
+        return merge(...streamingObservables.map((o) => o as any), regularObservable);
+      }
+
+      return merge(...streamingObservables.map((o) => o as any));
+    }
+
+    // Regular (non-streaming) path
     const queryProcessing = async () => {
       try {
-        this.options = options;
-        const targets = options.targets.filter((target) => !target.hide && target.query?.trim());
-        return await this.executeQueries(targets, options);
+        return await this.executeQueries(regularTargets, options);
       } catch (error) {
         console.error('Query processing failed:', error);
         throw error;

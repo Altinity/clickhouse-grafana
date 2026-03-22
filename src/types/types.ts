@@ -59,6 +59,9 @@ export interface CHQuery extends DataQuery {
   useWindowFuncForMacros?: boolean;
   showHelp: boolean;
   showFormattedSQL: boolean;
+
+  streaming?: boolean;
+  streamingInterval?: number;
 }
 
 /**

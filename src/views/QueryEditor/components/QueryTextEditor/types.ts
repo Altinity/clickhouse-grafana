@@ -15,6 +15,8 @@ export interface Query {
   showHelp: boolean;
   showFormattedSQL: boolean;
   datasourceMode?: DatasourceMode;
+  streaming?: boolean;
+  streamingInterval?: number;
 }
 
 export interface AdhocFilter {

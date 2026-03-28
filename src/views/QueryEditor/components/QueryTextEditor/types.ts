@@ -17,6 +17,8 @@ export interface Query {
   datasourceMode?: DatasourceMode;
   streaming?: boolean;
   streamingInterval?: number;
+  streamingMode?: 'delta' | 'full';
+  query?: string;
 }
 
 export interface AdhocFilter {

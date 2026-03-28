@@ -11,9 +11,17 @@
       "title": "Streaming: Total Value (timeSeries macro)",
       "description": "Uses $timeSeries macro with streaming enabled. Polls every 5s.",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
       "id": 1,
-      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
       "targets": [
         {
           "refId": "A",
@@ -26,17 +34,20 @@
           "adHocFilters": [],
           "showHelp": false,
           "showFormattedSQL": false,
-          "streaming": true,
-          "streamingInterval": 5000,
           "dateTimeType": "DATETIME",
           "dateTimeColDataType": "timestamp",
           "database": "default",
-          "table": "streaming_test"
+          "table": "streaming_test",
+          "streaming": true,
+          "streamingInterval": 5000,
+          "streamingMode": "full"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -51,17 +62,31 @@
         "overrides": []
       },
       "options": {
-        "tooltip": { "mode": "multi", "sort": "none" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
       }
     },
     {
       "title": "Streaming: CPU by Host ($columns macro)",
       "description": "Uses $columns macro to show per-host CPU. Polls every 5s.",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 0 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 0
+      },
       "id": 2,
-      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
       "targets": [
         {
           "refId": "A",
@@ -74,17 +99,20 @@
           "adHocFilters": [],
           "showHelp": false,
           "showFormattedSQL": false,
-          "streaming": true,
-          "streamingInterval": 5000,
           "dateTimeType": "DATETIME",
           "dateTimeColDataType": "timestamp",
           "database": "default",
-          "table": "streaming_test"
+          "table": "streaming_test",
+          "streaming": true,
+          "streamingInterval": 5000,
+          "streamingMode": "full"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -97,17 +125,31 @@
         "overrides": []
       },
       "options": {
-        "tooltip": { "mode": "multi", "sort": "none" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
       }
     },
     {
       "title": "Streaming: Memory by Host",
       "description": "Memory usage per host. Polls every 10s.",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 0,
+        "y": 8
+      },
       "id": 3,
-      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
       "targets": [
         {
           "refId": "A",
@@ -120,17 +162,20 @@
           "adHocFilters": [],
           "showHelp": false,
           "showFormattedSQL": false,
-          "streaming": true,
-          "streamingInterval": 10000,
           "dateTimeType": "DATETIME",
           "dateTimeColDataType": "timestamp",
           "database": "default",
-          "table": "streaming_test"
+          "table": "streaming_test",
+          "streaming": true,
+          "streamingInterval": 5000,
+          "streamingMode": "full"
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -144,17 +189,31 @@
         "overrides": []
       },
       "options": {
-        "tooltip": { "mode": "multi", "sort": "none" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
       }
     },
     {
       "title": "Non-streaming: Total Events (control panel)",
       "description": "Regular (non-streaming) panel for comparison. Uses normal auto-refresh.",
       "type": "timeseries",
-      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 8 },
+      "gridPos": {
+        "h": 8,
+        "w": 12,
+        "x": 12,
+        "y": 8
+      },
       "id": 4,
-      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
       "targets": [
         {
           "refId": "A",
@@ -167,16 +226,18 @@
           "adHocFilters": [],
           "showHelp": false,
           "showFormattedSQL": false,
-          "streaming": false,
           "dateTimeType": "DATETIME",
           "dateTimeColDataType": "timestamp",
           "database": "default",
-          "table": "streaming_test"
+          "table": "streaming_test",
+          "streaming": false
         }
       ],
       "fieldConfig": {
         "defaults": {
-          "color": { "mode": "palette-classic" },
+          "color": {
+            "mode": "palette-classic"
+          },
           "custom": {
             "axisBorderShow": false,
             "axisCenteredZero": false,
@@ -188,15 +249,30 @@
         "overrides": []
       },
       "options": {
-        "tooltip": { "mode": "multi", "sort": "none" },
-        "legend": { "displayMode": "list", "placement": "bottom" }
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        },
+        "legend": {
+          "displayMode": "list",
+          "placement": "bottom"
+        }
       }
     }
   ],
   "schemaVersion": 39,
-  "tags": ["streaming", "test", "clickhouse"],
-  "templating": { "list": [] },
-  "time": { "from": "now-1h", "to": "now" },
+  "tags": [
+    "streaming",
+    "test",
+    "clickhouse"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-1h",
+    "to": "now"
+  },
   "timepicker": {},
   "timezone": "",
   "title": "Streaming Test Dashboard",

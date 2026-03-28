@@ -17,6 +17,7 @@ import {
   UseWindowFunctionSwitch,
   StreamingSwitch,
   StreamingIntervalInput,
+  StreamingModeSelect,
   FormatAsSelect,
   ContextWindowSizeSelect,
   ToolbarButtons,
@@ -100,10 +101,16 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
             onChange={() => handlers.handleToggleField('streaming')}
           />
           {query.streaming && (
-            <StreamingIntervalInput
-              query={query}
-              handleStreamingIntervalChange={handlers.handleStreamingIntervalChange}
-            />
+            <>
+              <StreamingModeSelect
+                query={query}
+                onChange={(e: any) => handlers.handleStreamingModeChange(e.value)}
+              />
+              <StreamingIntervalInput
+                query={query}
+                handleStreamingIntervalChange={handlers.handleStreamingIntervalChange}
+              />
+            </>
           )}
         </InlineFieldRow>
         <InlineFieldRow>

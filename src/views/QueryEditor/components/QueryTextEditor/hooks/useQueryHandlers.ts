@@ -28,9 +28,12 @@ export const useQueryHandlers = ({ onFieldChange, query }: UseQueryHandlersProps
 
   const handleStreamingIntervalChange = (event: ChangeEvent<HTMLInputElement>) => {
     const raw = event.target.value;
-    // Allow free editing — store whatever the user types, backend enforces minimum
     const parsed = parseInt(raw, 10);
     onFieldChange({ fieldName: 'streamingInterval', value: isNaN(parsed) ? undefined : parsed });
+  };
+
+  const handleStreamingModeChange = (value: string | undefined) => {
+    onFieldChange({ fieldName: 'streamingMode', value: value || 'delta' });
   };
 
   const handleToggleField = (fieldName: string) => {
@@ -44,6 +47,7 @@ export const useQueryHandlers = ({ onFieldChange, query }: UseQueryHandlersProps
     handleFormatChange,
     handleContextWindowChange,
     handleStreamingIntervalChange,
+    handleStreamingModeChange,
     handleToggleField,
   };
 };

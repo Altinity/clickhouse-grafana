@@ -11,4 +11,5 @@ export * from './Switches/SkipCommentsSwitch';
 export * from './Switches/StreamingSwitch';
 export * from './Switches/UseWindowFunctionSwitch';
 export * from './Inputs/StreamingIntervalInput';
+export * from './Selects/StreamingModeSelect';
 export * from './Toolbar/ToolbarButtons';

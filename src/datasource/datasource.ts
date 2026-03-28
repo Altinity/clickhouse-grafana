@@ -540,6 +540,16 @@ export class CHDataSource
   }
 
 
+  private simpleHash(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash |= 0;
+    }
+    return Math.abs(hash).toString(36);
+  }
+
   query(options: DataQueryRequest<CHQuery>): any {
     this.options = options;
     const targets = options.targets.filter((target) => !target.hide && target.query?.trim());
@@ -571,6 +581,7 @@ export class CHDataSource
           table: target.table || '',
           maxDataPoints: options.maxDataPoints || 0,
           streamingInterval: target.streamingInterval || 5000,
+          streamingMode: target.streamingMode || 'delta',
           timeRange: {
             from: options.range.from.toISOString(),
             to: options.range.to.toISOString(),
@@ -590,71 +601,73 @@ export class CHDataSource
           addr: {
             scope: LiveChannelScope.DataSource,
             namespace: this.uid,
-            path: `stream/${target.refId}/${streamData.streamingInterval}/${encodeURIComponent(target.query || '')}`,
+            path: `stream/${target.refId}/${this.simpleHash(`${streamData.streamingMode}-${streamData.streamingInterval}-${streamData.timeRange.from}-${target.query}`)}`,
             data: streamData,
           },
           buffer: {
-            action: StreamingFrameAction.Append,
-            maxLength: options.maxDataPoints || 1000,
+            action: StreamingFrameAction.Replace,
           },
         });
 
+        console.log(`[streaming] CREATING Observable wrapper for refId=${target.refId}`);
+
         // Wrap in a new Observable to add logging (avoids rxjs version mismatch with .pipe())
         return new Observable((subscriber) => {
+          console.log(`[streaming] Observable SUBSCRIBED by Grafana | refId=${target.refId}`);
+
+          let eventCount = 0;
           const sub = liveStream.subscribe({
             next: (response: any) => {
+              eventCount++;
               const frames = response.data || [];
               const state = response.state || 'unknown';
-              const details = frames.map((f: any, i: number) => {
-                const fields = f.fields || [];
-                const fieldNames = fields.map((field: any) => field.name).join(', ');
-                const rows = f.length || 0;
-                let timeRange = '';
-                const timeField = fields.find((field: any) =>
-                  field.name?.toLowerCase().includes('time') || field.name === 't'
-                );
-                if (timeField && timeField.values && timeField.values.length > 0) {
-                  const first = new Date(timeField.values[0]).toISOString();
-                  const last = new Date(timeField.values[timeField.values.length - 1]).toISOString();
-                  timeRange = ` | dataRange: ${first} → ${last}`;
-                }
+              const key = response.key || 'no-key';
 
-                // Show last 5 data rows
-                let dataPreview = '';
-                if (rows > 0 && fields.length > 0) {
-                  const previewStart = Math.max(0, rows - 5);
-                  const previewRows = [];
-                  for (let r = previewStart; r < rows; r++) {
-                    const rowValues = fields.map((field: any) => {
-                      const val = field.values?.[r];
-                      if (val instanceof Date || (typeof val === 'number' && field.name?.toLowerCase().includes('time'))) {
-                        return new Date(val).toISOString();
-                      }
-                      return val;
-                    });
-                    previewRows.push(`    [${r}] ${rowValues.join(' | ')}`);
-                  }
-                  dataPreview = `\n    --- last ${rows - previewStart} of ${rows} rows ---\n${previewRows.join('\n')}`;
-                }
-
-                return `  frame[${i}]: ${rows} rows | fields: [${fieldNames}]${timeRange}${dataPreview}`;
-              });
               console.log(
-                `[streaming] DATA | ${new Date().toISOString()} | refId=${target.refId} | state=${state} | frames=${frames.length}\n${details.join('\n')}`,
+                `[streaming] EVENT #${eventCount} | ${new Date().toISOString()} | refId=${target.refId} | state=${state} | key=${key} | frames=${frames.length}`,
+                '\n  raw response keys:', Object.keys(response),
+                '\n  raw response.state:', response.state,
+                '\n  raw response.data length:', response.data?.length,
               );
+
+              if (frames.length > 0) {
+                frames.forEach((f: any, i: number) => {
+                  const fields = f.fields || [];
+                  const rows = f.length || 0;
+                  const fieldInfo = fields.map((field: any) => `${field.name}(${field.type}, ${field.values?.length || 0} vals)`).join(', ');
+                  console.log(`[streaming]   frame[${i}]: ${rows} rows | ${fieldInfo}`);
+
+                  // Show last 3 rows
+                  if (rows > 0) {
+                    const start = Math.max(0, rows - 3);
+                    for (let r = start; r < rows; r++) {
+                      const vals = fields.map((field: any) => {
+                        const v = field.values?.[r];
+                        return v instanceof Date ? v.toISOString() : v;
+                      });
+                      console.log(`[streaming]     row[${r}]: ${vals.join(' | ')}`);
+                    }
+                  }
+                });
+              }
+
               subscriber.next(response);
+              console.log(`[streaming] EVENT #${eventCount} forwarded to Grafana panel`);
             },
             error: (err: any) => {
               console.error(`[streaming] ERROR | refId=${target.refId}`, err);
               subscriber.error(err);
             },
             complete: () => {
-              console.log(`[streaming] COMPLETE | refId=${target.refId}`);
+              console.log(`[streaming] COMPLETE | refId=${target.refId} | total events=${eventCount}`);
               subscriber.complete();
             },
           });
+
+          console.log(`[streaming] liveStream.subscribe() called | refId=${target.refId}`);
+
           return () => {
-            console.log(`[streaming] UNSUBSCRIBE | refId=${target.refId}`);
+            console.log(`[streaming] UNSUBSCRIBE | refId=${target.refId} | total events=${eventCount}`);
             sub.unsubscribe();
           };
         });

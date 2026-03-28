@@ -62,6 +62,7 @@ export interface CHQuery extends DataQuery {
 
   streaming?: boolean;
   streamingInterval?: number;
+  streamingMode?: 'delta' | 'full';
 }
 
 /**
@@ -111,4 +112,7 @@ export const DEFAULT_QUERY: CHQuery = {
   showFormattedSQL: false,
   datasourceMode: DatasourceMode.Datasource,
   nullifySparse: false,
+  streaming: false,
+  streamingInterval: 5000,
+  streamingMode: 'delta',
 };

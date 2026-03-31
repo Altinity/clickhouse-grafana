@@ -5,31 +5,20 @@ import (
 	"encoding/json"
 	"fmt"
 	"net/http"
+	"sync"
+
 	"github.com/altinity/clickhouse-grafana/pkg/eval"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
-	"github.com/grafana/grafana-plugin-sdk-go/backend/datasource"
 	"github.com/grafana/grafana-plugin-sdk-go/backend/instancemgmt"
 	"golang.org/x/sync/errgroup"
 )
-
-func GetDatasourceServeOpts() datasource.ServeOpts {
-	ds := &ClickHouseDatasource{
-		im: datasource.NewInstanceManager(NewDatasourceSettings),
-	}
-
-	return datasource.ServeOpts{
-		QueryDataHandler:    ds,
-		CheckHealthHandler:  ds,
-		CallResourceHandler: ds,
-	}
-}
 
 type ClickHouseDatasource struct {
 	im instancemgmt.InstanceManager
 }
 
-func (ds *ClickHouseDatasource) getClient(ctx backend.PluginContext) (*ClickHouseClient, error) {
-	im, err := ds.im.Get(context.Background(), ctx)
+func (ds *ClickHouseDatasource) getClient(ctx context.Context, pluginCtx backend.PluginContext) (*ClickHouseClient, error) {
+	im, err := ds.im.Get(ctx, pluginCtx)
 	if err != nil {
 		return nil, err
 	}
@@ -46,7 +35,7 @@ func (ds *ClickHouseDatasource) executeQuery(pluginContext backend.PluginContext
 		return backend.DataResponse{Error: err}
 	}
 
-	client, err := ds.getClient(pluginContext)
+	client, err := ds.getClient(ctx, pluginContext)
 	if err != nil {
 		return onErr(err)
 	}
@@ -95,6 +84,7 @@ func (ds *ClickHouseDatasource) QueryData(
 		return nil, err
 	}
 	response := backend.NewQueryDataResponse()
+	var mu sync.Mutex
 	wg, wgCtx := errgroup.WithContext(ctx)
 	ruleUid := req.Headers["X-Rule-Uid"]
 	for _, query := range req.Queries {
@@ -107,7 +97,10 @@ func (ds *ClickHouseDatasource) QueryData(
 		evalJsonErr := json.Unmarshal(query.JSON, &evalQ)
 		if evalJsonErr == nil {
 			wg.Go(func() error {
-				response.Responses[evalQ.RefId] = ds.evalQuery(req.PluginContext, wgCtx, &evalQ)
+				result := ds.evalQuery(req.PluginContext, wgCtx, &evalQ)
+				mu.Lock()
+				response.Responses[evalQ.RefId] = result
+				mu.Unlock()
 				return nil
 			})
 		}
@@ -122,7 +115,10 @@ func (ds *ClickHouseDatasource) QueryData(
 				return onErr(fmt.Errorf("unable to parse json, to Query error: %v, to EvalQuery error: %v, source JSON: %s", jsonErr, evalJsonErr, query.JSON))
 			}
 			wg.Go(func() error {
-				response.Responses[q.RefId] = ds.executeQuery(req.PluginContext, wgCtx, &q)
+				result := ds.executeQuery(req.PluginContext, wgCtx, &q)
+				mu.Lock()
+				response.Responses[q.RefId] = result
+				mu.Unlock()
 				return nil
 			})
 		}
@@ -146,7 +142,7 @@ func (ds *ClickHouseDatasource) CheckHealth(
 		}, err
 	}
 
-	client, err := ds.getClient(req.PluginContext)
+	client, err := ds.getClient(ctx, req.PluginContext)
 	if err != nil {
 		return onErr(err)
 	}

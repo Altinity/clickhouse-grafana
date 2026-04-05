@@ -565,7 +565,7 @@ export class CHDataSource
         const streamData = {
           refId: target.refId,
           rawQuery: false,
-          query: target.query,
+          query: this.templateSrv.replace(target.query, options.scopedVars),
           dateTimeColDataType: target.dateTimeColDataType || '',
           dateColDataType: target.dateColDataType || '',
           dateTimeType: target.dateTimeType || 'DATETIME',
@@ -582,6 +582,7 @@ export class CHDataSource
           maxDataPoints: options.maxDataPoints || 0,
           streamingInterval: target.streamingInterval || 5000,
           streamingMode: target.streamingMode || 'delta',
+          streamingLookback: target.streamingLookback ?? 1,
           timeRange: {
             from: options.range.from.toISOString(),
             to: options.range.to.toISOString(),
@@ -601,7 +602,7 @@ export class CHDataSource
           addr: {
             scope: LiveChannelScope.DataSource,
             namespace: this.uid,
-            path: `stream/${target.refId}/${this.simpleHash(`${streamData.streamingMode}-${streamData.streamingInterval}-${streamData.timeRange.from}-${target.query}`)}`,
+            path: `stream/${target.refId}/${this.simpleHash(`${streamData.streamingMode}-${streamData.streamingInterval}-${streamData.streamingLookback}-${streamData.timeRange.from}-${target.query}`)}`,
             data: streamData,
           },
           buffer: {

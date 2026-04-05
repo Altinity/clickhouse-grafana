@@ -1,278 +1,350 @@
 {
-  "annotations": {
-    "list": []
-  },
+  "annotations": { "list": [] },
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 1,
   "links": [],
   "panels": [
     {
-      "title": "Streaming: Total Value (timeSeries macro)",
-      "description": "Uses $timeSeries macro with streaming enabled. Polls every 5s.",
+      "type": "text",
+      "title": "Streaming Controls Guide",
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 0 },
+      "id": 200,
+      "options": {
+        "mode": "markdown",
+        "content": "## ClickHouse Streaming Plugin Controls\n\nEnable **Streaming** toggle in the query editor to activate real-time data polling. The following controls appear:\n\n| Control | Description |\n|---|---|\n| **Streaming mode** | **Delta** — first poll fetches full range, subsequent polls fetch only new data. Efficient for heavy queries. Requires a time macro (`$timeFilter`, `$timeSeries`, etc.). **Full refresh** — re-runs the entire query each poll. Best for lightweight queries. Data is only sent to the panel when results change. |\n| **Poll interval** | How often ClickHouse is queried: `1s`, `2s`, `5s` (default), `10s`, `30s`, `1m`. Lower = fresher data, higher = less DB load. |\n| **Lookback points** | *(Delta mode only)* Number of recent data points to re-query each tick. Fixes incomplete GROUP BY buckets that are still receiving data. Default: `1`. Set higher (`3`–`5`) for coarse time buckets. |\n\n**Multi-series support:** Queries with `GROUP BY host` (or similar) produce multiple series on a single panel — handled automatically via wide-frame merge.\n\n**Panels below** demonstrate different combinations of mode, poll interval, and lookback. The bottom row shows non-streaming panels for comparison."
+      }
+    },
+    {
+      "type": "row",
+      "title": "Delta mode",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 7 },
+      "id": 100,
+
+      "collapsed": false
+    },
+    {
+      "title": "Delta 1s — CPU by Host (multi-series)",
+      "description": "Delta mode, 1s poll, lookback=2. Multi-series GROUP BY host.",
       "type": "timeseries",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 0
-      },
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 8 },
       "id": 1,
-      "datasource": {
-        "type": "vertamedia-clickhouse-datasource",
-        "uid": "P7E099F39B84EA795"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "SELECT\n    $timeSeries as t,\n    avg(value) as avg_value,\n    max(value) as max_value\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t\nORDER BY t",
-          "rawQuery": "",
-          "format": "time_series",
-          "extrapolate": false,
-          "datasourceMode": "Datasource",
-          "editorMode": "sql",
-          "adHocFilters": [],
-          "showHelp": false,
-          "showFormattedSQL": false,
-          "dateTimeType": "DATETIME",
-          "dateTimeColDataType": "timestamp",
-          "database": "default",
-          "table": "streaming_test",
-          "streaming": true,
-          "streamingInterval": 5000,
-          "streamingMode": "full"
-        }
-      ],
+      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "targets": [{
+        "refId": "A",
+        "query": "SELECT\n    $timeSeries as t,\n    host,\n    avg(cpu_usage) as cpu\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t, host\nORDER BY t",
+        "format": "time_series",
+        "extrapolate": false,
+        "datasourceMode": "Datasource",
+        "editorMode": "sql",
+        "adHocFilters": [],
+        "showHelp": false,
+        "showFormattedSQL": false,
+        "dateTimeType": "DATETIME",
+        "dateTimeColDataType": "timestamp",
+        "database": "default",
+        "table": "streaming_test",
+        "streaming": true,
+        "streamingInterval": 1000,
+        "streamingMode": "delta",
+        "streamingLookback": 2
+      }],
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisLabel": "",
-            "fillOpacity": 10,
-            "lineWidth": 2,
-            "pointSize": 5,
-            "showPoints": "auto"
-          },
-          "unit": "short"
+          "color": { "mode": "palette-classic" },
+          "custom": { "fillOpacity": 5, "lineWidth": 2 },
+          "unit": "percent"
         },
         "overrides": []
       },
       "options": {
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        },
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        }
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
       }
     },
     {
-      "title": "Streaming: CPU by Host ($columns macro)",
-      "description": "Uses $columns macro to show per-host CPU. Polls every 5s.",
+      "title": "Delta 5s — Total Value (single-series)",
+      "description": "Delta mode, 5s poll, lookback=1. Single series with avg/max.",
       "type": "timeseries",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 0
-      },
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 8 },
       "id": 2,
-      "datasource": {
-        "type": "vertamedia-clickhouse-datasource",
-        "uid": "P7E099F39B84EA795"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "SELECT\n    $timeSeries as t,\n    host,\n    avg(cpu_usage) as cpu\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t, host\nORDER BY t",
-          "rawQuery": "",
-          "format": "time_series",
-          "extrapolate": false,
-          "datasourceMode": "Datasource",
-          "editorMode": "sql",
-          "adHocFilters": [],
-          "showHelp": false,
-          "showFormattedSQL": false,
-          "dateTimeType": "DATETIME",
-          "dateTimeColDataType": "timestamp",
-          "database": "default",
-          "table": "streaming_test",
-          "streaming": true,
-          "streamingInterval": 5000,
-          "streamingMode": "full"
-        }
-      ],
+      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "targets": [{
+        "refId": "A",
+        "query": "SELECT\n    $timeSeries as t,\n    avg(value) as avg_value,\n    max(value) as max_value\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t\nORDER BY t",
+        "format": "time_series",
+        "extrapolate": false,
+        "datasourceMode": "Datasource",
+        "editorMode": "sql",
+        "adHocFilters": [],
+        "showHelp": false,
+        "showFormattedSQL": false,
+        "dateTimeType": "DATETIME",
+        "dateTimeColDataType": "timestamp",
+        "database": "default",
+        "table": "streaming_test",
+        "streaming": true,
+        "streamingInterval": 5000,
+        "streamingMode": "delta",
+        "streamingLookback": 1
+      }],
       "fieldConfig": {
         "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisLabel": "CPU %",
-            "fillOpacity": 5,
-            "lineWidth": 2
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "options": {
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        },
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        }
-      }
-    },
-    {
-      "title": "Streaming: Memory by Host",
-      "description": "Memory usage per host. Polls every 10s.",
-      "type": "timeseries",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 0,
-        "y": 8
-      },
-      "id": 3,
-      "datasource": {
-        "type": "vertamedia-clickhouse-datasource",
-        "uid": "P7E099F39B84EA795"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "SELECT\n    $timeSeries as t,\n    host,\n    avg(memory_usage) as memory\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t, host\nORDER BY t",
-          "rawQuery": "",
-          "format": "time_series",
-          "extrapolate": false,
-          "datasourceMode": "Datasource",
-          "editorMode": "sql",
-          "adHocFilters": [],
-          "showHelp": false,
-          "showFormattedSQL": false,
-          "dateTimeType": "DATETIME",
-          "dateTimeColDataType": "timestamp",
-          "database": "default",
-          "table": "streaming_test",
-          "streaming": true,
-          "streamingInterval": 5000,
-          "streamingMode": "full"
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "axisLabel": "Memory %",
-            "fillOpacity": 15,
-            "lineWidth": 2,
-            "gradientMode": "opacity"
-          },
-          "unit": "percent"
-        },
-        "overrides": []
-      },
-      "options": {
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
-        },
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        }
-      }
-    },
-    {
-      "title": "Non-streaming: Total Events (control panel)",
-      "description": "Regular (non-streaming) panel for comparison. Uses normal auto-refresh.",
-      "type": "timeseries",
-      "gridPos": {
-        "h": 8,
-        "w": 12,
-        "x": 12,
-        "y": 8
-      },
-      "id": 4,
-      "datasource": {
-        "type": "vertamedia-clickhouse-datasource",
-        "uid": "P7E099F39B84EA795"
-      },
-      "targets": [
-        {
-          "refId": "A",
-          "query": "SELECT\n    $timeSeries as t,\n    count() as events\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t\nORDER BY t",
-          "rawQuery": "",
-          "format": "time_series",
-          "extrapolate": false,
-          "datasourceMode": "Datasource",
-          "editorMode": "sql",
-          "adHocFilters": [],
-          "showHelp": false,
-          "showFormattedSQL": false,
-          "dateTimeType": "DATETIME",
-          "dateTimeColDataType": "timestamp",
-          "database": "default",
-          "table": "streaming_test",
-          "streaming": false
-        }
-      ],
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "axisBorderShow": false,
-            "axisCenteredZero": false,
-            "fillOpacity": 10,
-            "lineWidth": 2
-          },
+          "color": { "mode": "palette-classic" },
+          "custom": { "fillOpacity": 10, "lineWidth": 2, "pointSize": 5, "showPoints": "auto" },
           "unit": "short"
         },
         "overrides": []
       },
       "options": {
-        "tooltip": {
-          "mode": "multi",
-          "sort": "none"
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Delta 10s — Memory by Host (multi-series)",
+      "description": "Delta mode, 10s poll, lookback=3. Multi-series memory.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 8 },
+      "id": 3,
+      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "targets": [{
+        "refId": "A",
+        "query": "SELECT\n    $timeSeries as t,\n    host,\n    avg(memory_usage) as memory\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t, host\nORDER BY t",
+        "format": "time_series",
+        "extrapolate": false,
+        "datasourceMode": "Datasource",
+        "editorMode": "sql",
+        "adHocFilters": [],
+        "showHelp": false,
+        "showFormattedSQL": false,
+        "dateTimeType": "DATETIME",
+        "dateTimeColDataType": "timestamp",
+        "database": "default",
+        "table": "streaming_test",
+        "streaming": true,
+        "streamingInterval": 10000,
+        "streamingMode": "delta",
+        "streamingLookback": 3
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "fillOpacity": 15, "lineWidth": 2, "gradientMode": "opacity" },
+          "unit": "percent"
         },
-        "legend": {
-          "displayMode": "list",
-          "placement": "bottom"
-        }
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Full refresh mode",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 16 },
+      "id": 101,
+      "collapsed": false
+    },
+    {
+      "title": "Full 1s — Event Count (single-series)",
+      "description": "Full refresh, 1s poll. Re-queries full range every tick.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 0, "y": 17 },
+      "id": 4,
+      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "targets": [{
+        "refId": "A",
+        "query": "SELECT\n    $timeSeries as t,\n    count() as events\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t\nORDER BY t",
+        "format": "time_series",
+        "extrapolate": false,
+        "datasourceMode": "Datasource",
+        "editorMode": "sql",
+        "adHocFilters": [],
+        "showHelp": false,
+        "showFormattedSQL": false,
+        "dateTimeType": "DATETIME",
+        "dateTimeColDataType": "timestamp",
+        "database": "default",
+        "table": "streaming_test",
+        "streaming": true,
+        "streamingInterval": 1000,
+        "streamingMode": "full"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "fillOpacity": 10, "lineWidth": 2 },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Full 5s — CPU by Host (multi-series)",
+      "description": "Full refresh, 5s poll. Multi-series with dedup.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 8, "y": 17 },
+      "id": 5,
+      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "targets": [{
+        "refId": "A",
+        "query": "SELECT\n    $timeSeries as t,\n    host,\n    avg(cpu_usage) as cpu\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t, host\nORDER BY t",
+        "format": "time_series",
+        "extrapolate": false,
+        "datasourceMode": "Datasource",
+        "editorMode": "sql",
+        "adHocFilters": [],
+        "showHelp": false,
+        "showFormattedSQL": false,
+        "dateTimeType": "DATETIME",
+        "dateTimeColDataType": "timestamp",
+        "database": "default",
+        "table": "streaming_test",
+        "streaming": true,
+        "streamingInterval": 5000,
+        "streamingMode": "full"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "fillOpacity": 5, "lineWidth": 2 },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Full 10s — Value avg/max (single-series)",
+      "description": "Full refresh, 10s poll. Lightweight single-series.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 8, "x": 16, "y": 17 },
+      "id": 6,
+      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "targets": [{
+        "refId": "A",
+        "query": "SELECT\n    $timeSeries as t,\n    avg(value) as avg_value,\n    max(value) as max_value\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t\nORDER BY t",
+        "format": "time_series",
+        "extrapolate": false,
+        "datasourceMode": "Datasource",
+        "editorMode": "sql",
+        "adHocFilters": [],
+        "showHelp": false,
+        "showFormattedSQL": false,
+        "dateTimeType": "DATETIME",
+        "dateTimeColDataType": "timestamp",
+        "database": "default",
+        "table": "streaming_test",
+        "streaming": true,
+        "streamingInterval": 10000,
+        "streamingMode": "full"
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "fillOpacity": 10, "lineWidth": 2, "pointSize": 5, "showPoints": "auto" },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "type": "row",
+      "title": "Control (non-streaming)",
+      "gridPos": { "h": 1, "w": 24, "x": 0, "y": 25 },
+      "id": 102,
+      "collapsed": false
+    },
+    {
+      "title": "Non-streaming — Events (control panel)",
+      "description": "Regular panel for comparison. Uses normal auto-refresh.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 0, "y": 26 },
+      "id": 7,
+      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "targets": [{
+        "refId": "A",
+        "query": "SELECT\n    $timeSeries as t,\n    count() as events\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t\nORDER BY t",
+        "format": "time_series",
+        "extrapolate": false,
+        "datasourceMode": "Datasource",
+        "editorMode": "sql",
+        "adHocFilters": [],
+        "showHelp": false,
+        "showFormattedSQL": false,
+        "dateTimeType": "DATETIME",
+        "dateTimeColDataType": "timestamp",
+        "database": "default",
+        "table": "streaming_test",
+        "streaming": false
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "fillOpacity": 10, "lineWidth": 2 },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
+      }
+    },
+    {
+      "title": "Non-streaming — CPU by Host (control panel)",
+      "description": "Regular multi-series panel for comparison.",
+      "type": "timeseries",
+      "gridPos": { "h": 8, "w": 12, "x": 12, "y": 26 },
+      "id": 8,
+      "datasource": { "type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795" },
+      "targets": [{
+        "refId": "A",
+        "query": "SELECT\n    $timeSeries as t,\n    host,\n    avg(cpu_usage) as cpu\nFROM default.streaming_test\nWHERE $timeFilter\nGROUP BY t, host\nORDER BY t",
+        "format": "time_series",
+        "extrapolate": false,
+        "datasourceMode": "Datasource",
+        "editorMode": "sql",
+        "adHocFilters": [],
+        "showHelp": false,
+        "showFormattedSQL": false,
+        "dateTimeType": "DATETIME",
+        "dateTimeColDataType": "timestamp",
+        "database": "default",
+        "table": "streaming_test",
+        "streaming": false
+      }],
+      "fieldConfig": {
+        "defaults": {
+          "color": { "mode": "palette-classic" },
+          "custom": { "fillOpacity": 5, "lineWidth": 2 },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "options": {
+        "tooltip": { "mode": "multi", "sort": "none" },
+        "legend": { "displayMode": "list", "placement": "bottom" }
       }
     }
   ],
   "schemaVersion": 39,
-  "tags": [
-    "streaming",
-    "test",
-    "clickhouse"
-  ],
-  "templating": {
-    "list": []
-  },
-  "time": {
-    "from": "now-1h",
-    "to": "now"
-  },
+  "tags": [ "streaming", "test", "clickhouse" ],
+  "templating": { "list": [] },
+  "time": { "from": "now-15m", "to": "now" },
   "timepicker": {},
   "timezone": "",
   "title": "Streaming Test Dashboard",

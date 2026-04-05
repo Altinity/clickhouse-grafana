@@ -57,7 +57,8 @@ type streamQuery struct {
 	Table                  string `json:"table"`
 	MaxDataPoints          int64  `json:"maxDataPoints"`
 	StreamingInterval      int    `json:"streamingInterval"`
-	StreamingMode          string `json:"streamingMode"` // "delta" or "full"
+	StreamingMode          string `json:"streamingMode"`    // "delta" or "full"
+	StreamingLookback      int    `json:"streamingLookback"` // number of points to re-query for partial bucket updates
 
 	// Time range from the dashboard
 	TimeRange struct {
@@ -237,7 +238,13 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 	}
 	lastTo := now
 
-	// Tick 2+: delta query [lastTo, now] — only new data, merge into accumulated
+	// Lookback: re-query N recent points to update partial buckets
+	lookbackPoints := sq.StreamingLookback
+	if lookbackPoints < 0 {
+		lookbackPoints = 0
+	}
+
+	// Tick 2+: delta query with lookback overlap
 	for {
 		select {
 		case <-ctx.Done():
@@ -252,10 +259,20 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 				continue
 			}
 
-			backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | DELTA | from=%s | to=%s",
-				tickCount, lastTo.Format("15:04:05"), now.Format("15:04:05")))
+			// Shift from back by lookback to re-query recent incomplete buckets
+			deltaFrom := lastTo
+			if lookbackPoints > 0 && queryIntervalSec > 0 {
+				lookbackDuration := time.Duration(int64(lookbackPoints)*queryIntervalSec) * time.Second
+				deltaFrom = lastTo.Add(-lookbackDuration)
+				if deltaFrom.Before(dashboardFrom) {
+					deltaFrom = dashboardFrom
+				}
+			}
 
-			response := ds.executeStreamEvalQuery(req.PluginContext, ctx, sq, lastTo, now)
+			backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | DELTA | from=%s | to=%s | lookback=%d",
+				tickCount, deltaFrom.Format("15:04:05"), now.Format("15:04:05"), lookbackPoints))
+
+			response := ds.executeStreamEvalQuery(req.PluginContext, ctx, sq, deltaFrom, now)
 			if response.Error != nil {
 				backend.Logger.Error(fmt.Sprintf("[streaming] tick #%d | QUERY ERROR: %s", tickCount, response.Error))
 				ds.sendErrorFrame(sender, sq.RefId, response.Error.Error())
@@ -271,13 +288,15 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 				hasNewData = true
 				name := frameKey(frame)
 				if existing, ok := accumulated[name]; ok {
-					appendFrameRows(existing, frame)
+					upsertFrameRows(existing, frame)
 				} else {
 					accumulated[name] = frame
 				}
 			}
 
 			if hasNewData {
+				// Trim data older than dashboardFrom to prevent unbounded memory growth
+				trimAccumulatedFrames(accumulated, dashboardFrom)
 				ds.sendAccumulatedFrames(sender, accumulated, sq, tickCount)
 			} else {
 				backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA: no new rows", tickCount))
@@ -304,17 +323,81 @@ func frameKey(frame *data.Frame) string {
 	return frame.RefID
 }
 
-// appendFrameRows appends all rows from src to dst.
-// Both frames must have the same number of fields with compatible types.
-func appendFrameRows(dst, src *data.Frame) {
+// upsertFrameRows merges rows from src into dst:
+//   - If a timestamp already exists in dst, update the value fields
+//   - If a timestamp is new, append the row
+//
+// This handles the lookback overlap where recent buckets are re-queried
+// and may have updated aggregation values.
+func upsertFrameRows(dst, src *data.Frame) {
 	srcRows := src.Rows()
-	if srcRows == 0 || len(dst.Fields) != len(src.Fields) {
+	if srcRows == 0 || len(dst.Fields) != len(src.Fields) || len(dst.Fields) < 2 {
 		return
 	}
-	for r := 0; r < srcRows; r++ {
-		for i, srcField := range src.Fields {
-			dst.Fields[i].Append(srcField.At(r))
+
+	// Build time -> row index lookup for dst
+	dstTimeIdx := map[int64]int{}
+	dstTimeField := dst.Fields[0]
+	for r := 0; r < dst.Rows(); r++ {
+		if t, ok := dstTimeField.At(r).(time.Time); ok {
+			dstTimeIdx[t.UnixMilli()] = r
 		}
+	}
+
+	for r := 0; r < srcRows; r++ {
+		srcTime, ok := src.Fields[0].At(r).(time.Time)
+		if !ok {
+			continue
+		}
+		if existingRow, exists := dstTimeIdx[srcTime.UnixMilli()]; exists {
+			// Update existing row — overwrite value fields
+			for i := 1; i < len(src.Fields); i++ {
+				dst.Fields[i].Set(existingRow, src.Fields[i].At(r))
+			}
+		} else {
+			// Append new row
+			for i, srcField := range src.Fields {
+				dst.Fields[i].Append(srcField.At(r))
+			}
+			dstTimeIdx[srcTime.UnixMilli()] = dst.Rows() - 1
+		}
+	}
+}
+
+// trimAccumulatedFrames removes rows older than cutoff from all accumulated frames.
+// This prevents unbounded memory growth for long-running streams.
+func trimAccumulatedFrames(accumulated map[string]*data.Frame, cutoff time.Time) {
+	cutoffMs := cutoff.UnixMilli()
+	for name, frame := range accumulated {
+		if len(frame.Fields) == 0 || frame.Rows() == 0 {
+			continue
+		}
+		timeField := frame.Fields[0]
+		// Find the first row >= cutoff
+		firstValid := -1
+		for r := 0; r < frame.Rows(); r++ {
+			if t, ok := timeField.At(r).(time.Time); ok && t.UnixMilli() >= cutoffMs {
+				firstValid = r
+				break
+			}
+		}
+		if firstValid <= 0 {
+			continue // nothing to trim (or all rows are valid)
+		}
+		// Rebuild fields with only valid rows
+		trimmed := data.NewFrame(frame.Name)
+		trimmed.RefID = frame.RefID
+		trimmed.Meta = frame.Meta
+		for _, field := range frame.Fields {
+			newField := data.NewFieldFromFieldType(field.Type(), 0)
+			newField.Name = field.Name
+			newField.Labels = field.Labels
+			for r := firstValid; r < field.Len(); r++ {
+				newField.Append(field.At(r))
+			}
+			trimmed.Fields = append(trimmed.Fields, newField)
+		}
+		accumulated[name] = trimmed
 	}
 }
 

@@ -30,6 +30,10 @@ export const useQueryHandlers = ({ onFieldChange, query }: UseQueryHandlersProps
     onFieldChange({ fieldName: 'streamingInterval', value: value || 5000 });
   };
 
+  const handleStreamingLookbackChange = (value: number | undefined) => {
+    onFieldChange({ fieldName: 'streamingLookback', value: value ?? 1 });
+  };
+
   const handleStreamingModeChange = (value: string | undefined) => {
     onFieldChange({ fieldName: 'streamingMode', value: value || 'delta' });
   };
@@ -46,6 +50,7 @@ export const useQueryHandlers = ({ onFieldChange, query }: UseQueryHandlersProps
     handleContextWindowChange,
     handleStreamingIntervalChange,
     handleStreamingModeChange,
+    handleStreamingLookbackChange,
     handleToggleField,
   };
 };

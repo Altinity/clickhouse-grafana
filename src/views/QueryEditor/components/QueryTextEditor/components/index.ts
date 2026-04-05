@@ -12,4 +12,5 @@ export * from './Switches/StreamingSwitch';
 export * from './Switches/UseWindowFunctionSwitch';
 export * from './Inputs/StreamingIntervalInput';
 export * from './Selects/StreamingModeSelect';
+export * from './Selects/StreamingLookbackSelect';
 export * from './Toolbar/ToolbarButtons';

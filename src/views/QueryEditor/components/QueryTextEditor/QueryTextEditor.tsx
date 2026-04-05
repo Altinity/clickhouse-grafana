@@ -18,6 +18,7 @@ import {
   StreamingSwitch,
   StreamingIntervalInput,
   StreamingModeSelect,
+  StreamingLookbackSelect,
   FormatAsSelect,
   ContextWindowSizeSelect,
   ToolbarButtons,
@@ -110,6 +111,12 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
                 query={query}
                 handleStreamingIntervalChange={(e: any) => handlers.handleStreamingIntervalChange(e.value)}
               />
+              {(query.streamingMode || 'delta') === 'delta' && (
+                <StreamingLookbackSelect
+                  query={query}
+                  onChange={(e: any) => handlers.handleStreamingLookbackChange(e.value)}
+                />
+              )}
             </>
           )}
         </InlineFieldRow>

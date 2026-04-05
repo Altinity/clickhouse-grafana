@@ -15,6 +15,11 @@ export interface Query {
   showHelp: boolean;
   showFormattedSQL: boolean;
   datasourceMode?: DatasourceMode;
+  streaming?: boolean;
+  streamingInterval?: number;
+  streamingMode?: 'delta' | 'full';
+  streamingLookback?: number;
+  query?: string;
 }
 
 export interface AdhocFilter {

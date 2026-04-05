@@ -15,6 +15,10 @@ import {
   SkipCommentsSwitch,
   NullifySparseSwitch,
   UseWindowFunctionSwitch,
+  StreamingSwitch,
+  StreamingIntervalInput,
+  StreamingModeSelect,
+  StreamingLookbackSelect,
   FormatAsSelect,
   ContextWindowSizeSelect,
   ToolbarButtons,
@@ -91,6 +95,30 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
             query={query}
             onChange={() => handlers.handleToggleField('useWindowFuncForMacros')}
           />
+        </InlineFieldRow>
+        <InlineFieldRow>
+          <StreamingSwitch
+            query={query}
+            onChange={() => handlers.handleToggleField('streaming')}
+          />
+          {query.streaming && (
+            <>
+              <StreamingModeSelect
+                query={query}
+                onChange={(e: any) => handlers.handleStreamingModeChange(e.value)}
+              />
+              <StreamingIntervalInput
+                query={query}
+                handleStreamingIntervalChange={(e: any) => handlers.handleStreamingIntervalChange(e.value)}
+              />
+              {(query.streamingMode || 'delta') === 'delta' && (
+                <StreamingLookbackSelect
+                  query={query}
+                  onChange={(e: any) => handlers.handleStreamingLookbackChange(e.value)}
+                />
+              )}
+            </>
+          )}
         </InlineFieldRow>
         <InlineFieldRow>
           {(!isAnnotationView && query.datasourceMode !== DatasourceMode.Variable) && (

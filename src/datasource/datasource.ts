@@ -9,18 +9,20 @@ import {
   DataSourceInstanceSettings,
   DataSourceWithLogsContextSupport,
   DataSourceWithToggleableQueryFiltersSupport, FieldType,
+  LiveChannelScope,
   LogRowContextOptions,
+  StreamingFrameAction,
   LogRowContextQueryDirection,
   LogRowModel,
   QueryFilterOptions,
   TypedVariableModel, VariableSupportType,
 } from '@grafana/data';
-import { BackendSrv, config, DataSourceWithBackend, getBackendSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
+import { BackendSrv, config, DataSourceWithBackend, getBackendSrv, getGrafanaLiveSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
 import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
-import { from } from 'rxjs';
+import { from, merge, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation } from './helpers';
 import { ClickHouseResourceClient } from './resource_handler';
 import { IndexedDBManager } from '../utils/indexedDBManager';
@@ -538,12 +540,166 @@ export class CHDataSource
   }
 
 
+  private simpleHash(str: string): string {
+    let hash = 0;
+    for (let i = 0; i < str.length; i++) {
+      const char = str.charCodeAt(i);
+      hash = ((hash << 5) - hash) + char;
+      hash |= 0;
+    }
+    return Math.abs(hash).toString(36);
+  }
+
   query(options: DataQueryRequest<CHQuery>): any {
+    this.options = options;
+    const targets = options.targets.filter((target) => !target.hide && target.query?.trim());
+
+    // Split targets into streaming and regular queries
+    const streamingTargets = targets.filter((t) => t.streaming);
+    const regularTargets = targets.filter((t) => !t.streaming);
+
+    // Handle streaming targets via Grafana Live
+    if (streamingTargets.length > 0) {
+      const streamingObservables = streamingTargets.map((target) => {
+        const interval = this.templateSrv.replace(target.interval || options.interval || '30s', options.scopedVars);
+        const streamData = {
+          refId: target.refId,
+          rawQuery: false,
+          query: this.templateSrv.replace(target.query, options.scopedVars),
+          dateTimeColDataType: target.dateTimeColDataType || '',
+          dateColDataType: target.dateColDataType || '',
+          dateTimeType: target.dateTimeType || 'DATETIME',
+          extrapolate: target.extrapolate || false,
+          skip_comments: target.skip_comments || false,
+          add_metadata: target.add_metadata || false,
+          useWindowFuncForMacros: target.useWindowFuncForMacros || false,
+          format: target.format || 'time_series',
+          round: target.round || '0s',
+          intervalFactor: target.intervalFactor || 1,
+          interval: interval,
+          database: target.database || 'default',
+          table: target.table || '',
+          maxDataPoints: options.maxDataPoints || 0,
+          streamingInterval: target.streamingInterval || 5000,
+          streamingMode: target.streamingMode || 'delta',
+          streamingLookback: target.streamingLookback ?? 1,
+          timeRange: {
+            from: options.range.from.toISOString(),
+            to: options.range.to.toISOString(),
+          },
+        };
+
+        console.log(
+          `[streaming] SUBSCRIBE | refId=${target.refId} | channel=ds/${this.uid}/stream/${target.refId}/${streamData.streamingInterval}/...`,
+          '\n  query:', target.query?.substring(0, 100),
+          '\n  interval:', interval,
+          '\n  streamingInterval:', target.streamingInterval || 5000, 'ms',
+          '\n  timeRange:', options.range.from.toISOString(), '→', options.range.to.toISOString(),
+          '\n  maxDataPoints:', options.maxDataPoints,
+        );
+
+        const channelPath = `stream/${target.refId}/${this.simpleHash(`${streamData.streamingMode}-${streamData.streamingInterval}-${streamData.streamingLookback}-${streamData.timeRange.from}-${target.query}`)}`;
+        const liveStream = getGrafanaLiveSrv().getDataStream({
+          addr: {
+            scope: LiveChannelScope.DataSource,
+            // 'namespace' was renamed to 'stream' in @grafana/data 12.x
+            namespace: this.uid,
+            stream: this.uid,
+            path: channelPath,
+            data: streamData,
+          } as any,
+          buffer: {
+            action: StreamingFrameAction.Replace,
+          },
+        });
+
+        console.log(`[streaming] CREATING Observable wrapper for refId=${target.refId}`);
+
+        // Wrap in a new Observable to add logging (avoids rxjs version mismatch with .pipe())
+        return new Observable((subscriber) => {
+          console.log(`[streaming] Observable SUBSCRIBED by Grafana | refId=${target.refId}`);
+
+          let eventCount = 0;
+          const sub = liveStream.subscribe({
+            next: (response: any) => {
+              eventCount++;
+              const frames = response.data || [];
+              const state = response.state || 'unknown';
+              const key = response.key || 'no-key';
+
+              console.log(
+                `[streaming] EVENT #${eventCount} | ${new Date().toISOString()} | refId=${target.refId} | state=${state} | key=${key} | frames=${frames.length}`,
+                '\n  raw response keys:', Object.keys(response),
+                '\n  raw response.state:', response.state,
+                '\n  raw response.data length:', response.data?.length,
+              );
+
+              console.log(`[streaming] TOTAL frames in response: ${frames.length}`);
+              if (frames.length > 0) {
+                frames.forEach((f: any, i: number) => {
+                  const fields = f.fields || [];
+                  const rows = f.length || 0;
+                  const fieldNames = fields.map((field: any) => field.name);
+                  const fieldInfo = fields.map((field: any) => `${field.name}(${field.type}, ${field.values?.length || 0} vals)`).join(', ');
+                  console.log(`[streaming]   frame[${i}]: ${rows} rows | fields: [${fieldNames.join(', ')}] | ${fieldInfo}`);
+
+                  // Show if this looks like a wide frame (multiple non-time fields)
+                  const nonTimeFields = fields.filter((field: any) => field.type !== 'time');
+                  if (nonTimeFields.length > 1) {
+                    console.log(`[streaming]   frame[${i}]: WIDE FORMAT — ${nonTimeFields.length} value fields: [${nonTimeFields.map((f: any) => f.name).join(', ')}]`);
+                  } else if (nonTimeFields.length === 1) {
+                    console.log(`[streaming]   frame[${i}]: NARROW FORMAT — single series: ${nonTimeFields[0]?.name}`);
+                  }
+
+                  // Show last 3 rows
+                  if (rows > 0) {
+                    const start = Math.max(0, rows - 3);
+                    for (let r = start; r < rows; r++) {
+                      const vals = fields.map((field: any) => {
+                        const v = field.values?.[r];
+                        return v instanceof Date ? v.toISOString() : v;
+                      });
+                      console.log(`[streaming]     row[${r}]: ${vals.join(' | ')}`);
+                    }
+                  }
+                });
+              }
+
+              subscriber.next(response);
+              console.log(`[streaming] EVENT #${eventCount} forwarded to Grafana panel`);
+            },
+            error: (err: any) => {
+              console.error(`[streaming] ERROR | refId=${target.refId}`, err);
+              subscriber.error(err);
+            },
+            complete: () => {
+              console.log(`[streaming] COMPLETE | refId=${target.refId} | total events=${eventCount}`);
+              subscriber.complete();
+            },
+          });
+
+          console.log(`[streaming] liveStream.subscribe() called | refId=${target.refId}`);
+
+          return () => {
+            console.log(`[streaming] UNSUBSCRIBE | refId=${target.refId} | total events=${eventCount}`);
+            sub.unsubscribe();
+          };
+        });
+      });
+
+      if (regularTargets.length > 0) {
+        // Merge streaming observables with regular query results
+        const regularObservable = from(this.executeQueries(regularTargets, options));
+        return merge(...streamingObservables.map((o) => o as any), regularObservable);
+      }
+
+      return merge(...streamingObservables.map((o) => o as any));
+    }
+
+    // Regular (non-streaming) path
     const queryProcessing = async () => {
       try {
-        this.options = options;
-        const targets = options.targets.filter((target) => !target.hide && target.query?.trim());
-        return await this.executeQueries(targets, options);
+        return await this.executeQueries(regularTargets, options);
       } catch (error) {
         console.error('Query processing failed:', error);
         throw error;

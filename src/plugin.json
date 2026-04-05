@@ -6,6 +6,7 @@
   "metrics": true,
   "annotations": true,
   "backend": true,
+  "streaming": true,
   "alerting": true,
   "logs": true,
   "executable": "altinity-clickhouse-plugin",

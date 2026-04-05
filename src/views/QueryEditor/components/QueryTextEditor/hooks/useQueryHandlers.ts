@@ -26,6 +26,18 @@ export const useQueryHandlers = ({ onFieldChange, query }: UseQueryHandlersProps
     onFieldChange({ fieldName: 'contextWindowSize', value });
   };
 
+  const handleStreamingIntervalChange = (value: number | undefined) => {
+    onFieldChange({ fieldName: 'streamingInterval', value: value || 5000 });
+  };
+
+  const handleStreamingLookbackChange = (value: number | undefined) => {
+    onFieldChange({ fieldName: 'streamingLookback', value: value ?? 1 });
+  };
+
+  const handleStreamingModeChange = (value: string | undefined) => {
+    onFieldChange({ fieldName: 'streamingMode', value: value || 'delta' });
+  };
+
   const handleToggleField = (fieldName: string) => {
     onFieldChange({ fieldName, value: !query[fieldName] });
   };
@@ -36,6 +48,9 @@ export const useQueryHandlers = ({ onFieldChange, query }: UseQueryHandlersProps
     handleRoundChange,
     handleFormatChange,
     handleContextWindowChange,
+    handleStreamingIntervalChange,
+    handleStreamingModeChange,
+    handleStreamingLookbackChange,
     handleToggleField,
   };
 };

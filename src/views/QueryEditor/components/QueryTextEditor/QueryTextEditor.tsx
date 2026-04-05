@@ -108,7 +108,7 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
               />
               <StreamingIntervalInput
                 query={query}
-                handleStreamingIntervalChange={handlers.handleStreamingIntervalChange}
+                handleStreamingIntervalChange={(e: any) => handlers.handleStreamingIntervalChange(e.value)}
               />
             </>
           )}

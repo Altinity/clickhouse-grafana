@@ -21,7 +21,7 @@ export interface StreamingModeSelectProps {
   onChange: (e: SelectableValue<string>) => void;
 }
 
-const TIME_MACRO_PATTERN = /\$timeFilter|\$timeFilterMs|\$timeFilter64ByColumn|\$timeFilterByColumn/;
+const TIME_MACRO_PATTERN = /\$(timeFilter\b|timeFilterMs\b|timeFilterByColumn\(|timeFilter64ByColumn\(|timeSeries\b|timeSeriesMs\b|naturalTimeSeries\b|columns\b|columnsMs\b|rate\b|rateColumns\b|rateColumnsAggregated\b|perSecond\b|perSecondColumns\b|perSecondColumnsAggregated\b|delta\b|deltaColumns\b|deltaColumnsAggregated\b|increase\b|increaseColumns\b|increaseColumnsAggregated\b|lttb\b|lttbMs\b)/;
 
 export const StreamingModeSelect: React.FC<StreamingModeSelectProps> = ({ query, onChange }) => {
   const mode = query.streamingMode || 'delta';
@@ -57,7 +57,7 @@ export const StreamingModeSelect: React.FC<StreamingModeSelectProps> = ({ query,
         />
       </InlineField>
       {showWarning && (
-        <Alert title="" severity="warning" style={{ padding: '4px 8px', margin: '0 0 0 8px' }}>
+        <Alert title="" severity="error" style={{ padding: '4px 8px', margin: '0 0 0 8px' }}>
           Delta mode requires $timeFilter or $timeFilterMs macro in the query to limit the time range
         </Alert>
       )}

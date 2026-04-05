@@ -630,12 +630,22 @@ export class CHDataSource
                 '\n  raw response.data length:', response.data?.length,
               );
 
+              console.log(`[streaming] TOTAL frames in response: ${frames.length}`);
               if (frames.length > 0) {
                 frames.forEach((f: any, i: number) => {
                   const fields = f.fields || [];
                   const rows = f.length || 0;
+                  const fieldNames = fields.map((field: any) => field.name);
                   const fieldInfo = fields.map((field: any) => `${field.name}(${field.type}, ${field.values?.length || 0} vals)`).join(', ');
-                  console.log(`[streaming]   frame[${i}]: ${rows} rows | ${fieldInfo}`);
+                  console.log(`[streaming]   frame[${i}]: ${rows} rows | fields: [${fieldNames.join(', ')}] | ${fieldInfo}`);
+
+                  // Show if this looks like a wide frame (multiple non-time fields)
+                  const nonTimeFields = fields.filter((field: any) => field.type !== 'time');
+                  if (nonTimeFields.length > 1) {
+                    console.log(`[streaming]   frame[${i}]: WIDE FORMAT — ${nonTimeFields.length} value fields: [${nonTimeFields.map((f: any) => f.name).join(', ')}]`);
+                  } else if (nonTimeFields.length === 1) {
+                    console.log(`[streaming]   frame[${i}]: NARROW FORMAT — single series: ${nonTimeFields[0]?.name}`);
+                  }
 
                   // Show last 3 rows
                   if (rows > 0) {

@@ -63,6 +63,7 @@ export interface CHQuery extends DataQuery {
   streaming?: boolean;
   streamingInterval?: number;
   streamingMode?: 'delta' | 'full';
+  streamingLookback?: number;
 }
 
 /**

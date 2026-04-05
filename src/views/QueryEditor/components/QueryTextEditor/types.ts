@@ -18,6 +18,7 @@ export interface Query {
   streaming?: boolean;
   streamingInterval?: number;
   streamingMode?: 'delta' | 'full';
+  streamingLookback?: number;
   query?: string;
 }
 

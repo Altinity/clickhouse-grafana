@@ -598,13 +598,16 @@ export class CHDataSource
           '\n  maxDataPoints:', options.maxDataPoints,
         );
 
+        const channelPath = `stream/${target.refId}/${this.simpleHash(`${streamData.streamingMode}-${streamData.streamingInterval}-${streamData.streamingLookback}-${streamData.timeRange.from}-${target.query}`)}`;
         const liveStream = getGrafanaLiveSrv().getDataStream({
           addr: {
             scope: LiveChannelScope.DataSource,
+            // 'namespace' was renamed to 'stream' in @grafana/data 12.x
             namespace: this.uid,
-            path: `stream/${target.refId}/${this.simpleHash(`${streamData.streamingMode}-${streamData.streamingInterval}-${streamData.streamingLookback}-${streamData.timeRange.from}-${target.query}`)}`,
+            stream: this.uid,
+            path: channelPath,
             data: streamData,
-          },
+          } as any,
           buffer: {
             action: StreamingFrameAction.Replace,
           },

@@ -26,10 +26,8 @@ export const useQueryHandlers = ({ onFieldChange, query }: UseQueryHandlersProps
     onFieldChange({ fieldName: 'contextWindowSize', value });
   };
 
-  const handleStreamingIntervalChange = (event: ChangeEvent<HTMLInputElement>) => {
-    const raw = event.target.value;
-    const parsed = parseInt(raw, 10);
-    onFieldChange({ fieldName: 'streamingInterval', value: isNaN(parsed) ? undefined : parsed });
+  const handleStreamingIntervalChange = (value: number | undefined) => {
+    onFieldChange({ fieldName: 'streamingInterval', value: value || 5000 });
   };
 
   const handleStreamingModeChange = (value: string | undefined) => {

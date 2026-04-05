@@ -5,12 +5,32 @@ import (
 	"crypto/md5"
 	"encoding/json"
 	"fmt"
+	"regexp"
+	"sort"
 	"time"
 
 	"github.com/altinity/clickhouse-grafana/pkg/eval"
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
 	"github.com/grafana/grafana-plugin-sdk-go/data"
 )
+
+// timeMacroPattern matches all ClickHouse plugin macros that incorporate time range filtering.
+// Delta streaming mode requires at least one of these to properly scope queries to a time window.
+var timeMacroPattern = regexp.MustCompile(`\$(?:` +
+	`timeFilter\b|timeFilterMs\b|timeFilterByColumn\(|timeFilter64ByColumn\(|` +
+	`timeSeries\b|timeSeriesMs\b|naturalTimeSeries\b|` +
+	`columns\b|columnsMs\b|` +
+	`rate\b|rateColumns\b|rateColumnsAggregated\b|` +
+	`perSecond\b|perSecondColumns\b|perSecondColumnsAggregated\b|` +
+	`delta\b|deltaColumns\b|deltaColumnsAggregated\b|` +
+	`increase\b|increaseColumns\b|increaseColumnsAggregated\b|` +
+	`lttb\b|lttbMs\b` +
+	`)`)
+
+// queryHasTimeMacro checks whether the raw query contains any time-scoping macros.
+func queryHasTimeMacro(query string) bool {
+	return timeMacroPattern.MatchString(query)
+}
 
 const (
 	defaultStreamingIntervalMs = 5000
@@ -162,10 +182,16 @@ func (ds *ClickHouseDatasource) RunStream(ctx context.Context, req *backend.RunS
 	return ds.runDeltaLoop(ctx, req, sender, &sq, dashboardFrom, ticker, queryIntervalSec)
 }
 
-// runDeltaLoop: checks for new data with a small delta query [lastTo, now()].
-// If new data exists, re-queries the full range and sends the complete frame.
-// This reduces ClickHouse load: the lightweight delta check runs every tick,
-// but the heavy full-range query only runs when there's actually new data.
+// runDeltaLoop implements delta streaming with server-side accumulation:
+//   - Tick 1: queries the full time range [dashboardFrom, now] and stores frames in memory
+//   - Tick 2+: queries only the narrow window [lastTo, now], merges new rows into stored frames
+//
+// The frontend always receives the complete accumulated dataset via Replace mode.
+// This avoids Grafana's Append buffer issues with multi-frame responses (e.g. GROUP BY host)
+// while still keeping ClickHouse load low (only delta queries after tick 1).
+//
+// Requires time-scoping macros ($timeFilter, $timeSeries, $columns, etc.) in the query
+// so that the time range substitution actually limits the data fetched.
 func (ds *ClickHouseDatasource) runDeltaLoop(
 	ctx context.Context,
 	req *backend.RunStreamRequest,
@@ -175,18 +201,43 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 	ticker *time.Ticker,
 	queryIntervalSec int64,
 ) error {
-	tickCount := 0
-	lastFingerprints := map[string][16]byte{}
+	// Validate that the query contains time-scoping macros
+	if !queryHasTimeMacro(sq.Query) {
+		errMsg := "Delta streaming mode requires a time-scoping macro in the query " +
+			"(e.g. $timeFilter, $timeFilterMs, $timeSeries, $columns, $rate, etc.). " +
+			"Without it, every tick would fetch the entire dataset. " +
+			"Either add a time macro to the WHERE clause or switch to Full refresh mode."
+		backend.Logger.Error(fmt.Sprintf("[streaming] DELTA VALIDATION FAILED | refId=%s | %s", sq.RefId, errMsg))
+		ds.sendErrorFrame(sender, sq.RefId, errMsg)
+		return fmt.Errorf("delta mode validation: %s", errMsg)
+	}
 
-	// Tick 1: full range query
+	tickCount := 0
+	// Server-side accumulated frames, keyed by frame name
+	accumulated := map[string]*data.Frame{}
+
+	// Tick 1: full range [dashboardFrom, now] — initial data load
 	tickCount++
 	now := roundDownTo(time.Now(), queryIntervalSec)
-	backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | DELTA/FULL_RANGE | from=%s | to=%s",
+	backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | DELTA/INITIAL | from=%s | to=%s",
 		tickCount, dashboardFrom.Format("15:04:05"), now.Format("15:04:05")))
-	ds.sendFramesWithDedup(ctx, req.PluginContext, sender, sq, dashboardFrom, now, lastFingerprints, tickCount)
-	lastTo := time.Now()
 
-	// Tick 2+: probe with delta, send full range only if new data found
+	response := ds.executeStreamEvalQuery(req.PluginContext, ctx, sq, dashboardFrom, now)
+	if response.Error != nil {
+		backend.Logger.Error(fmt.Sprintf("[streaming] tick #%d | QUERY ERROR: %s", tickCount, response.Error))
+		ds.sendErrorFrame(sender, sq.RefId, response.Error.Error())
+	} else {
+		for _, frame := range response.Frames {
+			if frame.Rows() > 0 {
+				name := frameKey(frame)
+				accumulated[name] = frame
+			}
+		}
+		ds.sendAccumulatedFrames(sender, accumulated, sq, tickCount)
+	}
+	lastTo := now
+
+	// Tick 2+: delta query [lastTo, now] — only new data, merge into accumulated
 	for {
 		select {
 		case <-ctx.Done():
@@ -194,31 +245,234 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 			return nil
 		case <-ticker.C:
 			tickCount++
-			now = time.Now()
+			now = roundDownTo(time.Now(), queryIntervalSec)
 
-			// Lightweight delta probe — only checks if new data exists
-			probeResponse := ds.executeStreamEvalQuery(req.PluginContext, ctx, sq, lastTo, now)
+			if !now.After(lastTo) {
+				backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA: skipped (now <= lastTo)", tickCount))
+				continue
+			}
+
+			backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | DELTA | from=%s | to=%s",
+				tickCount, lastTo.Format("15:04:05"), now.Format("15:04:05")))
+
+			response := ds.executeStreamEvalQuery(req.PluginContext, ctx, sq, lastTo, now)
+			if response.Error != nil {
+				backend.Logger.Error(fmt.Sprintf("[streaming] tick #%d | QUERY ERROR: %s", tickCount, response.Error))
+				ds.sendErrorFrame(sender, sq.RefId, response.Error.Error())
+				lastTo = now
+				continue
+			}
+
 			hasNewData := false
-			if probeResponse.Error == nil {
-				for _, frame := range probeResponse.Frames {
-					if frame.Rows() > 0 {
-						hasNewData = true
-						break
-					}
+			for _, frame := range response.Frames {
+				if frame.Rows() == 0 {
+					continue
+				}
+				hasNewData = true
+				name := frameKey(frame)
+				if existing, ok := accumulated[name]; ok {
+					appendFrameRows(existing, frame)
+				} else {
+					accumulated[name] = frame
 				}
 			}
-			lastTo = now
 
 			if hasNewData {
-				// New data found — re-query full range, round to complete buckets
-				roundedTo := roundDownTo(now, queryIntervalSec)
-				backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | DELTA: new data, full range to=%s",
-					tickCount, roundedTo.Format("15:04:05")))
-				ds.sendFramesWithDedup(ctx, req.PluginContext, sender, sq, dashboardFrom, roundedTo, lastFingerprints, tickCount)
+				ds.sendAccumulatedFrames(sender, accumulated, sq, tickCount)
 			} else {
-				backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA: no new data (probe only)", tickCount))
+				backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA: no new rows", tickCount))
+			}
+
+			lastTo = now
+		}
+	}
+}
+
+// frameKey returns a stable key for a frame, used to match frames across ticks.
+// response.go creates frames with empty Name — the unique series identifier
+// is stored in the value field's name (e.g., "host0", "host1").
+func frameKey(frame *data.Frame) string {
+	if frame.Name != "" {
+		return frame.Name
+	}
+	// Use the first non-time field name as key (this is the series name)
+	for _, field := range frame.Fields {
+		if field.Type() != data.FieldTypeTime && field.Type() != data.FieldTypeNullableTime {
+			return field.Name
+		}
+	}
+	return frame.RefID
+}
+
+// appendFrameRows appends all rows from src to dst.
+// Both frames must have the same number of fields with compatible types.
+func appendFrameRows(dst, src *data.Frame) {
+	srcRows := src.Rows()
+	if srcRows == 0 || len(dst.Fields) != len(src.Fields) {
+		return
+	}
+	for r := 0; r < srcRows; r++ {
+		for i, srcField := range src.Fields {
+			dst.Fields[i].Append(srcField.At(r))
+		}
+	}
+}
+
+// sendAccumulatedFrames merges accumulated frames into a single wide-format frame
+// and sends it via Replace. Grafana's streaming Replace mode only keeps the last
+// frame sent per channel, so we must combine all series into one frame.
+func (ds *ClickHouseDatasource) sendAccumulatedFrames(
+	sender *backend.StreamSender,
+	accumulated map[string]*data.Frame,
+	sq *streamQuery,
+	tickCount int,
+) {
+	wide := mergeFramesToWide(accumulated)
+	if wide == nil {
+		backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA: nothing to send", tickCount))
+		return
+	}
+	wide.RefID = sq.RefId
+	addStreamingNotice(wide, "delta", tickCount, wide.Rows())
+	if err := sender.SendFrame(wide, data.IncludeAll); err != nil {
+		backend.Logger.Error(fmt.Sprintf("[streaming] tick #%d | SendFrame ERROR: %s", tickCount, err))
+		return
+	}
+	backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | refId=%s | series=%d | rows=%d",
+		tickCount, sq.RefId, len(accumulated), wide.Rows()))
+}
+
+// mergeFramesToWide combines multiple frames that share a common time field
+// into a single wide-format frame using time-based JOIN. This is necessary
+// because Grafana's streaming Replace mode only keeps the last frame sent.
+//
+// Handles frames with different row counts by building a unified time index
+// and filling missing values with nil (null). This supports GROUP BY queries
+// where some series may not have data in every time bucket.
+//
+// Input:  {host0: [t, cpu], host1: [t, cpu], host2: [t, cpu]}
+// Output: single frame [t, host0_cpu, host1_cpu, host2_cpu]
+func mergeFramesToWide(accumulated map[string]*data.Frame) *data.Frame {
+	if len(accumulated) == 0 {
+		return nil
+	}
+	// Single frame — no merge needed
+	if len(accumulated) == 1 {
+		for _, frame := range accumulated {
+			return frame
+		}
+	}
+
+	// Sort frame names for consistent field ordering across ticks
+	names := make([]string, 0, len(accumulated))
+	for name := range accumulated {
+		names = append(names, name)
+	}
+	sort.Strings(names)
+	backend.Logger.Info(fmt.Sprintf("[streaming] mergeFramesToWide: %d frames to merge, keys=%v", len(names), names))
+
+	// 1. Collect all unique timestamps from all frames
+	timeSet := map[int64]time.Time{}
+	for _, name := range names {
+		frame := accumulated[name]
+		if len(frame.Fields) == 0 {
+			continue
+		}
+		timeField := frame.Fields[0]
+		for r := 0; r < timeField.Len(); r++ {
+			if t, ok := timeField.At(r).(time.Time); ok {
+				timeSet[t.UnixMilli()] = t
 			}
 		}
+	}
+
+	// 2. Sort timestamps
+	sortedMs := make([]int64, 0, len(timeSet))
+	for ms := range timeSet {
+		sortedMs = append(sortedMs, ms)
+	}
+	sort.Slice(sortedMs, func(i, j int) bool { return sortedMs[i] < sortedMs[j] })
+
+	totalRows := len(sortedMs)
+	msToIdx := make(map[int64]int, totalRows)
+	timeValues := make([]time.Time, totalRows)
+	for i, ms := range sortedMs {
+		msToIdx[ms] = i
+		timeValues[i] = timeSet[ms]
+	}
+
+	// 3. Build wide frame with unified time field
+	wide := data.NewFrame("")
+	wide.Fields = append(wide.Fields, data.NewField("t", nil, timeValues))
+
+	// 4. For each series, create nullable value fields aligned to the time index
+	for _, name := range names {
+		frame := accumulated[name]
+		if len(frame.Fields) < 2 {
+			continue
+		}
+		timeField := frame.Fields[0]
+
+		for fi := 1; fi < len(frame.Fields); fi++ {
+			srcField := frame.Fields[fi]
+			values := make([]*float64, totalRows) // nil = no data
+
+			for r := 0; r < frame.Rows(); r++ {
+				t, ok := timeField.At(r).(time.Time)
+				if !ok {
+					continue
+				}
+				idx, exists := msToIdx[t.UnixMilli()]
+				if !exists {
+					continue
+				}
+				v := toFloat64(srcField.At(r))
+				values[idx] = &v
+			}
+
+			wide.Fields = append(wide.Fields, data.NewField(srcField.Name, srcField.Labels, values))
+		}
+	}
+
+	fieldNames := make([]string, 0, len(wide.Fields))
+	for _, f := range wide.Fields {
+		fieldNames = append(fieldNames, f.Name)
+	}
+	backend.Logger.Info(fmt.Sprintf("[streaming] mergeFramesToWide: result — %d fields %v, %d rows",
+		len(wide.Fields), fieldNames, totalRows))
+
+	return wide
+}
+
+// toFloat64 converts a data.Field value to float64.
+func toFloat64(v interface{}) float64 {
+	switch val := v.(type) {
+	case float64:
+		return val
+	case float32:
+		return float64(val)
+	case int64:
+		return float64(val)
+	case int32:
+		return float64(val)
+	case int:
+		return float64(val)
+	case uint64:
+		return float64(val)
+	case uint32:
+		return float64(val)
+	case *float64:
+		if val != nil {
+			return *val
+		}
+		return 0
+	case *float32:
+		if val != nil {
+			return float64(*val)
+		}
+		return 0
+	default:
+		return 0
 	}
 }
 
@@ -236,14 +490,14 @@ func (ds *ClickHouseDatasource) runFullRefreshLoop(
 	queryIntervalSec int64,
 ) error {
 	tickCount := 0
-	lastFingerprints := map[string][16]byte{}
+	var lastFingerprint [16]byte
 
 	// First tick immediately
 	tickCount++
 	now := roundDownTo(time.Now(), queryIntervalSec)
 	backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | FULL_REFRESH | from=%s | to=%s",
 		tickCount, dashboardFrom.Format("15:04:05"), now.Format("15:04:05")))
-	ds.sendFramesWithDedup(ctx, req.PluginContext, sender, sq, dashboardFrom, now, lastFingerprints, tickCount)
+	ds.sendFramesWithDedup(ctx, req.PluginContext, sender, sq, dashboardFrom, now, &lastFingerprint, tickCount)
 
 	for {
 		select {
@@ -255,20 +509,21 @@ func (ds *ClickHouseDatasource) runFullRefreshLoop(
 			now = roundDownTo(time.Now(), queryIntervalSec)
 			backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | FULL_REFRESH | from=%s | to=%s",
 				tickCount, dashboardFrom.Format("15:04:05"), now.Format("15:04:05")))
-			ds.sendFramesWithDedup(ctx, req.PluginContext, sender, sq, dashboardFrom, now, lastFingerprints, tickCount)
+			ds.sendFramesWithDedup(ctx, req.PluginContext, sender, sq, dashboardFrom, now, &lastFingerprint, tickCount)
 		}
 	}
 }
 
-// sendFramesWithDedup executes a query and sends only changed frames.
-// Used by both delta mode (full range re-query) and full refresh mode.
+// sendFramesWithDedup executes a query, merges frames into a single wide-format frame,
+// and sends it only when the result has changed (fingerprint comparison).
+// Used by full refresh mode.
 func (ds *ClickHouseDatasource) sendFramesWithDedup(
 	ctx context.Context,
 	pluginContext backend.PluginContext,
 	sender *backend.StreamSender,
 	sq *streamQuery,
 	from, to time.Time,
-	lastFingerprints map[string][16]byte,
+	lastFingerprint *[16]byte,
 	tickCount int,
 ) {
 	response := ds.executeStreamEvalQuery(pluginContext, ctx, sq, from, to)
@@ -278,42 +533,42 @@ func (ds *ClickHouseDatasource) sendFramesWithDedup(
 		return
 	}
 
-	if len(response.Frames) == 0 {
+	// Collect non-empty frames into a map for merging
+	framesMap := map[string]*data.Frame{}
+	for _, frame := range response.Frames {
+		if frame.Rows() > 0 {
+			framesMap[frameKey(frame)] = frame
+		}
+	}
+
+	if len(framesMap) == 0 {
 		ds.sendHeartbeat(sender, sq.RefId)
 		backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | refId=%s | NO DATA (heartbeat sent)", tickCount, sq.RefId))
 		return
 	}
 
-	sent, skipped := 0, 0
-	for _, frame := range response.Frames {
-		if frame.Rows() == 0 {
-			skipped++
-			continue
-		}
-		fp := frameFingerprint(frame)
-		name := frame.Name
-		if name == "" {
-			name = fmt.Sprintf("frame-%d", sent+skipped)
-		}
-		if prev, ok := lastFingerprints[name]; ok && prev == fp {
-			skipped++
-			continue
-		}
-		lastFingerprints[name] = fp
-		sent++
-		mode := sq.StreamingMode
-		if mode == "" {
-			mode = "delta"
-		}
-		addStreamingNotice(frame, mode, tickCount, frame.Rows())
-		if err := sender.SendFrame(frame, data.IncludeAll); err != nil {
-			backend.Logger.Error(fmt.Sprintf("[streaming] tick #%d | SendFrame ERROR: %s", tickCount, err))
-			return
-		}
+	wide := mergeFramesToWide(framesMap)
+	if wide == nil {
+		return
 	}
 
-	backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | refId=%s | sent=%d | skipped=%d",
-		tickCount, sq.RefId, sent, skipped))
+	// Dedup: skip if fingerprint unchanged
+	fp := frameFingerprint(wide)
+	if *lastFingerprint == fp {
+		backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | FULL: unchanged (skipped)", tickCount))
+		return
+	}
+	*lastFingerprint = fp
+
+	wide.RefID = sq.RefId
+	addStreamingNotice(wide, "full", tickCount, wide.Rows())
+	if err := sender.SendFrame(wide, data.IncludeAll); err != nil {
+		backend.Logger.Error(fmt.Sprintf("[streaming] tick #%d | SendFrame ERROR: %s", tickCount, err))
+		return
+	}
+
+	backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | refId=%s | series=%d | rows=%d",
+		tickCount, sq.RefId, len(framesMap), wide.Rows()))
 }
 
 // executeStreamEvalQuery builds and executes an EvalQuery.

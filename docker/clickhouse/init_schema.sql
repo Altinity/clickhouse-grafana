@@ -365,3 +365,39 @@ SELECT
   'category' || toString(number%25),
   rand() % 1000000
 FROM numbers(86400);
+
+
+DROP TABLE IF EXISTS default.streaming_test SYNC;
+CREATE TABLE default.streaming_test
+(
+    timestamp DateTime DEFAULT now(),
+    host LowCardinality(String),
+    cpu_usage Float64,
+    memory_usage Float64,
+    value UInt64
+) ENGINE = MergeTree()
+ORDER BY timestamp;
+
+INSERT INTO default.streaming_test(timestamp, host, cpu_usage, memory_usage, value)
+SELECT
+    now() - INTERVAL number SECOND AS timestamp,
+    concat('host', toString(number % 3)) AS host,
+    30 + (rand() % 40) + (rand() % 100) / 100.0 AS cpu_usage,
+    50 + (rand() % 30) + (rand() % 100) / 100.0 AS memory_usage,
+    rand() % 1000 AS value
+FROM numbers(3600);
+
+-- Continuously generate new rows every 2 seconds (3 rows per batch) for streaming tests.
+-- Uses REFRESH ... APPEND so new rows are added without replacing existing data.
+DROP VIEW IF EXISTS default.streaming_test_refresh SYNC;
+CREATE MATERIALIZED VIEW default.streaming_test_refresh
+REFRESH EVERY 2 SECOND APPEND
+TO default.streaming_test
+AS
+SELECT
+    now() AS timestamp,
+    concat('host', toString(rand() % 3)) AS host,
+    30 + (rand() % 40) + (rand() % 100) / 100.0 AS cpu_usage,
+    50 + (rand() % 30) + (rand() % 100) / 100.0 AS memory_usage,
+    rand() % 1000 AS value
+FROM numbers(3);

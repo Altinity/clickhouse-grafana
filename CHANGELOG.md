@@ -1,3 +1,11 @@
+# 3.4.11 (2026-04-08)
+## Fixes:
+* fix "Show Context" for logs generating SQL with `UNKNOWN_IDENTIFIER` errors when the original query has WHERE conditions on non-timestamp columns (e.g., `facility`, `node`, `level`), move WHERE conditions from outer query into inner subquery, fix https://github.com/Altinity/clickhouse-grafana/issues/706
+* fix alerting not firing properly via Private Data Source Connect (PDC) in Grafana Cloud with `i/o timeout` and `datasourceError (data source not found)`, change backend plugin mode from `Serve` to `Manage`, fix https://github.com/Altinity/clickhouse-grafana/issues/873, fix https://github.com/Altinity/clickhouse-grafana/issues/878
+
+## Enhancements:
+* bump lodash from 4.17.23 to 4.18.1 to fix security vulnerability
+
 # 3.4.10 (2026-03-14)
 ## Fixes:
 * fix panic when Grafana executes alert evaluation or when plotting time series using Math Operation, fix https://github.com/Altinity/clickhouse-grafana/issues/859, fix https://github.com/Altinity/clickhouse-grafana/issues/860

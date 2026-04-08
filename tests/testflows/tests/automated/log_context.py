@@ -20,7 +20,7 @@ def log_context_where_clause_in_subquery(self):
         """Run a query against ClickHouse via clickhouse-client in docker."""
         result = cluster.command(
             None,
-            f'{docker_compose} exec -T clickhouse clickhouse-client --query "{query}"',
+            f"""{docker_compose} exec -T clickhouse clickhouse-client --query "{query}" """,
             exitcode=exitcode,
             timeout=30,
         )
@@ -36,7 +36,7 @@ def log_context_where_clause_in_subquery(self):
             " SELECT event_time,"
             " FIRST_VALUE(event_time) OVER (ORDER BY event_time ROWS BETWEEN 10 PRECEDING AND CURRENT ROW) AS timestamp"
             " FROM default.test_logs"
-            " WHERE level = \\'Warn\\'"
+            " WHERE level = 'Warn'"
             " ORDER BY event_time"
             ") WHERE event_time = toDateTime(now())"
         )
@@ -50,7 +50,7 @@ def log_context_where_clause_in_subquery(self):
             " SELECT event_time,"
             " LAST_VALUE(event_time) OVER (ORDER BY event_time ROWS BETWEEN CURRENT ROW AND 10 FOLLOWING) AS timestamp"
             " FROM default.test_logs"
-            " WHERE level = \\'Warn\\'"
+            " WHERE level = 'Warn'"
             " ORDER BY event_time"
             ") WHERE event_time = toDateTime(now())"
         )
@@ -65,7 +65,7 @@ def log_context_where_clause_in_subquery(self):
             " FIRST_VALUE(event_time) OVER (ORDER BY event_time ROWS BETWEEN 10 PRECEDING AND CURRENT ROW) AS timestamp"
             " FROM default.test_logs"
             " ORDER BY event_time"
-            ") WHERE level = \\'Warn\\' AND event_time = toDateTime(now())",
+            ") WHERE level = 'Warn' AND event_time = toDateTime(now())",
             exitcode=None,
         )
 

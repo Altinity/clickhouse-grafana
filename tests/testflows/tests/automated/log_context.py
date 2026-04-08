@@ -1,5 +1,3 @@
-import time
-
 from testflows.core import *
 from testflows.asserts import error
 
@@ -61,7 +59,7 @@ def log_context_show_context_with_where(self):
                 with attempt:
                     show_context_item = driver.find_element(
                         SelectBy.XPATH,
-                        "//div[@role='menuitem' and text()='Show context']"
+                        "//*[@role='menuitem'][.//span[text()='Show context']]"
                     )
                     show_context_item.click()
 

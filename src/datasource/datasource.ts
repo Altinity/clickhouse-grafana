@@ -23,6 +23,7 @@ import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation } from './helpers';
 import { ClickHouseResourceClient } from './resource_handler';
+import { generateQueryForTimestampBackward, generateQueryForTimestampForward } from './log-context-query';
 import { IndexedDBManager } from '../utils/indexedDBManager';
 
 export class CHDataSource
@@ -252,29 +253,6 @@ export class CHDataSource
       return `SELECT ${select.join(',')} FROM $table WHERE $timeFilter AND trace_id=${traceId}`;
     };
 
-    const generateQueryForTimestampBackward = (inputTimestampColumn, inputTimestampValue, contextWindowSize) => {
-      return `SELECT timestamp FROM (
-          SELECT
-            ${inputTimestampColumn},
-            FIRST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN ${
-        contextWindowSize || 10
-      } PRECEDING AND CURRENT ROW) AS timestamp
-          FROM $table
-          ORDER BY ${inputTimestampColumn}
-        ) WHERE ${where?.length ? where.join(' ') + ' AND' : ''} ${inputTimestampColumn} = ${inputTimestampValue}`;
-    };
-
-    const generateQueryForTimestampForward = (inputTimestampColumn, inputTimestampValue, contextWindowSize) => {
-      return `SELECT timestamp FROM (
-          SELECT
-            ${inputTimestampColumn},
-            LAST_VALUE(${inputTimestampColumn}) OVER (ORDER BY ${inputTimestampColumn} ROWS BETWEEN CURRENT ROW AND ${
-        contextWindowSize || 10
-      } FOLLOWING) AS timestamp
-          FROM $table
-          ORDER BY ${inputTimestampColumn}
-        ) WHERE  ${where?.length ? where.join(' ') + ' AND' : ''} ${inputTimestampColumn} = ${inputTimestampValue}`;
-    };
 
     const generateRequestForTimestampForward = (timestampField, timestamp, currentRowTimestamp, select) => {
       return `SELECT ${select.join(
@@ -319,8 +297,8 @@ export class CHDataSource
 
         const boundariesRequest =
           options?.direction === LogRowContextQueryDirection.Backward
-            ? generateQueryForTimestampBackward(timestampColumn, formattedDate, query?.contextWindowSize)
-            : generateQueryForTimestampForward(timestampColumn, formattedDate, query?.contextWindowSize);
+            ? generateQueryForTimestampBackward(timestampColumn, formattedDate, where, query?.contextWindowSize)
+            : generateQueryForTimestampForward(timestampColumn, formattedDate, where, query?.contextWindowSize);
 
         const { stmt, requestId } = await this.createQuery(requestOptions, { ...query, query: boundariesRequest });
         const result: any = await this.seriesQuery(stmt, requestId + options?.direction);

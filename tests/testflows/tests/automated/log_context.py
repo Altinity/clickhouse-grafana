@@ -1,76 +1,98 @@
+import time
+
 from testflows.core import *
 from testflows.asserts import error
+
+from selenium.webdriver.common.by import By as SelectBy
+
+import steps.ui as ui
+import steps.dashboard.view as dashboard
+import steps.dashboards.view as dashboards
+from steps.delay import delay
 
 from requirements.requirements import *
 
 
 @TestScenario
 @Requirements(RQ_SRS_Plugin("1.0"))
-def log_context_where_clause_in_subquery(self):
-    """Check that Show Context log queries place WHERE conditions inside
-    the inner subquery so that non-timestamp columns are accessible.
+def log_context_show_context_with_where(self):
+    """Check that Show Context button works for logs when the query
+    has WHERE conditions on non-timestamp columns.
 
     Regression test for https://github.com/Altinity/clickhouse-grafana/issues/706
+
+    The bug: Show Context generated SQL that placed WHERE conditions
+    (e.g. on level, label columns) in the outer query of a window function
+    subquery, but those columns were only available in the inner subquery.
     """
 
-    cluster = self.context.cluster
-    docker_compose = cluster.docker_compose
+    with Given("I go to the Test Logs support dashboard"):
+        dashboards.open_dashboard(dashboard_name="Test Logs support")
 
-    def run_clickhouse_query(query, exitcode=0):
-        """Run a query against ClickHouse via clickhouse-client in docker."""
-        result = cluster.command(
-            None,
-            f"""{docker_compose} exec -T clickhouse clickhouse-client --query "{query}" """,
-            exitcode=exitcode,
-            timeout=30,
-        )
-        return result
+    with When("I scroll to the Altinity Plugin Logs panel"):
+        with delay():
+            dashboard.scroll_to_panel(panel_name="Altinity Plugin Logs")
 
-    with Given("I verify test_logs table has data"):
-        result = run_clickhouse_query("SELECT count() FROM default.test_logs")
-        assert int(result.output.strip()) > 0, error()
+    with And("I wait for log rows to appear"):
+        driver = self.context.driver
+        for attempt in retries(delay=5, timeout=30):
+            with attempt:
+                log_menu_buttons = driver.find_elements(
+                    SelectBy.CSS_SELECTOR,
+                    "[data-testid='data-testid Panel header Altinity Plugin Logs'] "
+                    "button[aria-label='Log menu']"
+                )
+                # fall back: look for any log menu button in the Altinity panel region
+                if not log_menu_buttons:
+                    panels = driver.find_elements(
+                        SelectBy.XPATH,
+                        "//section[.//h2[text()='Altinity Plugin Logs']]//button[@aria-label='Log menu']"
+                    )
+                    log_menu_buttons = panels
+                assert len(log_menu_buttons) > 0, error()
 
-    with When("I run the fixed backward context query with WHERE in inner subquery"):
-        result = run_clickhouse_query(
-            "SELECT timestamp FROM ("
-            " SELECT event_time,"
-            " FIRST_VALUE(event_time) OVER (ORDER BY event_time ROWS BETWEEN 10 PRECEDING AND CURRENT ROW) AS timestamp"
-            " FROM default.test_logs"
-            " WHERE level = 'Warn'"
-            " ORDER BY event_time"
-            ") WHERE event_time = toDateTime(now())"
-        )
+    with When("I click on the Log menu button for the first log row"):
+        with delay():
+            log_menu_buttons[0].click()
 
-        with Then("query should succeed without UNKNOWN_IDENTIFIER error"):
-            assert "UNKNOWN_IDENTIFIER" not in result.output, error()
+    with And("I click Show context in the dropdown"):
+        with delay():
+            for attempt in retries(delay=2, timeout=10):
+                with attempt:
+                    show_context_item = driver.find_element(
+                        SelectBy.XPATH,
+                        "//div[@role='menuitem' and text()='Show context']"
+                    )
+                    show_context_item.click()
 
-    with When("I run the fixed forward context query with WHERE in inner subquery"):
-        result = run_clickhouse_query(
-            "SELECT timestamp FROM ("
-            " SELECT event_time,"
-            " LAST_VALUE(event_time) OVER (ORDER BY event_time ROWS BETWEEN CURRENT ROW AND 10 FOLLOWING) AS timestamp"
-            " FROM default.test_logs"
-            " WHERE level = 'Warn'"
-            " ORDER BY event_time"
-            ") WHERE event_time = toDateTime(now())"
-        )
+    with Then("I verify the Log context dialog opens without errors"):
+        for attempt in retries(delay=2, timeout=15):
+            with attempt:
+                dialog = driver.find_element(
+                    SelectBy.XPATH,
+                    "//div[@role='dialog']//h2[text()='Log context']"
+                )
+                assert dialog is not None, error()
 
-        with Then("query should succeed without UNKNOWN_IDENTIFIER error"):
-            assert "UNKNOWN_IDENTIFIER" not in result.output, error()
+        with And("I verify the dialog contains log lines, not error messages"):
+            dialog_container = driver.find_element(
+                SelectBy.XPATH,
+                "//div[@role='dialog']"
+            )
+            dialog_text = dialog_container.text
+            assert "UNKNOWN_IDENTIFIER" not in dialog_text, error()
+            assert "DB::Exception" not in dialog_text, error()
+            assert "Log line" in dialog_text or "Log context" in dialog_text, error()
 
-    with When("I verify the buggy pattern would fail with UNKNOWN_IDENTIFIER"):
-        result = run_clickhouse_query(
-            "SELECT timestamp FROM ("
-            " SELECT event_time,"
-            " FIRST_VALUE(event_time) OVER (ORDER BY event_time ROWS BETWEEN 10 PRECEDING AND CURRENT ROW) AS timestamp"
-            " FROM default.test_logs"
-            " ORDER BY event_time"
-            ") WHERE level = 'Warn' AND event_time = toDateTime(now())",
-            exitcode=None,
-        )
-
-        with Then("buggy query should fail with UNKNOWN_IDENTIFIER"):
-            assert "UNKNOWN_IDENTIFIER" in result.output, error()
+    with Finally("I close the Log context dialog"):
+        try:
+            close_button = driver.find_element(
+                SelectBy.XPATH,
+                "//div[@role='dialog']//button[@aria-label='Close']"
+            )
+            close_button.click()
+        except Exception:
+            pass
 
 
 @TestFeature

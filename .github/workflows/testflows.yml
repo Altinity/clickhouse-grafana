@@ -131,6 +131,8 @@ jobs:
             suite: "limited_access"
           - group: worldmap-and-table-format
             suite: "worldmap_and_table_format"
+          - group: log-context
+            suite: "log_context"
 
     steps:
       - name: Checkout

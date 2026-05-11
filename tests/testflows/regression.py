@@ -144,6 +144,7 @@ def regression(self, before, after, suite=None):
         ("flamegraph_and_tracing", "testflows.tests.automated.flamegraph_and_tracing"),
         ("limited_access", "testflows.tests.automated.limited_access"),
         ("worldmap_and_table_format", "testflows.tests.automated.worldmap_and_table_format"),
+        ("log_context", "testflows.tests.automated.log_context"),
     ]
 
     self.context.grafana_version = None

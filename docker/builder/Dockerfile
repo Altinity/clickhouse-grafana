@@ -4,7 +4,7 @@ LABEL maintainer="Altinity <support@altinity.com>"
 
 ARG NODEJS_VERSION=24
 
-RUN apt update && apt install --no-install-recommends -y curl git gnupg2 software-properties-common && \
+RUN apt update && apt install --no-install-recommends -y curl git gnupg2 software-properties-common dirmngr && \
     curl -fsSL https://deb.nodesource.com/setup_${NODEJS_VERSION}.x | bash - && \
     apt update && apt install -y nodejs && \
     apt clean && rm -rf /var/lib/apt/lists/*
@@ -16,7 +16,7 @@ LABEL maintainer="Altinity <support@altinity.com>"
 ARG NODEJS_VERSION=24
 ARG GOLANG_VERSION=1.26
 
-RUN apt update && apt install --no-install-recommends -y curl git gnupg2 software-properties-common && \
+RUN apt update && apt install --no-install-recommends -y curl git gnupg2 software-properties-common dirmngr && \
     mkdir -p /etc/apt/keyrings && \
     gpg --no-default-keyring \
       --keyring /etc/apt/keyrings/golang-keyring.gpg \

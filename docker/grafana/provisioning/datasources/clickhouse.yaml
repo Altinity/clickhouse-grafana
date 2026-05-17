@@ -15,3 +15,52 @@ datasources:
       usePOST: true
       useCompression: true
       compressionType: gzip
+      dataLinks:
+        # --- Logs format ---
+        # `query_id` is a regular source column on system.text_log. v1.0.1
+        # auto-promotes any column referenced by a data link to a top-level
+        # field, so this link attaches directly without aliasing.
+        - fieldName: query_id
+          title: "All log entries for this query_id"
+          targetDatasourceUid: P7E099F39B84EA795
+          query: "SELECT event_time AS timestamp, level AS severity, message AS content FROM system.text_log WHERE $$timeFilter AND query_id = '$${__value.raw}' ORDER BY event_time LIMIT 500"
+          format: logs
+        # --- External URL link (demonstrates v1.0.1 external URL support) ---
+        - fieldName: query_id
+          title: "Open in ClickHouse web UI (external)"
+          targetDatasourceUid: ""
+          query: ""
+          url: "https://example.com/clickhouse/query/$${__value.raw}"
+        - fieldName: severity
+          title: "Logs with same severity"
+          targetDatasourceUid: P7E099F39B84EA795
+          query: "SELECT event_time AS timestamp, level AS severity, message AS content FROM system.text_log WHERE $$timeFilter AND level = '$${__value.raw}' ORDER BY event_time DESC LIMIT 200"
+          format: logs
+        - fieldName: body
+          title: "Full message detail"
+          targetDatasourceUid: P7E099F39B84EA795
+          query: "SELECT event_time AS timestamp, level AS severity, message AS content, query_id FROM system.text_log WHERE $$timeFilter AND message = '$${__value.raw}' LIMIT 50"
+          format: logs
+        - fieldName: timestamp
+          title: "+/- 5 min around this event"
+          targetDatasourceUid: P7E099F39B84EA795
+          query: "SELECT event_time AS timestamp, level AS severity, message AS content FROM system.text_log WHERE event_time BETWEEN toDateTime('$${__value.raw}') - INTERVAL 5 MINUTE AND toDateTime('$${__value.raw}') + INTERVAL 5 MINUTE ORDER BY event_time DESC LIMIT 200"
+          format: logs
+        # --- Traces format (toTraces produces fields: traceID, spanID, operationName, ...) ---
+        - fieldName: operationName
+          title: "Same operation across traces"
+          targetDatasourceUid: P7E099F39B84EA795
+          query: "SELECT trace_id AS traceID, span_id AS spanID, operation_name AS operationName, parent_span_id AS parentSpanID, 'clickhouse' AS serviceName, intDiv(finish_time_us - start_time_us, 1000) AS duration, intDiv(start_time_us, 1000) AS startTime, attribute AS tags, map('hostName', hostname) AS serviceTags FROM system.opentelemetry_span_log WHERE $$timeFilter AND operation_name = '$${__value.raw}' ORDER BY startTime DESC LIMIT 100"
+          format: traces
+        - fieldName: traceID
+          title: "Open this trace"
+          targetDatasourceUid: P7E099F39B84EA795
+          query: "SELECT trace_id AS traceID, span_id AS spanID, operation_name AS operationName, parent_span_id AS parentSpanID, 'clickhouse' AS serviceName, intDiv(finish_time_us - start_time_us, 1000) AS duration, intDiv(start_time_us, 1000) AS startTime, attribute AS tags, map('hostName', hostname) AS serviceTags FROM system.opentelemetry_span_log WHERE trace_id = '$${__value.raw}' ORDER BY startTime"
+          format: traces
+        # --- Time series format (link attaches to the value field — Grafana's
+        # time-series viz surfaces popovers from the clicked value, not the time axis) ---
+        - fieldName: log_count
+          title: "Logs in this bucket"
+          targetDatasourceUid: P7E099F39B84EA795
+          query: "SELECT event_time AS timestamp, level AS severity, message AS content FROM system.text_log WHERE event_time BETWEEN toDateTime(intDiv($${__from}, 1000)) AND toDateTime(intDiv($${__to}, 1000)) ORDER BY event_time DESC LIMIT 200"
+          format: logs

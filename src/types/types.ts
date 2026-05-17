@@ -1,5 +1,6 @@
 import { DataSourceJsonData } from '@grafana/data';
 import { DataQuery } from '@grafana/schema';
+import { DataLinkConfig } from '../datasource/datalinks/types';
 
 /*
  * Value that is used in QueryEditor to switch between builder and SQL modes
@@ -90,6 +91,7 @@ export interface CHDataSourceOptions extends DataSourceJsonData {
   contextWindowSize?: string;
   useWindowFuncForMacros?: boolean;
   nullifySparse?: boolean;
+  dataLinks?: DataLinkConfig[];
 }
 
 /**

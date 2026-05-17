@@ -1,5 +1,7 @@
 import { _toFieldType, convertTimezonedDateToUnixTimestamp, Field } from './sql_series';
 import { FieldType } from '@grafana/data';
+import { applyDataLinks } from '../datalinks';
+import { DataLinkConfig } from '../datalinks/types';
 
 interface TraceData {
   fields: Field[];
@@ -32,7 +34,7 @@ function createEmptyFields(): { [key: string]: Field } {
   };
 }
 
-export const toTraces = (series: Trace[], meta: any): TraceData[] => {
+export const toTraces = (series: Trace[], meta: any, dataLinks?: DataLinkConfig[], app?: string): TraceData[] => {
   let timeCol = meta.find((item: any) => item.name === 'startTime');
   let timeColType = _toFieldType(timeCol.type || '');
   const isTimeWithTimezone = timeColType?.fieldType === FieldType.time;
@@ -81,8 +83,11 @@ export const toTraces = (series: Trace[], meta: any): TraceData[] => {
       );
     }
 
+    const fieldArray = Object.values(fields);
+    applyDataLinks(fieldArray, dataLinks, { app });
+
     results.push({
-      fields: Object.values(fields),
+      fields: fieldArray,
       length: spans.length,
     });
   }

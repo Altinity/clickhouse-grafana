@@ -1,11 +1,11 @@
 module github.com/altinity/clickhouse-grafana
 
-go 1.26.0
+go 1.26.3
 
 require (
 	github.com/andybalholm/brotli v1.2.1
 	github.com/dlclark/regexp2 v1.12.0
-	github.com/grafana/grafana-plugin-sdk-go v0.292.0
+	github.com/grafana/grafana-plugin-sdk-go v0.292.1
 	github.com/klauspost/compress v1.18.6
 	github.com/stretchr/testify v1.11.1
 	golang.org/x/sync v0.20.0
@@ -43,7 +43,7 @@ require (
 	github.com/jaegertracing/jaeger-idl v0.7.0 // indirect
 	github.com/json-iterator/go v1.1.12 // indirect
 	github.com/klauspost/cpuid/v2 v2.3.0 // indirect
-	github.com/magefile/mage v1.17.1 // indirect
+	github.com/magefile/mage v1.17.2 // indirect
 	github.com/mattetti/filebuffer v1.0.1 // indirect
 	github.com/mattn/go-colorable v0.1.14 // indirect
 	github.com/mattn/go-isatty v0.0.22 // indirect
@@ -83,13 +83,9 @@ require (
 	go.opentelemetry.io/proto/otlp v1.10.0 // indirect
 	go.yaml.in/yaml/v2 v2.4.4 // indirect
 	golang.org/x/exp v0.0.0-20260508232706-74f9aab9d74a // indirect
-	golang.org/x/mod v0.36.0 // indirect
-	golang.org/x/net v0.54.0 // indirect
-	golang.org/x/sys v0.44.0 // indirect
-	golang.org/x/telemetry v0.0.0-20260508192327-42602be52be6 // indirect
+	golang.org/x/net v0.55.0 // indirect
+	golang.org/x/sys v0.45.0 // indirect
 	golang.org/x/text v0.37.0 // indirect
-	golang.org/x/tools v0.45.0 // indirect
-	golang.org/x/xerrors v0.0.0-20240903120638-7835f813f4da // indirect
 	google.golang.org/genproto/googleapis/api v0.0.0-20260504160031-60b97b32f348 // indirect
 	google.golang.org/genproto/googleapis/rpc v0.0.0-20260504160031-60b97b32f348 // indirect
 	google.golang.org/grpc v1.81.0 // indirect

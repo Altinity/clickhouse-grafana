@@ -85,6 +85,9 @@
     "serialize-javascript": "^7.0.5",
     "immutable": "^5.1.5",
     "react": "$react",
-    "react-dom": "$react-dom"
+    "react-dom": "$react-dom",
+    "dompurify": "^3.4.0",
+    "js-cookie": "^3.0.7",
+    "uuid": "^11.1.1"
   }
 }

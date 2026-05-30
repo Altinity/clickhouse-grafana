@@ -165,9 +165,6 @@ def feature(self):
     with Given("I define dashboard name for tests"):
         dashboard_name = define("dashboard_name", "functions")
 
-    with When("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='functions', url="http://clickhouse:8123",)
-
     with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name=dashboard_name)
 
@@ -176,7 +173,7 @@ def feature(self):
 
     with When("I select datasource"):
         with delay():
-            panel.select_datasource_in_panel_view(datasource_name='functions')
+            panel.select_datasource_in_panel_view(datasource_name='clickhouse')
 
     with When("I open SQL editor"):
         with delay():

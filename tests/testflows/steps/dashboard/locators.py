@@ -191,7 +191,7 @@ class Locators:
     @property
     def visualization(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[class='css-kuoxoh-panel-content']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid panel content']")
 
     @property
     def green_alert_for_panel(self):

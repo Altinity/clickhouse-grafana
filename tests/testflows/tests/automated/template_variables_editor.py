@@ -19,17 +19,14 @@ from requirements.requirements import *
 def preview_values(self):
     """Check that grafana plugin supports template variables editor and correctly display preview values."""
 
-    with Given("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='preview_variable_values', url="http://clickhouse:8123")
-
-    with And("I create new dashboard"):
+    with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name="preview_variable_values")
 
 
     with When("I create variable for dashboard"):
         with delay():
             dashboard.create_variable_for_dashboard(
-                datasource_name='preview_variable_values', 
+                datasource_name='clickhouse',
                 query="SELECT DISTINCT country FROM $table"
             )
 
@@ -48,17 +45,14 @@ def preview_values(self):
 def reformatted_query(self):
     """Check that grafana plugin supports template variables editor and correctly display reformatted query."""
 
-    with Given("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='reformatted_query_for_variable', url="http://clickhouse:8123")
-
-    with And("I create new dashboard"):
+    with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name="reformatted_query_for_variable")
 
 
     with When("I create variable for dashboard"):
         with delay():
             dashboard.create_variable_for_dashboard(
-                datasource_name='reformatted_query_for_variable', 
+                datasource_name='clickhouse',
                 query="SELECT '$table', '$dateCol', '$dateTimeCol', '$timeSeries'"
             )
 
@@ -80,16 +74,13 @@ def reformatted_query(self):
 def variable_dropdown(self):
     """Check that grafana plugin supports template variables editor and variable dropdown perform correctly."""
     
-    with Given("I create new altinity datasource"):
-        actions.create_new_altinity_datasource(datasource_name='dropdown_variable_values', url="http://clickhouse:8123")
-
-    with And("I create new dashboard"):
+    with Given("I create new dashboard"):
         actions.create_dashboard(dashboard_name="variable_dropdown")
 
     with When("I create variable for dashboard"):
         with delay():
             dashboard.create_variable_for_dashboard(
-                datasource_name='dropdown_variable_values', 
+                datasource_name='clickhouse',
                 query="SELECT DISTINCT country FROM $table"
             )
     
@@ -103,7 +94,7 @@ def variable_dropdown(self):
 
     with And("I select datasource"):
         with delay():
-            panel.select_datasource_in_panel_view(datasource_name='dropdown_variable_values')
+            panel.select_datasource_in_panel_view(datasource_name='clickhouse')
 
     with And("I setup query settings for queries"):
         with delay():

@@ -169,6 +169,29 @@ def check_screenshot(self, screenshot_name):
     return len(boxes) == 1
 
 
+@TestStep(Then)
+def check_screenshot_contains_green(self, screenshot_name, expected_green_pixels=3000):
+    """Check that graph is valid."""
+    with By("opening image"):
+        image = Image.open(
+            os.path.join(
+                self.context.project_root_dir,
+                "tests",
+                "testflows",
+                "screenshots",
+                f"{screenshot_name}.png",
+            )
+        )
+
+    with By("processing image"):
+        red, green, blue = image.split()[:3]
+        threshold = 100
+        gr = green.point(lambda x: 255 if x > threshold else 0)
+
+    with By("checking graph contains enough green pixels"):
+        return gr.histogram()[255] > expected_green_pixels
+
+
 @TestStep(Given)
 def create_new_altinity_datasource(
     self,

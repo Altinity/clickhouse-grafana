@@ -15,13 +15,13 @@ class Locators:
     def new_button(self):
 
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[class ='css-td06pi-button']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[aria-label='New']")
 
     @property
     def new_dashboard_button(self):
 
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[class ='css-w9mao9']")
+        return driver.find_element(SelectBy.XPATH, "//a[@href='/dashboard/new']")
 
     def check_mark(self, dashboard_name):
         driver: WebDriver = current().context.driver

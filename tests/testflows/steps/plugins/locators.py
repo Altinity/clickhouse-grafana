@@ -8,7 +8,7 @@ class Locators:
     @property
     def add_new_datasource_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[class='css-td06pi-button']")
+        return driver.find_element(SelectBy.XPATH, "//a[normalize-space()='Add new data source']")
 
 
 locators = Locators()

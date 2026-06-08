@@ -47,6 +47,9 @@ const config = async (env): Promise<Configuration> => {
       '@grafana/slate-react',
       'react',
       'react-dom',
+      // React 19 / Grafana 13: use the host's jsx runtime instead of bundling our own
+      'react/jsx-runtime',
+      'react/jsx-dev-runtime',
       'react-redux',
       'redux',
       'rxjs',

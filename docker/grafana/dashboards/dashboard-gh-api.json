@@ -163,7 +163,7 @@
       "list": []
     },
     "time": {
-      "from": "now-30d",
+      "from": "now-1y",
       "to": "now"
     },
     "timepicker": {},

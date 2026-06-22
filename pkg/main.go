@@ -27,6 +27,7 @@ func main() {
 		QueryDataHandler:    ds,
 		CheckHealthHandler:  ds,
 		CallResourceHandler: ds,
+		StreamHandler:       ds,
 	})
 
 	if err != nil {

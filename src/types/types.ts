@@ -60,6 +60,11 @@ export interface CHQuery extends DataQuery {
   useWindowFuncForMacros?: boolean;
   showHelp: boolean;
   showFormattedSQL: boolean;
+
+  streaming?: boolean;
+  streamingInterval?: number;
+  streamingMode?: 'delta' | 'full';
+  streamingLookback?: number;
 }
 
 /**
@@ -110,4 +115,7 @@ export const DEFAULT_QUERY: CHQuery = {
   showFormattedSQL: false,
   datasourceMode: DatasourceMode.Datasource,
   nullifySparse: false,
+  streaming: false,
+  streamingInterval: 5000,
+  streamingMode: 'delta',
 };

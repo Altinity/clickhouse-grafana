@@ -6,6 +6,7 @@
   "metrics": true,
   "annotations": true,
   "backend": true,
+  "streaming": true,
   "alerting": true,
   "logs": true,
   "executable": "altinity-clickhouse-plugin",
@@ -48,7 +49,7 @@
     "updated": "%TODAY%"
   },
   "dependencies": {
-    "grafanaDependency": ">=10.0.3",
+    "grafanaDependency": ">=12.3.0",
     "plugins": []
   },
   "routes": [

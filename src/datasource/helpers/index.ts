@@ -414,15 +414,19 @@ const detectConcatenationContext = (query: string, variableName: string): boolea
  * @param isRepeated - Whether this is a repeated panel variable (issue #712)
  * @returns Interpolated string ready for SQL
  *
- * **BEHAVIOR:**
+ * **BEHAVIOR (pre-3.4.0 semantics restored):**
  * ```
  * | Value Type | multi  | includeAll | isRepeated | Result           | Use Case           |
  * |------------|--------|------------|------------|------------------|--------------------|
- * | string     | false  | false      | false      | value (raw)      | Identifiers        |
+ * | string     | falsy  | falsy      | false      | value (raw)      | Identifiers        |
  * | string     | any    | any        | true       | 'value' (quoted) | Repeated panels    |
- * | string     | undef  | undef      | false      | 'value' (quoted) | Default values     |
  * | array      | any    | any        | any        | 'val1','val2'    | Multi-select       |
  * ```
+ *
+ * Single values pass through raw whenever `multi`/`includeAll` are falsy (false OR
+ * undefined), uniformly across all variable types. Quote in the dashboard SQL
+ * (`WHERE x = '$var'`) for value positions, or rely on Priority 3 of
+ * `interpolateQueryExprWithContext` which quotes single values inside IN clauses.
  *
  * **EXAMPLES:**
  * ```typescript
@@ -430,9 +434,9 @@ const detectConcatenationContext = (query: string, variableName: string): boolea
  * interpolateQueryExpr('mytable', {multi: false, includeAll: false})
  * // → "mytable"
  *
- * // Single value with undefined multi - quoted for SQL safety
+ * // Single value with undefined multi - also raw (pre-3.4.0 semantics)
  * interpolateQueryExpr('mysql', {multi: undefined, includeAll: undefined})
- * // → "'mysql'"
+ * // → "mysql"
  *
  * // Repeated panel variable (issue #712 fix)
  * interpolateQueryExpr('mysql', {multi: undefined}, true)
@@ -454,10 +458,13 @@ export const interpolateQueryExpr = (value: any, variable: any, isRepeated?: boo
     return `'${value}'`;
   }
 
-  // Single value with multi=false and includeAll=false - return raw value
-  // This is used for identifier contexts (table names, column names, etc.)
-  // For IN clause contexts, interpolateQueryExprWithContext handles quoting via Priority 3
-  if (variable.multi === false && variable.includeAll === false && !Array.isArray(value)) {
+  // Single value without multi/includeAll - return raw value (pre-3.4.0 semantics).
+  // This is used for identifier contexts (table names, column names, etc.) and applies
+  // uniformly regardless of variable type (constant/textbox/query/custom). A falsy check
+  // (not strict === false) so variables whose multi/includeAll are undefined - as Grafana
+  // populates them for constant/textbox variables - also pass through raw rather than quoted.
+  // For IN clause contexts, interpolateQueryExprWithContext handles quoting via Priority 3.
+  if (!variable.multi && !variable.includeAll && !Array.isArray(value)) {
     return value;
   }
 

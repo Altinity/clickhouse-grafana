@@ -2,10 +2,10 @@ import { interpolateQueryExpr, interpolateQueryExprWithContext, createContextAwa
 
 describe('Variable Interpolation', () => {
   describe('interpolateQueryExpr (original)', () => {
-    it('should quote single variables when multi/includeAll are undefined', () => {
+    it('should NOT quote single variables when multi/includeAll are undefined (pre-3.4.0 semantics)', () => {
       const variable = { name: 'test', multi: undefined, includeAll: undefined };
       const result = interpolateQueryExpr('testvalue', variable);
-      expect(result).toBe("'testvalue'");
+      expect(result).toBe('testvalue');
     });
 
     it('should not quote single variables when multi=false and includeAll=false', () => {
@@ -88,13 +88,14 @@ describe('Variable Interpolation', () => {
         expect(result).toBe("'myservice'"); // Should have quotes
       });
 
-      it('should quote variables in WHERE clauses', () => {
+      it('should NOT quote single values in WHERE clauses (pre-3.4.0 semantics)', () => {
         const query = 'SELECT * FROM table WHERE name = $name';
         const variables = [{ name: 'name', current: { value: 'testname' } }];
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'name', multi: undefined, includeAll: undefined };
         const result = interpolateFn('testname', variable);
-        expect(result).toBe("'testname'"); // Should have quotes
+        // Raw passthrough - quote in the dashboard SQL (WHERE name = '$name') for value positions
+        expect(result).toBe('testname');
       });
 
       it('should quote variables in repeated panels (original issue #712)', () => {
@@ -200,7 +201,7 @@ describe('Variable Interpolation', () => {
         expect(interpolateFn('mytable', tableVar)).toBe('mytable'); // No quotes
         expect(interpolateFn('myhost', hostVar)).toBe('myhost'); // No quotes
         expect(interpolateFn('mydomain', domainVar)).toBe('mydomain'); // No quotes
-        expect(interpolateFn('myservice', serviceVar)).toBe("'myservice'"); // Should have quotes
+        expect(interpolateFn('myservice', serviceVar)).toBe('myservice'); // Raw (pre-3.4.0 semantics)
       });
     });
 
@@ -210,7 +211,7 @@ describe('Variable Interpolation', () => {
         const interpolateFn = interpolateQueryExprWithContext('', variables);
         const variable = { name: 'test', multi: undefined, includeAll: undefined };
         const result = interpolateFn('value', variable);
-        expect(result).toBe("'value'"); // Should default to quoting
+        expect(result).toBe('value'); // Raw passthrough (pre-3.4.0 semantics)
       });
 
       it('should handle undefined variable name', () => {
@@ -219,7 +220,7 @@ describe('Variable Interpolation', () => {
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: undefined, multi: undefined, includeAll: undefined };
         const result = interpolateFn('value', variable);
-        expect(result).toBe("'value'"); // Should default to quoting
+        expect(result).toBe('value'); // Raw passthrough (pre-3.4.0 semantics)
       });
 
       it('should handle multi-value variables in concatenation context', () => {
@@ -238,7 +239,7 @@ describe('Variable Interpolation', () => {
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'host', multi: undefined, includeAll: undefined };
         const result = interpolateFn('my.host.com', variable);
-        expect(result).toBe("'my.host.com'"); // Should have quotes because it's not in concatenation
+        expect(result).toBe('my.host.com'); // Raw passthrough (pre-3.4.0 semantics)
       });
 
       it('should handle numeric values', () => {
@@ -396,7 +397,7 @@ describe('Variable Interpolation', () => {
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'table', multi: undefined, includeAll: undefined };
         const result = interpolateFn('/^prefix_.*/', variable);
-        expect(result).toBe("'/^prefix_.*/'"); // Should quote regex patterns
+        expect(result).toBe('/^prefix_.*/'); // Raw passthrough (pre-3.4.0 semantics)
       });
     });
   });
@@ -637,15 +638,17 @@ describe('Variable Interpolation', () => {
       expect(interpolateQueryExpr('testvalue', variable)).toBe('testvalue');
     });
 
-    it('should maintain original behavior for non-concatenation with multi=undefined, includeAll=undefined', () => {
+    it('should pass through raw for non-concatenation with multi=undefined, includeAll=undefined', () => {
       const query = 'SELECT * FROM table WHERE name = $test';
       const variables = [{ name: 'test', current: { value: 'testvalue' } }];
       const interpolateFn = interpolateQueryExprWithContext(query, variables);
       const variable = { name: 'test', multi: undefined, includeAll: undefined };
 
-      // Should behave exactly like original - quotes for repeated variables (issue #712)
-      expect(interpolateFn('testvalue', variable)).toBe("'testvalue'");
-      expect(interpolateQueryExpr('testvalue', variable)).toBe("'testvalue'");
+      // Pre-3.4.0 semantics: undefined multi/includeAll falls through raw (not quoted).
+      // Repeated panels (issue #712) are still quoted via the isRepeated path - see the
+      // dedicated repeated-panel test where the interpolated value differs from current.
+      expect(interpolateFn('testvalue', variable)).toBe('testvalue');
+      expect(interpolateQueryExpr('testvalue', variable)).toBe('testvalue');
     });
 
     it('should maintain original behavior for multi-value variables', () => {
@@ -661,25 +664,24 @@ describe('Variable Interpolation', () => {
       expect(newResult).toBe("'val1','val2'");
     });
 
-    it('should only change behavior for concatenation with multi=undefined, includeAll=undefined', () => {
-      // This is the ONLY case where behavior changes
+    it('should pass through raw for both concatenation and plain value positions (pre-3.4.0 semantics)', () => {
       const concatenationQuery = 'SELECT * FROM $container.$namespace.svc';
       const normalQuery = 'SELECT * FROM table WHERE name = $test';
 
       const variable = { name: 'test', multi: undefined, includeAll: undefined };
 
-      // Concatenation context - NEW behavior (fix for #797)
+      // Concatenation context - raw (fix for #797)
       const concatVariables = [{ name: 'container', current: { value: 'myvalue' } }];
       const concatFn = interpolateQueryExprWithContext(concatenationQuery, concatVariables);
       expect(concatFn('myvalue', { name: 'container', multi: undefined, includeAll: undefined })).toBe('myvalue');
 
-      // Non-concatenation context - OLD behavior preserved (fix for #712)
+      // Non-concatenation context - also raw now (undefined multi/includeAll no longer quotes)
       const normalVariables = [{ name: 'test', current: { value: 'myvalue' } }];
       const normalFn = interpolateQueryExprWithContext(normalQuery, normalVariables);
-      expect(normalFn('myvalue', variable)).toBe("'myvalue'");
+      expect(normalFn('myvalue', variable)).toBe('myvalue');
 
-      // Original function would always quote when multi/includeAll are undefined
-      expect(interpolateQueryExpr('myvalue', variable)).toBe("'myvalue'");
+      // Direct call matches: undefined multi/includeAll passes through raw
+      expect(interpolateQueryExpr('myvalue', variable)).toBe('myvalue');
     });
   });
 
@@ -728,8 +730,8 @@ describe('Variable Interpolation', () => {
       // $table is in concatenation context (mydb.$table)
       expect(interpolateFn('users', tableVar)).toBe('users');
       
-      // $service is not in concatenation context
-      expect(interpolateFn('api', serviceVar)).toBe("'api'");
+      // $service is not in concatenation context, but undefined multi/includeAll → raw
+      expect(interpolateFn('api', serviceVar)).toBe('api');
     });
 
     it('should handle the exact issue #797 scenario with multi-pass replacement', () => {
@@ -765,8 +767,8 @@ describe('Variable Interpolation', () => {
       const tableVar = { name: 'table', multi: undefined, includeAll: undefined };
       
       // $table is in concatenation with $timeFilter, but they're macros, not user variables
-      // A user variable in this context should work normally
-      expect(interpolateFn('events', tableVar)).toBe("'events'"); // Should be quoted as normal variable
+      // A user variable in this context passes through raw (pre-3.4.0 semantics)
+      expect(interpolateFn('events', tableVar)).toBe('events');
     });
 
     it('should handle quoted string with multiple variables', () => {

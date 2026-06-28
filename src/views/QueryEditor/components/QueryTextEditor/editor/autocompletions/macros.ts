@@ -205,6 +205,8 @@ const getMacrosAutocompletion = function () {
       docText:
         'Will add `SQL predicate` filter expression only if $variable have non empty value. ' +
         'Alternatively, can use the format with 3 parameters where SQL_else is used when $variable is empty. ' +
+        'To include a literal comma inside an SQL argument (so it is not treated as an argument ' +
+        'separator), escape it as `\\,` — e.g. $conditionalTest(category\\, trend, $group_by). ' +
         '\n' +
         'Example:\n' +
         'SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter\n' +

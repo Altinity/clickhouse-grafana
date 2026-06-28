@@ -68,9 +68,9 @@
     "node": ">=20"
   },
   "dependencies": {
-    "@grafana/data": "13.0.1",
-    "@grafana/runtime": "13.0.1",
-    "@grafana/ui": "13.0.1",
+    "@grafana/data": "13.1.0",
+    "@grafana/runtime": "13.1.0",
+    "@grafana/ui": "13.1.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
     "luxon": "^3.7.2",

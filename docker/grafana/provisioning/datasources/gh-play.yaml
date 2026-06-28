@@ -1,12 +1,12 @@
 apiVersion: 1
 
 datasources:
-  - name: gh-api
+  - name: gh-play
     type: vertamedia-clickhouse-datasource
     editable: true
-    uid: gh-api
+    uid: gh-play
     access: proxy
-    url: https://gh-api.clickhouse.tech
+    url: https://play.clickhouse.com
     basicAuth: true
     basicAuthUser: play
     jsonData:

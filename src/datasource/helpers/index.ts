@@ -36,43 +36,52 @@ export const conditionalTest = (query: string, templateSrv: TemplateSrv) => {
     }
     let arg = r.result;
 
-    // Count commas outside of nested parentheses to detect 2-param vs 3-param format
-    let commaCount = 0;
+    // Collect positions of argument-separator commas: top-level commas that are outside any
+    // nested parentheses AND outside any string literal. Commas inside '...', "..." or `...`
+    // and commas escaped as '\,' belong to the SQL text, not the macro arguments. A backslash
+    // escapes the next character (so '\,' is a literal comma and '\'' is an escaped quote).
+    let topCommas: number[] = [];
     let nestedParentheses = 0;
+    let quote = '';
     for (let i = 0; i < arg.length; i++) {
-      if (arg[i] === '(') {
+      const ch = arg[i];
+      if (ch === '\\') {
+        i++; // skip the escaped character
+      } else if (quote) {
+        if (ch === quote) {
+          quote = '';
+        }
+      } else if (ch === "'" || ch === '"' || ch === '`') {
+        quote = ch;
+      } else if (ch === '(') {
         nestedParentheses++;
-      } else if (arg[i] === ')') {
+      } else if (ch === ')') {
         nestedParentheses--;
-      } else if (arg[i] === ',' && nestedParentheses === 0) {
-        commaCount++;
+      } else if (ch === ',' && nestedParentheses === 0) {
+        topCommas.push(i);
       }
     }
+    const unescapeCommas = (s: string) => s.replace(/\\,/g, ',');
+
+    let firstCommaPos = topCommas.length > 0 ? topCommas[0] : -1;
+    let secondCommaPos = topCommas.length > 1 ? topCommas[1] : -1;
+
+    // A genuine 3-parameter form $conditionalTest(SQL_if, SQL_else, $var) has BOTH branches
+    // non-empty. The 2-param idioms carry a comma inside SQL_if, which leaves one segment empty:
+    //   - leading-comma:  $conditionalTest(, ${group_by_trend:raw}, $group_by_trend)  -> empty first
+    //   - trailing-comma: $conditionalTest(category,, $trend)               -> empty middle
+    // In both cases the comma belongs to SQL_if, so keep them as 2-param (handled via the last
+    // separator comma below). An empty SQL_else in a 3-param form would just duplicate the 2-param
+    // behaviour anyway. For full control, escape the comma as '\,' to force it into the SQL text.
+    const isThreeParam =
+      topCommas.length === 2 &&
+      arg.substring(0, firstCommaPos).trim().length > 0 &&
+      arg.substring(firstCommaPos + 1, secondCommaPos).trim().length > 0;
 
     // For 3-parameter format: $conditionalTest(SQL_if, SQL_else, $var)
-    if (commaCount === 2) {
-      // Find positions of commas that aren't inside nested parentheses
-      let firstCommaPos = -1;
-      let secondCommaPos = -1;
-      nestedParentheses = 0;
-
-      for (let i = 0; i < arg.length; i++) {
-        if (arg[i] === '(') {
-          nestedParentheses++;
-        } else if (arg[i] === ')') {
-          nestedParentheses--;
-        } else if (arg[i] === ',' && nestedParentheses === 0) {
-          if (firstCommaPos === -1) {
-            firstCommaPos = i;
-          } else {
-            secondCommaPos = i;
-            break;
-          }
-        }
-      }
-
-      let sqlIf = arg.substring(0, firstCommaPos).trim();
-      let sqlElse = arg.substring(firstCommaPos + 1, secondCommaPos).trim();
+    if (isThreeParam) {
+      let sqlIf = unescapeCommas(arg.substring(0, firstCommaPos).trim());
+      let sqlElse = unescapeCommas(arg.substring(firstCommaPos + 1, secondCommaPos).trim());
       let varParam = arg.substring(secondCommaPos + 1).trim();
 
       if (!varParam.startsWith('$')) {
@@ -115,9 +124,11 @@ export const conditionalTest = (query: string, templateSrv: TemplateSrv) => {
     // For 2-parameter format: $conditionalTest(SQL_if, $var)
     else {
       // first parameters is an expression and require some complex parsing,
-      // so parse from the end where you know that the last parameters is a comma with a variable
-      let param1 = arg.substring(0, arg.lastIndexOf(',')).trim();
-      let param2 = arg.substring(arg.lastIndexOf(',') + 1).trim();
+      // so parse from the end where you know that the last parameters is a comma with a variable.
+      // Split on the last separator comma (top-level, unescaped); any '\,' stays inside SQL_if.
+      let splitPos = topCommas.length > 0 ? topCommas[topCommas.length - 1] : arg.lastIndexOf(',');
+      let param1 = unescapeCommas(arg.substring(0, splitPos).trim());
+      let param2 = arg.substring(splitPos + 1).trim();
       // remove the $ from the variable
       let varInParam = param2.substring(1);
       let done = 0;

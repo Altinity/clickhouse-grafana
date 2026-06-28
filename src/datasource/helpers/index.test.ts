@@ -1015,4 +1015,130 @@ describe('conditionalTest', () => {
       expect(result).not.toContain("AND host = '$host'");
     });
   });
+
+  describe('2-parameter format with comma inside SQL_if (leading-comma idiom)', () => {
+    it('should keep the leading comma when variable has a value', () => {
+      const query = 'SELECT t, key FROM table GROUP BY t, key $conditionalTest(, ${group_by_trend:raw}, $group_by_trend)';
+      const templateSrv = createTemplateSrv([
+        { name: 'group_by_trend', type: 'query', current: { value: 'category' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain(', ${group_by_trend:raw}');
+      expect(result).not.toContain('$conditionalTest');
+    });
+
+    it('should remove the whole expression (including comma) when variable is $__all', () => {
+      const query = 'SELECT t, key FROM table GROUP BY t, key $conditionalTest(, ${group_by_trend:raw}, $group_by_trend)';
+      const templateSrv = createTemplateSrv([
+        { name: 'group_by_trend', type: 'query', current: { value: '$__all' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).not.toContain('group_by_trend');
+      expect(result).not.toContain('$conditionalTest');
+    });
+
+    it('should keep the trailing comma when variable has a value (EXPR,, $var idiom)', () => {
+      const query = 'SELECT $conditionalTest(category,, $trend) other FROM table';
+      const templateSrv = createTemplateSrv([
+        { name: 'trend', type: 'query', current: { value: 'on' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('category,');
+      expect(result).not.toContain('$conditionalTest');
+    });
+
+    it('should remove the whole expression (including trailing comma) when variable is empty', () => {
+      const query = 'SELECT $conditionalTest(category,, $trend) other FROM table';
+      const templateSrv = createTemplateSrv([
+        { name: 'trend', type: 'query', current: { value: [] } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).not.toContain('category');
+      expect(result).not.toContain('$conditionalTest');
+    });
+
+    it('should treat 2 commas with both branches non-empty as genuine 3-param', () => {
+      const query = "SELECT * FROM table WHERE $timeFilter $conditionalTest(AND a IN ($v), AND 1=1, $v)";
+      const templateSrv = createTemplateSrv([
+        { name: 'v', type: 'query', current: { value: '$__all' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('AND 1=1');
+      expect(result).not.toContain('AND a IN ($v)');
+    });
+  });
+
+  describe('escaped commas (\\,) inside SQL_if', () => {
+    it('should force 2-param parsing and emit a literal comma when value is present', () => {
+      // Without the escape this would parse as 3-param (both branches non-empty)
+      const query = 'SELECT * FROM table GROUP BY t $conditionalTest(category\\, trend, $group_by)';
+      const templateSrv = createTemplateSrv([
+        { name: 'group_by', type: 'query', current: { value: 'something' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('category, trend');
+      expect(result).not.toContain('\\,');
+      expect(result).not.toContain('$conditionalTest');
+    });
+
+    it('should keep an escaped leading comma in the 3-param SQL_if branch', () => {
+      const query = "SELECT * FROM table $conditionalTest(\\, a, AND b=2, $v)";
+      const templateSrv = createTemplateSrv([
+        { name: 'v', type: 'query', current: { value: 'x' } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain(', a');
+      expect(result).not.toContain('\\,');
+      expect(result).not.toContain('AND b=2');
+    });
+
+    it('should remove the macro (escaped comma included) when value is empty', () => {
+      const query = 'SELECT * FROM table GROUP BY t $conditionalTest(category\\, trend, $group_by)';
+      const templateSrv = createTemplateSrv([
+        { name: 'group_by', type: 'query', current: { value: [] } },
+      ]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).not.toContain('category');
+      expect(result).not.toContain('$conditionalTest');
+    });
+  });
+
+  describe('commas inside string literals are not argument separators', () => {
+    it('should keep a comma inside a single-quoted string in SQL_if', () => {
+      const query = "SELECT $conditionalTest(AND t = 'red,blue', $v) c FROM table";
+      const templateSrv = createTemplateSrv([{ name: 'v', type: 'query', current: { value: 'x' } }]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain("AND t = 'red,blue'");
+      expect(result).not.toContain('$conditionalTest');
+    });
+
+    it('should keep a comma inside a double-quoted string in SQL_if', () => {
+      const query = 'SELECT $conditionalTest(AND t = "a,b", $v) c FROM table';
+      const templateSrv = createTemplateSrv([{ name: 'v', type: 'query', current: { value: 'x' } }]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('AND t = "a,b"');
+    });
+
+    it('should keep a comma inside a backtick-quoted identifier', () => {
+      const query = 'SELECT $conditionalTest(AND `c,x` = 1, $v) c FROM table';
+      const templateSrv = createTemplateSrv([{ name: 'v', type: 'query', current: { value: 'x' } }]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('`c,x`');
+    });
+
+    it('should not count an escaped quote as a string boundary', () => {
+      const query = "SELECT $conditionalTest(AND t = 'it\\'s,ok', $v) c FROM table";
+      const templateSrv = createTemplateSrv([{ name: 'v', type: 'query', current: { value: 'x' } }]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain("AND t = 'it\\'s,ok'");
+    });
+
+    it('should ignore quoted commas when picking 3-param branches', () => {
+      const query = "WHERE $conditionalTest(AND t IN ('a,b'), AND 1=1, $v)";
+      const templateSrv = createTemplateSrv([{ name: 'v', type: 'query', current: { value: [] } }]);
+      const result = conditionalTest(query, templateSrv as any);
+      expect(result).toContain('AND 1=1');
+      expect(result).not.toContain("AND t IN ('a,b')");
+    });
+  });
 });

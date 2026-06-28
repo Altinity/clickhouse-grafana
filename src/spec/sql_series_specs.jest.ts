@@ -4,6 +4,17 @@ import { toTable } from '../datasource/sql-series/toTable';
 import { toTimeSeries } from '../datasource/sql-series/toTimeSeries';
 import { toTraces } from '../datasource/sql-series/toTraces';
 
+jest.mock('@grafana/runtime', () => ({
+  getDataSourceSrv: () => ({
+    getInstanceSettings: (uid: string) => {
+      if (uid === 'x') {
+        return { type: 'vertamedia-clickhouse-datasource' };
+      }
+      return undefined;
+    },
+  }),
+}));
+
 describe('sql-series. toFlamegraph unit tests', () => {
   it('should transform input series into flamegraph data correctly', () => {
     const inputSeries = [
@@ -775,5 +786,160 @@ describe('sql-series. toTraces unit tests', () => {
 
     const startTimeField = result[0].fields.find((field) => field.name === 'startTime');
     expect(startTimeField?.values).toEqual([1729196880999]);
+  });
+});
+
+describe('sql-series. toTraces data links', () => {
+  const meta = [
+    { name: 'traceID', type: 'String' },
+    { name: 'spanID', type: 'String' },
+    { name: 'parentSpanID', type: 'String' },
+    { name: 'serviceName', type: 'String' },
+    { name: 'startTime', type: 'UInt64' },
+    { name: 'duration', type: 'UInt64' },
+    { name: 'operationName', type: 'String' },
+  ];
+  const series = [
+    {
+      traceID: 't1',
+      spanID: 's1',
+      parentSpanID: null,
+      serviceName: 'web',
+      startTime: 1000,
+      duration: 10,
+      operationName: 'GET /',
+      tags: {},
+      serviceTags: {},
+    },
+  ];
+
+  it('attaches data link to matching field name', () => {
+    const links = [
+      {
+        fieldName: 'traceID',
+        title: 'View',
+        targetDatasourceUid: 'x',
+        query: 'q',
+      },
+    ];
+
+    const out = toTraces(series as any, meta, links as any);
+    const traceIdField = out[0].fields.find((f: any) => f.name === 'traceID');
+    const serviceField = out[0].fields.find((f: any) => f.name === 'serviceName');
+
+    expect(traceIdField?.config?.links).toHaveLength(1);
+    expect(serviceField?.config?.links ?? []).toHaveLength(0);
+  });
+
+  it('is a no-op when dataLinks is undefined', () => {
+    const out = toTraces(series as any, meta, undefined);
+    const traceIdField = out[0].fields.find((f: any) => f.name === 'traceID');
+    expect(traceIdField?.config?.links ?? []).toHaveLength(0);
+  });
+});
+
+describe('sql-series. toLogs data links', () => {
+  const meta = [
+    { name: 'timestamp', type: 'DateTime' },
+    { name: 'content', type: 'String' },
+    { name: 'trace_id', type: 'String' },
+  ];
+  const series = [
+    { timestamp: '2024-01-01 00:00:00', content: 'hello', trace_id: 't1' },
+  ];
+
+  it('promotes a source column to a top-level field when a dataLink targets it', () => {
+    const links = [
+      { fieldName: 'trace_id', title: 'View trace', targetDatasourceUid: 'x', query: 'q' },
+    ];
+    const self: any = { refId: 'A', series, meta, dataLinks: links };
+    const out = toLogs(self);
+    const traceField = out[0].fields.find((f: any) => f.name === 'trace_id');
+    expect(traceField).toBeDefined();
+    expect(traceField?.values?.toArray?.() ?? traceField?.values).toEqual(['t1']);
+    expect(traceField?.config?.links).toHaveLength(1);
+    expect(traceField?.config?.links?.[0].title).toBe('View trace');
+  });
+
+  it('excludes a promoted source column from the labels field', () => {
+    const links = [
+      { fieldName: 'trace_id', title: 'T', targetDatasourceUid: 'x', query: 'q' },
+    ];
+    const self: any = { refId: 'A', series, meta, dataLinks: links };
+    const out = toLogs(self);
+    const labels = out[0].fields.find((f: any) => f.name === 'labels');
+    // trace_id was promoted, so it should NOT appear in labels.
+    // (If labels field is omitted entirely because nothing else qualifies,
+    //  that's also acceptable.)
+    if (labels) {
+      const firstLabel = (labels.values?.toArray?.() ?? labels.values)?.[0] ?? {};
+      expect(Object.keys(firstLabel)).not.toContain('trace_id');
+    }
+  });
+
+  it('attaches link to body when fieldName matches "body"', () => {
+    const links = [
+      { fieldName: 'body', title: 'View body source', targetDatasourceUid: 'x', query: 'q' },
+    ];
+    const self: any = { refId: 'A', series, meta, dataLinks: links };
+    const out = toLogs(self);
+    const body = out[0].fields.find((f: any) => f.name === 'body');
+    expect(body?.config?.links).toHaveLength(1);
+  });
+});
+
+describe('sql-series. toFlamegraph data links', () => {
+  const input = [
+    { label: 'root', level: 1, value: '10', self: 5 },
+    { label: 'child', level: 2, value: '4', self: 2 },
+  ];
+
+  it('attaches data link to matching field', () => {
+    const links = [
+      { fieldName: 'label', title: 'Inspect', targetDatasourceUid: 'x', query: 'q' },
+    ];
+    const out = toFlamegraph(input, links as any);
+    const labelField = out[0].fields.find((f: any) => f.name === 'label');
+    const valueField = out[0].fields.find((f: any) => f.name === 'value');
+    expect(labelField?.config?.links).toHaveLength(1);
+    expect(valueField?.config?.links ?? []).toHaveLength(0);
+  });
+});
+
+describe('sql-series. toTimeSeries data links', () => {
+  const meta = [
+    { name: 'time', type: 'DateTime' },
+    { name: 'metric', type: 'UInt64' },
+  ];
+  const series = [
+    { time: '2024-01-01 00:00:00', metric: 1 },
+    { time: '2024-01-01 00:00:10', metric: 2 },
+  ];
+
+  it('attaches data link to the time field by name match', () => {
+    const self: any = {
+      refId: 'A', series, meta, keys: [], tillNow: false, from: 0, to: 1,
+      dataLinks: [{ fieldName: 'time', title: 'On time', targetDatasourceUid: 'x', query: 'q' }],
+    };
+    const out = toTimeSeries(true, false, self);
+    const timeField = out[0].fields.find((f: any) => f.name === 'time');
+    expect(timeField?.config?.links).toHaveLength(1);
+    expect(timeField?.config?.links?.[0].title).toBe('On time');
+  });
+
+  it('attaches data link to the value field by name match', () => {
+    // Grafana's time-series viz surfaces data links from the value field of the
+    // clicked data point — so links on the metric column are the practically
+    // useful ones for click-through drill-down.
+    const self: any = {
+      refId: 'A', series, meta, keys: [], tillNow: false, from: 0, to: 1,
+      dataLinks: [{ fieldName: 'metric', title: 'On metric', targetDatasourceUid: 'x', query: 'q' }],
+    };
+    const out = toTimeSeries(true, false, self);
+    const metricField = out[0].fields.find((f: any) => f.name === 'metric');
+    const timeField = out[0].fields.find((f: any) => f.name === 'time');
+    expect(metricField?.config?.links).toHaveLength(1);
+    expect(metricField?.config?.links?.[0].title).toBe('On metric');
+    expect(timeField?.config?.links ?? []).toHaveLength(0);
   });
 });

@@ -1,3 +1,15 @@
+# 3.5.0 (2026-05-25)
+## Features:
+* add **datasource-level data links** for cross-datasource navigation, modelled after Elasticsearch and Loki — configured in *Connections → ClickHouse → Data Links* or via YAML provisioning (`jsonData.dataLinks`), closes https://github.com/Altinity/clickhouse-grafana/issues/432, partially addresses https://github.com/Altinity/clickhouse-grafana/issues/645
+  * each link is attached by exact column name to results of `logs`, `traces`, `time_series`, or `flamegraph` queries
+  * any datasource is a valid target (ClickHouse, Loki, Prometheus, Tempo, ...) — when the target is this plugin, the produced query shape adapts automatically
+  * `External URL` mode supports plain HTTP links (Jaeger UI, runbooks, GitHub, custom dashboards) with `${__value.raw}` and other Grafana variables interpolated at click time
+  * on the `logs` format, columns referenced by a data link are auto-promoted to top-level DataFrame fields — `fieldName: trace_id` works without aliasing the column in the SELECT
+  * `traces`-format CH links auto-inject `panelsState.trace.spanId` so the Grafana TraceView scrolls to and highlights the clicked span
+  * `targetBlank` is context-aware: split-pane in Explore, new tab in Dashboards / alerting
+  * the configuration UI warns when a configured target datasource UID is missing
+  * supports multiple links per field and accumulates with any pre-existing `field.config.links` instead of overwriting
+
 # 3.4.11 (2026-04-08)
 ## Fixes:
 * fix "Show Context" for logs generating SQL with `UNKNOWN_IDENTIFIER` errors when the original query has WHERE conditions on non-timestamp columns (e.g., `facility`, `node`, `level`), move WHERE conditions from outer query into inner subquery, fix https://github.com/Altinity/clickhouse-grafana/issues/706

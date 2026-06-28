@@ -20,6 +20,7 @@ import {
 import { BackendSrv, config, DataSourceWithBackend, getBackendSrv, getGrafanaLiveSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
 import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
+import { DataLinkConfig } from './datalinks';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, merge, Observable } from 'rxjs';
@@ -55,6 +56,7 @@ export class CHDataSource
   adHocHideTableNames: boolean;
   uid: string;
   datasourceMode?: DatasourceMode;
+  dataLinks?: DataLinkConfig[];
 
   constructor(instanceSettings: DataSourceInstanceSettings<CHDataSourceOptions>) {
     super(instanceSettings);
@@ -76,6 +78,7 @@ export class CHDataSource
     this.xHeaderUser = instanceSettings.jsonData.xHeaderUser || '';
     this.xClickHouseSSLCertificateAuth = instanceSettings.jsonData.xClickHouseSSLCertificateAuth || false;
     this.useYandexCloudAuthorization = instanceSettings.jsonData.useYandexCloudAuthorization || false;
+    this.dataLinks = instanceSettings.jsonData.dataLinks;
     if (instanceSettings.jsonData.useDefaultConfiguration) {
       this.defaultValues = {
         dateTime: {
@@ -401,6 +404,8 @@ export class CHDataSource
         tillNow: options.rangeRaw?.to === 'now',
         from: convertTimestamp(options.range.from),
         to: convertTimestamp(options.range.to),
+        dataLinks: this.dataLinks,
+        app: options.app,
       });
 
           if (target.format === 'table') {

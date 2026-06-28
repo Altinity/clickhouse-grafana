@@ -25,7 +25,7 @@ def check_existing_data_sources(self):
             "clickhouse",
             "clickhouse-get",
             "clickhouse-x-auth",
-            "gh-api",
+            "gh-play",
             "trickster"
         ]
 

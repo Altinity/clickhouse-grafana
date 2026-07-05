@@ -1861,6 +1861,31 @@ func TestScannerAST(t *testing.T) {
 				}},
 			}},
 		),
+		/* fix https://github.com/Altinity/clickhouse-grafana/issues/610 */
+		newASTTestCase(
+			"AST case 30 (`#` and `#!` ClickHouse hash comments)",
+			"#test one line comment1\n"+
+				"#! test shebang comment\n"+
+				"SELECT *\n"+
+				"FROM $table\n"+
+				"WHERE title='# test not comment1' # test inline comment1\n"+
+				"AND user_info='test # not comment2' #! test inline comment2",
+			&EvalAST{Obj: map[string]interface{}{
+				"root": &EvalAST{Arr: []interface{}{
+					"#test one line comment1\n#! test shebang comment\n",
+				}},
+				"select": &EvalAST{Arr: []interface{}{
+					"*",
+				}},
+				"from": &EvalAST{Arr: []interface{}{
+					"$table",
+				}},
+				"where": &EvalAST{Arr: []interface{}{
+					"title = '# test not comment1'# test inline comment1\n",
+					"AND user_info = 'test # not comment2'#! test inline comment2\n",
+				}},
+			}},
+		),
 	}
 
 	r := require.New(t)
@@ -1888,6 +1913,19 @@ func TestScannerAST(t *testing.T) {
 			"FROM $table\n"+
 			"WHERE title='-- test not comment1' \n"+
 			"AND user_info='test -- not comment2' ",
+	)
+	// advanced check TestCase AST 30 (`#` / `#!` hash comments, https://github.com/Altinity/clickhouse-grafana/issues/610)
+	tc = testCases[len(testCases)-1]
+	expected, err = tc.scanner.RemoveComments(tc.query)
+	r.NoError(err)
+	r.Equal(
+		expected,
+		"\n"+
+			"\n"+
+			"SELECT *\n"+
+			"FROM $table\n"+
+			"WHERE title='# test not comment1' \n"+
+			"AND user_info='test # not comment2' ",
 	)
 }
 

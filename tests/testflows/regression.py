@@ -38,12 +38,6 @@ def argparser(parser):
     )
 
 ffails = {
-    "/Grafana Datasource Plugin For Clickhouse/sql editor/hash comment/":
-        (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
-    ,
-    "/Grafana Datasource Plugin For Clickhouse/sql editor/hash exclamation comment/":
-        (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
-    ,
 }
 
 xfails = {

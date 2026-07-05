@@ -111,30 +111,30 @@ class Locators:
     @property
     def database_dropdown(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[./text()="FROM"]/..//..//input[contains(@id, "react-select")]')
+        return driver.find_element(SelectBy.XPATH, '//input[@data-testid="database-select-input"] | //*[./text()="FROM"]/..//..//input[contains(@id, "react-select")]')
 
     @property
     def table_dropdown(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[@data-testid="table-select"]/..//input[contains(@id, "react-select")]')
+        return driver.find_element(SelectBy.XPATH, '//input[@data-testid="table-select-input"] | //*[@data-testid="table-select"]/..//input[contains(@id, "react-select")]')
 
     @property
     def column_timestamp_type_dropdown(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Column timestamp type"]/..//..//input[contains(@id, "react-select")]')
+                                   '//input[@data-testid="timestamp-type-select-input"] | //*[./text()="Column timestamp type"]/..//..//input[contains(@id, "react-select")]')
 
     @property
     def timestamp_column_dropdown(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Timestamp Column"]/..//..//input[contains(@id, "react-select")]')
+                                   '//input[@data-testid="timestamp-column-select-input"] | //*[./text()="Timestamp Column"]/..//..//input[contains(@id, "react-select")]')
 
     @property
     def date_column_dropdown(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Date column"]/..//..//input[contains(@id, "react-select")]')
+                                   '//input[@data-testid="date-column-select-input"] | //*[./text()="Date column"]/..//..//input[contains(@id, "react-select")]')
 
     @property
     def show_generated_sql_button(self):

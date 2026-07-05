@@ -34,11 +34,11 @@ class Locators:
     def sql_editor_toggle(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver
         if not(grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
-            search_class = "data-rbd-draggable-id"
-        else:
-            search_class = "data-rfd-draggable-id"
+            return driver.find_element(SelectBy.XPATH, f"//*[contains(@data-rbd-draggable-id, '{query_name}')]//*[contains(@id, 'option-sql')]")
 
-        return driver.find_element(SelectBy.XPATH, f"//*[contains(@{search_class}, '{query_name}')]//*[contains(@id, 'option-sql')]")
+        # modern Grafana generates opaque radio input ids (React useId), so anchor
+        # on the radio option label text rendered by the plugin instead
+        return driver.find_element(SelectBy.XPATH, f"//*[contains(@data-rfd-draggable-id, '{query_name}')]//label[normalize-space(.)='SQL Editor']")
 
     def sql_editor_input(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver

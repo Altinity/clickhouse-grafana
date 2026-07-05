@@ -116,8 +116,8 @@ jobs:
           - { group: worldmap-and-table-format,     name: worldmap_and_table_format }
           - { group: log-context,                   name: log_context }
         grafana:
-          - { version: "12.4.0-20977568970", label: fixed,  required: true }
-          - { version: "latest",             label: latest, required: false }
+          - { version: "13.1.0", label: fixed,  required: true }
+          - { version: "latest", label: latest, required: false }
 
     steps:
       - name: Checkout

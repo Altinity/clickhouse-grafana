@@ -242,6 +242,24 @@ def click_add_visualization_button(self):
 
 
 @TestStep(When)
+def click_sidebar_new_button(self):
+    """Click add (new) button in the dashboard edit sidebar (Grafana >= 13.1)."""
+    locators.sidebar_new_button.click()
+
+
+@TestStep(When)
+def click_sidebar_add_new_panel(self):
+    """Click the 'Panel' card in the add sidebar (Grafana >= 13.1)."""
+    locators.sidebar_add_new_panel.click()
+
+
+@TestStep(When)
+def click_configure_visualization_button(self):
+    """Click 'Configure visualization' on the newly added panel (Grafana >= 13.1)."""
+    locators.configure_visualization_button.click()
+
+
+@TestStep(When)
 def scroll_to_panel(self, panel_name):
     """Scroll until panel is presented."""
 
@@ -497,12 +515,27 @@ def add_visualization(self):
             with By("clicking edit button"):
                 click_edit_button()
 
-    with delay():
-        with By("clicking add button"):
-            click_add_button()
+    if len(locators.add_buttons()) > 0:
+        # Grafana <= 12.x: toolbar Add button with a dropdown
+        with delay():
+            with By("clicking add button"):
+                click_add_button()
 
-    with By("clicking add visualization button"):
-        click_add_visualization_button()
+        with By("clicking add visualization button"):
+            click_add_visualization_button()
+    else:
+        # Grafana >= 13.1 dynamic dashboards: edit sidebar -> Panel card -> Configure visualization
+        with delay():
+            with By("clicking new button in the edit sidebar"):
+                click_sidebar_new_button()
+
+        with delay():
+            with By("clicking add new panel card"):
+                click_sidebar_add_new_panel()
+
+        with delay():
+            with By("clicking configure visualization button"):
+                click_configure_visualization_button()
 
 
 @TestStep(When)

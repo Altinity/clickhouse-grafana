@@ -127,7 +127,7 @@ def regression(self, before, after, suite=None, scenario=None):
         self.context.driver = ui.create_driver()
 
     with And("I wait for grafana to be started"):
-        for attempt in retries(delay=10, timeout=50):
+        for attempt in retries(delay=10, timeout=180):
             with attempt:
                 ui.open_endpoint(endpoint=self.context.endpoint)
 

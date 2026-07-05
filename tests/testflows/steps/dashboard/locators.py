@@ -57,6 +57,29 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Add new visualization menu item']")
 
+    def add_buttons(self):
+        """Old (<= 12.x) add button occurrences, empty list on newer Grafana."""
+        driver: WebDriver = current().context.driver
+        return driver.find_elements(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Add button']")
+
+    @property
+    def sidebar_new_button(self):
+        """Grafana >= 13.1 dynamic dashboards: add (new) button in the edit sidebar."""
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Dashboard Sidebar new button']")
+
+    @property
+    def sidebar_add_new_panel(self):
+        """Grafana >= 13.1 dynamic dashboards: 'Panel' card in the add sidebar."""
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid sidebar add new panel']")
+
+    @property
+    def configure_visualization_button(self):
+        """Grafana >= 13.1 dynamic dashboards: 'Configure visualization' button on a new panel."""
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, "//button[.//text()='Configure visualization']")
+
     @property
     def dashboard_settings_button(self):
         driver: WebDriver = current().context.driver

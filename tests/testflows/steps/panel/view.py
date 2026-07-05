@@ -85,7 +85,7 @@ def wait_sql_editor_toggle(self):
     """Wait SQL editor toggle to be loaded."""
 
     ui.wait_for_element_to_be_present(
-        select_type=SelectBy.XPATH, element="//label[normalize-space(.)='SQL Editor'] | //*[contains(@id, 'option-sql')]"
+        select_type=SelectBy.XPATH, element="//input[@type='radio' and @title='SQL Editor'] | //*[contains(@id, 'option-sql')]"
     )
 
 

@@ -36,6 +36,13 @@ def argparser(parser):
         help="comma-separated list of test suites to run (default: all)",
         default=None
     )
+    parser.add_argument(
+        "--scenario",
+        metavar="scenario",
+        type=str,
+        help="comma-separated list of scenario function names to run within the selected suites (default: all)",
+        default=None
+    )
 
 ffails = {
     "/Grafana Datasource Plugin For Clickhouse/sql editor/hash comment/":
@@ -78,7 +85,7 @@ grafana_version = ""
     RQ_SRS_Plugin_DockerComposeEnvironment("1.0"),
     RQ_SRS_Plugin_VersionCompatibility("1.0")
 )
-def regression(self, before, after, suite=None):
+def regression(self, before, after, suite=None, scenario=None):
     self.context.browser = "chrome"
     self.context.local = False
     self.context.global_wait_time = 30
@@ -86,6 +93,7 @@ def regression(self, before, after, suite=None):
     self.context.before = before
     self.context.after = after
     self.context.server_name = "test.example.com"
+    self.context.scenario_names = set(scenario.split(",")) if scenario else None
 
     suites = set(suite.split(",")) if suite else None
 

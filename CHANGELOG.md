@@ -1,3 +1,16 @@
+# 3.5.0 (unreleased)
+## Enhancements:
+* add per-field "Advanced logs fields" settings for logs queries: configure how complex ClickHouse columns (`Map`, `Array`, `Tuple`, `JSON`, `Dynamic`, `Variant`) are rendered in the Logs panel — `expand` (one label per nested key, with per-field depth 1–4/All for nested types; the default depth is 1, matching previous releases so upgrades do not change label shapes), `single` (whole value as one label), `hide`, or `raw` (appended to the message body); the modal shows a live tree preview built from a sample row, disables Save until something changes, supports reset to defaults and marks modified fields, related to https://github.com/Altinity/clickhouse-grafana/issues/678
+* type-aware label accessors for logs: `Map` columns expand with bracket subscripts (`col['key']`, chained for nested maps), `JSON`/`Tuple`/`Nested` with dot paths (`col.a.b`), so every filter click produces valid ClickHouse SQL
+* make adhoc filters column/type-aware: introspect `system.columns` (cached per datasource) to keep dot-path keys (`json.a.b`, `tuple.field`, Nested `attr.key`) as column expressions of the current table, quote values by column type (e.g. `Map(String, String)` values are always quoted, numeric leaves stay unquoted) and emit ClickHouse array literals only for `Array` columns; falls back to the legacy behavior whenever introspection is unavailable
+* preserve big-number precision for `UInt64`/`Int64` above 2^53: `output_format_json_quote_64bit_integers=1` is applied to logs queries only (no time series regression, see https://github.com/Altinity/clickhouse-grafana/issues/832), adhoc array literals parse numbers with `json.Number` and format elements by the column's ELEMENT type — string-serialized `UInt64` elements become bare numerics for `Array(UInt64)` columns, numeric-looking strings stay quoted for `Array(String)` columns
+
+## Fixes:
+* fix Logs panel labels being attributed to the wrong rows when an expand-mode `Map`/`JSON` value is empty for some rows
+* fix adhoc filter values being corrupted: trailing text after a JSON-array prefix is no longer swallowed into an array literal, the legacy passthrough for pre-quoted / IN-list values is restored, and fully-qualified keys addressed to other tables are dropped again even when their first segment collides with a column name
+* fix responses being paired with hidden/empty targets in mixed panels (wrong format/refId applied to the visible query)
+* fix column-type cache leaking between multiple ClickHouse datasources within one Grafana process
+
 # 3.4.11 (2026-04-08)
 ## Fixes:
 * fix "Show Context" for logs generating SQL with `UNKNOWN_IDENTIFIER` errors when the original query has WHERE conditions on non-timestamp columns (e.g., `facility`, `node`, `level`), move WHERE conditions from outer query into inner subquery, fix https://github.com/Altinity/clickhouse-grafana/issues/706

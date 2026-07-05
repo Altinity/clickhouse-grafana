@@ -347,7 +347,8 @@ class Locators:
     @property
     def add_adhoc_filter_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[placeholder="Filter by label values"]')
+        # Grafana 13.1 renamed the adhoc filter input placeholder
+        return driver.find_element(SelectBy.CSS_SELECTOR, '[placeholder="Filter by label values"], [placeholder="+ label = value"]')
 
     def remove_adhoc_button(self, adhoc_name):
         driver: WebDriver = current().context.driver

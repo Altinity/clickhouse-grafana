@@ -11,6 +11,23 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Data source settings page name input field']")
 
+    def name_fields(self):
+        """Old (<= 12.x) name input occurrences, empty list on newer Grafana."""
+        driver: WebDriver = current().context.driver
+        return driver.find_elements(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Data source settings page name input field']")
+
+    @property
+    def edit_title_button(self):
+        """Grafana >= 13.1: pencil button that turns the page title into a rename input."""
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "button[aria-label='Edit title']")
+
+    @property
+    def rename_input(self):
+        """Grafana >= 13.1: inline rename input shown after clicking the pencil."""
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "input[aria-label^='Rename input']")
+
     @property
     def url_field(self):
         driver: WebDriver = current().context.driver

@@ -40,8 +40,18 @@ def check_alert_not_success(self):
 @TestStep(When)
 def enter_name_into_name_field(self, datasource_name):
     """Enter name into name field."""
-    locators.name_field.clear()
-    locators.name_field.send_keys(datasource_name)
+    if locators.name_fields():
+        # Grafana <= 12.x: plain name input on the settings page
+        locators.name_field.clear()
+        locators.name_field.send_keys(datasource_name)
+        return
+
+    # Grafana >= 13.1: the name is an inline-editable page title
+    locators.edit_title_button.click()
+    rename_input = locators.rename_input
+    rename_input.send_keys(Keys.CONTROL, 'a')
+    rename_input.send_keys(datasource_name)
+    rename_input.send_keys(Keys.ENTER)
 
 
 @TestStep(When)

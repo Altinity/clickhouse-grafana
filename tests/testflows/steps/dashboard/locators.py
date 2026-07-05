@@ -234,7 +234,8 @@ class Locators:
     @property
     def exit_edit_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Exit edit mode button']")
+        # Grafana 13.1 merged exit-edit into the edit button (aria-label distinguishes)
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Exit edit mode button'], [aria-label='Exit edit mode']")
 
     @property
     def discard_changes_confirmation_button(self):

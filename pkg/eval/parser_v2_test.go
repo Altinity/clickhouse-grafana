@@ -201,10 +201,41 @@ func TestParserV2SkeletonLeaves(t *testing.T) {
 	require.False(t, ast.HasOwnProperty("from"))
 }
 
+func TestParserV2From(t *testing.T) {
+	for _, q := range []string{
+		// subquery + one accumulated alias item (facts 9-11)
+		"SELECT 1 FROM (SELECT 2 FROM u) AS s WHERE 1",
+		"SELECT 1 FROM (SELECT 2 FROM (SELECT 3 FROM inner1) i1) i2",
+		// whitelisted table functions keep the RAW inner text (fact 10)
+		"SELECT 1 FROM numbers(10)",
+		"SELECT 1 FROM numbers( 10 , 20 )",
+		"SELECT 1 FROM clusterAllReplicas('{cluster}', merge(system,'^query_log')) WHERE x = 1",
+		// non-whitelisted: from replaced, head becomes the alias (fact 10)
+		"SELECT 1 FROM myfunc(10)",
+		"SELECT 1 FROM myfunc(10) AS z",
+		// quote-blind betweenBraces cut + silent truncation (facts 8-9)
+		"SELECT 1 FROM (SELECT ')' AS p FROM u) q",
+	} {
+		requireV2MatchesLegacy(t, q)
+	}
+}
+
+func TestParserV2FromLeaves(t *testing.T) {
+	ast, err := toASTV2("SELECT 1 FROM numbers( 10 , 20 )")
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{"numbers( 10 , 20 )"}, ast.Obj["from"].(*EvalAST).Arr)
+
+	ast, err = toASTV2("SELECT 1 FROM myfunc(10) AS z")
+	require.NoError(t, err)
+	from := ast.Obj["from"].(*EvalAST)
+	require.Nil(t, from.Arr, "from replaced by the sub-parse")
+	require.Equal(t, []interface{}{"10"}, from.Obj["root"].(*EvalAST).Arr)
+	require.Equal(t, []interface{}{"myfunc AS z"}, from.Obj["aliases"].(*EvalAST).Arr)
+}
+
 // Unimplemented branches fail loudly, never silently mis-parse.
 func TestParserV2StubBranches(t *testing.T) {
 	for q, msg := range map[string]string{
-		"SELECT 1 FROM (SELECT 2) x":          "not implemented",
 		"SELECT 1 FROM a INNER JOIN b ON a=b": "not implemented",
 		"SELECT 1 FROM t WHERE x IN (1)":      "not implemented",
 		"$rate(c) FROM t":                     "not implemented",

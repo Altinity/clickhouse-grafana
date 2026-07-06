@@ -159,7 +159,28 @@ func parseQueryAtDepthV2(src string, depth int) (*queryNode, error) {
 			p.expectedNext = true
 
 		case lt.kind == logClosure && p.rootName == "from":
-			return nil, fmt.Errorf("parser v2: FROM subqueries/table functions not implemented") // Task 6
+			// legacy :1675-1685. Fires for ANY of ( ) [ ] in FROM. The body
+			// between braces is a RAW slice (betweenBraces is quote-blind by
+			// design parity, fact 9); the stream resumes one byte past it.
+			rest := p.restAfterCur()
+			sub := betweenBraces(rest)
+			if !isTableFunc(renderItem(cur)) {
+				subQ, err := p.subParse(sub)
+				if err != nil {
+					return nil, err
+				}
+				fc := q.findClause("from")
+				fc.items = nil // legacy REPLACES Tree.Obj["from"] wholesale
+				fc.sub = subQ
+				fc.subAliases = nil
+				// cur intentionally NOT reset: the pending argument later
+				// lands as the first alias item (fact 10, "myfunc AS z").
+			} else {
+				cur.add(rawPart{"(" + sub + ")"}) // raw body, spacing preserved
+				p.push(q, cur)
+				cur = newItemNode()
+			}
+			p.resumeRaw(safeTail(rest, len(sub)+1))
 
 		case lt.kind == logMacroFunc:
 			return nil, fmt.Errorf("parser v2: macro heads not implemented") // Task 9

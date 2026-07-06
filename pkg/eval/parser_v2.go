@@ -19,6 +19,14 @@ import (
 // corpus case is remotely close to this depth.
 const maxSubqueryDepthV2 = 1000
 
+// ToAST parses the scanner's original query with the #733 recursive-descent
+// engine — the only engine since Phase 4 (the legacy regexp2 parser was
+// removed after one release of v2-default burn-in; the corpus goldens in
+// testdata/corpus/ are the frozen behavior baseline).
+func (s *EvalQueryScanner) ToAST() (*EvalAST, error) {
+	return toASTV2(s._sOriginal)
+}
+
 // toASTV2 is the #733 Phase-2 recursive-descent engine entry point.
 func toASTV2(src string) (*EvalAST, error) {
 	q, err := parseQueryV2(src)

@@ -58,12 +58,9 @@ func TestLogicalJoins(t *testing.T) {
 	requireLogical(t, "outer left", []wantLog{{logToken, "outer"}, {logToken, "left"}})
 }
 
-func TestJoinShapesMatchLegacyRegex(t *testing.T) {
+func TestJoinShapes(t *testing.T) {
 	// 72 [global][any|all][dir][outer] join combos + array join + left array join
 	require.Len(t, joinShapes, 74)
-	for shape := range joinShapes {
-		require.True(t, joinsOnlyRe.MatchString(shape), "shape %q rejected by legacy joinsRe", shape)
-	}
 	for _, not := range []string{"outer", "left", "global", "any left", "inner array join"} {
 		require.False(t, joinShapes[not], "%q must not be a shape", not)
 	}
@@ -127,25 +124,6 @@ func TestLogicalOffsets(t *testing.T) {
 	gb := lts[1]
 	require.Equal(t, "GROUP BY", gb.text)
 	require.Equal(t, src[gb.start:gb.end], gb.text)
-}
-
-// requireV2MatchesLegacy is the in-process mini-differential used by Tasks
-// 5-9: v2 and legacy must produce byte-identical AST JSON and PrintAST output
-// for the given query. Task 10's corpus gate generalizes this to all 202
-// cases plus the expansion goldens.
-func requireV2MatchesLegacy(t *testing.T, query string) {
-	t.Helper()
-	legacyScanner := NewScanner(query)
-	legacyAST, legacyErr := legacyScanner.toASTLegacy()
-	require.NoError(t, legacyErr, "legacy failed on %q", query)
-	v2AST, v2Err := toASTV2(query)
-	require.NoError(t, v2Err, "v2 failed on %q", query)
-	legacyJSON, err := json.MarshalIndent(legacyAST, "", "  ")
-	require.NoError(t, err)
-	v2JSON, err := json.MarshalIndent(v2AST, "", "  ")
-	require.NoError(t, err)
-	require.Equal(t, string(legacyJSON), string(v2JSON), "AST mismatch for %q", query)
-	require.Equal(t, PrintAST(legacyAST, " "), PrintAST(v2AST, " "), "PrintAST mismatch for %q", query)
 }
 
 const unitSnapshotsPath = "testdata/parser_v2_unit_snapshots.json"
@@ -295,10 +273,6 @@ func TestParserV2UnitSnapshots(t *testing.T) {
 		g := g
 		t.Run(g.Name, func(t *testing.T) {
 			for _, q := range g.Queries {
-				// LEGACY CROSS-CHECK — removed in Phase-4 Task 3 together with
-				// the legacy engine; the snapshot then carries the parity proof.
-				requireV2MatchesLegacy(t, q)
-
 				ast, err := toASTV2(q)
 				require.NoError(t, err, "v2 failed on %q", q)
 				astJSON, err := json.MarshalIndent(ast, "", "  ")
@@ -459,4 +433,23 @@ func TestParserV2UnionAllInvalidUTF8NoPanic(t *testing.T) {
 	} {
 		require.NotPanics(t, func() { _, _ = toASTV2(q) }, "v2 must not panic on %q", q)
 	}
+}
+
+// TestToASTIsV2Direct pins the Phase-4 wiring: ToAST is exactly toASTV2 and
+// the retired CLICKHOUSE_GRAFANA_PARSER env var is inert. (A permanent guard,
+// not a differential: it passes before and after the deletion — the red→green
+// signal for this task is the reference sweep below plus `go build`.)
+func TestToASTIsV2Direct(t *testing.T) {
+	t.Setenv("CLICKHOUSE_GRAFANA_PARSER", "legacy") // must be inert now
+	s := NewScanner("SELECT col2/col1*10000 FROM t")
+	ast, err := s.ToAST()
+	require.NoError(t, err)
+	sel := ast.Obj["select"].(*EvalAST)
+	require.Equal(t, "col2 / col1 * 10000", sel.Arr[0])
+
+	v2, err := toASTV2("SELECT col2/col1*10000 FROM t")
+	require.NoError(t, err)
+	a, _ := json.Marshal(ast)
+	b, _ := json.Marshal(v2)
+	require.Equal(t, string(b), string(a), "ToAST must be exactly toASTV2")
 }

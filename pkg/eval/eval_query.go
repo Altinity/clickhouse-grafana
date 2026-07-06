@@ -1510,14 +1510,6 @@ func (e *EvalAST) HasOwnProperty(key string) bool {
 	return hasKey && v != nil
 }
 
-func (e *EvalAST) pushObj(objName string, value interface{}) {
-	_, objExists := e.Obj[objName]
-	if !objExists {
-		e.Obj[objName] = &EvalAST{}
-	}
-	e.Obj[objName].(*EvalAST).push(value)
-}
-
 func (e *EvalAST) push(value interface{}) {
 	if e.Arr == nil {
 		e.Arr = []interface{}{}
@@ -1526,64 +1518,11 @@ func (e *EvalAST) push(value interface{}) {
 }
 
 type EvalQueryScanner struct {
-	Tree         *EvalAST
-	RootToken    string
-	Token        string
-	SkipSpace    bool
-	re           *regexp2.Regexp
-	expectedNext bool
-	_sOriginal   string
-	_s           string
+	_sOriginal string
 }
 
 func NewScanner(query string) EvalQueryScanner {
-	return EvalQueryScanner{
-		_sOriginal: query,
-		Token:      "",
-	}
-}
-
-func (s *EvalQueryScanner) raw() string {
-	return s._sOriginal
-}
-
-func (s *EvalQueryScanner) Next() (bool, error) {
-	for {
-		isNext, err := func() (bool, error) {
-			if len(s._s) == 0 {
-				return false, nil
-			}
-			r, err := s.re.FindStringMatch(s._s)
-			if err != nil || r == nil {
-				return false, fmt.Errorf("cannot find next token in [%v]", s._s)
-			}
-
-			s.Token = r.String()
-			s._s = s._s[len(s.Token):]
-
-			return true, nil
-		}()
-
-		if !isNext {
-			break
-		}
-		if err != nil {
-			return false, err
-		}
-		if s.SkipSpace && isWS(s.Token) {
-			continue
-		}
-		return true, nil
-	}
-	return false, nil
-}
-
-func (s *EvalQueryScanner) expectNext() (bool, error) {
-	isNext, err := s.Next()
-	if err != nil {
-		return false, fmt.Errorf("expecting additional token at the end of query [%s], error: %v", s._sOriginal, err)
-	}
-	return isNext, err
+	return EvalQueryScanner{_sOriginal: query}
 }
 
 func (s *EvalQueryScanner) Format() (string, error) {
@@ -1592,343 +1531,6 @@ func (s *EvalQueryScanner) Format() (string, error) {
 		return "", err
 	}
 	return PrintAST(ast, ""), nil
-}
-
-func (s *EvalQueryScanner) push(argument interface{}) {
-	rootAST, exist := s.Tree.Obj[s.RootToken]
-	if exist {
-		ast := rootAST.(*EvalAST)
-		if ast.Arr != nil {
-			ast.Arr = append(ast.Arr, argument)
-		} else {
-			var aliasesArr *EvalAST
-			if !ast.HasOwnProperty("aliases") {
-				aliasesArr = newEvalAST(false)
-				ast.Obj["aliases"] = aliasesArr
-			} else {
-				aliasesArr = ast.Obj["aliases"].(*EvalAST)
-			}
-			aliasesArr.Arr = append(aliasesArr.Arr, argument)
-		}
-		s.Tree.Obj[s.RootToken] = ast
-	}
-	s.expectedNext = false
-}
-
-func (s *EvalQueryScanner) SetRoot(token string) {
-	s.RootToken = strings.ToLower(token)
-	s.Tree.Obj[s.RootToken] = newEvalAST(false)
-	s.expectedNext = true
-}
-
-func (s *EvalQueryScanner) isExpectedNext() bool {
-	var v = s.expectedNext
-	s.expectedNext = false
-	return v
-}
-
-func (s *EvalQueryScanner) appendToken(argument string) string {
-	if argument == "" || isSkipSpace(argument[len(argument)-1:]) {
-		return s.Token
-	}
-	return " " + s.Token
-}
-
-func (s *EvalQueryScanner) toASTLegacy() (*EvalAST, error) {
-	var err error
-	s._s = s._sOriginal
-	s.Tree = newEvalAST(true)
-	s.SetRoot("root")
-	s.expectedNext = false
-	s.SkipSpace = true
-	s.re = tokenReComplied
-	subQuery := ""
-	argument := ""
-
-	for {
-		if next, err := s.Next(); err != nil {
-			return nil, err
-		} else if !next {
-			break
-		}
-		if !s.isExpectedNext() && isStatement(s.Token) && !s.Tree.HasOwnProperty(strings.ToLower(s.Token)) {
-			if strings.ToUpper(s.Token) == "WITH" && s.RootToken == "order by" {
-				argument += s.appendToken(argument)
-				continue
-			}
-			if !isClosured(argument) {
-				argument += s.appendToken(argument)
-				continue
-			}
-			if len(argument) > 0 {
-				s.push(argument)
-				argument = ""
-			}
-			s.SetRoot(s.Token)
-		} else if s.Token == "," && isClosured(argument) {
-			s.push(argument)
-			argument = ""
-			if s.RootToken == "where" {
-				s.push(s.Token)
-			}
-			s.expectedNext = true
-		} else if isClosureChars(s.Token) && s.RootToken == "from" {
-			subQuery = betweenBraces(s._s)
-			if !isTableFunc(argument) {
-				if s.Tree.Obj[s.RootToken], err = toAST(subQuery); err != nil {
-					return nil, err
-				}
-			} else {
-				s.push(argument + "(" + subQuery + ")")
-				argument = ""
-			}
-			s._s = s._s[len(subQuery)+1:]
-		} else if isMacroFunc(s.Token) {
-			var funcName = s.Token
-			if next, err := s.Next(); err != nil {
-				return nil, fmt.Errorf("wrong macros parsing: %v", err)
-			} else if !next {
-				return nil, fmt.Errorf("wrong macros signature for `%s` at [%s]", funcName, s._s)
-			}
-
-			subQuery = betweenBraces(s._s)
-			var subAST *EvalAST
-			if subAST, err = toAST(subQuery); err != nil {
-				return nil, err
-			}
-			if subAST.HasOwnProperty("root") {
-				s.Tree.Obj[funcName] = subAST.Obj["root"]
-			} else {
-				s.Tree.Obj[funcName] = subAST
-			}
-			s._s = s._s[len(subQuery)+1:]
-
-			// macro funcNames are used instead of SELECT statement
-			s.Tree.Obj["select"] = newEvalAST(false)
-		} else if isIn(s.Token) {
-			argument += " " + s.Token
-			if next, err := s.Next(); err != nil {
-				return nil, fmt.Errorf("error `IN` parsing: %v", err)
-			} else if !next {
-				return nil, fmt.Errorf("wrong `IN` signature for `%s` at [%s]", argument, s._s)
-			}
-
-			if isClosureChars(s.Token) {
-				subQuery = betweenBraces(s._s)
-
-				if subQuery == "" {
-					betweenSquareBraces(s._s)
-				}
-
-				var subAST *EvalAST
-				if subAST, err = toAST(subQuery); err != nil {
-					return nil, err
-				}
-				if subAST.HasOwnProperty("root") && len(subAST.Obj["root"].(*EvalAST).Arr) > 0 {
-					var subArr = subAST.Obj["root"].(*EvalAST)
-					argument += " ("
-					for _, item := range subArr.Arr {
-						argument += item.(string)
-					}
-					argument = argument + ")"
-				} else {
-					argument += " (" + newLine + PrintAST(subAST, tabSize) + ")"
-					if s.RootToken != "select" {
-						s.push(argument)
-						argument = ""
-					}
-				}
-				s._s = s._s[len(subQuery)+1:]
-			} else {
-				argument += " " + s.Token
-			}
-		} else if isCond(s.Token) && (s.RootToken == "where" || s.RootToken == "prewhere") {
-			if isClosured(argument) {
-				s.push(argument)
-				argument = s.Token
-			} else {
-				argument += " " + s.Token
-			}
-		} else if isJoin(s.Token) {
-			argument, err = s.parseJOIN(argument)
-			if err != nil {
-				return nil, fmt.Errorf("parseJOIN error: %v", err)
-			}
-		} else if s.RootToken == "union all" {
-			var statement = "union all"
-			s._s = s.Token + " " + s._s
-			var subQueryPos = strings.Index(strings.ToLower(s._s), statement)
-			for subQueryPos != -1 {
-				var subQuery = s._s[0:subQueryPos]
-				var ast *EvalAST
-				if ast, err = toAST(subQuery); err != nil {
-					return nil, err
-				}
-				s.Tree.pushObj(statement, ast)
-				s._s = s._s[subQueryPos+len(statement) : len(s._s)]
-				subQueryPos = strings.Index(strings.ToLower(s._s), statement)
-			}
-			ast, err := toAST(s._s)
-			if err != nil {
-				return nil, err
-			}
-			s._s = ""
-			s.Tree.pushObj(statement, ast)
-		} else if isComment(s.Token) {
-			//comment is part of push element, and will add after next statement
-			argument += s.Token + "\n"
-		} else if isClosureChars(s.Token) || s.Token == "." {
-			argument += s.Token
-		} else if s.Token == "," {
-			argument += s.Token + " "
-		} else {
-			argument += s.appendToken(argument)
-		}
-	}
-
-	if argument != "" {
-		s.push(argument)
-	}
-	return s.Tree, nil
-}
-
-func (s *EvalQueryScanner) parseJOIN(argument string) (string, error) {
-	if !s.Tree.HasOwnProperty("join") {
-		s.Tree.Obj["join"] = newEvalAST(false)
-	}
-	var joinType = s.Token
-	if next, err := s.Next(); err != nil {
-		return "", err
-	} else if !next {
-		return "", fmt.Errorf("wrong join signature for `%s` at [%s]", joinType, s._s)
-	}
-	var source *EvalAST
-	var err error
-	if isClosureChars(s.Token) {
-		var subQuery = betweenBraces(s._s)
-		if source, err = toAST(subQuery); err != nil {
-			return "", err
-		}
-		s._s = s._s[len(subQuery)+1:]
-		s.Token = ""
-	} else {
-		var sourceStr = ""
-		var ok = true
-		for {
-			if isID(s.Token) && !isTable(sourceStr) && strings.ToUpper(s.Token) != "AS" && !onJoinTokenOnlyRe.MatchString(s.Token) {
-				sourceStr += s.Token
-			} else if isMacro(s.Token) {
-				sourceStr += s.Token
-			} else if s.Token == "." {
-				sourceStr += s.Token
-			} else {
-				break
-			}
-			if ok, err = s.CheckArrayJOINAndExpectNextOrNext(joinType); err != nil {
-				return "", err
-			} else if !ok {
-				break
-			}
-		}
-		if s.Token == sourceStr {
-			s.Token = ""
-		}
-		source = &EvalAST{
-			Obj: map[string]interface{}{
-				"root": &EvalAST{Arr: []interface{}{sourceStr}},
-			},
-		}
-	}
-
-	var joinAST = &EvalAST{
-		Obj: map[string]interface{}{
-			"type":    joinType,
-			"source":  source,
-			"aliases": newEvalAST(false),
-			"using":   newEvalAST(false),
-			"on":      newEvalAST(false),
-		},
-	}
-	ok := true
-	for {
-		if s.Token != "" && !onJoinTokenOnlyRe.MatchString(s.Token) {
-			joinAST.pushObj("aliases", s.Token)
-		} else if onJoinTokenOnlyRe.MatchString(s.Token) {
-			break
-		}
-
-		if ok, err = s.CheckArrayJOINAndExpectNextOrNext(joinType); err != nil {
-			return "", err
-		} else if !ok {
-			break
-		}
-	}
-	var joinExprToken = strings.ToLower(s.Token)
-	var joinConditions = ""
-	for {
-		if next, err := s.Next(); err != nil {
-			return "", fmt.Errorf("joinConditions s.Next() return %v", err)
-		} else if !next {
-			break
-		}
-		if isStatement(s.Token) {
-			if argument != "" {
-				s.push(argument)
-				argument = ""
-			}
-			s.SetRoot(s.Token)
-			break
-		}
-		if isJoin(s.Token) {
-			if joinConditions != "" {
-				joinAST.pushObj("on", joinConditions)
-				joinConditions = ""
-			}
-			s.Tree.pushObj("join", joinAST)
-			joinAST = nil
-			if argument, err = s.parseJOIN(argument); err != nil {
-				return "", fmt.Errorf("joinConditions s.parseJOIN return: %v", err)
-			}
-			break
-		}
-
-		if joinExprToken == "using" {
-			if !isID(s.Token) {
-				continue
-			}
-			joinAST.pushObj("using", s.Token)
-		} else {
-			if isCond(s.Token) {
-				joinConditions += " " + strings.ToUpper(s.Token) + " "
-			} else {
-				joinConditions += s.Token
-			}
-		}
-	}
-	if joinAST != nil {
-		if joinConditions != "" {
-			joinAST.pushObj("on", joinConditions)
-		}
-		s.Tree.pushObj("join", joinAST)
-	}
-	return argument, nil
-}
-
-func (s *EvalQueryScanner) CheckArrayJOINAndExpectNextOrNext(joinType string) (bool, error) {
-	if !strings.Contains(strings.ToUpper(joinType), "ARRAY JOIN") {
-		expectNext, err := s.expectNext()
-		if err != nil {
-			return false, fmt.Errorf("parseJOIN s.expectNext() return: %v", err)
-		}
-		if expectNext {
-			return expectNext, nil
-		}
-	}
-	next, err := s.Next()
-	if err != nil {
-		return false, fmt.Errorf("parseJOIN s.next() return: %v", err)
-	}
-	return next, nil
 }
 
 func (s *EvalQueryScanner) RemoveComments(query string) (string, error) {
@@ -1946,215 +1548,43 @@ func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
 	return "/* grafana alerts rule=" + q.RuleUid + " query=" + q.RefId + " */ " + query
 }
 
-const wsRe = "\\s+"
 const commentRe = `--(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|` + `/\*(?:[^*]|\*[^/])*\*/`
 const idRe = "[a-zA-Z_][a-zA-Z_0-9]*"
-const intRe = "\\d+"
-const powerIntRe = "\\d+e\\d+"
-const floatRe = "\\d+\\.\\d*|\\d*\\.\\d+|\\d+[eE][-+]\\d+"
-const stringRe = "('(?:[^'\\\\]|\\\\.)*')|(`(?:[^`\\\\]|\\\\.)*`)|(\"(?:[^\"\\\\]|\\\\.)*\")"
-const binaryOpRe = "=>|\\|\\||>=|<=|==|!=|<>|->|[-+/%*=<>\\.!]"
-const statementRe = "\\b(with|select|from|where|having|order by|group by|limit|format|prewhere|union all)\\b"
-
-// look https://clickhouse.tech/docs/en/sql-reference/statements/select/join/
-// [GLOBAL] [ANY|ALL] [INNER|LEFT|RIGHT|FULL|CROSS] [OUTER] JOIN
-const joinsRe = "\\b(" +
-	"left\\s+array\\s+join|" +
-	"array\\s+join|" +
-	"global\\s+any\\s+inner\\s+outer\\s+join|" +
-	"global\\s+any\\s+inner\\s+join|" +
-	"global\\s+any\\s+left\\s+outer\\s+join|" +
-	"global\\s+any\\s+left\\s+join|" +
-	"global\\s+any\\s+right\\s+outer\\s+join|" +
-	"global\\s+any\\s+right\\s+join|" +
-	"global\\s+any\\s+full\\s+outer\\s+join|" +
-	"global\\s+any\\s+full\\s+join|" +
-	"global\\s+any\\s+cross\\s+outer\\s+join|" +
-	"global\\s+any\\s+cross\\s+join|" +
-	"global\\s+any\\s+outer\\s+join|" +
-	"global\\s+any\\s+join|" +
-	"global\\s+all\\s+inner\\s+outer\\s+join|" +
-	"global\\s+all\\s+inner\\s+join|" +
-	"global\\s+all\\s+left\\s+outer\\s+join|" +
-	"global\\s+all\\s+left\\s+join|" +
-	"global\\s+all\\s+right\\s+outer\\s+join|" +
-	"global\\s+all\\s+right\\s+join|" +
-	"global\\s+all\\s+full\\s+outer\\s+join|" +
-	"global\\s+all\\s+full\\s+join|" +
-	"global\\s+all\\s+cross\\s+outer\\s+join|" +
-	"global\\s+all\\s+cross\\s+join|" +
-	"global\\s+all\\s+outer\\s+join|" +
-	"global\\s+all\\s+join|" +
-	"global\\s+inner\\s+outer\\s+join|" +
-	"global\\s+inner\\s+join|" +
-	"global\\s+left\\s+outer\\s+join|" +
-	"global\\s+left\\s+join|" +
-	"global\\s+right\\s+outer\\s+join|" +
-	"global\\s+right\\s+join|" +
-	"global\\s+full\\s+outer\\s+join|" +
-	"global\\s+full\\s+join|" +
-	"global\\s+cross\\s+outer\\s+join|" +
-	"global\\s+cross\\s+join|" +
-	"global\\s+outer\\s+join|" +
-	"global\\s+join|" +
-	"any\\s+inner\\s+outer\\s+join|" +
-	"any\\s+inner\\s+join|" +
-	"any\\s+left\\s+outer\\s+join|" +
-	"any\\s+left\\s+join|" +
-	"any\\s+right\\s+outer\\s+join|" +
-	"any\\s+right\\s+join|" +
-	"any\\s+full\\s+outer\\s+join|" +
-	"any\\s+full\\s+join|" +
-	"any\\s+cross\\s+outer\\s+join|" +
-	"any\\s+cross\\s+join|" +
-	"any\\s+outer\\s+join|" +
-	"any\\s+join|" +
-	"all\\s+inner\\s+outer\\s+join|" +
-	"all\\s+inner\\s+join|" +
-	"all\\s+left\\s+outer\\s+join|" +
-	"all\\s+left\\s+join|" +
-	"all\\s+right\\s+outer\\s+join|" +
-	"all\\s+right\\s+join|" +
-	"all\\s+full\\s+outer\\s+join|" +
-	"all\\s+full\\s+join|" +
-	"all\\s+cross\\s+outer\\s+join|" +
-	"all\\s+cross\\s+join|" +
-	"all\\s+outer\\s+join|" +
-	"all\\s+join|" +
-	"inner\\s+outer\\s+join|" +
-	"inner\\s+join|" +
-	"left\\s+outer\\s+join|" +
-	"left\\s+join|" +
-	"right\\s+outer\\s+join|" +
-	"right\\s+join|" +
-	"full\\s+outer\\s+join|" +
-	"full\\s+join|" +
-	"cross\\s+outer\\s+join|" +
-	"cross\\s+join|" +
-	"outer\\s+join|" +
-	"join" +
-	")\\b"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
-const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columnsMs|\\$columns|\\$lttbMs|\\$lttb)"
 const condRe = "\\b(or|and)\\b"
-const inRe = "\\b(global in|global not in|not in|in)\\b(?:\\s+\\[\\s*(?:'[^']*'\\s*,\\s*)*'[^']*'\\s*\\])?"
-const closureRe = "[\\(\\)\\[\\]]"
-const specCharsRe = "[,?:]"
 const macroRe = "\\$[A-Za-z0-9_$]+"
 const macroVarRe = "\\${[A-Za-z0-9_]+(:[A-Za-z0-9_]+)?}"
-const skipSpaceRe = "[\\(\\.! \\[]"
 
 const tableFuncRe = "\\b(sqlite|file|remote|remoteSecure|cluster|clusterAllReplicas|merge|numbers|url|mysql|postgresql|jdbc|odbc|hdfs|input|generateRandom|s3|s3Cluster)\\b"
 
-var wsOnlyRe = regexp.MustCompile("^(?:" + wsRe + ")$")
-var commentOnlyRe = regexp2.MustCompile("^(?:"+commentRe+")$", regexp2.Multiline)
 var idOnlyRe = regexp.MustCompile("^(?:" + idRe + ")$")
-var closureOnlyRe = regexp.MustCompile("^(?:" + closureRe + ")$")
-var macroFuncOnlyRe = regexp.MustCompile("^(?:" + macroFuncRe + ")$")
-var statementOnlyRe = regexp.MustCompile("(?mi)^(?:" + statementRe + ")$")
-var joinsOnlyRe = regexp.MustCompile("(?mi)^(?:" + joinsRe + ")$")
 var onJoinTokenOnlyRe = regexp.MustCompile("(?mi)^(?:" + onJoinTokenRe + ")$")
 var tableNameOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableNameRe + ")$")
 
 var tableFuncOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableFuncRe + ")$")
 var macroOnlyRe = regexp.MustCompile("(?mi)^(?:" + macroRe + "|" + macroVarRe + ")$")
-var inOnlyRe = regexp.MustCompile("(?mi)^(?:" + inRe + ")$")
 var condOnlyRe = regexp.MustCompile("(?mi)^(?:" + condRe + ")$")
-
-/* var numOnlyRe = regexp.MustCompile("^(?:" + strings.Join([]string{powerIntRe, intRe, floatRe},"|") + ")$") */
-/* var stringOnlyRe = regexp.MustCompile("^(?:" + stringRe + ")$") */
-var skipSpaceOnlyRe = regexp.MustCompile("^(?:" + skipSpaceRe + ")$")
-
-/* var binaryOnlyRe = regexp.MustCompile("^(?:" + binaryOpRe + ")$") */
-
-var tokenRe = strings.Join([]string{
-	statementRe, macroFuncRe, joinsRe, inRe, wsRe, commentRe, idRe, stringRe, powerIntRe, floatRe, intRe,
-	binaryOpRe, closureRe, specCharsRe, macroVarRe, macroRe,
-}, "|")
-
-var tokenReComplied = regexp2.MustCompile("^(?:"+tokenRe+")", regexp2.IgnoreCase+regexp2.Multiline)
-
-func isSkipSpace(token string) bool {
-	return skipSpaceOnlyRe.MatchString(token)
-}
 
 func isCond(token string) bool {
 	return condOnlyRe.MatchString(token)
-}
-
-func isIn(token string) bool {
-	return inOnlyRe.MatchString(token)
-}
-
-func isJoin(token string) bool {
-	return joinsOnlyRe.MatchString(token)
 }
 
 func isTable(token string) bool {
 	return tableNameOnlyRe.MatchString(token)
 }
 
-func isWS(token string) bool {
-	return wsOnlyRe.MatchString(token)
-}
-
-func isMacroFunc(token string) bool {
-	return macroFuncOnlyRe.MatchString(token)
-}
-
 func isMacro(token string) bool {
 	return macroOnlyRe.MatchString(token)
-}
-
-func isComment(token string) bool {
-	res, _ := commentOnlyRe.MatchString(token)
-	return res
 }
 
 func isID(token string) bool {
 	return idOnlyRe.MatchString(token)
 }
 
-func isStatement(token string) bool {
-	return statementOnlyRe.MatchString(token)
-}
-
-/*
-func isOperator(token string) bool {
-    return operatorOnlyRe.MatchString(token)
-}
-
-func isDataType(token string) bool {
-    return dataTypeOnlyRe.MatchString(token)
-}
-
-func isBuiltInFunc(token string) bool {
-    return builtInFuncOnlyRe.MatchString(token)
-}
-*/
-
 func isTableFunc(token string) bool {
 	return tableFuncOnlyRe.MatchString(token)
 }
-
-func isClosureChars(token string) bool {
-	return closureOnlyRe.MatchString(token)
-}
-
-/*
-func isNum(token string) bool {
-    return numOnlyRe.MatchString(token)
-}
-
-func isString(token string) bool {
-    return stringOnlyRe.MatchString(token)
-}
-
-func isBinary(token string) bool {
-    return binaryOnlyRe.MatchString(token)
-}
-*/
 
 const tabSize = "    " // 4 spaces
 const newLine = "\n"
@@ -2179,11 +1609,6 @@ func printItems(items *EvalAST, tab string, separator string) string {
 	}
 
 	return result
-}
-
-func toAST(s string) (*EvalAST, error) {
-	var scanner = NewScanner(s)
-	return scanner.ToAST()
 }
 
 // isClosured checks if a string has properly balanced brackets while ignoring brackets within quotes
@@ -2252,24 +1677,6 @@ func betweenBraces(query string) string {
 			openBraces++
 		}
 		if query[i] == ')' {
-			if openBraces == 1 {
-				subQuery = query[0:i]
-				break
-			}
-			openBraces--
-		}
-	}
-	return subQuery
-}
-
-func betweenSquareBraces(query string) string {
-	var openBraces = 1
-	var subQuery = ""
-	for i := 0; i < len(query); i++ {
-		if query[i] == '[' {
-			openBraces++
-		}
-		if query[i] == ']' {
 			if openBraces == 1 {
 				subQuery = query[0:i]
 				break

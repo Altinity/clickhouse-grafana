@@ -836,6 +836,31 @@ describe('sql-series. toTraces data links', () => {
     const traceIdField = out[0].fields.find((f: any) => f.name === 'traceID');
     expect(traceIdField?.config?.links ?? []).toHaveLength(0);
   });
+
+  it('builds a CH traces-format link with panelsState.trace.spanId (explore → split pane)', () => {
+    const links = [
+      { fieldName: 'traceID', title: 'Open trace', targetDatasourceUid: 'x', query: 'SELECT 1', format: 'traces' },
+    ];
+
+    const out = toTraces(series as any, meta, links as any, 'explore');
+    const link = out[0].fields.find((f: any) => f.name === 'traceID')?.config?.links?.[0];
+
+    expect(link?.internal?.panelsState).toEqual({ trace: { spanId: '${__value.raw}' } });
+    expect(link?.internal?.query).toMatchObject({ refId: 'datalink', query: 'SELECT 1', format: 'traces' });
+    expect(link?.targetBlank).toBe(false);
+  });
+
+  it('builds a generic internal link for a non-CH metrics target (dashboard → new tab)', () => {
+    const query = 'rate(http_requests_total{service="${__value.raw}"}[5m])';
+    const links = [{ fieldName: 'serviceName', title: 'Service metrics', targetDatasourceUid: 'prom-uid', query }];
+
+    const out = toTraces(series as any, meta, links as any, 'dashboard');
+    const link = out[0].fields.find((f: any) => f.name === 'serviceName')?.config?.links?.[0];
+
+    expect(link?.internal?.datasourceUid).toBe('prom-uid');
+    expect(link?.internal?.query).toEqual({ refId: 'datalink', query });
+    expect(link?.targetBlank).toBe(true);
+  });
 });
 
 describe('sql-series. toLogs data links', () => {
@@ -885,6 +910,19 @@ describe('sql-series. toLogs data links', () => {
     const out = toLogs(self);
     const body = out[0].fields.find((f: any) => f.name === 'body');
     expect(body?.config?.links).toHaveLength(1);
+  });
+
+  it('does not create a phantom field when the linked column is absent from the result', () => {
+    const links = [
+      { fieldName: 'does_not_exist', title: 'X', targetDatasourceUid: 'x', query: 'q' },
+    ];
+    const self: any = { refId: 'A', series, meta, dataLinks: links };
+    const out = toLogs(self);
+    expect(out[0].fields.find((f: any) => f.name === 'does_not_exist')).toBeUndefined();
+    // trace_id is not referenced by any link, so it still folds into labels
+    const labels = out[0].fields.find((f: any) => f.name === 'labels');
+    const firstLabel = (labels?.values?.toArray?.() ?? labels?.values)?.[0] ?? {};
+    expect(Object.keys(firstLabel)).toContain('trace_id');
   });
 });
 

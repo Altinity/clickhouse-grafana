@@ -186,7 +186,34 @@ func parseQueryAtDepthV2(src string, depth int) (*queryNode, error) {
 			return nil, fmt.Errorf("parser v2: macro heads not implemented") // Task 9
 
 		case lt.kind == logIn:
-			return nil, fmt.Errorf("parser v2: IN forms not implemented") // Task 8
+			// legacy :1708-1744. The IN keyword (raw slice — may be the whole
+			// swallowed "IN ['aa', 'bb']" form, fact 7) appends spaced; the
+			// NEXT token is consumed blindly.
+			cur.add(spacedPart{lt.text})
+			if !p.advance() {
+				return nil, fmt.Errorf("wrong `IN` signature for `%s` at [%s]", renderItem(cur), "")
+			}
+			if p.cur.kind == logClosure {
+				// fires for '(' AND '[' — betweenBraces always scans for ')'
+				// (fact 6; the legacy betweenSquareBraces call discards its
+				// result — dead code, deliberately not mirrored).
+				rest := p.restAfterCur()
+				sub := betweenBraces(rest)
+				subQ, err := p.subParse(sub)
+				if err != nil {
+					return nil, err
+				}
+				root := subQ.findClause("root")
+				concat := root != nil && len(root.items) > 0
+				cur.add(subqueryPart{q: subQ, concat: concat})
+				if !concat && p.rootName != "select" {
+					p.push(q, cur)
+					cur = newItemNode()
+				}
+				p.resumeRaw(safeTail(rest, len(sub)+1))
+			} else {
+				cur.add(spacedPart{p.cur.text})
+			}
 
 		case lt.kind == logCond && (p.rootName == "where" || p.rootName == "prewhere"):
 			if isClosured(renderItem(cur)) {

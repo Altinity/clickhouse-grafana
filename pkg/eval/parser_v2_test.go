@@ -282,10 +282,62 @@ func TestParserV2JoinError(t *testing.T) {
 	require.Contains(t, err.Error(), "wrong join signature for `INNER JOIN`")
 }
 
+func TestParserV2In(t *testing.T) {
+	for _, q := range []string{
+		// list concat quirk (fact 4)
+		"SELECT 1 FROM t WHERE x IN (1,2,3)",
+		"SELECT 1 FROM t WHERE x NOT IN ('a', 'b')",
+		"SELECT type in (2,4) FROM t",
+		"SELECT 1 FROM t WHERE x IN ($templateVar)",
+		// subquery form (fact 5), all root positions
+		"SELECT 1 FROM t WHERE x IN (SELECT id FROM u WHERE q = 1)",
+		"SELECT 1 FROM t WHERE x GLOBAL NOT IN (SELECT id FROM u)",
+		"SELECT a IN (SELECT q FROM u) AS flag FROM t",
+		"SELECT 1 FROM a WHERE b IN (SELECT 1 FROM c) FROM d",
+		// the [$hash] mangling (fact 6) — byte-parity, NOT an engine_diff
+		"SELECT 1 FROM t WHERE h IN [$query_hash]",
+		"SELECT 1 FROM t WHERE h IN [$query_hash]\nGROUP BY x",
+		// swallowed quoted-array form (fact 7)
+		"SELECT 1 FROM t WHERE x IN ['aa', 'bb'] AND y = 1",
+		// in [ inside an unbalanced $conditionalTest( item (dash_3e6747ba5c shape)
+		"SELECT 1 FROM t WHERE a = 1 $conditionalTest(AND h in [$query_hash],$query_hash)",
+	} {
+		requireV2MatchesLegacy(t, q)
+	}
+}
+
+func TestParserV2InLeaves(t *testing.T) {
+	ast, err := toASTV2("SELECT 1 FROM t WHERE x IN (1,2,3)")
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{"x IN (123)"}, ast.Obj["where"].(*EvalAST).Arr)
+
+	// fact 6 end-to-end: " (\n)" push, resume one byte past '[', ']' poisons
+	// isClosured so the trailing GROUP BY glues into the last item. (This
+	// exact query is also in the parity battery above — if this literal pin
+	// ever disagrees with requireV2MatchesLegacy, trust the parity check and
+	// correct the literal.)
+	ast, err = toASTV2("SELECT 1 FROM t WHERE h IN [$query_hash]\nGROUP BY x")
+	require.NoError(t, err)
+	require.Equal(t,
+		[]interface{}{"h IN (\n)", "query_hash] GROUP BY x"},
+		ast.Obj["where"].(*EvalAST).Arr)
+	require.False(t, ast.HasOwnProperty("group by"))
+
+	// fact 7: swallowed IN-array keeps the whole thing one item
+	ast, err = toASTV2("SELECT 1 FROM t WHERE x IN ['aa', 'bb'] AND y = 1")
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{"x IN ['aa', 'bb'] AND y = 1"}, ast.Obj["where"].(*EvalAST).Arr)
+}
+
+func TestParserV2InError(t *testing.T) {
+	_, err := toASTV2("SELECT 1 FROM t WHERE x IN")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "wrong `IN` signature for `x IN`")
+}
+
 // Unimplemented branches fail loudly, never silently mis-parse.
 func TestParserV2StubBranches(t *testing.T) {
 	for q, msg := range map[string]string{
-		"SELECT 1 FROM t WHERE x IN (1)":     "not implemented",
 		"$rate(c) FROM t":                    "not implemented",
 		"SELECT 1 FROM a UNION ALL SELECT 2": "not implemented",
 	} {

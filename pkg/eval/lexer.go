@@ -175,9 +175,10 @@ func (lx *lexer) scanBlockComment() error {
 }
 
 // scanString consumes a single-quoted literal honoring both escape styles:
-// backslash (\') and SQL doubling (''). NOTE: legacy honors only backslash —
-// 'it''s' lexes as TWO legacy tokens. Intended divergence; no corpus case
-// exercises it (probe-verified 2026-07-06, see lexer_diff_test.go).
+// backslash escape and doubled single-quote. NOTE: legacy honors only the
+// backslash escape — a doubled single-quote lexes as TWO legacy tokens.
+// Intended divergence; no corpus case exercises it (probe-verified
+// 2026-07-06, see lexer_diff_test.go).
 func (lx *lexer) scanString() error {
 	start := lx.pos
 	lx.pos++ // opening quote

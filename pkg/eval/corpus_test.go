@@ -25,7 +25,9 @@ type corpusCase struct {
 }
 
 // loadCorpusCase reads a .sql corpus file. An optional first line of the form
-//   -- corpus: expect=error tags=macro,subquery
+//
+//	-- corpus: expect=error tags=macro,subquery
+//
 // is parsed as a directive and stripped from the query text.
 func loadCorpusCase(path string) (corpusCase, error) {
 	raw, err := os.ReadFile(path)

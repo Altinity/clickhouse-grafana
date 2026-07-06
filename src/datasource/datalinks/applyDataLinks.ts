@@ -1,9 +1,14 @@
+import { DataLink } from '@grafana/data';
 import { buildDataLink, isClickHouseTarget } from './buildDataLink';
 import { DataLinkConfig } from './types';
 
+/**
+ * The minimal structural shape applyDataLinks needs. Both the plugin's own
+ * converter fields (sql_series Field) and @grafana/data Fields satisfy it.
+ */
 interface MinimalField {
   name: string;
-  config?: { links?: any[] } & Record<string, unknown>;
+  config?: { links?: DataLink[] };
 }
 
 interface ApplyOptions {

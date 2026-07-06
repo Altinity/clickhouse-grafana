@@ -82,34 +82,36 @@ export function DataLinkEditor({ dataLink, onChange, onDelete }: Props) {
           </InlineField>
 
           {!isExternal && (
-            <>
-              <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
-                <InlineField
-                  label="Target"
-                  labelWidth={LABEL_WIDTH}
-                  invalid={targetMissing}
-                  error={targetMissing ? 'Target datasource not found — uid does not exist in this Grafana instance' : undefined}
-                >
-                  <div style={{ width: 260 }}>
-                    <DataSourcePicker
-                      current={dataLink.targetDatasourceUid}
-                      onChange={(ds) => onChange({ ...dataLink, targetDatasourceUid: ds.uid ?? '' })}
-                      noDefault
-                    />
-                  </div>
+            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 4, marginTop: 4 }}>
+              <InlineField
+                label="Target"
+                labelWidth={LABEL_WIDTH}
+                invalid={targetMissing}
+                error={
+                  targetMissing
+                    ? 'Target datasource not found — uid does not exist in this Grafana instance'
+                    : undefined
+                }
+              >
+                <div style={{ width: 260 }}>
+                  <DataSourcePicker
+                    current={dataLink.targetDatasourceUid}
+                    onChange={(ds) => onChange({ ...dataLink, targetDatasourceUid: ds.uid ?? '' })}
+                    noDefault
+                  />
+                </div>
+              </InlineField>
+              {isCHTarget && (
+                <InlineField label="Format" labelWidth={10}>
+                  <Select
+                    width={20}
+                    options={FORMAT_OPTIONS}
+                    value={dataLink.format ?? 'table'}
+                    onChange={(v) => onChange({ ...dataLink, format: (v.value ?? 'table') as CHFormat })}
+                  />
                 </InlineField>
-                {isCHTarget && (
-                  <InlineField label="Format" labelWidth={10}>
-                    <Select
-                      width={20}
-                      options={FORMAT_OPTIONS}
-                      value={dataLink.format ?? 'table'}
-                      onChange={(v) => onChange({ ...dataLink, format: (v.value ?? 'table') as CHFormat })}
-                    />
-                  </InlineField>
-                )}
-              </div>
-            </>
+              )}
+            </div>
           )}
         </div>
         <IconButton

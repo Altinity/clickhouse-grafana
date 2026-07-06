@@ -205,11 +205,11 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
     const processedDataPoints = (extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints).filter(item => (typeof item[0] === 'number' || typeof item[0] === 'string' || item[0] === null) && item[1]);
 
     const fields = [
-      { config: { links: [] as any[] }, name: 'time', type: 'time', values: processedDataPoints.map((v: any) => v[1]) },
-      { config: { links: [] as any[] }, name: seriesName, values: processedDataPoints.map((v: any) => v[0]) },
+      { config: { links: [] }, name: 'time', type: 'time', values: processedDataPoints.map((v: any) => v[1]) },
+      { config: { links: [] }, name: seriesName, values: processedDataPoints.map((v: any) => v[0]) },
     ];
 
-    applyDataLinks(fields as any, self.dataLinks, { app: self.app });
+    applyDataLinks(fields, self.dataLinks, { app: self.app });
 
     timeSeries.push({
       length: processedDataPoints.length,

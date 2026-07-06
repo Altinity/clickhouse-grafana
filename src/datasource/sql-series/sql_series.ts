@@ -5,14 +5,14 @@ import { toTable } from './toTable';
 import { toTimeSeries } from './toTimeSeries';
 import { toTraces } from './toTraces';
 import { DateTime } from 'luxon';
-import { FieldType } from '@grafana/data';
+import { DataLink, FieldType } from '@grafana/data';
 import { DataLinkConfig } from '../datalinks';
 
 export interface Field {
   name: string;
   type: string;
   values: Array<string | number | null | object>;
-  config: Record<string, unknown>;
+  config: { links?: DataLink[]; [key: string]: unknown };
 }
 
 export const convertTimezonedDateToUTC = (localDateTime, timeZone) => {

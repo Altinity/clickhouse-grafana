@@ -1,7 +1,7 @@
 import { DataLink } from '@grafana/data';
 import { getDataSourceSrv } from '@grafana/runtime';
 import { DataLinkConfig } from './types';
-import { DatasourceMode } from '../../types/types';
+import { CHQuery, DatasourceMode } from '../../types/types';
 
 const CH_PLUGIN_ID = 'vertamedia-clickhouse-datasource';
 
@@ -54,7 +54,7 @@ export function buildDataLink(
           adHocFilters: [],
           showHelp: false,
           showFormattedSQL: false,
-        },
+        } satisfies Partial<CHQuery>,
       },
     };
     // For trace navigation, pin the clicked span so Grafana's TraceView panel

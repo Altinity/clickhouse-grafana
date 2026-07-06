@@ -1,7 +1,7 @@
 import {createDataFrame, DataFrame, DataFrameType, FieldType} from '@grafana/data';
 import {each, find, omitBy, pickBy} from 'lodash';
 import {convertTimezonedDateToUTC} from './sql_series';
-import { applyDataLinks } from '../datalinks';
+import { applyDataLinks, DataLinkConfig } from '../datalinks';
 
 export const transformObject = (obj) => {
   // Check if the input is an object and not null
@@ -94,11 +94,8 @@ export const toLogs = (self: any): DataFrame[] => {
   // Columns referenced by data-link configs are promoted to top-level fields
   // below (instead of being folded into the `labels` map). Exclude them from
   // `labelFields` so the value isn't duplicated in both places.
-  const promotedColumns = new Set<string>(
-    ((self.dataLinks ?? []) as Array<{ fieldName?: string }>)
-      .map((c) => c.fieldName)
-      .filter((n): n is string => !!n)
-  );
+  const dataLinks: DataLinkConfig[] = self.dataLinks ?? [];
+  const promotedColumns = new Set<string>(dataLinks.map((c) => c.fieldName).filter((n) => !!n));
 
   let types: { [key: string]: any } = {};
   let labelFields: any[] = [];
@@ -225,7 +222,7 @@ export const toLogs = (self: any): DataFrame[] => {
     refId: self.refId,
   });
 
-  applyDataLinks(result.fields as any, self.dataLinks, { app: self.app });
+  applyDataLinks(result.fields, dataLinks, { app: self.app });
 
   return [result]
 };

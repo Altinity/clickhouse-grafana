@@ -1,0 +1,61 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.left_tbl AS t"
+      ]
+    },
+    "join": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": [
+                "AS",
+                "s"
+              ]
+            },
+            "on": {
+              "Obj": null,
+              "Arr": []
+            },
+            "source": {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": [
+                    "default.right_tbl"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            "type": "GLOBAL ANY LEFT JOIN",
+            "using": {
+              "Obj": null,
+              "Arr": [
+                "id"
+              ]
+            }
+          },
+          "Arr": null
+        }
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "t.a",
+        "s.b"
+      ]
+    }
+  },
+  "Arr": null
+}

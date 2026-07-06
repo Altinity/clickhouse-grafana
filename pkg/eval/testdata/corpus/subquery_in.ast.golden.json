@@ -1,0 +1,27 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.test_grafana"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "a"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "id IN (\n    SELECT id\n\n    FROM default.other\n\n    WHERE flag = 1\n\n    LIMIT 10\n)"
+      ]
+    }
+  },
+  "Arr": null
+}

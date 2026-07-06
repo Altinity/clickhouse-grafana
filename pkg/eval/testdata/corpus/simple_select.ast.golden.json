@@ -1,0 +1,41 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.test_grafana"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "a"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "a"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "a",
+        "b",
+        "c / d * 100 AS ratio"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "x \u003e 1"
+      ]
+    }
+  },
+  "Arr": null
+}

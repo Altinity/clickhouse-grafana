@@ -1,0 +1,1 @@
+SELECT a, b, c / d * 100 AS ratio FROM default.test_grafana WHERE x > 1 GROUP BY a ORDER BY a

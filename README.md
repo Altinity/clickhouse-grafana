@@ -1281,7 +1281,7 @@ Primary supported result formats: `logs`, `traces`, and `time_series`. Table for
 
 ### Logs format notes
 
-The logs format builds a DataFrame with up to five canonical fields (`timestamp`, `severity`, `body`, `labels`, `id`) plus — since v1.0.1 — any **extra columns referenced by a configured data link**. The promoted column is removed from the `labels` map to avoid duplication. This lets you attach a link directly to `trace_id`, `query_id`, etc. without aliasing the column to `body` in the `SELECT`.
+The logs format builds a DataFrame with up to five canonical fields (`timestamp`, `severity`, `body`, `labels`, `id`) plus any **extra columns referenced by a configured data link**. The promoted column is removed from the `labels` map to avoid duplication. This lets you attach a link directly to `trace_id`, `query_id`, etc. without aliasing the column to `body` in the `SELECT`.
 
 Columns that are not referenced by any data link still fold into the stringified `labels` field as before, preserving backward compatibility.
 

@@ -17,15 +17,15 @@ datasources:
       compressionType: gzip
       dataLinks:
         # --- Logs format ---
-        # `query_id` is a regular source column on system.text_log. v1.0.1
-        # auto-promotes any column referenced by a data link to a top-level
-        # field, so this link attaches directly without aliasing.
+        # `query_id` is a regular source column on system.text_log. The logs
+        # converter auto-promotes any column referenced by a data link to a
+        # top-level field, so this link attaches directly without aliasing.
         - fieldName: query_id
           title: "All log entries for this query_id"
           targetDatasourceUid: P7E099F39B84EA795
           query: "SELECT event_time AS timestamp, level AS severity, message AS content FROM system.text_log WHERE $$timeFilter AND query_id = '$${__value.raw}' ORDER BY event_time LIMIT 500"
           format: logs
-        # --- External URL link (demonstrates v1.0.1 external URL support) ---
+        # --- External URL link ---
         - fieldName: query_id
           title: "Open in ClickHouse web UI (external)"
           targetDatasourceUid: ""

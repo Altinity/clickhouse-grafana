@@ -39,13 +39,28 @@ func Tokenize(src string) ([]Token, error) {
 }
 
 // next dispatches on the byte at lx.pos. Every branch consumes at least one
-// byte. Branch order is load-bearing (see Tasks 3-4 for the full order).
+// byte. Branch order is load-bearing: '--' and '/*' must be checked before
+// single-char operators.
 func (lx *lexer) next() error {
 	c := lx.src[lx.pos]
 	switch {
 	case isSpaceByte(c):
 		lx.scanWS()
 		return nil
+	case c == '-' && lx.peekAt(1) == '-':
+		lx.scanLineComment()
+		return nil
+	case c == '#':
+		// '#' and '#!' line comments (issue #610). Only fires at a
+		// token-start position — '#' inside strings/comments is data.
+		lx.scanLineComment()
+		return nil
+	case c == '/' && lx.peekAt(1) == '*':
+		return lx.scanBlockComment()
+	case c == '\'':
+		return lx.scanString()
+	case c == '`' || c == '"':
+		return lx.scanQuotedIdent(c)
 	default:
 		return lx.scanOpOrPunct()
 	}
@@ -123,4 +138,82 @@ func (lx *lexer) scanOpOrPunct() error {
 	lx.pos++
 	lx.emit(kind, start)
 	return nil
+}
+
+// scanLineComment consumes '--', '#', or '#!' to end of line. The trailing
+// newline is NOT part of the token (it lexes as the following TokWS) —
+// probe-verified legacy shape, relied on by the differential test.
+func (lx *lexer) scanLineComment() {
+	start := lx.pos
+	for lx.pos < len(lx.src) && lx.src[lx.pos] != '\n' {
+		lx.pos++
+	}
+	lx.emit(TokComment, start)
+}
+
+// scanBlockComment consumes '/* … */' (non-nesting, design §3.4).
+func (lx *lexer) scanBlockComment() error {
+	start := lx.pos
+	lx.pos += 2 // consume "/*"
+	for lx.pos < len(lx.src) {
+		if lx.src[lx.pos] == '*' && lx.peekAt(1) == '/' {
+			lx.pos += 2
+			lx.emit(TokComment, start)
+			return nil
+		}
+		lx.pos++
+	}
+	return fmt.Errorf("unterminated block comment at offset %d", start)
+}
+
+// scanString consumes a single-quoted literal honoring both escape styles:
+// backslash (\') and SQL doubling (''). NOTE: legacy honors only backslash —
+// 'it''s' lexes as TWO legacy tokens. Intended divergence; no corpus case
+// exercises it (probe-verified 2026-07-06, see lexer_diff_test.go).
+func (lx *lexer) scanString() error {
+	start := lx.pos
+	lx.pos++ // opening quote
+	for lx.pos < len(lx.src) {
+		switch lx.src[lx.pos] {
+		case '\\':
+			if lx.pos+1 >= len(lx.src) {
+				return fmt.Errorf("unterminated string literal at offset %d", start)
+			}
+			lx.pos += 2
+		case '\'':
+			if lx.peekAt(1) == '\'' {
+				lx.pos += 2 // '' doubling: stay inside the literal
+				continue
+			}
+			lx.pos++
+			lx.emit(TokString, start)
+			return nil
+		default:
+			lx.pos++
+		}
+	}
+	return fmt.Errorf("unterminated string literal at offset %d", start)
+}
+
+// scanQuotedIdent consumes `…` or "…" with backslash escapes (no doubling —
+// mirrors legacy stringRe for these quote flavors).
+func (lx *lexer) scanQuotedIdent(q byte) error {
+	start := lx.pos
+	lx.pos++ // opening quote
+	for lx.pos < len(lx.src) {
+		switch lx.src[lx.pos] {
+		case '\\':
+			if lx.pos+1 >= len(lx.src) {
+				return fmt.Errorf("unterminated quoted identifier at offset %d", start)
+			}
+			lx.pos += 2
+		case q:
+			lx.pos++
+			lx.emit(TokQuotedIdent, start)
+			return nil
+		default:
+			lx.pos++
+		}
+	}
+	return fmt.Errorf("unterminated quoted identifier at offset %d", start)
 }

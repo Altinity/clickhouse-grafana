@@ -83,28 +83,28 @@ def click_save_and_test_button(self):
 def click_default_toggle(self):
     """Click default toggle."""
 
-    locators.default_toggle.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.default_toggle)
 
 
 @TestStep(When)
 def click_delete_datasource(self):
     """Click delete datasource button."""
 
-    locators.delete_button.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.delete_button)
 
 
 @TestStep(When)
 def click_confirm_delete_datasource(self):
     """Click delete datasource button in confirmation modal dialog."""
 
-    locators.confirm_delete_button.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.confirm_delete_button)
 
 
 @TestStep(When)
 def click_access_dropdown(self):
     """Click access dropdown."""
 
-    locators.access_dropdown().click()
+    self.context.driver.execute_script("arguments[0].click();", locators.access_dropdown())
 
 
 @TestStep(When)
@@ -112,44 +112,44 @@ def choose_access_type_in_access_dropdown(self, access_type):
     """Choose access type in access dropdown."""
 
     if access_type == "Browser":
-        locators.browser_access_button.click()
+        self.context.driver.execute_script("arguments[0].click();", locators.browser_access_button)
     elif access_type == "Server":
-        locators.server_access_button.click()
+        self.context.driver.execute_script("arguments[0].click();", locators.server_access_button)
 
 
 @TestStep(When)
 def click_basic_auth_toggle(self):
     """Click basic auth toggle."""
 
-    locators.basic_auth_toggle.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.basic_auth_toggle)
 
 
 @TestStep(When)
 def click_with_credentials_toggle(self):
     """Click with credentials toggle."""
 
-    locators.with_credentials_toggle.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.with_credentials_toggle)
 
 
 @TestStep(When)
 def click_tls_client_auth_toggle(self):
     """Click tls client auth toggle."""
 
-    locators.tls_client_auth_toggle.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.tls_client_auth_toggle)
 
 
 @TestStep(When)
 def click_with_ca_cert_toggle(self):
     """Click with ca cert toggle."""
 
-    locators.with_ca_cert_toggle.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.with_ca_cert_toggle)
 
 
 @TestStep(When)
 def click_skip_tls_verify_toggle(self):
     """Click with tls verify toggle."""
 
-    locators.skip_tls_verify_toggle.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.skip_tls_verify_toggle)
 
 
 @TestStep(When)
@@ -164,35 +164,35 @@ def enter_default_database(self, database_name):
 def click_forward_oauth_identity_toggle(self):
     """Click forward oauth identity toggle."""
 
-    locators.forward_oauth_identity_toggle.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.forward_oauth_identity_toggle)
 
 
 @TestStep(When)
 def click_use_post_method_toggle(self):
     """Click forward oauth identity toggle."""
 
-    locators.use_post_method_to_send_queries.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.use_post_method_to_send_queries)
 
 
 @TestStep(When)
 def click_use_default_values_toggle(self):
     """Click `Use default values toggle`."""
 
-    locators.use_default_values_toggle.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.use_default_values_toggle)
 
 
 @TestStep(When)
 def click_add_cors_flag_to_request_toggle(self):
     """Click add CORS flag to request toggle."""
 
-    locators.add_cors_flag_to_requests.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.add_cors_flag_to_requests)
 
 
 @TestStep(When)
 def click_use_compression_toggle(self):
     """Click Use Compression toggle."""
 
-    locators.use_compression.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.use_compression)
 
 
 @TestStep(When)
@@ -207,7 +207,7 @@ def enter_compression_type(self, compression_type):
 def click_use_yandex_cloud_authorization_toggle(self):
     """Click Use Yandex.Cloud authorization header toggle."""
 
-    locators.use_yandex_cloud_authorization_toggle.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.use_yandex_cloud_authorization_toggle)
 
 
 @TestStep(When)
@@ -278,7 +278,7 @@ def enter_server_name(self, server_name=None):
 def enter_column_timestamp_type(self, column_timestamp_type):
     """Enter column timestamp type."""
 
-    locators.column_timestamp_type_field.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.column_timestamp_type_field)
     locators.column_timestamp_type_field.send_keys(column_timestamp_type)
     locators.column_timestamp_type_field.send_keys(Keys.ENTER)
 
@@ -287,7 +287,7 @@ def enter_column_timestamp_type(self, column_timestamp_type):
 def enter_datetime_field(self, datetime):
     """Enter datetime field."""
 
-    locators.datetime_field.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.datetime_field)
     locators.datetime_field.send_keys(datetime)
     locators.datetime_field.send_keys(Keys.ENTER)
 
@@ -296,7 +296,7 @@ def enter_datetime_field(self, datetime):
 def enter_timestamp_field(self, timestamp):
     """Enter timestamp field."""
 
-    locators.timestamp_field.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.timestamp_field)
     locators.timestamp_field.send_keys(timestamp)
     locators.timestamp_field.send_keys(Keys.ENTER)
 
@@ -305,7 +305,7 @@ def enter_timestamp_field(self, timestamp):
 def enter_datetime64_field(self, datetime64):
     """Enter datetime64 field."""
 
-    locators.datetime64_field.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.datetime64_field)
     locators.datetime64_field.send_keys(datetime64)
     locators.datetime64_field.send_keys(Keys.ENTER)
 
@@ -314,7 +314,7 @@ def enter_datetime64_field(self, datetime64):
 def enter_float_field(self, float):
     """Enter float field."""
 
-    locators.float_field.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.float_field)
     locators.float_field.send_keys(float)
     locators.float_field.send_keys(Keys.ENTER)
 
@@ -322,7 +322,7 @@ def enter_float_field(self, float):
 def enter_timestamp_64_3_field(self, timestamp_64_3):
     """Enter Timestamp64(3) field."""
 
-    locators.timestamp_64_3_field.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.timestamp_64_3_field)
     locators.timestamp_64_3_field.send_keys(timestamp_64_3)
     locators.timestamp_64_3_field.send_keys(Keys.ENTER)
 
@@ -330,7 +330,7 @@ def enter_timestamp_64_3_field(self, timestamp_64_3):
 def enter_timestamp_64_6_field(self, timestamp_64_6):
     """Enter Timestamp64(6) field."""
 
-    locators.timestamp_64_6_field.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.timestamp_64_6_field)
     locators.timestamp_64_6_field.send_keys(timestamp_64_6)
     locators.timestamp_64_6_field.send_keys(Keys.ENTER)
 
@@ -338,7 +338,7 @@ def enter_timestamp_64_6_field(self, timestamp_64_6):
 def enter_timestamp_64_9_field(self, timestamp_64_9):
     """Enter Timestamp64(9) field."""
 
-    locators.timestamp_64_9_field.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.timestamp_64_9_field)
     locators.timestamp_64_9_field.send_keys(timestamp_64_9)
     locators.timestamp_64_9_field.send_keys(Keys.ENTER)
 
@@ -347,7 +347,7 @@ def enter_timestamp_64_9_field(self, timestamp_64_9):
 def enter_date_field(self, date):
     """Enter date field."""
 
-    locators.date_field.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.date_field)
     locators.date_field.send_keys(date)
     locators.date_field.send_keys(Keys.ENTER)
 
@@ -372,7 +372,7 @@ def enter_configure_adhoc_filter_request(self, adhoc_request):
 def enter_context_window_field(self, context_window):
     """Enter context window field."""
 
-    locators.context_window_field.click()
+    self.context.driver.execute_script("arguments[0].click();", locators.context_window_field)
     locators.context_window_field.send_keys(context_window)
     locators.context_window_field.send_keys(Keys.ENTER)
 

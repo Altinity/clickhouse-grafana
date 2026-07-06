@@ -1,0 +1,7 @@
+Ident	"SELECT"
+Ident	"a"
+Comment	"# trailing hash comment"
+Ident	"FROM"
+Ident	"default"
+Op	"."
+Ident	"test_grafana"

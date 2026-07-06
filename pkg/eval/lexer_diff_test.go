@@ -206,3 +206,125 @@ func TestNewAndLegacyAgreeOnProbeSamples(t *testing.T) {
 		require.Equal(t, want, normalizeNewTokens(newToks), "stream diff for %q", src)
 	}
 }
+
+// ---------------------------------------------------------------------------
+// The Phase-1 gate: corpus-wide differential test
+// ---------------------------------------------------------------------------
+
+// lexerDiffAllowed lists corpus cases where the new lexer INTENTIONALLY
+// diverges from the legacy tokenizer. Design rule (§4, §5): every entry MUST
+// carry an issue number; for each, the new token stream is pinned by
+// <name>.v2tokens.golden.txt so the divergence is asserted, not ignored.
+//
+// Do not add entries casually: a new mismatch means either a new-lexer bug
+// (fix the lexer) or a newly discovered legacy quirk (document it here with
+// probe evidence + an issue number, and pin the new stream with a golden).
+var lexerDiffAllowed = map[string]string{
+	"bug_610_hash_comment": "issue #610: legacy tokenRe has no alternative for '#'; " +
+		"regexp2 Multiline '^' teleports to the next line start (token \"FROM\" consumes \"# tr\") " +
+		"producing garbage idents (\"ailing\", \"hash\", ...); the new lexer emits a TokComment",
+	"dash_24a54b5141": "issue #374/#648 class: legacy commentRe requires an even number of " +
+		"single quotes inside a '--' comment; \"-- Test user's ...\" fails to lex as a comment, " +
+		"'-','-' lex as operators and the apostrophe opens a string that swallows half the query; " +
+		"the new lexer lexes the comment to end of line",
+}
+
+// renderTokens renders non-WS tokens one per line as "KIND<TAB>quoted-text".
+// %q keeps multi-line token texts on one golden line.
+func renderTokens(toks []Token) string {
+	var b strings.Builder
+	for _, tk := range toks {
+		if tk.Kind == TokWS {
+			continue
+		}
+		fmt.Fprintf(&b, "%s\t%q\n", tk.Kind, tk.Text)
+	}
+	return b.String()
+}
+
+// requireKindShape sanity-checks kind assignment from token text alone —
+// a one-way invariant the text-based diff cannot see.
+func requireKindShape(t *testing.T, toks []Token) {
+	t.Helper()
+	for i, tk := range toks {
+		switch {
+		case strings.HasPrefix(tk.Text, "--"), strings.HasPrefix(tk.Text, "/*"), strings.HasPrefix(tk.Text, "#"):
+			require.Equal(t, TokComment, tk.Kind, "token %d %q", i, tk.Text)
+		case strings.HasPrefix(tk.Text, "'"):
+			require.Equal(t, TokString, tk.Kind, "token %d %q", i, tk.Text)
+		case strings.HasPrefix(tk.Text, "`"), strings.HasPrefix(tk.Text, `"`):
+			require.Equal(t, TokQuotedIdent, tk.Kind, "token %d %q", i, tk.Text)
+		case strings.HasPrefix(tk.Text, "$"):
+			require.Equal(t, TokMacro, tk.Kind, "token %d %q", i, tk.Text)
+		}
+	}
+}
+
+// requireTokenTextsEqual reports the FIRST diverging index with context —
+// far more debuggable on 400-token streams than require.Equal's dump.
+func requireTokenTextsEqual(t *testing.T, want, got []string) {
+	t.Helper()
+	n := len(want)
+	if len(got) < n {
+		n = len(got)
+	}
+	for i := 0; i < n; i++ {
+		if want[i] != got[i] {
+			lo := i - 3
+			if lo < 0 {
+				lo = 0
+			}
+			hiW, hiG := i+4, i+4
+			if hiW > len(want) {
+				hiW = len(want)
+			}
+			if hiG > len(got) {
+				hiG = len(got)
+			}
+			t.Fatalf("token %d differs:\n  legacy: %q\n  new:    %q\ncontext legacy[%d:%d]: %q\ncontext new[%d:%d]:    %q",
+				i, want[i], got[i], lo, hiW, want[lo:hiW], lo, hiG, got[lo:hiG])
+		}
+	}
+	if len(want) != len(got) {
+		t.Fatalf("stream lengths differ: legacy=%d new=%d (first %d tokens match)\nlegacy tail: %q\nnew tail: %q",
+			len(want), len(got), n, want[n:], got[n:])
+	}
+}
+
+// TestLexerDifferential is the Phase-1 gate (design §5, Stage 1 row): for
+// every corpus case the new lexer's token stream equals the legacy stream
+// after normalization, except the issue-tagged allow-list above.
+func TestLexerDifferential(t *testing.T) {
+	seen := map[string]bool{}
+	for _, path := range corpusFiles(t) {
+		c, err := loadCorpusCase(path)
+		require.NoError(t, err)
+		seen[c.Name] = true
+		t.Run(c.Name, func(t *testing.T) {
+			newToks, err := Tokenize(c.Query)
+			require.NoError(t, err, "the new lexer must tokenize every corpus case")
+			requireLosslessTokens(t, c.Query, newToks)
+			requireKindShape(t, newToks)
+			got := normalizeNewTokens(newToks)
+
+			if reason, ok := lexerDiffAllowed[c.Name]; ok {
+				t.Logf("allow-listed divergence: %s", reason)
+				assertGolden(t, c.Name, "v2tokens.golden.txt", renderTokens(newToks))
+				return
+			}
+
+			legToks, err := legacyTokenStream(c.Query)
+			require.NoError(t, err, "legacy tokenizer errored on a corpus case that Phase 0 froze as parseable - investigate before proceeding")
+			for i, lt := range legToks {
+				require.False(t, lt.Teleport,
+					"legacy teleported at token %d (%q) - an UNDOCUMENTED divergence; diagnose it and either fix the new lexer or add an issue-tagged lexerDiffAllowed entry", i, lt.Text)
+			}
+			want, err := normalizeLegacyTokens(legToks)
+			require.NoError(t, err)
+			requireTokenTextsEqual(t, want, got)
+		})
+	}
+	for name := range lexerDiffAllowed {
+		require.True(t, seen[name], "allow-list entry %q matches no corpus case - stale entry", name)
+	}
+}

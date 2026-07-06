@@ -60,7 +60,7 @@ func (q *Query) formatTimeValue(fmtQuery string, fmtTime time.Time, fmtRE *regex
 					if isMs {
 						ts = fmtTime.UnixMilli()
 					}
-					fmtQuery = strings.Replace(fmtQuery, matches[i], strconv.FormatInt(ts, 10), -1)
+					fmtQuery = strings.Replace(fmtQuery, matches[i], strconv.FormatInt(ts, 10), -1) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 				}
 			}
 		}
@@ -75,27 +75,27 @@ func (q *Query) formatNumericDateAndTimeValues(fmtQuery string) string {
 		fromRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(>=|>)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
 		toRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(<|<=)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
 		if slices.Contains([]string{"DATE", "DATE32"}, strings.ToUpper(fieldType)) {
-			substitutionFrom += fmt.Sprintf("to"+strings.Title(strings.ToLower(fieldType))+"(%d)", from.Unix())
-			substitutionTo += fmt.Sprintf("to"+strings.Title(strings.ToLower(fieldType))+"(%d)", to.Unix())
-		} else if "DATETIME" == strings.ToUpper(fieldType) {
+			substitutionFrom += fmt.Sprintf("to"+strings.Title(strings.ToLower(fieldType))+"(%d)", from.Unix()) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
+			substitutionTo += fmt.Sprintf("to"+strings.Title(strings.ToLower(fieldType))+"(%d)", to.Unix()) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
+		} else if "DATETIME" == strings.ToUpper(fieldType) { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 			substitutionFrom += fmt.Sprintf("toDateTime(%d)", from.Unix())
 			substitutionTo += fmt.Sprintf("toDateTime(%d)", to.Unix())
-		} else if "DATETIME64" == strings.ToUpper(fieldType) {
+		} else if "DATETIME64" == strings.ToUpper(fieldType) { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 			substitutionFrom += fmt.Sprintf("toDateTime64(%.3f,3)", float64(from.UnixMilli())/1000.0)
 			substitutionTo += fmt.Sprintf("toDateTime64(%.3f,3)", float64(to.UnixMilli())/1000.0)
-		} else if "TIMESTAMP" == strings.ToUpper(fieldType) {
+		} else if "TIMESTAMP" == strings.ToUpper(fieldType) { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 			substitutionFrom += fmt.Sprintf("%d", from.Unix())
 			substitutionTo += fmt.Sprintf("%d", to.Unix())
-		} else if "TIMESTAMP64_3" == strings.ToUpper(fieldType) {
+		} else if "TIMESTAMP64_3" == strings.ToUpper(fieldType) { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 			substitutionFrom += fmt.Sprintf("%d", from.UnixMilli())
 			substitutionTo += fmt.Sprintf("%d", to.UnixMilli())
-		} else if "TIMESTAMP64_6" == strings.ToUpper(fieldType) {
+		} else if "TIMESTAMP64_6" == strings.ToUpper(fieldType) { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 			substitutionFrom += fmt.Sprintf("%d", from.UnixMicro())
 			substitutionTo += fmt.Sprintf("%d", to.UnixMicro())
-		} else if "TIMESTAMP64_9" == strings.ToUpper(fieldType) {
+		} else if "TIMESTAMP64_9" == strings.ToUpper(fieldType) { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 			substitutionFrom += fmt.Sprintf("%d", from.UnixNano())
 			substitutionTo += fmt.Sprintf("%d", to.UnixNano())
-		} else if "FLOAT" == strings.ToUpper(fieldType) {
+		} else if "FLOAT" == strings.ToUpper(fieldType) { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 			substitutionFrom += fmt.Sprintf("%.3f", float64(from.UnixNano())/1000000000.0)
 			substitutionTo += fmt.Sprintf("%.3f", float64(to.UnixNano())/1000000000.0)
 		}

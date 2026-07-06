@@ -26,7 +26,7 @@ type DatasourceSettings struct {
 	CompressionType               string `json:"compressionType,omitempty"`
 	TLSSkipVerify                 bool   `json:"tlsSkipVerify"`
 
-	CustomHeaders map[string]string `json:"-,omitempty"`
+	CustomHeaders map[string]string `json:"-,omitempty"` //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	HTTPClient    *http.Client      `json:"-"`
 }
 

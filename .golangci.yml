@@ -1,0 +1,15 @@
+version: "2"
+linters:
+  default: none
+  enable:
+    - govet
+    - errcheck
+    - staticcheck
+    - ineffassign
+  settings:
+    errcheck:
+      exclude-functions:
+        - (github.com/grafana/grafana-plugin-sdk-go/backend.CallResourceResponseSender).Send
+issues:
+  max-issues-per-linter: 0
+  max-same-issues: 0

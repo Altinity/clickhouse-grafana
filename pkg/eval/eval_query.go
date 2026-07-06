@@ -173,7 +173,7 @@ func (q *EvalQuery) ApplyMacrosAndTimeRangeToQuery() (string, error) {
 
 func (q *EvalQuery) replace(query string) (string, error) {
 	var err error
-	query = strings.Trim(query, " \xA0\t\r\n")
+	query = strings.Trim(query, " \xA0\t\r\n") //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	if q.DateTimeType == "" {
 		q.DateTimeType = "DATETIME"
 	}
@@ -266,11 +266,11 @@ func (q *EvalQuery) replace(query string) (string, error) {
 	from := q.convertTimestamp(q.round(q.From, myRound))
 	to := q.convertTimestamp(q.round(q.To, myRound))
 
-	query = timeSeriesMacroRegexp.ReplaceAllString(query, strings.Replace(q.getTimeSeries(q.DateTimeType), "$", "$$", -1))
-	query = timeSeriesMsMacroRegexp.ReplaceAllString(query, strings.Replace(q.getTimeSeriesMs(q.DateTimeType), "$", "$$", -1))
-	query = naturalTimeSeriesMacroRegexp.ReplaceAllString(query, strings.Replace(q.getNaturalTimeSeries(q.DateTimeType, from, to), "$", "$$", -1))
-	query = timeFilterMacroRegexp.ReplaceAllString(query, strings.Replace(timeFilter, "$", "$$", -1))
-	query = timeFilterMsMacroRegexp.ReplaceAllString(query, strings.Replace(timeFilterMs, "$", "$$", -1))
+	query = timeSeriesMacroRegexp.ReplaceAllString(query, strings.Replace(q.getTimeSeries(q.DateTimeType), "$", "$$", -1)) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
+	query = timeSeriesMsMacroRegexp.ReplaceAllString(query, strings.Replace(q.getTimeSeriesMs(q.DateTimeType), "$", "$$", -1)) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
+	query = naturalTimeSeriesMacroRegexp.ReplaceAllString(query, strings.Replace(q.getNaturalTimeSeries(q.DateTimeType, from, to), "$", "$$", -1)) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
+	query = timeFilterMacroRegexp.ReplaceAllString(query, strings.Replace(timeFilter, "$", "$$", -1)) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
+	query = timeFilterMsMacroRegexp.ReplaceAllString(query, strings.Replace(timeFilterMs, "$", "$$", -1)) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	query = tableMacroRegexp.ReplaceAllString(query, table)
 	query = fromMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", from))
 	query = toMacroRegexp.ReplaceAllString(query, fmt.Sprintf("%d", to))
@@ -290,7 +290,7 @@ func (q *EvalQuery) escapeIdentifier(identifier string) string {
 	if regexp.MustCompile(`^[a-zA-Z][0-9a-zA-Z_]+$`).MatchString(identifier) || regexp.MustCompile(`\(.*\)`).MatchString(identifier) || regexp.MustCompile(`[/*+\-]`).MatchString(identifier) {
 		return identifier
 	} else {
-		return `"` + strings.Replace(identifier, `"`, `\"`, -1) + `"`
+		return `"` + strings.Replace(identifier, `"`, `\"`, -1) + `"` //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	}
 }
 
@@ -298,7 +298,7 @@ func (q *EvalQuery) escapeTableIdentifier(identifier string) string {
 	if regexp.MustCompile(`^[$a-zA-Z][0-9a-zA-Z_]+$`).MatchString(identifier) {
 		return identifier
 	} else {
-		return "`" + strings.Replace(identifier, "`", "\\`", -1) + "`"
+		return "`" + strings.Replace(identifier, "`", "\\`", -1) + "`" //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	}
 }
 
@@ -516,9 +516,9 @@ func (q *EvalQuery) _columns(key, value, beforeMacrosQuery, fromQuery string, us
 	if key[len(key)-1] == ')' || value[len(value)-1] == ')' {
 		return "", fmt.Errorf("some of passed arguments are without aliases: %s, %s", key, value)
 	}
-	var keySplit = strings.Split(strings.Trim(key, " \xA0\t\r\n"), " ")
+	var keySplit = strings.Split(strings.Trim(key, " \xA0\t\r\n"), " ") //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	var keyAlias = keySplit[len(keySplit)-1]
-	var valueSplit = strings.Split(strings.Trim(value, " \xA0\t\r\n"), " ")
+	var valueSplit = strings.Split(strings.Trim(value, " \xA0\t\r\n"), " ") //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	var valueAlias = valueSplit[len(valueSplit)-1]
 	var groupByQuery = " GROUP BY t, " + keyAlias
 	var orderByQuery = " ORDER BY t, " + keyAlias
@@ -584,7 +584,7 @@ func (q *EvalQuery) lttb(query string, ast *EvalAST) (string, error) {
 		return query, nil
 	}
 	args := ast.Obj["$lttb"].(*EvalAST).Arr
-	if args == nil || len(args) < 3 {
+	if args == nil || len(args) < 3 { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 		return "", fmt.Errorf("amount of arguments must great or equal 3 for $lttb func. Parsed arguments are: %v", ast.Obj["$lttb"])
 	}
 	return q._lttb(beforeMacrosQuery, fromQuery, args, false)
@@ -600,7 +600,7 @@ func (q *EvalQuery) lttbMs(query string, ast *EvalAST) (string, error) {
 		return query, nil
 	}
 	args := ast.Obj["$lttbMs"].(*EvalAST).Arr
-	if args == nil || len(args) < 3 {
+	if args == nil || len(args) < 3 { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 		return "", fmt.Errorf("amount of arguments must great or equal 3 for $lttbMs func. Parsed arguments are: %v", ast.Obj["$lttbMs"])
 	}
 	return q._lttb(beforeMacrosQuery, fromQuery, args, true)
@@ -608,7 +608,7 @@ func (q *EvalQuery) lttbMs(query string, ast *EvalAST) (string, error) {
 
 func (q *EvalQuery) _lttb(beforeMacrosQuery string, fromQuery string, args []interface{}, useMs bool) (string, error) {
 	bucketNumbers := args[0].(string)
-	if strings.ToLower(strings.Trim(bucketNumbers, " \xA0\t\r\n")) == "auto" {
+	if strings.ToLower(strings.Trim(bucketNumbers, " \xA0\t\r\n")) == "auto" { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 		if useMs {
 			bucketNumbers = "toUInt64( ($__to - $__from) / $__interval_ms )"
 		} else {
@@ -622,7 +622,7 @@ func (q *EvalQuery) _lttb(beforeMacrosQuery string, fromQuery string, args []int
 			if i > 0 {
 				argsExceptLastTwo.WriteString(", ") // Add delimiter after the first element
 			}
-			argsExceptLastTwo.WriteString(fmt.Sprintf("%v", arg)) // Convert each element to a string
+			argsExceptLastTwo.WriteString(fmt.Sprintf("%v", arg)) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md (was: convert element to string)
 		}
 		argsExceptLastTwo.WriteString(", ")
 	}
@@ -633,10 +633,10 @@ func (q *EvalQuery) _lttb(beforeMacrosQuery string, fromQuery string, args []int
 		return "", fmt.Errorf("some of passed arguments are without aliases: %s, %s", xField, yField)
 	}
 
-	var xSplit = strings.Split(strings.Trim(xField, " \xA0\t\r\n"), " ")
+	var xSplit = strings.Split(strings.Trim(xField, " \xA0\t\r\n"), " ") //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	var xAlias = xSplit[len(xSplit)-1]
 
-	var ySplit = strings.Split(strings.Trim(yField, " \xA0\t\r\n"), " ")
+	var ySplit = strings.Split(strings.Trim(yField, " \xA0\t\r\n"), " ") //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	var yAlias = ySplit[len(ySplit)-1]
 
 	fromQuery = q._applyTimeFilter(fromQuery, useMs)
@@ -720,7 +720,7 @@ func (q *EvalQuery) _prepareColumnsAggregated(macroName string, query string, as
 	}
 	var args = ast.Obj[macroName].(*EvalAST).Arr
 
-	if args == nil || len(args) < 4 {
+	if args == nil || len(args) < 4 { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 		return "", "", "", "", "", "", "", nil, nil, nil, fmt.Errorf("expect 2 or more amount of arguments for $*ColumnsAggregated macro functions. Parsed arguments are: %v", args)
 	}
 
@@ -734,10 +734,10 @@ func (q *EvalQuery) _prepareColumnsAggregated(macroName string, query string, as
 	fromQuery = q._applyTimeFilter(fromQuery, false)
 
 	var key = args[0].(string)
-	var keySplit = strings.Split(strings.Trim(key, " \xA0\t\r\n"), " ")
+	var keySplit = strings.Split(strings.Trim(key, " \xA0\t\r\n"), " ") //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	var keyAlias = keySplit[len(keySplit)-1]
 	var subKey = args[1].(string)
-	var subKeySplit = strings.Split(strings.Trim(subKey, " \xA0\t\r\n"), " ")
+	var subKeySplit = strings.Split(strings.Trim(subKey, " \xA0\t\r\n"), " ") //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	var subKeyAlias = subKeySplit[len(subKeySplit)-1]
 
 	if len(args)%2 != 0 {
@@ -750,7 +750,7 @@ func (q *EvalQuery) _prepareColumnsAggregated(macroName string, query string, as
 		aggFuncs = append(aggFuncs, args[i].(string))
 
 		value := args[i+1].(string)
-		aliasSplit := strings.Split(strings.Trim(value, " \xA0\t\r\n"), " ")
+		aliasSplit := strings.Split(strings.Trim(value, " \xA0\t\r\n"), " ") //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 		alias := aliasSplit[len(aliasSplit)-1]
 		aliases = append(aliases, alias)
 
@@ -897,7 +897,7 @@ func (q *EvalQuery) rate(query string, ast *EvalAST) (string, error) {
 		return query, nil
 	}
 	var args = ast.Obj["$rate"].(*EvalAST).Arr
-	if args == nil || len(args) < 1 {
+	if args == nil || len(args) < 1 { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 		return "", fmt.Errorf("amount of arguments must be > 0 for $rate func. Parsed arguments are: %v ", args)
 	}
 
@@ -912,7 +912,7 @@ func (q *EvalQuery) _rate(args []interface{}, beforeMacrosQuery, fromQuery strin
 		if str[len(str)-1] == ')' {
 			return "", fmt.Errorf("argument %v cant be used without alias", str)
 		}
-		argSplit := strings.Split(strings.Trim(str, " \xA0\t\r\n"), " ")
+		argSplit := strings.Split(strings.Trim(str, " \xA0\t\r\n"), " ") //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 		aliases[i] = argSplit[len(argSplit)-1]
 		argsStr[i] = arg.(string)
 	}
@@ -954,7 +954,7 @@ func (q *EvalQuery) perSecondColumns(query string, ast *EvalAST) (string, error)
 	}
 
 	var key = args[0].(string)
-	var value = "max(" + strings.Trim(args[1].(string), " \xA0\t\r\n") + ") AS max_0"
+	var value = "max(" + strings.Trim(args[1].(string), " \xA0\t\r\n") + ") AS max_0" //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
 	var having = ""
 	var aliasIndex = strings.Index(strings.ToLower(key), " as ")
@@ -1013,7 +1013,7 @@ func (q *EvalQuery) deltaColumns(query string, ast *EvalAST) (string, error) {
 	}
 
 	var key = args[0].(string)
-	var value = "max(" + strings.Trim(args[1].(string), " \xA0\t\r\n") + ") AS max_0"
+	var value = "max(" + strings.Trim(args[1].(string), " \xA0\t\r\n") + ") AS max_0" //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
 	var having = ""
 	var aliasIndex = strings.Index(strings.ToLower(key), " as ")
@@ -1073,7 +1073,7 @@ func (q *EvalQuery) increaseColumns(query string, ast *EvalAST) (string, error) 
 	}
 
 	var key = args[0].(string)
-	var value = "max(" + strings.Trim(args[1].(string), " \xA0\t\r\n") + ") AS max_0"
+	var value = "max(" + strings.Trim(args[1].(string), " \xA0\t\r\n") + ") AS max_0" //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	var havingIndex = strings.Index(strings.ToLower(fromQuery), "having")
 	var having = ""
 	var aliasIndex = strings.Index(strings.ToLower(key), " as ")
@@ -1131,7 +1131,7 @@ func (q *EvalQuery) perSecond(query string, ast *EvalAST) (string, error) {
 		return "", fmt.Errorf("amount of arguments must be > 0 for $perSecond func. Parsed arguments are: %v", args)
 	}
 	for i, a := range args {
-		args[i] = fmt.Sprintf("max("+strings.Trim(a.(string), " \xA0\t\r\n")+") AS max_%d", i)
+		args[i] = fmt.Sprintf("max("+strings.Trim(a.(string), " \xA0\t\r\n")+") AS max_%d", i) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	}
 
 	return q._perSecond(args, beforeMacrosQuery, fromQuery)
@@ -1179,7 +1179,7 @@ func (q *EvalQuery) delta(query string, ast *EvalAST) (string, error) {
 		return "", fmt.Errorf("amount of arguments must be > 0 for $delta func. Parsed arguments are: %v", args)
 	}
 	for i, a := range args {
-		args[i] = fmt.Sprintf("max("+strings.Trim(a.(string), " \xA0\t\r\n")+") AS max_%d", i)
+		args[i] = fmt.Sprintf("max("+strings.Trim(a.(string), " \xA0\t\r\n")+") AS max_%d", i) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	}
 
 	return q._delta(args, beforeMacrosQuery, fromQuery)
@@ -1224,7 +1224,7 @@ func (q *EvalQuery) increase(query string, ast *EvalAST) (string, error) {
 		return "", fmt.Errorf("amount of arguments must be > 0 for $increase func. Parsed arguments are: %v", args)
 	}
 	for i, a := range args {
-		args[i] = fmt.Sprintf("max("+strings.Trim(a.(string), " \xA0\t\r\n")+") AS max_%d", i)
+		args[i] = fmt.Sprintf("max("+strings.Trim(a.(string), " \xA0\t\r\n")+") AS max_%d", i) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 	}
 
 	return q._increase(args, beforeMacrosQuery, fromQuery)
@@ -1452,7 +1452,7 @@ func (q *EvalQuery) unescape(query string) (string, error) {
 			return "", fmt.Errorf("$unescape macros error: %v", r.error)
 		}
 		arg := r.result
-		arg = strings.Replace(arg, "'", "", -1)
+		arg = strings.Replace(arg, "'", "", -1) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 		var closeMacros = openMacros + len(macros) + len(r.result) + 1
 		query = query[:openMacros] + arg + query[closeMacros:]
 		openMacros = strings.Index(query, macros)
@@ -1717,7 +1717,7 @@ func (s *EvalQueryScanner) ToAST() (*EvalAST, error) {
 				subQuery = betweenBraces(s._s)
 
 				if subQuery == "" {
-					betweenSquareBraces(s._s)
+					betweenSquareBraces(s._s) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
 				}
 
 				var subAST *EvalAST
@@ -1813,7 +1813,7 @@ func (s *EvalQueryScanner) parseJOIN(argument string) (string, error) {
 		s.Token = ""
 	} else {
 		var sourceStr = ""
-		var ok = true
+		var ok = true //nolint:ineffassign // pre-existing, tracked in docs/repo-audit-2026-07.md
 		for {
 			if isID(s.Token) && !isTable(sourceStr) && strings.ToUpper(s.Token) != "AS" && !onJoinTokenOnlyRe.MatchString(s.Token) {
 				sourceStr += s.Token
@@ -1849,7 +1849,7 @@ func (s *EvalQueryScanner) parseJOIN(argument string) (string, error) {
 			"on":      newEvalAST(false),
 		},
 	}
-	ok := true
+	ok := true //nolint:ineffassign // pre-existing, tracked in docs/repo-audit-2026-07.md
 	for {
 		if s.Token != "" && !onJoinTokenOnlyRe.MatchString(s.Token) {
 			joinAST.pushObj("aliases", s.Token)
@@ -2415,7 +2415,7 @@ func NewEvalQuery(request interface{}, from, to time.Time) EvalQuery {
 	v := reflect.ValueOf(request)
 
 	// Handle pointers
-	if v.Kind() == reflect.Ptr {
+	if v.Kind() == reflect.Ptr { //nolint:govet // pre-existing, tracked in docs/repo-audit-2026-07.md
 		v = v.Elem()
 	}
 

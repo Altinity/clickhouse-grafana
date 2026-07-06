@@ -87,6 +87,26 @@ def click_default_toggle(self):
 
 
 @TestStep(When)
+def ensure_default_after_save(self):
+    """Re-apply the default flag after saving on Grafana >= 13.1.
+
+    The Make default header button acts immediately and independently of the
+    settings form, so a later Save & test overwrites isDefault back to false.
+    No-op on older Grafana (no such button) and when already default."""
+    import time
+    from selenium.webdriver.common.by import By as SelectBy
+    driver = self.context.driver
+    buttons = driver.find_elements(SelectBy.XPATH, "//button[.//text()='Make default']")
+    if buttons:
+        driver.execute_script("arguments[0].click();", buttons[0])
+        time.sleep(1)
+        # the action asks for confirmation in a modal dialog
+        confirm = driver.find_elements(SelectBy.XPATH, "//div[@role='dialog']//button[.//text()='Confirm']")
+        if confirm:
+            driver.execute_script("arguments[0].click();", confirm[0])
+
+
+@TestStep(When)
 def click_delete_datasource(self):
     """Click delete datasource button."""
 

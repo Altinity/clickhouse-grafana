@@ -385,6 +385,11 @@ def create_new_altinity_datasource(
                 with By("clicking save and test button"):
                     datasources_altinity_edit.click_save_and_test_button()
 
+            if default:
+                with delay():
+                    with By("ensuring datasource stays default after save"):
+                        datasources_altinity_edit.ensure_default_after_save()
+
             if use_default_values:
                 with delay():
                     with By("clicking use default values toggle"):

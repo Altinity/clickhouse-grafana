@@ -1,0 +1,49 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "trace_id"
+      ]
+    },
+    "limit": {
+      "Obj": null,
+      "Arr": [
+        "100"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "`Duration ms` DESC"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "trace_id AS `Trace ID`",
+        "min(operation_name) AS `Operation`",
+        "count() AS `Spans`",
+        "intDiv(max(finish_time_us) - min(start_time_us), 1000) AS `Duration ms`",
+        "intDiv(min(start_time_us), 1000) AS `Start Time`"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter"
+      ]
+    }
+  },
+  "Arr": null
+}

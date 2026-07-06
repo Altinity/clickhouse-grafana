@@ -1,0 +1,43 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "clusterAllReplicas('{cluster}',merge(system,'^query_log'))"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "query_kind"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "count() DESC SETTINGS skip_unavailable_shards = 1"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "query_kind"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "event_date BETWEEN toDate($__from / 1000)",
+        "AND toDate($__to / 1000)",
+        "AND event_time BETWEEN toDateTime($__from / 1000)",
+        "AND toDateTime($__to / 1000)",
+        "AND type != 1 $conditionalTest( AND hostName() in ($hostname), $hostname)"
+      ]
+    }
+  },
+  "Arr": null
+}

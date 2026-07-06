@@ -1,0 +1,22 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "clusterAllReplicas('{cluster}', system.one)",
+        "SETTINGS skip_unavailable_shards = 1"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "hostName()"
+      ]
+    }
+  },
+  "Arr": null
+}

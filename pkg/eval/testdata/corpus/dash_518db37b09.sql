@@ -1,0 +1,1 @@
+$delta(Value) FROM $table

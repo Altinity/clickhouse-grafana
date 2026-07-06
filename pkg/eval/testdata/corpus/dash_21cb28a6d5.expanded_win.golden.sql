@@ -1,0 +1,1 @@
+/* UI alerts with `from` and `to` */ SELECT (intDiv(toUInt32(event_time), 30) * 30) * 1000 as t, count() FROM default.test_grafana WHERE EventTime>=1735787045 AND EventTime<=1735790706 GROUP BY t ORDER BY t

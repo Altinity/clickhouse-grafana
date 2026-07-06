@@ -1,0 +1,50 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "spl"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "spl"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "CASE WHEN ${split:text} IN (\n    SELECT filter\n\n    FROM topx\n) THEN ${split:text} ELSE 'other' END AS spl",
+        "count()"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter",
+        "AND $adhoc"
+      ]
+    },
+    "with": {
+      "Obj": null,
+      "Arr": [
+        "topx AS(SELECT DISTINCT CASE WHEN ${split:text} = '' THEN 'other' ELSE ${split:text} END AS filter, count() AS cnt FROM $table WHERE $timeFilter AND $adhoc GROUP BY ${split:text} ORDER BY cnt DESC LIMIT 10)"
+      ]
+    }
+  },
+  "Arr": null
+}

@@ -1,0 +1,44 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "Name"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "Name"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "Name",
+        "sum(Value) v"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter",
+        "AND Name in ($template_variable)"
+      ]
+    }
+  },
+  "Arr": null
+}

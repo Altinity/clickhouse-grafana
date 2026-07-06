@@ -1,0 +1,42 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "service_name"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "sum(too_big_value) as v",
+        "service_name"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter $conditionalTest( AND service_name IN ($service_name), $service_name)"
+      ]
+    }
+  },
+  "Arr": null
+}

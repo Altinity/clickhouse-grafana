@@ -1,0 +1,47 @@
+{
+  "Obj": {
+    "$columns": {
+      "Obj": null,
+      "Arr": [
+        "service_name",
+        "count() as sum_req"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "service_name"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "service_name",
+        "t WITH FILL STEP 6000"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter",
+        "AND service_name != 'deprecated'"
+      ]
+    }
+  },
+  "Arr": null
+}

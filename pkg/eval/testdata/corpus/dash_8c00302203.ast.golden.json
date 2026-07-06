@@ -1,0 +1,41 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "datasets.ontime"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "Month"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "toUInt64(addMonths(toDateTime('2017-12-01'), Month)) * 1000 as t",
+        "count() AS Flights2018"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "Year = 2018"
+      ]
+    }
+  },
+  "Arr": null
+}

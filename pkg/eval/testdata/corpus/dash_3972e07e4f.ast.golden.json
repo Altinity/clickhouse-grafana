@@ -1,0 +1,41 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "count()"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter",
+        "AND service_name IN ($group_array_var)"
+      ]
+    }
+  },
+  "Arr": null
+}

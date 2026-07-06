@@ -1,0 +1,56 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "$table"
+          ]
+        },
+        "group by": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "$timeSeries as t",
+            "count() as c"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "service_name IN ($repeated_service)",
+            "AND $timeFilter"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "*"
+      ]
+    }
+  },
+  "Arr": null
+}

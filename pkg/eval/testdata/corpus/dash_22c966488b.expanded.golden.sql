@@ -1,0 +1,1 @@
+SELECT name FROM system.columns WHERE database='default' AND table='test_grafana' AND type ILIKE '%String%'

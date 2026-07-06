@@ -1,0 +1,1 @@
+$increase(Value) FROM $table

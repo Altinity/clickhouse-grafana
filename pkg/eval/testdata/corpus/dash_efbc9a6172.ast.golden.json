@@ -1,0 +1,41 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "system.opentelemetry_span_log"
+      ]
+    },
+    "limit": {
+      "Obj": null,
+      "Arr": [
+        "100"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "finish_time_us DESC"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "DISTINCT trace_id"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "parent_span_id = 0",
+        "AND finish_date \u003e= toDate(now() - 60)",
+        "AND intDiv(finish_time_us, 1000000) \u003e= toUInt32(now() - 60)"
+      ]
+    }
+  },
+  "Arr": null
+}

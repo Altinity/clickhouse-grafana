@@ -1,0 +1,1 @@
+$columns(Name, sum(Value) c) FROM $table

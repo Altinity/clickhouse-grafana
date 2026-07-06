@@ -1,0 +1,58 @@
+{
+  "Obj": {
+    "$rateColumns": {
+      "Obj": null,
+      "Arr": [
+        "'User.' || toString(from_user) || ', Serv.' || toString(service_name) as key",
+        "sum(count) as value"
+      ]
+    },
+    "from": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "$table"
+          ]
+        },
+        "group by": {
+          "Obj": null,
+          "Arr": [
+            "event_time",
+            "from_user",
+            "service_name"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "toStartOfMinute(event_time) AS event_time",
+            "service_name",
+            "from_user",
+            "count() as count"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "$timeFilter"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

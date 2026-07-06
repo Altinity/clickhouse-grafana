@@ -1,0 +1,43 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "country"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "country"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "country",
+        "sum(too_big_value) AS value"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter"
+      ]
+    }
+  },
+  "Arr": null
+}

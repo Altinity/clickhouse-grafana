@@ -1,0 +1,1 @@
+$perSecondColumns(Name, Value) FROM $table

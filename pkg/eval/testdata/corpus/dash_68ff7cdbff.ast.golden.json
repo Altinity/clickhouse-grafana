@@ -1,0 +1,60 @@
+{
+  "Obj": {
+    "$columns": {
+      "Obj": null,
+      "Arr": [
+        "substring(concat(JobName as JobName, ' # ', Metrics.Name as MetricName), 1, 50) as JobSource",
+        "sum(rand() %(Metrics.Value + 1)) as Kafka_lag_max"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "join": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": []
+            },
+            "on": {
+              "Obj": null,
+              "Arr": []
+            },
+            "source": {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": [
+                    "Metrics"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            "type": "ARRAY JOIN",
+            "using": {
+              "Obj": null,
+              "Arr": []
+            }
+          },
+          "Arr": null
+        }
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

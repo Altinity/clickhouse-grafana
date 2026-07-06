@@ -1,0 +1,41 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.streaming_test"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "avg(value) as avg_value",
+        "max(value) as max_value"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter"
+      ]
+    }
+  },
+  "Arr": null
+}

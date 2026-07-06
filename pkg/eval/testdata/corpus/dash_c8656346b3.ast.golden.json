@@ -1,0 +1,21 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "system.clusters"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "DISTINCT concat(host_name, ':', toString(port)) AS remote_host"
+      ]
+    }
+  },
+  "Arr": null
+}

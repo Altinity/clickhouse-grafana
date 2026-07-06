@@ -1,0 +1,27 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.test_depends_on_variable"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "DISTINCT city"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "bulk_id IN ('$bulk_id')"
+      ]
+    }
+  },
+  "Arr": null
+}

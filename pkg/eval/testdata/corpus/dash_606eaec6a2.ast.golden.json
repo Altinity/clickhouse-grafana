@@ -1,0 +1,35 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "system.one"
+      ]
+    },
+    "limit": {
+      "Obj": null,
+      "Arr": [
+        "1"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": [
+        "-- [Complex Mix] URL Path Concatenation Test\n-- Pattern: https://$test_default/$test_single/api\n-- Expected: https://database1/users/api (NO quotes)\n-- Check Query Inspector to see actual interpolation\n"
+      ]
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "*"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "url = 'https://$test_default/$test_single/api'"
+      ]
+    }
+  },
+  "Arr": null
+}

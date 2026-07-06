@@ -1,0 +1,49 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "clusterAllReplicas('{cluster}', merge(system,'^query_log'))"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "normalized_query_hash"
+      ]
+    },
+    "limit": {
+      "Obj": null,
+      "Arr": [
+        "80 SETTINGS skip_unavailable_shards = 1"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "${metric:raw} DESC"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "normalized_query_hash"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "event_date BETWEEN toDate($__from / 1000)",
+        "AND toDate($__to / 1000)",
+        "AND event_time BETWEEN toDateTime($__from / 1000)",
+        "AND toDateTime($__to / 1000)",
+        "AND type != 1 $conditionalTest( AND hostName() in ($hostname), $hostname) $conditionalTest( AND query_kind in ($query_kind), $query_kind) $conditionalTest( AND exception_code in ($exception_code), $exception_code) $conditionalTest( AND(initial_user in ($user) OR user in ($user)), $user)"
+      ]
+    }
+  },
+  "Arr": null
+}

@@ -1,0 +1,40 @@
+{
+  "Obj": {
+    "$lttb": {
+      "Obj": null,
+      "Arr": [
+        "10",
+        "category",
+        "event_time",
+        "requests"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "category"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter"
+      ]
+    }
+  },
+  "Arr": null
+}

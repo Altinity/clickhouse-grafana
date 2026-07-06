@@ -1,0 +1,44 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "clusterAllReplicas('{cluster}', merge(system,'^asynchronous_metric_log'))"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "host",
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "host",
+        "t SETTINGS skip_unavailable_shards = 1"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "hostName() as host",
+        "max(value) as LoadAverage1"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter $conditionalTest( AND hostName() in ($hostname), $hostname)",
+        "AND metric = 'LoadAverage1'"
+      ]
+    }
+  },
+  "Arr": null
+}

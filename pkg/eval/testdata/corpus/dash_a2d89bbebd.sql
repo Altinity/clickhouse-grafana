@@ -1,0 +1,1 @@
+$perSecond(Value) FROM $table

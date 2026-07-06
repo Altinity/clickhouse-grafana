@@ -1,0 +1,43 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t_local",
+        "t_orig"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t_local"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "toUInt64(event_time) * 1000 as t_local",
+        "event_time as t_orig",
+        "count() c",
+        "sum(too_big_value) s"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter"
+      ]
+    }
+  },
+  "Arr": null
+}

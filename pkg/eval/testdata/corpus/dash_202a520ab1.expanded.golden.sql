@@ -1,0 +1,1 @@
+SELECT DISTINCT city FROM default.test_depends_on_variable WHERE bulk_id IN ('$bulk_id')

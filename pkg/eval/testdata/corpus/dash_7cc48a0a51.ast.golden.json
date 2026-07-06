@@ -1,0 +1,39 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "'Test Pattern' as pattern",
+        "'Variable Config' as config",
+        "'Expected Result' as expected"
+      ]
+    },
+    "union all": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "'$test_default:$test_numeric'",
+                "'Default + Numeric'",
+                "'database1:8080,8081 (no quotes)'"
+              ]
+            }
+          },
+          "Arr": null
+        }
+      ]
+    }
+  },
+  "Arr": null
+}

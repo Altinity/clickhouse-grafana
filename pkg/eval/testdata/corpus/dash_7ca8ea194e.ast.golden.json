@@ -1,0 +1,27 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "system.tables"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "name"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "database = '${template_db}'"
+      ]
+    }
+  },
+  "Arr": null
+}

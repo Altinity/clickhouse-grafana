@@ -1,0 +1,43 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "requests"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "UserName"
+      ]
+    },
+    "limit": {
+      "Obj": null,
+      "Arr": [
+        "5",
+        "10000000000000/* select some ridiculous number after first 5 */\n"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "req DESC"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "1 AS t",
+        "/* fake timestamp value */\n UserName",
+        "sum(req_count) AS req"
+      ]
+    }
+  },
+  "Arr": null
+}

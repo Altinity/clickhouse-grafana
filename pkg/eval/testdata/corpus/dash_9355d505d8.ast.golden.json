@@ -1,0 +1,21 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "test_grafana"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "DISTINCT ARRAY_TO_STRING(ARRAY[service_name, ' test array'], ',')"
+      ]
+    }
+  },
+  "Arr": null
+}

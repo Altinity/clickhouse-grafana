@@ -1,0 +1,28 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.test_grafana"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "service_name"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "service_name",
+        "count() as count"
+      ]
+    }
+  },
+  "Arr": null
+}

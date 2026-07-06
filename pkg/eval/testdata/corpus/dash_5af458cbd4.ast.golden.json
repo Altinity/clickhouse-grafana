@@ -1,0 +1,21 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.test_alerts"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "DISTINCT Name"
+      ]
+    }
+  },
+  "Arr": null
+}

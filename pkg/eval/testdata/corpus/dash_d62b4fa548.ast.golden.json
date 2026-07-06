@@ -1,0 +1,367 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": {
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "toDateTime(toStartOfWeek(now(), 1)) as t",
+            "'macOS' os",
+            "1 count"
+          ]
+        },
+        "union all": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) as t",
+                    "'Linux' os",
+                    "3 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 1 week as t",
+                    "'macOS' os",
+                    "15 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 1 week as t",
+                    "'Linux' os",
+                    "25 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 2 week as t",
+                    "'macOS' os",
+                    "14 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 2 week as t",
+                    "'Linux' os",
+                    "10 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 3 week as t",
+                    "'macOS' os",
+                    "24 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 3 week as t",
+                    "'Linux' os",
+                    "18 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 4 week as t",
+                    "'macOS' os",
+                    "17 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 4 week as t",
+                    "'Linux' os",
+                    "15 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 5 week as t",
+                    "'macOS' os",
+                    "11 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 5 week as t",
+                    "'Linux' os",
+                    "22 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 6 week as t",
+                    "'macOS' os",
+                    "13 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 6 week as t",
+                    "'Linux' os",
+                    "31 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 7 week as t",
+                    "'macOS' os",
+                    "11 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 7 week as t",
+                    "'Linux' os",
+                    "19 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 8 week as t",
+                    "'macOS' os",
+                    "11 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 8 week as t",
+                    "'Linux' os",
+                    "19 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 9 week as t",
+                    "'macOS' os",
+                    "17 count"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "toDateTime(toStartOfWeek(now(), 1)) - interval 9 week as t",
+                    "'Linux' os",
+                    "24 count"
+                  ]
+                }
+              },
+              "Arr": null
+            }
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "array((os, count))"
+      ]
+    }
+  },
+  "Arr": null
+}

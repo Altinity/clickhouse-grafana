@@ -1,0 +1,68 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "clusterAllReplicas('{cluster}', merge(system,'^asynchronous_metric_log'))"
+          ]
+        },
+        "group by": {
+          "Obj": null,
+          "Arr": [
+            "host",
+            "event_time"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "event_time",
+            "hostName() as host",
+            "anyIf(value, metric LIKE 'NetworkReceiveBytes%') / anyIf(value, metric = 'AsynchronousMetricsUpdateInterval') as val"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "$timeFilter $conditionalTest( AND hostName() in ($hostname), $hostname)",
+            "AND(metric LIKE 'NetworkReceiveBytes%' OR metric = 'AsynchronousMetricsUpdateInterval')"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "h",
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "h",
+        "t SETTINGS skip_unavailable_shards = 1"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "'Receive ' || host as h",
+        "max(val) as v"
+      ]
+    }
+  },
+  "Arr": null
+}

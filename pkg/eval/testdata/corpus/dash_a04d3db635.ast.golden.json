@@ -1,0 +1,15 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "('${type}')"
+      ]
+    }
+  },
+  "Arr": null
+}

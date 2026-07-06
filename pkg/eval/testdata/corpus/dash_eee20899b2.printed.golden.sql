@@ -1,0 +1,3 @@
+ SELECT name
+
+ FROM system.databases

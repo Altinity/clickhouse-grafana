@@ -1,0 +1,67 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "clusterAllReplicas('{cluster}', merge(system,'^metric_log'))"
+          ]
+        },
+        "group by": {
+          "Obj": null,
+          "Arr": [
+            "host",
+            "event_time"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "event_time",
+            "hostName() as host",
+            "sum(ProfileEvent_OSIOWaitMicroseconds) AS m"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "$timeFilter $conditionalTest( AND hostName() in ($hostname), $hostname)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "host",
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "host",
+        "t SETTINGS skip_unavailable_shards = 1"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "(intDiv(toUInt32(event_time), $interval)) * $interval * 1000 as t",
+        "host",
+        "avg(m) / 1000000"
+      ]
+    }
+  },
+  "Arr": null
+}

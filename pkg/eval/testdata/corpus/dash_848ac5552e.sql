@@ -1,0 +1,2 @@
+$delta(counter)
+FROM $table

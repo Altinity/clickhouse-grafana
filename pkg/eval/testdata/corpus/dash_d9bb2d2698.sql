@@ -1,0 +1,1 @@
+$lttb(10, category, event_time, requests) FROM $table WHERE $timeFilter GROUP BY category

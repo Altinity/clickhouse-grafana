@@ -1,0 +1,41 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.test_logs"
+      ]
+    },
+    "limit": {
+      "Obj": null,
+      "Arr": [
+        "100"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "_time DESC"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "event_time as _time",
+        "content as _content",
+        "level as _level"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter"
+      ]
+    }
+  },
+  "Arr": null
+}

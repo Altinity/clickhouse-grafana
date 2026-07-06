@@ -1,0 +1,25 @@
+{
+  "Obj": {
+    "$rate": {
+      "Obj": null,
+      "Arr": [
+        "sum(Value) AS vSumValue"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

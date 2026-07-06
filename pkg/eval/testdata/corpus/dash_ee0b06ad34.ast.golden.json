@@ -1,0 +1,15 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "(${test_multi})"
+      ]
+    }
+  },
+  "Arr": null
+}

@@ -1,0 +1,18 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "now() AS t",
+        "100 AS small",
+        "500 AS medium",
+        "1000 AS big"
+      ]
+    }
+  },
+  "Arr": null
+}

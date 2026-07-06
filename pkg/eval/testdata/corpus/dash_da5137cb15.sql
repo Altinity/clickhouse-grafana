@@ -1,0 +1,1 @@
+$increaseColumns(Name, Value) FROM $table

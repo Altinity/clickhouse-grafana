@@ -1,0 +1,290 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": {
+        "aliases": {
+          "Obj": null,
+          "Arr": [
+            "TR"
+          ]
+        },
+        "from": {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": [
+                "TData"
+              ]
+            },
+            "from": {
+              "Obj": null,
+              "Arr": [
+                "numbers(toUInt32(($to-$from)/60))",
+                "TNums"
+              ]
+            },
+            "join": {
+              "Obj": null,
+              "Arr": [
+                {
+                  "Obj": {
+                    "aliases": {
+                      "Obj": null,
+                      "Arr": [
+                        "TProps"
+                      ]
+                    },
+                    "on": {
+                      "Obj": null,
+                      "Arr": [
+                        "1=1"
+                      ]
+                    },
+                    "source": {
+                      "Obj": {
+                        "root": {
+                          "Obj": null,
+                          "Arr": []
+                        },
+                        "select": {
+                          "Obj": null,
+                          "Arr": [
+                            "'mysql' propId"
+                          ]
+                        },
+                        "union all": {
+                          "Obj": null,
+                          "Arr": [
+                            {
+                              "Obj": {
+                                "root": {
+                                  "Obj": null,
+                                  "Arr": []
+                                },
+                                "select": {
+                                  "Obj": null,
+                                  "Arr": [
+                                    "'postgresql' propId"
+                                  ]
+                                }
+                              },
+                              "Arr": null
+                            }
+                          ]
+                        }
+                      },
+                      "Arr": null
+                    },
+                    "type": "JOIN",
+                    "using": {
+                      "Obj": null,
+                      "Arr": []
+                    }
+                  },
+                  "Arr": null
+                }
+              ]
+            },
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "toDateTime($from + toUInt32(number) * 60) as event_time",
+                "propId propId",
+                "null value"
+              ]
+            },
+            "union all": {
+              "Obj": null,
+              "Arr": [
+                {
+                  "Obj": {
+                    "from": {
+                      "Obj": null,
+                      "Arr": [
+                        "$table"
+                      ]
+                    },
+                    "root": {
+                      "Obj": null,
+                      "Arr": []
+                    },
+                    "select": {
+                      "Obj": null,
+                      "Arr": [
+                        "event_time",
+                        "$table.service_name AS propId",
+                        "too_big_value AS value"
+                      ]
+                    },
+                    "where": {
+                      "Obj": null,
+                      "Arr": [
+                        "$timeFilter",
+                        "AND $table.service_name IN ('mysql''postgresq')"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                }
+              ]
+            }
+          },
+          "Arr": null
+        },
+        "group by": {
+          "Obj": null,
+          "Arr": [
+            "t",
+            "propId",
+            "T.key"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": [
+                    "T"
+                  ]
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": []
+                    },
+                    "select": {
+                      "Obj": null,
+                      "Arr": [
+                        "'mysql' propId",
+                        "'0 exit.temp' key"
+                      ]
+                    },
+                    "union all": {
+                      "Obj": null,
+                      "Arr": [
+                        {
+                          "Obj": {
+                            "root": {
+                              "Obj": null,
+                              "Arr": []
+                            },
+                            "select": {
+                              "Obj": null,
+                              "Arr": [
+                                "'postgresql' propId",
+                                "'2 mid.temp' key"
+                              ]
+                            }
+                          },
+                          "Arr": null
+                        },
+                        {
+                          "Obj": {
+                            "root": {
+                              "Obj": null,
+                              "Arr": []
+                            },
+                            "select": {
+                              "Obj": null,
+                              "Arr": [
+                                "'mysql' propId",
+                                "'3 bottom.temp' key"
+                              ]
+                            }
+                          },
+                          "Arr": null
+                        },
+                        {
+                          "Obj": {
+                            "root": {
+                              "Obj": null,
+                              "Arr": []
+                            },
+                            "select": {
+                              "Obj": null,
+                              "Arr": [
+                                "'postgresql' propId",
+                                "'1 top.temp' key"
+                              ]
+                            }
+                          },
+                          "Arr": null
+                        }
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": [
+                    "propId"
+                  ]
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "order by": {
+          "Obj": null,
+          "Arr": [
+            "t",
+            "T.key"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "$timeSeries as t",
+            "propId",
+            "avg(value) val",
+            "T.key"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "arraySort(groupArray((key, val))) AS groupArr"
+      ]
+    }
+  },
+  "Arr": null
+}

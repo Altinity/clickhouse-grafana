@@ -1,0 +1,42 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t WITH FILL STEP($interval * 1000 * 5)"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "sum(too_big_value) * 8 / $interval AS B"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "event_time BETWEEN $from",
+        "AND $to",
+        "AND $adhoc"
+      ]
+    }
+  },
+  "Arr": null
+}

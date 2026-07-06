@@ -1,0 +1,62 @@
+{
+  "Obj": {
+    "$columns": {
+      "Obj": null,
+      "Arr": [
+        "OSName",
+        "sum(req_count) c"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "requests"
+      ]
+    },
+    "join": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": []
+            },
+            "on": {
+              "Obj": null,
+              "Arr": []
+            },
+            "source": {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": [
+                    "oses"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            "type": "INNER JOIN",
+            "using": {
+              "Obj": null,
+              "Arr": [
+                "OS"
+              ]
+            }
+          },
+          "Arr": null
+        }
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

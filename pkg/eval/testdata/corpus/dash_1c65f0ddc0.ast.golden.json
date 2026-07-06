@@ -1,0 +1,29 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "system.columns"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "name"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "database = 'default'",
+        "AND table = 'test_grafana'",
+        "AND type = 'LowCardinality(String)'"
+      ]
+    }
+  },
+  "Arr": null
+}

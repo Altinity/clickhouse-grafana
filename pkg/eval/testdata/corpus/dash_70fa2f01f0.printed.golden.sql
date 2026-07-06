@@ -1,0 +1,7 @@
+ SELECT
+     t AS t_server_tz,
+     timezone() AS server_timezone,
+     toDateTime(t, 'Asia/Yekaterinburg') AS t_gmt_plus_5,
+     toTypeName(t_gmt_plus_5),
+     value
+ FROM $table

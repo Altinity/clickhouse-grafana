@@ -1,0 +1,26 @@
+{
+  "Obj": {
+    "$columns": {
+      "Obj": null,
+      "Arr": [
+        "Name",
+        "sum(Value) c"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

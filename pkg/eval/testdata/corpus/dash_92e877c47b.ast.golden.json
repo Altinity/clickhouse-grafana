@@ -1,0 +1,27 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.test_grafana"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "DISTINCT country"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "country LIKE ${__searchFilter:sqlstring}"
+      ]
+    }
+  },
+  "Arr": null
+}

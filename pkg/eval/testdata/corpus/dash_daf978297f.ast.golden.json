@@ -1,0 +1,41 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "count()"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "event_time \u003e= toDateTime(intDiv($__from, 1000))",
+        "AND event_time \u003c= toDateTime(intDiv($__to, 1000))"
+      ]
+    }
+  },
+  "Arr": null
+}

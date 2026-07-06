@@ -1,0 +1,39 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "'Test Pattern' as pattern",
+        "'Variable Config' as config",
+        "'Expected Result' as expected"
+      ]
+    },
+    "union all": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "'$test_default.$test_single'",
+                "'Default + Single'",
+                "'database1.users (no quotes)'"
+              ]
+            }
+          },
+          "Arr": null
+        }
+      ]
+    }
+  },
+  "Arr": null
+}

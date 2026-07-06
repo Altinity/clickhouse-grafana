@@ -1,0 +1,26 @@
+{
+  "Obj": {
+    "$increaseColumns": {
+      "Obj": null,
+      "Arr": [
+        "category AS category",
+        "counter"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

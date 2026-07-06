@@ -1,0 +1,43 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": [
+        "/* UI alerts with `from` and `to` */\n"
+      ]
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries as t",
+        "count()"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "EventTime \u003e= $from",
+        "AND EventTime \u003c= $to"
+      ]
+    }
+  },
+  "Arr": null
+}

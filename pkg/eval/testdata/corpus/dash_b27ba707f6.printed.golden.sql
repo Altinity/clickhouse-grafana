@@ -1,0 +1,3 @@
+ SELECT count() as total_records
+
+ FROM default.test_grafana

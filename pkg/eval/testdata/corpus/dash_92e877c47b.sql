@@ -1,0 +1,1 @@
+SELECT DISTINCT country FROM default.test_grafana WHERE country LIKE ${__searchFilter:sqlstring}

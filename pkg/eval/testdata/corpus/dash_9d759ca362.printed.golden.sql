@@ -1,0 +1,3 @@
+ SELECT
+     now(),
+     1

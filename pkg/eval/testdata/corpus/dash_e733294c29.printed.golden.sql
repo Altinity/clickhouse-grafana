@@ -1,0 +1,6 @@
+ SELECT
+     tm64 AS timestamp,
+     log AS message
+ FROM $table
+
+ WHERE $timeFilter

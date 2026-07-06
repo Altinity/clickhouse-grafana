@@ -1,0 +1,38 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "system.one"
+      ]
+    },
+    "limit": {
+      "Obj": null,
+      "Arr": [
+        "1"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": [
+        "-- [Default Config] SQL Context Patterns Test\n-- These patterns should quote variables (except single config)\n-- Check Query Inspector to see actual interpolation\n"
+      ]
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "*"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "name = $test_default-- Should be quoted: 'database1'\n",
+        "AND id IN ($test_multi)-- Should be CSV: 'api','web' \n",
+        "AND service = $test_single-- Single config: NEVER quoted!\n",
+        "AND port = $test_numeric-- Numeric: no quotes\n"
+      ]
+    }
+  },
+  "Arr": null
+}

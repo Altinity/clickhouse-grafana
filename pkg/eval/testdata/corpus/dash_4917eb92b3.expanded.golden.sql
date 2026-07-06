@@ -1,0 +1,3 @@
+SELECT `lttb_result.1` AS event_time, category, `lttb_result.2` AS requests FROM (
+  SELECT category, untuple(arrayJoin(lttb(10)(event_time, requests))) AS lttb_result FROM default.test_grafana WHERE event_date >= toDate(1735787045) AND event_date <= toDate(1735790706) AND event_time >= toDateTime(1735787045000/1000) AND event_time <= toDateTime(1735790706000/1000) AND event_date >= toDate(1735787045) AND event_date <= toDate(1735790706) AND event_time >= toDateTime(1735787045) AND event_time <= toDateTime(1735790706) GROUP BY category
+) ORDER BY event_time

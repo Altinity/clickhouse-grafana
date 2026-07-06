@@ -1,0 +1,27 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "cte2"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "* EXCEPT(\"excluded_column\")"
+      ]
+    },
+    "with": {
+      "Obj": null,
+      "Arr": [
+        "cte2 as(select cte2_field, blatenant \"Alias\" FROM cte2_table WHERE 1 $conditionalTest(AND cte2_tenant in ($Tenant), AND cte2_tenant = 'default_tenant', $Tenant))"
+      ]
+    }
+  },
+  "Arr": null
+}

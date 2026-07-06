@@ -1,0 +1,28 @@
+{
+  "Obj": {
+    "$rateColumnsAggregated": {
+      "Obj": null,
+      "Arr": [
+        "Name",
+        "if(today() % 2, 'subTest1', 'subTest2') AS SubName",
+        "sum",
+        "Value"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

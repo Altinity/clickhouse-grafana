@@ -1,0 +1,40 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.test_grafana"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "service_name"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "count DESC"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "service_name",
+        "count() as count"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "service_name IN ($service_filter)"
+      ]
+    }
+  },
+  "Arr": null
+}

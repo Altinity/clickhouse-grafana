@@ -1,0 +1,113 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "'Backend Macro Tests' as category",
+        "'' as test_case",
+        "'' as pattern",
+        "'' as note"
+      ]
+    },
+    "union all": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Table Macro Mix'",
+                "'SELECT * FROM $table WHERE $timeFilter'",
+                "'User var vs macro'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Adhoc Mix'",
+                "'WHERE $adhoc AND service = $test_default'",
+                "'Macro + user var'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Partial Replace'",
+                "'mydb.$test_single WHERE db = $test_default'",
+                "'One var replaced'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Multi Replace'",
+                "'$test_default.$test_single.$test_dangerous'",
+                "'Sequential replace'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Rate Macro'",
+                "'SELECT $rate(value, EventTime) FROM $test_default.$test_single'",
+                "'Macro function'"
+              ]
+            }
+          },
+          "Arr": null
+        }
+      ]
+    }
+  },
+  "Arr": null
+}

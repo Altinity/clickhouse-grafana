@@ -1,0 +1,1 @@
+$perSecondColumnsAggregated(datacenter, concat(datacenter,interface) AS dc_interface, sum, tx_bytes, sum, rx_bytes) FROM traffic

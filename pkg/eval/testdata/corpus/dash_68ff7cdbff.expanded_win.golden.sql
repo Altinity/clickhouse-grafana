@@ -1,0 +1,2 @@
+SELECT t, groupArray((JobSource, Kafka_lag_max)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 30) * 30) * 1000 AS t, substring(concat(JobName as JobName, ' # ', Metrics.Name as MetricName), 1, 50) as JobSource, sum(rand() %(Metrics.Value + 1)) as Kafka_lag_max FROM default.test_grafana
+ARRAY JOIN Metrics WHERE event_date >= toDate(1735787045) AND event_date <= toDate(1735790706) AND event_time >= toDateTime(1735787045) AND event_time <= toDateTime(1735790706) GROUP BY t, JobSource ORDER BY t, JobSource) GROUP BY t ORDER BY t

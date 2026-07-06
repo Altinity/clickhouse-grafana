@@ -1,0 +1,16 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "now()",
+        "1"
+      ]
+    }
+  },
+  "Arr": null
+}

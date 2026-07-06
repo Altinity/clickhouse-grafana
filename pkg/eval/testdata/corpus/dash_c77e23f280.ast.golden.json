@@ -1,0 +1,149 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "'Edge Case Tests' as category",
+        "'' as test_case",
+        "'' as pattern",
+        "'' as issue"
+      ]
+    },
+    "union all": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Empty Variable'",
+                "'WHERE name = $test_empty'",
+                "'Empty string handling'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Null Variable'",
+                "'WHERE id = $test_null'",
+                "'Null handling'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Dots in Value'",
+                "'FROM $test_dots.$test_single'",
+                "'Value: my.host.com'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Empty Multi'",
+                "'WHERE id IN ($test_multi)'",
+                "'Empty () breaks SQL'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Unicode Names'",
+                "'WHERE 名前 = $test_unicode'",
+                "'Unicode handling'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Long Variable'",
+                "'$test_very_long_variable_name_that_exceeds_normal_length'",
+                "'Long names'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Regex Pattern'",
+                "'WHERE path REGEXP $test_regex'",
+                "'Pattern: /^prefix_.*/'"
+              ]
+            }
+          },
+          "Arr": null
+        }
+      ]
+    }
+  },
+  "Arr": null
+}

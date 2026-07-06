@@ -1,0 +1,35 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$test_single.suffix"
+      ]
+    },
+    "limit": {
+      "Obj": null,
+      "Arr": [
+        "1"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": [
+        "-- [Single Config] Variable.Suffix Concatenation Test\n-- Pattern: $test_single.suffix\n-- Expected: users.suffix (NO quotes) - Single config never quotes!\n-- Check Query Inspector to see actual interpolation\n"
+      ]
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "*"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "1 = 1"
+      ]
+    }
+  },
+  "Arr": null
+}

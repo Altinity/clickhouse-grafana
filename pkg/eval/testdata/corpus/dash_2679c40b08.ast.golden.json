@@ -1,0 +1,44 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "trace_level"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "trace_level",
+        "level SETTINGS allow_introspection_functions = 1"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "(arrayMap(x -\u003e if(addressToSymbol(x) != '', demangle(addressToSymbol(x)), 'unknown'), arrayJoin(arrayPopFront(arrayMap(x -\u003e arraySlice(reverse(trace), 1, x), range(length(trace) - 1))))) AS trace_level)[- 1] AS label",
+        "count() AS value",
+        "length(trace_level) AS level",
+        "countIf(length(trace) - 2 = length(trace_level)) AS self"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "trace_type = 'Real'",
+        "AND $timeFilter"
+      ]
+    }
+  },
+  "Arr": null
+}

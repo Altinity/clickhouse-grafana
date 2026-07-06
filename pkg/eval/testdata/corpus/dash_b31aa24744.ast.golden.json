@@ -1,0 +1,42 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": [
+        "/* panel alerts dashboard=$__dashboard, user=$__user */\n"
+      ]
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "$timeSeries AS t",
+        "sum(Value * 10.01) c"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter"
+      ]
+    }
+  },
+  "Arr": null
+}

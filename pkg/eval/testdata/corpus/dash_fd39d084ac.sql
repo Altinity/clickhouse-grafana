@@ -1,0 +1,1 @@
+$increaseColumnsAggregated(Name, 'test2' AS subName, sum, Value) FROM $table

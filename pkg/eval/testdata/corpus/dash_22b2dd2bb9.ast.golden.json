@@ -1,0 +1,120 @@
+{
+  "Obj": {
+    "$columns": {
+      "Obj": null,
+      "Arr": [
+        "service_name",
+        "sum(agg_value) as value"
+      ]
+    },
+    "from": {
+      "Obj": {
+        "from": {
+          "Obj": {
+            "from": {
+              "Obj": null,
+              "Arr": [
+                "$table"
+              ]
+            },
+            "group by": {
+              "Obj": null,
+              "Arr": [
+                "t",
+                "service_name"
+              ]
+            },
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "$timeSeries as t",
+                "service_name",
+                "sum(too_big_value) as agg_value"
+              ]
+            },
+            "union all": {
+              "Obj": null,
+              "Arr": [
+                {
+                  "Obj": {
+                    "from": {
+                      "Obj": null,
+                      "Arr": [
+                        "$table"
+                      ]
+                    },
+                    "group by": {
+                      "Obj": null,
+                      "Arr": [
+                        "t",
+                        "service_name"
+                      ]
+                    },
+                    "root": {
+                      "Obj": null,
+                      "Arr": []
+                    },
+                    "select": {
+                      "Obj": null,
+                      "Arr": [
+                        "$timeSeries as t",
+                        "service_name",
+                        "sum(too_big_value) / total_value as agg_value"
+                      ]
+                    },
+                    "where": {
+                      "Obj": null,
+                      "Arr": [
+                        "$timeFilter"
+                      ]
+                    },
+                    "with": {
+                      "Obj": null,
+                      "Arr": [
+                        "(SELECT sum(too_big_value) FROM $table) AS total_value"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                }
+              ]
+            },
+            "where": {
+              "Obj": null,
+              "Arr": [
+                "$timeFilter"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "toDateTime(t / 1000) AS event_time",
+            "service_name",
+            "agg_value"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

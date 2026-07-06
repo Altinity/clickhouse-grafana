@@ -1,0 +1,35 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$test_default.$test_single"
+      ]
+    },
+    "limit": {
+      "Obj": null,
+      "Arr": [
+        "1"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": [
+        "-- [Default Config] Database.Table Concatenation Test\n-- Pattern: $test_default.$test_single  \n-- Expected: database1.users (NO quotes)\n-- Check Query Inspector to see actual interpolation\n"
+      ]
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "*"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "1 = 1"
+      ]
+    }
+  },
+  "Arr": null
+}

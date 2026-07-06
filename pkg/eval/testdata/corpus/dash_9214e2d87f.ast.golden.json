@@ -1,0 +1,63 @@
+{
+  "Obj": {
+    "$columns": {
+      "Obj": null,
+      "Arr": [
+        "dataMap.key AS key",
+        "sum(dataMap.value) AS value"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.nested_array_join_example"
+      ]
+    },
+    "join": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": [
+                "WHERE",
+                "$timeFilter"
+              ]
+            },
+            "on": {
+              "Obj": null,
+              "Arr": []
+            },
+            "source": {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": [
+                    "dataMap"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            "type": "ARRAY JOIN",
+            "using": {
+              "Obj": null,
+              "Arr": []
+            }
+          },
+          "Arr": null
+        }
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

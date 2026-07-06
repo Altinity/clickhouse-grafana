@@ -1,0 +1,1 @@
+$rate(sum(Value) AS vSumValue) FROM $table

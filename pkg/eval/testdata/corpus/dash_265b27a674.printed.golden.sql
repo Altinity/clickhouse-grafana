@@ -1,0 +1,12 @@
+ /* UI alerts with `timeFilter` */
+
+ SELECT
+     $timeSeries as t,
+     count()
+ FROM $table
+
+ WHERE $timeFilter
+
+ GROUP BY t
+
+ ORDER BY t

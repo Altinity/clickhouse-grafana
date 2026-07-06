@@ -1,0 +1,25 @@
+{
+  "Obj": {
+    "$increase": {
+      "Obj": null,
+      "Arr": [
+        "counter"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

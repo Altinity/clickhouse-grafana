@@ -1,0 +1,113 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "'Advanced Concatenation' as category",
+        "'' as test_case",
+        "'' as pattern",
+        "'' as expected"
+      ]
+    },
+    "union all": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Numeric Suffix'",
+                "'$test_single.8090'",
+                "'No quotes (bug test)'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Port Pattern'",
+                "'$test_default.8090.svc'",
+                "'No quotes'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Identifier Suffix'",
+                "'$test_single.identifier'",
+                "'No quotes'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Multiple Dots'",
+                "'$test_default..$test_single'",
+                "'No quotes'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Three Level'",
+                "'$test_default.$test_single.$test_dangerous'",
+                "'No quotes'"
+              ]
+            }
+          },
+          "Arr": null
+        }
+      ]
+    }
+  },
+  "Arr": null
+}

@@ -1,0 +1,12 @@
+ SELECT
+     $timeSeries as t,
+     service_name,
+     count()
+ FROM $table
+
+ WHERE $timeFilter
+
+ GROUP BY
+     t,
+     service_name
+ ORDER BY t

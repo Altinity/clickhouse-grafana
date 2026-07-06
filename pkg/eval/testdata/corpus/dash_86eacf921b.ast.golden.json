@@ -1,0 +1,32 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "id",
+        "source",
+        "target"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "concat(source, '-\u003e', target) AS id",
+        "source",
+        "target",
+        "sum(bytes) AS mainStat"
+      ]
+    }
+  },
+  "Arr": null
+}

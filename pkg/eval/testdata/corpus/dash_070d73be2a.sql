@@ -1,0 +1,2 @@
+$increase(counter)
+FROM $table

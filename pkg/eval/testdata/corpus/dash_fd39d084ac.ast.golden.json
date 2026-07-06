@@ -1,0 +1,28 @@
+{
+  "Obj": {
+    "$increaseColumnsAggregated": {
+      "Obj": null,
+      "Arr": [
+        "Name",
+        "'test2' AS subName",
+        "sum",
+        "Value"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    }
+  },
+  "Arr": null
+}

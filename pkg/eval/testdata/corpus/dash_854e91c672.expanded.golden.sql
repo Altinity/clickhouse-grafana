@@ -1,0 +1,4 @@
+SELECT t, groupArray((service_name, sum_req)) AS groupArr FROM ( SELECT (intDiv(toUInt32(event_time), 30) * 30) * 1000 AS t, service_name, count() as sum_req FROM default.test_grafana  
+WHERE event_date >= toDate(1735787045) AND event_date <= toDate(1735790706) AND event_time >= toDateTime(1735787045) AND event_time <= toDateTime(1735790706) AND
+    event_date >= toDate(1735787045) AND event_date <= toDate(1735790706) AND event_time >= toDateTime(1735787045) AND event_time <= toDateTime(1735790706)
+    AND service_name != 'deprecated' GROUP BY t, service_name ORDER BY service_name, t WITH FILL STEP 6000) GROUP BY t ORDER BY t

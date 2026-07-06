@@ -1,0 +1,53 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": {
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "'test' as label",
+            "1 as value"
+          ]
+        },
+        "union all": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "NULL as label",
+                    "2 as value"
+                  ]
+                }
+              },
+              "Arr": null
+            }
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "toInt32(now() - 300) * 1000 as t",
+        "groupArray((label, value))"
+      ]
+    }
+  },
+  "Arr": null
+}

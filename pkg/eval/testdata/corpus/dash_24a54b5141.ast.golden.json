@@ -1,0 +1,11 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": [
+        "- - Test user 's original issue query pattern\nSELECT \n  1 as test_value,\n  ' $container.$selectednamespace .8090.svc ' as host_pattern,\n  CASE \n    WHEN position(' $container.$selectednamespace .8090.svc ', '.') \u003e 0 \n    THEN ' SUCCESS : Concatenation worked - contains dots '\n    ELSE ' FAILED : Variables not properly concatenated '\n  END as status,\n  -- Simulate a real query that would use this pattern\n  concat(' http : / / ', ' $container.$selectednamespace .8090.svc ', ' / metrics"
+      ]
+    }
+  },
+  "Arr": null
+}

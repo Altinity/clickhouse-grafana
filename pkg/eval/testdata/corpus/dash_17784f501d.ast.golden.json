@@ -1,0 +1,33 @@
+{
+  "Obj": {
+    "$columns": {
+      "Obj": null,
+      "Arr": [
+        "service_name",
+        "count() c"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "[service_name, ' test array'] IN (${array_var})",
+        "AND $timeFilter"
+      ]
+    }
+  },
+  "Arr": null
+}

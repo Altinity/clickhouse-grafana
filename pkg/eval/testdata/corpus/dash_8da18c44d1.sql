@@ -1,0 +1,1 @@
+$deltaColumns(Name, Value) FROM $table

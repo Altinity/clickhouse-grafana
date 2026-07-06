@@ -1,0 +1,1 @@
+SELECT * FROM default.test_grafana WHERE $adhoc

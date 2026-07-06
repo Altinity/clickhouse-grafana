@@ -1,0 +1,131 @@
+{
+  "Obj": {
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "'Complex Scenarios' as category",
+        "'' as test_case",
+        "'' as pattern",
+        "'' as behavior"
+      ]
+    },
+    "union all": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Quoted Multi-Var'",
+                "\"WHERE host = '$test_default.$test_single.$test_dangerous.local'\"",
+                "'All unquoted'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Mixed Contexts'",
+                "'FROM $test_default.$test_single WHERE db = $test_default'",
+                "'Context differs'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Nested Quotes'",
+                "\"WHERE path = '/$test_default/$test_single' AND host = '$test_default'\"",
+                "'Quote contexts'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Array Access'",
+                "'SELECT $test_array[$test_numeric]'",
+                "'Array pattern'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Math Operations'",
+                "'WHERE value = $test_numeric + $test_numeric'",
+                "'Math context'"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "''",
+                "'Function Call'",
+                "'SELECT $test_func($test_default, $test_single)'",
+                "'Function args'"
+              ]
+            }
+          },
+          "Arr": null
+        }
+      ]
+    }
+  },
+  "Arr": null
+}

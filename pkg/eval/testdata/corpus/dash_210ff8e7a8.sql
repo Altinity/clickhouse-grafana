@@ -1,0 +1,1 @@
+$rateColumns(Name, sum(Value) AS vSumValue) FROM $table

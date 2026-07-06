@@ -1,0 +1,32 @@
+{
+  "Obj": {
+    "$rate": {
+      "Obj": null,
+      "Arr": [
+        "countIf(service_name = 'mysql' AND from_user = 'bob') AS mysql_bob",
+        "countIf(service_name = 'postgres') AS postgres"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "from_user IN ('bob''alice')"
+      ]
+    }
+  },
+  "Arr": null
+}

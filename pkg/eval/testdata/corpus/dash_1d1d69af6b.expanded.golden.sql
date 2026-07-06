@@ -1,0 +1,1 @@
+SELECT event_time as _time, content as _content, level as _level FROM default.test_logs WHERE event_date >= toDate(1735787045) AND event_date <= toDate(1735790706) AND event_time >= toDateTime(1735787045) AND event_time <= toDateTime(1735790706) ORDER BY _time DESC LIMIT 100

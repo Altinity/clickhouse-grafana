@@ -1,0 +1,53 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.test_barchart"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "keys",
+        "t"
+      ]
+    },
+    "order by": {
+      "Obj": null,
+      "Arr": [
+        "keys",
+        "t"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "(intDiv(toUInt32(_time), 3600) * 3600) * 1000 as t",
+        "keys",
+        "sum(alloc_cost) as cost"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "cluster NOT LIKE '%-sleep'",
+        "AND cluster NOT LIKE '%_test'",
+        "AND hpcod_resource_name != 'INTERACTIVE'"
+      ]
+    },
+    "with": {
+      "Obj": null,
+      "Arr": [
+        "splitByChar('(', user_metadata_map['rp_prescreenStep'])[1] as prescreen",
+        "user_metadata_map['rocketStage'] AS stage",
+        "stage AS keys"
+      ]
+    }
+  },
+  "Arr": null
+}

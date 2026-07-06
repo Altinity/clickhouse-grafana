@@ -1,0 +1,1 @@
+SELECT DISTINCT bulk_id FROM default.test_depends_on_variable

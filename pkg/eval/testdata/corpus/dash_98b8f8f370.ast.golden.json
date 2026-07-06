@@ -1,0 +1,63 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "id"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "source AS id",
+        "source AS title",
+        "count() AS mainStat"
+      ]
+    },
+    "union all": {
+      "Obj": null,
+      "Arr": [
+        {
+          "Obj": {
+            "from": {
+              "Obj": null,
+              "Arr": [
+                "$table"
+              ]
+            },
+            "group by": {
+              "Obj": null,
+              "Arr": [
+                "id"
+              ]
+            },
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "target AS id",
+                "target AS title",
+                "count() AS mainStat"
+              ]
+            }
+          },
+          "Arr": null
+        }
+      ]
+    }
+  },
+  "Arr": null
+}

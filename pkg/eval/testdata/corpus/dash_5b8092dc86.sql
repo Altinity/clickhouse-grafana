@@ -1,0 +1,1 @@
+SELECT groupArray(service_name) FROM default.test_grafana

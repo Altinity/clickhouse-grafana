@@ -1,0 +1,3 @@
+ SELECT DISTINCT service_name
+
+ FROM default.test_grafana

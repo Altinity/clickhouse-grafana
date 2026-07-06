@@ -1,0 +1,53 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": {
+        "aliases": {
+          "Obj": null,
+          "Arr": [
+            "subquery"
+          ]
+        },
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "numbers(1000)",
+            "/* More rows for higher variability */\n"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "rand() % 4 + 1 AS cat",
+            "/* Random category */\n rand() % 100 AS idx/* Random idx values */\n"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "t",
+        "cat"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "1 AS t",
+        "concat('Category ', toString(cat)) AS cat",
+        "count(idx) AS errors"
+      ]
+    }
+  },
+  "Arr": null
+}

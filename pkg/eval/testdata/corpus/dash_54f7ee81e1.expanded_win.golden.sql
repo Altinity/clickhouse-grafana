@@ -1,0 +1,1 @@
+SELECT DISTINCT service_name FROM default.test_depends_on_variable WHERE bulk_id IN ('$bulk_id') AND city IN ($city)

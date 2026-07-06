@@ -478,6 +478,15 @@ def create_new_variable(
                     SelectBy.XPATH,
                     f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']",
                 ).click()
+
+        with And("renaming the filter variable to the legacy default name"):
+            # the sidebar control is auto-named filter0, while scenarios (and
+            # the submenu label anchors) expect the legacy auto-name query0
+            with delay():
+                name_input = driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid variable name input']")
+                name_input.send_keys(Keys.CONTROL, 'a')
+                name_input.send_keys("query0")
+                name_input.send_keys(Keys.TAB)
         return
 
     with And("clicking dashboard settings button"):

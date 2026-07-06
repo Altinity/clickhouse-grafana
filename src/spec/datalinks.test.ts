@@ -193,4 +193,31 @@ describe('applyDataLinks', () => {
 
     expect(fields[0].config?.links ?? []).toHaveLength(0);
   });
+
+  it('skips internal configs with empty query silently', () => {
+    const fields: AnyField[] = [{ name: 'trace_id', config: {} }];
+    const incomplete: DataLinkConfig = { ...cfg, query: '' };
+
+    applyDataLinks(fields, [incomplete]);
+
+    expect(fields[0].config?.links ?? []).toHaveLength(0);
+  });
+
+  it('applies external-url configs even when query is empty', () => {
+    const fields: AnyField[] = [{ name: 'trace_id', config: {} }];
+    const external: DataLinkConfig = { ...cfg, query: '', url: 'https://x.example/${__value.raw}' };
+
+    applyDataLinks(fields, [external]);
+
+    expect(fields[0].config?.links).toHaveLength(1);
+    expect(fields[0].config?.links?.[0].url).toBe('https://x.example/${__value.raw}');
+  });
+
+  it('attaches links to fields that have no config object yet', () => {
+    const fields: AnyField[] = [{ name: 'trace_id' }];
+
+    applyDataLinks(fields, [cfg]);
+
+    expect(fields[0].config?.links).toHaveLength(1);
+  });
 });

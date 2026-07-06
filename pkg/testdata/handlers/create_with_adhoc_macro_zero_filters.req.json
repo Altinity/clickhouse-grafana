@@ -1,0 +1,15 @@
+{
+  "refId": "A",
+  "query": "SELECT t, c FROM default.test_grafana WHERE $adhoc",
+  "dateTimeColDataType": "event_time",
+  "dateColDataType": "event_date",
+  "dateTimeType": "DATETIME",
+  "database": "default",
+  "table": "test_grafana",
+  "interval": "30s",
+  "intervalFactor": 1,
+  "round": "0s",
+  "adhocFilters": [],
+  "target": {"database": "default", "table": "test_grafana"},
+  "timeRange": {"from": "2025-01-02T03:04:05Z", "to": "2025-01-02T04:05:06Z"}
+}

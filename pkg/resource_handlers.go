@@ -709,8 +709,8 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		return sendUniversalErrorResponse(sender, *errCtx, errCtx.Status)
 	}
 	// Step 2: Apply Adhoc Filters via the shared helper.
-	// replaceAdhocMacroAlways=false: $adhoc is only replaced when filters exist.
-	sql, errCtx := applyAdhocFiltersToAST(qc, request.AdhocFilters, request.Target, false)
+	// true: this handler replaces $adhoc even with zero filters (preserved from pre-refactor behavior, git 371e5e99)
+	sql, errCtx := applyAdhocFiltersToAST(qc, request.AdhocFilters, request.Target, true)
 	if errCtx != nil {
 		return sendUniversalErrorResponse(sender, *errCtx, errCtx.Status)
 	}

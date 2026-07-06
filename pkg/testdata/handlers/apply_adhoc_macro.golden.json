@@ -1,0 +1,6 @@
+{
+  "body": {
+    "query": "SELECT t, c FROM default.test_grafana WHERE 1"
+  },
+  "status": 200
+}

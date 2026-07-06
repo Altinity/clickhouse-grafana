@@ -1,0 +1,6 @@
+{
+  "body": {
+    "query": " SELECT\n     t,\n     c\n FROM default.test_grafana\n\n WHERE\n     event_time \u003e toDateTime(0)\n     AND\n     (service_name = 'mysql')"
+  },
+  "status": 200
+}

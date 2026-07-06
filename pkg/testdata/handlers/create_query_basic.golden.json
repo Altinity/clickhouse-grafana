@@ -1,0 +1,9 @@
+{
+  "body": {
+    "sql": "SELECT (intDiv(toUInt32(event_time), 30) * 30) * 1000 as t, count() FROM default.test_grafana WHERE event_date \u003e= toDate(1735787045) AND event_date \u003c= toDate(1735790706) AND event_time \u003e= toDateTime(1735787045) AND event_time \u003c= toDateTime(1735790706) GROUP BY t ORDER BY t",
+    "keys": [
+      "t"
+    ]
+  },
+  "status": 200
+}

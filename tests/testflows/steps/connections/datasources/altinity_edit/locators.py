@@ -42,12 +42,13 @@ class Locators:
     @property
     def browser_access_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//label[contains(text(), 'Browser')]/../input")
+        # 13.1 renders the access mode as a radio group with titled inputs
+        return driver.find_element(SelectBy.XPATH, "//input[@type='radio' and @title='Browser'] | //label[contains(text(), 'Browser')]/../input")
 
     @property
     def server_access_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//label[contains(text(), 'Server')]/../input")
+        return driver.find_element(SelectBy.XPATH, "//input[@type='radio' and starts-with(@title, 'Server')] | //label[contains(text(), 'Server')]/../input")
         
     @property
     def save_and_test_button(self):

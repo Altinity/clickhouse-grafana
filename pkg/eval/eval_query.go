@@ -1634,7 +1634,7 @@ func (s *EvalQueryScanner) appendToken(argument string) string {
 	return " " + s.Token
 }
 
-func (s *EvalQueryScanner) ToAST() (*EvalAST, error) {
+func (s *EvalQueryScanner) toASTLegacy() (*EvalAST, error) {
 	var err error
 	s._s = s._sOriginal
 	s.Tree = newEvalAST(true)

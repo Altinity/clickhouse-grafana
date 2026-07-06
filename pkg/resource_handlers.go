@@ -425,21 +425,13 @@ func (ds *ClickHouseDatasource) handleReplaceTimeFilters(ctx context.Context, re
 	from, err := time.Parse(time.RFC3339, request.TimeRange.From)
 	if err != nil {
 		response := ReplaceTimeFiltersResponse{Error: "Invalid from time"}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   body,
-		})
+		return requests.SendJSON(sender, http.StatusBadRequest, response)
 	}
 
 	to, err := time.Parse(time.RFC3339, request.TimeRange.To)
 	if err != nil {
 		response := ReplaceTimeFiltersResponse{Error: "Invalid to time"}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   body,
-		})
+		return requests.SendJSON(sender, http.StatusBadRequest, response)
 	}
 
 	// Create eval.EvalQuery
@@ -455,14 +447,7 @@ func (ds *ClickHouseDatasource) handleReplaceTimeFilters(ctx context.Context, re
 
 	// Return the result
 	response := ReplaceTimeFiltersResponse{SQL: sql}
-	body, _ := json.Marshal(response)
-	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
-	})
+	return requests.SendJSON(sender, http.StatusOK, response)
 }
 
 // handleGetAstProperty extracts properties from SQL AST (like GROUP BY clauses)
@@ -490,14 +475,7 @@ func (ds *ClickHouseDatasource) handleGetAstProperty(ctx context.Context, req *b
 	if request.PropertyName == "group by" {
 		properties := findGroupByProperties(ast)
 		response := GetAstPropertyResponse{Properties: properties}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusOK,
-			Headers: map[string][]string{
-				"Content-Type": {"application/json"},
-			},
-			Body: body,
-		})
+		return requests.SendJSON(sender, http.StatusOK, response)
 	}
 
 	// Standard extraction for other properties
@@ -539,21 +517,13 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 	from, err := time.Parse(time.RFC3339, request.TimeRange.From)
 	if err != nil {
 		response := ProcessQueryBatchResponse{Error: "Invalid `$from` time"}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   body,
-		})
+		return requests.SendJSON(sender, http.StatusBadRequest, response)
 	}
 
 	to, err := time.Parse(time.RFC3339, request.TimeRange.To)
 	if err != nil {
 		response := ProcessQueryBatchResponse{Error: "Invalid `$to` time"}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusBadRequest,
-			Body:   body,
-		})
+		return requests.SendJSON(sender, http.StatusBadRequest, response)
 	}
 
 	// Create eval.EvalQuery
@@ -563,22 +533,14 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
 	if err != nil {
 		response := ProcessQueryBatchResponse{Error: fmt.Sprintf("Failed to apply macros: %v", err)}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusInternalServerError,
-			Body:   body,
-		})
+		return requests.SendJSON(sender, http.StatusInternalServerError, response)
 	}
 
 	scanner := eval.NewScanner(sql)
 	ast, err := scanner.ToAST()
 	if err != nil {
 		response := ProcessQueryBatchResponse{Error: fmt.Sprintf("Failed to parse query: %v", err)}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusInternalServerError,
-			Body:   body,
-		})
+		return requests.SendJSON(sender, http.StatusInternalServerError, response)
 	}
 
 	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
@@ -605,20 +567,12 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 		fromExpr, okExpr := fromAst.StringAt(0)
 		if !okFrom || !okExpr {
 			response := ProcessQueryBatchResponse{Error: "query has no FROM table expression"}
-			body, _ := json.Marshal(response)
-			return sender.Send(&backend.CallResourceResponse{
-				Status: http.StatusInternalServerError,
-				Body:   body,
-			})
+			return requests.SendJSON(sender, http.StatusInternalServerError, response)
 		}
 		targetDatabase, targetTable := parseTargets(fromExpr, target.Database, target.Table)
 		if targetDatabase == "" && targetTable == "" {
 			response := ProcessQueryBatchResponse{Error: "FROM expression can't be parsed"}
-			body, _ := json.Marshal(response)
-			return sender.Send(&backend.CallResourceResponse{
-				Status: http.StatusInternalServerError,
-				Body:   body,
-			})
+			return requests.SendJSON(sender, http.StatusInternalServerError, response)
 		}
 
 		// Process adhoc filters using shared utility function
@@ -707,14 +661,7 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 		Keys:       groupByProperties, // Maintain backward compatibility
 		Properties: properties,
 	}
-	body, _ := json.Marshal(response)
-	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
-	})
+	return requests.SendJSON(sender, http.StatusOK, response)
 }
 
 // handleGetMultipleAstProperties extracts multiple AST properties in one call for efficiency
@@ -729,11 +676,7 @@ func (ds *ClickHouseDatasource) handleGetMultipleAstProperties(ctx context.Conte
 	ast, err := scanner.ToAST()
 	if err != nil {
 		response := GetMultipleAstPropertiesResponse{Error: fmt.Sprintf("Failed to parse query: %v", err)}
-		body, _ := json.Marshal(response)
-		return sender.Send(&backend.CallResourceResponse{
-			Status: http.StatusInternalServerError,
-			Body:   body,
-		})
+		return requests.SendJSON(sender, http.StatusInternalServerError, response)
 	}
 
 	// Extract all requested properties
@@ -913,15 +856,7 @@ func findUnreplacedMacros(sql string) []string {
 // sendUniversalErrorResponse sends a standardized error response
 func sendUniversalErrorResponse(sender backend.CallResourceResponseSender, ctx ErrorContext, httpStatus int) error {
 	response, _ := createUniversalErrorResponse(ctx)
-	body, _ := json.Marshal(response)
-
-	return sender.Send(&backend.CallResourceResponse{
-		Status: httpStatus,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
-	})
+	return requests.SendJSON(sender, httpStatus, response)
 }
 
 // handleCreateQueryWithAdhoc safely batches createQuery + applyAdhocFilters without property extraction
@@ -1081,12 +1016,5 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 
 	// Return the result (no property extraction)
 	response := CreateQueryWithAdhocResponse{SQL: sql}
-	body, _ := json.Marshal(response)
-	return sender.Send(&backend.CallResourceResponse{
-		Status: http.StatusOK,
-		Headers: map[string][]string{
-			"Content-Type": {"application/json"},
-		},
-		Body: body,
-	})
+	return requests.SendJSON(sender, http.StatusOK, response)
 }

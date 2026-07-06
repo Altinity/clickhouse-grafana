@@ -26,7 +26,7 @@ class Locators:
     def rename_input(self):
         """Grafana >= 13.1: inline rename input shown after clicking the pencil."""
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "input[aria-label^='Rename input']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "input#page-editable-title")
 
     @property
     def url_field(self):
@@ -36,7 +36,8 @@ class Locators:
     @property
     def default_toggle(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[for='basic-settings-default']")
+        # Grafana 13.1 replaced the settings-page default toggle with a header button
+        return driver.find_element(SelectBy.XPATH, "//*[@for='basic-settings-default'] | //button[.//text()='Make default']")
 
     @property
     def browser_access_button(self):

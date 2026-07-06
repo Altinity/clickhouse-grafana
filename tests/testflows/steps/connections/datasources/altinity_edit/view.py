@@ -74,7 +74,9 @@ def get_url_textfield_text(self):
 def click_save_and_test_button(self):
     """Click submit button."""
 
-    locators.save_and_test_button.click()
+    # JS click: the save confirmation toast from a previous scenario can
+    # overlay the button and intercept a regular click
+    self.context.driver.execute_script("arguments[0].click();", locators.save_and_test_button)
 
 
 @TestStep(When)

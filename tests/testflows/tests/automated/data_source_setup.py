@@ -162,11 +162,14 @@ def check_creating_datasource_and_panel(
 
     if check_visualization:
         with Then("I check visualization is valid"):
-            with By("taking screenshot"):
-                panel.take_screenshot_for_visualization(screenshot_name="panel_check")
+            # retry the screenshot: the panel may still be rendering
+            for attempt in retries(delay=3, timeout=30):
+                with attempt:
+                    with By("taking screenshot"):
+                        panel.take_screenshot_for_visualization(screenshot_name="panel_check")
 
-            with By("checking screenshot"):
-                assert actions.check_screenshot(screenshot_name="panel_check") is True, error()
+                    with By("checking screenshot"):
+                        assert actions.check_screenshot(screenshot_name="panel_check") is True, error()
 
     with delay():
         if check_visualization_alert:

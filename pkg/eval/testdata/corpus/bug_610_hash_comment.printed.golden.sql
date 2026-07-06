@@ -1,3 +1,4 @@
- SELECT a
+ SELECT a# trailing hash comment
 
- FROM ailing hash comment FROM default.test_grafana
+
+ FROM default.test_grafana

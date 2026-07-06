@@ -22,7 +22,6 @@ type corpusCase struct {
 	Query       string
 	ExpectError bool
 	Tags        []string
-	EngineDiff  string // issue number from an `engine_diff=NNN` directive token
 }
 
 // loadCorpusCase reads a .sql corpus file. An optional first line of the form
@@ -48,8 +47,6 @@ func loadCorpusCase(path string) (corpusCase, error) {
 				c.ExpectError = true
 			case strings.HasPrefix(tok, "tags="):
 				c.Tags = strings.Split(strings.TrimPrefix(tok, "tags="), ",")
-			case strings.HasPrefix(tok, "engine_diff="):
-				c.EngineDiff = strings.TrimPrefix(tok, "engine_diff=")
 			}
 		}
 		if len(lines) == 2 {
@@ -135,16 +132,13 @@ func safeToAST(query string) (ast *EvalAST, err error) {
 }
 
 func TestGoldenCorpus(t *testing.T) {
-	// PINNED to legacy on purpose (since Phase 2; keep through Phase 4):
-	// this test IS the legacy freeze — its goldens are legacy bytes, and
-	// -update must regenerate them with legacy output regardless of the
-	// process default (v2 since Phase 3). v2 corpus coverage lives in
-	// TestParserV2Differential (pinned v2); the true-default dispatch is
-	// covered by engine_default_test.go on the engine-discriminating cases.
-	// Net effect: one `go test ./pkg/eval` run covers BOTH engines under
-	// ANY CLICKHOUSE_GRAFANA_PARSER setting.
-	prev := SetEngine(EngineLegacy)
-	defer SetEngine(prev)
+	// Since Phase 4 the corpus asserts the v2 engine directly — the only
+	// engine. These goldens are the regression baseline for pkg/eval: they
+	// were proven byte-identical between legacy and v2 during Phases 2-3
+	// (differential gate, deleted with the legacy engine), except the two
+	// intended fixes pinned below by their own (promoted) goldens:
+	//   bug_610_hash_comment — issue #610 ('#' comments; legacy emitted garbage)
+	//   dash_24a54b5141      — issues #374/#648 (apostrophe in '--' comment)
 	for _, path := range corpusFiles(t) {
 		c, err := loadCorpusCase(path)
 		require.NoError(t, err)

@@ -286,6 +286,8 @@ export class CHDataSource
         refId: 'FORWARD',
         series: response.data,
         meta: response.meta,
+        dataLinks: this.dataLinks,
+        app: this.options?.app,
       });
 
       return { data: sqlSeries.toLogs() };
@@ -334,6 +336,8 @@ export class CHDataSource
         refId: options?.direction,
         series: response.data,
         meta: response.meta,
+        dataLinks: this.dataLinks,
+        app: this.options?.app,
       });
 
       return { data: sqlSeries.toLogs() };

@@ -219,7 +219,12 @@ func parseFloatValue(value interface{}, isNullable bool) Value {
 				return 0.0
 			}
 		default:
-			fv = reflect.ValueOf(value).Float()
+			rv := reflect.ValueOf(value)
+			if rv.Kind() != reflect.Float32 && rv.Kind() != reflect.Float64 &&
+				!rv.CanInt() && !rv.CanUint() {
+				return nil // unexpected kind: treat as null instead of panicking
+			}
+			fv = rv.Convert(reflect.TypeOf(float64(0))).Float()
 		}
 		if isNullable {
 			return &fv
@@ -237,7 +242,11 @@ func parseFloatValue(value interface{}, isNullable bool) Value {
 
 func parseStringValue(value interface{}, isNullable bool) Value {
 	if value != nil {
-		str := reflect.ValueOf(value).String()
+		rv := reflect.ValueOf(value)
+		if rv.Kind() != reflect.String {
+			return fmt.Sprintf("%v", value)
+		}
+		str := rv.String()
 		if isNullable {
 			return &str
 		} else {

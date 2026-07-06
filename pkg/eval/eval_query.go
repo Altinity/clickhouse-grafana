@@ -2329,7 +2329,7 @@ func PrintAST(AST *EvalAST, tab string) string {
 
 	if AST.HasOwnProperty("$lttbMs") {
 		result += tab + "$lttbMs("
-		result += printItems(AST.Obj["$lttb"].(*EvalAST), tab, ",") + ")"
+		result += printItems(AST.Obj["$lttbMs"].(*EvalAST), tab, ",") + ")"
 	}
 
 	if AST.HasOwnProperty("with") {

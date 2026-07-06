@@ -2542,3 +2542,16 @@ func TestEvalQueryTimeStamp64AndFloatColumnsSupport(t *testing.T) {
 		})
 	}
 }
+
+func TestPrintASTLttbMs(t *testing.T) {
+	scanner := NewScanner("$lttbMs(event_time, 100) FROM default.test_grafana")
+	ast, err := scanner.ToAST()
+	require.NoError(t, err)
+	defer func() {
+		if r := recover(); r != nil {
+			t.Fatalf("PrintAST panicked on $lttbMs: %v", r)
+		}
+	}()
+	printed := PrintAST(ast, " ")
+	require.Contains(t, printed, "$lttbMs(")
+}

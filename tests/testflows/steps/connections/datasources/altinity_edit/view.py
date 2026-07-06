@@ -46,8 +46,10 @@ def enter_name_into_name_field(self, datasource_name):
         locators.name_field.send_keys(datasource_name)
         return
 
-    # Grafana >= 13.1: the name is an inline-editable page title
-    locators.edit_title_button.click()
+    # Grafana >= 13.1: the name is an inline-editable page title. Use a JS click
+    # for the pencil: a lingering save-confirmation toast can overlay it and
+    # intercept a regular click.
+    self.context.driver.execute_script("arguments[0].click();", locators.edit_title_button)
     rename_input = locators.rename_input
     rename_input.send_keys(Keys.CONTROL, 'a')
     rename_input.send_keys(datasource_name)

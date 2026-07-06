@@ -151,6 +151,16 @@ Press `Show Generated SQL` for see a raw query (all macros and functions have al
 ![generated sql](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/07_generated_sql.png)
 
 
+## SQL parser engine
+
+The plugin backend parses raw SQL with a rewritten recursive-descent parser ("v2", [#733](https://github.com/Altinity/clickhouse-grafana/issues/733)). It produces byte-identical queries to the previous parser for ordinary SQL and additionally fixes two long-standing comment-handling bugs:
+
+* `#`-style comments no longer corrupt the generated query ([#610](https://github.com/Altinity/clickhouse-grafana/issues/610))
+* `--` comments containing an apostrophe (e.g. `-- user's filter`) no longer swallow the rest of the query ([#374](https://github.com/Altinity/clickhouse-grafana/issues/374), [#648](https://github.com/Altinity/clickhouse-grafana/issues/648))
+
+For ONE release the previous parser remains available as a rollback: set the environment variable `CLICKHOUSE_GRAFANA_PARSER=legacy` for the Grafana server process and restart it. If you need this rollback, please [open an issue](https://github.com/Altinity/clickhouse-grafana/issues) with the query that misbehaves — the legacy parser will be removed in the following release.
+
+
 ## Macros support
 
 Plugin supports the following marcos:

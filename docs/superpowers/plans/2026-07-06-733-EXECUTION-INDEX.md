@@ -24,15 +24,14 @@ decision is already made in the plan files. If reality diverges from a plan step
 |---|---|---|---|---|
 | 1 | `2026-07-06-backend-pre-parser-stabilization.md` | Stage A: safe AST accessors, panic fixes, marshal sweep, dedup 3 handlers, golangci-lint | **Yes** | goldens byte-identical after refactor; lint green |
 | 2 | `2026-07-06-733-phase0-golden-corpus.md` | Phase 0: golden corpus + oracle; freezes current behavior | **No** (tests/data only) | `TestGoldenCorpus` green ×2; ≥40 cases |
-| 3 | *(author after Phase 0 gate)* | Phase 1: state-machine lexer, differential token test | No (test-gated, opt-in) | token streams match legacy on corpus + fuzz |
-| 4 | *(author after Phase 1 gate)* | Phase 2: recursive-descent parser + compat, engine flag | Yes (behind flag, default legacy) | **byte-identical** corpus on both engines |
-| 5 | *(author after Phase 2 gate)* | Phase 3: flip default to v2; burn-in | Yes (default change) | full suite + testflows green, 1 release |
+| 3 | `2026-07-06-733-phase1-lexer.md` | Phase 1: state-machine lexer, differential token test | No (test-gated, opt-in) | token streams match legacy on corpus + fuzz |
+| 4 | `2026-07-06-733-phase2-parser.md` | Phase 2: recursive-descent parser + compat, engine flag | Yes (behind flag, default legacy) | **byte-identical** corpus on both engines |
+| 5 | `2026-07-06-733-phase3-flip.md` | Phase 3: flip default to v2; burn-in | Yes (default change) | full suite green ×3 env settings; testflows post-merge; 1 release |
 | 6 | *(author after Phase 3 gate)* | Phase 4: delete legacy + land intended fixes | Yes | corpus green; issues closed w/ regression cases |
 
-Plans 3–6 are deliberately NOT written yet. Each depends on the previous stage's
-outputs (e.g. Phase 1's differential test needs Phase 0's corpus; Phase 2's byte-parity
-targets need Phase 1's token model). Writing them now would be guesswork. After a gate
-passes, request the next plan.
+Plan 6 (Phase 4: delete legacy + land intended fixes) is deliberately NOT written yet:
+it is authored only after the Phase-3 gate is green AND one release of v2-default
+burn-in has shipped. After that, request the Phase-4 plan.
 
 ## Design reference
 

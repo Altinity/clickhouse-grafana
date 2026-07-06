@@ -1,3 +1,7 @@
+# Unreleased
+## Enhancements:
+* switch the backend SQL parser to a rewritten recursive-descent engine (v2) by default, part of https://github.com/Altinity/clickhouse-grafana/issues/733. Generated SQL is byte-identical for ordinary queries; the only behavior changes are two intended fixes: `#`-style comments no longer corrupt the query, fix https://github.com/Altinity/clickhouse-grafana/issues/610, and `--` comments containing an apostrophe no longer swallow the rest of the query, fix https://github.com/Altinity/clickhouse-grafana/issues/374, fix https://github.com/Altinity/clickhouse-grafana/issues/648. The legacy parser remains available for ONE release as a rollback via the `CLICKHOUSE_GRAFANA_PARSER=legacy` environment variable on the Grafana server process
+
 # 3.4.11 (2026-04-08)
 ## Fixes:
 * fix "Show Context" for logs generating SQL with `UNKNOWN_IDENTIFIER` errors when the original query has WHERE conditions on non-timestamp columns (e.g., `facility`, `node`, `level`), move WHERE conditions from outer query into inner subquery, fix https://github.com/Altinity/clickhouse-grafana/issues/706

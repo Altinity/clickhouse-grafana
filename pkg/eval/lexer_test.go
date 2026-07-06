@@ -174,3 +174,93 @@ func TestTokenizeQuotedIdents(t *testing.T) {
 	_, err = Tokenize(`"nope`)
 	require.EqualError(t, err, "unterminated quoted identifier at offset 0")
 }
+
+func TestTokenizeIdentifiers(t *testing.T) {
+	requireTokens(t, "SELECT x FROM t GROUP BY x", []wantTok{
+		{TokIdent, "SELECT"}, {TokIdent, "x"}, {TokIdent, "FROM"}, {TokIdent, "t"},
+		{TokIdent, "GROUP"}, {TokIdent, "BY"}, {TokIdent, "x"},
+	})
+	requireTokens(t, "_under score_9", []wantTok{{TokIdent, "_under"}, {TokIdent, "score_9"}})
+
+	// '#' at a token-start position begins a comment even with no whitespace
+	// before it; it can never be INSIDE an ident (class excludes it)
+	requireTokens(t, "a#b", []wantTok{{TokIdent, "a"}, {TokComment, "#b"}})
+
+	// db.table: ident, '.' operator, ident
+	requireTokens(t, "default.test_grafana", []wantTok{
+		{TokIdent, "default"}, {TokOp, "."}, {TokIdent, "test_grafana"},
+	})
+}
+
+func TestTokenizeNumbers(t *testing.T) {
+	cases := []struct {
+		src  string
+		want []wantTok
+	}{
+		{"1", []wantTok{{TokNumber, "1"}}},
+		{"42 7", []wantTok{{TokNumber, "42"}, {TokNumber, "7"}}},
+		{"1.5", []wantTok{{TokNumber, "1.5"}}},
+		{"1.", []wantTok{{TokNumber, "1."}}},
+		{".5", []wantTok{{TokNumber, ".5"}}},
+		{"1e6", []wantTok{{TokNumber, "1e6"}}},
+		{"1E6", []wantTok{{TokNumber, "1E6"}}},
+		{"1e+6", []wantTok{{TokNumber, "1e+6"}}},
+		{"1E-6", []wantTok{{TokNumber, "1E-6"}}},
+		// legacy quirk, preserved for the Phase-1 differential gate
+		// (probe-verified): a dotted float NEVER takes an exponent
+		{"1.5e3", []wantTok{{TokNumber, "1.5"}, {TokIdent, "e3"}}},
+		// bare 'e' with no exponent digits stays outside the number
+		{"1e", []wantTok{{TokNumber, "1"}, {TokIdent, "e"}}},
+		{"1e+", []wantTok{{TokNumber, "1"}, {TokIdent, "e"}, {TokOp, "+"}}},
+		// corpus-observed shape: leading-dot float straight after a macro
+		{"$ns.8090.svc", []wantTok{
+			{TokMacro, "$ns"}, {TokNumber, ".8090"}, {TokOp, "."}, {TokIdent, "svc"},
+		}},
+		// '.' not followed by a digit is an operator
+		{"a.b", []wantTok{{TokIdent, "a"}, {TokOp, "."}, {TokIdent, "b"}}},
+		{"1abc", []wantTok{{TokNumber, "1"}, {TokIdent, "abc"}}},
+	}
+	for _, c := range cases {
+		requireTokens(t, c.src, c.want)
+	}
+}
+
+func TestTokenizeMacros(t *testing.T) {
+	requireTokens(t, "$timeSeries", []wantTok{{TokMacro, "$timeSeries"}})
+	requireTokens(t, "$__interval_ms", []wantTok{{TokMacro, "$__interval_ms"}})
+	requireTokens(t, "${var}", []wantTok{{TokMacro, "${var}"}})
+	requireTokens(t, "${var:sqlstring}", []wantTok{{TokMacro, "${var:sqlstring}"}})
+	// legacy macroRe allows leading digits and embedded '$' — mirror it
+	requireTokens(t, "$5x", []wantTok{{TokMacro, "$5x"}})
+	requireTokens(t, "$foo$bar", []wantTok{{TokMacro, "$foo$bar"}})
+	requireTokens(t, "$table WHERE $timeFilter", []wantTok{
+		{TokMacro, "$table"}, {TokIdent, "WHERE"}, {TokMacro, "$timeFilter"},
+	})
+}
+
+func TestTokenizeMacroErrors(t *testing.T) {
+	for src, wantErr := range map[string]string{
+		"$":       "unexpected character '$' at offset 0",
+		"$ x":     "unexpected character '$' at offset 0",
+		"${":      "invalid macro syntax at offset 0",
+		"${}":     "invalid macro syntax at offset 0",
+		"${va-r}": "invalid macro syntax at offset 0",
+		"${var":   "invalid macro syntax at offset 0",
+		"${var:}": "invalid macro syntax at offset 0",
+		"( ${v!}": "invalid macro syntax at offset 2",
+	} {
+		_, err := Tokenize(src)
+		require.EqualError(t, err, wantErr, "input %q", src)
+	}
+}
+
+func TestTokenizeRealisticQuery(t *testing.T) {
+	src := "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t"
+	requireTokens(t, src, []wantTok{
+		{TokIdent, "SELECT"}, {TokMacro, "$timeSeries"}, {TokIdent, "as"}, {TokIdent, "t"},
+		{TokComma, ","}, {TokIdent, "count"}, {TokLParen, "("}, {TokRParen, ")"},
+		{TokIdent, "FROM"}, {TokMacro, "$table"}, {TokIdent, "WHERE"}, {TokMacro, "$timeFilter"},
+		{TokIdent, "GROUP"}, {TokIdent, "BY"}, {TokIdent, "t"},
+		{TokIdent, "ORDER"}, {TokIdent, "BY"}, {TokIdent, "t"},
+	})
+}

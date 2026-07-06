@@ -39,8 +39,8 @@ func Tokenize(src string) ([]Token, error) {
 }
 
 // next dispatches on the byte at lx.pos. Every branch consumes at least one
-// byte. Branch order is load-bearing: '--' and '/*' must be checked before
-// single-char operators.
+// byte. Branch order is load-bearing: '--' and '/*' before operators, and
+// the '.5' number form before the '.' operator.
 func (lx *lexer) next() error {
 	c := lx.src[lx.pos]
 	switch {
@@ -61,6 +61,14 @@ func (lx *lexer) next() error {
 		return lx.scanString()
 	case c == '`' || c == '"':
 		return lx.scanQuotedIdent(c)
+	case c == '$':
+		return lx.scanMacro()
+	case isDigitByte(c) || (c == '.' && isDigitByte(lx.peekAt(1))):
+		lx.scanNumber()
+		return nil
+	case isIdentStartByte(c):
+		lx.scanIdent()
+		return nil
 	default:
 		return lx.scanOpOrPunct()
 	}
@@ -216,4 +224,117 @@ func (lx *lexer) scanQuotedIdent(q byte) error {
 		}
 	}
 	return fmt.Errorf("unterminated quoted identifier at offset %d", start)
+}
+
+func isDigitByte(c byte) bool { return c >= '0' && c <= '9' }
+
+func isIdentStartByte(c byte) bool {
+	return c == '_' || (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z')
+}
+
+func isIdentByte(c byte) bool { return isIdentStartByte(c) || isDigitByte(c) }
+
+// scanIdent consumes a bare word. The character class mirrors legacy idRe
+// ([a-zA-Z_][a-zA-Z_0-9]*) exactly — ASCII only — so the Phase-1 differential
+// gate compares like for like. Keywords are NOT recognized here (design §3.3).
+func (lx *lexer) scanIdent() {
+	start := lx.pos
+	for lx.pos < len(lx.src) && isIdentByte(lx.src[lx.pos]) {
+		lx.pos++
+	}
+	lx.emit(TokIdent, start)
+}
+
+// scanNumber mirrors the legacy number grammar EXACTLY (probe-verified),
+// including its quirks — Phase 1 freezes tokenization; Phase 4 may liberalize:
+//
+//	\d+             integer            "1"
+//	\d+\.\d*        float              "1.5", "1."
+//	\d*\.\d+        leading-dot float  ".5", ".8090"
+//	\d+[eE]\d+      exponent, no sign  "1e6", "1E6"
+//	\d+[eE][+-]\d+  exponent, signed   "1e+6", "1E-6"
+//
+// A dotted float NEVER takes an exponent: "1.5e3" is TokNumber("1.5") then
+// TokIdent("e3") — same as legacy. "1e" is TokNumber("1") then TokIdent("e").
+func (lx *lexer) scanNumber() {
+	start := lx.pos
+	if lx.src[lx.pos] == '.' { // .5 form (dispatched only when a digit follows)
+		lx.pos++
+		lx.consumeDigits()
+		lx.emit(TokNumber, start)
+		return
+	}
+	lx.consumeDigits()
+	if lx.pos < len(lx.src) && lx.src[lx.pos] == '.' {
+		lx.pos++
+		lx.consumeDigits()
+		lx.emit(TokNumber, start) // dotted float: no exponent, by legacy rule
+		return
+	}
+	if c := lx.peekAt(0); c == 'e' || c == 'E' {
+		n := 1
+		if s := lx.peekAt(1); s == '+' || s == '-' {
+			n = 2
+		}
+		if isDigitByte(lx.peekAt(n)) {
+			lx.pos += n
+			lx.consumeDigits()
+		}
+	}
+	lx.emit(TokNumber, start)
+}
+
+func (lx *lexer) consumeDigits() {
+	for lx.pos < len(lx.src) && isDigitByte(lx.src[lx.pos]) {
+		lx.pos++
+	}
+}
+
+// scanMacro consumes $ident (legacy macroRe: \$[A-Za-z0-9_$]+ — greedy,
+// leading digits and embedded '$' allowed) or ${ident} / ${ident:fmt}
+// (legacy macroVarRe). A bare '$' or a malformed ${…} is an error — legacy
+// had no anchored match for these either (it "teleported"; see
+// lexer_diff_test.go for what that means).
+func (lx *lexer) scanMacro() error {
+	start := lx.pos
+	lx.pos++ // '$'
+	if lx.peekAt(0) == '{' {
+		lx.pos++
+		if !lx.consumeMacroName() {
+			return fmt.Errorf("invalid macro syntax at offset %d", start)
+		}
+		if lx.peekAt(0) == ':' {
+			lx.pos++
+			if !lx.consumeMacroName() {
+				return fmt.Errorf("invalid macro syntax at offset %d", start)
+			}
+		}
+		if lx.peekAt(0) != '}' {
+			return fmt.Errorf("invalid macro syntax at offset %d", start)
+		}
+		lx.pos++
+		lx.emit(TokMacro, start)
+		return nil
+	}
+	n := 0
+	for lx.pos < len(lx.src) && (isIdentByte(lx.src[lx.pos]) || lx.src[lx.pos] == '$') {
+		lx.pos++
+		n++
+	}
+	if n == 0 {
+		return fmt.Errorf("unexpected character '$' at offset %d", start)
+	}
+	lx.emit(TokMacro, start)
+	return nil
+}
+
+// consumeMacroName consumes [A-Za-z0-9_]+ and reports whether it consumed
+// at least one byte.
+func (lx *lexer) consumeMacroName() bool {
+	n := 0
+	for lx.pos < len(lx.src) && isIdentByte(lx.src[lx.pos]) {
+		lx.pos++
+		n++
+	}
+	return n > 0
 }

@@ -1,0 +1,5 @@
+{
+  "query": "SELECT 1",
+  "adhocFilters": [{"key": "default.test_grafana.service_name", "operator": "=", "value": "mysql"}],
+  "target": {"database": "default", "table": "test_grafana"}
+}

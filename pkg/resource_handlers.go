@@ -342,13 +342,7 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 
 	if len(adhocFilters) > 0 {
 		// Navigate to the deepest FROM clause
-		for ast.HasOwnProperty("from") && ast.Obj["from"].(*eval.EvalAST).Arr == nil {
-			nextAst, ok := ast.Obj["from"].(*eval.EvalAST)
-			if !ok {
-				break
-			}
-			ast = nextAst
-		}
+		ast = eval.InnermostFrom(ast)
 
 		// Initialize WHERE clause if it doesn't exist
 		if !ast.HasOwnProperty("where") {
@@ -359,7 +353,19 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 		}
 
 		// Get target database and table
-		targetDatabase, targetTable := parseTargets(ast.Obj["from"].(*eval.EvalAST).Arr[0].(string), target.Database, target.Table)
+		fromAst, okFrom := ast.SubAST("from")
+		fromExpr, okExpr := fromAst.StringAt(0)
+		if !okFrom || !okExpr {
+			return sendUniversalErrorResponse(sender, ErrorContext{
+				ErrorType:     ErrorTypeFromClause,
+				OriginalSQL:   query,
+				HasAdhocMacro: hasAdhocMacro,
+				AdhocFilters:  []interface{}{adhocFilters},
+				OriginalError: fmt.Errorf("query has no FROM table expression"),
+				Handler:       "handleApplyAdhocFilters",
+			}, http.StatusInternalServerError)
+		}
+		targetDatabase, targetTable := parseTargets(fromExpr, target.Database, target.Table)
 		if targetDatabase == "" && targetTable == "" {
 			return sendUniversalErrorResponse(sender, ErrorContext{
 				ErrorType:     ErrorTypeFromClause,
@@ -584,13 +590,7 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 		adhocConditions := make([]string, 0)
 
 		// Navigate to the deepest FROM clause
-		for ast.HasOwnProperty("from") && ast.Obj["from"].(*eval.EvalAST).Arr == nil {
-			nextAst, ok := ast.Obj["from"].(*eval.EvalAST)
-			if !ok {
-				break
-			}
-			ast = nextAst
-		}
+		ast = eval.InnermostFrom(ast)
 
 		// Initialize WHERE clause if it doesn't exist
 		if !ast.HasOwnProperty("where") {
@@ -601,7 +601,17 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 		}
 
 		// Get target database and table
-		targetDatabase, targetTable := parseTargets(ast.Obj["from"].(*eval.EvalAST).Arr[0].(string), target.Database, target.Table)
+		fromAst, okFrom := ast.SubAST("from")
+		fromExpr, okExpr := fromAst.StringAt(0)
+		if !okFrom || !okExpr {
+			response := ProcessQueryBatchResponse{Error: "query has no FROM table expression"}
+			body, _ := json.Marshal(response)
+			return sender.Send(&backend.CallResourceResponse{
+				Status: http.StatusInternalServerError,
+				Body:   body,
+			})
+		}
+		targetDatabase, targetTable := parseTargets(fromExpr, target.Database, target.Table)
 		if targetDatabase == "" && targetTable == "" {
 			response := ProcessQueryBatchResponse{Error: "FROM expression can't be parsed"}
 			body, _ := json.Marshal(response)
@@ -987,13 +997,7 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		}
 
 		// Navigate to the deepest FROM clause
-		for ast.HasOwnProperty("from") {
-			fromObj, ok := ast.Obj["from"].(*eval.EvalAST)
-			if !ok || fromObj.Arr != nil {
-				break
-			}
-			ast = fromObj
-		}
+		ast = eval.InnermostFrom(ast)
 
 		// Initialize WHERE clause if it doesn't exist
 		if !ast.HasOwnProperty("where") {
@@ -1004,11 +1008,20 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		}
 
 		// Get target database and table
-		if fromObj, ok := ast.Obj["from"].(*eval.EvalAST); ok && len(fromObj.Arr) > 0 {
-			if fromStr, ok := fromObj.Arr[0].(string); ok {
-				targetDatabase, targetTable = parseTargets(fromStr, target.Database, target.Table)
-			}
+		fromAst, okFrom := ast.SubAST("from")
+		fromExpr, okExpr := fromAst.StringAt(0)
+		if !okFrom || !okExpr {
+			return sendUniversalErrorResponse(sender, ErrorContext{
+				ErrorType:     ErrorTypeFromClause,
+				OriginalSQL:   request.Query,
+				ProcessedSQL:  sql,
+				HasAdhocMacro: hasAdhocMacro,
+				AdhocFilters:  []interface{}{adhocFilters},
+				OriginalError: fmt.Errorf("query has no FROM table expression"),
+				Handler:       "handleCreateQueryWithAdhoc",
+			}, http.StatusInternalServerError)
 		}
+		targetDatabase, targetTable = parseTargets(fromExpr, target.Database, target.Table)
 		if targetDatabase == "" && targetTable == "" {
 			return sendUniversalErrorResponse(sender, ErrorContext{
 				ErrorType:     ErrorTypeFromClause,

@@ -62,6 +62,7 @@ func TestHandlerCharacterization(t *testing.T) {
 		{"create_query_basic", ds.handleCreateQuery, "create_query_basic.req.json"},
 		{"apply_adhoc_basic", ds.handleApplyAdhocFilters, "apply_adhoc_basic.req.json"},
 		{"apply_adhoc_macro", ds.handleApplyAdhocFilters, "apply_adhoc_macro.req.json"},
+		{"apply_adhoc_no_from", ds.handleApplyAdhocFilters, "apply_adhoc_no_from.req.json"},
 	}
 	for _, tc := range cases {
 		t.Run(tc.name, func(t *testing.T) {

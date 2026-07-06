@@ -1,0 +1,6 @@
+{
+  "body": {
+    "error": "FROM clause parsing failed: query has no FROM table expression. Ensure your FROM clause uses a simple table reference."
+  },
+  "status": 500
+}

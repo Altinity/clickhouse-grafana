@@ -158,7 +158,7 @@ The plugin backend parses raw SQL with a rewritten recursive-descent parser ("v2
 * `#`-style comments no longer corrupt the generated query ([#610](https://github.com/Altinity/clickhouse-grafana/issues/610))
 * `--` comments containing an apostrophe (e.g. `-- user's filter`) no longer swallow the rest of the query ([#374](https://github.com/Altinity/clickhouse-grafana/issues/374), [#648](https://github.com/Altinity/clickhouse-grafana/issues/648))
 
-For ONE release the previous parser remains available as a rollback: set the environment variable `CLICKHOUSE_GRAFANA_PARSER=legacy` for the Grafana server process and restart it. If you need this rollback, please [open an issue](https://github.com/Altinity/clickhouse-grafana/issues) with the query that misbehaves — the legacy parser will be removed in the following release.
+The legacy parser and its `CLICKHOUSE_GRAFANA_PARSER=legacy` rollback were **removed in this release** — the one-release deprecation window is over, so v2 is now the only engine and the `dlclark/regexp2` dependency is gone. If a query is parsed incorrectly, please [open an issue](https://github.com/Altinity/clickhouse-grafana/issues) with the misbehaving query; the golden corpus makes such reports reproducible as regression cases.
 
 
 ## Macros support

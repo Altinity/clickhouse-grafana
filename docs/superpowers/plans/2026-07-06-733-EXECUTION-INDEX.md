@@ -26,12 +26,16 @@ decision is already made in the plan files. If reality diverges from a plan step
 | 2 | `2026-07-06-733-phase0-golden-corpus.md` | Phase 0: golden corpus + oracle; freezes current behavior | **No** (tests/data only) | `TestGoldenCorpus` green ×2; ≥40 cases |
 | 3 | `2026-07-06-733-phase1-lexer.md` | Phase 1: state-machine lexer, differential token test | No (test-gated, opt-in) | token streams match legacy on corpus + fuzz |
 | 4 | `2026-07-06-733-phase2-parser.md` | Phase 2: recursive-descent parser + compat, engine flag | Yes (behind flag, default legacy) | **byte-identical** corpus on both engines |
-| 5 | `2026-07-06-733-phase3-flip.md` | Phase 3: flip default to v2; burn-in | Yes (default change) | full suite green ×3 env settings; testflows post-merge; 1 release |
-| 6 | *(author after Phase 3 gate)* | Phase 4: delete legacy + land intended fixes | Yes | corpus green; issues closed w/ regression cases |
+| 5 | `2026-07-06-733-phase3-flip.md` | Phase 3: flip default to v2; burn-in | Yes (default change) | ✅ Done — full suite green ×3 env settings; v2 shipped as default |
+| 6 | `2026-07-06-733-phase4-cleanup.md` | Phase 4: delete legacy engine + drop `regexp2` (intended-fix landing deferred to a follow-up epic) | Yes | ✅ Done — legacy engine + `CLICKHOUSE_GRAFANA_PARSER` removed; `dlclark/regexp2` gone; corpus green on v2; #610 and #374/#648 pinned by promoted goldens |
 
-Plan 6 (Phase 4: delete legacy + land intended fixes) is deliberately NOT written yet:
-it is authored only after the Phase-3 gate is green AND one release of v2-default
-burn-in has shipped. After that, request the Phase-4 plan.
+Phase 4 is complete: the legacy `regexp2` engine and the `CLICKHOUSE_GRAFANA_PARSER=legacy`
+rollback are deleted, `pkg/eval` runs solely on the v2 lexer+parser, and the `dlclark/regexp2`
+dependency is gone (verified by the final battery in `2026-07-06-733-phase4-cleanup.md`).
+Landing the intended parser fixes (#565/#277/#38, #871/#319, table-function whitelist removal,
+the `$delta*`/`$increase*` and `RemoveComments` follow-throughs) is deliberately split out as a
+separate follow-up epic — feature work on the surviving engine, kept out of the behavior-neutral
+deletion diff. See the "Out of scope" section of the Phase 4 plan.
 
 ## Design reference
 

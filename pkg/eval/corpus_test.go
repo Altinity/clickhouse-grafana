@@ -135,6 +135,14 @@ func safeToAST(query string) (ast *EvalAST, err error) {
 }
 
 func TestGoldenCorpus(t *testing.T) {
+	// PINNED to legacy on purpose (since Phase 2; keep through Phase 4):
+	// this test IS the legacy freeze — its goldens are legacy bytes, and
+	// -update must regenerate them with legacy output regardless of the
+	// process default (v2 since Phase 3). v2 corpus coverage lives in
+	// TestParserV2Differential (pinned v2); the true-default dispatch is
+	// covered by engine_default_test.go on the engine-discriminating cases.
+	// Net effect: one `go test ./pkg/eval` run covers BOTH engines under
+	// ANY CLICKHOUSE_GRAFANA_PARSER setting.
 	prev := SetEngine(EngineLegacy)
 	defer SetEngine(prev)
 	for _, path := range corpusFiles(t) {

@@ -1,0 +1,38 @@
+{
+  "Obj": {
+    "$columns": {
+      "Obj": null,
+      "Arr": [
+        "service_name",
+        "sum(agg_value) as value"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "group by": {
+      "Obj": null,
+      "Arr": [
+        "service_name"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "$timeFilter"
+      ]
+    }
+  },
+  "Arr": null
+}

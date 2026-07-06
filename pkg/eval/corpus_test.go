@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/require"
 )
@@ -88,6 +89,30 @@ func assertGolden(t *testing.T, name, suffix, got string) {
 	require.Equal(t, string(want), got, "golden mismatch for %s", path)
 }
 
+// corpusFixedConfig — the frozen expansion context. NEVER change these values;
+// the goldens are computed against them.
+var (
+	corpusFrom = time.Date(2025, 1, 2, 3, 4, 5, 0, time.UTC)
+	corpusTo   = time.Date(2025, 1, 2, 4, 5, 6, 0, time.UTC)
+)
+
+func expandForCorpus(query string, window bool) (string, error) {
+	q := EvalQuery{
+		Query:                  query,
+		Database:               "default",
+		Table:                  "test_grafana",
+		DateTimeType:           "DATETIME",
+		DateTimeCol:            "event_time",
+		DateCol:                "event_date",
+		Interval:               "30s",
+		IntervalFactor:         1,
+		From:                   corpusFrom,
+		To:                     corpusTo,
+		UseWindowFuncForMacros: window,
+	}
+	return q.ApplyMacrosAndTimeRangeToQuery()
+}
+
 // safeToAST runs ToAST but converts a panic into an error, so that one
 // pathological corpus query fails ONLY its own subtest instead of crashing the
 // whole `go test` binary (a panic in a t.Run subtest aborts the entire run).
@@ -127,6 +152,15 @@ func TestGoldenCorpus(t *testing.T) {
 			require.NoError(t, err)
 			assertGolden(t, c.Name, "ast.golden.json", string(astJSON))
 			assertGolden(t, c.Name, "printed.golden.sql", PrintAST(ast, " "))
+
+			for _, v := range []struct {
+				suffix string
+				window bool
+			}{{"expanded.golden.sql", false}, {"expanded_win.golden.sql", true}} {
+				expanded, expErr := expandForCorpus(c.Query, v.window)
+				require.NoError(t, expErr, "expansion failed for %s (window=%v)", c.Name, v.window)
+				assertGolden(t, c.Name, v.suffix, expanded)
+			}
 		})
 	}
 }

@@ -1,3 +1,5 @@
+github.com/AfterShip/clickhouse-sql-parser v0.5.1 h1:Re4BZXx0v4zVKvtumqwFSVy6Xmaui6QT/OgYL6zM3aI=
+github.com/AfterShip/clickhouse-sql-parser v0.5.1/go.mod h1:Qi3qvPTfZb/aFwI5V4WFOahgjsLJa4MzVijIAfwOhDw=
 github.com/BurntSushi/toml v0.3.1/go.mod h1:xHWCNGjB5oqiDr8zfno3MHue2Ht5sIBksp03qcyfWMU=
 github.com/BurntSushi/toml v1.5.0/go.mod h1:ukJfTF/6rtPPRCnwkur4qwRxa8vTRFBF0uk2lLoLwho=
 github.com/BurntSushi/toml v1.6.0 h1:dRaEfpa2VI55EwlIW72hMRHdWouJeRF7TPYhI+AUQjk=

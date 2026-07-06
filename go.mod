@@ -12,6 +12,7 @@ require (
 )
 
 require (
+	github.com/AfterShip/clickhouse-sql-parser v0.5.1 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/apache/arrow-go/v18 v18.6.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

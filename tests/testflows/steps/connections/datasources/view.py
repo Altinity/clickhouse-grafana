@@ -29,4 +29,5 @@ def check_datasource_is_default(self, datasource_name):
         open_connections_datasources_endpoint()
 
     with By("checking datasource is default"):
-        return '\ndefault\n' in locators.datasource_card(datasource_name=datasource_name).text
+        # the default badge is newline-delimited on older Grafana and inline on 13.1
+        return 'default' in locators.datasource_card(datasource_name=datasource_name).text.split()

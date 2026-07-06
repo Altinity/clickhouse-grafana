@@ -184,61 +184,61 @@ class Locators:
     def column_timestamp_type_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Column timestamp type"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Column timestamp type"]/..//input')
 
     @property
     def datetime_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Datetime Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Datetime Field"]/..//input')
 
     @property
     def timestamp_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Timestamp (Uint32) Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Timestamp (Uint32) Field"]/..//input')
 
     @property
     def datetime64_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Datetime64 Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Datetime64 Field"]/..//input')
 
     @property
     def float_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Float Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Float Field"]/..//input')
 
     @property
     def timestamp_64_3_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Timestamp64(3) Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Timestamp64(3) Field"]/..//input')
 
     @property
     def timestamp_64_6_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Timestamp64(6) Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Timestamp64(6) Field"]/..//input')
 
     @property
     def timestamp_64_9_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Timestamp64(9) Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Timestamp64(9) Field"]/..//input')
 
     @property
     def date_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Date Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Date Field"]/..//input')
 
     @property
     def context_window_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Context window"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Context window"]/..//input')
 
 
     @property

@@ -1,0 +1,2759 @@
+{
+  "$COLUMNS(a, b) FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": [
+            "$COLUMNS(a, b)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " $COLUMNS(a, b)\n\n FROM t\n"
+  },
+  "$columns(a, sum(b) c) FROM t WHERE z = 1": {
+    "ast": {
+      "Obj": {
+        "$columns": {
+          "Obj": null,
+          "Arr": [
+            "a",
+            "sum(b) c"
+          ]
+        },
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": []
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "z = 1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " $columns(\n     a,\n     sum(b) c) SELECT\n FROM t\n\n WHERE z = 1\n"
+  },
+  "$conditionalTest(AND x = 1, $var) FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": [
+            "$conditionalTest(AND x = 1, $var)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " $conditionalTest(AND x = 1, $var)\n\n FROM t\n"
+  },
+  "$deltaColumnsAggregated(a, b, sum(c) c) FROM t": {
+    "ast": {
+      "Obj": {
+        "$deltaColumnsAggregated": {
+          "Obj": null,
+          "Arr": [
+            "a",
+            "b",
+            "sum(c) c"
+          ]
+        },
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": []
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT\n FROM t\n"
+  },
+  "$lttbMs(t, v) FROM t2 WHERE x = 1": {
+    "ast": {
+      "Obj": {
+        "$lttbMs": {
+          "Obj": null,
+          "Arr": [
+            "t",
+            "v"
+          ]
+        },
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t2"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": []
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "x = 1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " $lttbMs(\n     t,\n     v) SELECT\n FROM t2\n\n WHERE x = 1\n"
+  },
+  "$perSecondColumns(k, v) FROM t WHERE a = 1": {
+    "ast": {
+      "Obj": {
+        "$perSecondColumns": {
+          "Obj": null,
+          "Arr": [
+            "k",
+            "v"
+          ]
+        },
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": []
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "a = 1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " $perSecondColumns(\n     k,\n     v) SELECT\n FROM t\n\n WHERE a = 1\n"
+  },
+  "$rate(cnt c) FROM t": {
+    "ast": {
+      "Obj": {
+        "$rate": {
+          "Obj": null,
+          "Arr": [
+            "cnt c"
+          ]
+        },
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": []
+        }
+      },
+      "Arr": null
+    },
+    "printed": " $rate( cnt c\n) SELECT\n FROM t\n"
+  },
+  "$rateColumns(x, y) FROM t": {
+    "ast": {
+      "Obj": {
+        "$rateColumns": {
+          "Obj": null,
+          "Arr": [
+            "x",
+            "y"
+          ]
+        },
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": []
+        }
+      },
+      "Arr": null
+    },
+    "printed": " $rateColumns(\n     x,\n     y) SELECT\n FROM t\n"
+  },
+  "-- c\nSELECT 1 FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": [
+            "-- c\n"
+          ]
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " -- c\n\n SELECT 1\n\n FROM t\n"
+  },
+  "/* head */ SELECT 1 FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": [
+            "/* head */\n"
+          ]
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " /* head */\n\n SELECT 1\n\n FROM t\n"
+  },
+  "SELECT !flag, not x FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "!flag",
+            "not x"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT\n     !flag,\n     not x\n FROM t\n"
+  },
+  "SELECT $rate(x) FROM t": {
+    "ast": {
+      "Obj": {
+        "$rate": {
+          "Obj": null,
+          "Arr": [
+            "x"
+          ]
+        },
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": []
+        }
+      },
+      "Arr": null
+    },
+    "printed": " $rate( x\n) SELECT\n FROM t\n"
+  },
+  "SELECT $timeSeries as t, count() FROM t WHERE $timeFilter GROUP BY t ORDER BY t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "group by": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "order by": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "$timeSeries as t",
+            "count()"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "$timeFilter"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT\n     $timeSeries as t,\n     count()\n FROM t\n\n WHERE $timeFilter\n\n GROUP BY t\n\n ORDER BY t\n"
+  },
+  "SELECT 'a b  c', `q id`, \"dq\" FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "'a b  c'",
+            "`q id`",
+            "\"dq\""
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT\n     'a b  c',\n     `q id`,\n     \"dq\"\n FROM t\n"
+  },
+  "SELECT 'has union all inside' FROM a UNION ALL SELECT 2 FROM b": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "'has union all inside'"
+          ]
+        },
+        "union all": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "from": {
+                  "Obj": null,
+                  "Arr": [
+                    "b"
+                  ]
+                },
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "2"
+                  ]
+                }
+              },
+              "Arr": null
+            }
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 'has union all inside'\n\n FROM a\n\n\n UNION ALL\n\n SELECT 2\n\n FROM b\n"
+  },
+  "SELECT , x FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "",
+            "x"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT\n     ,\n     x\n FROM t\n"
+  },
+  "SELECT -1, a.b, arr[1], f(a,b), g( x ,  y ) FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "- 1",
+            "a.b",
+            "arr[1]",
+            "f(a, b)",
+            "g(x, y)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT\n     - 1,\n     a.b,\n     arr[1],\n     f(a, b),\n     g(x, y)\n FROM t\n"
+  },
+  "SELECT 1 FROM (SELECT ')' AS p FROM u) q": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": {
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": []
+            }
+          },
+          "Arr": null
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM\n(\n     SELECT\n)"
+  },
+  "SELECT 1 FROM (SELECT 1 FROM q) x INNER JOIN (SELECT 2 FROM w) y ON x.a = y.a": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": [
+                "x"
+              ]
+            },
+            "from": {
+              "Obj": null,
+              "Arr": [
+                "q"
+              ]
+            },
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "1"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": [
+                    "y"
+                  ]
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": [
+                    "x.a=y.a"
+                  ]
+                },
+                "source": {
+                  "Obj": {
+                    "from": {
+                      "Obj": null,
+                      "Arr": [
+                        "w"
+                      ]
+                    },
+                    "root": {
+                      "Obj": null,
+                      "Arr": []
+                    },
+                    "select": {
+                      "Obj": null,
+                      "Arr": [
+                        "2"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "INNER JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM\n(\n     SELECT 1\n\n     FROM q\n x\n\n)\n INNER JOIN\n(\n     SELECT 2\n\n     FROM w\n\n)  y\n ON  x.a=y.a\n"
+  },
+  "SELECT 1 FROM (SELECT 2 FROM (SELECT 3 FROM inner1) i1) i2": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": [
+                "i2"
+              ]
+            },
+            "from": {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": [
+                    "i1"
+                  ]
+                },
+                "from": {
+                  "Obj": null,
+                  "Arr": [
+                    "inner1"
+                  ]
+                },
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "3"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "2"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM\n(\n     SELECT 2\n\n     FROM\n(\n         SELECT 3\n\n         FROM inner1\n i1\n\n) i2\n\n)"
+  },
+  "SELECT 1 FROM (SELECT 2 FROM u) AS s WHERE 1": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": [
+                "AS s"
+              ]
+            },
+            "from": {
+              "Obj": null,
+              "Arr": [
+                "u"
+              ]
+            },
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "2"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM\n(\n     SELECT 2\n\n     FROM u\n AS s\n\n)\n WHERE 1\n"
+  },
+  "SELECT 1 FROM (SELECT 2 UNION ALL SELECT 3) x": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": [
+                "x"
+              ]
+            },
+            "root": {
+              "Obj": null,
+              "Arr": []
+            },
+            "select": {
+              "Obj": null,
+              "Arr": [
+                "2"
+              ]
+            },
+            "union all": {
+              "Obj": null,
+              "Arr": [
+                {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": []
+                    },
+                    "select": {
+                      "Obj": null,
+                      "Arr": [
+                        "3"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                }
+              ]
+            }
+          },
+          "Arr": null
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM\n(\n     SELECT 2\n x\n\n\n     UNION ALL\n\n     SELECT 3\n\n)"
+  },
+  "SELECT 1 FROM a ANY LEFT JOIN b AS bb USING (id, name)": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": [
+                    "AS",
+                    "bb"
+                  ]
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "b"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "ANY LEFT JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": [
+                    "id",
+                    "name"
+                  ]
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n ANY LEFT JOIN\n(\n b\n\n) \n    AS \n    bb USING \n    id \n    name"
+  },
+  "SELECT 1 FROM a ARRAY JOIN $col AS c": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": [
+                    "AS",
+                    "c"
+                  ]
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "$col"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "ARRAY JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n ARRAY JOIN\n(\n $col\n\n) \n    AS \n    c"
+  },
+  "SELECT 1 FROM a ARRAY JOIN arr AS x WHERE 1": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": [
+                    "AS",
+                    "x",
+                    "WHERE",
+                    "1"
+                  ]
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "arr"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "ARRAY JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n ARRAY JOIN\n(\n arr\n\n) \n    AS \n    x \n    WHERE \n    1"
+  },
+  "SELECT 1 FROM a GLOBAL ANY LEFT\n OUTER JOIN b ON a.x=b.x": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": [
+                    "a.x=b.x"
+                  ]
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "b"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "GLOBAL ANY LEFT\n OUTER JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n GLOBAL ANY LEFT\n OUTER JOIN\n(\n b\n\n)  ON  a.x=b.x\n"
+  },
+  "SELECT 1 FROM a INNER JOIN b ON a.id = b.id AND a.x \u003e 1": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": [
+                    "a.id=b.id AND a.x\u003e1"
+                  ]
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "b"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "INNER JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n INNER JOIN\n(\n b\n\n)  ON  a.id=b.id AND a.x\u003e1\n"
+  },
+  "SELECT 1 FROM a INNER JOIN b ON a.x=b.x LEFT JOIN c ON a.y=c.y WHERE q=1": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": [
+                    "a.x=b.x"
+                  ]
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "b"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "INNER JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": [
+                    "a.y=c.y"
+                  ]
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "c"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "LEFT JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "q = 1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n INNER JOIN\n(\n b\n\n)  ON  a.x=b.x\n\n LEFT JOIN\n(\n c\n\n)  ON  a.y=c.y\n\n WHERE q = 1\n"
+  },
+  "SELECT 1 FROM a INNER JOIN b WHERE x = 1": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": [
+                    "WHERE",
+                    "x",
+                    "=",
+                    "1"
+                  ]
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "b"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "INNER JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n INNER JOIN\n(\n b\n\n) \n    WHERE \n    x \n    = \n    1"
+  },
+  "SELECT 1 FROM a INNER JOIN db.tbl x ON a.id=x.id": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": [
+                    "a.id=x.id"
+                  ]
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "db.tblx"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "INNER JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n INNER JOIN\n(\n db.tblx\n\n)  ON  a.id=x.id\n"
+  },
+  "SELECT 1 FROM a JOIN b": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "b"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n JOIN\n(\n b\n\n) "
+  },
+  "SELECT 1 FROM a JOIN db.tbl": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": [
+                    "tbl"
+                  ]
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "db.tbl"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n JOIN\n(\n db.tbl\n\n)  tbl\n"
+  },
+  "SELECT 1 FROM a LEFT ARRAY JOIN arr": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "join": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "aliases": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "on": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "source": {
+                  "Obj": {
+                    "root": {
+                      "Obj": null,
+                      "Arr": [
+                        "arr"
+                      ]
+                    }
+                  },
+                  "Arr": null
+                },
+                "type": "LEFT ARRAY JOIN",
+                "using": {
+                  "Obj": null,
+                  "Arr": []
+                }
+              },
+              "Arr": null
+            }
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n LEFT ARRAY JOIN\n(\n arr\n\n) "
+  },
+  "SELECT 1 FROM a UNION ALL": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "union all": {
+          "Obj": null,
+          "Arr": []
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n"
+  },
+  "SELECT 1 FROM a UNION ALL SELECT 2 FROM b": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "union all": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "from": {
+                  "Obj": null,
+                  "Arr": [
+                    "b"
+                  ]
+                },
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "2"
+                  ]
+                }
+              },
+              "Arr": null
+            }
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n\n UNION ALL\n\n SELECT 2\n\n FROM b\n"
+  },
+  "SELECT 1 FROM a UNION ALL SELECT 2 FROM b UNION ALL SELECT 3 FROM c": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "union all": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "from": {
+                  "Obj": null,
+                  "Arr": [
+                    "b"
+                  ]
+                },
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "2"
+                  ]
+                }
+              },
+              "Arr": null
+            },
+            {
+              "Obj": {
+                "from": {
+                  "Obj": null,
+                  "Arr": [
+                    "c"
+                  ]
+                },
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "3"
+                  ]
+                }
+              },
+              "Arr": null
+            }
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n\n UNION ALL\n\n SELECT 2\n\n FROM b\n\n\n UNION ALL\n\n SELECT 3\n\n FROM c\n"
+  },
+  "SELECT 1 FROM a UNION ALL SELECT 2 FROM b union  all SELECT 3 FROM c": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "union all": {
+          "Obj": null,
+          "Arr": [
+            {
+              "Obj": {
+                "from": {
+                  "Obj": null,
+                  "Arr": [
+                    "b union all SELECT 3 FROM c"
+                  ]
+                },
+                "root": {
+                  "Obj": null,
+                  "Arr": []
+                },
+                "select": {
+                  "Obj": null,
+                  "Arr": [
+                    "2"
+                  ]
+                }
+              },
+              "Arr": null
+            }
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n\n UNION ALL\n\n SELECT 2\n\n FROM b union all SELECT 3 FROM c\n"
+  },
+  "SELECT 1 FROM a WHERE b IN (SELECT 1 FROM c) FROM d": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "a"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "b IN (\n    SELECT 1\n\n    FROM c\n)",
+            "FROM d"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM a\n\n WHERE\n     b IN (\n    SELECT 1\n\n    FROM c\n)\n     FROM d"
+  },
+  "SELECT 1 FROM clusterAllReplicas('{cluster}', merge(system,'^query_log')) WHERE x = 1": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "clusterAllReplicas('{cluster}', merge(system,'^query_log'))"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "x = 1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM clusterAllReplicas('{cluster}', merge(system,'^query_log'))\n\n WHERE x = 1\n"
+  },
+  "SELECT 1 FROM default.test_grafana FINAL": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "default.test_grafana FINAL"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM default.test_grafana FINAL\n"
+  },
+  "SELECT 1 FROM myfunc(10)": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": [
+                "myfunc"
+              ]
+            },
+            "root": {
+              "Obj": null,
+              "Arr": [
+                "10"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM\n(\n 10\n myfunc\n\n)"
+  },
+  "SELECT 1 FROM myfunc(10) AS z": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": {
+            "aliases": {
+              "Obj": null,
+              "Arr": [
+                "myfunc AS z"
+              ]
+            },
+            "root": {
+              "Obj": null,
+              "Arr": [
+                "10"
+              ]
+            }
+          },
+          "Arr": null
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM\n(\n 10\n myfunc AS z\n\n)"
+  },
+  "SELECT 1 FROM numbers( 10 , 20 )": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "numbers( 10 , 20 )"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM numbers( 10 , 20 )\n"
+  },
+  "SELECT 1 FROM numbers(10)": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "numbers(10)"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM numbers(10)\n"
+  },
+  "SELECT 1 FROM t LIMIT 10, 20": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "limit": {
+          "Obj": null,
+          "Arr": [
+            "10",
+            "20"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n LIMIT\n     10,\n     20"
+  },
+  "SELECT 1 FROM t PREWHERE a = 1 AND b = 2": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "prewhere": {
+          "Obj": null,
+          "Arr": [
+            "a = 1",
+            "AND b = 2"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n PREWHERE\n     a = 1\n     AND b = 2"
+  },
+  "SELECT 1 FROM t WHERE (AND x = 1)": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "( AND x = 1)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE ( AND x = 1)\n"
+  },
+  "SELECT 1 FROM t WHERE a = 1 $conditionalTest(AND h in [$query_hash],$query_hash)": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "a = 1 $conditionalTest( AND h in ($query_hash], $query_hash)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE a = 1 $conditionalTest( AND h in ($query_hash], $query_hash)\n"
+  },
+  "SELECT 1 FROM t WHERE a = 1 AND (b = 2 OR c = 3), d = 4 OR e = 5": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "a = 1",
+            "AND(b = 2 OR c = 3)",
+            ",",
+            "d = 4",
+            "OR e = 5"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE\n     a = 1\n     AND(b = 2 OR c = 3)\n     ,\n     d = 4\n     OR e = 5"
+  },
+  "SELECT 1 FROM t WHERE a = 1 ORDER BY x": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "order by": {
+          "Obj": null,
+          "Arr": [
+            "x"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "a = 1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE a = 1\n\n ORDER BY x\n"
+  },
+  "SELECT 1 FROM t WHERE h IN [$query_hash]": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "h IN (\n)",
+            "query_hash]"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE\n     h IN (\n)\n     query_hash]"
+  },
+  "SELECT 1 FROM t WHERE h IN [$query_hash]\nGROUP BY x": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "h IN (\n)",
+            "query_hash] GROUP BY x"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE\n     h IN (\n)\n     query_hash] GROUP BY x"
+  },
+  "SELECT 1 FROM t WHERE x GLOBAL NOT IN (SELECT id FROM u)": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "x GLOBAL NOT IN (\n    SELECT id\n\n    FROM u\n)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE x GLOBAL NOT IN (\n    SELECT id\n\n    FROM u\n)\n"
+  },
+  "SELECT 1 FROM t WHERE x IN ($templateVar)": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "x IN ($templateVar)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE x IN ($templateVar)\n"
+  },
+  "SELECT 1 FROM t WHERE x IN (1,2,3)": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "x IN (123)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE x IN (123)\n"
+  },
+  "SELECT 1 FROM t WHERE x IN (SELECT id FROM u WHERE q = 1)": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "x IN (\n    SELECT id\n\n    FROM u\n\n    WHERE q = 1\n)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE x IN (\n    SELECT id\n\n    FROM u\n\n    WHERE q = 1\n)\n"
+  },
+  "SELECT 1 FROM t WHERE x IN ['aa', 'bb'] AND y = 1": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "x IN ['aa', 'bb'] AND y = 1"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE x IN ['aa', 'bb'] AND y = 1\n"
+  },
+  "SELECT 1 FROM t WHERE x NOT IN ('a', 'b')": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "1"
+          ]
+        },
+        "where": {
+          "Obj": null,
+          "Arr": [
+            "x NOT IN ('a''b')"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT 1\n\n FROM t\n\n WHERE x NOT IN ('a''b')\n"
+  },
+  "SELECT FROM t": {
+    "ast": {
+      "Obj": {
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "FROM t"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT FROM t\n"
+  },
+  "SELECT a IN (SELECT q FROM u) AS flag FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "a IN (\n    SELECT q\n\n    FROM u\n) AS flag"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT a IN (\n    SELECT q\n\n    FROM u\n) AS flag\n\n FROM t\n"
+  },
+  "SELECT a, count() FROM t GROUP BY a, b HAVING count() \u003e 1": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "group by": {
+          "Obj": null,
+          "Arr": [
+            "a",
+            "b"
+          ]
+        },
+        "having": {
+          "Obj": null,
+          "Arr": [
+            "count() \u003e 1"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "a",
+            "count()"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT\n     a,\n     count()\n FROM t\n\n GROUP BY\n     a,\n     b\n HAVING count() \u003e 1\n"
+  },
+  "SELECT col2/col1*10000 FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "col2 / col1 * 10000"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT col2 / col1 * 10000\n\n FROM t\n"
+  },
+  "SELECT concat('a','b') FROM t PREWHERE d = today() FORMAT JSON": {
+    "ast": {
+      "Obj": {
+        "format": {
+          "Obj": null,
+          "Arr": [
+            "JSON"
+          ]
+        },
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "prewhere": {
+          "Obj": null,
+          "Arr": [
+            "d = today()"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "concat('a', 'b')"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT concat('a', 'b')\n\n FROM t\n\n PREWHERE d = today()\n\n FORMAT JSON\n"
+  },
+  "SELECT type in (2,4) FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "type in (24)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT type in (24)\n\n FROM t\n"
+  },
+  "SELECT x -- c\n, y FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "x-- c\n",
+            "y"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT\n     x-- c\n,\n     y\n FROM t\n"
+  },
+  "SELECT x /* blk */ , y FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "x/* blk */\n",
+            "y"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT\n     x/* blk */\n,\n     y\n FROM t\n"
+  },
+  "SELECT x FROM t GROUP\nBY x": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t GROUP BY x"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "x"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT x\n\n FROM t GROUP BY x\n"
+  },
+  "SELECT x FROM t GROUP  BY x": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t GROUP BY x"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "x"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT x\n\n FROM t GROUP BY x\n"
+  },
+  "SELECT x FROM t ORDER BY x DESC, y ASC": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "order by": {
+          "Obj": null,
+          "Arr": [
+            "x DESC",
+            "y ASC"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "x"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT x\n\n FROM t\n\n ORDER BY\n     x DESC,\n     y ASC"
+  },
+  "SELECT x FROM t ORDER BY x WITH FILL STEP 1": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "order by": {
+          "Obj": null,
+          "Arr": [
+            "x WITH FILL STEP 1"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "x"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT x\n\n FROM t\n\n ORDER BY x WITH FILL STEP 1\n"
+  },
+  "SELECT x, from FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "x",
+            "from"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " SELECT\n     x,\n     from\n FROM t\n"
+  },
+  "WITH 1 AS x SELECT x FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "x"
+          ]
+        },
+        "with": {
+          "Obj": null,
+          "Arr": [
+            "1 AS x"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " WITH 1 AS x\n SELECT x\n\n FROM t\n"
+  },
+  "WITH x AS (SELECT a FROM b) SELECT x FROM t": {
+    "ast": {
+      "Obj": {
+        "from": {
+          "Obj": null,
+          "Arr": [
+            "t"
+          ]
+        },
+        "root": {
+          "Obj": null,
+          "Arr": []
+        },
+        "select": {
+          "Obj": null,
+          "Arr": [
+            "x"
+          ]
+        },
+        "with": {
+          "Obj": null,
+          "Arr": [
+            "x AS(SELECT a FROM b)"
+          ]
+        }
+      },
+      "Arr": null
+    },
+    "printed": " WITH x AS(SELECT a FROM b)\n SELECT x\n\n FROM t\n"
+  }
+}

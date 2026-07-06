@@ -2,7 +2,9 @@
 package eval
 
 import (
+	"bytes"
 	"encoding/json"
+	"os"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -146,39 +148,183 @@ func requireV2MatchesLegacy(t *testing.T, query string) {
 	require.Equal(t, PrintAST(legacyAST, " "), PrintAST(v2AST, " "), "PrintAST mismatch for %q", query)
 }
 
-// Every query below exercises ONLY Task-5 machinery: statements, items,
-// commas, WHERE/PREWHERE conds, comments, glue quirks. No FROM-(, no JOIN,
-// no IN, no macro heads, no UNION ALL (those are Tasks 6-9).
-func TestParserV2ClauseSkeleton(t *testing.T) {
-	for _, q := range []string{
-		"SELECT col2/col1*10000 FROM t",
-		"SELECT -1, a.b, arr[1], f(a,b), g( x ,  y ) FROM t",
-		"SELECT x -- c\n, y FROM t",
-		"SELECT x /* blk */ , y FROM t",
-		"-- c\nSELECT 1 FROM t",
-		"/* head */ SELECT 1 FROM t",
-		"SELECT 1 FROM t WHERE a = 1 AND (b = 2 OR c = 3), d = 4 OR e = 5",
-		"SELECT 1 FROM t WHERE (AND x = 1)",
-		"SELECT a, count() FROM t GROUP BY a, b HAVING count() > 1",
-		"WITH 1 AS x SELECT x FROM t",
-		"WITH x AS (SELECT a FROM b) SELECT x FROM t",
-		"SELECT x FROM t ORDER BY x WITH FILL STEP 1",
-		"SELECT x FROM t ORDER BY x DESC, y ASC",
-		"SELECT 1 FROM t LIMIT 10, 20",
-		"SELECT concat('a','b') FROM t PREWHERE d = today() FORMAT JSON",
-		"SELECT 1 FROM t PREWHERE a = 1 AND b = 2",
-		"SELECT x, from FROM t",
-		"SELECT FROM t",
-		"SELECT , x FROM t",
-		"SELECT x FROM t GROUP  BY x",
-		"SELECT x FROM t GROUP\nBY x",
-		"SELECT 'a b  c', `q id`, \"dq\" FROM t",
-		"SELECT !flag, not x FROM t",
-		"SELECT 1 FROM default.test_grafana FINAL",
-		"SELECT 1 FROM t WHERE a = 1 ORDER BY x",
-		"SELECT $timeSeries as t, count() FROM t WHERE $timeFilter GROUP BY t ORDER BY t",
-	} {
-		requireV2MatchesLegacy(t, q)
+const unitSnapshotsPath = "testdata/parser_v2_unit_snapshots.json"
+
+type unitSnapshot struct {
+	AST     json.RawMessage `json:"ast"`
+	Printed string          `json:"printed"`
+}
+
+// parserV2UnitGroups holds the 73 hand-built edge queries from #733 Phase-2
+// (the former 6 mini-differential loop-tests, grouped identically). Their exact
+// two-engine output is pinned by TestParserV2UnitSnapshots.
+var parserV2UnitGroups = []struct {
+	Name    string
+	Queries []string
+}{
+	{
+		// Every query below exercises ONLY Task-5 machinery: statements, items,
+		// commas, WHERE/PREWHERE conds, comments, glue quirks. No FROM-(, no JOIN,
+		// no IN, no macro heads, no UNION ALL (those are Tasks 6-9).
+		Name: "clause_skeleton",
+		Queries: []string{
+			"SELECT col2/col1*10000 FROM t",
+			"SELECT -1, a.b, arr[1], f(a,b), g( x ,  y ) FROM t",
+			"SELECT x -- c\n, y FROM t",
+			"SELECT x /* blk */ , y FROM t",
+			"-- c\nSELECT 1 FROM t",
+			"/* head */ SELECT 1 FROM t",
+			"SELECT 1 FROM t WHERE a = 1 AND (b = 2 OR c = 3), d = 4 OR e = 5",
+			"SELECT 1 FROM t WHERE (AND x = 1)",
+			"SELECT a, count() FROM t GROUP BY a, b HAVING count() > 1",
+			"WITH 1 AS x SELECT x FROM t",
+			"WITH x AS (SELECT a FROM b) SELECT x FROM t",
+			"SELECT x FROM t ORDER BY x WITH FILL STEP 1",
+			"SELECT x FROM t ORDER BY x DESC, y ASC",
+			"SELECT 1 FROM t LIMIT 10, 20",
+			"SELECT concat('a','b') FROM t PREWHERE d = today() FORMAT JSON",
+			"SELECT 1 FROM t PREWHERE a = 1 AND b = 2",
+			"SELECT x, from FROM t",
+			"SELECT FROM t",
+			"SELECT , x FROM t",
+			"SELECT x FROM t GROUP  BY x",
+			"SELECT x FROM t GROUP\nBY x",
+			"SELECT 'a b  c', `q id`, \"dq\" FROM t",
+			"SELECT !flag, not x FROM t",
+			"SELECT 1 FROM default.test_grafana FINAL",
+			"SELECT 1 FROM t WHERE a = 1 ORDER BY x",
+			"SELECT $timeSeries as t, count() FROM t WHERE $timeFilter GROUP BY t ORDER BY t",
+		},
+	},
+	{
+		Name: "from",
+		Queries: []string{
+			// subquery + one accumulated alias item (facts 9-11)
+			"SELECT 1 FROM (SELECT 2 FROM u) AS s WHERE 1",
+			"SELECT 1 FROM (SELECT 2 FROM (SELECT 3 FROM inner1) i1) i2",
+			// whitelisted table functions keep the RAW inner text (fact 10)
+			"SELECT 1 FROM numbers(10)",
+			"SELECT 1 FROM numbers( 10 , 20 )",
+			"SELECT 1 FROM clusterAllReplicas('{cluster}', merge(system,'^query_log')) WHERE x = 1",
+			// non-whitelisted: from replaced, head becomes the alias (fact 10)
+			"SELECT 1 FROM myfunc(10)",
+			"SELECT 1 FROM myfunc(10) AS z",
+			// quote-blind betweenBraces cut + silent truncation (facts 8-9)
+			"SELECT 1 FROM (SELECT ')' AS p FROM u) q",
+		},
+	},
+	{
+		Name: "join",
+		Queries: []string{
+			"SELECT 1 FROM a INNER JOIN b ON a.id = b.id AND a.x > 1",
+			"SELECT 1 FROM a ANY LEFT JOIN b AS bb USING (id, name)",
+			"SELECT 1 FROM a ARRAY JOIN arr AS x WHERE 1",
+			"SELECT 1 FROM a LEFT ARRAY JOIN arr",
+			"SELECT 1 FROM a ARRAY JOIN $col AS c",
+			"SELECT 1 FROM a INNER JOIN b WHERE x = 1",
+			"SELECT 1 FROM a INNER JOIN b ON a.x=b.x LEFT JOIN c ON a.y=c.y WHERE q=1",
+			"SELECT 1 FROM a GLOBAL ANY LEFT\n OUTER JOIN b ON a.x=b.x",
+			"SELECT 1 FROM (SELECT 1 FROM q) x INNER JOIN (SELECT 2 FROM w) y ON x.a = y.a",
+			"SELECT 1 FROM a INNER JOIN db.tbl x ON a.id=x.id",
+			"SELECT 1 FROM a JOIN b",
+			"SELECT 1 FROM a JOIN db.tbl",
+		},
+	},
+	{
+		Name: "in",
+		Queries: []string{
+			// list concat quirk (fact 4)
+			"SELECT 1 FROM t WHERE x IN (1,2,3)",
+			"SELECT 1 FROM t WHERE x NOT IN ('a', 'b')",
+			"SELECT type in (2,4) FROM t",
+			"SELECT 1 FROM t WHERE x IN ($templateVar)",
+			// subquery form (fact 5), all root positions
+			"SELECT 1 FROM t WHERE x IN (SELECT id FROM u WHERE q = 1)",
+			"SELECT 1 FROM t WHERE x GLOBAL NOT IN (SELECT id FROM u)",
+			"SELECT a IN (SELECT q FROM u) AS flag FROM t",
+			"SELECT 1 FROM a WHERE b IN (SELECT 1 FROM c) FROM d",
+			// the [$hash] mangling (fact 6) — byte-parity, NOT an engine_diff
+			"SELECT 1 FROM t WHERE h IN [$query_hash]",
+			"SELECT 1 FROM t WHERE h IN [$query_hash]\nGROUP BY x",
+			// swallowed quoted-array form (fact 7)
+			"SELECT 1 FROM t WHERE x IN ['aa', 'bb'] AND y = 1",
+			// in [ inside an unbalanced $conditionalTest( item (dash_3e6747ba5c shape)
+			"SELECT 1 FROM t WHERE a = 1 $conditionalTest(AND h in [$query_hash],$query_hash)",
+		},
+	},
+	{
+		Name: "macro_heads",
+		Queries: []string{
+			"$columns(a, sum(b) c) FROM t WHERE z = 1",
+			"$rate(cnt c) FROM t",
+			"$rateColumns(x, y) FROM t",
+			"$perSecondColumns(k, v) FROM t WHERE a = 1",
+			"$lttbMs(t, v) FROM t2 WHERE x = 1",
+			"$deltaColumnsAggregated(a, b, sum(c) c) FROM t",
+			"SELECT $rate(x) FROM t",                   // fires mid-select, resets select (fact 15)
+			"$COLUMNS(a, b) FROM t",                    // case-sensitive: NOT a macro head (fact 15)
+			"$conditionalTest(AND x = 1, $var) FROM t", // not in macroFuncRe either
+		},
+	},
+	{
+		Name: "union_all",
+		Queries: []string{
+			"SELECT 1 FROM a UNION ALL SELECT 2 FROM b",
+			"SELECT 1 FROM a UNION ALL SELECT 2 FROM b UNION ALL SELECT 3 FROM c",
+			"SELECT 'has union all inside' FROM a UNION ALL SELECT 2 FROM b",
+			"SELECT 1 FROM a UNION ALL",                                            // trailing: empty Arr (fact 13)
+			"SELECT 1 FROM a UNION ALL SELECT 2 FROM b union  all SELECT 3 FROM c", // 2 spaces: no split (fact 13)
+			"SELECT 1 FROM (SELECT 2 UNION ALL SELECT 3) x",                        // union inside a FROM subquery
+		},
+	},
+}
+
+// TestParserV2UnitSnapshots pins the v2 engine's exact AST-JSON and PrintAST
+// bytes for 73 hand-built edge queries (#733 Phase-2 unit oracle set). The
+// snapshot was captured while the legacy engine still existed and asserted
+// byte-identical (requireV2MatchesLegacy) — it IS the two-engine agreement,
+// frozen. Regenerate: go test ./pkg/eval -run TestParserV2UnitSnapshots -args -update
+func TestParserV2UnitSnapshots(t *testing.T) {
+	snaps := map[string]unitSnapshot{}
+	if !*updateCorpus {
+		raw, err := os.ReadFile(unitSnapshotsPath)
+		require.NoError(t, err, "missing %s (run with -args -update)", unitSnapshotsPath)
+		require.NoError(t, json.Unmarshal(raw, &snaps))
+	}
+	for _, g := range parserV2UnitGroups {
+		g := g
+		t.Run(g.Name, func(t *testing.T) {
+			for _, q := range g.Queries {
+				// LEGACY CROSS-CHECK — removed in Phase-4 Task 3 together with
+				// the legacy engine; the snapshot then carries the parity proof.
+				requireV2MatchesLegacy(t, q)
+
+				ast, err := toASTV2(q)
+				require.NoError(t, err, "v2 failed on %q", q)
+				astJSON, err := json.MarshalIndent(ast, "", "  ")
+				require.NoError(t, err)
+				printed := PrintAST(ast, " ")
+				if *updateCorpus {
+					snaps[q] = unitSnapshot{AST: astJSON, Printed: printed}
+					continue
+				}
+				want, ok := snaps[q]
+				require.True(t, ok, "no snapshot for %q (run with -args -update)", q)
+				// The stored AST RawMessage was re-indented to the outer map's
+				// nesting level when the golden was written; normalize it back to
+				// the base indentation MarshalIndent(ast, "", "  ") emits before
+				// byte-comparing.
+				var wantAST bytes.Buffer
+				require.NoError(t, json.Indent(&wantAST, want.AST, "", "  "))
+				require.Equal(t, wantAST.String(), string(astJSON), "AST drift for %q", q)
+				require.Equal(t, want.Printed, printed, "PrintAST drift for %q", q)
+			}
+		})
+	}
+	if *updateCorpus {
+		out, err := json.MarshalIndent(snaps, "", "  ")
+		require.NoError(t, err)
+		require.NoError(t, os.WriteFile(unitSnapshotsPath, append(out, '\n'), 0o644))
 	}
 }
 
@@ -201,25 +347,6 @@ func TestParserV2SkeletonLeaves(t *testing.T) {
 	require.False(t, ast.HasOwnProperty("from"))
 }
 
-func TestParserV2From(t *testing.T) {
-	for _, q := range []string{
-		// subquery + one accumulated alias item (facts 9-11)
-		"SELECT 1 FROM (SELECT 2 FROM u) AS s WHERE 1",
-		"SELECT 1 FROM (SELECT 2 FROM (SELECT 3 FROM inner1) i1) i2",
-		// whitelisted table functions keep the RAW inner text (fact 10)
-		"SELECT 1 FROM numbers(10)",
-		"SELECT 1 FROM numbers( 10 , 20 )",
-		"SELECT 1 FROM clusterAllReplicas('{cluster}', merge(system,'^query_log')) WHERE x = 1",
-		// non-whitelisted: from replaced, head becomes the alias (fact 10)
-		"SELECT 1 FROM myfunc(10)",
-		"SELECT 1 FROM myfunc(10) AS z",
-		// quote-blind betweenBraces cut + silent truncation (facts 8-9)
-		"SELECT 1 FROM (SELECT ')' AS p FROM u) q",
-	} {
-		requireV2MatchesLegacy(t, q)
-	}
-}
-
 func TestParserV2FromLeaves(t *testing.T) {
 	ast, err := toASTV2("SELECT 1 FROM numbers( 10 , 20 )")
 	require.NoError(t, err)
@@ -231,25 +358,6 @@ func TestParserV2FromLeaves(t *testing.T) {
 	require.Nil(t, from.Arr, "from replaced by the sub-parse")
 	require.Equal(t, []interface{}{"10"}, from.Obj["root"].(*EvalAST).Arr)
 	require.Equal(t, []interface{}{"myfunc AS z"}, from.Obj["aliases"].(*EvalAST).Arr)
-}
-
-func TestParserV2Join(t *testing.T) {
-	for _, q := range []string{
-		"SELECT 1 FROM a INNER JOIN b ON a.id = b.id AND a.x > 1",
-		"SELECT 1 FROM a ANY LEFT JOIN b AS bb USING (id, name)",
-		"SELECT 1 FROM a ARRAY JOIN arr AS x WHERE 1",
-		"SELECT 1 FROM a LEFT ARRAY JOIN arr",
-		"SELECT 1 FROM a ARRAY JOIN $col AS c",
-		"SELECT 1 FROM a INNER JOIN b WHERE x = 1",
-		"SELECT 1 FROM a INNER JOIN b ON a.x=b.x LEFT JOIN c ON a.y=c.y WHERE q=1",
-		"SELECT 1 FROM a GLOBAL ANY LEFT\n OUTER JOIN b ON a.x=b.x",
-		"SELECT 1 FROM (SELECT 1 FROM q) x INNER JOIN (SELECT 2 FROM w) y ON x.a = y.a",
-		"SELECT 1 FROM a INNER JOIN db.tbl x ON a.id=x.id",
-		"SELECT 1 FROM a JOIN b",
-		"SELECT 1 FROM a JOIN db.tbl",
-	} {
-		requireV2MatchesLegacy(t, q)
-	}
 }
 
 func TestParserV2JoinLeaves(t *testing.T) {
@@ -282,30 +390,6 @@ func TestParserV2JoinError(t *testing.T) {
 	require.Contains(t, err.Error(), "wrong join signature for `INNER JOIN`")
 }
 
-func TestParserV2In(t *testing.T) {
-	for _, q := range []string{
-		// list concat quirk (fact 4)
-		"SELECT 1 FROM t WHERE x IN (1,2,3)",
-		"SELECT 1 FROM t WHERE x NOT IN ('a', 'b')",
-		"SELECT type in (2,4) FROM t",
-		"SELECT 1 FROM t WHERE x IN ($templateVar)",
-		// subquery form (fact 5), all root positions
-		"SELECT 1 FROM t WHERE x IN (SELECT id FROM u WHERE q = 1)",
-		"SELECT 1 FROM t WHERE x GLOBAL NOT IN (SELECT id FROM u)",
-		"SELECT a IN (SELECT q FROM u) AS flag FROM t",
-		"SELECT 1 FROM a WHERE b IN (SELECT 1 FROM c) FROM d",
-		// the [$hash] mangling (fact 6) — byte-parity, NOT an engine_diff
-		"SELECT 1 FROM t WHERE h IN [$query_hash]",
-		"SELECT 1 FROM t WHERE h IN [$query_hash]\nGROUP BY x",
-		// swallowed quoted-array form (fact 7)
-		"SELECT 1 FROM t WHERE x IN ['aa', 'bb'] AND y = 1",
-		// in [ inside an unbalanced $conditionalTest( item (dash_3e6747ba5c shape)
-		"SELECT 1 FROM t WHERE a = 1 $conditionalTest(AND h in [$query_hash],$query_hash)",
-	} {
-		requireV2MatchesLegacy(t, q)
-	}
-}
-
 func TestParserV2InLeaves(t *testing.T) {
 	ast, err := toASTV2("SELECT 1 FROM t WHERE x IN (1,2,3)")
 	require.NoError(t, err)
@@ -335,22 +419,6 @@ func TestParserV2InError(t *testing.T) {
 	require.Contains(t, err.Error(), "wrong `IN` signature for `x IN`")
 }
 
-func TestParserV2MacroHeads(t *testing.T) {
-	for _, q := range []string{
-		"$columns(a, sum(b) c) FROM t WHERE z = 1",
-		"$rate(cnt c) FROM t",
-		"$rateColumns(x, y) FROM t",
-		"$perSecondColumns(k, v) FROM t WHERE a = 1",
-		"$lttbMs(t, v) FROM t2 WHERE x = 1",
-		"$deltaColumnsAggregated(a, b, sum(c) c) FROM t",
-		"SELECT $rate(x) FROM t",                   // fires mid-select, resets select (fact 15)
-		"$COLUMNS(a, b) FROM t",                    // case-sensitive: NOT a macro head (fact 15)
-		"$conditionalTest(AND x = 1, $var) FROM t", // not in macroFuncRe either
-	} {
-		requireV2MatchesLegacy(t, q)
-	}
-}
-
 func TestParserV2MacroHeadLeaves(t *testing.T) {
 	ast, err := toASTV2("$columns(a, sum(b) c) FROM t WHERE z = 1")
 	require.NoError(t, err)
@@ -363,19 +431,6 @@ func TestParserV2MacroHeadError(t *testing.T) {
 	_, err := toASTV2("SELECT $rate")
 	require.Error(t, err)
 	require.Contains(t, err.Error(), "wrong macros signature for `$rate`")
-}
-
-func TestParserV2UnionAll(t *testing.T) {
-	for _, q := range []string{
-		"SELECT 1 FROM a UNION ALL SELECT 2 FROM b",
-		"SELECT 1 FROM a UNION ALL SELECT 2 FROM b UNION ALL SELECT 3 FROM c",
-		"SELECT 'has union all inside' FROM a UNION ALL SELECT 2 FROM b",
-		"SELECT 1 FROM a UNION ALL",                                            // trailing: empty Arr (fact 13)
-		"SELECT 1 FROM a UNION ALL SELECT 2 FROM b union  all SELECT 3 FROM c", // 2 spaces: no split (fact 13)
-		"SELECT 1 FROM (SELECT 2 UNION ALL SELECT 3) x",                        // union inside a FROM subquery
-	} {
-		requireV2MatchesLegacy(t, q)
-	}
 }
 
 func TestParserV2UnionAllLeaves(t *testing.T) {

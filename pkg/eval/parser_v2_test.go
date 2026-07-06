@@ -233,13 +233,61 @@ func TestParserV2FromLeaves(t *testing.T) {
 	require.Equal(t, []interface{}{"myfunc AS z"}, from.Obj["aliases"].(*EvalAST).Arr)
 }
 
+func TestParserV2Join(t *testing.T) {
+	for _, q := range []string{
+		"SELECT 1 FROM a INNER JOIN b ON a.id = b.id AND a.x > 1",
+		"SELECT 1 FROM a ANY LEFT JOIN b AS bb USING (id, name)",
+		"SELECT 1 FROM a ARRAY JOIN arr AS x WHERE 1",
+		"SELECT 1 FROM a LEFT ARRAY JOIN arr",
+		"SELECT 1 FROM a ARRAY JOIN $col AS c",
+		"SELECT 1 FROM a INNER JOIN b WHERE x = 1",
+		"SELECT 1 FROM a INNER JOIN b ON a.x=b.x LEFT JOIN c ON a.y=c.y WHERE q=1",
+		"SELECT 1 FROM a GLOBAL ANY LEFT\n OUTER JOIN b ON a.x=b.x",
+		"SELECT 1 FROM (SELECT 1 FROM q) x INNER JOIN (SELECT 2 FROM w) y ON x.a = y.a",
+		"SELECT 1 FROM a INNER JOIN db.tbl x ON a.id=x.id",
+		"SELECT 1 FROM a JOIN b",
+		"SELECT 1 FROM a JOIN db.tbl",
+	} {
+		requireV2MatchesLegacy(t, q)
+	}
+}
+
+func TestParserV2JoinLeaves(t *testing.T) {
+	// alias loop eats statements (fact 14): no where clause, aliases get it
+	ast, err := toASTV2("SELECT 1 FROM a ARRAY JOIN arr AS x WHERE 1")
+	require.NoError(t, err)
+	require.False(t, ast.HasOwnProperty("where"))
+	join := ast.Obj["join"].(*EvalAST).Arr[0].(*EvalAST)
+	require.Equal(t, []interface{}{"AS", "x", "WHERE", "1"}, join.Obj["aliases"].(*EvalAST).Arr)
+	require.Equal(t, "ARRAY JOIN", join.Obj["type"])
+
+	// raw multi-whitespace type slice + ON raw concat
+	ast, err = toASTV2("SELECT 1 FROM a GLOBAL ANY LEFT\n OUTER JOIN b ON a.x=b.x AND q>1")
+	require.NoError(t, err)
+	join = ast.Obj["join"].(*EvalAST).Arr[0].(*EvalAST)
+	require.Equal(t, "GLOBAL ANY LEFT\n OUTER JOIN", join.Obj["type"])
+	require.Equal(t, []interface{}{"a.x=b.x AND q>1"}, join.Obj["on"].(*EvalAST).Arr)
+
+	// isTable quirk: alias glues into the source chain (fact 14)
+	ast, err = toASTV2("SELECT 1 FROM a INNER JOIN db.tbl x ON a.id=x.id")
+	require.NoError(t, err)
+	join = ast.Obj["join"].(*EvalAST).Arr[0].(*EvalAST)
+	src := join.Obj["source"].(*EvalAST)
+	require.Equal(t, []interface{}{"db.tblx"}, src.Obj["root"].(*EvalAST).Arr)
+}
+
+func TestParserV2JoinError(t *testing.T) {
+	_, err := toASTV2("SELECT 1 FROM a INNER JOIN")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "wrong join signature for `INNER JOIN`")
+}
+
 // Unimplemented branches fail loudly, never silently mis-parse.
 func TestParserV2StubBranches(t *testing.T) {
 	for q, msg := range map[string]string{
-		"SELECT 1 FROM a INNER JOIN b ON a=b": "not implemented",
-		"SELECT 1 FROM t WHERE x IN (1)":      "not implemented",
-		"$rate(c) FROM t":                     "not implemented",
-		"SELECT 1 FROM a UNION ALL SELECT 2":  "not implemented",
+		"SELECT 1 FROM t WHERE x IN (1)":     "not implemented",
+		"$rate(c) FROM t":                    "not implemented",
+		"SELECT 1 FROM a UNION ALL SELECT 2": "not implemented",
 	} {
 		_, err := toASTV2(q)
 		require.Error(t, err, "expected stub error for %q", q)

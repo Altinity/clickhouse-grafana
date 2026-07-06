@@ -198,7 +198,11 @@ func parseQueryAtDepthV2(src string, depth int) (*queryNode, error) {
 			}
 
 		case lt.kind == logJoin:
-			return nil, fmt.Errorf("parser v2: JOIN not implemented") // Task 7
+			var err error
+			cur, err = p.parseJoin(q, cur, lt)
+			if err != nil {
+				return nil, fmt.Errorf("parseJOIN error: %v", err)
+			}
 
 		case p.rootName == "union all":
 			return nil, fmt.Errorf("parser v2: UNION ALL not implemented") // Task 9
@@ -504,4 +508,111 @@ func isWSOnlyGap(s string) bool {
 		}
 	}
 	return true
+}
+
+// parseJoin transliterates legacy parseJOIN (eval_query.go:1795-1915) over
+// logical tokens. joinTok is the already-consumed join-kind token; cur is
+// the caller's pending item (legacy `argument`), returned possibly replaced.
+// The quirks here are deliberate legacy parity (plan fact 14): the alias
+// loop eats statement keywords; the ident-chain source inherits the broken
+// isTable behavior; a statement in the conditions loop calls setRoot
+// UNCONDITIONALLY (clause overwrite, no HasOwnProperty guard).
+func (p *parserV2) parseJoin(q *queryNode, cur *itemNode, joinTok logicalToken) (*itemNode, error) {
+	j := newJoinNode(joinTok.text)
+	if !p.advance() {
+		return cur, fmt.Errorf("wrong join signature for `%s` at [%s]", joinTok.text, p.src[joinTok.end:])
+	}
+
+	if p.cur.kind == logClosure {
+		// parenthesized subquery source (legacy :1807-1813)
+		rest := p.restAfterCur()
+		sub := betweenBraces(rest)
+		subQ, err := p.subParse(sub)
+		if err != nil {
+			return cur, err
+		}
+		j.source = subQ
+		p.resumeRaw(safeTail(rest, len(sub)+1))
+		p.clearCur() // legacy: s.Token = ""
+	} else {
+		// ident-chain source (legacy :1815-1840)
+		sourceStr := ""
+	source:
+		for {
+			text := p.cur.text
+			switch {
+			case isID(text) && !isTable(sourceStr) && strings.ToUpper(text) != "AS" && !onJoinTokenOnlyRe.MatchString(text):
+				sourceStr += text
+			case isMacro(text):
+				sourceStr += text
+			case p.cur.kind == logDot:
+				sourceStr += text
+			default:
+				break source
+			}
+			if !p.advance() {
+				break source
+			}
+		}
+		if p.hasCur && p.cur.text == sourceStr {
+			p.clearCur() // single-word source at stream end (fact 14)
+		}
+		j.sourceStr = sourceStr
+	}
+
+	// alias loop (legacy :1852-1865): everything except USING/ON is an alias —
+	// including statement keywords (fact 14).
+	for {
+		if p.hasCur && !onJoinTokenOnlyRe.MatchString(p.cur.text) {
+			j.aliases = append(j.aliases, p.cur.text)
+		} else if p.hasCur && onJoinTokenOnlyRe.MatchString(p.cur.text) {
+			break
+		}
+		if !p.advance() {
+			break
+		}
+	}
+
+	joinExpr := ""
+	if p.hasCur {
+		joinExpr = strings.ToLower(p.cur.text)
+	}
+
+	// conditions loop (legacy :1868-1907)
+	nested := false
+	for {
+		if !p.advance() {
+			break
+		}
+		if p.cur.kind == logStatement {
+			if renderItem(cur) != "" {
+				p.push(q, cur)
+				cur = newItemNode()
+			}
+			p.setRoot(q, p.cur.text) // UNCONDITIONAL overwrite (fact 14)
+			break
+		}
+		if p.cur.kind == logJoin {
+			q.joins = append(q.joins, j)
+			nested = true
+			var err error
+			cur, err = p.parseJoin(q, cur, p.cur)
+			if err != nil {
+				return cur, err
+			}
+			break
+		}
+		if joinExpr == "using" {
+			if !isID(p.cur.text) {
+				continue // commas/parens dropped (fact 14)
+			}
+			j.using = append(j.using, p.cur.text)
+		} else {
+			j.on = append(j.on, onPart{text: p.cur.text, cond: isCond(p.cur.text)})
+		}
+	}
+	if !nested {
+		q.joins = append(q.joins, j)
+	}
+	return cur, nil
 }

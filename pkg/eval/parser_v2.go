@@ -183,7 +183,25 @@ func parseQueryAtDepthV2(src string, depth int) (*queryNode, error) {
 			p.resumeRaw(safeTail(rest, len(sub)+1))
 
 		case lt.kind == logMacroFunc:
-			return nil, fmt.Errorf("parser v2: macro heads not implemented") // Task 9
+			// legacy :1686-1707. Fires ANYWHERE; consumes ONE token blindly;
+			// the value is the sub-parse's ROOT items only; select is RESET.
+			funcName := lt.text
+			if !p.advance() {
+				return nil, fmt.Errorf("wrong macros signature for `%s` at [%s]", funcName, p.src[lt.end:])
+			}
+			rest := p.restAfterCur()
+			sub := betweenBraces(rest)
+			subQ, err := p.subParse(sub)
+			if err != nil {
+				return nil, err
+			}
+			mc := q.setClause(funcName)
+			if root := subQ.findClause("root"); root != nil {
+				mc.items = root.items
+			}
+			p.resumeRaw(safeTail(rest, len(sub)+1))
+			// macro heads replace SELECT (legacy :1707) — rootName unchanged
+			q.setClause("select")
 
 		case lt.kind == logIn:
 			// legacy :1708-1744. The IN keyword (raw slice — may be the whole
@@ -232,7 +250,30 @@ func parseQueryAtDepthV2(src string, depth int) (*queryNode, error) {
 			}
 
 		case p.rootName == "union all":
-			return nil, fmt.Errorf("parser v2: UNION ALL not implemented") // Task 9
+			// legacy :1757-1776: rebuild the remainder as token+" "+rest, then
+			// split on RAW lowercase "union all" occurrences (position-blind,
+			// single-space only — fact 13) and sub-parse every segment.
+			remainder := lt.text + " " + p.restAfterCur()
+			const unionStmt = "union all"
+			uc := q.findClause("union all")
+			for {
+				idx := strings.Index(strings.ToLower(remainder), unionStmt)
+				if idx == -1 {
+					break
+				}
+				segQ, err := p.subParse(remainder[:idx])
+				if err != nil {
+					return nil, err
+				}
+				uc.subQueries = append(uc.subQueries, segQ)
+				remainder = remainder[idx+len(unionStmt):]
+			}
+			segQ, err := p.subParse(remainder)
+			if err != nil {
+				return nil, err
+			}
+			uc.subQueries = append(uc.subQueries, segQ)
+			p.resumeRaw("") // legacy consumes the whole remainder
 
 		case lt.kind == logComment:
 			cur.add(tokenPart{lt}) // glued + "\n" via appendExprToken (fact 2)

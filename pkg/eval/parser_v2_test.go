@@ -335,14 +335,58 @@ func TestParserV2InError(t *testing.T) {
 	require.Contains(t, err.Error(), "wrong `IN` signature for `x IN`")
 }
 
-// Unimplemented branches fail loudly, never silently mis-parse.
-func TestParserV2StubBranches(t *testing.T) {
-	for q, msg := range map[string]string{
-		"$rate(c) FROM t":                    "not implemented",
-		"SELECT 1 FROM a UNION ALL SELECT 2": "not implemented",
+func TestParserV2MacroHeads(t *testing.T) {
+	for _, q := range []string{
+		"$columns(a, sum(b) c) FROM t WHERE z = 1",
+		"$rate(cnt c) FROM t",
+		"$rateColumns(x, y) FROM t",
+		"$perSecondColumns(k, v) FROM t WHERE a = 1",
+		"$lttbMs(t, v) FROM t2 WHERE x = 1",
+		"$deltaColumnsAggregated(a, b, sum(c) c) FROM t",
+		"SELECT $rate(x) FROM t",                   // fires mid-select, resets select (fact 15)
+		"$COLUMNS(a, b) FROM t",                    // case-sensitive: NOT a macro head (fact 15)
+		"$conditionalTest(AND x = 1, $var) FROM t", // not in macroFuncRe either
 	} {
-		_, err := toASTV2(q)
-		require.Error(t, err, "expected stub error for %q", q)
-		require.Contains(t, err.Error(), msg, "for %q", q)
+		requireV2MatchesLegacy(t, q)
 	}
+}
+
+func TestParserV2MacroHeadLeaves(t *testing.T) {
+	ast, err := toASTV2("$columns(a, sum(b) c) FROM t WHERE z = 1")
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{"a", "sum(b) c"}, ast.Obj["$columns"].(*EvalAST).Arr)
+	require.Equal(t, []interface{}{}, ast.Obj["select"].(*EvalAST).Arr, "select reset to empty")
+	require.Equal(t, []interface{}{"t"}, ast.Obj["from"].(*EvalAST).Arr)
+}
+
+func TestParserV2MacroHeadError(t *testing.T) {
+	_, err := toASTV2("SELECT $rate")
+	require.Error(t, err)
+	require.Contains(t, err.Error(), "wrong macros signature for `$rate`")
+}
+
+func TestParserV2UnionAll(t *testing.T) {
+	for _, q := range []string{
+		"SELECT 1 FROM a UNION ALL SELECT 2 FROM b",
+		"SELECT 1 FROM a UNION ALL SELECT 2 FROM b UNION ALL SELECT 3 FROM c",
+		"SELECT 'has union all inside' FROM a UNION ALL SELECT 2 FROM b",
+		"SELECT 1 FROM a UNION ALL",                                            // trailing: empty Arr (fact 13)
+		"SELECT 1 FROM a UNION ALL SELECT 2 FROM b union  all SELECT 3 FROM c", // 2 spaces: no split (fact 13)
+		"SELECT 1 FROM (SELECT 2 UNION ALL SELECT 3) x",                        // union inside a FROM subquery
+	} {
+		requireV2MatchesLegacy(t, q)
+	}
+}
+
+func TestParserV2UnionAllLeaves(t *testing.T) {
+	ast, err := toASTV2("SELECT 1 FROM a UNION ALL SELECT 2 FROM b UNION ALL SELECT 3 FROM c")
+	require.NoError(t, err)
+	unions := ast.Obj["union all"].(*EvalAST)
+	require.Len(t, unions.Arr, 2)
+	first := unions.Arr[0].(*EvalAST)
+	require.Equal(t, []interface{}{"2"}, first.Obj["select"].(*EvalAST).Arr)
+
+	ast, err = toASTV2("SELECT 1 FROM a UNION ALL")
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{}, ast.Obj["union all"].(*EvalAST).Arr)
 }

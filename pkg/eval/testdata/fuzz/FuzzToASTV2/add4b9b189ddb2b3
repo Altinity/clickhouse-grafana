@@ -1,0 +1,2 @@
+go test fuzz v1
+string("UNION ALL 00000000\xf4UNION ALL")

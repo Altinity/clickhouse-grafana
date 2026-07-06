@@ -390,3 +390,18 @@ func TestParserV2UnionAllLeaves(t *testing.T) {
 	require.NoError(t, err)
 	require.Equal(t, []interface{}{}, ast.Obj["union all"].(*EvalAST).Arr)
 }
+
+// TestParserV2UnionAllInvalidUTF8NoPanic regresses the FuzzToASTV2 crasher
+// add4b9b189ddb2b3: an invalid UTF-8 byte in the union-all remainder makes
+// strings.ToLower expand to the 3-byte U+FFFD, so the "union all" offset found
+// in the lowered copy overran the original slice ([21:19]). Legacy panics on
+// this input too (eval_query.go:1760-1769); v2 must not.
+func TestParserV2UnionAllInvalidUTF8NoPanic(t *testing.T) {
+	for _, q := range []string{
+		"UNION ALL 00000000\xf4UNION ALL",
+		"union all \xf4\xf4\xf4union all",
+		"SELECT 1 UNION ALL \xf4 UNION ALL SELECT 2",
+	} {
+		require.NotPanics(t, func() { _, _ = toASTV2(q) }, "v2 must not panic on %q", q)
+	}
+}

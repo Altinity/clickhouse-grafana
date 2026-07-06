@@ -22,6 +22,7 @@ type corpusCase struct {
 	Query       string
 	ExpectError bool
 	Tags        []string
+	EngineDiff  string // issue number from an `engine_diff=NNN` directive token
 }
 
 // loadCorpusCase reads a .sql corpus file. An optional first line of the form
@@ -47,6 +48,8 @@ func loadCorpusCase(path string) (corpusCase, error) {
 				c.ExpectError = true
 			case strings.HasPrefix(tok, "tags="):
 				c.Tags = strings.Split(strings.TrimPrefix(tok, "tags="), ",")
+			case strings.HasPrefix(tok, "engine_diff="):
+				c.EngineDiff = strings.TrimPrefix(tok, "engine_diff=")
 			}
 		}
 		if len(lines) == 2 {
@@ -132,6 +135,8 @@ func safeToAST(query string) (ast *EvalAST, err error) {
 }
 
 func TestGoldenCorpus(t *testing.T) {
+	prev := SetEngine(EngineLegacy)
+	defer SetEngine(prev)
 	for _, path := range corpusFiles(t) {
 		c, err := loadCorpusCase(path)
 		require.NoError(t, err)

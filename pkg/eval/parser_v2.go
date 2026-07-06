@@ -261,12 +261,24 @@ func parseQueryAtDepthV2(src string, depth int) (*queryNode, error) {
 				if idx == -1 {
 					break
 				}
-				segQ, err := p.subParse(remainder[:idx])
+				// strings.ToLower can change byte length on invalid UTF-8 (the
+				// U+FFFD replacement rune is 3 bytes), so idx — an offset into the
+				// lowered copy — may exceed len(remainder). On ASCII SQL (every
+				// corpus case) the lengths match and these clamps are no-ops, so
+				// parity with legacy (eval_query.go:1760-1769, which shares this
+				// latent overflow but never reaches it) is preserved byte-for-byte;
+				// the guards only tame pathological fuzz input that would otherwise
+				// panic exactly as legacy does.
+				head := idx
+				if head > len(remainder) {
+					head = len(remainder)
+				}
+				segQ, err := p.subParse(remainder[:head])
 				if err != nil {
 					return nil, err
 				}
 				uc.subQueries = append(uc.subQueries, segQ)
-				remainder = remainder[idx+len(unionStmt):]
+				remainder = safeTail(remainder, idx+len(unionStmt))
 			}
 			segQ, err := p.subParse(remainder)
 			if err != nil {

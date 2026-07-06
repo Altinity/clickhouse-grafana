@@ -1,4 +1,3 @@
--- corpus: tags=comment,known-bug,issue-374 engine_diff=374
 -- Test user's original issue query pattern
 SELECT 
   1 as test_value,

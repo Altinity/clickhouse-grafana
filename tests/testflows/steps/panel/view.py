@@ -278,6 +278,10 @@ def select_datasource_in_panel_view(self, datasource_name):
     """Select datasource in datasource dropdown."""
     with By("clicking datasource dropdown"):
         click_select_datasource_button()
+    with By(f"typing {datasource_name} into the datasource picker search"):
+        # newer Grafana renders only the first page of datasource cards,
+        # so filter the picker list before waiting for the card
+        self.context.driver.switch_to.active_element.send_keys(datasource_name)
     with By(f"waiting datasource={datasource_name} in datasource dropdown"):
         wait_datasource_in_datasource_dropdown(datasource_name=datasource_name)
     with delay():

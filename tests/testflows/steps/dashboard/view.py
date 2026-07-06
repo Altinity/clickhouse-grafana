@@ -370,7 +370,18 @@ def open_panel(self, panel_name):
 @TestStep(When)
 def click_dashboard_settings_button(self):
     """Click dashboard settings button."""
-    locators.dashboard_settings_button.click()
+    driver = self.context.driver
+    buttons = driver.find_elements(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Dashboard settings']")
+    if buttons:
+        buttons[0].click()
+        return
+
+    # Grafana >= 13.1: the edit toolbar has no settings button anymore, but the
+    # classic settings view (General/Annotations/Variables/Links) is still
+    # reachable by URL
+    url = driver.current_url.split('#')[0]
+    separator = '&' if '?' in url else '?'
+    driver.get(url + separator + 'editview=variables')
 
 
 @TestStep(When)

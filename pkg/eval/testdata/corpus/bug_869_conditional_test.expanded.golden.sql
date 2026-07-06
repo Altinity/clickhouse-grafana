@@ -1,0 +1,1 @@
+SELECT $conditionalTest(field = 'a', field, 'b') FROM default.test_grafana

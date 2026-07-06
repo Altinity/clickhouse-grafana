@@ -1,0 +1,2 @@
+-- corpus: tags=quoting,known-bug,issue-121
+SELECT count() AS "Count of samples" FROM default.test_grafana

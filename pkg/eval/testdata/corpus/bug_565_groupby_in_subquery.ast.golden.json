@@ -1,0 +1,32 @@
+{
+  "Obj": {
+    "$columns": {
+      "Obj": null,
+      "Arr": [
+        "cat",
+        "sum(v) value"
+      ]
+    },
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "$table"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": []
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "(a, b) IN (\n    SELECT\n        a,\n        b\n    FROM default.other\n\n    LIMIT 10\n)"
+      ]
+    }
+  },
+  "Arr": null
+}

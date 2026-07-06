@@ -1,0 +1,21 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "ailing hash comment FROM default.test_grafana"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "a"
+      ]
+    }
+  },
+  "Arr": null
+}

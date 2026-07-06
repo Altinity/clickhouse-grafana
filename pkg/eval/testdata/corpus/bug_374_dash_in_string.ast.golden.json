@@ -1,0 +1,27 @@
+{
+  "Obj": {
+    "from": {
+      "Obj": null,
+      "Arr": [
+        "default.test_grafana"
+      ]
+    },
+    "root": {
+      "Obj": null,
+      "Arr": []
+    },
+    "select": {
+      "Obj": null,
+      "Arr": [
+        "a"
+      ]
+    },
+    "where": {
+      "Obj": null,
+      "Arr": [
+        "name IN ('ccc--bert''ddd')"
+      ]
+    }
+  },
+  "Arr": null
+}

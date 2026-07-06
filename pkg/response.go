@@ -88,7 +88,7 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 		value := ParseValue(timestampFieldName, timestampFieldType, timeZonesMap[timestampFieldName], row[timestampFieldName], false)
 		timestampValue, ok := value.(time.Time)
 		if !ok {
-			return nil, fmt.Errorf("Unexpected type from ParseValue of field %s. Expected time.Time, got %T ", timestampFieldName, value) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
+			return nil, fmt.Errorf("Unexpected type from ParseValue of field %s. Expected time.Time, got %T ", timestampFieldName, value)
 		}
 
 		if hasLabelFields {
@@ -121,15 +121,15 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 									case []interface{}:
 										tsName := ParseValue(fieldName, labelType, timeZonesMap[fieldName], tuple[0], true)
 										tsNameString := "null"
-										switch tsName.(type) { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
+										switch tsName.(type) {
 										case *string:
-											if tsName.(*string) != nil { //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
-												tsNameString = *tsName.(*string) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
+											if tsName.(*string) != nil {
+												tsNameString = *tsName.(*string)
 											} else {
 												tsNameString = "null"
 											}
 										case string:
-											tsNameString = tsName.(string) //nolint:staticcheck // pre-existing, tracked in docs/repo-audit-2026-07.md
+											tsNameString = tsName.(string)
 											if tsNameString == "" {
 												tsNameString = "null"
 											}

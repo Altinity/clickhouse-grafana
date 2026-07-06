@@ -89,6 +89,7 @@ jobs:
         with:
           version: latest
           args: ./pkg/...
+          only-new-issues: true
 
       - name: Check for E2E
         id: check-for-e2e

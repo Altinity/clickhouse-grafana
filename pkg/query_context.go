@@ -31,7 +31,7 @@ func buildQueryContext(request interface{}, rawQuery string, timeRange timeutils
 			ErrorType:     ErrorTypeTimeRange,
 			OriginalSQL:   rawQuery,
 			HasAdhocMacro: hasAdhocMacro,
-			OriginalError: fmt.Errorf("Invalid time range: %v", err), //nolint:staticcheck // ST1005: message text preserved verbatim from pre-refactor handler (behavior parity)
+			OriginalError: fmt.Errorf("invalid time range: %v", err),
 			Handler:       handler,
 			Status:        http.StatusBadRequest,
 		}
@@ -44,7 +44,7 @@ func buildQueryContext(request interface{}, rawQuery string, timeRange timeutils
 			ErrorType:     ErrorTypeMacroExpansion,
 			OriginalSQL:   rawQuery,
 			HasAdhocMacro: hasAdhocMacro,
-			OriginalError: fmt.Errorf("Failed to apply macros: %v", err), //nolint:staticcheck // ST1005: message text preserved verbatim from pre-refactor handler (behavior parity)
+			OriginalError: fmt.Errorf("failed to apply macros: %v", err),
 			Handler:       handler,
 			Status:        http.StatusInternalServerError,
 		}

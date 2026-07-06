@@ -128,9 +128,9 @@ func frameFingerprint(frame *data.Frame) [16]byte {
 		return [16]byte{}
 	}
 	h := md5.New()
-	_, _ = fmt.Fprintf(h, "rows=%d;fields=%d;", rows, len(frame.Fields))
+	fmt.Fprintf(h, "rows=%d;fields=%d;", rows, len(frame.Fields))
 	for _, field := range frame.Fields {
-		_, _ = fmt.Fprintf(h, "first=%v;last=%v;", field.At(0), field.At(rows-1))
+		fmt.Fprintf(h, "first=%v;last=%v;", field.At(0), field.At(rows-1))
 	}
 	var result [16]byte
 	copy(result[:], h.Sum(nil))

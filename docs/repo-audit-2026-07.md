@@ -242,31 +242,3 @@ Kept for transparency; do **not** act on these:
 4. **"SQL injection in `useConnectionData` (critical)"** — downgraded to correctness: the query *editor* is an arbitrary-SQL surface by design for its users; unescaped identifiers there break functionality but don't cross a privilege boundary. The genuine privilege-boundary issue is the backend adhoc path (§2.3).
 5. **"React 19 / Jest 30 / TS 5.9 too new/risky"** — date-confused agent reasoning; all are mature as of mid-2026.
 6. Various date attributions ("@swc pinned since early 2024" etc.) were unreliable and are excluded; only structural dependency findings were retained.
-
----
-
-## 9. golangci-lint adoption baseline (2026-07)
-
-CI now runs `golangci-lint run ./pkg/...` (`.golangci.yml`: `govet`, `errcheck`, `staticcheck`, `ineffassign`; errcheck exclusion for the SDK `CallResourceResponseSender.Send`). This is Tier 1 item 1 (§3.5). golangci-lint v2 folds the former `gosimple`/`stylecheck`/`quickfix` checks into `staticcheck`, so first adoption surfaced a batch of **pre-existing** findings in legacy files that predate this work and are out of scope for the current change. To land the gate green without rewriting untouched legacy logic (behavior-preservation), each of these is suppressed inline with `//nolint:<linter> // pre-existing, tracked in docs/repo-audit-2026-07.md`. They are the baseline to burn down during the #733 rewrite and the §2/§3 cleanups; new findings in changed code are still caught.
-
-Suppressed pre-existing findings, by file:
-
-| File | Lines | Checks | Nature |
-|---|---|---|---|
-| `pkg/eval/eval_query.go` | 176, 519, 521, 611, 636, 639, 737, 740, 753, 915, 957, 1016, 1076, 1134, 1182, 1227 | SA1011 | `strings.Trim` cutset contains the raw `\xA0` byte (invalid UTF-8); latent, ships today — do **not** "fix" (§2.4 / #733 territory) |
-| `pkg/eval/eval_query.go` | 269–273, 293, 301, 1455 | QF1004 | `strings.Replace(..., -1)` → could be `ReplaceAll` (cosmetic) |
-| `pkg/eval/eval_query.go` | 587, 603, 723, 900 | S1009 | redundant `nil` check before `len()` (cosmetic) |
-| `pkg/eval/eval_query.go` | 625 | QF1012 | `WriteString(fmt.Sprintf)` → `Fprintf` (cosmetic) |
-| `pkg/eval/eval_query.go` | 1720 | SA4017 | `betweenSquareBraces(...)` return value ignored — real latent defect, fixing changes behavior; defer |
-| `pkg/eval/eval_query.go` | 1816, 1852 | ineffassign | ineffectual assignment to `ok` |
-| `pkg/eval/eval_query.go` | 2418 | govet (inline) | `reflect.Ptr` should be inlined as `reflect.Pointer` (cosmetic) |
-| `pkg/query.go` | 63 | QF1004 | `strings.Replace(..., -1)` |
-| `pkg/query.go` | 78, 79 | SA1019 | deprecated `strings.Title`; replacing it changes word-boundary behavior — defer |
-| `pkg/query.go` | 80, 83, 86, 89, 92, 95, 98 | ST1017 | Yoda conditions (cosmetic) |
-| `pkg/response.go` | 91 | ST1005 | capitalized error string; message text is user-facing, preserve |
-| `pkg/response.go` | 124, 126, 127, 132 | S1034 | type-assertion-in-switch simplification (cosmetic) |
-| `pkg/datasource_settings.go` | 29 | SA5008 | `json:"-,omitempty"` tag ambiguity; changing it alters serialization — defer |
-
-Two pre-existing `errcheck` findings in `pkg/streaming.go` (`fmt.Fprintf` to an `md5` hash, whose `Write` never errors) were fixed trivially and safely with `_, _ =` rather than suppressed.
-
-Findings in files this stabilization work authored/touched (`pkg/query_context.go`, `pkg/requests/request_response.go`, `pkg/eval/ast_access.go`, `pkg/parser.go`, `pkg/resource_handlers.go`, and the `$lttbMs` region of `eval_query.go`) were resolved directly. The only style finding there — ST1005 on two `fmt.Errorf` messages in `query_context.go` — is annotated (not lowercased) because those strings are carried over **verbatim** from the pre-refactor handlers and must stay byte-identical for behavior parity.

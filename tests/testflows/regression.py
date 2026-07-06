@@ -45,6 +45,9 @@ def argparser(parser):
     )
 
 ffails = {
+    "/Grafana Datasource Plugin For Clickhouse/unified alerts/*":
+        (XFail, "Grafana >= 13.1 v2 dashboards have no panel Alert tab; the alert creation flow needs a redesign, see #908")
+    ,
     "/Grafana Datasource Plugin For Clickhouse/sql editor/hash comment/":
         (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
     ,

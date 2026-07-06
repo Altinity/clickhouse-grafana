@@ -642,7 +642,12 @@ def check_default_context_window(self, default_context_window):
 
     with Then("I check Context window is the same as in default datasource values"):
         with delay():
-            assert sql_editor.get_context_window(query_name="A") == default_context_window, error()
+            actual_context_window = sql_editor.get_context_window(query_name="A")
+            # Grafana >= 13.1 renders the plugin's built-in default (10 entries)
+            # as an empty combobox instead of an explicit selection
+            assert actual_context_window == default_context_window or (
+                default_context_window == "10 entries" and actual_context_window == ""
+            ), error()
 
 
 @TestScenario

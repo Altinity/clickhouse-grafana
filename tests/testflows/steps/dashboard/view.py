@@ -454,6 +454,32 @@ def create_new_variable(
         with delay():
             click_edit_button()
 
+    driver = self.context.driver
+    if variable_type == "Ad hoc filters" and not driver.find_elements(
+        SelectBy.CSS_SELECTOR, "[data-testid='data-testid Dashboard settings']"
+    ):
+        # Grafana >= 13.1: "Ad hoc filters" is not a variable type anymore; the
+        # adhoc control is added via the edit sidebar "Filter and Group by"
+        # card, which creates an adhoc templating variable under the hood
+        with And("adding a Filter and Group by control from the edit sidebar"):
+            with delay():
+                if not driver.find_elements(SelectBy.XPATH, "//button[.//text()='Filter and Group by']"):
+                    click_sidebar_new_button()
+            with delay():
+                driver.find_element(SelectBy.XPATH, "//button[.//text()='Filter and Group by']").click()
+
+        with And("selecting datasource for the filter"):
+            with delay():
+                driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Select a data source']").click()
+            with delay():
+                driver.switch_to.active_element.send_keys(datasource_name)
+            with delay():
+                driver.find_element(
+                    SelectBy.XPATH,
+                    f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']",
+                ).click()
+        return
+
     with And("clicking dashboard settings button"):
         with delay():
             click_dashboard_settings_button()

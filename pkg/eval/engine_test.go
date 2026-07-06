@@ -28,15 +28,14 @@ func TestSetEngineRoundtrip(t *testing.T) {
 	require.Equal(t, EngineLegacy, Engine())
 }
 
-// Replaced in Task 5 once toASTV2 is real: for now the stub must error, which
-// proves ToAST actually dispatches on the engine.
 func TestToASTDispatchesToV2(t *testing.T) {
 	prev := SetEngine(EngineV2)
 	defer SetEngine(prev)
-	s := NewScanner("SELECT 1")
-	_, err := s.ToAST()
-	require.Error(t, err)
-	require.Contains(t, err.Error(), "not implemented")
+	s := NewScanner("SELECT 1 FROM t")
+	ast, err := s.ToAST()
+	require.NoError(t, err)
+	require.True(t, ast.HasOwnProperty("select"))
+	require.True(t, ast.HasOwnProperty("from"))
 }
 
 func TestToASTLegacyDefaultUnchanged(t *testing.T) {

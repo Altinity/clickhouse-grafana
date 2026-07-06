@@ -2,6 +2,7 @@
 package eval
 
 import (
+	"encoding/json"
 	"testing"
 
 	"github.com/stretchr/testify/require"
@@ -124,4 +125,93 @@ func TestLogicalOffsets(t *testing.T) {
 	gb := lts[1]
 	require.Equal(t, "GROUP BY", gb.text)
 	require.Equal(t, src[gb.start:gb.end], gb.text)
+}
+
+// requireV2MatchesLegacy is the in-process mini-differential used by Tasks
+// 5-9: v2 and legacy must produce byte-identical AST JSON and PrintAST output
+// for the given query. Task 10's corpus gate generalizes this to all 202
+// cases plus the expansion goldens.
+func requireV2MatchesLegacy(t *testing.T, query string) {
+	t.Helper()
+	legacyScanner := NewScanner(query)
+	legacyAST, legacyErr := legacyScanner.toASTLegacy()
+	require.NoError(t, legacyErr, "legacy failed on %q", query)
+	v2AST, v2Err := toASTV2(query)
+	require.NoError(t, v2Err, "v2 failed on %q", query)
+	legacyJSON, err := json.MarshalIndent(legacyAST, "", "  ")
+	require.NoError(t, err)
+	v2JSON, err := json.MarshalIndent(v2AST, "", "  ")
+	require.NoError(t, err)
+	require.Equal(t, string(legacyJSON), string(v2JSON), "AST mismatch for %q", query)
+	require.Equal(t, PrintAST(legacyAST, " "), PrintAST(v2AST, " "), "PrintAST mismatch for %q", query)
+}
+
+// Every query below exercises ONLY Task-5 machinery: statements, items,
+// commas, WHERE/PREWHERE conds, comments, glue quirks. No FROM-(, no JOIN,
+// no IN, no macro heads, no UNION ALL (those are Tasks 6-9).
+func TestParserV2ClauseSkeleton(t *testing.T) {
+	for _, q := range []string{
+		"SELECT col2/col1*10000 FROM t",
+		"SELECT -1, a.b, arr[1], f(a,b), g( x ,  y ) FROM t",
+		"SELECT x -- c\n, y FROM t",
+		"SELECT x /* blk */ , y FROM t",
+		"-- c\nSELECT 1 FROM t",
+		"/* head */ SELECT 1 FROM t",
+		"SELECT 1 FROM t WHERE a = 1 AND (b = 2 OR c = 3), d = 4 OR e = 5",
+		"SELECT 1 FROM t WHERE (AND x = 1)",
+		"SELECT a, count() FROM t GROUP BY a, b HAVING count() > 1",
+		"WITH 1 AS x SELECT x FROM t",
+		"WITH x AS (SELECT a FROM b) SELECT x FROM t",
+		"SELECT x FROM t ORDER BY x WITH FILL STEP 1",
+		"SELECT x FROM t ORDER BY x DESC, y ASC",
+		"SELECT 1 FROM t LIMIT 10, 20",
+		"SELECT concat('a','b') FROM t PREWHERE d = today() FORMAT JSON",
+		"SELECT 1 FROM t PREWHERE a = 1 AND b = 2",
+		"SELECT x, from FROM t",
+		"SELECT FROM t",
+		"SELECT , x FROM t",
+		"SELECT x FROM t GROUP  BY x",
+		"SELECT x FROM t GROUP\nBY x",
+		"SELECT 'a b  c', `q id`, \"dq\" FROM t",
+		"SELECT !flag, not x FROM t",
+		"SELECT 1 FROM default.test_grafana FINAL",
+		"SELECT 1 FROM t WHERE a = 1 ORDER BY x",
+		"SELECT $timeSeries as t, count() FROM t WHERE $timeFilter GROUP BY t ORDER BY t",
+	} {
+		requireV2MatchesLegacy(t, q)
+	}
+}
+
+// Literal leaf pins for readability (probe-verified facts 1-3, 12, 16).
+func TestParserV2SkeletonLeaves(t *testing.T) {
+	ast, err := toASTV2("SELECT x -- c\n, y FROM t WHERE a = 1 AND (b = 2 OR c = 3), d = 4")
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{"x-- c\n", "y"}, ast.Obj["select"].(*EvalAST).Arr)
+	require.Equal(t,
+		[]interface{}{"a = 1", "AND(b = 2 OR c = 3)", ",", "d = 4"},
+		ast.Obj["where"].(*EvalAST).Arr)
+
+	ast, err = toASTV2("SELECT , x FROM t")
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{"", "x"}, ast.Obj["select"].(*EvalAST).Arr)
+
+	ast, err = toASTV2("SELECT FROM t")
+	require.NoError(t, err)
+	require.Equal(t, []interface{}{"FROM t"}, ast.Obj["select"].(*EvalAST).Arr)
+	require.False(t, ast.HasOwnProperty("from"))
+}
+
+// Unimplemented branches fail loudly, never silently mis-parse.
+func TestParserV2StubBranches(t *testing.T) {
+	for q, msg := range map[string]string{
+		"SELECT 1 FROM (SELECT 2) x":          "not implemented",
+		"SELECT 1 FROM a INNER JOIN b ON a=b": "not implemented",
+		"SELECT 1 FROM t WHERE x IN (1)":      "not implemented",
+		"$rate(c) FROM t":                     "not implemented",
+		"SELECT 1 FROM a UNION ALL SELECT 2":  "not implemented",
+	} {
+		_, err := toASTV2(q)
+		require.Error(t, err, "expected stub error for %q", q)
+		require.Contains(t, err.Error(), msg, "for %q", q)
+	}
 }

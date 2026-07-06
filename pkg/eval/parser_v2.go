@@ -6,10 +6,200 @@ import (
 	"strings"
 )
 
+// ---------------------------------------------------------------------------
+// Parser v2: a transliteration of the legacy ToAST loop over logical tokens,
+// building typed nodes (nodes.go) rendered by compat.go. Legacy classifier
+// and raw-scan helpers (isClosured, betweenBraces, isTableFunc, isID,
+// isTable, isMacro, isCond, onJoinTokenOnlyRe) are REUSED so their quirks
+// are inherited, not re-implemented.
+// ---------------------------------------------------------------------------
+
+// maxSubqueryDepthV2 caps recursion (FROM/IN/JOIN/macro/UNION sub-parses).
+// Legacy had no cap and overflows the stack on adversarial nesting; no
+// corpus case is remotely close to this depth.
+const maxSubqueryDepthV2 = 1000
+
 // toASTV2 is the #733 Phase-2 recursive-descent engine entry point.
-// Implemented across Tasks 5-9; until then it reports itself unimplemented.
 func toASTV2(src string) (*EvalAST, error) {
-	return nil, fmt.Errorf("parser v2: not implemented")
+	q, err := parseQueryV2(src)
+	if err != nil {
+		return nil, err
+	}
+	return q.toEvalAST(), nil
+}
+
+func parseQueryV2(src string) (*queryNode, error) {
+	return parseQueryAtDepthV2(src, 0)
+}
+
+// parserV2 mirrors the legacy scanner state: src is the CURRENT working
+// string (the legacy s._s analogue — resumeRaw re-slices it, fact 6), cur is
+// the legacy s.Token (hasCur=false == legacy s.Token==""), rootName is
+// s.RootToken, expectedNext is s.expectedNext.
+type parserV2 struct {
+	src          string
+	lts          []logicalToken
+	pos          int
+	cur          logicalToken
+	hasCur       bool
+	rootName     string
+	expectedNext bool
+	depth        int
+}
+
+func (p *parserV2) advance() bool {
+	if p.pos >= len(p.lts) {
+		return false // cur intentionally left as-is: legacy keeps s.Token
+	}
+	p.cur = p.lts[p.pos]
+	p.pos++
+	p.hasCur = true
+	return true
+}
+
+func (p *parserV2) clearCur() { p.hasCur = false }
+
+// restAfterCur is the raw working-string tail after the current token — the
+// legacy s._s at the same loop position.
+func (p *parserV2) restAfterCur() string { return p.src[p.cur.end:] }
+
+// resumeRaw replaces the working string (legacy `s._s = …` slicing after a
+// betweenBraces consumption) and re-tokenizes it. Offsets in the new logical
+// tokens are relative to the new working string.
+func (p *parserV2) resumeRaw(rest string) {
+	p.src = rest
+	p.lts = logicalScan(rest, tokenizeForParse(rest))
+	p.pos = 0
+	p.hasCur = false
+}
+
+func (p *parserV2) subParse(src string) (*queryNode, error) {
+	return parseQueryAtDepthV2(src, p.depth+1)
+}
+
+// setRoot mirrors legacy SetRoot (eval_query.go:1618): lowercased key,
+// clause created or RESET unconditionally, expectedNext raised.
+func (p *parserV2) setRoot(q *queryNode, name string) {
+	p.rootName = strings.ToLower(name)
+	q.setClause(p.rootName)
+	p.expectedNext = true
+}
+
+// push mirrors legacy push (eval_query.go:1597): the item goes to the current
+// clause; if that clause was replaced by a subquery, it lands in the
+// subquery's "aliases" (fact 11).
+func (p *parserV2) push(q *queryNode, it *itemNode) {
+	c := q.findClause(p.rootName)
+	if c == nil {
+		return
+	}
+	if c.sub != nil {
+		c.subAliases = append(c.subAliases, it)
+		return
+	}
+	c.items = append(c.items, it)
+}
+
+// safeTail returns s[n:]. Legacy sliced s._s[len(sub)+1:] unguarded and can
+// panic on pathological inputs (no corpus case does); v2 clamps instead.
+func safeTail(s string, n int) string {
+	if n > len(s) {
+		return ""
+	}
+	return s[n:]
+}
+
+// parseQueryAtDepthV2 is the legacy ToAST loop (eval_query.go:1637-1793)
+// transliterated over logical tokens. Branch ORDER mirrors the legacy
+// if/else chain exactly — reordering cases changes behavior.
+func parseQueryAtDepthV2(src string, depth int) (*queryNode, error) {
+	if depth > maxSubqueryDepthV2 {
+		return nil, fmt.Errorf("parser v2: subquery nesting deeper than %d", maxSubqueryDepthV2)
+	}
+	p := &parserV2{src: src, lts: logicalScan(src, tokenizeForParse(src)), depth: depth}
+	q := newQueryNode()
+	p.setRoot(q, "root")
+	p.expectedNext = false
+	cur := newItemNode()
+
+	for {
+		if !p.advance() {
+			break
+		}
+		// legacy consumes the flag on EVERY iteration (isExpectedNext side
+		// effect inside the && chain).
+		exp := p.expectedNext
+		p.expectedNext = false
+		lt := p.cur
+
+		switch {
+		case !exp && lt.kind == logStatement && !q.hasClause(strings.ToLower(lt.text)):
+			if strings.ToUpper(lt.text) == "WITH" && p.rootName == "order by" {
+				cur.add(tokenPart{lt}) // ORDER BY … WITH FILL (fact 12)
+				continue
+			}
+			if !isClosured(renderItem(cur)) {
+				cur.add(tokenPart{lt}) // keyword inside an open bracket glues
+				continue
+			}
+			if renderItem(cur) != "" {
+				p.push(q, cur)
+				cur = newItemNode()
+			}
+			p.setRoot(q, lt.text)
+
+		case lt.kind == logComma && isClosured(renderItem(cur)):
+			p.push(q, cur) // pushes even an empty item (fact 16)
+			cur = newItemNode()
+			if p.rootName == "where" {
+				comma := newItemNode()
+				comma.add(rawPart{","}) // bare "," item, not ", " (fact 3)
+				p.push(q, comma)
+			}
+			p.expectedNext = true
+
+		case lt.kind == logClosure && p.rootName == "from":
+			return nil, fmt.Errorf("parser v2: FROM subqueries/table functions not implemented") // Task 6
+
+		case lt.kind == logMacroFunc:
+			return nil, fmt.Errorf("parser v2: macro heads not implemented") // Task 9
+
+		case lt.kind == logIn:
+			return nil, fmt.Errorf("parser v2: IN forms not implemented") // Task 8
+
+		case lt.kind == logCond && (p.rootName == "where" || p.rootName == "prewhere"):
+			if isClosured(renderItem(cur)) {
+				p.push(q, cur) // pushes even empty (fact 16)
+				cur = newItemNode()
+				cur.add(tokenPart{lt}) // connector STARTS the next item (fact 3)
+			} else {
+				cur.add(spacedPart{lt.text}) // " "+raw even after '(' (fact 3)
+			}
+
+		case lt.kind == logJoin:
+			return nil, fmt.Errorf("parser v2: JOIN not implemented") // Task 7
+
+		case p.rootName == "union all":
+			return nil, fmt.Errorf("parser v2: UNION ALL not implemented") // Task 9
+
+		case lt.kind == logComment:
+			cur.add(tokenPart{lt}) // glued + "\n" via appendExprToken (fact 2)
+
+		case lt.kind == logClosure || lt.kind == logDot:
+			cur.add(tokenPart{lt}) // glued
+
+		case lt.kind == logComma:
+			cur.add(tokenPart{lt}) // ", " inside an unbalanced item
+
+		default:
+			cur.add(tokenPart{lt})
+		}
+	}
+
+	if renderItem(cur) != "" {
+		p.push(q, cur)
+	}
+	return q, nil
 }
 
 // ---------------------------------------------------------------------------

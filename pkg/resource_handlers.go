@@ -285,95 +285,32 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 	}
 
 	query := request.Query
-	adhocFilters := request.AdhocFilters
-	target := request.Target
 
-	// Process the query
+	// Parse the raw query into an AST (this handler does not expand macros).
 	hasAdhocMacro := strings.Contains(query, "$adhoc")
-	adhocConditions := make([]string, 0)
 	scanner := eval.NewScanner(query)
 	ast, err := scanner.ToAST()
-	topQueryAst := ast
 	if err != nil {
 		return sendUniversalErrorResponse(sender, ErrorContext{
 			ErrorType:     ErrorTypeQueryParsing,
 			OriginalSQL:   query,
 			HasAdhocMacro: hasAdhocMacro,
-			AdhocFilters:  []interface{}{adhocFilters},
+			AdhocFilters:  []interface{}{request.AdhocFilters},
 			OriginalError: err,
 			Handler:       "handleApplyAdhocFilters",
 		}, http.StatusInternalServerError)
 	}
 
-	if len(adhocFilters) > 0 {
-		// Navigate to the deepest FROM clause
-		ast = eval.InnermostFrom(ast)
-
-		// Initialize WHERE clause if it doesn't exist
-		if !ast.HasOwnProperty("where") {
-			ast.Obj["where"] = &eval.EvalAST{
-				Obj: make(map[string]interface{}),
-				Arr: make([]interface{}, 0),
-			}
-		}
-
-		// Get target database and table
-		fromAst, okFrom := ast.SubAST("from")
-		fromExpr, okExpr := fromAst.StringAt(0)
-		if !okFrom || !okExpr {
-			return sendUniversalErrorResponse(sender, ErrorContext{
-				ErrorType:     ErrorTypeFromClause,
-				OriginalSQL:   query,
-				HasAdhocMacro: hasAdhocMacro,
-				AdhocFilters:  []interface{}{adhocFilters},
-				OriginalError: fmt.Errorf("query has no FROM table expression"),
-				Handler:       "handleApplyAdhocFilters",
-			}, http.StatusInternalServerError)
-		}
-		targetDatabase, targetTable := parseTargets(fromExpr, target.Database, target.Table)
-		if targetDatabase == "" && targetTable == "" {
-			return sendUniversalErrorResponse(sender, ErrorContext{
-				ErrorType:     ErrorTypeFromClause,
-				OriginalSQL:   query,
-				HasAdhocMacro: hasAdhocMacro,
-				AdhocFilters:  []interface{}{adhocFilters},
-				OriginalError: fmt.Errorf("FROM expression can't be parsed - unable to determine target database and table"),
-				Handler:       "handleApplyAdhocFilters",
-			}, http.StatusInternalServerError)
-		}
-
-		// Process adhoc filters using shared utility function
-		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
-
-		// Handle conditions differently based on $adhoc presence
-		if !strings.Contains(query, "$adhoc") {
-			// If no $adhoc, modify WHERE clause through AST
-			whereAst := ast.Obj["where"].(*eval.EvalAST)
-			if len(adhocConditions) > 0 {
-				combinedCondition := strings.Join(adhocConditions, " AND ")
-				if len(whereAst.Arr) > 0 {
-					// If WHERE has existing conditions, add with AND
-					whereAst.Arr = append(whereAst.Arr, "AND", fmt.Sprintf("(%s)", combinedCondition))
-				} else {
-					// If WHERE is empty, add without AND
-					whereAst.Arr = append(whereAst.Arr, combinedCondition)
-				}
-			}
-			query = eval.PrintAST(topQueryAst, " ")
-		}
-	}
-
-	// Always handle $adhoc replacement, even for empty filters
-	if strings.Contains(query, "$adhoc") {
-		renderedCondition := "1"
-		if len(adhocConditions) > 0 {
-			renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
-		}
-		query = strings.ReplaceAll(query, "$adhoc", renderedCondition)
+	// Inject adhoc filters via the shared helper. This handler always replaces
+	// the $adhoc macro, even with zero filters (historical divergence).
+	qc := &queryContext{SQL: query, AST: ast, HasAdhocMacro: hasAdhocMacro}
+	resultSQL, errCtx := applyAdhocFiltersToAST(qc, request.AdhocFilters, request.Target, true)
+	if errCtx != nil {
+		return sendUniversalErrorResponse(sender, *errCtx, errCtx.Status)
 	}
 
 	// Return the result using utility function
-	return requests.SendSuccessResponse(sender, ApplyAdhocFiltersResponse{Query: query})
+	return requests.SendSuccessResponse(sender, ApplyAdhocFiltersResponse{Query: resultSQL})
 }
 
 // handleReplaceTimeFilters replaces time-related macros in queries
@@ -482,67 +419,21 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 	if errCtx != nil {
 		return requests.SendJSON(sender, errCtx.Status, ProcessQueryBatchResponse{Error: errCtx.OriginalError.Error()})
 	}
-	sql := qc.SQL
-	ast := qc.AST
-
-	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
+	// Step 2: Apply Adhoc Filters via the shared helper.
+	// replaceAdhocMacroAlways=false: $adhoc is only replaced when filters exist.
 	adhocFilters := request.AdhocFilters
-	target := request.Target
-	topQueryAst := ast // Store reference to original AST before navigation
+	topQueryAst := qc.AST // Store reference to original AST before navigation
 
+	sql, errCtx := applyAdhocFiltersToAST(qc, adhocFilters, request.Target, false)
+	if errCtx != nil {
+		return requests.SendJSON(sender, errCtx.Status, ProcessQueryBatchResponse{Error: errCtx.OriginalError.Error()})
+	}
+
+	// Re-derive the innermost-FROM AST that the shared helper navigated to,
+	// so the property extraction below reads from the same node it always did.
+	ast := qc.AST
 	if len(adhocFilters) > 0 {
-		adhocConditions := make([]string, 0)
-
-		// Navigate to the deepest FROM clause
-		ast = eval.InnermostFrom(ast)
-
-		// Initialize WHERE clause if it doesn't exist
-		if !ast.HasOwnProperty("where") {
-			ast.Obj["where"] = &eval.EvalAST{
-				Obj: make(map[string]interface{}),
-				Arr: make([]interface{}, 0),
-			}
-		}
-
-		// Get target database and table
-		fromAst, okFrom := ast.SubAST("from")
-		fromExpr, okExpr := fromAst.StringAt(0)
-		if !okFrom || !okExpr {
-			response := ProcessQueryBatchResponse{Error: "query has no FROM table expression"}
-			return requests.SendJSON(sender, http.StatusInternalServerError, response)
-		}
-		targetDatabase, targetTable := parseTargets(fromExpr, target.Database, target.Table)
-		if targetDatabase == "" && targetTable == "" {
-			response := ProcessQueryBatchResponse{Error: "FROM expression can't be parsed"}
-			return requests.SendJSON(sender, http.StatusInternalServerError, response)
-		}
-
-		// Process adhoc filters using shared utility function
-		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
-
-		// Handle conditions differently based on $adhoc presence
-		if !strings.Contains(sql, "$adhoc") {
-			// If no $adhoc, modify WHERE clause through AST
-			whereAst := ast.Obj["where"].(*eval.EvalAST)
-			if len(adhocConditions) > 0 {
-				combinedCondition := strings.Join(adhocConditions, " AND ")
-				if len(whereAst.Arr) > 0 {
-					// If WHERE has existing conditions, add with AND
-					whereAst.Arr = append(whereAst.Arr, "AND", fmt.Sprintf("(%s)", combinedCondition))
-				} else {
-					// If WHERE is empty, add without AND
-					whereAst.Arr = append(whereAst.Arr, combinedCondition)
-				}
-			}
-			sql = eval.PrintAST(topQueryAst, " ")
-		} else {
-			// Always handle $adhoc replacement, even for empty filters
-			renderedCondition := "1"
-			if len(adhocConditions) > 0 {
-				renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
-			}
-			sql = strings.ReplaceAll(sql, "$adhoc", renderedCondition)
-		}
+		ast = eval.InnermostFrom(qc.AST)
 	}
 
 	// Step 3: Extract Properties (combined approach)
@@ -817,104 +708,11 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 	if errCtx != nil {
 		return sendUniversalErrorResponse(sender, *errCtx, errCtx.Status)
 	}
-	sql := qc.SQL
-	hasAdhocMacro := strings.Contains(sql, "$adhoc")
-
-	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
-	adhocFilters := request.AdhocFilters
-	target := request.Target
-	adhocConditions := make([]string, 0)
-
-	// Check if query contains $adhoc upfront for better error handling
-	var targetDatabase, targetTable string
-
-	if len(adhocFilters) > 0 {
-		// AST already built by buildQueryContext; reuse it (Task 7 will extract
-		// the adhoc-injection logic that follows).
-		ast := qc.AST
-		topQueryAst := ast
-
-		// Navigate to the deepest FROM clause
-		ast = eval.InnermostFrom(ast)
-
-		// Initialize WHERE clause if it doesn't exist
-		if !ast.HasOwnProperty("where") {
-			ast.Obj["where"] = &eval.EvalAST{
-				Obj: make(map[string]interface{}),
-				Arr: make([]interface{}, 0),
-			}
-		}
-
-		// Get target database and table
-		fromAst, okFrom := ast.SubAST("from")
-		fromExpr, okExpr := fromAst.StringAt(0)
-		if !okFrom || !okExpr {
-			return sendUniversalErrorResponse(sender, ErrorContext{
-				ErrorType:     ErrorTypeFromClause,
-				OriginalSQL:   request.Query,
-				ProcessedSQL:  sql,
-				HasAdhocMacro: hasAdhocMacro,
-				AdhocFilters:  []interface{}{adhocFilters},
-				OriginalError: fmt.Errorf("query has no FROM table expression"),
-				Handler:       "handleCreateQueryWithAdhoc",
-			}, http.StatusInternalServerError)
-		}
-		targetDatabase, targetTable = parseTargets(fromExpr, target.Database, target.Table)
-		if targetDatabase == "" && targetTable == "" {
-			return sendUniversalErrorResponse(sender, ErrorContext{
-				ErrorType:     ErrorTypeFromClause,
-				OriginalSQL:   request.Query,
-				ProcessedSQL:  sql,
-				HasAdhocMacro: hasAdhocMacro,
-				AdhocFilters:  []interface{}{adhocFilters},
-				OriginalError: fmt.Errorf("FROM expression can't be parsed - unable to determine target database and table"),
-				Handler:       "handleCreateQueryWithAdhoc",
-			}, http.StatusInternalServerError)
-		}
-
-		// Process adhoc filters using shared utility function
-		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
-
-		// Handle conditions differently based on $adhoc presence
-		if !strings.Contains(sql, "$adhoc") {
-			// If no $adhoc, modify WHERE clause through AST
-			whereAst := ast.Obj["where"].(*eval.EvalAST)
-			if len(adhocConditions) > 0 {
-				combinedCondition := strings.Join(adhocConditions, " AND ")
-				if len(whereAst.Arr) > 0 {
-					// If WHERE has existing conditions, add with AND
-					whereAst.Arr = append(whereAst.Arr, "AND", fmt.Sprintf("(%s)", combinedCondition))
-				} else {
-					// If WHERE is empty, add without AND
-					whereAst.Arr = append(whereAst.Arr, combinedCondition)
-				}
-			}
-			sql = eval.PrintAST(topQueryAst, " ")
-		}
-	}
-
-	// Always handle $adhoc replacement, even for empty filters
-	if strings.Contains(sql, "$adhoc") {
-		renderedCondition := "1"
-		if len(adhocConditions) > 0 {
-			renderedCondition = fmt.Sprintf("(%s)", strings.Join(adhocConditions, " AND "))
-			backend.Logger.Debug("$adhoc macro replaced with filter conditions",
-				"conditions", renderedCondition,
-				"filter_count", len(adhocConditions),
-				"configured_filters", len(adhocFilters))
-		} else if len(adhocFilters) > 0 {
-			// We had adhoc filters configured but none matched the query table
-			backend.Logger.Warn("$adhoc macro replaced with '1' - adhoc filters configured but none matched the query table",
-				"configured_filter_count", len(adhocFilters),
-				"target_database", targetDatabase,
-				"target_table", targetTable,
-				"original_query", request.Query)
-		} else {
-			// No adhoc filters configured at all
-			backend.Logger.Debug("$adhoc macro replaced with '1' - no adhoc filters configured",
-				"original_query", request.Query)
-		}
-		sql = strings.ReplaceAll(sql, "$adhoc", renderedCondition)
+	// Step 2: Apply Adhoc Filters via the shared helper.
+	// replaceAdhocMacroAlways=false: $adhoc is only replaced when filters exist.
+	sql, errCtx := applyAdhocFiltersToAST(qc, request.AdhocFilters, request.Target, false)
+	if errCtx != nil {
+		return sendUniversalErrorResponse(sender, *errCtx, errCtx.Status)
 	}
 
 	// Return the result (no property extraction)

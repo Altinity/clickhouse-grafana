@@ -2,7 +2,6 @@ package eval
 
 import (
 	"fmt"
-	"github.com/dlclark/regexp2"
 	"math"
 	"reflect"
 	"regexp"
@@ -1533,8 +1532,17 @@ func (s *EvalQueryScanner) Format() (string, error) {
 	return PrintAST(ast, ""), nil
 }
 
+// removeCommentsRe is the stdlib port of the legacy regexp2 commentRe.
+// (?m)$ is a zero-width end-of-line assertion — exactly the regexp2
+// lookahead (?=\n|$). Probe-verified byte-identical on all 202 corpus
+// queries + 17 edge cases (2026-07-06, Phase-4 plan, Fact 3). Quirks are
+// preserved bug-for-bug: a '--' comment with an ODD number of apostrophes
+// is NOT removed (#374/#648 class), '#' comments are NOT removed (#610) —
+// fixing these is the post-Phase-4 fix epic, not this port.
+var removeCommentsRe = regexp.MustCompile(`(?m)--(?:[^'\n]*'[^'\n]*')*[^'\n]*$|/\*(?:[^*]|\*[^/])*\*/`)
+
 func (s *EvalQueryScanner) RemoveComments(query string) (string, error) {
-	return regexp2.MustCompile(commentRe, 0).Replace(query, "", 0, -1)
+	return removeCommentsRe.ReplaceAllString(query, ""), nil
 }
 
 func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
@@ -1548,7 +1556,6 @@ func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
 	return "/* grafana alerts rule=" + q.RuleUid + " query=" + q.RefId + " */ " + query
 }
 
-const commentRe = `--(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|` + `/\*(?:[^*]|\*[^/])*\*/`
 const idRe = "[a-zA-Z_][a-zA-Z_0-9]*"
 const onJoinTokenRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`

@@ -3,8 +3,8 @@ module github.com/altinity/clickhouse-grafana
 go 1.26.3
 
 require (
+	github.com/AfterShip/clickhouse-sql-parser v0.5.1
 	github.com/andybalholm/brotli v1.2.1
-	github.com/dlclark/regexp2 v1.12.0
 	github.com/grafana/grafana-plugin-sdk-go v0.292.1
 	github.com/klauspost/compress v1.18.6
 	github.com/stretchr/testify v1.11.1
@@ -12,7 +12,6 @@ require (
 )
 
 require (
-	github.com/AfterShip/clickhouse-sql-parser v0.5.1 // indirect
 	github.com/BurntSushi/toml v1.6.0 // indirect
 	github.com/apache/arrow-go/v18 v18.6.0 // indirect
 	github.com/beorn7/perks v1.0.1 // indirect

@@ -387,49 +387,49 @@ func TestExtractDashboardCorpus(t *testing.T) {
 - [ ] **Step 2: Run the extractor**
 
 Run: `go test ./pkg/eval -run TestExtractDashboardCorpus -v -args -update`
-Expected: log line `extracted N unique dashboard queries` with N roughly 40–120; many `dash_*.sql` files appear under `testdata/corpus/`.
+Expected: log line `extracted N unique dashboard queries`. **N is often large — observed ~630** (Grafana dashboards carry `query` keys in panels, templating variables, and annotations, and this plugin's template-var queries are real ClickHouse SQL, so they legitimately belong in the corpus). Many `dash_*.sql` files appear under `testdata/corpus/`.
 
-- [ ] **Step 3: Triage every case mechanically, then generate goldens**
+- [ ] **Step 3: Triage every case in ONE batch pass, then generate goldens**
 
-Some dashboard queries error or panic in the current parser — that is a real finding, and the harness (Task 1) is now panic-safe, so it will NOT crash the run: a panicking case fails only its own subtest with a `PANIC:` message naming the file. Triage in three deterministic sub-steps — no eyeballing:
-
-First, tag every case that errors-or-panics today as `expect=error`. Run this exact script (it classifies each file by running its own single subtest and inspecting the result):
+Some dashboard queries error or panic in the current parser — a real finding. The harness (Task 1) is panic-safe: a panicking case fails only its own subtest, naming the file. **CRITICAL — do the triage as a BATCH, not per-case.** A per-case loop (`go test` once per file) is O(N) full test binaries and takes ~1 hour at N≈630. Instead run ONE update pass, harvest the failing case names from its output, tag them, and regenerate. This is ~3 test runs total, seconds not minutes.
 
 ```bash
 cd pkg/eval
-for f in testdata/corpus/dash_*.sql; do
-  name=$(basename "$f" .sql)
-  # skip files that already carry a directive
-  head -1 "$f" | grep -q '^-- corpus:' && continue
-  # remove any stale golden, then probe this ONE case with -update
-  rm -f "testdata/corpus/$name.ast.golden.json"
-  go test . -run "TestGoldenCorpus/$name\$" -args -update >/dev/null 2>&1
-  # a case is "clean" iff -update wrote an ast golden; otherwise it errored/panicked
-  if [ ! -f "testdata/corpus/$name.ast.golden.json" ]; then
-    printf -- '-- corpus: expect=error tags=dashboard\n%s' "$(cat "$f")" > "$f"
-  fi
-done
+# 1) One update pass. Untagged error/panic cases FAIL their subtest (expected); clean cases write goldens.
+go test . -run TestGoldenCorpus -args -update > /tmp/corpus_upd.log 2>&1 ; true
+
+# 2) Harvest failing case names (these errored or panicked without an expect=error tag).
+grep -E '^\s*--- FAIL: TestGoldenCorpus/' /tmp/corpus_upd.log \
+  | sed -E 's#.*TestGoldenCorpus/([A-Za-z0-9_]+).*#\1#' | sort -u > /tmp/failed_cases.txt
+# Panic cases specifically (harness Fatalf says "<name>.sql panics in ToAST").
+grep -E 'panics in ToAST' /tmp/corpus_upd.log \
+  | sed -E 's#.*[^A-Za-z0-9_]([A-Za-z0-9_]+)\.sql panics.*#\1#' | sort -u > /tmp/panic_cases.txt
+echo "failed=$(wc -l < /tmp/failed_cases.txt) panic=$(wc -l < /tmp/panic_cases.txt)"
+
+# 3) Quarantine panic cases (untracked files → plain mv), remove their partial goldens.
+mkdir -p testdata/corpus_broken
+while read -r name; do
+  [ -z "$name" ] && continue
+  mv "testdata/corpus/$name.sql" "testdata/corpus_broken/$name.sql" 2>/dev/null
+  rm -f "testdata/corpus/$name".*.golden.* "testdata/corpus/$name".error.golden.txt
+done < /tmp/panic_cases.txt
+
+# 4) Tag remaining failed (non-panic) cases as expect=error.
+while read -r name; do
+  [ -z "$name" ] && continue
+  grep -qxF "$name" /tmp/panic_cases.txt && continue          # skip quarantined
+  f="testdata/corpus/$name.sql"; [ -f "$f" ] || continue
+  head -1 "$f" | grep -q '^-- corpus:' && continue            # already tagged
+  printf -- '-- corpus: expect=error tags=dashboard\n%s' "$(cat "$f")" > "$f"
+done < /tmp/failed_cases.txt
+
+# 5) Regenerate with tags in place, then confirm no panics remain.
+go test . -run TestGoldenCorpus -args -update > /dev/null 2>&1 ; true
+go test . -run TestGoldenCorpus 2>&1 | grep -c 'panics in ToAST'   # must print 0
 cd ../..
 ```
 
-The `\$` anchors the `-run` regex to the exact case name (so `dash_ab` does not also match `dash_abcd`).
-
-Then regenerate all goldens (now that error-cases are tagged) and confirm none panic:
-
-```bash
-go test ./pkg/eval -run TestGoldenCorpus -args -update
-go test ./pkg/eval -run TestGoldenCorpus 2>&1 | grep -i 'PANIC:' || echo "NO PANICS"
-```
-
-Expected: the second command prints `NO PANICS`. If instead it lists any `PANIC:` files, move each named file to a quarantine dir and note it in the commit message:
-
-```bash
-mkdir -p pkg/eval/testdata/corpus_broken
-# for each PANIC-named file reported above:
-# git mv pkg/eval/testdata/corpus/<name>.sql pkg/eval/testdata/corpus_broken/<name>.sql
-```
-
-Do NOT attempt to fix a panicking parser — quarantining is the correct Phase-0 action; the fix lands in Phase 4.
+Expected: the final grep prints `0`. Do NOT attempt to fix a panicking parser — quarantining is the correct Phase-0 action; the fix lands in Phase 4. Note the failed/panic counts for the report; if `failed` is a very large fraction of N (say >40%), the extractor likely pulled in non-SQL `query` fields — flag it rather than silently freezing junk.
 
 - [ ] **Step 4: Verify the whole corpus is green and stable**
 

@@ -261,53 +261,18 @@ func (ds *ClickHouseDatasource) handleCreateQuery(ctx context.Context, req *back
 		return nil
 	}
 
-	// Parse time range using helper function
-	hasAdhocMacro := strings.Contains(request.Query, "$adhoc")
-	from, to, err := timeutils.ParseTimeRange(timeutils.TimeRangeStruct(request.TimeRange))
-	if err != nil {
-		return sendUniversalErrorResponse(sender, ErrorContext{
-			ErrorType:     ErrorTypeTimeRange,
-			OriginalSQL:   request.Query,
-			HasAdhocMacro: hasAdhocMacro,
-			OriginalError: fmt.Errorf("Invalid time range: %v", err),
-			Handler:       "handleCreateQuery",
-		}, http.StatusBadRequest)
-	}
-
-	// Create eval.EvalQuery
-	evalQ := eval.NewEvalQuery(request, from, to)
-
-	// Apply macros and get AST
-	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
-	if err != nil {
-		return sendUniversalErrorResponse(sender, ErrorContext{
-			ErrorType:     ErrorTypeMacroExpansion,
-			OriginalSQL:   request.Query,
-			HasAdhocMacro: hasAdhocMacro,
-			OriginalError: fmt.Errorf("Failed to apply macros: %v", err),
-			Handler:       "handleCreateQuery",
-		}, http.StatusInternalServerError)
-	}
-
-	scanner := eval.NewScanner(sql)
-	ast, err := scanner.ToAST()
-	if err != nil {
-		return sendUniversalErrorResponse(sender, ErrorContext{
-			ErrorType:     ErrorTypeQueryParsing,
-			OriginalSQL:   request.Query,
-			ProcessedSQL:  sql,
-			HasAdhocMacro: hasAdhocMacro,
-			OriginalError: err,
-			Handler:       "handleCreateQuery",
-		}, http.StatusInternalServerError)
+	// Parse time range, expand macros and build the AST via the shared path
+	qc, errCtx := buildQueryContext(request, request.Query, timeutils.TimeRangeStruct(request.TimeRange), "handleCreateQuery")
+	if errCtx != nil {
+		return sendUniversalErrorResponse(sender, *errCtx, errCtx.Status)
 	}
 
 	// Use the recursive function to find GROUP BY properties at any level
-	properties := findGroupByProperties(ast)
+	properties := findGroupByProperties(qc.AST)
 
 	// Return the result using utility function
 	return requests.SendSuccessResponse(sender, CreateQueryResponse{
-		SQL:  sql,
+		SQL:  qc.SQL,
 		Keys: properties,
 	})
 }
@@ -512,36 +477,13 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 		})
 	}
 
-	// Step 1: Create Query (same as handleCreateQuery)
-	// Parse time range
-	from, err := time.Parse(time.RFC3339, request.TimeRange.From)
-	if err != nil {
-		response := ProcessQueryBatchResponse{Error: "Invalid `$from` time"}
-		return requests.SendJSON(sender, http.StatusBadRequest, response)
+	// Step 1: Create Query (same as handleCreateQuery) via the shared path
+	qc, errCtx := buildQueryContext(request, request.Query, timeutils.TimeRangeStruct(request.TimeRange), "handleProcessQueryBatch")
+	if errCtx != nil {
+		return requests.SendJSON(sender, errCtx.Status, ProcessQueryBatchResponse{Error: errCtx.OriginalError.Error()})
 	}
-
-	to, err := time.Parse(time.RFC3339, request.TimeRange.To)
-	if err != nil {
-		response := ProcessQueryBatchResponse{Error: "Invalid `$to` time"}
-		return requests.SendJSON(sender, http.StatusBadRequest, response)
-	}
-
-	// Create eval.EvalQuery
-	evalQ := eval.NewEvalQuery(request, from, to)
-
-	// Apply macros and get AST
-	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
-	if err != nil {
-		response := ProcessQueryBatchResponse{Error: fmt.Sprintf("Failed to apply macros: %v", err)}
-		return requests.SendJSON(sender, http.StatusInternalServerError, response)
-	}
-
-	scanner := eval.NewScanner(sql)
-	ast, err := scanner.ToAST()
-	if err != nil {
-		response := ProcessQueryBatchResponse{Error: fmt.Sprintf("Failed to parse query: %v", err)}
-		return requests.SendJSON(sender, http.StatusInternalServerError, response)
-	}
+	sql := qc.SQL
+	ast := qc.AST
 
 	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
 	adhocFilters := request.AdhocFilters
@@ -733,6 +675,7 @@ type ErrorContext struct {
 	AdhocFilters  []interface{}
 	OriginalError error
 	Handler       string
+	Status        int
 }
 
 // createUniversalErrorResponse creates a comprehensive error response with fallback macro replacement
@@ -869,43 +812,13 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		})
 	}
 
-	// Step 1: Create Query (same as handleCreateQuery)
-	// Parse time range
-	from, err := time.Parse(time.RFC3339, request.TimeRange.From)
-	if err != nil {
-		return sendUniversalErrorResponse(sender, ErrorContext{
-			ErrorType:     ErrorTypeTimeRange,
-			OriginalSQL:   request.Query,
-			OriginalError: fmt.Errorf("Invalid `$from` time: %v", err),
-			Handler:       "handleCreateQueryWithAdhoc",
-		}, http.StatusBadRequest)
+	// Step 1: Create Query (same as handleCreateQuery) via the shared path
+	qc, errCtx := buildQueryContext(request, request.Query, timeutils.TimeRangeStruct(request.TimeRange), "handleCreateQueryWithAdhoc")
+	if errCtx != nil {
+		return sendUniversalErrorResponse(sender, *errCtx, errCtx.Status)
 	}
-
-	to, err := time.Parse(time.RFC3339, request.TimeRange.To)
-	if err != nil {
-		return sendUniversalErrorResponse(sender, ErrorContext{
-			ErrorType:     ErrorTypeTimeRange,
-			OriginalSQL:   request.Query,
-			OriginalError: fmt.Errorf("Invalid `$to` time: %v", err),
-			Handler:       "handleCreateQueryWithAdhoc",
-		}, http.StatusBadRequest)
-	}
-
-	// Create eval.EvalQuery
-	evalQ := eval.NewEvalQuery(request, from, to)
-
-	// Apply macros and get AST
-	sql, err := evalQ.ApplyMacrosAndTimeRangeToQuery()
+	sql := qc.SQL
 	hasAdhocMacro := strings.Contains(sql, "$adhoc")
-	if err != nil {
-		return sendUniversalErrorResponse(sender, ErrorContext{
-			ErrorType:     ErrorTypeMacroExpansion,
-			OriginalSQL:   request.Query,
-			HasAdhocMacro: hasAdhocMacro,
-			OriginalError: fmt.Errorf("Failed to apply macros: %v", err),
-			Handler:       "handleCreateQueryWithAdhoc",
-		}, http.StatusInternalServerError)
-	}
 
 	// Step 2: Apply Adhoc Filters (same as handleApplyAdhocFilters)
 	adhocFilters := request.AdhocFilters
@@ -916,20 +829,10 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 	var targetDatabase, targetTable string
 
 	if len(adhocFilters) > 0 {
-		scanner := eval.NewScanner(sql)
-		ast, err := scanner.ToAST()
+		// AST already built by buildQueryContext; reuse it (Task 7 will extract
+		// the adhoc-injection logic that follows).
+		ast := qc.AST
 		topQueryAst := ast
-		if err != nil {
-			return sendUniversalErrorResponse(sender, ErrorContext{
-				ErrorType:     ErrorTypeQueryParsing,
-				OriginalSQL:   request.Query,
-				ProcessedSQL:  sql,
-				HasAdhocMacro: hasAdhocMacro,
-				AdhocFilters:  []interface{}{adhocFilters},
-				OriginalError: err,
-				Handler:       "handleCreateQueryWithAdhoc",
-			}, http.StatusInternalServerError)
-		}
 
 		// Navigate to the deepest FROM clause
 		ast = eval.InnermostFrom(ast)

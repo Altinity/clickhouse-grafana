@@ -5,13 +5,14 @@ import { toTable } from './toTable';
 import { toTimeSeries } from './toTimeSeries';
 import { toTraces } from './toTraces';
 import { DateTime } from 'luxon';
-import { FieldType } from '@grafana/data';
+import { DataLink, FieldType } from '@grafana/data';
+import { DataLinkConfig } from '../datalinks';
 
 export interface Field {
   name: string;
   type: string;
   values: Array<string | number | null | object>;
-  config: Record<string, unknown>;
+  config: { links?: DataLink[]; [key: string]: unknown };
 }
 
 export const convertTimezonedDateToUTC = (localDateTime, timeZone) => {
@@ -113,6 +114,8 @@ export default class SqlSeries {
   tillNow: any;
   from: any;
   to: any;
+  dataLinks?: DataLinkConfig[];
+  app?: string;
 
   /** @ngInject */
   constructor(options: any) {
@@ -123,6 +126,8 @@ export default class SqlSeries {
     this.from = options.from;
     this.to = options.to;
     this.keys = options.keys || [];
+    this.dataLinks = options.dataLinks;
+    this.app = options.app;
   }
 
   toAnnotation = (input: any, meta: any): any[] => {
@@ -130,7 +135,7 @@ export default class SqlSeries {
   };
 
   toFlamegraph = (): any => {
-    return toFlamegraph(this.series);
+    return toFlamegraph(this.series, this.dataLinks, this.app);
   };
 
   toLogs = (): any => {
@@ -149,6 +154,6 @@ export default class SqlSeries {
   };
 
   toTraces = (): any => {
-    return toTraces(this.series, this.meta);
+    return toTraces(this.series, this.meta, this.dataLinks, this.app);
   };
 }

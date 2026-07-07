@@ -2,6 +2,7 @@ import { each, isArray } from 'lodash';
 import { _toFieldType, convertTimezonedDateToUTC } from './sql_series';
 import { FieldType } from '@grafana/data';
 import { formatNumericValue, is64BitIntegerType, extractValueTypeFromArrayTuple } from './bigIntUtils';
+import { applyDataLinks } from '../datalinks';
 
 /**
  * Formats a value for time series data.
@@ -201,17 +202,20 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
   });
 
   each(metrics, function (dataPoints, seriesName) {
-    // Filter: allow numbers, strings (for big integers), and nulls
     const processedDataPoints = (extrapolate ? extrapolateDataPoints(dataPoints, self) : dataPoints).filter(item => (typeof item[0] === 'number' || typeof item[0] === 'string' || item[0] === null) && item[1]);
+
+    const fields = [
+      { config: { links: [] }, name: 'time', type: 'time', values: processedDataPoints.map((v: any) => v[1]) },
+      { config: { links: [] }, name: seriesName, values: processedDataPoints.map((v: any) => v[0]) },
+    ];
+
+    applyDataLinks(fields, self.dataLinks, { app: self.app });
 
     timeSeries.push({
       length: processedDataPoints.length,
-      fields: [
-        { config: { links: []}, name: 'time', type: 'time', values: processedDataPoints.map((v: any) => v[1])},
-        { config: { links: []}, name: seriesName, values: processedDataPoints.map((v: any) => v[0])},
-      ],
-      refId: seriesName && self.refId ? `${self.refId} - ${seriesName}` : undefined
-    })
+      fields,
+      refId: seriesName && self.refId ? `${self.refId} - ${seriesName}` : undefined,
+    });
   });
 
   return timeSeries;

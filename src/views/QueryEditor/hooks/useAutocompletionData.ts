@@ -39,6 +39,13 @@ FROM (
 ) WHERE notEmpty(completion) LIMIT 10000
 `;
 
+// Some Grafana versions (<= 12.4) fail to parse the text/plain ClickHouse error body of a
+// FORMAT JSON query and deliver an empty error.data, leaving nothing to classify. With this
+// setting ClickHouse returns the exception as a JSON "exception" field instead, which
+// survives parsing and is recognized by isPermissionError.
+const AUTOCOMPLETION_QUERY_WITH_JSON_EXCEPTION =
+  AUTOCOMPLETION_QUERY + ' SETTINGS http_write_exception_in_output_format=1';
+
 export const useAutocompleteData = (datasource) => {
   const [data, setData] = useState<null | any>(null);
   const [hasPermissionError, setHasPermissionError] = useState<boolean>(false);
@@ -65,7 +72,17 @@ export const useAutocompleteData = (datasource) => {
           return;
         }
 
-        const result = await datasource.metricFindQuery(AUTOCOMPLETION_QUERY);
+        let result;
+        try {
+          result = await datasource.metricFindQuery(AUTOCOMPLETION_QUERY);
+        } catch (error: any) {
+          if (isPermissionError(error)) {
+            throw error;
+          }
+          // The error body may have been lost (see AUTOCOMPLETION_QUERY_WITH_JSON_EXCEPTION);
+          // retry once so a permission denial becomes classifiable.
+          result = await datasource.metricFindQuery(AUTOCOMPLETION_QUERY_WITH_JSON_EXCEPTION);
+        }
 
         const groupByColor = (data) => {
           const groupedData = {};

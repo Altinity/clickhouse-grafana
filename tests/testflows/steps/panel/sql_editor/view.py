@@ -145,4 +145,23 @@ def enter_context_window(self, query_name, context_window):
 def get_context_window(self, query_name):
     """Get context window."""
 
+    import time
+    from selenium.webdriver.common.by import By as SelectBy
+
+    # Grafana >= 13.1 combobox keeps the selected value in the input itself;
+    # poll (the datasource default is applied asynchronously and the editor
+    # re-renders) and re-find on each attempt since references go stale
+    found_any = False
+    for _ in range(40):
+        inputs = self.context.driver.find_elements(
+            SelectBy.XPATH, '//input[@data-testid="context-window-size-select-input"]'
+        )
+        found_any = found_any or bool(inputs)
+        for candidate in inputs:
+            value = candidate.get_attribute('value')
+            if value:
+                return value
+        time.sleep(0.5)
+    if found_any:
+        return ''
     return locators.context_window_grafana_select_value_container(query_name=query_name, grafana_version=self.context.grafana_version).text

@@ -27,7 +27,7 @@
       {
         "datasource": {
           "type": "vertamedia-clickhouse-datasource",
-          "uid": "gh-api"
+          "uid": "gh-play"
         },
         "fieldConfig": {
           "defaults": {
@@ -116,30 +116,30 @@
         "pluginVersion": "8.1.0-pre",
         "targets": [
           {
-            "database": "default",
+            "database": "coverage_ci",
             "datasource": {
               "type": "vertamedia-clickhouse-datasource",
-              "uid": "gh-api"
+              "uid": "gh-play"
             },
             "dateColDataType": "",
             "dateLoading": false,
-            "dateTimeColDataType": "closed_at",
+            "dateTimeColDataType": "check_start_time",
             "dateTimeType": "DATETIME",
             "datetimeLoading": false,
             "extrapolate": true,
             "format": "time_series",
             "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
             "intervalFactor": 1,
-            "query": "SELECT\n    Time as DateTime,\n    count()\nFROM github_events\n\nWHERE\n    (repo_name = 'grafana/grafana')\n    AND(event_type = 'PullRequestEvent')\n    AND(Time >= $from) \n    AND(Time <= $to)\nGROUP BY toStartOfDay(created_at) AS Time\n\nORDER BY Time ASC\n",
-            "rawQuery": "SELECT\n    Time as DateTime,\n    count()\nFROM github_events\n\nWHERE\n    (repo_name = 'grafana/grafana')\n    AND(event_type = 'PullRequestEvent')\n    AND(Time >= 1635688854) \n    AND(Time <= 1638280854)\nGROUP BY toStartOfDay(created_at) AS Time\n\nORDER BY Time ASC",
+            "query": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+            "rawQuery": "SELECT (intDiv(toUInt32(check_start_time), 86400) * 86400) * 1000 as t, count() FROM coverage_ci.coverage_data WHERE check_start_time >= toDateTime(1635688854) AND check_start_time <= toDateTime(1638280854) GROUP BY t ORDER BY t",
             "refId": "A",
             "round": "0s",
             "skip_comments": true,
-            "table": "github_events",
+            "table": "coverage_data",
             "tableLoading": false
           }
         ],
-        "title": "Pull request events for grafana/grafana",
+        "title": "Coverage CI checks per day",
         "transformations": [
           {
             "id": "filterFieldsByName",
@@ -168,8 +168,8 @@
     },
     "timepicker": {},
     "timezone": "",
-    "title": "dashboard-gh-api",
-    "uid": "dashboard-gh-api",
+    "title": "dashboard-gh-play",
+    "uid": "dashboard-gh-play",
     "version": 8,
     "weekStart": ""
   }

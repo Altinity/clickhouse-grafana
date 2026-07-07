@@ -1,52 +1,10 @@
 import {createDataFrame, DataFrame, DataFrameType, FieldType} from '@grafana/data';
-import {each, find, omitBy, pickBy} from 'lodash';
+import {each, find} from 'lodash';
 import {convertTimezonedDateToUTC} from './sql_series';
+import { resolveFieldModes, transformObject, renderFieldByMode, pathStyleForType } from './logsFieldModes';
 
-export const transformObject = (obj) => {
-  // Check if the input is an object and not null
-  if (obj && typeof obj === 'object') {
-    // Create a new object to store the transformed properties
-    const result = Array.isArray(obj) ? [] : {};
-
-    for (const key in obj) {
-      if (Object.prototype.hasOwnProperty.call(obj, key)) {
-        const value = obj[key];
-
-        // If the value is an object (and not null), extract first level properties
-        if (value && typeof value === 'object') {
-          if (Array.isArray(value)) {
-            // For arrays, we still stringify
-            result[key] = JSON.stringify(value);
-          } else {
-            // For objects, extract first level properties
-            for (const nestedKey in value) {
-              if (Object.prototype.hasOwnProperty.call(value, nestedKey)) {
-                const nestedValue = value[nestedKey];
-                // Create a new key in the format `key[nestedKey]`
-                const newKey = `${key}['${nestedKey}']`;
-                
-                // If nested value is still an object, stringify it
-                if (nestedValue && typeof nestedValue === 'object') {
-                  result[newKey] = JSON.stringify(nestedValue);
-                } else {
-                  // Otherwise, keep the primitive value as is
-                  result[newKey] = nestedValue;
-                }
-              }
-            }
-          }
-        } else {
-          // Otherwise, keep the primitive value as it is
-          result[key] = value;
-        }
-      }
-    }
-
-    return result;
-  }
-  // Return the original value if it's not an object
-  return obj;
-}
+// Re-export transformObject so existing imports from './toLogs' keep working
+export { transformObject } from './logsFieldModes';
 
 const _toFieldType = (type: string, index?: number): FieldType | Object => {
   if (type.startsWith('Nullable(')) {
@@ -105,15 +63,30 @@ export const toLogs = (self: any): DataFrame[] => {
     return [];
   }
 
+  const fieldModes = resolveFieldModes(self.meta || [], self.logsFieldConfig);
+
+  const chTypeByName: Record<string, string> = {};
+  (self.meta || []).forEach((c: any) => { chTypeByName[c.name] = c.type; });
+
   each(self.meta, function (col: any, index: number) {
     let type = _toFieldType(col.type, index);
+    const mode = fieldModes[col.name];
 
-    if ((type === FieldType.number || type === FieldType.string) && col.name !== messageField && !reservedFields.includes(col.name)) {
+    const isLabelCandidate =
+      (type === FieldType.number || type === FieldType.string) &&
+      col.name !== messageField &&
+      !reservedFields.includes(col.name);
+
+    if (isLabelCandidate && mode !== 'hide' && mode !== 'raw') {
       labelFields.push(col.name);
     }
 
     types[col.name] = type;
   });
+
+  const rawFields = (self.meta || [])
+    .map((c: any) => c.name)
+    .filter((name: string) => fieldModes[name] === 'raw' && name !== messageField);
 
   const dataObjectValues = Object.entries(self.series[0]).reduce((acc, [key, value]) => {
     acc[key] = {
@@ -126,20 +99,38 @@ export const toLogs = (self: any): DataFrame[] => {
   },{});
 
   each(self.series, function (ser: any) {
-    const labels = pickBy(ser, (_value: any, key: string) => labelFields.includes(key));
-
-    if (Object.keys(labels).length > 0) {
-      labelFieldsList.push(transformObject(labels))
+    const labels: any = {};
+    for (const key of labelFields) {
+      const mode = fieldModes[key];
+      if (mode) {
+        const depth = self.logsFieldConfig?.[key]?.depth;
+        Object.assign(labels, renderFieldByMode(key, ser[key], mode, depth, pathStyleForType(chTypeByName[key] || '')).labels);
+      } else {
+        labels[key] = ser[key];
+      }
     }
 
-    const data = omitBy(ser, (_value: any, key: string) => {
-      labelFields.includes(key);
-    });
+    // Push one labels object per row whenever label fields exist — even if this row's
+    // rendered labels are empty (e.g. an expand-mode Map value of {}). Skipping empty
+    // rows would desynchronize the labels field from timestamp/body rows.
+    if (labelFields.length > 0) {
+      labelFieldsList.push(transformObject(labels));
+    }
 
     const timestampObject = Object.entries(types)?.find(object => object[1] === 'time')
     timestampKey = timestampObject? timestampObject[0] : null;
 
-    Object.entries(data)?.forEach(([key, value]) => {
+    let rawSuffix = '';
+    for (const rawName of rawFields) {
+      const r = renderFieldByMode(rawName, ser[rawName], 'raw');
+      rawSuffix += ` ${r.bodyAppend}`;
+    }
+
+    Object.entries(ser).forEach(([key, value]) => {
+      let outValue: any = value;
+      if (key === messageField && rawSuffix) {
+        outValue = `${value}${rawSuffix}`;
+      }
       if (
         types[key] &&
         types[key] instanceof Object &&
@@ -149,9 +140,14 @@ export const toLogs = (self: any): DataFrame[] => {
         timestampKey = key;
         dataObjectValues[key].values.push(convertTimezonedDateToUTC(value, types[key].timezone));
       } else {
-        dataObjectValues[key].values.push(value);
+        // With output_format_json_quote_64bit_integers=1 (enabled for logs queries),
+        // UInt64/Int64 values arrive as strings; coerce all-digit strings for time-typed
+        // columns back to numbers so the timestamp field stays valid (epoch ms < 2^53).
+        if (types[key] === FieldType.time && typeof outValue === 'string' && /^\d+$/.test(outValue)) {
+          outValue = Number(outValue);
+        }
+        dataObjectValues[key].values.push(outValue);
       }
-
     });
   });
 

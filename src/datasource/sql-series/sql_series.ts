@@ -113,6 +113,7 @@ export default class SqlSeries {
   tillNow: any;
   from: any;
   to: any;
+  logsFieldConfig: any;
 
   /** @ngInject */
   constructor(options: any) {
@@ -123,6 +124,7 @@ export default class SqlSeries {
     this.from = options.from;
     this.to = options.to;
     this.keys = options.keys || [];
+    this.logsFieldConfig = options.logsFieldConfig;
   }
 
   toAnnotation = (input: any, meta: any): any[] => {

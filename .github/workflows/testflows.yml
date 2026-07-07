@@ -12,12 +12,6 @@ on:
 permissions:
   contents: read
 
-env:
-  testflows_logs: |
-    ./testflows_logs/*
-  selenium_logs: |
-    ./selenium_logs/*
-
 jobs:
   prepare-frontend-build:
     runs-on: ubuntu-latest
@@ -79,8 +73,9 @@ jobs:
             dist/
             go_coverage/
 
-  tests:
-    name: tests (${{ matrix.suite.group }}, ${{ matrix.grafana.label }})
+  # Required leg: pinned Grafana version, gates the build.
+  tests-fixed:
+    name: fixed / ${{ matrix.suite.group }}
     needs: [prepare-frontend-build, prepare-backend-build]
     # runs-on: [ self-hosted, on-demand, type-cpx41, image-x86-system-ubuntu-22.04 ]
     runs-on: ubuntu-latest
@@ -108,86 +103,82 @@ jobs:
           - { group: adhoc-macro,                   name: adhoc_macro }
           - { group: unified-alerts,                name: unified_alerts }
           - { group: template-variables-editor,     name: template_variables_editor }
-          - { group: legacy-alerts,                 name: legacy_alerts }
+          # legacy_alerts always runs against its own pinned Grafana 10.4.3
+          # service, so it lives only in this leg, sharded to cut the wall-clock tail.
+          - { group: legacy-alerts-1, name: legacy_alerts, scenario: "check_red_alert,check_green_alert" }
+          - { group: legacy-alerts-2, name: legacy_alerts, scenario: "check_green_into_red_alert,check_red_into_green_alert" }
           - { group: conditional-test,              name: conditional_test }
           - { group: search-filter,                 name: search_filter }
           - { group: flamegraph-and-tracing,        name: flamegraph_and_tracing }
           - { group: limited-access,                name: limited_access }
           - { group: worldmap-and-table-format,     name: worldmap_and_table_format }
           - { group: log-context,                   name: log_context }
-        grafana:
-          - { version: "12.4.0-20977568970", label: fixed,  required: true }
-          - { version: "latest",             label: latest, required: false }
 
     steps:
       - name: Checkout
         uses: actions/checkout@v6
 
-      - name: Download frontend build
-        uses: actions/download-artifact@v7
+      - name: Run suite
+        uses: ./.github/actions/testflows-suite
         with:
-          name: build-frontend
-          path: dist/
+          suite-group: ${{ matrix.suite.group }}
+          suite-name: ${{ matrix.suite.name }}
+          scenario: ${{ matrix.suite.scenario || '' }}
+          grafana-version: "13.1.0"
+          grafana-label: fixed
 
-      - name: Download backend build
-        uses: actions/download-artifact@v7
+  # Informational leg: tracks the latest Grafana release. A failure marks the
+  # job red (visible in the UI) but does not fail the workflow run.
+  tests-latest:
+    name: latest / ${{ matrix.suite.group }}
+    needs: [prepare-frontend-build, prepare-backend-build]
+    runs-on: ubuntu-latest
+    continue-on-error: true
+    permissions:
+      contents: read
+      checks: write
+
+    timeout-minutes: 60
+
+    env:
+      SKIP_BUILDERS: "1"
+
+    strategy:
+      fail-fast: false
+      matrix:
+        suite:
+          - { group: window-functions,              name: window_functions }
+          - { group: sql-editor,                    name: sql_editor }
+          - { group: data-source-setup-connections, name: data_source_setup_connections }
+          - { group: data-source-setup-defaults,    name: data_source_setup_defaults }
+          - { group: e2e,                           name: e2e }
+          - { group: query-options,                 name: query_options }
+          - { group: functions,                     name: functions }
+          - { group: macros,                        name: macros }
+          - { group: adhoc-macro,                   name: adhoc_macro }
+          - { group: unified-alerts,                name: unified_alerts }
+          - { group: template-variables-editor,     name: template_variables_editor }
+          - { group: conditional-test,              name: conditional_test }
+          - { group: search-filter,                 name: search_filter }
+          - { group: flamegraph-and-tracing,        name: flamegraph_and_tracing }
+          - { group: limited-access,                name: limited_access }
+          - { group: worldmap-and-table-format,     name: worldmap_and_table_format }
+          - { group: log-context,                   name: log_context }
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v6
+
+      - name: Run suite
+        uses: ./.github/actions/testflows-suite
         with:
-          name: build-backend
-          path: .
-
-      - name: Restore executable permissions on backend binaries
-        run: chmod +x dist/altinity-clickhouse-plugin*
-
-      - name: Setup
-        run: tests/testflows/infra/setup.sh
-
-      - name: Cache pip packages
-        uses: actions/cache@v5
-        with:
-          path: ~/.cache/pip
-          key: ${{ runner.os }}-pip-${{ hashFiles('tests/testflows/requirements.txt') }}
-          restore-keys: |
-            ${{ runner.os }}-pip-
-
-      - name: Run Altinity Grafana Plugin tests (${{ matrix.suite.group }} on Grafana ${{ matrix.grafana.label }})
-        continue-on-error: ${{ !matrix.grafana.required }}
-        env:
-          GRAFANA_VERSION: ${{ matrix.grafana.version }}
-        run: cd ./tests/testflows/ &&
-          python3
-          -u ./regression.py --before=0.1 --after=0.1
-          --suite ${{ matrix.suite.name }}
-          --log raw.log
-          -o short
-
-      - name: Create reports
-        if: always()
-        run: tests/testflows/infra/create-report.sh
-
-      - name: Upload raw coverage data
-        if: always()
-        uses: actions/upload-artifact@v7
-        with:
-          name: raw-coverage-${{ matrix.suite.group }}-${{ matrix.grafana.label }}
-          path: |
-            go_coverage/raw/
-            tests/testflows/coverage/raw/
-          if-no-files-found: ignore
-
-      - uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: testflows-logs-${{ matrix.suite.group }}-${{ matrix.grafana.label }}
-          path: ${{ env.testflows_logs}}
-
-      - uses: actions/upload-artifact@v7
-        if: always()
-        with:
-          name: selenium-logs-${{ matrix.suite.group }}-${{ matrix.grafana.label }}
-          path: ${{ env.selenium_logs}}
+          suite-group: ${{ matrix.suite.group }}
+          suite-name: ${{ matrix.suite.name }}
+          grafana-version: "latest"
+          grafana-label: latest
 
   coverage:
-    needs: tests
+    needs: tests-fixed
     if: always()
     runs-on: ubuntu-latest
     permissions:

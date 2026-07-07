@@ -9,7 +9,15 @@ class Locators:
     @property
     def new_altinity_plugin_datasource(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[aria-label='Add new data source Altinity plugin for ClickHouse']")
+        # Grafana migrated this control from aria-label to data-testid; keep both
+        # plus text-anchored fallbacks for card markup variations
+        return driver.find_element(
+            SelectBy.XPATH,
+            "//*[@data-testid='data-testid Add new data source Altinity plugin for ClickHouse']"
+            " | //*[@aria-label='Add new data source Altinity plugin for ClickHouse']"
+            " | //button[.//text()='Altinity plugin for ClickHouse']"
+            " | //a[.//text()='Altinity plugin for ClickHouse']",
+        )
 
 
 locators = Locators()

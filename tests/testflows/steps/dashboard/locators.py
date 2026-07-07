@@ -57,6 +57,29 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Add new visualization menu item']")
 
+    def add_buttons(self):
+        """Old (<= 12.x) add button occurrences, empty list on newer Grafana."""
+        driver: WebDriver = current().context.driver
+        return driver.find_elements(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Add button']")
+
+    @property
+    def sidebar_new_button(self):
+        """Grafana >= 13.1 dynamic dashboards: add (new) button in the edit sidebar."""
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Dashboard Sidebar new button']")
+
+    @property
+    def sidebar_add_new_panel(self):
+        """Grafana >= 13.1 dynamic dashboards: 'Panel' card in the add sidebar."""
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid sidebar add new panel']")
+
+    @property
+    def configure_visualization_button(self):
+        """Grafana >= 13.1 dynamic dashboards: 'Configure visualization' button on a new panel."""
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, "//button[.//text()='Configure visualization']")
+
     @property
     def dashboard_settings_button(self):
         driver: WebDriver = current().context.driver
@@ -88,30 +111,30 @@ class Locators:
     @property
     def database_dropdown(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[./text()="FROM"]/..//..//input[contains(@id, "react-select")]')
+        return driver.find_element(SelectBy.XPATH, '//input[@data-testid="database-select-input"] | //*[./text()="FROM"]/..//..//input[contains(@id, "react-select")]')
 
     @property
     def table_dropdown(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f'//*[@data-testid="table-select"]/..//input[contains(@id, "react-select")]')
+        return driver.find_element(SelectBy.XPATH, '//input[@data-testid="table-select-input"] | //*[@data-testid="table-select"]/..//input[contains(@id, "react-select")]')
 
     @property
     def column_timestamp_type_dropdown(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Column timestamp type"]/..//..//input[contains(@id, "react-select")]')
+                                   '//input[@data-testid="timestamp-type-select-input"] | //*[./text()="Column timestamp type"]/..//..//input[contains(@id, "react-select")]')
 
     @property
     def timestamp_column_dropdown(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Timestamp Column"]/..//..//input[contains(@id, "react-select")]')
+                                   '//input[@data-testid="timestamp-column-select-input"] | //*[./text()="Timestamp Column"]/..//..//input[contains(@id, "react-select")]')
 
     @property
     def date_column_dropdown(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Date column"]/..//..//input[contains(@id, "react-select")]')
+                                   '//input[@data-testid="date-column-select-input"] | //*[./text()="Date column"]/..//..//input[contains(@id, "react-select")]')
 
     @property
     def show_generated_sql_button(self):
@@ -211,7 +234,8 @@ class Locators:
     @property
     def exit_edit_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Exit edit mode button']")
+        # Grafana 13.1 merged exit-edit into the edit button (aria-label distinguishes)
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Exit edit mode button'], [aria-label='Exit edit mode']")
 
     @property
     def discard_changes_confirmation_button(self):

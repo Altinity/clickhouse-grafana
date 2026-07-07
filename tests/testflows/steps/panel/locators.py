@@ -34,11 +34,11 @@ class Locators:
     def sql_editor_toggle(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver
         if not(grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
-            search_class = "data-rbd-draggable-id"
-        else:
-            search_class = "data-rfd-draggable-id"
+            return driver.find_element(SelectBy.XPATH, f"//*[contains(@data-rbd-draggable-id, '{query_name}')]//*[contains(@id, 'option-sql')]")
 
-        return driver.find_element(SelectBy.XPATH, f"//*[contains(@{search_class}, '{query_name}')]//*[contains(@id, 'option-sql')]")
+        # modern Grafana generates opaque radio input ids (React useId), so anchor
+        # on the radio input title; the input sits on top of its label and receives clicks
+        return driver.find_element(SelectBy.XPATH, f"//*[contains(@data-rfd-draggable-id, '{query_name}')]//input[@type='radio' and @title='SQL Editor']")
 
     def sql_editor_input(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver
@@ -74,17 +74,17 @@ class Locators:
     @property
     def panel_error_for_table_view(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[aria-label='Panel header error']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Panel header error'], [aria-label='Panel header error']")
 
     @property
     def query_inspector_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[aria-label='Query inspector button']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Query inspector button'], [aria-label='Query inspector button']")
 
     @property
     def query_inspector_refresh_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[aria-label='Panel inspector Query refresh button']")
+        return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Panel inspector Query refresh button'], [aria-label='Panel inspector Query refresh button']")
 
     @property
     def query_inspector_data_tab(self):
@@ -94,12 +94,20 @@ class Locators:
     @property
     def query_inspector_data_options_expand_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, "//*[@aria-label='Panel inspector Data content']//button[@aria-label='Expand query row']")
+        return driver.find_element(
+            SelectBy.XPATH,
+            "//*[@aria-label='Panel inspector Data content' or @data-testid='data-testid Panel inspector Data content']"
+            "//button[@aria-label='Expand query row' or @data-testid='data-testid Expand query row']",
+        )
 
     @property
     def query_inspector_data_options_dropdown(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, "//*[@aria-label='Panel inspector Data content']//input[@aria-label='Select dataframe']")
+        return driver.find_element(
+            SelectBy.XPATH,
+            "//*[@aria-label='Panel inspector Data content' or @data-testid='data-testid Panel inspector Data content']"
+            "//input[@aria-label='Select dataframe' or @data-testid='data-testid Select dataframe']",
+        )
 
     @property
     def query_inspector_download_csv_button(self):
@@ -339,7 +347,8 @@ class Locators:
     @property
     def add_adhoc_filter_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f'[placeholder="Filter by label values"]')
+        # Grafana 13.1 renamed the adhoc filter input placeholder
+        return driver.find_element(SelectBy.CSS_SELECTOR, '[placeholder="Filter by label values"], [placeholder="+ label = value"]')
 
     def remove_adhoc_button(self, adhoc_name):
         driver: WebDriver = current().context.driver

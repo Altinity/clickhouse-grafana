@@ -373,6 +373,56 @@ def services_distribution_piechart_displays_data(self):
                 dashboard.discard_changes_for_dashboard()
 
 
+@TestScenario
+def autocomplete_permission_bubble_is_shown(self):
+    """Check that the SQL editor shows a red 'Autocomplete unavailable' badge
+    when the datasource user has no access to system tables (issue #816)."""
+
+    permission_badge_text = (
+        "Autocomplete unavailable - insufficient permissions to access system tables"
+    )
+
+    with Given("I open the limited permissions dashboard"):
+        open_limited_permissions_dashboard()
+
+    with And("I open the basic query panel in edit mode"):
+        with delay():
+            dashboard.open_panel(
+                panel_name="Basic Query - No System Table Access Required"
+            )
+
+    try:
+        with When("I switch the query editor to SQL mode"):
+            with delay():
+                panel.go_to_sql_editor(query_name="A")
+
+        with Then("I see the red 'autocomplete unavailable' permission badge"):
+            for attempt in retries(delay=3, timeout=30):
+                with attempt:
+                    with delay():
+                        ui.wait_for_element_to_be_visible(
+                            select_type=SelectBy.XPATH,
+                            element=f"//*[text()[contains(., '{permission_badge_text}')]]",
+                            timeout=10,
+                        )
+
+        with And("I check the SQL editor is rendered despite the autocomplete failure"):
+            with delay():
+                ui.wait_for_element_to_be_present(
+                    select_type=SelectBy.CSS_SELECTOR,
+                    element="[class='view-lines monaco-mouse-cursor-text']",
+                )
+
+    finally:
+        with Finally("I discard changes for panel"):
+            with delay(after=0.5):
+                panel.click_back_to_dashboard_button()
+
+        with And("I discard changes for dashboard"):
+            with delay(after=0.5):
+                dashboard.discard_changes_for_dashboard()
+
+
 @TestFeature
 @Name("limited access")
 def feature(self):

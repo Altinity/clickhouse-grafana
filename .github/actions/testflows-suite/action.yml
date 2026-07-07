@@ -1,0 +1,94 @@
+name: Run testflows suite
+description: Download plugin builds, set up the environment and run one testflows suite against a given Grafana version
+
+inputs:
+  suite-group:
+    description: Suite group name used in artifact names (e.g. sql-editor)
+    required: true
+  suite-name:
+    description: Suite name passed to regression.py --suite (e.g. sql_editor)
+    required: true
+  scenario:
+    description: Optional comma-separated scenario function names passed to regression.py --scenario
+    required: false
+    default: ""
+  grafana-version:
+    description: Grafana docker image tag to test against
+    required: true
+  grafana-label:
+    description: Matrix label used in artifact names (fixed or latest)
+    required: true
+
+runs:
+  using: composite
+  steps:
+    - name: Download frontend build
+      uses: actions/download-artifact@v7
+      with:
+        name: build-frontend
+        path: dist/
+
+    - name: Download backend build
+      uses: actions/download-artifact@v7
+      with:
+        name: build-backend
+        path: .
+
+    - name: Restore executable permissions on backend binaries
+      shell: bash
+      run: chmod +x dist/altinity-clickhouse-plugin*
+
+    - name: Setup
+      shell: bash
+      run: tests/testflows/infra/setup.sh
+
+    - name: Cache pip packages
+      uses: actions/cache@v5
+      with:
+        path: ~/.cache/pip
+        key: ${{ runner.os }}-pip-${{ hashFiles('tests/testflows/requirements.txt') }}
+        restore-keys: |
+          ${{ runner.os }}-pip-
+
+    - name: Run Altinity Grafana Plugin tests (${{ inputs.suite-group }} on Grafana ${{ inputs.grafana-label }})
+      shell: bash
+      env:
+        GRAFANA_VERSION: ${{ inputs.grafana-version }}
+      run: |
+        cd ./tests/testflows/
+        SCENARIO_ARG=()
+        if [ -n "${{ inputs.scenario }}" ]; then
+          SCENARIO_ARG=(--scenario "${{ inputs.scenario }}")
+        fi
+        python3 -u ./regression.py --before=0.1 --after=0.1 \
+          --suite ${{ inputs.suite-name }} "${SCENARIO_ARG[@]}" \
+          --log raw.log -o short
+
+    - name: Create reports
+      if: always()
+      shell: bash
+      run: tests/testflows/infra/create-report.sh
+
+    - name: Upload raw coverage data
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: raw-coverage-${{ inputs.suite-group }}-${{ inputs.grafana-label }}
+        path: |
+          go_coverage/raw/
+          tests/testflows/coverage/raw/
+        if-no-files-found: ignore
+
+    - name: Upload testflows logs
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: testflows-logs-${{ inputs.suite-group }}-${{ inputs.grafana-label }}
+        path: ./testflows_logs/*
+
+    - name: Upload selenium logs
+      if: always()
+      uses: actions/upload-artifact@v7
+      with:
+        name: selenium-logs-${{ inputs.suite-group }}-${{ inputs.grafana-label }}
+        path: ./selenium_logs/*

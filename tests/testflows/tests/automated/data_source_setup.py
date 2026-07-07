@@ -162,11 +162,14 @@ def check_creating_datasource_and_panel(
 
     if check_visualization:
         with Then("I check visualization is valid"):
-            with By("taking screenshot"):
-                panel.take_screenshot_for_visualization(screenshot_name="panel_check")
+            # retry the screenshot: the panel may still be rendering
+            for attempt in retries(delay=3, timeout=30):
+                with attempt:
+                    with By("taking screenshot"):
+                        panel.take_screenshot_for_visualization(screenshot_name="panel_check")
 
-            with By("checking screenshot"):
-                assert actions.check_screenshot(screenshot_name="panel_check") is True, error()
+                    with By("checking screenshot"):
+                        assert actions.check_screenshot(screenshot_name="panel_check") is True, error()
 
     with delay():
         if check_visualization_alert:
@@ -639,7 +642,12 @@ def check_default_context_window(self, default_context_window):
 
     with Then("I check Context window is the same as in default datasource values"):
         with delay():
-            assert sql_editor.get_context_window(query_name="A") == default_context_window, error()
+            actual_context_window = sql_editor.get_context_window(query_name="A")
+            # Grafana >= 13.1 renders the plugin's built-in default (10 entries)
+            # as an empty combobox instead of an explicit selection
+            assert actual_context_window == default_context_window or (
+                default_context_window == "10 entries" and actual_context_window == ""
+            ), error()
 
 
 @TestScenario

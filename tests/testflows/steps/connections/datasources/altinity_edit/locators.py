@@ -11,6 +11,23 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Data source settings page name input field']")
 
+    def name_fields(self):
+        """Old (<= 12.x) name input occurrences, empty list on newer Grafana."""
+        driver: WebDriver = current().context.driver
+        return driver.find_elements(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Data source settings page name input field']")
+
+    @property
+    def edit_title_button(self):
+        """Grafana >= 13.1: pencil button that turns the page title into a rename input."""
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "button[aria-label='Edit title']")
+
+    @property
+    def rename_input(self):
+        """Grafana >= 13.1: inline rename input shown after clicking the pencil."""
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.CSS_SELECTOR, "input#page-editable-title")
+
     @property
     def url_field(self):
         driver: WebDriver = current().context.driver
@@ -19,17 +36,19 @@ class Locators:
     @property
     def default_toggle(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, "[for='basic-settings-default']")
+        # Grafana 13.1 replaced the settings-page default toggle with a header button
+        return driver.find_element(SelectBy.XPATH, "//*[@for='basic-settings-default'] | //button[.//text()='Make default']")
 
     @property
     def browser_access_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//label[contains(text(), 'Browser')]/../input")
+        # 13.1 renders the access mode as a radio group with titled inputs
+        return driver.find_element(SelectBy.XPATH, "//input[@type='radio' and @title='Browser'] | //label[contains(text(), 'Browser')]/../input")
 
     @property
     def server_access_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//label[contains(text(), 'Server')]/../input")
+        return driver.find_element(SelectBy.XPATH, "//input[@type='radio' and starts-with(@title, 'Server')] | //label[contains(text(), 'Server')]/../input")
         
     @property
     def save_and_test_button(self):
@@ -166,61 +185,61 @@ class Locators:
     def column_timestamp_type_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Column timestamp type"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Column timestamp type"]/..//input')
 
     @property
     def datetime_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Datetime Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Datetime Field"]/..//input')
 
     @property
     def timestamp_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Timestamp (Uint32) Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Timestamp (Uint32) Field"]/..//input')
 
     @property
     def datetime64_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Datetime64 Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Datetime64 Field"]/..//input')
 
     @property
     def float_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Float Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Float Field"]/..//input')
 
     @property
     def timestamp_64_3_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Timestamp64(3) Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Timestamp64(3) Field"]/..//input')
 
     @property
     def timestamp_64_6_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Timestamp64(6) Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Timestamp64(6) Field"]/..//input')
 
     @property
     def timestamp_64_9_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Timestamp64(9) Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Timestamp64(9) Field"]/..//input')
 
     @property
     def date_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Date Field"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Date Field"]/..//input')
 
     @property
     def context_window_field(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Context window"]/..//input[contains(@id, "react-select")]')
+                                   f'//*[./text()="Context window"]/..//input')
 
 
     @property

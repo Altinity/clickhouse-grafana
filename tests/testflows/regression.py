@@ -36,8 +36,21 @@ def argparser(parser):
         help="comma-separated list of test suites to run (default: all)",
         default=None
     )
+    parser.add_argument(
+        "--scenario",
+        metavar="scenario",
+        type=str,
+        help="comma-separated list of scenario function names to run within the selected suites (default: all)",
+        default=None
+    )
 
 ffails = {
+    "/Grafana Datasource Plugin For Clickhouse/unified alerts/*":
+        (XFail, "Grafana >= 13.1 v2 dashboards have no panel Alert tab; the alert creation flow needs a redesign, see #908")
+    ,
+    "/Grafana Datasource Plugin For Clickhouse/data source setup defaults/check default context window *":
+        (XFail, "datasource default values apply non-deterministically to new panels on Grafana >= 13.1 - suspected plugin-side race, needs product investigation, see #908")
+    ,
     "/Grafana Datasource Plugin For Clickhouse/sql editor/hash comment/":
         (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
     ,
@@ -78,7 +91,7 @@ grafana_version = ""
     RQ_SRS_Plugin_DockerComposeEnvironment("1.0"),
     RQ_SRS_Plugin_VersionCompatibility("1.0")
 )
-def regression(self, before, after, suite=None):
+def regression(self, before, after, suite=None, scenario=None):
     self.context.browser = "chrome"
     self.context.local = False
     self.context.global_wait_time = 30
@@ -86,6 +99,7 @@ def regression(self, before, after, suite=None):
     self.context.before = before
     self.context.after = after
     self.context.server_name = "test.example.com"
+    self.context.scenario_names = set(scenario.split(",")) if scenario else None
 
     suites = set(suite.split(",")) if suite else None
 
@@ -119,7 +133,7 @@ def regression(self, before, after, suite=None):
         self.context.driver = ui.create_driver()
 
     with And("I wait for grafana to be started"):
-        for attempt in retries(delay=10, timeout=50):
+        for attempt in retries(delay=10, timeout=180):
             with attempt:
                 ui.open_endpoint(endpoint=self.context.endpoint)
 

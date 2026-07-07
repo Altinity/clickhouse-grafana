@@ -242,6 +242,24 @@ def click_add_visualization_button(self):
 
 
 @TestStep(When)
+def click_sidebar_new_button(self):
+    """Click add (new) button in the dashboard edit sidebar (Grafana >= 13.1)."""
+    locators.sidebar_new_button.click()
+
+
+@TestStep(When)
+def click_sidebar_add_new_panel(self):
+    """Click the 'Panel' card in the add sidebar (Grafana >= 13.1)."""
+    locators.sidebar_add_new_panel.click()
+
+
+@TestStep(When)
+def click_configure_visualization_button(self):
+    """Click 'Configure visualization' on the newly added panel (Grafana >= 13.1)."""
+    locators.configure_visualization_button.click()
+
+
+@TestStep(When)
 def scroll_to_panel(self, panel_name):
     """Scroll until panel is presented."""
 
@@ -352,7 +370,18 @@ def open_panel(self, panel_name):
 @TestStep(When)
 def click_dashboard_settings_button(self):
     """Click dashboard settings button."""
-    locators.dashboard_settings_button.click()
+    driver = self.context.driver
+    buttons = driver.find_elements(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Dashboard settings']")
+    if buttons:
+        buttons[0].click()
+        return
+
+    # Grafana >= 13.1: the edit toolbar has no settings button anymore, but the
+    # classic settings view (General/Annotations/Variables/Links) is still
+    # reachable by URL
+    url = driver.current_url.split('#')[0]
+    separator = '&' if '?' in url else '?'
+    driver.get(url + separator + 'editview=variables')
 
 
 @TestStep(When)
@@ -424,6 +453,41 @@ def create_new_variable(
     with By("clicking edit button"):
         with delay():
             click_edit_button()
+
+    driver = self.context.driver
+    if variable_type == "Ad hoc filters" and not driver.find_elements(
+        SelectBy.CSS_SELECTOR, "[data-testid='data-testid Dashboard settings']"
+    ):
+        # Grafana >= 13.1: "Ad hoc filters" is not a variable type anymore; the
+        # adhoc control is added via the edit sidebar "Filter and Group by"
+        # card, which creates an adhoc templating variable under the hood
+        with And("adding a Filter and Group by control from the edit sidebar"):
+            with delay():
+                if not driver.find_elements(SelectBy.XPATH, "//button[.//text()='Filter and Group by']"):
+                    click_sidebar_new_button()
+            with delay():
+                driver.find_element(SelectBy.XPATH, "//button[.//text()='Filter and Group by']").click()
+
+        with And("selecting datasource for the filter"):
+            with delay():
+                driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid Select a data source']").click()
+            with delay():
+                driver.switch_to.active_element.send_keys(datasource_name)
+            with delay():
+                driver.find_element(
+                    SelectBy.XPATH,
+                    f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']",
+                ).click()
+
+        with And("renaming the filter variable to the legacy default name"):
+            # the sidebar control is auto-named filter0, while scenarios (and
+            # the submenu label anchors) expect the legacy auto-name query0
+            with delay():
+                name_input = driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='data-testid variable name input']")
+                name_input.send_keys(Keys.CONTROL, 'a')
+                name_input.send_keys("query0")
+                name_input.send_keys(Keys.TAB)
+        return
 
     with And("clicking dashboard settings button"):
         with delay():
@@ -497,12 +561,27 @@ def add_visualization(self):
             with By("clicking edit button"):
                 click_edit_button()
 
-    with delay():
-        with By("clicking add button"):
-            click_add_button()
+    if len(locators.add_buttons()) > 0:
+        # Grafana <= 12.x: toolbar Add button with a dropdown
+        with delay():
+            with By("clicking add button"):
+                click_add_button()
 
-    with By("clicking add visualization button"):
-        click_add_visualization_button()
+        with By("clicking add visualization button"):
+            click_add_visualization_button()
+    else:
+        # Grafana >= 13.1 dynamic dashboards: edit sidebar -> Panel card -> Configure visualization
+        with delay():
+            with By("clicking new button in the edit sidebar"):
+                click_sidebar_new_button()
+
+        with delay():
+            with By("clicking add new panel card"):
+                click_sidebar_add_new_panel()
+
+        with delay():
+            with By("clicking configure visualization button"):
+                click_configure_visualization_button()
 
 
 @TestStep(When)

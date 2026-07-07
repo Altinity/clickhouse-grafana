@@ -284,5 +284,8 @@ def feature(self):
     with When("I create new altinity datasource"):
         actions.create_new_altinity_datasource(datasource_name='test_alerts_legacy', url="http://clickhouse:8123",)
 
+    scenario_names = getattr(self.context, "scenario_names", None)
     for scenario in loads(current_module(), Scenario):
+        if scenario_names and scenario.__name__ not in scenario_names:
+            continue
         scenario()

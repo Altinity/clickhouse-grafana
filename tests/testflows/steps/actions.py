@@ -473,6 +473,13 @@ def create_new_altinity_datasource(
                     assert (
                         datasources_altinity_edit.check_alert_not_success() is True
                     ), error()
+
+            if default:
+                # must run after the save round-trip completes (green alert),
+                # otherwise the form save overwrites isDefault back to false
+                with delay():
+                    with By("ensuring datasource stays default after save"):
+                        datasources_altinity_edit.ensure_default_after_save()
         yield
     finally:
         with Finally("I delete datasource"):

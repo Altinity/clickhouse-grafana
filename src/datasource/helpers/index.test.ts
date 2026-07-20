@@ -238,7 +238,9 @@ describe('Variable Interpolation', () => {
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'host', multi: undefined, includeAll: undefined };
         const result = interpolateFn('my.host.com', variable);
-        expect(result).toBe("'my.host.com'"); // Should have quotes because it's not in concatenation
+        // Identifier position (FROM $host): raw per class 13 fix for #905 —
+        // the old quoted expectation pinned guaranteed-broken SQL (FROM 'x' is never valid)
+        expect(result).toBe('my.host.com');
       });
 
       it('should handle numeric values', () => {
@@ -396,7 +398,9 @@ describe('Variable Interpolation', () => {
         const interpolateFn = interpolateQueryExprWithContext(query, variables);
         const variable = { name: 'table', multi: undefined, includeAll: undefined };
         const result = interpolateFn('/^prefix_.*/', variable);
-        expect(result).toBe("'/^prefix_.*/'"); // Should quote regex patterns
+        // Identifier position (FROM $table): raw per class 13 fix for #905 —
+        // the old quoted expectation pinned guaranteed-broken SQL
+        expect(result).toBe('/^prefix_.*/');
       });
     });
   });
@@ -764,9 +768,9 @@ describe('Variable Interpolation', () => {
       // Our context detection should not interfere with them
       const tableVar = { name: 'table', multi: undefined, includeAll: undefined };
       
-      // $table is in concatenation with $timeFilter, but they're macros, not user variables
-      // A user variable in this context should work normally
-      expect(interpolateFn('events', tableVar)).toBe("'events'"); // Should be quoted as normal variable
+      // $table sits right after FROM — identifier position, raw per class 13 fix for #905
+      // (the old quoted expectation produced FROM 'events' — never valid SQL)
+      expect(interpolateFn('events', tableVar)).toBe('events');
     });
 
     it('should handle quoted string with multiple variables', () => {

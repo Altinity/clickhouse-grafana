@@ -7,7 +7,7 @@
     "dev": "webpack -w -c ./.config/webpack/webpack.config.ts --env development",
     "test": "jest",
     "test:coverage": "jest --coverage",
-    "test:ci": "jest --passWithNoTests --maxWorkers 4",
+    "test:ci": "jest --coverage --passWithNoTests --maxWorkers 4",
     "typecheck": "tsc --noEmit",
     "lint": "eslint --cache .",
     "lint:fix": "npm run lint -- --fix",

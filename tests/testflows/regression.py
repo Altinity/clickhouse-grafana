@@ -51,12 +51,6 @@ ffails = {
     "/Grafana Datasource Plugin For Clickhouse/data source setup defaults/check default context window *":
         (XFail, "datasource default values apply non-deterministically to new panels on Grafana >= 13.1 - suspected plugin-side race, needs product investigation, see #908")
     ,
-    "/Grafana Datasource Plugin For Clickhouse/sql editor/hash comment/":
-        (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
-    ,
-    "/Grafana Datasource Plugin For Clickhouse/sql editor/hash exclamation comment/":
-        (XFail, "https://github.com/Altinity/clickhouse-grafana/issues/610")
-    ,
 }
 
 xfails = {

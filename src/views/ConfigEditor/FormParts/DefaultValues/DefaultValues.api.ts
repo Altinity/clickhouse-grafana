@@ -1,5 +1,6 @@
 import { getBackendSrv } from '@grafana/runtime';
 import { CHDataSource } from '../../../../datasource/datasource';
+import { parseJsonResponseLossless, tryParseJson } from '../../../../datasource/losslessJson';
 
 export const getOptions = async (query: string, url: string, datasourceOptions: any): Promise<any> => {
   const backendSrv = getBackendSrv();
@@ -16,10 +17,14 @@ export const getOptions = async (query: string, url: string, datasourceOptions: 
   return new Promise((resolve, reject) => {
     backendSrv.fetch(queryParams).subscribe(
       (response) => {
-        resolve(response.data);
+        try {
+          resolve(parseJsonResponseLossless(response.data));
+        } catch (parseError) {
+          reject(parseError);
+        }
       },
       (e) => {
-        reject(e);
+        reject({ ...e, data: tryParseJson(e?.data) });
       }
     );
   });

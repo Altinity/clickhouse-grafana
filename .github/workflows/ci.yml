@@ -51,22 +51,25 @@ jobs:
         run: npm run lint
       - name: Test frontend
         run: npm run test:ci
+
+      - name: Report frontend coverage
+        uses: coverallsapp/github-action@v2
+        with:
+          fail-on-error: false
+          file: ./coverage/lcov.info
+          format: lcov
+          flag-name: frontend
+          parallel: true
+
       - name: Build frontend
         run: npm run build
 
       - name: Test backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
         uses: magefile/mage-action@v3
-        env:
-          GOCOVERDIR: ./coverage/
         with:
           version: latest
           args: coverage
-
-      - name: check GOCOVERDIR after
-        run: |
-          ls -la ./coverage/
-          cat ./coverage/backend.txt
 
       - name: Report golang coverage
         if: steps.check-for-backend.outputs.has-backend == 'true'
@@ -75,6 +78,14 @@ jobs:
           fail-on-error: false
           file: ./coverage/backend.out
           format: golang
+          flag-name: backend
+          parallel: true
+
+      - name: Finish coveralls (aggregate frontend + backend)
+        uses: coverallsapp/github-action@v2
+        with:
+          fail-on-error: false
+          parallel-finished: true
 
       - name: Build backend
         if: steps.check-for-backend.outputs.has-backend == 'true'

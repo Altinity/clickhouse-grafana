@@ -1947,7 +1947,7 @@ func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
 }
 
 const wsRe = "\\s+"
-const commentRe = `--(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|` + `/\*(?:[^*]|\*[^/])*\*/`
+const commentRe = `--(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|` + `#!?(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|` + `/\*(?:[^*]|\*[^/])*\*/`
 const idRe = "[a-zA-Z_][a-zA-Z_0-9]*"
 const intRe = "\\d+"
 const powerIntRe = "\\d+e\\d+"

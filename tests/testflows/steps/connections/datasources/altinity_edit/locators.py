@@ -6,6 +6,10 @@ from selenium.webdriver.common.by import By as SelectBy
 class Locators:
     # Locators for connections/datasources/altinity_edit page
 
+    # First field of the default values section, rendered only when the
+    # `use default values` toggle is on.
+    COLUMN_TIMESTAMP_TYPE_XPATH = '//*[./text()="Column timestamp type"]/..//input'
+
     @property
     def name_field(self):
         driver: WebDriver = current().context.driver
@@ -184,8 +188,7 @@ class Locators:
     @property
     def column_timestamp_type_field(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH,
-                                   f'//*[./text()="Column timestamp type"]/..//input')
+        return driver.find_element(SelectBy.XPATH, self.COLUMN_TIMESTAMP_TYPE_XPATH)
 
     @property
     def datetime_field(self):

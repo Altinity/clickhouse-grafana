@@ -1,3 +1,22 @@
+# 3.4.12 (2026-07-27)
+## Breaking changes:
+* minimal supported Grafana version bumped to 12.3.0 (`grafanaDependency: ">=12.3.0"`), frontend migrated to `@grafana/data|runtime|ui` 13.x
+
+## Enhancements:
+* add streaming support for near real-time dashboards: `Streaming` switch in Query Editor with `Delta` (fetch only new data since last poll, requires `$timeFilter`) and `Full refresh` modes, configurable poll interval and lookback window; implemented via short time-range polling instead of `LIVE VIEW` / `WINDOW VIEW`, fix https://github.com/Altinity/clickhouse-grafana/issues/429
+* honest frontend coverage numbers (coverage denominator pinned to the whole `src/`, threshold ratchet to fail CI on silent drops) and full Coveralls reporting for both Go and frontend parts, fix https://github.com/Altinity/clickhouse-grafana/issues/785
+* run testflows e2e suites against fixed Grafana 13.1.0 and `latest` in parallel job groups, fix https://github.com/Altinity/clickhouse-grafana/issues/908, fix https://github.com/Altinity/clickhouse-grafana/issues/786
+* add e2e coverage for the autocomplete permission bubble when connection user has limited access, fix https://github.com/Altinity/clickhouse-grafana/issues/816
+* stabilize testflows suite: replace the flaky `gh-api` external datasource with `gh-play` (play.clickhouse.com), use provisioned datasources instead of UI creation, re-anchor selectors on stable `data-testid`/`aria-label` instead of hashed Emotion classes, adapt to Grafana 13.1 UI
+* upgrade JS and Go dependencies to fix security alerts (dompurify, @grafana/runtime, immutable, postcss, fast-uri, protobufjs, protocol-buffers-schema, websocket-driver, google.golang.org/grpc, pillow)
+
+## Fixes:
+* fix UInt64/Int64 values still rounded on JS side — ClickHouse >= 25.8 changed `output_format_json_quote_64bit_integers` default from 1 to 0, so `JSON.parse` inside Grafana's `backendSrv` rounded big integers before the plugin saw them (`11189782786942380395` shown as `11189782786942380000`); responses are now fetched as raw text and parsed losslessly with `lossless-json`, which also works for `readonly=1` users where per-request settings are forbidden, fix https://github.com/Altinity/clickhouse-grafana/issues/832, related to https://github.com/ClickHouse/ClickHouse/issues/86553
+* fix breaking change in 3.4.x when constant and plain template variables were single-quoted in identifier positions (`FROM`, `JOIN`, `INTO`, `TO`, `TABLE`) producing invalid SQL like `FROM 'db.table'`, now such positions interpolate raw while `IN` / tuple context keeps quoting; also fix `TypeError` crash on `null` values of variables without config, fix https://github.com/Altinity/clickhouse-grafana/issues/905
+* fix ClickHouse `#` and `#!` line comments silently corrupting or truncating queries in the SQL tokenizer, AST comment preservation and comment stripping, add syntax highlight for them in the Monaco editor, fix https://github.com/Altinity/clickhouse-grafana/issues/610
+* fix `$conditionalTest` dropping commas inside `SQL_if` — the 2- vs 3-parameter form was decided by counting top-level commas, so leading-comma (`$conditionalTest(, expr, $var)`), trailing-comma and quoted-comma (`AND t = 'a,b'`) idioms produced broken SQL; the comma scan is now quote- and backslash-aware and `\,` is supported as an explicit escape, regression of https://github.com/Altinity/clickhouse-grafana/pull/726, thanks https://github.com/oplehto
+* fix autocomplete permission errors not classified when Grafana <= 12.4 drops the `text/plain` ClickHouse error body and the permission bubble never showed — the autocomplete query is retried once with `SETTINGS http_write_exception_in_output_format=1` so `ACCESS_DENIED` is reported as a JSON `exception` field, related to https://github.com/Altinity/clickhouse-grafana/issues/816
+
 # 3.4.11 (2026-04-08)
 ## Fixes:
 * fix "Show Context" for logs generating SQL with `UNKNOWN_IDENTIFIER` errors when the original query has WHERE conditions on non-timestamp columns (e.g., `facility`, `node`, `level`), move WHERE conditions from outer query into inner subquery, fix https://github.com/Altinity/clickhouse-grafana/issues/706

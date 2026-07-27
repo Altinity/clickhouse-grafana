@@ -69,10 +69,11 @@
   },
   "dependencies": {
     "@grafana/data": "13.1.0",
-    "@grafana/runtime": "13.1.0",
+    "@grafana/runtime": "13.1.1",
     "@grafana/ui": "13.1.0",
     "date-fns": "^4.1.0",
     "date-fns-tz": "^3.2.0",
+    "lossless-json": "^4.3.0",
     "luxon": "^3.7.2",
     "pako": "^2.1.0",
     "react": "19.2.4",

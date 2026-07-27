@@ -1,6 +1,6 @@
 module github.com/altinity/clickhouse-grafana
 
-go 1.26
+go 1.26.5
 
 require (
 	github.com/andybalholm/brotli v1.2.2

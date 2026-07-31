@@ -57,7 +57,7 @@ type streamQuery struct {
 	Table                  string `json:"table"`
 	MaxDataPoints          int64  `json:"maxDataPoints"`
 	StreamingInterval      int    `json:"streamingInterval"`
-	StreamingMode          string `json:"streamingMode"`    // "delta" or "full"
+	StreamingMode          string `json:"streamingMode"`     // "delta" or "full"
 	StreamingLookback      int    `json:"streamingLookback"` // number of points to re-query for partial bucket updates
 
 	// Time range from the dashboard
@@ -141,7 +141,7 @@ func frameFingerprint(frame *data.Frame) [16]byte {
 //   - "delta": first tick full range, subsequent ticks only new data (reduces CH load)
 //   - "full": every tick re-queries full range, sends only when data changes
 func (ds *ClickHouseDatasource) RunStream(ctx context.Context, req *backend.RunStreamRequest, sender *backend.StreamSender) error {
-	backend.Logger.Info(fmt.Sprintf("[streaming] RunStream STARTED | path=%s", req.Path))
+	backend.Logger.Debug(fmt.Sprintf("[streaming] RunStream STARTED | path=%s", req.Path))
 
 	var sq streamQuery
 	if err := json.Unmarshal(req.Data, &sq); err != nil {
@@ -158,7 +158,7 @@ func (ds *ClickHouseDatasource) RunStream(ctx context.Context, req *backend.RunS
 		mode = "delta"
 	}
 
-	backend.Logger.Info(fmt.Sprintf("[streaming] config | refId=%s | mode=%s | pollInterval=%dms | interval=%s | query=%.100s",
+	backend.Logger.Debug(fmt.Sprintf("[streaming] config | refId=%s | mode=%s | pollInterval=%dms | interval=%s | query=%.100s",
 		sq.RefId, mode, intervalMs, sq.Interval, sq.Query))
 
 	ticker := time.NewTicker(time.Duration(intervalMs) * time.Millisecond)
@@ -174,7 +174,7 @@ func (ds *ClickHouseDatasource) RunStream(ctx context.Context, req *backend.RunS
 	// Parse query $interval to round timestamps to complete buckets.
 	// This prevents the last partial bucket from causing visual jumps.
 	queryIntervalSec := parseIntervalSeconds(sq.Interval)
-	backend.Logger.Info(fmt.Sprintf("[streaming] dashboardFrom=%s | queryInterval=%ds",
+	backend.Logger.Debug(fmt.Sprintf("[streaming] dashboardFrom=%s | queryInterval=%ds",
 		dashboardFrom.Format(time.RFC3339), queryIntervalSec))
 
 	if mode == "full" {
@@ -220,7 +220,7 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 	// Tick 1: full range [dashboardFrom, now] — initial data load
 	tickCount++
 	now := roundDownTo(time.Now(), queryIntervalSec)
-	backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | DELTA/INITIAL | from=%s | to=%s",
+	backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA/INITIAL | from=%s | to=%s",
 		tickCount, dashboardFrom.Format("15:04:05"), now.Format("15:04:05")))
 
 	response := ds.executeStreamEvalQuery(req.PluginContext, ctx, sq, dashboardFrom, now)
@@ -248,7 +248,7 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 	for {
 		select {
 		case <-ctx.Done():
-			backend.Logger.Info(fmt.Sprintf("[streaming] RunStream STOPPED | path=%s | totalTicks=%d", req.Path, tickCount))
+			backend.Logger.Debug(fmt.Sprintf("[streaming] RunStream STOPPED | path=%s | totalTicks=%d", req.Path, tickCount))
 			return nil
 		case <-ticker.C:
 			tickCount++
@@ -269,7 +269,7 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 				}
 			}
 
-			backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | DELTA | from=%s | to=%s | lookback=%d",
+			backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA | from=%s | to=%s | lookback=%d",
 				tickCount, deltaFrom.Format("15:04:05"), now.Format("15:04:05"), lookbackPoints))
 
 			response := ds.executeStreamEvalQuery(req.PluginContext, ctx, sq, deltaFrom, now)
@@ -421,7 +421,7 @@ func (ds *ClickHouseDatasource) sendAccumulatedFrames(
 		backend.Logger.Error(fmt.Sprintf("[streaming] tick #%d | SendFrame ERROR: %s", tickCount, err))
 		return
 	}
-	backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | refId=%s | series=%d | rows=%d",
+	backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | refId=%s | series=%d | rows=%d",
 		tickCount, sq.RefId, len(accumulated), wide.Rows()))
 }
 
@@ -452,7 +452,7 @@ func mergeFramesToWide(accumulated map[string]*data.Frame) *data.Frame {
 		names = append(names, name)
 	}
 	sort.Strings(names)
-	backend.Logger.Info(fmt.Sprintf("[streaming] mergeFramesToWide: %d frames to merge, keys=%v", len(names), names))
+	backend.Logger.Debug(fmt.Sprintf("[streaming] mergeFramesToWide: %d frames to merge, keys=%v", len(names), names))
 
 	// 1. Collect all unique timestamps from all frames
 	timeSet := map[int64]time.Time{}
@@ -521,7 +521,7 @@ func mergeFramesToWide(accumulated map[string]*data.Frame) *data.Frame {
 	for _, f := range wide.Fields {
 		fieldNames = append(fieldNames, f.Name)
 	}
-	backend.Logger.Info(fmt.Sprintf("[streaming] mergeFramesToWide: result — %d fields %v, %d rows",
+	backend.Logger.Debug(fmt.Sprintf("[streaming] mergeFramesToWide: result — %d fields %v, %d rows",
 		len(wide.Fields), fieldNames, totalRows))
 
 	return wide
@@ -578,19 +578,19 @@ func (ds *ClickHouseDatasource) runFullRefreshLoop(
 	// First tick immediately
 	tickCount++
 	now := roundDownTo(time.Now(), queryIntervalSec)
-	backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | FULL_REFRESH | from=%s | to=%s",
+	backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | FULL_REFRESH | from=%s | to=%s",
 		tickCount, dashboardFrom.Format("15:04:05"), now.Format("15:04:05")))
 	ds.sendFramesWithDedup(ctx, req.PluginContext, sender, sq, dashboardFrom, now, &lastFingerprint, tickCount)
 
 	for {
 		select {
 		case <-ctx.Done():
-			backend.Logger.Info(fmt.Sprintf("[streaming] RunStream STOPPED | path=%s | totalTicks=%d", req.Path, tickCount))
+			backend.Logger.Debug(fmt.Sprintf("[streaming] RunStream STOPPED | path=%s | totalTicks=%d", req.Path, tickCount))
 			return nil
 		case <-ticker.C:
 			tickCount++
 			now = roundDownTo(time.Now(), queryIntervalSec)
-			backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | FULL_REFRESH | from=%s | to=%s",
+			backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | FULL_REFRESH | from=%s | to=%s",
 				tickCount, dashboardFrom.Format("15:04:05"), now.Format("15:04:05")))
 			ds.sendFramesWithDedup(ctx, req.PluginContext, sender, sq, dashboardFrom, now, &lastFingerprint, tickCount)
 		}
@@ -626,7 +626,7 @@ func (ds *ClickHouseDatasource) sendFramesWithDedup(
 
 	if len(framesMap) == 0 {
 		ds.sendHeartbeat(sender, sq.RefId)
-		backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | refId=%s | NO DATA (heartbeat sent)", tickCount, sq.RefId))
+		backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | refId=%s | NO DATA (heartbeat sent)", tickCount, sq.RefId))
 		return
 	}
 
@@ -650,7 +650,7 @@ func (ds *ClickHouseDatasource) sendFramesWithDedup(
 		return
 	}
 
-	backend.Logger.Info(fmt.Sprintf("[streaming] tick #%d | refId=%s | series=%d | rows=%d",
+	backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | refId=%s | series=%d | rows=%d",
 		tickCount, sq.RefId, len(framesMap), wide.Rows()))
 }
 

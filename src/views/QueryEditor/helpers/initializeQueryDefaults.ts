@@ -96,7 +96,6 @@ export const initializeQueryDefaults = (
       initializedQuery.contextWindowSize = datasource.defaultValues.contextWindowSize;
     }
 
-    console.log(datasource.defaultValues.nullifySparse, query.nullifySparse, '------')
     if (datasource.defaultValues.nullifySparse !== undefined && query.nullifySparse === undefined) {
       initializedQuery.nullifySparse = datasource.defaultValues.nullifySparse;
     }

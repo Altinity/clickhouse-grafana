@@ -43,6 +43,15 @@ jobs:
           name: build-frontend
           path: dist/
 
+      # frontend_coverage_builder also runs `npm run test:coverage`; keep the
+      # jest unit-test coverage so the coverage job can merge it with e2e data
+      - name: Upload frontend unit-test coverage
+        uses: actions/upload-artifact@v7
+        with:
+          name: frontend-unit-coverage
+          path: coverage/coverage-final.json
+          if-no-files-found: error
+
   prepare-backend-build:
     runs-on: ubuntu-latest
     permissions:
@@ -208,22 +217,38 @@ jobs:
           pattern: raw-coverage-*-fixed
           path: raw-coverage
 
+      # unit/integration `go test -test.gocoverdir` pods live at go_coverage/
+      # root inside this artifact; they never pass through the tests jobs
+      - name: Download backend build (unit-test coverage pods)
+        uses: actions/download-artifact@v7
+        with:
+          name: build-backend
+          path: build-backend
+
+      - name: Download frontend unit-test coverage
+        uses: actions/download-artifact@v7
+        with:
+          name: frontend-unit-coverage
+          path: frontend-unit-coverage
+
       - name: Merge and generate backend coverage
         run: |
+          if ! ls raw-coverage/*/go_coverage/raw/covcounters.* 1>/dev/null 2>&1; then
+            echo "::error::No e2e Go coverage counters in any suite artifact — the instrumented plugin did not flush GOCOVERDIR data"
+            exit 1
+          fi
           mkdir -p go_coverage/raw
           for dir in raw-coverage/*/go_coverage/raw/; do
             cp -r "$dir"* go_coverage/raw/ 2>/dev/null || true
           done
-          if ls go_coverage/raw/cov* 1>/dev/null 2>&1; then
-            go tool covdata textfmt -i=go_coverage/raw -o=go_coverage/coverage.txt
-            go tool cover -html=go_coverage/coverage.txt -o=go_coverage/coverage.html
-          else
-            echo "No backend coverage data found"
-          fi
+          cp build-backend/go_coverage/covmeta.* build-backend/go_coverage/covcounters.* go_coverage/raw/ 2>/dev/null || true
+          go tool covdata percent -i=go_coverage/raw
+          go tool covdata textfmt -i=go_coverage/raw -o=go_coverage/coverage.txt
+          go tool cover -html=go_coverage/coverage.txt -o=go_coverage/coverage.html
 
       - name: Normalize frontend coverage paths
         run: |
-          for f in raw-coverage/*/tests/testflows/coverage/raw/*.json; do
+          for f in raw-coverage/*/tests/testflows/coverage/raw/*.json frontend-unit-coverage/coverage-final.json; do
             [ -f "$f" ] || continue
             jq '
               with_entries(
@@ -239,14 +264,8 @@ jobs:
           for dir in raw-coverage/*/tests/testflows/coverage/raw/; do
             cp -r "$dir"* .nyc_output/ 2>/dev/null || true
           done
-          if ls .nyc_output/* 1>/dev/null 2>&1; then
-            if [ -f coverage/coverage-final.json ]; then
-              cp coverage/coverage-final.json .nyc_output/
-            fi
-            npx nyc report --temp-dir .nyc_output --reporter html --reporter=lcov --report-dir=./tests/testflows/coverage
-          else
-            echo "No frontend coverage data found"
-          fi
+          cp frontend-unit-coverage/coverage-final.json .nyc_output/unit-coverage-final.json
+          npx nyc report --temp-dir .nyc_output --reporter html --reporter=lcov --report-dir=./tests/testflows/coverage
 
       - name: Verify frontend coverage
         run: |

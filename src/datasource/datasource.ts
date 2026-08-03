@@ -579,7 +579,12 @@ export class CHDataSource
           },
         };
 
-        const channelPath = `stream/${target.refId}/${this.simpleHash(`${streamData.streamingMode}-${streamData.streamingInterval}-${streamData.streamingLookback}-${streamData.timeRange.from}-${target.query}`)}`;
+        // Grafana keys streams by channel path alone, so the key must cover the whole
+        // payload — a partial key makes two different queries share one stream.
+        // maxDataPoints is excluded: it follows the panel width and would resubscribe on resize.
+        const channelPath = `stream/${target.refId}/${this.simpleHash(
+          JSON.stringify(streamData, (key, value) => (key === 'maxDataPoints' ? undefined : value))
+        )}`;
         const liveStream = getGrafanaLiveSrv().getDataStream({
           addr: {
             scope: LiveChannelScope.DataSource,

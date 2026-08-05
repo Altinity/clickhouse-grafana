@@ -35,6 +35,8 @@ func queryHasTimeMacro(query string) bool {
 const (
 	defaultStreamingIntervalMs = 5000
 	minStreamingIntervalMs     = 1000
+	maxStreamingIntervalMs     = 600000
+	maxStreamingLookbackPoints = 1000
 )
 
 // streamQuery represents the query parameters passed from the frontend via the channel path data.
@@ -152,6 +154,10 @@ func (ds *ClickHouseDatasource) RunStream(ctx context.Context, req *backend.RunS
 	if intervalMs < minStreamingIntervalMs {
 		intervalMs = defaultStreamingIntervalMs
 	}
+	if intervalMs > maxStreamingIntervalMs {
+		backend.Logger.Warn(fmt.Sprintf("[streaming] streamingInterval %d out of range, using %d", sq.StreamingInterval, maxStreamingIntervalMs))
+		intervalMs = maxStreamingIntervalMs
+	}
 
 	mode := sq.StreamingMode
 	if mode == "" {
@@ -210,7 +216,8 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 			"Either add a time macro to the WHERE clause or switch to Full refresh mode."
 		backend.Logger.Error(fmt.Sprintf("[streaming] DELTA VALIDATION FAILED | refId=%s | %s", sq.RefId, errMsg))
 		ds.sendErrorFrame(sender, sq.RefId, errMsg)
-		return fmt.Errorf("delta mode validation: %s", errMsg)
+		// nil, not an error: Grafana re-establishes an errored stream forever.
+		return nil
 	}
 
 	tickCount := 0
@@ -242,6 +249,10 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 	lookbackPoints := sq.StreamingLookback
 	if lookbackPoints < 0 {
 		lookbackPoints = 0
+	}
+	// Unbounded lookback overflows lookbackPoints*queryIntervalSec below.
+	if lookbackPoints > maxStreamingLookbackPoints {
+		lookbackPoints = maxStreamingLookbackPoints
 	}
 
 	// Tick 2+: delta query with lookback overlap
@@ -333,6 +344,14 @@ func upsertFrameRows(dst, src *data.Frame) {
 	srcRows := src.Rows()
 	if srcRows == 0 || len(dst.Fields) != len(src.Fields) || len(dst.Fields) < 2 {
 		return
+	}
+	// Field.Set/Append type-assert without checking, and a field type can change between ticks.
+	for i := range dst.Fields {
+		if dst.Fields[i].Type() != src.Fields[i].Type() {
+			backend.Logger.Warn(fmt.Sprintf("[streaming] field %q changed type %s -> %s, skipping merge",
+				dst.Fields[i].Name, dst.Fields[i].Type(), src.Fields[i].Type()))
+			return
+		}
 	}
 
 	// Build time -> row index lookup for dst

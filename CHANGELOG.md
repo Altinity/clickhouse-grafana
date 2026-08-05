@@ -1,7 +1,14 @@
-# 3.4.12 (2026-07-27)
+# 3.5.0 (2026-08-05)
 ## Breaking changes:
 * minimal supported Grafana version bumped to 12.3.0 (`grafanaDependency: ">=12.3.0"`), frontend migrated to `@grafana/data|runtime|ui` 13.x
 
+## Fixes:
+* fix streaming panels sharing a Grafana Live channel — the channel key was derived only from the raw query, so two panels with the same SQL but different query options (format, interval, time range) received each other's frames; the key is now generated from the whole stream request, fix https://github.com/Altinity/clickhouse-grafana/pull/924
+* fix streaming window pinned to its start — the dashboard time range was captured once at subscribe time and `TimeRange.To` was never read, so `Full refresh` re-queried `[session start, now]` on every tick and `Delta` trimmed its accumulator against a cutoff that never advanced, growing memory and the payload sent to the browser for as long as the dashboard stayed open; the window width is now derived from the dashboard range and both edges slide, aligned to `$interval` buckets so identical ticks still dedup by fingerprint, and trimming filters by predicate so series that left the window and rows appended out of order by backfill are dropped too, fix https://github.com/Altinity/clickhouse-grafana/pull/928
+* fix backend plugin process killed by crafted Grafana Live payloads — `streamingInterval` had no upper bound, so it overflowed `time.Duration` and made `time.NewTicker` panic unrecovered; `streamingInterval` and `streamingLookback` are now clamped, a frame merge is skipped when a field type changed between ticks (a second panic of the same class), and delta validation failure returns nil instead of an error so Grafana stops reconnecting forever, fix https://github.com/Altinity/clickhouse-grafana/pull/927
+* trim and publish the streaming window while a source is silent, so panels keep scrolling with the time picker instead of freezing on the last received frame
+
+# 3.4.12 (2026-07-27)
 ## Enhancements:
 * add streaming support for near real-time dashboards: `Streaming` switch in Query Editor with `Delta` (fetch only new data since last poll, requires `$timeFilter`) and `Full refresh` modes, configurable poll interval and lookback window; implemented via short time-range polling instead of `LIVE VIEW` / `WINDOW VIEW`, fix https://github.com/Altinity/clickhouse-grafana/issues/429
 * honest frontend coverage numbers (coverage denominator pinned to the whole `src/`, threshold ratchet to fail CI on silent drops) and full Coveralls reporting for both Go and frontend parts, fix https://github.com/Altinity/clickhouse-grafana/issues/785

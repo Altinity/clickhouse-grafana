@@ -1,6 +1,7 @@
 package main
 
 import (
+	"fmt"
 	"net/http"
 	"net/http/httptest"
 	"regexp"
@@ -298,10 +299,14 @@ func (f *fakeInstanceManager) Do(context.Context, backend.PluginContext, instanc
 	return nil
 }
 
-// clickhouseStub records the SQL it is asked to run and answers with an empty result set.
+// clickhouseStub records the SQL it is asked to run and answers with a scripted result set.
 type clickhouseStub struct {
 	mu      sync.Mutex
 	queries []string
+	// rowsFor returns the JSON rows for the n-th data query (1-based), empty for no rows.
+	rowsFor func(n int) string
+	// failAfter makes every data query past the n-th fail, 0 disables it.
+	failAfter int
 }
 
 func (s *clickhouseStub) record(q string) {
@@ -327,7 +332,22 @@ func newStubDatasource(t *testing.T) (*ClickHouseDatasource, *clickhouseStub) {
 			return
 		}
 		stub.record(query)
-		_, _ = w.Write([]byte(`{"meta":[{"name":"t","type":"DateTime"},{"name":"v","type":"Float64"}],"data":[]}`))
+
+		stub.mu.Lock()
+		n := len(stub.queries)
+		rowsFor, failAfter := stub.rowsFor, stub.failAfter
+		stub.mu.Unlock()
+
+		if failAfter > 0 && n > failAfter {
+			w.WriteHeader(http.StatusInternalServerError)
+			_, _ = w.Write([]byte("boom"))
+			return
+		}
+		rows := ""
+		if rowsFor != nil {
+			rows = rowsFor(n)
+		}
+		_, _ = fmt.Fprintf(w, `{"meta":[{"name":"t","type":"DateTime"},{"name":"v","type":"Float64"}],"data":[%s]}`, rows)
 	}))
 	t.Cleanup(srv.Close)
 
@@ -385,4 +405,176 @@ func TestFullRefreshQueryRangeStaysBounded(t *testing.T) {
 		starts[from] = true
 	}
 	require.Greater(t, len(starts), 1, "window start must advance, not stay pinned to the session start")
+}
+
+// capturingSender decodes the frames the stream published.
+type capturingSender struct {
+	mu     sync.Mutex
+	frames []*data.Frame
+}
+
+func (c *capturingSender) Send(p *backend.StreamPacket) error {
+	frame := &data.Frame{}
+	if err := frame.UnmarshalJSON(p.Data); err != nil {
+		return err
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	c.frames = append(c.frames, frame)
+	return nil
+}
+
+func (c *capturingSender) captured() []*data.Frame {
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	return append([]*data.Frame(nil), c.frames...)
+}
+
+func TestTrimAccumulatedFramesReportsChanges(t *testing.T) {
+	base := time.Unix(1785000000, 0)
+
+	t.Run("reports false when nothing is stale", func(t *testing.T) {
+		acc := map[string]*data.Frame{"s": accumFrame([]time.Time{base}, []float64{1})}
+		require.False(t, trimAccumulatedFrames(acc, base))
+	})
+
+	t.Run("reports false on an empty accumulator", func(t *testing.T) {
+		require.False(t, trimAccumulatedFrames(map[string]*data.Frame{}, base))
+	})
+
+	t.Run("reports true when rows are dropped", func(t *testing.T) {
+		acc := map[string]*data.Frame{"s": accumFrame(
+			[]time.Time{base, base.Add(time.Minute)}, []float64{1, 2},
+		)}
+		require.True(t, trimAccumulatedFrames(acc, base.Add(time.Minute)))
+	})
+
+	t.Run("reports true when a series is removed", func(t *testing.T) {
+		acc := map[string]*data.Frame{"s": accumFrame([]time.Time{base}, []float64{1})}
+		require.True(t, trimAccumulatedFrames(acc, base.Add(time.Hour)))
+	})
+}
+
+// Replace keeps the last frame on the client, so an emptied accumulator must be published
+// as a zero-row frame instead of silence.
+func TestSendAccumulatedFramesClearsThePanel(t *testing.T) {
+	base := time.Unix(1785000000, 0)
+	sq := &streamQuery{RefId: "A"}
+	ds := &ClickHouseDatasource{}
+
+	t.Run("sends a zero-row frame keeping the schema", func(t *testing.T) {
+		sink := &capturingSender{}
+		sender := backend.NewStreamSender(sink)
+
+		sent := ds.sendAccumulatedFrames(sender, map[string]*data.Frame{
+			"s": accumFrame([]time.Time{base}, []float64{1}),
+		}, sq, 1, nil)
+		require.NotNil(t, sent)
+
+		cleared := ds.sendAccumulatedFrames(sender, map[string]*data.Frame{}, sq, 2, sent)
+		require.NotNil(t, cleared)
+
+		frames := sink.captured()
+		require.Len(t, frames, 2)
+		require.Equal(t, 1, frames[0].Rows())
+		require.Equal(t, 0, frames[1].Rows(), "the panel must be cleared, not left on stale data")
+		require.Equal(t, len(frames[0].Fields), len(frames[1].Fields), "schema must survive")
+		require.Equal(t, frames[0].Fields[0].Name, frames[1].Fields[0].Name)
+	})
+
+	t.Run("stays silent when nothing was ever shown", func(t *testing.T) {
+		sink := &capturingSender{}
+
+		sent := ds.sendAccumulatedFrames(backend.NewStreamSender(sink), map[string]*data.Frame{}, sq, 1, nil)
+
+		require.Nil(t, sent)
+		require.Empty(t, sink.captured())
+	})
+}
+
+// The window keeps sliding while a source is silent: points that left it must still be
+// dropped and the client told, even though the query returned nothing new.
+func TestDeltaTrimsWhileSourceIsSilent(t *testing.T) {
+	ds, stub := newStubDatasource(t)
+	stub.rowsFor = func(n int) string {
+		if n == 1 {
+			return fmt.Sprintf(`{"t":"%s","v":1}`, time.Now().UTC().Format("2006-01-02 15:04:05"))
+		}
+		return "" // source goes silent
+	}
+
+	sq := &streamQuery{
+		RefId:        "A",
+		Query:        "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t",
+		Table:        "test",
+		DateTimeCol:  "event_time",
+		DateTimeType: "DATETIME",
+		Interval:     "1s",
+		Format:       "time_series",
+	}
+
+	sink := &capturingSender{}
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+	ctx, cancel := context.WithTimeout(context.Background(), 4*time.Second)
+	defer cancel()
+
+	require.NoError(t, ds.runDeltaLoop(ctx, &backend.RunStreamRequest{Path: "ds/uid/A"},
+		backend.NewStreamSender(sink), sq, 2*time.Second, ticker, 1))
+
+	frames := sink.captured()
+	require.GreaterOrEqual(t, len(frames), 2, "expected the initial frame and a frame clearing it")
+	require.Equal(t, 1, frames[0].Rows(), "tick 1 must publish the row")
+
+	// A clearing frame keeps the schema and carries no rows. Error frames, which a
+	// cancelled last request can produce on shutdown, have no fields at all.
+	cleared := false
+	for _, f := range frames[1:] {
+		if f.Rows() == 0 && len(f.Fields) > 0 {
+			cleared = true
+		}
+	}
+	require.True(t, cleared, "the aged-out row must leave the panel")
+
+	// Republishing on every silent tick is ruled out by trimAccumulatedFrames reporting
+	// no change once the accumulator is empty, which is covered directly above.
+}
+
+func TestDeltaKeepsDataOnQueryError(t *testing.T) {
+	ds, stub := newStubDatasource(t)
+	stub.rowsFor = func(n int) string {
+		if n == 1 {
+			return fmt.Sprintf(`{"t":"%s","v":1}`, time.Now().UTC().Format("2006-01-02 15:04:05"))
+		}
+		return ""
+	}
+	stub.failAfter = 1
+
+	sq := &streamQuery{
+		RefId:        "A",
+		Query:        "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t",
+		Table:        "test",
+		DateTimeCol:  "event_time",
+		DateTimeType: "DATETIME",
+		Interval:     "1s",
+		Format:       "time_series",
+	}
+
+	sink := &capturingSender{}
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+	ctx, cancel := context.WithTimeout(context.Background(), 1500*time.Millisecond)
+	defer cancel()
+
+	require.NoError(t, ds.runDeltaLoop(ctx, &backend.RunStreamRequest{Path: "ds/uid/A"},
+		backend.NewStreamSender(sink), sq, time.Hour, ticker, 1))
+
+	frames := sink.captured()
+	require.GreaterOrEqual(t, len(frames), 2, "expected the data frame and at least one error frame")
+	require.Equal(t, 1, frames[0].Rows())
+
+	for i, f := range frames[1:] {
+		// Error frames carry no fields; a cleared accumulator would keep the data schema.
+		require.Empty(t, f.Fields, "frame %d: a failing query must not clear accumulated data", i+1)
+	}
 }

@@ -256,6 +256,10 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 	backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA/INITIAL | from=%s | to=%s",
 		tickCount, cutoff.Format("15:04:05"), now.Format("15:04:05")))
 
+	// Last frame published to the client; kept as the schema for the zero-row frame that
+	// clears the panel once every series has left the window.
+	var lastSent *data.Frame
+
 	response := ds.executeStreamEvalQuery(req.PluginContext, ctx, sq, cutoff, now)
 	if response.Error != nil {
 		backend.Logger.Error(fmt.Sprintf("[streaming] tick #%d | QUERY ERROR: %s", tickCount, response.Error))
@@ -267,7 +271,7 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 				accumulated[name] = frame
 			}
 		}
-		ds.sendAccumulatedFrames(sender, accumulated, sq, tickCount)
+		lastSent = ds.sendAccumulatedFrames(sender, accumulated, sq, tickCount, nil)
 	}
 	lastTo := now
 
@@ -333,10 +337,12 @@ func (ds *ClickHouseDatasource) runDeltaLoop(
 				}
 			}
 
-			if hasNewData {
-				// Drop rows that slid out of the window, else the accumulator grows forever.
-				trimAccumulatedFrames(accumulated, cutoff)
-				ds.sendAccumulatedFrames(sender, accumulated, sq, tickCount)
+			// Trim on every successful tick, not just when rows arrived: the window keeps
+			// sliding while a source is silent, and those points must still leave the panel.
+			trimmed := trimAccumulatedFrames(accumulated, cutoff)
+
+			if hasNewData || trimmed {
+				lastSent = ds.sendAccumulatedFrames(sender, accumulated, sq, tickCount, lastSent)
 			} else {
 				backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA: no new rows", tickCount))
 			}
@@ -413,11 +419,15 @@ func upsertFrameRows(dst, src *data.Frame) {
 
 // trimAccumulatedFrames removes rows older than cutoff from all accumulated frames.
 // This prevents unbounded memory growth for long-running streams.
-func trimAccumulatedFrames(accumulated map[string]*data.Frame, cutoff time.Time) {
+// It reports whether any row or series was removed, so the caller knows the client needs
+// a refreshed frame even when the query itself returned nothing new.
+func trimAccumulatedFrames(accumulated map[string]*data.Frame, cutoff time.Time) bool {
 	cutoffMs := cutoff.UnixMilli()
+	changed := false
 	for name, frame := range accumulated {
 		if len(frame.Fields) == 0 || frame.Rows() == 0 {
 			delete(accumulated, name)
+			changed = true
 			continue
 		}
 		timeField := frame.Fields[0]
@@ -434,8 +444,10 @@ func trimAccumulatedFrames(accumulated map[string]*data.Frame, cutoff time.Time)
 		}
 		if len(keep) == 0 {
 			delete(accumulated, name) // series slid out of the window entirely
+			changed = true
 			continue
 		}
+		changed = true
 		// Rebuild fields with only valid rows
 		trimmed := data.NewFrame(frame.Name)
 		trimmed.RefID = frame.RefID
@@ -451,30 +463,52 @@ func trimAccumulatedFrames(accumulated map[string]*data.Frame, cutoff time.Time)
 		}
 		accumulated[name] = trimmed
 	}
+	return changed
 }
 
 // sendAccumulatedFrames merges accumulated frames into a single wide-format frame
 // and sends it via Replace. Grafana's streaming Replace mode only keeps the last
 // frame sent per channel, so we must combine all series into one frame.
+// It returns the frame that was sent, which the caller keeps as the schema to fall back on
+// once every series has left the window: Replace keeps the previous frame on the client, so
+// an emptied accumulator has to be published as a zero-row frame rather than silence.
 func (ds *ClickHouseDatasource) sendAccumulatedFrames(
 	sender *backend.StreamSender,
 	accumulated map[string]*data.Frame,
 	sq *streamQuery,
 	tickCount int,
-) {
+	lastSent *data.Frame,
+) *data.Frame {
 	wide := mergeFramesToWide(accumulated)
 	if wide == nil {
-		backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA: nothing to send", tickCount))
-		return
+		if lastSent == nil {
+			backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | DELTA: nothing to send", tickCount))
+			return nil
+		}
+		wide = emptyLike(lastSent)
 	}
 	wide.RefID = sq.RefId
 	addStreamingNotice(wide, "delta", tickCount, wide.Rows())
 	if err := sender.SendFrame(wide, data.IncludeAll); err != nil {
 		backend.Logger.Error(fmt.Sprintf("[streaming] tick #%d | SendFrame ERROR: %s", tickCount, err))
-		return
+		return lastSent
 	}
 	backend.Logger.Debug(fmt.Sprintf("[streaming] tick #%d | refId=%s | series=%d | rows=%d",
 		tickCount, sq.RefId, len(accumulated), wide.Rows()))
+	return wide
+}
+
+// emptyLike returns a zero-row frame with the same schema, used to clear the panel.
+func emptyLike(frame *data.Frame) *data.Frame {
+	empty := data.NewFrame(frame.Name)
+	empty.RefID = frame.RefID
+	for _, field := range frame.Fields {
+		f := data.NewFieldFromFieldType(field.Type(), 0)
+		f.Name = field.Name
+		f.Labels = field.Labels
+		empty.Fields = append(empty.Fields, f)
+	}
+	return empty
 }
 
 // mergeFramesToWide combines multiple frames that share a common time field

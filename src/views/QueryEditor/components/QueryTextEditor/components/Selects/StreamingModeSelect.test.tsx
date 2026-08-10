@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 // react-calendar is ESM-only and not in the scaffolded transform list; @grafana/ui barrel imports it
 jest.mock('react-calendar', () => ({}));
 

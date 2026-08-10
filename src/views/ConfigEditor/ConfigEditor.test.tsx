@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 jest.mock('react-calendar', () => ({}));
 // Monaco cannot run under jsdom; replace CodeEditor with a plain textarea
 jest.mock('@grafana/ui', () => ({

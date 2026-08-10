@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 jest.mock('react-calendar', () => ({}));
 
 import React from 'react';

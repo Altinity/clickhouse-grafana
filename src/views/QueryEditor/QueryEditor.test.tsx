@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 jest.mock('react-calendar', () => ({}));
 jest.mock('./components/QueryTextEditor/SQLCodeEditor', () => ({
   SQLCodeEditor: ({ onSqlChange }: any) => (

@@ -1,8 +1,9 @@
+import '@testing-library/jest-dom';
 jest.mock('react-calendar', () => ({}));
 jest.mock('./hooks/useConnectionData');
 
 import React from 'react';
-import { fireEvent, render, screen } from '@testing-library/react';
+import { render, screen } from '@testing-library/react';
 import { selectOption } from 'spec/testUtils';
 import { QueryBuilder } from './QueryBuilder';
 import { useConnectionData } from './hooks/useConnectionData';

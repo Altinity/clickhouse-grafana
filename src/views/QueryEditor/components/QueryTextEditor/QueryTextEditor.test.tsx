@@ -1,3 +1,4 @@
+import '@testing-library/jest-dom';
 jest.mock('react-calendar', () => ({}));
 // Monaco-based editor cannot run under jsdom
 jest.mock('./SQLCodeEditor', () => ({

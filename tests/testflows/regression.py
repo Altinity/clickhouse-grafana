@@ -153,6 +153,7 @@ def regression(self, before, after, suite=None, scenario=None):
         ("limited_access", "testflows.tests.automated.limited_access"),
         ("worldmap_and_table_format", "testflows.tests.automated.worldmap_and_table_format"),
         ("log_context", "testflows.tests.automated.log_context"),
+        ("advanced_logs_fields", "testflows.tests.automated.advanced_logs_fields"),
     ]
 
     self.context.grafana_version = None

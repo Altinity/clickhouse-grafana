@@ -316,10 +316,12 @@ def mode_single_hide_raw(self):
 
             else:
                 with Then("I check the map appears in the log line body"):
-                    # raw mode appends ' _map={json}' to the message body
+                    # raw mode appends ' _map={json}' to the message body; check innerText —
+                    # the log highlighter splits '_map' and '={' into separate spans in the HTML
                     for attempt in retries(delay=2, timeout=30):
                         with attempt:
-                            assert "_map={" in driver.page_source, error()
+                            body_text = driver.execute_script("return document.body.innerText;")
+                            assert "_map={" in body_text, error()
 
     finally:
         with Finally("I go back to dashboard"):
@@ -355,8 +357,10 @@ def upgrade_safety_defaults(self):
                 assert "_map['map_key" in driver.page_source, error()
 
     with And("I check no deeper-than-1 nested accessors are rendered"):
-        # depth-2 bracket expansion would produce keys like _map['a']['b']
-        assert "']['" not in driver.page_source, error()
+        # depth-2 bracket expansion would produce keys like _map['a']['b'];
+        # check innerText, not page_source — ']][' occurs in bundled JS
+        body_text = driver.execute_script("return document.body.innerText;")
+        assert "']['" not in body_text, error()
 
 
 @TestScenario

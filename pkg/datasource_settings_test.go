@@ -55,3 +55,12 @@ func TestNewDatasourceSettings(t *testing.T) {
 	require.Equal(t, "value1", dsSettings.CustomHeaders["header1"])
 	require.Equal(t, "value2", dsSettings.CustomHeaders["header2"])
 }
+
+func TestNewDatasourceSettingsMissingSecureHeader(t *testing.T) {
+	settings := backend.DataSourceInstanceSettings{
+		JSONData:                []byte(`{"httpHeaderName1": "X-Custom"}`),
+		DecryptedSecureJSONData: map[string]string{},
+	}
+	_, err := NewDatasourceSettings(context.Background(), settings)
+	require.ErrorContains(t, err, "httpHeaderValue1 not present in settings.DecryptedSecureJSONData")
+}

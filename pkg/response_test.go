@@ -2,8 +2,12 @@ package main
 
 import (
 	"context"
+	"encoding/json"
 	"testing"
 	"time"
+
+	"github.com/grafana/grafana-plugin-sdk-go/data"
+	"github.com/stretchr/testify/require"
 )
 
 // TestToFramesWithTimeStampAndLabels verifies that 3-field queries
@@ -109,4 +113,122 @@ func TestToFramesWithTimeStampNoLabels(t *testing.T) {
 	if frame.Fields[1].Len() != 2 {
 		t.Errorf("expected 2 data points, got %d", frame.Fields[1].Len())
 	}
+}
+
+var fetchUTC = func(ctx context.Context) *time.Location { return time.UTC }
+
+// TestToFramesTable covers the table branch (no timestamp column in Meta)
+// and string precision preservation for UInt64 values above 2^53
+func TestToFramesTable(t *testing.T) {
+	r := &Response{
+		ctx:  context.Background(),
+		Meta: []*FieldMeta{{Name: "name", Type: "String"}, {Name: "big", Type: "UInt64"}},
+		Data: []map[string]interface{}{
+			{"name": "a", "big": json.Number("9007199254740993")},
+			{"name": "b", "big": json.Number("1")},
+		},
+	}
+	frames, err := r.toFrames(&Query{RefId: "A"}, fetchUTC)
+	require.NoError(t, err)
+	require.Len(t, frames, 2)
+	for _, frame := range frames {
+		require.Equal(t, "A", frame.RefID)
+		require.Len(t, frame.Fields, 1)
+		require.Equal(t, data.FieldTypeString, frame.Fields[0].Type())
+		require.Equal(t, 2, frame.Fields[0].Len())
+	}
+}
+
+func TestToFramesWithTimeStampSeriesFromMacros(t *testing.T) {
+	r := &Response{
+		ctx: context.Background(),
+		Meta: []*FieldMeta{
+			{Name: "t", Type: "DateTime"},
+			{Name: "garr", Type: "Array(Tuple(String, Float64))"},
+		},
+		Data: []map[string]interface{}{
+			{"t": "2024-01-15 10:00:00", "garr": []interface{}{
+				[]interface{}{"web", 1.0},
+				[]interface{}{nil, 2.0},
+			}},
+		},
+	}
+	frames, err := r.toFrames(&Query{RefId: "B"}, fetchUTC)
+	require.NoError(t, err)
+	require.Len(t, frames, 2)
+	values := map[string]float64{}
+	for _, frame := range frames {
+		require.Len(t, frame.Fields, 2)
+		values[frame.Fields[1].Name] = frame.Fields[1].At(0).(float64)
+	}
+	// nil label becomes a "null" series
+	require.Equal(t, map[string]float64{"web": 1.0, "null": 2.0}, values)
+}
+
+func TestToFramesWithTimeStampSeriesFromMacrosErrors(t *testing.T) {
+	meta := []*FieldMeta{
+		{Name: "t", Type: "DateTime"},
+		{Name: "garr", Type: "Array(Tuple(String, Float64))"},
+	}
+	testCases := []struct {
+		name        string
+		garr        interface{}
+		expectedErr string
+	}{
+		{"malformed tuple", []interface{}{"bad"}, "unable to parse data section type=string"},
+		{"malformed array", "bad", "unable to parse data section name=garr type=string"},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := &Response{
+				ctx:  context.Background(),
+				Meta: meta,
+				Data: []map[string]interface{}{{"t": "2024-01-15 10:00:00", "garr": tc.garr}},
+			}
+			_, err := r.toFrames(&Query{RefId: "B"}, fetchUTC)
+			require.ErrorContains(t, err, tc.expectedErr)
+		})
+	}
+}
+
+func TestToFramesTimestampParseError(t *testing.T) {
+	r := &Response{
+		ctx:  context.Background(),
+		Meta: []*FieldMeta{{Name: "t", Type: "Nullable(UInt64)"}, {Name: "v", Type: "Float64"}},
+		Data: []map[string]interface{}{{"t": nil, "v": 1.0}},
+	}
+	_, err := r.toFrames(&Query{RefId: "C"}, fetchUTC)
+	require.ErrorContains(t, err, "Unexpected type from ParseValue of field t")
+}
+
+// TestToFramesUInt64Timestamp covers the "t" UInt64 millisecond timestamp column
+func TestToFramesUInt64Timestamp(t *testing.T) {
+	r := &Response{
+		ctx:  context.Background(),
+		Meta: []*FieldMeta{{Name: "t", Type: "UInt64"}, {Name: "v", Type: "Float64"}},
+		Data: []map[string]interface{}{{"t": json.Number("1705312800000"), "v": 1.5}},
+	}
+	frames, err := r.toFrames(&Query{RefId: "D"}, fetchUTC)
+	require.NoError(t, err)
+	require.Len(t, frames, 1)
+	require.Equal(t, data.FieldTypeTime, frames[0].Fields[0].Type())
+	require.Equal(t, time.UnixMilli(1705312800000).UTC(), frames[0].Fields[0].At(0).(time.Time).UTC())
+	require.Equal(t, 1.5, frames[0].Fields[1].At(0))
+}
+
+func TestAnalyzeColumnPrecisionNeeds(t *testing.T) {
+	r := &Response{
+		Data: []map[string]interface{}{
+			{"a": json.Number("9007199254740993"), "b": json.Number("5"), "skip": json.Number("1")},
+			{"a": json.Number("1"), "b": json.Number("-9007199254740993")},
+		},
+	}
+	needs := r.analyzeColumnPrecisionNeeds(map[string]string{
+		"a": "Nullable(UInt64)",
+		"b": "LowCardinality(Int64)",
+	})
+	require.True(t, needs["a"], "unsafe UInt64 must keep string precision")
+	require.True(t, needs["b"], "unsafe negative Int64 must keep string precision")
+	_, tracked := needs["skip"]
+	require.False(t, tracked, "columns without known integer type are not tracked")
 }

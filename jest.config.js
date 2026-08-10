@@ -13,20 +13,21 @@ module.exports = {
     'src/**/*.{ts,tsx}',
     '!src/**/*.{test,spec,jest}.{ts,tsx}',
     '!src/**/__mocks__/**',
+    '!src/spec/testUtils/**',
     '!src/**/*.d.ts',
     // Pure static data (autocomplete metadata): thousands of LOC, ~5 statements, no logic.
     '!src/views/QueryEditor/components/QueryTextEditor/editor/autocompletions/functions.ts',
     '!src/views/QueryEditor/components/QueryTextEditor/editor/constants/funcs.ts',
   ],
 
-  // Ratchet: floor measured 2026-07-14 on master (stmts 32.76 / branch 31.44 / func 21.75 / lines 32.33).
+  // Ratchet: floor measured 2026-08-10 (stmts 91.9 / branch 90.17 / func 82.18 / lines 92.68).
   // Raise these as coverage grows; never lower without a written justification.
   coverageThreshold: {
     global: {
-      statements: 32,
-      branches: 31,
-      functions: 21,
-      lines: 32,
+      statements: 90,
+      branches: 88,
+      functions: 80,
+      lines: 90,
     },
   },
 };

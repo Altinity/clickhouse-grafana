@@ -134,6 +134,7 @@ jobs:
           suite-name: ${{ matrix.suite.name }}
           scenario: ${{ matrix.suite.scenario || '' }}
           grafana-version: "13.1.0"
+          clickhouse-version: "26.6"
           grafana-label: fixed
 
   # Informational leg: tracks the latest Grafana release. A failure marks the

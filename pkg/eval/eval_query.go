@@ -1815,7 +1815,7 @@ func (s *EvalQueryScanner) parseJOIN(argument string) (string, error) {
 		var sourceStr = ""
 		var ok = true
 		for {
-			if isID(s.Token) && !isTable(sourceStr) && strings.ToUpper(s.Token) != "AS" && !onJoinTokenOnlyRe.MatchString(s.Token) {
+			if isID(s.Token) && !isTable(sourceStr) && strings.ToUpper(s.Token) != "AS" && !onJoinKeywordOnlyRe.MatchString(s.Token) {
 				sourceStr += s.Token
 			} else if isMacro(s.Token) {
 				sourceStr += s.Token
@@ -1851,9 +1851,9 @@ func (s *EvalQueryScanner) parseJOIN(argument string) (string, error) {
 	}
 	ok := true
 	for {
-		if s.Token != "" && !onJoinTokenOnlyRe.MatchString(s.Token) {
+		if s.Token != "" && !onJoinKeywordOnlyRe.MatchString(s.Token) {
 			joinAST.pushObj("aliases", s.Token)
-		} else if onJoinTokenOnlyRe.MatchString(s.Token) {
+		} else if onJoinKeywordOnlyRe.MatchString(s.Token) {
 			break
 		}
 
@@ -1947,7 +1947,7 @@ func (s *EvalQueryScanner) AddMetadata(query string, q *EvalQuery) string {
 }
 
 const wsRe = "\\s+"
-const commentRe = `--(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|` + `/\*(?:[^*]|\*[^/])*\*/`
+const commentRe = `--(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|` + `#!?(([^\'\n]*[\']){2})*[^\'\n]*(?=\n|$)|` + `/\*(?:[^*]|\*[^/])*\*/`
 const idRe = "[a-zA-Z_][a-zA-Z_0-9]*"
 const intRe = "\\d+"
 const powerIntRe = "\\d+e\\d+"
@@ -2034,7 +2034,7 @@ const joinsRe = "\\b(" +
 	"outer\\s+join|" +
 	"join" +
 	")\\b"
-const onJoinTokenRe = "\\b(using|on)\\b"
+const onJoinKeywordRe = "\\b(using|on)\\b"
 const tableNameRe = `([A-Za-z0-9_]+|[A-Za-z0-9_]+\\.[A-Za-z0-9_]+)`
 const macroFuncRe = "(\\$deltaColumnsAggregated|\\$increaseColumnsAggregated|\\$perSecondColumnsAggregated|\\$rateColumnsAggregated|\\$rateColumns|\\$perSecondColumns|\\$deltaColumns|\\$increaseColumns|\\$rate|\\$perSecond|\\$delta|\\$increase|\\$columnsMs|\\$columns|\\$lttbMs|\\$lttb)"
 const condRe = "\\b(or|and)\\b"
@@ -2054,7 +2054,7 @@ var closureOnlyRe = regexp.MustCompile("^(?:" + closureRe + ")$")
 var macroFuncOnlyRe = regexp.MustCompile("^(?:" + macroFuncRe + ")$")
 var statementOnlyRe = regexp.MustCompile("(?mi)^(?:" + statementRe + ")$")
 var joinsOnlyRe = regexp.MustCompile("(?mi)^(?:" + joinsRe + ")$")
-var onJoinTokenOnlyRe = regexp.MustCompile("(?mi)^(?:" + onJoinTokenRe + ")$")
+var onJoinKeywordOnlyRe = regexp.MustCompile("(?mi)^(?:" + onJoinKeywordRe + ")$")
 var tableNameOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableNameRe + ")$")
 
 var tableFuncOnlyRe = regexp.MustCompile("(?mi)^(?:" + tableFuncRe + ")$")

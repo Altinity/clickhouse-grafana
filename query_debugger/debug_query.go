@@ -3,8 +3,9 @@ package main
 import (
 	"encoding/json"
 	"fmt"
-	"io/ioutil"
+	"io"
 	"os"
+	"path/filepath"
 	"time"
 
 	"github.com/altinity/clickhouse-grafana/pkg/eval"
@@ -154,14 +155,53 @@ func createQuery(reqData QueryRequest) map[string]interface{} {
 	}
 }
 
+// readInputFile reads the user supplied path through an os.Root scoped to the
+// current working directory, so a traversal like ../../etc/passwd or a symlink
+// pointing outside the working directory is rejected by the OS itself.
+func readInputFile(arg string) ([]byte, error) {
+	base, err := os.Getwd()
+	if err != nil {
+		return nil, err
+	}
+
+	root, err := os.OpenRoot(base)
+	if err != nil {
+		return nil, err
+	}
+	defer root.Close()
+
+	rel := filepath.Clean(filepath.FromSlash(arg))
+	if filepath.IsAbs(rel) {
+		if rel, err = filepath.Rel(base, rel); err != nil {
+			return nil, err
+		}
+	}
+
+	f, err := root.Open(rel)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+
+	info, err := f.Stat()
+	if err != nil {
+		return nil, err
+	}
+	if !info.Mode().IsRegular() {
+		return nil, fmt.Errorf("%q is not a regular file", arg)
+	}
+
+	return io.ReadAll(f)
+}
+
 func main() {
 	if len(os.Args) < 2 {
 		fmt.Println("Usage: go run debug_query.go <input.json>")
 		os.Exit(1)
 	}
 
-	// Read input file
-	data, err := ioutil.ReadFile(os.Args[1])
+	// Read input file (scoped to the current working directory)
+	data, err := readInputFile(os.Args[1])
 	if err != nil {
 		fmt.Printf("Error reading file: %v\n", err)
 		os.Exit(1)

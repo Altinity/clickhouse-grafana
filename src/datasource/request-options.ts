@@ -13,6 +13,7 @@ export interface RequestOptions {
   data?: string;
   withCredentials?: boolean;
   headers?: Record<string, string>;
+  responseType?: string;
 }
 
 export interface RequestOptionsInput {
@@ -51,6 +52,11 @@ export function buildRequestOptions(
   const requestOptions: RequestOptions = {
     url: options.url,
     requestId,
+    // Fetch the body as raw text: Grafana's own JSON.parse would round
+    // 64-bit integers above 2^53-1 before the plugin ever sees them.
+    // Parsing is done losslessly in _request/annotationQuery instead.
+    // https://github.com/Altinity/clickhouse-grafana/issues/832
+    responseType: 'text',
   };
   const params: string[] = [];
 

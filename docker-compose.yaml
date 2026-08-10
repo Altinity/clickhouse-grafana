@@ -74,6 +74,9 @@ services:
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-true}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-false}
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
+      # Grafana >= 12.4 no longer forwards host env vars to plugin processes,
+      # without this the plugin never sees GOCOVERDIR and writes no coverage counters
+      GF_PLUGINS_FORWARD_HOST_ENV_VARS: vertamedia-clickhouse-datasource
     depends_on:
       - clickhouse
 
@@ -104,6 +107,8 @@ services:
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
       GF_ALERTING_ENABLED: ${GF_ALERTING_ENABLED:-true}
       GF_PLUGINS_ALLOW_LOADING_UNSIGNED_PLUGINS: vertamedia-clickhouse-datasource
+      # no-op on 10.4.3 (forwards everything anyway), needed once the legacy pin moves past 12.4
+      GF_PLUGINS_FORWARD_HOST_ENV_VARS: vertamedia-clickhouse-datasource
     depends_on:
       - clickhouse
 
@@ -117,7 +122,7 @@ services:
       - ./docker/grafana/dashboards/:/var/lib/grafana/dashboards/
 
     environment:
-      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,https://github.com/Altinity/clickhouse-grafana/releases/download/v${GRAFANA_PLUGIN_VERSION:-3.4.10}/vertamedia-clickhouse-datasource-${GRAFANA_PLUGIN_VERSION:-3.4.10}.zip;vertamedia-clickhouse-datasource"
+      GF_INSTALL_PLUGINS: "grafana-piechart-panel,grafana-worldmap-panel,grafana-clickhouse-datasource,https://github.com/Altinity/clickhouse-grafana/releases/download/v${GRAFANA_PLUGIN_VERSION:-3.4.12}/vertamedia-clickhouse-datasource-${GRAFANA_PLUGIN_VERSION:-3.4.12}.zip;vertamedia-clickhouse-datasource"
       GF_LOG_LEVEL: debug
       GF_DATABASE_WAL: "true"
       GF_UNIFIED_ALERTING_ENABLED: ${GF_UNIFIED_ALERTING_ENABLED:-false}
@@ -237,7 +242,7 @@ services:
         (command -v mage || go install -v github.com/magefile/mage@latest) &&
         mkdir -p /go/src/grafana-clickhouse/go_coverage/raw &&
         go env &&
-        go test -timeout 1m -cover -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/... -test.gocoverdir="/go/src/grafana-clickhouse/go_coverage" &&
+        go test -timeout 1m -cover -coverpkg=./... -failfast -tags=integration -run "${RUN_TESTS:-.+}" -v ./pkg/... -test.gocoverdir="/go/src/grafana-clickhouse/go_coverage" &&
         GOOS=linux GOARCH=amd64 go build -cover -buildvcs=false -o ./dist/altinity-clickhouse-plugin_linux_amd64 ./pkg/ &&
         chmod +x dist/altinity-clickhouse-plugin*
       "

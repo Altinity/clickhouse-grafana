@@ -51,30 +51,20 @@ jobs:
         run: npm run lint
       - name: Test frontend
         run: npm run test:ci
+
       - name: Build frontend
         run: npm run build
 
+      # Coverage is reported to Coveralls only by the testflows workflow, which
+      # merges these same unit-test results with the e2e counters; a second
+      # upload from here would create a competing Coveralls build for the same
+      # commit and make the badge flip between the two numbers.
       - name: Test backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
         uses: magefile/mage-action@v3
-        env:
-          GOCOVERDIR: ./coverage/
         with:
           version: latest
           args: coverage
-
-      - name: check GOCOVERDIR after
-        run: |
-          ls -la ./coverage/
-          cat ./coverage/backend.txt
-
-      - name: Report golang coverage
-        if: steps.check-for-backend.outputs.has-backend == 'true'
-        uses: coverallsapp/github-action@v2
-        with:
-          fail-on-error: false
-          file: ./coverage/backend.out
-          format: golang
 
       - name: Build backend
         if: steps.check-for-backend.outputs.has-backend == 'true'

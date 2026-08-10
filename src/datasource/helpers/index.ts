@@ -171,6 +171,14 @@ export const conditionalTest = (query: string, templateSrv: TemplateSrv) => {
 export const adhocFilterVariable = 'adhoc_query_filter';
 
 export const clickhouseEscape = (value: any, variable: any): any => {
+  // Null/undefined values must not crash interpolation: variables whose
+  // multi/includeAll are undefined bypass the strict raw guard, so a null
+  // value used to reach the quoting branch and throw TypeError on
+  // value.replace. Pass through as-is. Contract: class 11.
+  if (value === null || value === undefined) {
+    return value;
+  }
+
   const NumberOnlyRegexp = /^[+-]?\d+(\.\d+)?$/;
 
   let returnAsIs = true;
@@ -248,6 +256,33 @@ export const clickhouseEscape = (value: any, variable: any): any => {
  * // → ['val1','val2']
  * ```
  */
+/**
+ * Detects if a variable sits in an identifier position — directly after a
+ * keyword that expects a table/database name: FROM, JOIN, INTO, TO, TABLE.
+ *
+ * Identifier positions always take RAW values regardless of variable config
+ * or the repeated-panel flag: a quoted identifier (`FROM 'db.t'`) is never
+ * valid ClickHouse SQL, so this exception can only fix queries, not break them.
+ * This is the targeted fix for issue #905 (constant/textbox variables used as
+ * table names) that deliberately KEEPS the 3.4.x auto-quoting default for all
+ * other positions (dashboards relying on it — see issue #809 — stay intact).
+ * IN/tuple context still outranks this detector (same rule as concatenation).
+ *
+ * Known limitation (shared with the other detectors): the verdict is global
+ * per variable name and comments are not stripped — `-- FROM $v` in a comment
+ * marks every `$v` in the query as identifier-positioned.
+ *
+ * Contract: class 13 in interpolation-contract.test.ts —
+ * edit them ONLY together with the class table there.
+ */
+const isIdentifierPosition = (query: string, variableName: string): boolean => {
+  if (!query || !variableName) {
+    return false;
+  }
+  const pattern = new RegExp(`\\b(?:FROM|JOIN|INTO|TO|TABLE)\\s+\\$\\{?${variableName}\\}?`, 'i');
+  return pattern.test(query);
+};
+
 export const interpolateQueryExprWithContext = (query: string, variables: any[] = []) => {
   return (value: any, variable: any) => {
     // Check if this variable is part of a concatenation pattern
@@ -274,6 +309,13 @@ export const interpolateQueryExprWithContext = (query: string, variables: any[] 
     // BUT: if also in IN clause (needsComma), IN clause takes precedence (fix for issue #847)
     // This prevents false positives where concatenation regex matches across unrelated quotes
     if (isInConcatenation && !needsComma && !Array.isArray(value)) {
+      return value;
+    }
+
+    // Priority 1.5: Identifier position (FROM/JOIN/INTO/TO/TABLE $var) - raw for simple
+    // values regardless of config or repeated flag: a quoted identifier is never valid SQL.
+    // Targeted fix for issue #905; IN clause still takes precedence (same rule as Priority 1).
+    if (isIdentifierPosition(query, variable.name) && !needsComma && !Array.isArray(value)) {
       return value;
     }
 

@@ -1,5 +1,6 @@
 import { renderHook, waitFor } from '@testing-library/react';
 import { useAutocompleteData } from '../views/QueryEditor/hooks/useAutocompletionData';
+import { IndexedDBManager } from '../utils/indexedDBManager';
 
 jest.mock('../utils/indexedDBManager', () => ({
   IndexedDBManager: {
@@ -83,5 +84,47 @@ describe('useAutocompleteData permission error detection (issue #816)', () => {
 
     await waitFor(() => expect(result.current.data).toEqual({}));
     expect(result.current.hasPermissionError).toBe(false);
+  });
+});
+
+describe('useAutocompleteData cache and cleanup paths', () => {
+  const mockedIDB = IndexedDBManager as jest.Mocked<typeof IndexedDBManager>;
+
+  it('uses a cached permission error without querying', async () => {
+    // first getItem call is the permission-error key
+    mockedIDB.getItem.mockResolvedValueOnce(true);
+    const datasource = { uid: 'uid-cached-error', metricFindQuery: jest.fn() };
+
+    const { result } = renderHook(() => useAutocompleteData(datasource));
+
+    await waitFor(() => expect(result.current.hasPermissionError).toBe(true));
+    expect(result.current.data).toEqual({});
+    expect(datasource.metricFindQuery).not.toHaveBeenCalled();
+  });
+
+  it('returns cached autocomplete data without querying', async () => {
+    mockedIDB.getItem.mockResolvedValueOnce(null).mockResolvedValueOnce({ identifier: ['count'] });
+    const datasource = { uid: 'uid-cached-data', metricFindQuery: jest.fn() };
+
+    const { result } = renderHook(() => useAutocompleteData(datasource));
+
+    await waitFor(() => expect(result.current.data).toEqual({ identifier: ['count'] }));
+    expect(result.current.hasPermissionError).toBe(false);
+    expect(datasource.metricFindQuery).not.toHaveBeenCalled();
+  });
+
+  it('logs a failed cache cleanup and still fetches', async () => {
+    const error = jest.spyOn(console, 'error').mockImplementation(() => {});
+    mockedIDB.cleanupExpiredByPrefix.mockRejectedValueOnce(new Error('cleanup failed'));
+    const datasource = {
+      uid: 'uid-cleanup',
+      metricFindQuery: jest.fn().mockResolvedValue([{ completion: 'count', color: 'identifier' }]),
+    };
+
+    const { result } = renderHook(() => useAutocompleteData(datasource));
+
+    await waitFor(() => expect(result.current.data).toEqual({ identifier: ['count'] }));
+    expect(error).toHaveBeenCalledWith('Failed to cleanup expired autocomplete data:', expect.any(Error));
+    error.mockRestore();
   });
 });

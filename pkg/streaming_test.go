@@ -578,3 +578,322 @@ func TestDeltaKeepsDataOnQueryError(t *testing.T) {
 		require.Empty(t, f.Fields, "frame %d: a failing query must not clear accumulated data", i+1)
 	}
 }
+
+func TestSubscribeAndPublishStream(t *testing.T) {
+	ds := &ClickHouseDatasource{}
+
+	sub, err := ds.SubscribeStream(context.Background(), &backend.SubscribeStreamRequest{Path: "ds/uid/A"})
+	require.NoError(t, err)
+	require.Equal(t, backend.SubscribeStreamStatusOK, sub.Status)
+
+	pub, err := ds.PublishStream(context.Background(), &backend.PublishStreamRequest{})
+	require.NoError(t, err)
+	require.Equal(t, backend.PublishStreamStatusPermissionDenied, pub.Status)
+}
+
+func TestParseIntervalSeconds(t *testing.T) {
+	tests := []struct {
+		in   string
+		want int64
+	}{
+		{"", 0},
+		{"200ms", 0},
+		{"1500ms", 1},
+		{"20s", 20},
+		{"1m", 60},
+		{"1h", 3600},
+		{"1d", 86400},
+		{"5", 5},
+		{"xs", 0},
+	}
+	for _, tt := range tests {
+		t.Run("interval "+tt.in, func(t *testing.T) {
+			require.Equal(t, tt.want, parseIntervalSeconds(tt.in))
+		})
+	}
+}
+
+func TestToFloat64(t *testing.T) {
+	f64 := 1.5
+	f32 := float32(2.5)
+	tests := []struct {
+		name string
+		in   interface{}
+		want float64
+	}{
+		{"float64", 1.5, 1.5},
+		{"float32", float32(2.5), 2.5},
+		{"int64", int64(-3), -3},
+		{"int32", int32(4), 4},
+		{"int", 5, 5},
+		{"uint64", uint64(6), 6},
+		{"uint32", uint32(7), 7},
+		{"*float64", &f64, 1.5},
+		{"*float64 nil", (*float64)(nil), 0},
+		{"*float32", &f32, 2.5},
+		{"*float32 nil", (*float32)(nil), 0},
+		{"string falls back to zero", "8", 0},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			require.Equal(t, tt.want, toFloat64(tt.in))
+		})
+	}
+}
+
+func TestFrameFingerprint(t *testing.T) {
+	base := time.Unix(1785000000, 0)
+	a := accumFrame([]time.Time{base, base.Add(time.Minute)}, []float64{1, 2})
+	same := accumFrame([]time.Time{base, base.Add(time.Minute)}, []float64{1, 2})
+	changed := accumFrame([]time.Time{base, base.Add(time.Minute)}, []float64{1, 3})
+
+	require.Equal(t, [16]byte{}, frameFingerprint(accumFrame(nil, nil)))
+	require.Equal(t, frameFingerprint(a), frameFingerprint(same))
+	require.NotEqual(t, frameFingerprint(a), frameFingerprint(changed))
+}
+
+func TestFrameKey(t *testing.T) {
+	base := time.Unix(1785000000, 0)
+
+	named := accumFrame([]time.Time{base}, []float64{1})
+	named.Name = "explicit"
+	require.Equal(t, "explicit", frameKey(named))
+
+	require.Equal(t, "v", frameKey(accumFrame([]time.Time{base}, []float64{1})))
+
+	timeOnly := data.NewFrame("", data.NewField("t", nil, []time.Time{base}))
+	timeOnly.RefID = "R"
+	require.Equal(t, "R", frameKey(timeOnly))
+}
+
+func seriesFrame(name string, times []time.Time, values []float64) *data.Frame {
+	return data.NewFrame("",
+		data.NewField("t", nil, times),
+		data.NewField(name, nil, values),
+	)
+}
+
+func TestMergeFramesToWide(t *testing.T) {
+	base := time.Unix(1785000000, 0)
+	t0, t1, t2 := base, base.Add(time.Minute), base.Add(2*time.Minute)
+
+	t.Run("empty map", func(t *testing.T) {
+		require.Nil(t, mergeFramesToWide(map[string]*data.Frame{}))
+	})
+
+	t.Run("single frame passthrough", func(t *testing.T) {
+		f := seriesFrame("a", []time.Time{t0}, []float64{1})
+		require.Same(t, f, mergeFramesToWide(map[string]*data.Frame{"a": f}))
+	})
+
+	t.Run("overlapping buckets join on a unified sorted time index", func(t *testing.T) {
+		wide := mergeFramesToWide(map[string]*data.Frame{
+			"b": seriesFrame("b", []time.Time{t1, t2}, []float64{20, 21}),
+			"a": seriesFrame("a", []time.Time{t0, t1}, []float64{10, 11}),
+			"c": seriesFrame("c", []time.Time{t0, t2}, []float64{30, 31}),
+		})
+
+		require.Equal(t, 3, wide.Rows())
+		require.Len(t, wide.Fields, 4)
+		require.Equal(t, []string{"t", "a", "b", "c"}, []string{
+			wide.Fields[0].Name, wide.Fields[1].Name, wide.Fields[2].Name, wide.Fields[3].Name,
+		})
+		require.Equal(t, []time.Time{t0, t1, t2}, []time.Time{
+			wide.Fields[0].At(0).(time.Time), wide.Fields[0].At(1).(time.Time), wide.Fields[0].At(2).(time.Time),
+		})
+
+		at := func(fi, r int) *float64 { return wide.Fields[fi].At(r).(*float64) }
+		require.Equal(t, 10.0, *at(1, 0))
+		require.Equal(t, 11.0, *at(1, 1))
+		require.Nil(t, at(1, 2), "series a has no bucket at t2")
+		require.Nil(t, at(2, 0))
+		require.Equal(t, 20.0, *at(2, 1))
+		require.Equal(t, 21.0, *at(2, 2))
+		require.Equal(t, 30.0, *at(3, 0))
+		require.Nil(t, at(3, 1))
+		require.Equal(t, 31.0, *at(3, 2))
+	})
+
+	t.Run("time-only and empty frames contribute no value fields", func(t *testing.T) {
+		wide := mergeFramesToWide(map[string]*data.Frame{
+			"a":     seriesFrame("a", []time.Time{t0}, []float64{1}),
+			"bare":  data.NewFrame("", data.NewField("t", nil, []time.Time{t1})),
+			"empty": data.NewFrame(""),
+		})
+
+		require.Len(t, wide.Fields, 2)
+		// The time-only frame still contributes its timestamp to the index.
+		require.Equal(t, 2, wide.Rows())
+	})
+
+	t.Run("rows keyed by a non-time first field are skipped", func(t *testing.T) {
+		wide := mergeFramesToWide(map[string]*data.Frame{
+			"a": seriesFrame("a", []time.Time{t0}, []float64{1}),
+			"bad": data.NewFrame("",
+				data.NewField("s", nil, []string{"x"}),
+				data.NewField("v", nil, []float64{99}),
+			),
+		})
+
+		require.Equal(t, 1, wide.Rows())
+		for _, f := range wide.Fields[1:] {
+			if f.Name == "v" {
+				require.Nil(t, f.At(0).(*float64), "value keyed by a non-time row must stay null")
+			}
+		}
+	})
+}
+
+func TestDeltaModeRequiresTimeMacro(t *testing.T) {
+	ds := &ClickHouseDatasource{}
+	sink := &capturingSender{}
+	sq := &streamQuery{RefId: "A", Query: "SELECT 1"}
+	ticker := time.NewTicker(time.Hour)
+	defer ticker.Stop()
+
+	// nil, not an error: an error makes Grafana re-establish the stream forever.
+	require.NoError(t, ds.runDeltaLoop(context.Background(), &backend.RunStreamRequest{Path: "ds/uid/A"},
+		backend.NewStreamSender(sink), sq, time.Hour, ticker, 1))
+
+	frames := sink.captured()
+	require.Len(t, frames, 1)
+	require.Empty(t, frames[0].Fields)
+	require.Contains(t, frames[0].Meta.Notices[0].Text, "time-scoping macro")
+}
+
+func streamQueryFixture() *streamQuery {
+	return &streamQuery{
+		RefId:        "A",
+		Query:        "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t",
+		Table:        "test",
+		DateTimeCol:  "event_time",
+		DateTimeType: "DATETIME",
+		Interval:     "1s",
+		Format:       "time_series",
+	}
+}
+
+func TestSendFramesWithDedup(t *testing.T) {
+	from := time.Now().Add(-time.Minute)
+	to := time.Now()
+
+	t.Run("query error publishes an error frame", func(t *testing.T) {
+		ds := &ClickHouseDatasource{im: &fakeInstanceManager{settings: &DatasourceSettings{
+			Instance:   backend.DataSourceInstanceSettings{URL: "://bad"},
+			HTTPClient: http.DefaultClient,
+		}}}
+		sink := &capturingSender{}
+		var fp [16]byte
+
+		ds.sendFramesWithDedup(context.Background(), backend.PluginContext{},
+			backend.NewStreamSender(sink), streamQueryFixture(), from, to, &fp, 1)
+
+		frames := sink.captured()
+		require.Len(t, frames, 1)
+		require.Empty(t, frames[0].Fields)
+		require.Equal(t, data.NoticeSeverityError, frames[0].Meta.Notices[0].Severity)
+	})
+
+	t.Run("no rows sends a heartbeat", func(t *testing.T) {
+		ds, _ := newStubDatasource(t)
+		sink := &capturingSender{}
+		var fp [16]byte
+
+		ds.sendFramesWithDedup(context.Background(), backend.PluginContext{},
+			backend.NewStreamSender(sink), streamQueryFixture(), from, to, &fp, 1)
+
+		frames := sink.captured()
+		require.Len(t, frames, 1)
+		require.Equal(t, "heartbeat", frames[0].Name)
+		require.Equal(t, 0, frames[0].Rows())
+	})
+
+	t.Run("data is sent once and deduped by fingerprint", func(t *testing.T) {
+		ds, stub := newStubDatasource(t)
+		row := fmt.Sprintf(`{"t":"%s","v":1}`, to.UTC().Add(-30*time.Second).Format("2006-01-02 15:04:05"))
+		stub.rowsFor = func(int) string { return row }
+		sink := &capturingSender{}
+		var fp [16]byte
+
+		ds.sendFramesWithDedup(context.Background(), backend.PluginContext{},
+			backend.NewStreamSender(sink), streamQueryFixture(), from, to, &fp, 1)
+		ds.sendFramesWithDedup(context.Background(), backend.PluginContext{},
+			backend.NewStreamSender(sink), streamQueryFixture(), from, to, &fp, 2)
+
+		frames := sink.captured()
+		require.Len(t, frames, 1, "unchanged result must be deduped, not resent")
+		require.Equal(t, 1, frames[0].Rows())
+		require.Equal(t, "A", frames[0].RefID)
+		require.Contains(t, frames[0].Meta.Notices[0].Text, "full mode")
+	})
+}
+
+func TestDeltaInitialQueryErrorSendsErrorFrame(t *testing.T) {
+	ds := &ClickHouseDatasource{im: &fakeInstanceManager{settings: &DatasourceSettings{
+		Instance:   backend.DataSourceInstanceSettings{URL: "://bad"},
+		HTTPClient: http.DefaultClient,
+	}}}
+	sink := &capturingSender{}
+	ticker := time.NewTicker(time.Hour)
+	defer ticker.Stop()
+	ctx, cancel := context.WithCancel(context.Background())
+	cancel() // stop right after the initial tick
+
+	require.NoError(t, ds.runDeltaLoop(ctx, &backend.RunStreamRequest{Path: "ds/uid/A"},
+		backend.NewStreamSender(sink), streamQueryFixture(), time.Hour, ticker, 1))
+
+	frames := sink.captured()
+	require.Len(t, frames, 1)
+	require.Empty(t, frames[0].Fields)
+	require.Equal(t, data.NoticeSeverityError, frames[0].Meta.Notices[0].Severity)
+}
+
+// A lookback wider than the window must clamp the delta query to the window start,
+// keeping every query at most windowSpan wide.
+func TestDeltaLookbackClampsToWindowStart(t *testing.T) {
+	ds, stub := newStubDatasource(t)
+	sq := streamQueryFixture()
+	sq.StreamingLookback = 5000 // clamped to maxStreamingLookbackPoints, still >> window
+
+	ticker := time.NewTicker(200 * time.Millisecond)
+	defer ticker.Stop()
+	ctx, cancel := context.WithTimeout(context.Background(), 2500*time.Millisecond)
+	defer cancel()
+
+	require.NoError(t, ds.runDeltaLoop(ctx, &backend.RunStreamRequest{Path: "ds/uid/A"},
+		backend.NewStreamSender(&nopPacketSender{}), sq, 2*time.Second, ticker, 1))
+
+	queries := stub.recorded()
+	require.GreaterOrEqual(t, len(queries), 2, "expected the initial tick plus delta ticks")
+	for i, sql := range queries {
+		from, to := queryRange(t, sql)
+		require.Equal(t, int64(2), to-from, "tick %d: lookback must clamp to the window", i+1)
+	}
+}
+
+// Full mode dispatch through RunStream, including timeRange parsing from the payload.
+func TestRunStreamFullModeRunsFirstTick(t *testing.T) {
+	ds, stub := newStubDatasource(t)
+	payload, err := json.Marshal(map[string]any{
+		"refId":               "A",
+		"query":               "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t",
+		"table":               "test",
+		"dateTimeColDataType": "event_time",
+		"dateTimeType":        "DATETIME",
+		"interval":            "1s",
+		"streamingMode":       "full",
+		"streamingInterval":   60000,
+		"timeRange": map[string]string{
+			"from": time.Now().Add(-time.Hour).UTC().Format(time.RFC3339),
+			"to":   time.Now().UTC().Format(time.RFC3339),
+		},
+	})
+	require.NoError(t, err)
+
+	ctx, cancel := context.WithTimeout(context.Background(), 500*time.Millisecond)
+	defer cancel()
+
+	require.NoError(t, ds.RunStream(ctx, &backend.RunStreamRequest{Path: "ds/uid/A", Data: payload},
+		backend.NewStreamSender(&nopPacketSender{})))
+	require.Len(t, stub.recorded(), 1, "the first tick runs immediately, the next one is a minute away")
+}

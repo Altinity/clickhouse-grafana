@@ -42,6 +42,7 @@
     "crypto-browserify": "^3.12.1",
     "css-loader": "^7.1.4",
     "eslint-webpack-plugin": "^5.0.3",
+    "fake-indexeddb": "^6.2.5",
     "fork-ts-checker-webpack-plugin": "^9.1.0",
     "glob": "^13.0.6",
     "identity-obj-proxy": "^3.0.0",

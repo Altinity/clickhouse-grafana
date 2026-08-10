@@ -13,7 +13,7 @@ export interface RequestOptions {
   data?: string;
   withCredentials?: boolean;
   headers?: Record<string, string>;
-  responseType?: string;
+  responseType?: 'text' | 'json' | 'arraybuffer' | 'blob';
 }
 
 export interface RequestOptionsInput {

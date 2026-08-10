@@ -15,6 +15,10 @@ inputs:
   grafana-version:
     description: Grafana docker image tag to test against
     required: true
+  clickhouse-version:
+    description: ClickHouse docker image tag to test against
+    required: false
+    default: "latest"
   grafana-label:
     description: Matrix label used in artifact names (fixed or latest)
     required: true
@@ -54,6 +58,7 @@ runs:
       shell: bash
       env:
         GRAFANA_VERSION: ${{ inputs.grafana-version }}
+        CLICKHOUSE_VERSION: ${{ inputs.clickhouse-version }}
       run: |
         cd ./tests/testflows/
         SCENARIO_ARG=()

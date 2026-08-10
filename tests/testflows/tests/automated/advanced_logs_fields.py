@@ -31,12 +31,14 @@ def save_button_disabled(driver):
 
 
 def set_field_mode(driver, field, mode_label):
-    # RadioButtonGroup renders <input id>+<label for=id>; clicking the label toggles the mode
-    driver.find_element(
+    # RadioButtonGroup overlays the radio <input> on its <label>, which makes a
+    # label click "intercepted" by the input — click the input itself via JS
+    radio = driver.find_element(
         SelectBy.XPATH,
         f"{MODAL_XPATH}//div[@data-testid='field-card-{field}']"
-        f"//label[normalize-space()='{mode_label}']",
-    ).click()
+        f"//input[@type='radio'][@title='{mode_label}']",
+    )
+    driver.execute_script("arguments[0].click();", radio)
 
 
 def open_advanced_logs_modal(driver):
@@ -73,7 +75,8 @@ def expand_log_row(driver, marker="advanced log line"):
                 SelectBy.XPATH, f"//*[contains(text(),'{marker}')]"
             )
             assert len(rows) > 0, error()
-            rows[0].click()
+            # JS click: log rows have overlay elements that intercept native clicks
+            driver.execute_script("arguments[0].click();", rows[0])
 
 
 @TestScenario

@@ -11,7 +11,7 @@ import (
 const pluginID = "vertamedia-clickhouse-datasource"
 
 func main() {
-	backend.Logger.Info("Starting ClickHouse datasource backend...")
+	backend.Logger.Debug("Starting ClickHouse datasource backend...")
 
 	// Setup plugin environment and tracing (required by Manage API)
 	backend.SetupPluginEnvironment(pluginID)

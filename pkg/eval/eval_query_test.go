@@ -1861,6 +1861,31 @@ func TestScannerAST(t *testing.T) {
 				}},
 			}},
 		),
+		/* fix https://github.com/Altinity/clickhouse-grafana/issues/610 */
+		newASTTestCase(
+			"AST case 30 (`#` and `#!` ClickHouse hash comments)",
+			"#test one line comment1\n"+
+				"#! test shebang comment\n"+
+				"SELECT *\n"+
+				"FROM $table\n"+
+				"WHERE title='# test not comment1' # test inline comment1\n"+
+				"AND user_info='test # not comment2' #! test inline comment2",
+			&EvalAST{Obj: map[string]interface{}{
+				"root": &EvalAST{Arr: []interface{}{
+					"#test one line comment1\n#! test shebang comment\n",
+				}},
+				"select": &EvalAST{Arr: []interface{}{
+					"*",
+				}},
+				"from": &EvalAST{Arr: []interface{}{
+					"$table",
+				}},
+				"where": &EvalAST{Arr: []interface{}{
+					"title = '# test not comment1'# test inline comment1\n",
+					"AND user_info = 'test # not comment2'#! test inline comment2\n",
+				}},
+			}},
+		),
 	}
 
 	r := require.New(t)
@@ -1888,6 +1913,19 @@ func TestScannerAST(t *testing.T) {
 			"FROM $table\n"+
 			"WHERE title='-- test not comment1' \n"+
 			"AND user_info='test -- not comment2' ",
+	)
+	// advanced check TestCase AST 30 (`#` / `#!` hash comments, https://github.com/Altinity/clickhouse-grafana/issues/610)
+	tc = testCases[len(testCases)-1]
+	expected, err = tc.scanner.RemoveComments(tc.query)
+	r.NoError(err)
+	r.Equal(
+		expected,
+		"\n"+
+			"\n"+
+			"SELECT *\n"+
+			"FROM $table\n"+
+			"WHERE title='# test not comment1' \n"+
+			"AND user_info='test # not comment2' ",
 	)
 }
 
@@ -2541,4 +2579,293 @@ func TestEvalQueryTimeStamp64AndFloatColumnsSupport(t *testing.T) {
 			r.Equal(expQuery, actualQuery, description)
 		})
 	}
+}
+
+// TestApplyMacrosAndTimeRangeToQuery runs the full pipeline for each macro to cover applyMacros dispatch
+func TestApplyMacrosAndTimeRangeToQuery(t *testing.T) {
+	from := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2022, 1, 2, 0, 0, 0, 0, time.UTC)
+	testCases := []struct {
+		query    string
+		expected string
+	}{
+		{
+			"SELECT $timeSeries AS t, count() FROM $table WHERE $timeFilter GROUP BY t",
+			"SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, count() FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600) GROUP BY t",
+		},
+		{
+			"$columns(a, sum(x) AS c) FROM $table",
+			"SELECT t, groupArray((a, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, a, sum(x) AS c FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600) GROUP BY t, a ORDER BY t, a) GROUP BY t ORDER BY t",
+		},
+		{
+			"$columnsMs(a, sum(x) AS c) FROM $table",
+			"SELECT t, groupArray((a, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(dt) * 1000, 864000) * 864000) AS t, a, sum(x) AS c FROM db.tbl WHERE dt >= toDateTime(1640995200000/1000) AND dt <= toDateTime(1641081600000/1000) GROUP BY t, a ORDER BY t, a) GROUP BY t ORDER BY t",
+		},
+		{
+			"$lttb(auto, x, y) FROM $table",
+			"SELECT `lttb_result.1` AS x, `lttb_result.2` AS y FROM (\n  SELECT untuple(arrayJoin(lttb(toUInt64( (1641081600 - 1640995200) / 864 ))(x, y))) AS lttb_result FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600)\n) ORDER BY x",
+		},
+		{
+			"$lttbMs(auto, x, y) FROM $table",
+			"SELECT `lttb_result.1` AS x, `lttb_result.2` AS y FROM (\n  SELECT untuple(arrayJoin(lttb(toUInt64( (1641081600000 - 1640995200000) / 864000 ))(x, y))) AS lttb_result FROM db.tbl WHERE dt >= toDateTime(1640995200000/1000) AND dt <= toDateTime(1641081600000/1000)\n) ORDER BY x",
+		},
+		{
+			"$rate(cnt AS c) FROM $table",
+			"SELECT t, c/runningDifference(t/1000) cRate FROM ( SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, cnt AS c FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600)\n GROUP BY t\n ORDER BY t)",
+		},
+		{
+			"$perSecond(a) FROM $table",
+			"SELECT t, if(runningDifference(max_0) < 0, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, max(a) AS max_0 FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600) GROUP BY t ORDER BY t)",
+		},
+		{
+			"$perSecondColumns(a, b) FROM $table",
+			"SELECT t, groupArray((perSecondColumns, max_0_PerSecond)) AS groupArr FROM ( SELECT t, perSecondColumns, if(runningDifference(max_0) < 0 OR neighbor(perSecondColumns,-1,perSecondColumns) != perSecondColumns, nan, runningDifference(max_0) / runningDifference(t/1000)) AS max_0_PerSecond FROM ( SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, a AS perSecondColumns, max(b) AS max_0 FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600) GROUP BY t, perSecondColumns ORDER BY perSecondColumns, t)) GROUP BY t ORDER BY t",
+		},
+		{
+			"$perSecondColumnsAggregated(dc, concat(dc,i) AS dci, sum, tx AS t2) FROM $table",
+			"SELECT t, dc, sum(t2PerSecond) AS t2PerSecondAgg FROM (  SELECT t, dc, dci, if(runningDifference(t2) < 0 OR neighbor(dci,-1,dci) != dci, nan, runningDifference(t2) / runningDifference(t / 1000)) AS t2PerSecond  FROM (   SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, dc, concat(dc, i) AS dci, max(tx) AS t2   FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600)   GROUP BY dc, dci, t    ORDER BY dc, dci, t  ) ) GROUP BY dc, t ORDER BY dc, t",
+		},
+		{
+			"$rateColumns(a, sum(b) AS c) FROM $table",
+			"SELECT t, arrayMap(a -> (a.1, a.2/runningDifference( t/1000 )), groupArr) FROM (SELECT t, groupArray((a, c)) AS groupArr FROM ( SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, a, sum(b) AS c FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600) GROUP BY t, a ORDER BY t, a) GROUP BY t ORDER BY t)",
+		},
+		{
+			"$rateColumnsAggregated(dc, concat(dc,i) AS dci, sum, tx AS t2) FROM $table",
+			"SELECT t, dc, sum(t2Rate) AS t2RateAgg FROM (  SELECT t, dc, dci, t2 / runningDifference(t / 1000) AS t2Rate  FROM (   SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, dc, concat(dc, i) AS dci, max(tx) AS t2   FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600)   GROUP BY dc, dci, t    ORDER BY dc, dci, t  ) ) GROUP BY dc, t ORDER BY dc, t",
+		},
+		{
+			"$deltaColumnsAggregated(dc, concat(dc,i) AS dci, sum, tx AS t2) FROM $table",
+			"SELECT t, dc, sum(t2Delta) AS t2DeltaAgg FROM (  SELECT t, dc, dci, if(neighbor(dci,-1,dci) != dci, 0, runningDifference(t2) / 1) AS t2Delta  FROM (   SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, dc, concat(dc, i) AS dci, max(tx) AS t2   FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600)   GROUP BY dc, dci, t    ORDER BY dc, dci, t  ) ) GROUP BY dc, t ORDER BY dc, t",
+		},
+		{
+			"$increaseColumnsAggregated(dc, concat(dc,i) AS dci, sum, tx AS t2) FROM $table",
+			"SELECT t, dc, sum(t2Increase) AS t2IncreaseAgg FROM (  SELECT t, dc, dci, if(runningDifference(t2) < 0 OR neighbor(dci,-1,dci) != dci, nan, runningDifference(t2) / 1) AS t2Increase  FROM (   SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, dc, concat(dc, i) AS dci, max(tx) AS t2   FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600)   GROUP BY dc, dci, t    ORDER BY dc, dci, t  ) ) GROUP BY dc, t ORDER BY dc, t",
+		},
+		{
+			"$delta(a) FROM $table",
+			"SELECT t, runningDifference(max_0) AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, max(a) AS max_0 FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600) GROUP BY t ORDER BY t)",
+		},
+		{
+			"$deltaColumns(a, b) FROM $table",
+			"SELECT t, groupArray((deltaColumns, max_0_Delta)) AS groupArr FROM ( SELECT t, deltaColumns, if(neighbor(deltaColumns,-1,deltaColumns) != deltaColumns, 0, runningDifference(max_0)) AS max_0_Delta FROM ( SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, a AS deltaColumns, max(b) AS max_0 FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600) GROUP BY t, deltaColumns ORDER BY deltaColumns, t)) GROUP BY t ORDER BY t",
+		},
+		{
+			"$increase(a) FROM $table",
+			"SELECT t, if(runningDifference(max_0) < 0, 0, runningDifference(max_0)) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, max(a) AS max_0 FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600) GROUP BY t ORDER BY t)",
+		},
+		{
+			"$increaseColumns(a, b) FROM $table",
+			"SELECT t, groupArray((increaseColumns, max_0_Increase)) AS groupArr FROM ( SELECT t, increaseColumns, if(runningDifference(max_0) < 0 OR neighbor(increaseColumns,-1,increaseColumns) != increaseColumns, 0, runningDifference(max_0)) AS max_0_Increase FROM ( SELECT (intDiv(toUInt32(dt), 864) * 864) * 1000 AS t, a AS increaseColumns, max(b) AS max_0 FROM db.tbl WHERE dt >= toDateTime(1640995200) AND dt <= toDateTime(1641081600) GROUP BY t, increaseColumns ORDER BY increaseColumns, t)) GROUP BY t ORDER BY t",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.query, func(t *testing.T) {
+			q := EvalQuery{
+				Query:         tc.query,
+				Database:      "db",
+				Table:         "tbl",
+				DateTimeCol:   "dt",
+				DateTimeType:  "DATETIME",
+				From:          from,
+				To:            to,
+				MaxDataPoints: 100,
+			}
+			actual, err := q.ApplyMacrosAndTimeRangeToQuery()
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, actual)
+		})
+	}
+}
+
+func TestApplyMacrosAndTimeRangeToQueryErrors(t *testing.T) {
+	from := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2022, 1, 2, 0, 0, 0, 0, time.UTC)
+	testCases := []struct {
+		name        string
+		q           EvalQuery
+		expectedErr string
+	}{
+		{"invalid interval", EvalQuery{Query: "SELECT 1", Interval: "xyz", From: from, To: to}, "expected number at position 0 in interval 'xyz'"},
+		{"invalid round", EvalQuery{Query: "SELECT 1", Round: "1z", From: from, To: to}, `unknown unit "z"`},
+		{"AST parse error", EvalQuery{Query: "SELECT x FROM tbl WHERE a IN", From: from, To: to}, "parse AST error"},
+		{"macro args error", EvalQuery{Query: "$columns(a) FROM tbl", From: from, To: to}, "applyMacros error: amount of arguments must equal 2 for $columns func"},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			_, err := tc.q.ApplyMacrosAndTimeRangeToQuery()
+			require.ErrorContains(t, err, tc.expectedErr)
+		})
+	}
+}
+
+// covers Round == "$step" and IntervalFactor > 1
+func TestApplyMacrosAndTimeRangeToQueryRoundStepAndIntervalFactor(t *testing.T) {
+	q := EvalQuery{
+		Query:          "SELECT $from, $to, $interval, $__interval_ms",
+		Database:       "db",
+		Table:          "tbl",
+		DateTimeCol:    "dt",
+		DateTimeType:   "DATETIME",
+		Interval:       "30s",
+		IntervalFactor: 2,
+		Round:          "$step",
+		From:           time.Date(2022, 1, 1, 0, 0, 13, 0, time.UTC),
+		To:             time.Date(2022, 1, 2, 0, 0, 17, 0, time.UTC),
+	}
+	actual, err := q.ApplyMacrosAndTimeRangeToQuery()
+	require.NoError(t, err)
+	require.Equal(t, "SELECT 1640995200, 1641081600, 60, 60000", actual)
+}
+
+func TestAddMetadata(t *testing.T) {
+	s := NewScanner("")
+	require.Equal(t,
+		"/* grafana dashboard=$__dashboard, user=$__user */\nSELECT 1",
+		s.AddMetadata("SELECT 1", &EvalQuery{FrontendDatasource: true}))
+	require.Equal(t,
+		"/* grafana dashboard=$__dashboard, user=bob */\nSELECT 1",
+		s.AddMetadata("SELECT 1", &EvalQuery{FrontendDatasource: true, MetadataUserLogin: "bob"}))
+	require.Equal(t,
+		"/* grafana alerts rule=r1 query=A */ SELECT 1",
+		s.AddMetadata("SELECT 1", &EvalQuery{RuleUid: "r1", RefId: "A"}))
+}
+
+func TestScannerFormat(t *testing.T) {
+	testCases := []struct {
+		name     string
+		query    string
+		expected string
+	}{
+		{
+			"select with aliases group by having order by limit format",
+			"SELECT a, b AS bb FROM db.tbl AS x WHERE x > 1 GROUP BY a HAVING cnt > 0 ORDER BY a LIMIT 10,20 FORMAT JSON",
+			"SELECT\n    a,\n    b AS bb\nFROM db.tbl AS x\n\nWHERE x > 1\n\nGROUP BY a\n\nHAVING cnt > 0\n\nORDER BY a\n\nLIMIT\n    10,\n    20\nFORMAT JSON\n",
+		},
+		{
+			"with and prewhere",
+			"WITH 1 AS one SELECT one FROM tbl PREWHERE a = 1 WHERE b = 2",
+			"WITH 1 AS one\nSELECT one\n\nFROM tbl\n\nPREWHERE a = 1\n\nWHERE b = 2\n",
+		},
+		{
+			"union all",
+			"SELECT 1 UNION ALL SELECT 2",
+			"SELECT 1\n\n\nUNION ALL\n\nSELECT 2\n",
+		},
+		{
+			"$rate",
+			"$rate(cnt c) FROM tbl",
+			"$rate( cnt c\n)SELECT\nFROM tbl\n",
+		},
+		{
+			"$perSecond",
+			"$perSecond(a) FROM tbl",
+			"$perSecond( a\n)SELECT\nFROM tbl\n",
+		},
+		{
+			"$perSecondColumns",
+			"$perSecondColumns(a, b) FROM tbl",
+			"$perSecondColumns(\n    a,\n    b)SELECT\nFROM tbl\n",
+		},
+		{
+			"$columns",
+			"$columns(a, sum(b) c) FROM tbl",
+			"$columns(\n    a,\n    sum(b) c)SELECT\nFROM tbl\n",
+		},
+		{
+			"$columnsMs",
+			"$columnsMs(a, sum(b) c) FROM tbl",
+			"$columnsMs(\n    a,\n    sum(b) c)SELECT\nFROM tbl\n",
+		},
+		{
+			"$rateColumns",
+			"$rateColumns(a, sum(b) c) FROM tbl",
+			"$rateColumns(\n    a,\n    sum(b) c)SELECT\nFROM tbl\n",
+		},
+		{
+			"$rateColumnsAggregated",
+			"$rateColumnsAggregated(dc, concat(dc,i) AS dci, sum, tx AS t2, sum, max(rx) AS r2) FROM tbl",
+			"$rateColumnsAggregated(\n    dc,\n    concat(dc, i) AS dci,\n    sum,\n    tx AS t2,\n    sum,\n    max(rx) AS r2)SELECT\nFROM tbl\n",
+		},
+		{
+			"$lttb",
+			"$lttb(auto, x, y) FROM tbl",
+			"$lttb(\n    auto,\n    x,\n    y)SELECT\nFROM tbl\n",
+		},
+		{
+			"join using",
+			"SELECT * FROM a ANY LEFT JOIN b USING (x)",
+			"SELECT *\n\nFROM a\n\nANY LEFT JOIN\n(\n b\n\n)  USING  x\n",
+		},
+		{
+			"join on",
+			"SELECT * FROM a LEFT JOIN b ON a.x = b.x",
+			"SELECT *\n\nFROM a\n\nLEFT JOIN\n(\n b\n\n)  ON  a.x=b.x\n",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			s := NewScanner(tc.query)
+			actual, err := s.Format()
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, actual)
+		})
+	}
+
+	s := NewScanner("SELECT x FROM tbl WHERE a IN")
+	_, err := s.Format()
+	require.ErrorContains(t, err, "wrong `IN` signature")
+}
+
+func TestBetweenSquareBraces(t *testing.T) {
+	require.Equal(t, "a,b", betweenSquareBraces("a,b] rest"))
+	require.Equal(t, "[x,y],z", betweenSquareBraces("[x,y],z] rest"))
+	require.Equal(t, "", betweenSquareBraces("no close"))
+	require.Equal(t, "", betweenSquareBraces("]"))
+}
+
+func TestNewEvalQuery(t *testing.T) {
+	type evalQueryRequest struct {
+		RefId                  string
+		RuleUid                string
+		RawQuery               bool
+		Query                  string
+		DateTimeColDataType    string
+		DateColDataType        string
+		DateTimeType           string
+		Extrapolate            bool
+		SkipComments           bool
+		AddMetadata            bool
+		Format                 string
+		Round                  string
+		IntervalFactor         int
+		Interval               string
+		Database               string
+		Table                  string
+		MaxDataPoints          int64
+		FrontendDatasource     bool
+		UseWindowFuncForMacros bool
+		MetadataUserLogin      string
+	}
+	req := evalQueryRequest{
+		RefId: "A", RuleUid: "r1", RawQuery: true, Query: "SELECT 1",
+		DateTimeColDataType: "dt", DateColDataType: "d", DateTimeType: "DATETIME64",
+		Extrapolate: true, SkipComments: true, AddMetadata: true,
+		Format: "time_series", Round: "1m", IntervalFactor: 2, Interval: "30s",
+		Database: "db", Table: "tbl", MaxDataPoints: 42,
+		FrontendDatasource: true, UseWindowFuncForMacros: true, MetadataUserLogin: "bob",
+	}
+	from := time.Date(2022, 1, 1, 0, 0, 0, 0, time.UTC)
+	to := time.Date(2022, 1, 2, 0, 0, 0, 0, time.UTC)
+	expected := EvalQuery{
+		RefId: "A", RuleUid: "r1", RawQuery: true, Query: "SELECT 1",
+		DateTimeCol: "dt", DateCol: "d", DateTimeType: "DATETIME64",
+		Extrapolate: true, SkipComments: true, AddMetadata: true,
+		Format: "time_series", Round: "1m", IntervalFactor: 2, Interval: "30s",
+		Database: "db", Table: "tbl", MaxDataPoints: 42,
+		FrontendDatasource: true, UseWindowFuncForMacros: true, MetadataUserLogin: "bob",
+		From: from, To: to,
+	}
+	require.Equal(t, expected, NewEvalQuery(req, from, to))
+	// pointer requests are dereferenced
+	require.Equal(t, expected, NewEvalQuery(&req, from, to))
 }

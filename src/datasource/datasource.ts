@@ -26,6 +26,7 @@ import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, merge, Observable } from 'rxjs';
 import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation } from './helpers';
 import { ClickHouseResourceClient } from './resource_handler';
+import { parseJsonResponseLossless, tryParseJson } from './losslessJson';
 import { generateQueryForTimestampBackward, generateQueryForTimestampForward } from './log-context-query';
 import { IndexedDBManager } from '../utils/indexedDBManager';
 
@@ -128,12 +129,8 @@ export class CHDataSource
     if (!cleanupPerformed) {
       try {
         // Cleanup all expired entries
-        const stats = await IndexedDBManager.cleanupAllExpired();
-        
-        if (stats.removedKeys > 0) {
-          console.log(`Altinity Plugin: Cleaned up ${stats.removedKeys} expired IndexedDB entries`);
-        }
-        
+        await IndexedDBManager.cleanupAllExpired();
+
         // Mark cleanup as performed for this session
         sessionStorage.setItem(cleanupKey, 'true');
       } catch (error) {
@@ -146,6 +143,11 @@ export class CHDataSource
     let requestOptions: any = {
       url: options.url,
       requestId: requestId,
+      // Fetch the body as raw text: Grafana's own JSON.parse would round
+      // 64-bit integers above 2^53-1 before the plugin ever sees them.
+      // Parsing is done losslessly in _request/annotationQuery instead.
+      // https://github.com/Altinity/clickhouse-grafana/issues/832
+      responseType: 'text',
     };
     let params: string[] = [];
 
@@ -156,8 +158,6 @@ export class CHDataSource
       requestOptions.method = 'GET';
       params.push('query=' + encodeURIComponent(query));
     }
-    // https://github.com/Altinity/clickhouse-grafana/issues/832, https://github.com/ClickHouse/ClickHouse/issues/86553
-    // params.push('output_format_json_quote_64bit_integers=1');
     if (options.defaultDatabase) {
       params.push('database=' + options.defaultDatabase);
     }
@@ -213,15 +213,27 @@ export class CHDataSource
       this.backendSrv.fetch(queryParams).subscribe(
         (response) => {
           if (response && response?.data) {
-            resolve(response.data);
+            try {
+              resolve(parseJsonResponseLossless(response.data));
+            } catch (parseError) {
+              reject({
+                originalError: parseError,
+                query: query,
+                requestId: requestId,
+              });
+            }
           } else {
             resolve(null);
           }
         },
         (error) => {
-          // Enhance error with more context information
+          // Enhance error with more context information.
+          // With responseType 'text' the error body arrives as a raw string;
+          // restore the parsed object shape that downstream classification
+          // (e.g. isPermissionError reading error.data.exception) relies on.
           const enhancedError = {
             ...error,
+            data: tryParseJson(error?.data),
             originalError: error,
             query: query,
             requestId: requestId
@@ -576,16 +588,12 @@ export class CHDataSource
           },
         };
 
-        console.log(
-          `[streaming] SUBSCRIBE | refId=${target.refId} | channel=ds/${this.uid}/stream/${target.refId}/${streamData.streamingInterval}/...`,
-          '\n  query:', target.query?.substring(0, 100),
-          '\n  interval:', interval,
-          '\n  streamingInterval:', target.streamingInterval || 5000, 'ms',
-          '\n  timeRange:', options.range.from.toISOString(), '→', options.range.to.toISOString(),
-          '\n  maxDataPoints:', options.maxDataPoints,
-        );
-
-        const channelPath = `stream/${target.refId}/${this.simpleHash(`${streamData.streamingMode}-${streamData.streamingInterval}-${streamData.streamingLookback}-${streamData.timeRange.from}-${target.query}`)}`;
+        // Grafana keys streams by channel path alone, so the key must cover the whole
+        // payload — a partial key makes two different queries share one stream.
+        // maxDataPoints is excluded: it follows the panel width and would resubscribe on resize.
+        const channelPath = `stream/${target.refId}/${this.simpleHash(
+          JSON.stringify(streamData, (key, value) => (key === 'maxDataPoints' ? undefined : value))
+        )}`;
         const liveStream = getGrafanaLiveSrv().getDataStream({
           addr: {
             scope: LiveChannelScope.DataSource,
@@ -600,75 +608,25 @@ export class CHDataSource
           },
         });
 
-        console.log(`[streaming] CREATING Observable wrapper for refId=${target.refId}`);
-
         // Wrap in a new Observable to add logging (avoids rxjs version mismatch with .pipe())
         return new Observable((subscriber) => {
-          console.log(`[streaming] Observable SUBSCRIBED by Grafana | refId=${target.refId}`);
 
           let eventCount = 0;
           const sub = liveStream.subscribe({
             next: (response: any) => {
               eventCount++;
-              const frames = response.data || [];
-              const state = response.state || 'unknown';
-              const key = response.key || 'no-key';
-
-              console.log(
-                `[streaming] EVENT #${eventCount} | ${new Date().toISOString()} | refId=${target.refId} | state=${state} | key=${key} | frames=${frames.length}`,
-                '\n  raw response keys:', Object.keys(response),
-                '\n  raw response.state:', response.state,
-                '\n  raw response.data length:', response.data?.length,
-              );
-
-              console.log(`[streaming] TOTAL frames in response: ${frames.length}`);
-              if (frames.length > 0) {
-                frames.forEach((f: any, i: number) => {
-                  const fields = f.fields || [];
-                  const rows = f.length || 0;
-                  const fieldNames = fields.map((field: any) => field.name);
-                  const fieldInfo = fields.map((field: any) => `${field.name}(${field.type}, ${field.values?.length || 0} vals)`).join(', ');
-                  console.log(`[streaming]   frame[${i}]: ${rows} rows | fields: [${fieldNames.join(', ')}] | ${fieldInfo}`);
-
-                  // Show if this looks like a wide frame (multiple non-time fields)
-                  const nonTimeFields = fields.filter((field: any) => field.type !== 'time');
-                  if (nonTimeFields.length > 1) {
-                    console.log(`[streaming]   frame[${i}]: WIDE FORMAT — ${nonTimeFields.length} value fields: [${nonTimeFields.map((f: any) => f.name).join(', ')}]`);
-                  } else if (nonTimeFields.length === 1) {
-                    console.log(`[streaming]   frame[${i}]: NARROW FORMAT — single series: ${nonTimeFields[0]?.name}`);
-                  }
-
-                  // Show last 3 rows
-                  if (rows > 0) {
-                    const start = Math.max(0, rows - 3);
-                    for (let r = start; r < rows; r++) {
-                      const vals = fields.map((field: any) => {
-                        const v = field.values?.[r];
-                        return v instanceof Date ? v.toISOString() : v;
-                      });
-                      console.log(`[streaming]     row[${r}]: ${vals.join(' | ')}`);
-                    }
-                  }
-                });
-              }
-
               subscriber.next(response);
-              console.log(`[streaming] EVENT #${eventCount} forwarded to Grafana panel`);
             },
             error: (err: any) => {
               console.error(`[streaming] ERROR | refId=${target.refId}`, err);
               subscriber.error(err);
             },
             complete: () => {
-              console.log(`[streaming] COMPLETE | refId=${target.refId} | total events=${eventCount}`);
               subscriber.complete();
             },
           });
 
-          console.log(`[streaming] liveStream.subscribe() called | refId=${target.refId}`);
-
           return () => {
-            console.log(`[streaming] UNSUBSCRIBE | refId=${target.refId} | total events=${eventCount}`);
             sub.unsubscribe();
           };
         });
@@ -841,10 +799,15 @@ export class CHDataSource
     const dataRequest = new Promise((resolve, reject) => {
       this.backendSrv.fetch(queryParams).subscribe(
         (response) => {
-          resolve(this.responseParser.transformAnnotationResponse(params, response.data) as AnnotationEvent[]);
+          try {
+            const data = parseJsonResponseLossless(response.data);
+            resolve(this.responseParser.transformAnnotationResponse(params, data) as AnnotationEvent[]);
+          } catch (parseError) {
+            reject(parseError);
+          }
         },
         (e) => {
-          reject(e);
+          reject({ ...e, data: tryParseJson(e?.data) });
         }
       );
     });

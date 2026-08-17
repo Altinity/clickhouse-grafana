@@ -17,9 +17,9 @@ jobs:
       GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
       - name: Setup Node.js environment
-        uses: actions/setup-node@v4
+        uses: actions/setup-node@v7
         with:
           node-version: '22'
           cache: 'npm'
@@ -32,7 +32,7 @@ jobs:
         run: npm run build
 
       - name: Setup Go environment
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v7
         with:
           go-version: '1.26'
 
@@ -46,14 +46,14 @@ jobs:
 
       - name: Test backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
-        uses: magefile/mage-action@v3
+        uses: magefile/mage-action@v4
         with:
           version: latest
           args: coverage
 
       - name: Build backend
         if: steps.check-for-backend.outputs.has-backend == 'true'
-        uses: magefile/mage-action@v3
+        uses: magefile/mage-action@v4
         with:
           version: latest
           args: buildAll
@@ -102,11 +102,16 @@ jobs:
 
       - name: Validate plugin
         run: |
-          VALIDATOR_VERSION=$(curl -sL https://github.com/grafana/plugin-validator/releases/latest -H "Accept: application/json" | jq -r .tag_name)
+          VALIDATOR_TAG=$(curl -sL https://github.com/grafana/plugin-validator/releases/latest -H "Accept: application/json" | jq -r .tag_name)
+          # tag looks like `plugin-validator/v0.45.3`, but the asset name only contains the bare version `0.45.3`
+          VALIDATOR_VERSION="${VALIDATOR_TAG##*/}"
+          VALIDATOR_VERSION="${VALIDATOR_VERSION#v}"
           VALIDATOR_ARCH=$(dpkg --print-architecture)
           mkdir -p ./plugin-validator/
           pushd ./plugin-validator/
-          curl -L https://github.com/grafana/plugin-validator/releases/download/${VALIDATOR_VERSION}/plugin-validator_${VALIDATOR_VERSION//v/}_linux_${VALIDATOR_ARCH}.tar.gz | tar -xz -C .
+          VALIDATOR_URL="https://github.com/grafana/plugin-validator/releases/download/${VALIDATOR_TAG}/plugin-validator_${VALIDATOR_VERSION}_linux_${VALIDATOR_ARCH}.tar.gz"
+          echo ${VALIDATOR_URL}
+          curl -L ${VALIDATOR_URL} | tar -xz -C .
           curl -L https://github.com/grafana/plugin-validator/raw/main/config/strict.yaml -o strict.yaml
           popd
           ./plugin-validator/plugincheck2 -config ./plugin-validator/strict.yaml ${{ steps.metadata.outputs.archive }}
@@ -119,7 +124,7 @@ jobs:
           echo "path=/tmp/release_notes.md" >> $GITHUB_OUTPUT
 
       - name: Create Github release
-        uses: softprops/action-gh-release@v1
+        uses: softprops/action-gh-release@v3
         with:
           draft: true
           generate_release_notes: true

@@ -3,6 +3,9 @@ from testflows.core import *
 from selenium.webdriver import ActionChains
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By as SelectBy
+from selenium.webdriver.support.wait import WebDriverWait
+from selenium.webdriver.support import expected_conditions as EC
+from selenium.common.exceptions import TimeoutException
 from steps.delay import delay
 from steps.connections.datasources.altinity_edit.locators import locators
 
@@ -196,9 +199,65 @@ def click_use_post_method_toggle(self):
 
 @TestStep(When)
 def click_use_default_values_toggle(self):
-    """Click `Use default values toggle`."""
+    """Turn on the `Use default values` toggle and make sure the default values
+    section is actually rendered.
 
-    self.context.driver.execute_script("arguments[0].click();", locators.use_default_values_toggle)
+    This step normally runs right after `save and test`. When the save response
+    arrives the config editor re-renders from the returned `jsonData`, which
+    silently drops a toggle click that happened while the request was still in
+    flight, so the default values section never appears. Re-click the toggle
+    until the section shows up instead of assuming a single click sticks.
+    """
+    driver = self.context.driver
+
+    wait_for_save_and_test_result()
+
+    for attempt in range(5):
+        if not use_default_values_toggle_enabled():
+            driver.execute_script("arguments[0].click();", locators.use_default_values_toggle)
+
+        try:
+            WebDriverWait(driver, 3, poll_frequency=0.2).until(
+                EC.presence_of_element_located(
+                    (SelectBy.XPATH, locators.COLUMN_TIMESTAMP_TYPE_XPATH)
+                )
+            )
+            return
+        except TimeoutException:
+            note(f"default values section did not render, retrying toggle, attempt {attempt}")
+
+    fail("`use default values` toggle did not render the default values section")
+
+
+@TestStep(When)
+def wait_for_save_and_test_result(self, timeout=10):
+    """Wait until `save and test` reports a result.
+
+    Clicking anything on the config editor while the save request is still in
+    flight is unsafe: the response re-renders the form from the saved
+    `jsonData` and discards the click.
+    """
+    try:
+        WebDriverWait(self.context.driver, timeout, poll_frequency=0.2).until(
+            EC.presence_of_element_located((
+                SelectBy.CSS_SELECTOR,
+                "[data-testid='data-testid Alert success'], [data-testid='data-testid Alert error']",
+            ))
+        )
+    except TimeoutException:
+        note("save and test did not report a result in time, continuing")
+
+
+@TestStep(Then)
+def use_default_values_toggle_enabled(self):
+    """Return True if the `Use default values` toggle is currently on."""
+
+    return bool(
+        self.context.driver.execute_script(
+            "const el = document.getElementById('useDefaultConfiguration');"
+            "return el ? el.checked : false;"
+        )
+    )
 
 
 @TestStep(When)

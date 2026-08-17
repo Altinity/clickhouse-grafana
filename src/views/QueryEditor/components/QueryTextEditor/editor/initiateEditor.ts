@@ -103,6 +103,7 @@ export const initiateEditor = (
           [new RegExp(`\\b(${sortedKeywords.join('|')})(?=\\W|$)`), TokenType.KEYWORDS],
           [new RegExp(`[()]`), TokenType.PARENTHESIS],
           [new RegExp(`--.*$`), TokenType.COMMENT],
+          [new RegExp(`#!?.*$`), TokenType.COMMENT],
           [new RegExp(`\`\`\`.*\`\`\``), TokenType.COMMENT_BLOCK],
           [new RegExp(`\\$\\w+`), TokenType.VARIABLE],
           [new RegExp(`\\$\{\\w+\}`), TokenType.VARIABLE],

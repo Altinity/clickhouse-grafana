@@ -67,7 +67,7 @@ venv/
 # test temporary files
 tests/testflows/tmp/target/
 tests/testflows/assets/
-tests/testflows/tests/automated/**/Downloads/*.csv
+**/Downloads/*.csv
 
 
 # ai agents

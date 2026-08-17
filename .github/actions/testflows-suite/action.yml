@@ -15,6 +15,10 @@ inputs:
   grafana-version:
     description: Grafana docker image tag to test against
     required: true
+  clickhouse-version:
+    description: ClickHouse docker image tag to test against
+    required: false
+    default: "latest"
   grafana-label:
     description: Matrix label used in artifact names (fixed or latest)
     required: true
@@ -54,6 +58,7 @@ runs:
       shell: bash
       env:
         GRAFANA_VERSION: ${{ inputs.grafana-version }}
+        CLICKHOUSE_VERSION: ${{ inputs.clickhouse-version }}
       run: |
         cd ./tests/testflows/
         SCENARIO_ARG=()
@@ -63,6 +68,15 @@ runs:
         python3 -u ./regression.py --before=0.1 --after=0.1 \
           --suite ${{ inputs.suite-name }} "${SCENARIO_ARG[@]}" \
           --log raw.log -o short
+
+    - name: Stop cluster to flush Go coverage counters
+      if: always()
+      shell: bash
+      # The -cover instrumented plugin writes GOCOVERDIR counter files only on
+      # graceful exit. Normally regression.py brings the cluster down itself;
+      # this is the safety net for failed/aborted runs so partial coverage
+      # still reaches the artifact.
+      run: docker compose --profile test stop -t 60 || true
 
     - name: Create reports
       if: always()
@@ -77,7 +91,7 @@ runs:
         path: |
           go_coverage/raw/
           tests/testflows/coverage/raw/
-        if-no-files-found: ignore
+        if-no-files-found: warn
 
     - name: Upload testflows logs
       if: always()

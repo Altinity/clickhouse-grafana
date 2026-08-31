@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"net/http"
+	"net/http/httptest"
+	"sync/atomic"
 	"testing"
 
 	"github.com/grafana/grafana-plugin-sdk-go/backend"
@@ -147,4 +150,34 @@ func TestFetchColumnTypes_NilDataSourceInstanceSettingsSafe(t *testing.T) {
 	pluginCtx := backend.PluginContext{DataSourceInstanceSettings: nil}
 	got := ds.fetchColumnTypes(context.Background(), pluginCtx, "", "mytable")
 	assert.Nil(t, got, "should return nil for empty database without touching cache key / client logic")
+}
+
+// Empty system.columns (table not created yet) must not be cached — #909 review: attrs.* filters dropped until restart.
+func TestFetchColumnTypes_EmptyResultIsNotCached(t *testing.T) {
+	var calls atomic.Int32
+	srv := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if calls.Add(1) == 1 {
+			_, _ = w.Write([]byte(`{"meta":[{"name":"name","type":"String"},{"name":"type","type":"String"}],"data":[]}`))
+			return
+		}
+		_, _ = w.Write([]byte(`{"meta":[{"name":"name","type":"String"},{"name":"type","type":"String"}],"data":[{"name":"attrs","type":"Tuple(region String, zone String)"}]}`))
+	}))
+	defer srv.Close()
+
+	ds := &ClickHouseDatasource{im: &fakeInstanceManager{settings: &DatasourceSettings{
+		Instance:   backend.DataSourceInstanceSettings{URL: srv.URL},
+		HTTPClient: srv.Client(),
+	}}}
+	pluginCtx := backend.PluginContext{DataSourceInstanceSettings: &backend.DataSourceInstanceSettings{UID: "uid-empty-not-cached"}}
+
+	got := ds.fetchColumnTypes(context.Background(), pluginCtx, "default", "logs")
+	assert.Nil(t, got, "empty introspection result must behave like a failed introspection")
+
+	got = ds.fetchColumnTypes(context.Background(), pluginCtx, "default", "logs")
+	assert.Equal(t, map[string]string{"attrs": "Tuple(region String, zone String)"}, got,
+		"second call must re-query instead of serving a poisoned empty cache")
+
+	got = ds.fetchColumnTypes(context.Background(), pluginCtx, "default", "logs")
+	assert.Equal(t, map[string]string{"attrs": "Tuple(region String, zone String)"}, got)
+	assert.Equal(t, int32(2), calls.Load(), "third call must be served from the cache")
 }

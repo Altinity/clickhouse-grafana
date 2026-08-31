@@ -119,9 +119,11 @@ func (ds *ClickHouseDatasource) fetchColumnTypes(
 	}
 
 	cols = parseColumnTypes(resp)
-	// Store even an empty map so we don't re-query a table with no columns.
-	// Transient errors (network, permission) return nil above and are NOT cached,
-	// so a subsequent request will retry.
+	// Empty result = table missing (e.g. schema-init race): don't cache, let a later request retry.
+	if len(cols) == 0 {
+		backend.Logger.Debug(fmt.Sprintf("fetchColumnTypes: empty system.columns result for %s, not caching", cacheKey))
+		return nil
+	}
 	columnTypeCache.Store(cacheKey, cols)
 	return cols
 }

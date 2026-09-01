@@ -247,6 +247,23 @@ def wait_for_element_to_be_clickable(
 
 
 @TestStep(Given)
+def wait_for_element_to_be_invisible(self, select_type=None, element=None, timeout=30):
+    """An expectation for checking that an element is invisible or absent.
+    select_type - option that follows after SelectBy. (Examples: CSS, ID, XPATH, NAME)
+    element - locator in string format(Example: "organizationId").
+    """
+    driver = self.context.driver
+
+    # implicit wait would stall every poll for an absent element, so drop it for the check
+    driver.implicitly_wait(0)
+    try:
+        wait = WebDriverWait(driver, timeout)
+        wait.until(EC.invisibility_of_element_located((select_type, element)))
+    finally:
+        driver.implicitly_wait(getattr(driver, "implicit_wait", 1))
+
+
+@TestStep(Given)
 def wait_for_element_to_be_present(self, select_type=None, element=None):
     """An expectation for checking that an element is present on the DOM
     of a page. This does not necessarily mean that the element is visible.

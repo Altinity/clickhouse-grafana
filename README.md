@@ -1263,6 +1263,28 @@ FROM
 WHERE $timeFilter
 ORDER BY traceID, startTime
 ```
+
+## Data Links
+
+You can configure clickable data links on query result fields at the datasource level. When a result column matches a configured `Field name` (exact, case-sensitive), every cell in that column becomes a link that opens Explore with a chosen target query in another datasource (or in this one).
+
+Configured per datasource in the **Data Links** section of the datasource settings. Each link has:
+
+- **Field name** — exact column name in your `SELECT` (including aliases) that the link should attach to. On `logs` format, any column referenced here is automatically promoted to a top-level field (it would otherwise be folded into the `labels` map).
+- **Title** — what appears in the click popover.
+- **External URL** (optional) — when set, the link becomes a plain URL link and the Target datasource / Query fields below are ignored. Useful for opening Jaeger UI, custom dashboards, etc.
+- **Target datasource** (when External URL is empty) — any datasource in your Grafana instance. The plugin adapts the produced query shape automatically when the target is ClickHouse. A warning is shown if the configured uid does not resolve.
+- **Query** (when External URL is empty) — the target datasource's query body. Supports Grafana data link variables: `${__value.raw}`, `${__data.fields.<name>}`, `$__from`, `$__to`, and dashboard variables. Variables are resolved by Grafana at click time.
+- **Format** (ClickHouse target only) — `logs`, `traces`, `time_series`, `flamegraph`, or `table`.
+
+Primary supported result formats: `logs`, `traces`, and `time_series`. Table format support is planned for a follow-up release. For `time_series`, attach the link to the metric (value) field by name — Grafana's time-series visualisation surfaces the popover from the clicked value, not the time axis. Dimension columns from `GROUP BY` queries are folded into series names and are not directly addressable as `fieldName` targets (see #788). Data links also work on `flamegraph` results for ClickHouse performance-debugging workflows, though this is a niche scenario.
+
+### Logs format notes
+
+The logs format builds a DataFrame with up to five canonical fields (`timestamp`, `severity`, `body`, `labels`, `id`) plus any **extra columns referenced by a configured data link**. The promoted column is removed from the `labels` map to avoid duplication. This lets you attach a link directly to `trace_id`, `query_id`, etc. without aliasing the column to `body` in the `SELECT`.
+
+Columns that are not referenced by any data link still fold into the stringified `labels` field as before, preserving backward compatibility.
+
 ## Configure the Datasource with Provisioning
 
 It’s now possible to configure datasources using config files with Grafana’s provisioning system.

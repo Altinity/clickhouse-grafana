@@ -1,0 +1,183 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana",
+          "uid": "-- Grafana --"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "Demonstrates datasource-level data links across logs, time_series, traces and flamegraph formats. Configured on the `clickhouse` datasource via provisioning.",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "type": "text",
+      "id": 99,
+      "gridPos": { "h": 7, "w": 24, "x": 0, "y": 0 },
+      "options": {
+        "mode": "markdown",
+        "content": "**Data Links** attach clickable shortcuts to columns in query results — configured once on the datasource (*Connections → clickhouse → Data Links*, or via YAML provisioning) and applied automatically wherever the matching column appears.\n\n**Typical use cases:**\n- **Logs → traces** — click a `trace_id` / `query_id` in a log row to jump to the full trace or related queries\n- **Drill-down** — click a `severity` / `service` / `user_id` value to see all related entries\n- **Span → logs / metrics** — click a trace span field to open Loki, Prometheus, or another ClickHouse query\n- **External jumps** — open Jaeger UI, a runbook, GitHub source, or any URL with the cell value interpolated\n\nTry it on the panels below. In Explore, clicks open the target in a split pane on the right; in dashboards, in a new Explore tab."
+      },
+      "transparent": true,
+      "title": ""
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "Hover any cell on `severity`, `body`, or `timestamp` columns — a Data Links popover appears (configured per-field on the datasource).",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 7 },
+      "id": 1,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": true,
+        "showCommonLabels": true,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "targets": [
+        {
+          "adHocFilters": [],
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "logs",
+          "formattedQuery": "SELECT $timeSeries as t, count() FROM $table WHERE $timeFilter GROUP BY t ORDER BY t",
+          "intervalFactor": 1,
+          "query": "SELECT event_time AS timestamp, level AS severity, message AS content, query_id FROM system.text_log WHERE $timeFilter ORDER BY event_time DESC LIMIT 100",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": false,
+          "skip_comments": true,
+          "table": "text_log"
+        }
+      ],
+      "title": "Logs · links on severity / body / timestamp",
+      "type": "logs"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "Click any point on the line — `log_count` (the value/metric field) carries the data link. Grafana time-series viz surfaces the popover from the clicked value field, not the time axis.",
+      "fieldConfig": {
+        "defaults": {
+          "custom": { "drawStyle": "line", "lineWidth": 2, "fillOpacity": 10 },
+          "unit": "short"
+        },
+        "overrides": []
+      },
+      "gridPos": { "h": 8, "w": 24, "x": 0, "y": 17 },
+      "id": 2,
+      "options": {
+        "legend": { "displayMode": "list", "placement": "bottom", "showLegend": true },
+        "tooltip": { "mode": "single", "sort": "none" }
+      },
+      "targets": [
+        {
+          "adHocFilters": [],
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "time_series",
+          "intervalFactor": 1,
+          "query": "SELECT $timeSeries AS t, count() AS log_count FROM system.text_log WHERE $timeFilter GROUP BY t ORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": false,
+          "skip_comments": true,
+          "table": "text_log"
+        }
+      ],
+      "title": "Time series · link on value field (log_count)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "Expand a span — clickable links appear on `operationName` and `traceID` fields.",
+      "fieldConfig": { "defaults": {}, "overrides": [] },
+      "gridPos": { "h": 10, "w": 24, "x": 0, "y": 25 },
+      "id": 3,
+      "options": {
+        "spanFilters": {
+          "criticalPathOnly": false,
+          "matchesOnly": false,
+          "serviceNameOperator": "=",
+          "spanNameOperator": "="
+        }
+      },
+      "targets": [
+        {
+          "adHocFilters": [],
+          "add_metadata": true,
+          "database": "system",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "finish_date",
+          "dateTimeColDataType": "intDiv(finish_time_us,1000000)",
+          "dateTimeType": "TIMESTAMP",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "traces",
+          "intervalFactor": 1,
+          "query": "SELECT trace_id AS traceID, span_id AS spanID, operation_name AS operationName, parent_span_id AS parentSpanID, 'clickhouse' AS serviceName, intDiv(finish_time_us - start_time_us, 1000) AS duration, intDiv(start_time_us, 1000) AS startTime, attribute AS tags, map('hostName', hostname) AS serviceTags FROM system.opentelemetry_span_log WHERE $timeFilter ORDER BY finish_time_us DESC LIMIT 500",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": false,
+          "skip_comments": true,
+          "table": "opentelemetry_span_log"
+        }
+      ],
+      "title": "Traces · links on operationName / traceID",
+      "type": "traces"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 40,
+  "tags": ["data-links"],
+  "templating": { "list": [] },
+  "time": { "from": "now-1h", "to": "now" },
+  "timepicker": {},
+  "timezone": "browser",
+  "title": "Data Links Demo",
+  "uid": "data-links-demo",
+  "version": 2,
+  "weekStart": ""
+}

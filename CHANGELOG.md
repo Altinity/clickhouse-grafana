@@ -2,6 +2,17 @@
 ## Breaking changes:
 * minimal supported Grafana version bumped to 12.3.0 (`grafanaDependency: ">=12.3.0"`), frontend migrated to `@grafana/data|runtime|ui` 13.x
 
+## Features:
+* add **datasource-level data links** for cross-datasource navigation, modelled after Elasticsearch and Loki — configured in *Connections → ClickHouse → Data Links* or via YAML provisioning (`jsonData.dataLinks`), closes https://github.com/Altinity/clickhouse-grafana/issues/432, partially addresses https://github.com/Altinity/clickhouse-grafana/issues/645
+  * each link is attached by exact column name to results of `logs`, `traces`, `time_series`, or `flamegraph` queries
+  * any datasource is a valid target (ClickHouse, Loki, Prometheus, Tempo, ...) — when the target is this plugin, the produced query shape adapts automatically
+  * `External URL` mode supports plain HTTP links (Jaeger UI, runbooks, GitHub, custom dashboards) with `${__value.raw}` and other Grafana variables interpolated at click time
+  * on the `logs` format, columns referenced by a data link are auto-promoted to top-level DataFrame fields — `fieldName: trace_id` works without aliasing the column in the SELECT
+  * `traces`-format CH links auto-inject `panelsState.trace.spanId` so the Grafana TraceView scrolls to and highlights the clicked span
+  * `targetBlank` is context-aware: split-pane in Explore, new tab in Dashboards / alerting
+  * the configuration UI warns when a configured target datasource UID is missing
+  * supports multiple links per field and accumulates with any pre-existing `field.config.links` instead of overwriting
+
 ## Fixes:
 * fix streaming panels sharing a Grafana Live channel — the channel key was derived only from the raw query, so two panels with the same SQL but different query options (format, interval, time range) received each other's frames; the key is now generated from the whole stream request, fix https://github.com/Altinity/clickhouse-grafana/pull/924
 * fix streaming window pinned to its start — the dashboard time range was captured once at subscribe time and `TimeRange.To` was never read, so `Full refresh` re-queried `[session start, now]` on every tick and `Delta` trimmed its accumulator against a cutoff that never advanced, growing memory and the payload sent to the browser for as long as the dashboard stayed open; the window width is now derived from the dashboard range and both edges slide, aligned to `$interval` buckets so identical ticks still dedup by fingerprint, and trimming filters by predicate so series that left the window and rows appended out of order by backfill are dropped too, fix https://github.com/Altinity/clickhouse-grafana/pull/928

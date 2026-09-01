@@ -54,6 +54,15 @@ runs:
         restore-keys: |
           ${{ runner.os }}-pip-
 
+    - name: Pre-pull selenium node images
+      shell: bash
+      # The dynamic grid pulls these at first session request; a cold pull can eat the whole 300s webdriver budget. Tags must match tests/testflows/infra/config.toml.
+      run: |
+        for image in selenium/standalone-chromium:4.40.0 selenium/video:ffmpeg-8.1-20260808; do
+          ./tests/testflows/infra/retry.sh 30 5 "docker pull --quiet $image" &
+        done
+        wait
+
     - name: Run Altinity Grafana Plugin tests (${{ inputs.suite-group }} on Grafana ${{ inputs.grafana-label }})
       shell: bash
       env:

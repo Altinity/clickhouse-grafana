@@ -53,6 +53,11 @@ ffails = {
     ,
 }
 
+# the informational latest leg exports GRAFANA_VERSION=latest (see testflows-suite action)
+if os.getenv("GRAFANA_VERSION", "") == "latest":
+    ffails["/Grafana Datasource Plugin For Clickhouse/template variable editor/*"] = \
+        (XFail, "Grafana 13.2 moved variable editing to the dashboard sidebar (type picker + sidebar form); the create-variable flow needs a redesign, see #908")
+
 xfails = {
     # "/Grafana Datasource Plugin For Clickhouse/e2e/mixed data sources/*": [
     #     (Fail, "https://github.com/Altinity/clickhouse-grafana/issues/604")

@@ -7,8 +7,12 @@ from testflows.core import *
 from selenium import webdriver as selenium_webdriver
 from selenium.webdriver.chrome.service import Service
 from selenium.webdriver.chrome.options import Options
+from selenium.webdriver.remote.client_config import ClientConfig
 from selenium.webdriver.support.wait import WebDriverWait
 from selenium.webdriver.support import expected_conditions as EC
+
+# Caps every webdriver HTTP command so a hung browser fails in minutes, not the full 60m CI job timeout
+WEBDRIVER_COMMAND_TIMEOUT = 180
 
 
 @TestStep(Given)
@@ -111,9 +115,12 @@ def create_remote_chrome_driver(
         start_time = time.time()
 
     with And(f"try to create a remote webdriver instance {hub_url}"):
+        client_config = ClientConfig(remote_server_addr=hub_url, timeout=WEBDRIVER_COMMAND_TIMEOUT)
         while True:
             try:
-                return selenium_webdriver.Remote(command_executor=hub_url, options=remote_chrome_options)
+                return selenium_webdriver.Remote(
+                    command_executor=hub_url, options=remote_chrome_options, client_config=client_config
+                )
             except Exception:
                 if time.time() - start_time >= timeout:
                     raise

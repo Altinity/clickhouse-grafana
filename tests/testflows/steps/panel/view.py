@@ -222,6 +222,12 @@ def wait_visualization(self):
         select_type=SelectBy.CSS_SELECTOR, element=f"[data-testid='data-testid panel content']"
     )
 
+    # in-flight queries dim the panel and redraw annotations, breaking screenshot compares
+    ui.wait_for_element_to_be_invisible(
+        select_type=SelectBy.CSS_SELECTOR,
+        element="[aria-label='Panel loading bar'], [aria-label='data-testid Loading indicator']"
+    )
+
 
 @TestStep(When)
 def take_visualization_screenshot(self, screenshot_name):
@@ -268,8 +274,10 @@ def double_click_on_visualization(self):
 def wait_datasource_in_datasource_dropdown(self, datasource_name):
     """Wait panel menu button for panel."""
 
+    # Grafana 13.2 renamed the card test-id to 'data-testid data source card <name>'
     ui.wait_for_element_to_be_clickable(
-        select_type=SelectBy.XPATH, element=f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']"
+        select_type=SelectBy.XPATH,
+        element=f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}'] | //div[@data-testid='data-testid data source card {datasource_name}']"
     )
 
 

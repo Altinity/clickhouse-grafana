@@ -76,7 +76,7 @@ describe('seriesQuery', () => {
     const ds = makeDatasource();
     const requestSpy = jest.spyOn(ds, '_request').mockResolvedValue(null);
     await (ds as any).seriesQuery('SELECT 1', 'rid');
-    expect(requestSpy).toHaveBeenCalledWith('SELECT 1 FORMAT JSON', 'rid');
+    expect(requestSpy).toHaveBeenCalledWith('SELECT 1 FORMAT JSON', 'rid', undefined);
   });
 });
 
@@ -98,7 +98,9 @@ describe('executeQueries', () => {
     const processSpy = jest.spyOn(ds, 'processQueryResponse').mockReturnValue({ data: ['done'] });
     const options = { targets: [{ refId: 'A' }] };
     await expect(ds.executeQueries([{ refId: 'A' }], options)).resolves.toEqual({ data: ['done'] });
-    expect(processSpy).toHaveBeenCalledWith([{ rows: 1 }], options, [{ keys: [], requestId: 'r', stmt: 'SELECT 1' }]);
+    expect(processSpy).toHaveBeenCalledWith([{ rows: 1 }], options, [{ keys: [], requestId: 'r', stmt: 'SELECT 1' }], [
+      { refId: 'A' },
+    ]);
   });
 
   it.each([

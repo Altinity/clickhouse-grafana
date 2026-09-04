@@ -20,6 +20,9 @@ export interface Query {
   streamingMode?: 'delta' | 'full';
   streamingLookback?: number;
   query?: string;
+  database?: string;
+  table?: string;
+  logsFieldConfig?: Record<string, import('../../../../types/types').LogsFieldConfigEntry>;
 }
 
 export interface AdhocFilter {

@@ -29,7 +29,8 @@ class Locators:
 
     def select_datasource(self, datasource_name):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']")
+        # Grafana 13.2 renamed the card test-id to 'data-testid data source card <name>'
+        return driver.find_element(SelectBy.XPATH, f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}'] | //div[@data-testid='data-testid data source card {datasource_name}']")
 
     def sql_editor_toggle(self, query_name, grafana_version=None):
         driver: WebDriver = current().context.driver

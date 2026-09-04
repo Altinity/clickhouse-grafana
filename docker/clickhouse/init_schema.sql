@@ -73,6 +73,9 @@ CREATE TABLE default.test_logs_with_complex_labels(
   `_raw` String CODEC(ZSTD(1)),
   `_time` DateTime64(3, 'Asia/Yekaterinburg') CODEC(ZSTD(1)),
   `_map` Map(String, String),
+  `attrs` Tuple(region String, zone String),
+  `tags` Array(String),
+  `trace_id` UInt64,
   `_db_time` DateTime DEFAULT now() CODEC(ZSTD(1)),
   `_time_dec` Float64 DEFAULT toFloat64(_time) CODEC(DoubleDelta, Default),
   `cluster_name` LowCardinality(String) DEFAULT JSONExtractString(_raw, 'cluster_name') CODEC(ZSTD(1)),
@@ -93,10 +96,13 @@ ENGINE = MergeTree
 PARTITION BY toDate(_time)
 ORDER BY (cluster_name, bu, pod_namespace, pod_name, container_name, _time);
 
-INSERT INTO default.test_logs_with_complex_labels(_raw, _time, _map)
-SELECT '{"cluster_name":"test' || toString(number) || '","host":"test","pod_namespace":"test","pod_name":"test","container_name":"test' || toString(number) || '","container_image":"test","stream":"test","source":"test","source_type":"test","namespace_labels":{"business-unit-code":"test"}}' AS _raw,
+INSERT INTO default.test_logs_with_complex_labels(_raw, _time, _map, attrs, tags, trace_id)
+SELECT '{"cluster_name":"test' || toString(number) || '","host":"test","pod_namespace":"test","pod_name":"test","container_name":"test' || toString(number) || '","container_image":"test","stream":"test","source":"test","source_type":"test","message":"advanced log line ' || toString(number) || '","namespace_labels":{"business-unit-code":"test"}}' AS _raw,
        now64() - INTERVAL number SECOND _time,
-       map('map_key' || toString(number),'map_value' ||toString(number)) AS _map
+       map('map_key' || toString(number),'map_value' ||toString(number)) AS _map,
+       CAST(('region' || toString(number % 3), 'zone' || toString(number % 5)), 'Tuple(region String, zone String)') AS attrs,
+       ['static_tag', 'tag' || toString(number % 4)] AS tags,
+       toUInt64('11189782786942380395') + number AS trace_id
 FROM numbers(100);
 
 DROP TABLE IF EXISTS default.test_alerts;

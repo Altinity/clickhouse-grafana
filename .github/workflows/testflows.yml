@@ -122,6 +122,7 @@ jobs:
           - { group: limited-access,                name: limited_access }
           - { group: worldmap-and-table-format,     name: worldmap_and_table_format }
           - { group: log-context,                   name: log_context }
+          - { group: advanced-logs-fields,          name: advanced_logs_fields }
 
     steps:
       - name: Checkout
@@ -174,6 +175,7 @@ jobs:
           - { group: limited-access,                name: limited_access }
           - { group: worldmap-and-table-format,     name: worldmap_and_table_format }
           - { group: log-context,                   name: log_context }
+          - { group: advanced-logs-fields,          name: advanced_logs_fields }
 
     steps:
       - name: Checkout

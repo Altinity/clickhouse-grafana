@@ -30,6 +30,13 @@ export enum DatasourceMode {
   Annotation = 'Annotation'
 }
 
+export type LogsFieldMode = 'expand' | 'single' | 'hide' | 'raw';
+
+export interface LogsFieldConfigEntry {
+  mode: LogsFieldMode;
+  depth?: number; // expand depth; undefined => DEFAULT_EXPAND_DEPTH (1, legacy-compatible). Large number = all levels.
+}
+
 export interface CHQuery extends DataQuery {
   query: string;
   format: string;
@@ -56,6 +63,7 @@ export interface CHQuery extends DataQuery {
   formattedQuery?: string;
   contextWindowSize?: string;
   adHocValuesQuery?: string;
+  logsFieldConfig?: Record<string, LogsFieldConfigEntry>;
   useWindowFuncForMacros?: boolean;
   showHelp: boolean;
   showFormattedSQL: boolean;

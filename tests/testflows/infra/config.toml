@@ -1,6 +1,7 @@
+# Node images pinned to the hub version (standalone-docker:4.40.0 in docker-compose.yaml)
 [docker]
 configs = [
-  "selenium/standalone-chromium:latest",
+  "selenium/standalone-chromium:4.40.0",
   '''
   {
       "browserName": "chrome",
@@ -8,7 +9,7 @@ configs = [
   }
   ''',
 
-  "selenium/standalone-firefox:latest",
+  "selenium/standalone-firefox:4.40.0",
   '''
   {
       "browserName": "firefox",
@@ -20,6 +21,6 @@ configs = [
 host-config-keys = ["Dns", "DnsOptions", "DnsSearch", "ExtraHosts", "NetworkMode", "ShmSize"]
 
 url = "http://127.0.0.1:2375"
-video-image = "selenium/video:latest"
+video-image = "selenium/video:ffmpeg-8.1-20260808"
 auto-remove = false
 env = ["SE_NODE_SESSION_TIMEOUT=86400"]

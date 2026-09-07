@@ -32,7 +32,8 @@ class Locators:
         if not (grafana_version is None) and (int(grafana_version.split(".")[0]) <= 10):
             return driver.find_element(SelectBy.CSS_SELECTOR, f"[class ='css-8tk2dk-input-input']")
         else:
-            return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='Save dashboard title field']")
+            # Grafana 13.2 renamed the test-id from 'Save dashboard title field' to the prefixed form
+            return driver.find_element(SelectBy.CSS_SELECTOR, "[data-testid='Save dashboard title field'], [data-testid='data-testid Save dashboard title field']")
 
     def save_dashboard_button(self, grafana_version):
         driver: WebDriver = current().context.driver

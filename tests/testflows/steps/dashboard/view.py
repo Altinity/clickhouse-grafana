@@ -476,7 +476,7 @@ def create_new_variable(
             with delay():
                 driver.find_element(
                     SelectBy.XPATH,
-                    f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']",
+                    f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}'] | //div[@data-testid='data-testid data source card {datasource_name}']",
                 ).click()
 
         with And("renaming the filter variable to the legacy default name"):

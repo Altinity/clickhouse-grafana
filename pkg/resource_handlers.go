@@ -372,7 +372,8 @@ func (ds *ClickHouseDatasource) handleApplyAdhocFilters(ctx context.Context, req
 		}
 
 		// Process adhoc filters using shared utility function
-		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
+		columns := ds.fetchColumnTypes(ctx, req.PluginContext, targetDatabase, targetTable)
+		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable, columns)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(query, "$adhoc") {
@@ -612,7 +613,8 @@ func (ds *ClickHouseDatasource) handleProcessQueryBatch(ctx context.Context, req
 		}
 
 		// Process adhoc filters using shared utility function
-		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
+		columns := ds.fetchColumnTypes(ctx, req.PluginContext, targetDatabase, targetTable)
+		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable, columns)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(sql, "$adhoc") {
@@ -1022,7 +1024,8 @@ func (ds *ClickHouseDatasource) handleCreateQueryWithAdhoc(ctx context.Context, 
 		}
 
 		// Process adhoc filters using shared utility function
-		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable)
+		columns := ds.fetchColumnTypes(ctx, req.PluginContext, targetDatabase, targetTable)
+		adhocConditions = adhoc.ProcessAdhocFilters(adhocFilters, targetDatabase, targetTable, columns)
 
 		// Handle conditions differently based on $adhoc presence
 		if !strings.Contains(sql, "$adhoc") {

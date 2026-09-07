@@ -196,18 +196,18 @@ describe('_getRequestOptions', () => {
   it('sets credentials and Authorization for basicAuth', () => {
     const opts = CHDataSource._getRequestOptions('q', true, 'r', { ...base, basicAuth: 'Basic xyz' });
     expect(opts.withCredentials).toBe(true);
-    expect(opts.headers.Authorization).toBe('Basic xyz');
+    expect(opts.headers!.Authorization).toBe('Basic xyz');
   });
 
   it('sets credentials for withCredentials alone', () => {
     const opts = CHDataSource._getRequestOptions('q', true, 'r', { ...base, withCredentials: true });
     expect(opts.withCredentials).toBe(true);
-    expect(opts.headers.Authorization).toBeUndefined();
+    expect(opts.headers!.Authorization).toBeUndefined();
   });
 
   it('adds compression header and param', () => {
     const opts = CHDataSource._getRequestOptions('q', true, 'r', { ...base, useCompression: true, compressionType: 'gzip' });
-    expect(opts.headers['Accept-Encoding']).toBe('gzip');
+    expect(opts.headers!['Accept-Encoding']).toBe('gzip');
     expect(opts.url).toContain('enable_http_compression=1');
   });
 
@@ -217,7 +217,7 @@ describe('_getRequestOptions', () => {
       useYandexCloudAuthorization: true,
       xHeaderUser: 'user1',
     });
-    expect(opts.headers['X-ClickHouse-User']).toBe('user1');
+    expect(opts.headers!['X-ClickHouse-User']).toBe('user1');
     expect(opts.url).toBe('http://localhost:8123/xHeaderKey');
   });
 
@@ -228,21 +228,21 @@ describe('_getRequestOptions', () => {
       xClickHouseSSLCertificateAuth: true,
       xHeaderUser: 'user1',
     });
-    expect(opts.headers['X-ClickHouse-SSL-Certificate-Auth']).toBe('on');
+    expect(opts.headers!['X-ClickHouse-SSL-Certificate-Auth']).toBe('on');
     expect(opts.url).toBe('http://localhost:8123/xClickHouseSSLCertificateAuth');
   });
 
-  it.each([[true], [false]])(
-    'does not append a suffix when the url already contains /? (ssl=%s)',
-    (ssl) => {
-      const opts = CHDataSource._getRequestOptions('q', true, 'r', {
-        url: 'http://localhost:8123/?foo=1',
-        useYandexCloudAuthorization: true,
-        xClickHouseSSLCertificateAuth: ssl,
-      });
-      expect(opts.url).toBe('http://localhost:8123/?foo=1');
-    }
-  );
+  it.each([
+    [true, 'http://localhost:8123/xClickHouseSSLCertificateAuth/?foo=1'],
+    [false, 'http://localhost:8123/xHeaderKey/?foo=1'],
+  ])('inserts the auth route before /? when the url already contains it (ssl=%s)', (ssl, expected) => {
+    const opts = CHDataSource._getRequestOptions('q', true, 'r', {
+      url: 'http://localhost:8123/?foo=1',
+      useYandexCloudAuthorization: true,
+      xClickHouseSSLCertificateAuth: ssl,
+    });
+    expect(opts.url).toBe(expected);
+  });
 
   it('adds the CORS param', () => {
     const opts = CHDataSource._getRequestOptions('q', true, 'r', { ...base, addCorsHeader: true });

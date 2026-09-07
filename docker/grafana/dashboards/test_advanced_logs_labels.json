@@ -1,0 +1,115 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "id": null,
+  "links": [],
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "e2e fixture for the 'Advanced log fields settings' modal: per-field Expand/Single/Hide/Raw modes for Map/Tuple/Array columns and UInt64 precision",
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "prettifyLogMessage": false,
+        "showCommonLabels": false,
+        "showLabels": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": true
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "_time",
+          "dateTimeType": "DATETIME64",
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "logs",
+          "formattedQuery": "",
+          "initialized": true,
+          "interval": "",
+          "intervalFactor": 1,
+          "query": "SELECT _time, message, _map, attrs, tags, trace_id FROM $table WHERE $timeFilter AND $adhoc ORDER BY _time DESC",
+          "rawQuery": "SELECT _time, message, _map, attrs, tags, trace_id FROM default.test_logs_with_complex_labels",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "test_logs_with_complex_labels"
+        }
+      ],
+      "title": "Advanced Logs Labels",
+      "type": "logs"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 40,
+  "tags": [],
+  "templating": {
+    "list": [
+      {
+        "baseFilters": [],
+        "datasource": {
+          "type": "vertamedia-clickhouse-datasource",
+          "uid": "P7E099F39B84EA795"
+        },
+        "filters": [],
+        "name": "adhoc_advanced",
+        "type": "adhoc"
+      }
+    ]
+  },
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "utc",
+  "title": "Test Advanced Logs Labels",
+  "uid": "adv-logs-fields-01",
+  "version": 1,
+  "weekStart": ""
+}

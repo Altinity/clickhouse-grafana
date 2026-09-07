@@ -44,19 +44,7 @@ def argparser(parser):
         default=None
     )
 
-ffails = {
-    "/Grafana Datasource Plugin For Clickhouse/unified alerts/*":
-        (XFail, "Grafana >= 13.1 v2 dashboards have no panel Alert tab; the alert creation flow needs a redesign, see #908")
-    ,
-    "/Grafana Datasource Plugin For Clickhouse/data source setup defaults/check default context window *":
-        (XFail, "datasource default values apply non-deterministically to new panels on Grafana >= 13.1 - suspected plugin-side race, needs product investigation, see #908")
-    ,
-}
-
-# the informational latest leg exports GRAFANA_VERSION=latest (see testflows-suite action)
-if os.getenv("GRAFANA_VERSION", "") == "latest":
-    ffails["/Grafana Datasource Plugin For Clickhouse/template variable editor/*"] = \
-        (XFail, "Grafana 13.2 moved variable editing to the dashboard sidebar (type picker + sidebar form); the create-variable flow needs a redesign, see #908")
+ffails = {}
 
 xfails = {
     # "/Grafana Datasource Plugin For Clickhouse/e2e/mixed data sources/*": [

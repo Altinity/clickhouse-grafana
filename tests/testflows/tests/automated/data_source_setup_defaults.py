@@ -40,5 +40,8 @@ def feature(self):
         check_default_context_window_100,
     ]
 
+    scenario_names = getattr(self.context, "scenario_names", None)
     for scenario in scenarios:
+        if scenario_names and scenario.__name__ not in scenario_names:
+            continue
         scenario()

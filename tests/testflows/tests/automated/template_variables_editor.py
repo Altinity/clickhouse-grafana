@@ -23,14 +23,15 @@ def preview_values(self):
         actions.create_new_altinity_datasource(datasource_name='preview_variable_values', url="http://clickhouse:8123")
 
     with And("I create new dashboard"):
-        actions.create_dashboard(dashboard_name="preview_variable_values")
+        actions.create_dashboard(dashboard_name="preview_variable_values", finally_save_dashboard=False)
 
 
     with When("I create variable for dashboard"):
         with delay():
             dashboard.create_variable_for_dashboard(
-                datasource_name='preview_variable_values', 
-                query="SELECT DISTINCT country FROM $table"
+                datasource_name='preview_variable_values',
+                query="SELECT DISTINCT country FROM $table",
+                save=False,
             )
 
     with Then("I get preview values"):
@@ -52,14 +53,15 @@ def reformatted_query(self):
         actions.create_new_altinity_datasource(datasource_name='reformatted_query_for_variable', url="http://clickhouse:8123")
 
     with And("I create new dashboard"):
-        actions.create_dashboard(dashboard_name="reformatted_query_for_variable")
+        actions.create_dashboard(dashboard_name="reformatted_query_for_variable", finally_save_dashboard=False)
 
 
     with When("I create variable for dashboard"):
         with delay():
             dashboard.create_variable_for_dashboard(
-                datasource_name='reformatted_query_for_variable', 
-                query="SELECT '$table', '$dateCol', '$dateTimeCol', '$timeSeries'"
+                datasource_name='reformatted_query_for_variable',
+                query="SELECT '$table', '$dateCol', '$dateTimeCol', '$timeSeries'",
+                save=False,
             )
 
     with And("I click run query"):

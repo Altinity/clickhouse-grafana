@@ -1175,10 +1175,12 @@ describe('safeTemplateReplace', () => {
     expect(() => safeTemplateReplace(templateSrv, 'SELECT $x', {}, undefined)).toThrow('boom');
   });
 
-  it('returns the stripped query when even the retry fails', () => {
-    const warn = jest.spyOn(console, 'warn').mockImplementation(() => {});
-    const templateSrv = { replace: jest.fn(() => { throw new Error('SceneObject root is not a DashboardScene'); }) } as any;
-    expect(safeTemplateReplace(templateSrv, '/* $__dashboard */ SELECT 1', {}, undefined)).toBe('/*  */ SELECT 1');
-    warn.mockRestore();
+  it('rethrows when the retry without $__dashboard fails too', () => {
+    const templateSrv = { replace: jest.fn(() => { throw new Error('boom'); }) } as any;
+    expect(() =>
+      safeTemplateReplace(templateSrv, '/* grafana dashboard=$__dashboard, user=admin */ SELECT $x', {}, undefined)
+    ).toThrow('boom');
+    expect(templateSrv.replace).toHaveBeenCalledTimes(2);
+    expect(templateSrv.replace).toHaveBeenLastCalledWith('/* grafana dashboard=, user=admin */ SELECT $x', {}, undefined);
   });
 });

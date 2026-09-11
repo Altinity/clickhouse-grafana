@@ -597,13 +597,8 @@ export const safeTemplateReplace = (
       throw error;
     }
     DASHBOARD_MACRO_RE.lastIndex = 0;
-    const stripped = text.replace(DASHBOARD_MACRO_RE, '');
-    try {
-      return templateSrv.replace(stripped, scopedVars, format);
-    } catch (retryError) {
-      console.warn('Template interpolation failed, using query without template variables:', retryError);
-      return stripped;
-    }
+    // a failure unrelated to $__dashboard must surface, not degrade to un-interpolated SQL
+    return templateSrv.replace(text.replace(DASHBOARD_MACRO_RE, ''), scopedVars, format);
   }
 };
 

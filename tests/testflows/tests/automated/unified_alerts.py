@@ -61,7 +61,8 @@ def check_red_alert(self):
             alert_name="red_alert",
             alert_folder_name="test_alert_red",
             alert_group_name="test_alert_group",
-            threshold_value='0'
+            threshold_value='0',
+            dashboard_name=dashboard_name,
         )
 
     with Then("I open dashboard"):
@@ -119,7 +120,8 @@ def check_green_alert(self):
             alert_name="green_alert",
             alert_folder_name="test_alert_green",
             alert_group_name="test_alert_group",
-            threshold_value='10'
+            threshold_value='10',
+            dashboard_name=dashboard_name,
         )
 
     with Then("I open dashboard"):

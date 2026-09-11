@@ -129,6 +129,11 @@ def get_reformatted_query(self):
 def get_values_preview(self):
     """Get values preview."""
 
+    # Grafana >= 13.2 renders every preview value as a separate labelled option
+    options = locators.variable_preview_options
+    if options:
+        return " ".join(option.text for option in options)
+
     return locators.values_preview.text
 
 
@@ -152,24 +157,51 @@ def enter_variable_name(self, variable_name):
 
 
 @TestStep(When)
-def create_variable_for_dashboard(self, datasource_name, query):
-    """Create variable for dashboard."""
+def create_variable_for_dashboard(self, datasource_name, query, save=True):
+    """Create variable for dashboard.
+
+    With save=False the variable editor is left open (nothing applied or
+    saved) so the scenario can inspect preview values and the generated SQL;
+    Grafana >= 13.2 closes the editor modal on Apply.
+    """
 
     with When("I click edit button"):
         with delay():
             click_edit_button()
 
-    with And("I click dashboard settings button"):
-        with delay():
-            click_dashboard_settings_button()
+    if locators.sidebar_add_variable_buttons:
+        # Grafana >= 13.2: variables are edited in the dashboard sidebar,
+        # the classic settings view only points there
+        with And("I click add variable button in the edit toolbar"):
+            with delay():
+                locators.sidebar_add_variable_buttons[0].click()
 
-    with And("I click variables tab"):
-        with delay():
-            click_variables_tab()
+        with And("I choose `Query` variable type"):
+            with delay():
+                ui.wait_for_element_to_be_clickable(
+                    select_type=SelectBy.XPATH, element="//button[normalize-space(text())='Query']"
+                )
+                locators.sidebar_query_variable_type_button.click()
 
-    with And("I click add variable button"):
-        with delay():
-            click_add_variable_button()
+        with And("I open variable editor"):
+            with delay():
+                ui.wait_for_element_to_be_clickable(
+                    select_type=SelectBy.CSS_SELECTOR,
+                    element="[data-testid='data-testid Query Variable editor open button']",
+                )
+                locators.sidebar_open_variable_editor_button.click()
+    else:
+        with And("I click dashboard settings button"):
+            with delay():
+                click_dashboard_settings_button()
+
+        with And("I click variables tab"):
+            with delay():
+                click_variables_tab()
+
+        with And("I click add variable button"):
+            with delay():
+                click_add_variable_button()
 
     with And("I select datasource"):
         with delay():
@@ -191,6 +223,20 @@ def create_variable_for_dashboard(self, datasource_name, query):
         with delay():
             click_run_query_button()
 
+    if not save:
+        return
+
+    if locators.variable_editor_apply_buttons:
+        # Grafana >= 13.2 keeps the variable editor in a modal, changes must be applied first
+        with And("I apply variable changes"):
+            with delay():
+                locators.variable_editor_apply_buttons[0].click()
+    elif locators.variable_editor_close_buttons:
+        # Grafana 13.1 modal applies changes live, close it so it does not cover the Save button
+        with And("I close variable editor"):
+            with delay():
+                locators.variable_editor_close_buttons[0].click()
+
     with And("I click save dashboard"):
         with delay():
             saving_dashboard()
@@ -201,6 +247,42 @@ def click_menu_button_for_panel(self, panel_name):
     """Click menu button for panel."""
 
     locators.menu_button_for_panel(panel_name=panel_name).click()
+
+
+@TestStep(When)
+def open_new_alert_rule_from_panel_menu(self, panel_name):
+    """Open the new alert rule form from the panel menu (More... -> New alert rule).
+
+    Grafana >= 13.1 dashboards have no Alert tab in the panel editor, the alert
+    rule for a panel is created from the panel menu in dashboard view mode."""
+    with By("moving cursor to the panel header"):
+        move_cursor_to_menu_button(panel_name=panel_name)
+
+    with And("clicking panel menu button"):
+        click_menu_button_for_panel(panel_name=panel_name)
+
+    driver = self.context.driver
+    more_selector = "[data-testid='data-testid Panel menu item More...']"
+    item_selector = "[data-testid='data-testid Panel menu item New alert rule']"
+
+    with And("hovering `More...` menu item"):
+        ui.wait_for_element_to_be_clickable(select_type=SelectBy.CSS_SELECTOR, element=more_selector)
+        more_item = driver.find_element(SelectBy.CSS_SELECTOR, more_selector)
+        ActionChains(driver).move_to_element(more_item).perform()
+        # the submenu opens on pointer events; the webdriver mouse move alone
+        # does not reliably trigger them, so dispatch them explicitly
+        driver.execute_script(
+            """
+            for (const type of ['pointerover', 'pointerenter', 'mouseover', 'mouseenter', 'pointermove']) {
+              arguments[0].dispatchEvent(new MouseEvent(type, {bubbles: true}));
+            }
+            """,
+            more_item,
+        )
+
+    with And("clicking `New alert rule` menu item"):
+        ui.wait_for_element_to_be_clickable(select_type=SelectBy.CSS_SELECTOR, element=item_selector)
+        driver.execute_script("arguments[0].click();", driver.find_element(SelectBy.CSS_SELECTOR, item_selector))
 
 
 @TestStep(When)
@@ -407,7 +489,17 @@ def select_datasource(self, datasource_name):
     """Select datasource."""
 
     locators.select_data_source_dropdown.send_keys(datasource_name)
-    locators.select_data_source_dropdown.send_keys(Keys.ENTER)
+
+    # Grafana >= 13.2 shows datasource cards, Enter does not select one
+    card_xpath = (
+        f"//div[@data-testid='data-source-card' and .//text()='{datasource_name}']"
+        f" | //div[@data-testid='data-testid data source card {datasource_name}']"
+    )
+    try:
+        ui.wait_for_element_to_be_clickable(select_type=SelectBy.XPATH, element=card_xpath, timeout=3)
+        self.context.driver.find_element(SelectBy.XPATH, card_xpath).click()
+    except Exception:
+        locators.select_data_source_dropdown.send_keys(Keys.ENTER)
 
 
 @TestStep(When)

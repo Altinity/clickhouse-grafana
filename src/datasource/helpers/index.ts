@@ -573,6 +573,35 @@ export const createContextAwareInterpolation = (query: string, variables: any[] 
  * @param date - Date in various formats (string, Date object, etc.)
  * @returns Unix timestamp in seconds
  */
+const DASHBOARD_MACRO_RE = /\$__dashboard\b|\$\{__dashboard(?::[^}]*)?\}/g;
+
+/**
+ * templateSrv.replace() that survives contexts without a dashboard scene.
+ *
+ * The backend puts `$__dashboard` into the metadata comment of every query.
+ * Grafana >= 13.2 resolves that variable through the dashboard scene and
+ * throws "SceneObject root is not a DashboardScene" when the query runs from
+ * the variable editor modal (and other non-dashboard hosts). The macro only
+ * carries a comment, so drop it and interpolate the rest of the query.
+ */
+export const safeTemplateReplace = (
+  templateSrv: TemplateSrv,
+  text: string,
+  scopedVars?: any,
+  format?: any
+): string => {
+  try {
+    return templateSrv.replace(text, scopedVars, format);
+  } catch (error) {
+    if (!DASHBOARD_MACRO_RE.test(text)) {
+      throw error;
+    }
+    DASHBOARD_MACRO_RE.lastIndex = 0;
+    // a failure unrelated to $__dashboard must surface, not degrade to un-interpolated SQL
+    return templateSrv.replace(text.replace(DASHBOARD_MACRO_RE, ''), scopedVars, format);
+  }
+};
+
 export const convertTimestamp = (date: any) => {
   if (isString(date)) {
     date = dateMath.parse(date, true);

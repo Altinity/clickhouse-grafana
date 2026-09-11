@@ -1144,3 +1144,43 @@ describe('conditionalTest', () => {
     });
   });
 });
+
+describe('safeTemplateReplace', () => {
+  const { safeTemplateReplace } = require('./index');
+
+  it('delegates to templateSrv.replace when it succeeds', () => {
+    const templateSrv = { replace: jest.fn().mockReturnValue('SELECT 1') } as any;
+    expect(safeTemplateReplace(templateSrv, 'SELECT $x', { x: 1 }, 'fmt')).toBe('SELECT 1');
+    expect(templateSrv.replace).toHaveBeenCalledWith('SELECT $x', { x: 1 }, 'fmt');
+  });
+
+  it('drops $__dashboard and retries when the scene lookup throws', () => {
+    const replace = jest.fn((text: string) => {
+      if (text.includes('__dashboard')) {
+        throw new Error('SceneObject root is not a DashboardScene');
+      }
+      return text.replace('$x', '1');
+    });
+    const templateSrv = { replace } as any;
+    expect(
+      safeTemplateReplace(templateSrv, "/* grafana dashboard=$__dashboard, user=admin */ SELECT $x", {}, undefined)
+    ).toBe('/* grafana dashboard=, user=admin */ SELECT 1');
+    expect(
+      safeTemplateReplace(templateSrv, "/* grafana dashboard=${__dashboard}, user=admin */ SELECT $x", {}, undefined)
+    ).toBe('/* grafana dashboard=, user=admin */ SELECT 1');
+  });
+
+  it('rethrows errors unrelated to $__dashboard', () => {
+    const templateSrv = { replace: jest.fn(() => { throw new Error('boom'); }) } as any;
+    expect(() => safeTemplateReplace(templateSrv, 'SELECT $x', {}, undefined)).toThrow('boom');
+  });
+
+  it('rethrows when the retry without $__dashboard fails too', () => {
+    const templateSrv = { replace: jest.fn(() => { throw new Error('boom'); }) } as any;
+    expect(() =>
+      safeTemplateReplace(templateSrv, '/* grafana dashboard=$__dashboard, user=admin */ SELECT $x', {}, undefined)
+    ).toThrow('boom');
+    expect(templateSrv.replace).toHaveBeenCalledTimes(2);
+    expect(templateSrv.replace).toHaveBeenLastCalledWith('/* grafana dashboard=, user=admin */ SELECT $x', {}, undefined);
+  });
+});

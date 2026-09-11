@@ -1,3 +1,5 @@
+import time
+
 from testflows.core import *
 from testflows.asserts import error
 
@@ -142,11 +144,49 @@ def click_new_evaluation_group_create_button(self):
 
 @TestStep(When)
 def enter_contact_point_textfield(self, contact_point):
-    """Enter contact point textfield."""
+    """Select a contact point.
 
-    locators.contact_point_textfield.click()
-    locators.contact_point_textfield.send_keys(contact_point)
-    locators.contact_point_textfield.send_keys(Keys.ENTER)
+    Prefer the contact point with the given name; when it does not exist
+    (Grafana >= 13.2 ships only the built-in `empty` contact point) fall back
+    to the first option in the picker, the test only needs a valid recipient.
+    """
+    driver = self.context.driver
+
+    field = locators.contact_point_textfield
+    driver.execute_script("arguments[0].scrollIntoView({block: 'center'});", field)
+    # JS click: the sticky form footer can overlay the picker and intercept a regular click
+    driver.execute_script("arguments[0].focus(); arguments[0].click();", field)
+    field.send_keys(contact_point)
+
+    def picker_options():
+        # only the options of this combobox, the form has other role=option
+        # buttons (pending period presets)
+        menu_id = field.get_attribute("aria-controls")
+        if menu_id:
+            return driver.find_elements(SelectBy.XPATH, f"//*[@id='{menu_id}']//*[@role='option']")
+        return driver.find_elements(SelectBy.XPATH, "//*[@role='listbox']//*[@role='option']")
+
+    options = []
+    for attempt in range(10):
+        options = picker_options()
+        if options:
+            break
+        time.sleep(0.3)
+
+    if any(contact_point in option.text for option in options):
+        field.send_keys(Keys.ENTER)
+        return
+
+    field.send_keys(Keys.CONTROL, "a")
+    field.send_keys(Keys.BACKSPACE)
+    for attempt in range(10):
+        options = picker_options()
+        if options:
+            note(f"contact point '{contact_point}' not found, selecting '{options[0].text}'")
+            driver.execute_script("arguments[0].click();", options[0])
+            return
+        time.sleep(0.3)
+    field.send_keys(Keys.ENTER)
 
 @TestStep(When)
 def enter_pending_period_textfield(self, pending_period):

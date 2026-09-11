@@ -15,12 +15,24 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource, optio
     const hasExecutionContext = (datasource.options?.range || options?.range);
     const hasTemplateService = !!datasource.templateSrv;
 
+    // replace() is a backend round trip and this effect fires on every query
+    // change, so several requests can be in flight at once and resolve out of
+    // order. Only the result of the latest request may reach the state,
+    // otherwise the generated SQL shows a stale query object.
+    let stale = false;
+
     if (hasExecutionContext && hasTemplateService) {
       // Normal dashboard mode - perform replacement
       datasource.replace(datasource.options || options, query).then((replaced) => {
+        if (stale) {
+          return;
+        }
         setFormattedData(replaced.stmt);
         setError(null);
       }).catch((e) => {
+        if (stale) {
+          return;
+        }
         setFormattedData(query.query);
         const errorStr = e.data?.error || e.toString();
         setError(errorStr);
@@ -37,6 +49,9 @@ export const useFormattedData = (query: CHQuery, datasource: CHDataSource, optio
       setError('Grafana template service unavailable. Please refresh the page.');
     }
 
+    return () => {
+      stale = true;
+    };
     // eslint-disable-next-line
   }, [query, datasource.name, datasource.options, options, datasource.templateSrv]);
 

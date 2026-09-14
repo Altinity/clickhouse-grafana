@@ -4,6 +4,8 @@ import numpy as np
 from PIL import Image
 from PIL import ImageFilter
 
+from selenium.webdriver.common.by import By as SelectBy
+
 from testflows.core import *
 from steps.delay import delay
 from testflows.asserts import error
@@ -544,15 +546,32 @@ def setup_unified_alerts(
     alert_interval="10s",
     threshold_value="0",
     new=True,
+    dashboard_name=None,
+    panel_name="New panel",
 ):
-    with When("I go to alerts tab"):
-        with delay():
-            panel.click_alert_tab()
+    alert_tab = self.context.driver.find_elements(
+        SelectBy.CSS_SELECTOR, "[data-testid='data-testid Tab Alert'], [aria-label='Tab Alert']"
+    )
 
-    if new:
-        with And("I click `New alert rule`"):
+    if alert_tab:
+        with When("I go to alerts tab"):
             with delay():
-                alert_rules.click_new_alert_rule_button()
+                panel.click_alert_tab()
+
+        if new:
+            with And("I click `New alert rule`"):
+                with delay():
+                    alert_rules.click_new_alert_rule_button()
+    else:
+        # Grafana >= 13.1: no Alert tab in the panel editor, create the rule
+        # from the panel menu in dashboard view mode
+        with When("I open dashboard"):
+            with delay():
+                dashboards.open_dashboard(dashboard_name=dashboard_name)
+
+        with And("I open new alert rule form from the panel menu"):
+            with delay():
+                dashboard.open_new_alert_rule_from_panel_menu(panel_name=panel_name)
 
     with And("I enter alert name"):
         with delay():

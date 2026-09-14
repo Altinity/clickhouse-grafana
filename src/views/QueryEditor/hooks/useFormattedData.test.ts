@@ -56,6 +56,26 @@ describe('useFormattedData', () => {
     expect(result.current[0]).toBe('SELECT $x');
   });
 
+  it('ignores a slow response that belongs to a superseded query', async () => {
+    let resolveFirst: (v: any) => void = () => {};
+    const first = new Promise((resolve) => {
+      resolveFirst = resolve;
+    });
+    const replace = jest
+      .fn()
+      .mockImplementationOnce(() => first)
+      .mockImplementationOnce(() => Promise.resolve({ stmt: 'SELECT second' }));
+    const ds = makeDatasource({ replace });
+    const { result, rerender } = renderHook(({ q }) => useFormattedData(q, ds), {
+      initialProps: { q: { query: 'SELECT 1' } as any },
+    });
+    rerender({ q: { query: 'SELECT 2' } as any });
+    await waitFor(() => expect(result.current[0]).toBe('SELECT second'));
+    resolveFirst({ stmt: 'SELECT first' });
+    await new Promise((r) => setTimeout(r, 0));
+    expect(result.current[0]).toBe('SELECT second');
+  });
+
   it('takes the range from the options argument when the datasource has none', async () => {
     const ds = makeDatasource({ options: undefined });
     const options = { range: { from: 1, to: 2 } };

@@ -24,7 +24,7 @@ import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../ty
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, merge, Observable } from 'rxjs';
-import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation } from './helpers';
+import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation, safeTemplateReplace } from './helpers';
 import { ClickHouseResourceClient } from './resource_handler';
 import { parseJsonResponseLossless, tryParseJson } from './losslessJson';
 import { generateQueryForTimestampBackward, generateQueryForTimestampForward } from './log-context-query';
@@ -785,10 +785,11 @@ export class CHDataSource
           text: '',
         },
       };
-      query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
+      query = safeTemplateReplace(this.templateSrv, query, scopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
     }
     const conditionalQuery = conditionalTest(query, this.templateSrv);
-    interpolatedQuery = this.templateSrv.replace(
+    interpolatedQuery = safeTemplateReplace(
+      this.templateSrv,
       conditionalQuery,
       scopedVars,
       createContextAwareInterpolation(conditionalQuery, this.templateSrv.getVariables())
@@ -938,7 +939,8 @@ export class CHDataSource
       // Important: use transformed query for context-aware interpolation (fix for issue #847)
       const transformedQuery = conditionalTest(queryData.query, this.templateSrv);
 
-      queryData.query = this.templateSrv.replace(
+      queryData.query = safeTemplateReplace(
+        this.templateSrv,
         transformedQuery,
         options.scopedVars,
         createContextAwareInterpolation(transformedQuery, this.templateSrv.getVariables())
@@ -961,7 +963,8 @@ export class CHDataSource
       // Apply template variable replacements (these don't require backend processing)
       // Important: use transformed query for context-aware interpolation (fix for issue #847)
       const transformedQueryAfterBackend = conditionalTest(query, this.templateSrv);
-      query = this.templateSrv.replace(
+      query = safeTemplateReplace(
+        this.templateSrv,
         transformedQueryAfterBackend,
         options.scopedVars,
         createContextAwareInterpolation(transformedQueryAfterBackend, this.templateSrv.getVariables())
@@ -973,12 +976,13 @@ export class CHDataSource
         const fallbackScopedVars = {
           __searchFilter: { value: '%', text: '' },
         };
-        query = this.templateSrv.replace(query, fallbackScopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
+        query = safeTemplateReplace(this.templateSrv, query, fallbackScopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
       }
 
       // Important: use transformed query for context-aware interpolation (fix for issue #847)
       const finalTransformedQuery = conditionalTest(query, this.templateSrv);
-      const interpolatedQuery = this.templateSrv.replace(
+      const interpolatedQuery = safeTemplateReplace(
+        this.templateSrv,
         finalTransformedQuery,
         options.scopedVars,
         createContextAwareInterpolation(finalTransformedQuery, this.templateSrv.getVariables())

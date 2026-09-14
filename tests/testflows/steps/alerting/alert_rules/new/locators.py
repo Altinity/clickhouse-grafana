@@ -130,7 +130,10 @@ class Locators:
         driver: WebDriver = current().context.driver
         return driver.find_element(
             SelectBy.XPATH,
-            f"//div[@data-testid='data-testid alert-rule step-2']//input[contains(@class,'input-input') and @type='number']",
+            # Grafana <= 13.0 nests the threshold input in the step-2 section,
+            # Grafana >= 13.1 gives it its own test-id
+            f"//div[@data-testid='data-testid alert-rule step-2']//input[contains(@class,'input-input') and @type='number']"
+            f" | //input[@data-testid='data-testid alert-rule threshold-input']",
         )
 
     def expression_value_range_condition(self, expression_name):
@@ -173,7 +176,8 @@ class Locators:
     def new_folder_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(
-            SelectBy.XPATH, f"//*[./text()='New folder']/../../button"
+            # Grafana >= 13.1 renders a plain "New folder" button next to the folder picker
+            SelectBy.XPATH, f"//*[./text()='New folder']/../../button | //button[.//text()='New folder']"
         )
 
     @property
@@ -233,14 +237,18 @@ class Locators:
     def contact_point_textfield(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(
-            SelectBy.XPATH, f"//div[@data-testid='contact-point-picker']//input"
+            SelectBy.XPATH,
+            f"//div[@data-testid='contact-point-picker']//input"
+            f" | //input[@data-testid='data-testid alert-rule contact-point-input']",
         )
 
     @property
     def save_rule_and_exit_button(self):
         driver: WebDriver = current().context.driver
         return driver.find_element(
-            SelectBy.XPATH, f"//button[@data-testid='save-rule' and contains(normalize-space(.), 'Save')]"
+            SelectBy.XPATH,
+            f"//button[@data-testid='save-rule' and contains(normalize-space(.), 'Save')]"
+            f" | //button[@data-testid='data-testid alert-rule save-rule-button']",
         )
 
 

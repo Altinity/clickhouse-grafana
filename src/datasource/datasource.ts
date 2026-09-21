@@ -2,6 +2,7 @@ import _, { curry, each } from 'lodash';
 import SqlSeries from './sql-series/sql_series';
 import ResponseParser from './response_parser';
 import AdHocFilter from './adhoc';
+import { buildRequestOptions } from './request-options';
 
 import {
   AnnotationEvent,
@@ -24,7 +25,7 @@ import { DataLinkConfig } from './datalinks';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, merge, Observable } from 'rxjs';
-import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation } from './helpers';
+import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation, safeTemplateReplace } from './helpers';
 import { ClickHouseResourceClient } from './resource_handler';
 import { parseJsonResponseLossless, tryParseJson } from './losslessJson';
 import { generateQueryForTimestampBackward, generateQueryForTimestampForward } from './log-context-query';
@@ -139,75 +140,23 @@ export class CHDataSource
     }
   }
 
+  /**
+   * Delegates to the standalone `buildRequestOptions` pure utility.
+   * Kept as a static method for backward-compatibility with existing callers
+   * (annotationQuery, _request).
+   *
+   * Pass `options.quoteBigInts = true` to add output_format_json_quote_64bit_integers=1
+   * to the request — use ONLY for logs-format queries (see issue #832).
+   */
   static _getRequestOptions(query: string, usePOST?: boolean, requestId?: string, options?: any) {
-    let requestOptions: any = {
-      url: options.url,
-      requestId: requestId,
-      // Fetch the body as raw text: Grafana's own JSON.parse would round
-      // 64-bit integers above 2^53-1 before the plugin ever sees them.
-      // Parsing is done losslessly in _request/annotationQuery instead.
-      // https://github.com/Altinity/clickhouse-grafana/issues/832
-      responseType: 'text',
-    };
-    let params: string[] = [];
-
-    if (usePOST) {
-      requestOptions.method = 'POST';
-      requestOptions.data = query;
-    } else {
-      requestOptions.method = 'GET';
-      params.push('query=' + encodeURIComponent(query));
-    }
-    if (options.defaultDatabase) {
-      params.push('database=' + options.defaultDatabase);
-    }
-
-    if (options.basicAuth || options.withCredentials) {
-      requestOptions.withCredentials = true;
-    }
-
-    requestOptions.headers = options.headers || {};
-    if (options.basicAuth) {
-      requestOptions.headers.Authorization = options.basicAuth;
-    }
-
-    if (options.useCompression) {
-      requestOptions.headers['Accept-Encoding'] = options.compressionType;
-      params.push('enable_http_compression=1');
-    }
-
-    if (options.useYandexCloudAuthorization) {
-      requestOptions.headers['X-ClickHouse-User'] = options.xHeaderUser;
-      // look to routes in plugin.json
-      if (options.xClickHouseSSLCertificateAuth) {
-        requestOptions.headers['X-ClickHouse-SSL-Certificate-Auth'] = 'on';
-        if (requestOptions.url.indexOf('/?') === -1) {
-          requestOptions.url += '/xClickHouseSSLCertificateAuth';
-        } else {
-          requestOptions.url.replace('/?', '/xClickHouseSSLCertificateAuth/?');
-        }
-      } else {
-        if (requestOptions.url.indexOf('/?') === -1) {
-          requestOptions.url += '/xHeaderKey';
-        } else {
-          requestOptions.url.replace('/?', '/xHeaderKey/?');
-        }
-      }
-    }
-
-    if (options.addCorsHeader) {
-      params.push('add_http_cors_header=1');
-    }
-
-    if (params.length) {
-      requestOptions.url += (requestOptions.url.indexOf('?') !== -1 ? '&' : '/?') + params.join('&');
-    }
-
-    return requestOptions;
+    return buildRequestOptions(query, usePOST, requestId, options);
   }
 
-  _request(query: string, requestId?: string) {
-    const queryParams = CHDataSource._getRequestOptions(query, this.usePOST, requestId, this);
+  _request(query: string, requestId?: string, quoteBigInts?: boolean) {
+    // Merge quoteBigInts into options only when needed, leaving all other
+    // datasource settings on `this` untouched (avoids mutating shared state).
+    const opts = quoteBigInts ? { ...this, quoteBigInts: true } : this;
+    const queryParams = CHDataSource._getRequestOptions(query, this.usePOST, requestId, opts);
 
     const dataRequest = new Promise((resolve, reject) => {
       this.backendSrv.fetch(queryParams).subscribe(
@@ -399,12 +348,17 @@ export class CHDataSource
     return query.adHocFilters.some((f) => f.key === filter.key && f.value === filter.value);
   }
 
-  processQueryResponse(responses: any, options: any, queries: any[]): any {
+  processQueryResponse(responses: any, options: any, queries: any[], queryTargets?: any[]): any {
     let result: any[] = [];
     let i = 0;
 
+    // Pair responses with the SAME (filtered) targets list that built the queries.
+    // options.targets is the unfiltered list — with a hidden/empty target preceding a
+    // visible one, indexing into it reads the wrong target (wrong format/refId/logsFieldConfig).
+    const pairedTargets = queryTargets ?? options.targets;
+
     _.each(responses, (response) => {
-      const target = options.targets[i];
+      const target = pairedTargets[i];
       const keys = queries[i].keys;
 
       i++;
@@ -422,6 +376,7 @@ export class CHDataSource
         to: convertTimestamp(options.range.to),
         dataLinks: this.dataLinks,
         app: options.app,
+        logsFieldConfig: target.logsFieldConfig,
       });
 
           if (target.format === 'table') {
@@ -516,7 +471,14 @@ export class CHDataSource
     }
 
     const responses = await Promise.all(
-      queries.map((query) => this.seriesQuery(query.stmt, query.requestId))
+      // Thread quoteBigInts=true only for logs-format targets so that large
+      // UInt64/Int64 label values survive JSON.parse without precision loss.
+      // All other formats (time_series, table, traces, flamegraph) leave the
+      // flag off — enabling it for them would regress issue #832.
+      queries.map((query, i) => {
+        const isLogs = targets[i]?.format === 'logs';
+        return this.seriesQuery(query.stmt, query.requestId, isLogs);
+      })
     ).catch(error => {
       // Enhance error message with more details if available
       if (error?.data?.exception) {
@@ -535,7 +497,7 @@ export class CHDataSource
       }
     });
 
-    return this.processQueryResponse(responses, options, queries)
+    return this.processQueryResponse(responses, options, queries, targets)
   }
 
 
@@ -832,10 +794,11 @@ export class CHDataSource
           text: '',
         },
       };
-      query = this.templateSrv.replace(query, scopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
+      query = safeTemplateReplace(this.templateSrv, query, scopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
     }
     const conditionalQuery = conditionalTest(query, this.templateSrv);
-    interpolatedQuery = this.templateSrv.replace(
+    interpolatedQuery = safeTemplateReplace(
+      this.templateSrv,
       conditionalQuery,
       scopedVars,
       createContextAwareInterpolation(conditionalQuery, this.templateSrv.getVariables())
@@ -859,9 +822,9 @@ export class CHDataSource
     });
   }
 
-  private seriesQuery(query: string, requestId?: string) {
+  private seriesQuery(query: string, requestId?: string, quoteBigInts?: boolean) {
     query += ' FORMAT JSON';
-    return this._request(query, requestId);
+    return this._request(query, requestId, quoteBigInts);
   }
 
   targetContainsTemplate(target: CHQuery) {
@@ -985,7 +948,8 @@ export class CHDataSource
       // Important: use transformed query for context-aware interpolation (fix for issue #847)
       const transformedQuery = conditionalTest(queryData.query, this.templateSrv);
 
-      queryData.query = this.templateSrv.replace(
+      queryData.query = safeTemplateReplace(
+        this.templateSrv,
         transformedQuery,
         options.scopedVars,
         createContextAwareInterpolation(transformedQuery, this.templateSrv.getVariables())
@@ -1008,7 +972,8 @@ export class CHDataSource
       // Apply template variable replacements (these don't require backend processing)
       // Important: use transformed query for context-aware interpolation (fix for issue #847)
       const transformedQueryAfterBackend = conditionalTest(query, this.templateSrv);
-      query = this.templateSrv.replace(
+      query = safeTemplateReplace(
+        this.templateSrv,
         transformedQueryAfterBackend,
         options.scopedVars,
         createContextAwareInterpolation(transformedQueryAfterBackend, this.templateSrv.getVariables())
@@ -1020,12 +985,13 @@ export class CHDataSource
         const fallbackScopedVars = {
           __searchFilter: { value: '%', text: '' },
         };
-        query = this.templateSrv.replace(query, fallbackScopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
+        query = safeTemplateReplace(this.templateSrv, query, fallbackScopedVars, createContextAwareInterpolation(query, this.templateSrv.getVariables()));
       }
 
       // Important: use transformed query for context-aware interpolation (fix for issue #847)
       const finalTransformedQuery = conditionalTest(query, this.templateSrv);
-      const interpolatedQuery = this.templateSrv.replace(
+      const interpolatedQuery = safeTemplateReplace(
+        this.templateSrv,
         finalTransformedQuery,
         options.scopedVars,
         createContextAwareInterpolation(finalTransformedQuery, this.templateSrv.getVariables())

@@ -1083,6 +1083,24 @@ You can make following query with `Table` formatting:
 
 ![geohash-query](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/14_worldmap_query.png)
 
+### Logs panel — Advanced field settings
+
+For queries with `Format as: Logs`, the query editor shows an **Advanced** button that opens the *Advanced logs fields* dialog. It lists the complex-typed columns of the current table (`Map`, `Array`, `Tuple`, `Nested`, `JSON`, `Dynamic`, `Variant`) and lets you choose, per field, how the value is rendered in the Logs panel and how the `+`/`-` filter buttons behave:
+
+| Mode | Log details | Filter click produces |
+|------|-------------|-----------------------|
+| **Expand** | one label per (nested) key: `attrs['host']`, `attrs['http']['method']`, `json.a.b` | `attrs['http']['method'] = 'GET'` / `json.a.b = 'GET'` |
+| **Single** | one label holding the whole value | whole-array equality for `Array` columns: `tags = ['a', 'b']` |
+| **Hide** | field is not shown | — |
+| **Raw (body)** | value appended to the log message body | — |
+
+Notes:
+
+* `Map` columns expand with bracket subscripts (`col['key']`, chained for nested maps); `JSON`, `Tuple` and `Nested` columns expand with dot paths (`col.a.b`) — both are valid ClickHouse accessors, so filter clicks always generate working SQL.
+* For nested types an additional **Depth** selector (1–4 / All) controls how many levels are expanded; deeper values are shown as collapsed JSON. The default depth is **1** — identical to previous plugin versions, so upgrading does not change the label shape of nested columns; deeper expansion is an explicit opt-in.
+* Every field shows a live preview built from one sample row (`LIMIT 1`), updated as you switch modes; fields whose configuration differs from the type default are marked with a dot.
+* The configuration is stored per query (`logsFieldConfig` in the panel JSON). Without configuration the defaults apply: `Map`/`JSON`/`Tuple`/`Nested` → expand (one level deep), `Array`/`Dynamic`/`Variant` → single.
+
 ## Ad-hoc filters
 
 If there is an Ad-hoc variable, plugin will fetch all columns of all tables of all databases (except system database) as tags.

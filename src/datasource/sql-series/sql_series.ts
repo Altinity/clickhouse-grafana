@@ -116,6 +116,7 @@ export default class SqlSeries {
   to: any;
   dataLinks?: DataLinkConfig[];
   app?: string;
+  logsFieldConfig: any;
 
   /** @ngInject */
   constructor(options: any) {
@@ -128,6 +129,7 @@ export default class SqlSeries {
     this.keys = options.keys || [];
     this.dataLinks = options.dataLinks;
     this.app = options.app;
+    this.logsFieldConfig = options.logsFieldConfig;
   }
 
   toAnnotation = (input: any, meta: any): any[] => {

@@ -170,7 +170,53 @@ class Locators:
     @property
     def run_variable_query_button(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.CSS_SELECTOR, f"[data-testid='data-testid Variable editor Run Query button']")
+        # Grafana >= 13.2 variable editor modal renders the run button as the preview button
+        return driver.find_element(
+            SelectBy.CSS_SELECTOR,
+            "[data-testid='data-testid Variable editor Run Query button'], "
+            "[data-testid='data-testid Query Variable editor preview button']",
+        )
+
+    @property
+    def variable_preview_options(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_elements(
+            SelectBy.CSS_SELECTOR, "[data-testid='data-testid Variable editor Preview of Values option']"
+        )
+
+    @property
+    def variable_editor_apply_buttons(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_elements(
+            SelectBy.CSS_SELECTOR, "[data-testid='data-testid Query Variable editor apply button']"
+        )
+
+    @property
+    def variable_editor_close_buttons(self):
+        driver: WebDriver = current().context.driver
+        # Grafana 13.1 modal applies changes live and only offers Close;
+        # on 13.2 the same test-id is the Discard button, so use it only without Apply
+        return driver.find_elements(
+            SelectBy.CSS_SELECTOR, "[data-testid='data-testid Query Variable editor close button']"
+        )
+
+    @property
+    def sidebar_add_variable_buttons(self):
+        driver: WebDriver = current().context.driver
+        # Grafana >= 13.2 edit toolbar: variables live in the dashboard sidebar
+        return driver.find_elements(SelectBy.CSS_SELECTOR, "button[aria-label='Add variable']")
+
+    @property
+    def sidebar_query_variable_type_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(SelectBy.XPATH, "//button[normalize-space(text())='Query']")
+
+    @property
+    def sidebar_open_variable_editor_button(self):
+        driver: WebDriver = current().context.driver
+        return driver.find_element(
+            SelectBy.CSS_SELECTOR, "[data-testid='data-testid Query Variable editor open button']"
+        )
     
     @property
     def apply_variable_button(self):

@@ -642,6 +642,19 @@ def change_variable_value(self, variable_name, variable_value):
 def get_dropdown_variable_values_set(self, variable_name):
     """Get dropdown values set."""
 
+    with When("I open variable dropdown and read its options"):
+        with delay():
+            click_variable_dropdown(variable_name=variable_name)
+        options = self.context.driver.find_elements(
+            SelectBy.XPATH, "//*[@data-testid='data-testid Select option']"
+        )
+        values_from_options = {option.text.strip() for option in options if option.text.strip()}
+        locators.variable_dropdown(variable_name=variable_name).send_keys(Keys.ESCAPE)
+
+    if values_from_options:
+        return values_from_options
+
+    # older Grafana: walk the options with the keyboard
     values_set = set()
     with When(f"I get 0 dropdown value"):
         change_variable_value_order(variable_name=variable_name, value_order=0)

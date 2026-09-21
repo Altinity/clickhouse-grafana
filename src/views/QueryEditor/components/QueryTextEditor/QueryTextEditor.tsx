@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { InlineFieldRow } from '@grafana/ui';
+import { InlineFieldRow, ToolbarButton } from '@grafana/ui';
 import { SQLCodeEditor } from './SQLCodeEditor';
 import { FormattedSQL } from './FormattedSQL';
 import QueryMacrosInfo from './QueryMacrosInfo';
@@ -23,7 +23,8 @@ import {
   ContextWindowSizeSelect,
   ToolbarButtons,
 } from './components';
-import {DatasourceMode} from "../../../../types/types";
+import { CHQuery, DatasourceMode } from '../../../../types/types';
+import { AdvancedLogsFieldsModal } from './components/AdvancedLogsFields/AdvancedLogsFieldsModal';
 
 export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
   query,
@@ -39,6 +40,7 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
 }) => {
   const [sqlFormattedData, setSqlFormattedData] = useState(formattedData);
   const handlers = useQueryHandlers({ onFieldChange, query });
+  const [advancedOpen, setAdvancedOpen] = useState(false);
 
   useEffect(() => {
     setSqlFormattedData(formattedData);
@@ -128,10 +130,24 @@ export const QueryTextEditor: React.FC<QueryTextEditorProps> = ({
             />
           )}
           {query.format === 'logs' && (
-            <ContextWindowSizeSelect
-              query={query}
-              onChange={(e: any) => handlers.handleContextWindowChange(e.value)}
-            />
+            <>
+              <ContextWindowSizeSelect
+                query={query}
+                onChange={(e: any) => handlers.handleContextWindowChange(e.value)}
+              />
+              <span style={{ marginRight: 8 }}>
+                <ToolbarButton variant="primary" onClick={() => setAdvancedOpen(true)}>
+                  Advanced log fields settings
+                </ToolbarButton>
+              </span>
+              <AdvancedLogsFieldsModal
+                isOpen={advancedOpen}
+                onDismiss={() => setAdvancedOpen(false)}
+                query={query as unknown as CHQuery}
+                datasource={datasource}
+                onChange={(logsFieldConfig) => onFieldChange({ fieldName: 'logsFieldConfig', value: logsFieldConfig })}
+              />
+            </>
           )}
           <ToolbarButtons
             showHelp={query.showHelp}

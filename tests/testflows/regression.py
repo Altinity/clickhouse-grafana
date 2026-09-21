@@ -44,14 +44,7 @@ def argparser(parser):
         default=None
     )
 
-ffails = {
-    "/Grafana Datasource Plugin For Clickhouse/unified alerts/*":
-        (XFail, "Grafana >= 13.1 v2 dashboards have no panel Alert tab; the alert creation flow needs a redesign, see #908")
-    ,
-    "/Grafana Datasource Plugin For Clickhouse/data source setup defaults/check default context window *":
-        (XFail, "datasource default values apply non-deterministically to new panels on Grafana >= 13.1 - suspected plugin-side race, needs product investigation, see #908")
-    ,
-}
+ffails = {}
 
 # the informational latest leg exports GRAFANA_VERSION=latest (see testflows-suite action)
 if os.getenv("GRAFANA_VERSION", "") == "latest":
@@ -158,6 +151,7 @@ def regression(self, before, after, suite=None, scenario=None):
         ("limited_access", "testflows.tests.automated.limited_access"),
         ("worldmap_and_table_format", "testflows.tests.automated.worldmap_and_table_format"),
         ("log_context", "testflows.tests.automated.log_context"),
+        ("advanced_logs_fields", "testflows.tests.automated.advanced_logs_fields"),
     ]
 
     self.context.grafana_version = None

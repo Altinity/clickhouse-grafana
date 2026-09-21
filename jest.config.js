@@ -21,6 +21,10 @@ module.exports = {
   // Jest configuration provided by Grafana scaffolding
   ...require('./.config/jest.config'),
   transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, ...extraESModules])],
+  // Async RTL tests (Advanced logs modal) do a real render + findBy* after a mocked fetch; under
+  // the full parallel suite (plus the extra ESM transforms above) the first heavy test can exceed
+  // the 5s default. Logic is verified green in isolation — raise the ceiling to avoid flaky timeouts.
+  testTimeout: 15000,
 
   // Pin the coverage denominator to the whole frontend (issue #785).
   // Without this, Istanbul only counts files imported by some test, which

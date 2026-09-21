@@ -44,7 +44,7 @@ datasources:
         - fieldName: timestamp
           title: "+/- 5 min around this event"
           targetDatasourceUid: P7E099F39B84EA795
-          query: "SELECT event_time AS timestamp, level AS severity, message AS content FROM system.text_log WHERE event_time BETWEEN toDateTime('$${__value.raw}') - INTERVAL 5 MINUTE AND toDateTime('$${__value.raw}') + INTERVAL 5 MINUTE ORDER BY event_time DESC LIMIT 200"
+          query: "SELECT event_time AS timestamp, level AS severity, message AS content FROM system.text_log WHERE event_time BETWEEN toDateTime(intDiv($${__value.raw}, 1000)) - INTERVAL 5 MINUTE AND toDateTime(intDiv($${__value.raw}, 1000)) + INTERVAL 5 MINUTE ORDER BY event_time DESC LIMIT 200"
           format: logs
         # --- Traces format (toTraces produces fields: traceID, spanID, operationName, ...) ---
         - fieldName: operationName

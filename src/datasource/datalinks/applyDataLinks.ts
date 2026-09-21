@@ -1,5 +1,5 @@
 import { DataLink } from '@grafana/data';
-import { buildDataLink, isClickHouseTarget } from './buildDataLink';
+import { buildDataLink, InheritedQuerySettings, isClickHouseTarget } from './buildDataLink';
 import { DataLinkConfig } from './types';
 
 /**
@@ -15,6 +15,8 @@ interface ApplyOptions {
   allowedFieldNames?: Set<string>;
   /** Grafana app context (forwarded to buildDataLink for targetBlank). */
   app?: string;
+  /** Source query whose Database/Table/Timestamp settings CH-target links inherit. */
+  sourceQuery?: InheritedQuerySettings;
 }
 
 /**
@@ -38,7 +40,10 @@ export function applyDataLinks(
     const matching = configs.filter((c) => isApplicable(c) && c.fieldName === field.name);
     if (!matching.length) continue;
     const links = matching.map((c) =>
-      buildDataLink(c, isClickHouseTarget(c.targetDatasourceUid), { app: options?.app })
+      buildDataLink(c, isClickHouseTarget(c.targetDatasourceUid), {
+        app: options?.app,
+        sourceQuery: options?.sourceQuery,
+      })
     );
     field.config = {
       ...field.config,

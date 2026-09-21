@@ -14,7 +14,8 @@ jest.mock('@grafana/runtime', () => ({
   getGrafanaLiveSrv: jest.fn(),
   getTemplateSrv: jest.fn(),
   getDataSourceSrv: () => ({
-    getInstanceSettings: () => undefined, // non-CH target → generic internal link
+    // 'ch-uid' is this plugin; any other uid (e.g. 'tempo-uid') → generic internal link
+    getInstanceSettings: (uid: string) => (uid === 'ch-uid' ? { type: 'vertamedia-clickhouse-datasource' } : undefined),
   }),
   DataSourcePicker: () => null,
 }));
@@ -68,6 +69,23 @@ describe('getLogRowContext data links', () => {
     expect(traceField?.config?.links?.[0].internal?.datasourceUid).toBe('tempo-uid');
     // app context is forwarded: explore → split pane, no new tab
     expect(traceField?.config?.links?.[0].targetBlank).toBe(false);
+  });
+
+  it('CH-target links inherit the time settings of the query that owns the log row', async () => {
+    const ds = createDatasource();
+    ds.dataLinks = [
+      {
+        fieldName: 'trace_id',
+        title: 'Same trace',
+        targetDatasourceUid: 'ch-uid',
+        query: 'SELECT 1 WHERE $timeFilter',
+      },
+    ];
+
+    const result = await ds.getLogRowContext(row, { direction: LogRowContextQueryDirection.Backward }, query);
+
+    const link = result.data[0].fields.find((f: any) => f.name === 'trace_id')?.config?.links?.[0];
+    expect(link?.internal?.query).toMatchObject({ dateTimeColDataType: 'timestamp' });
   });
 
   it('still returns plain frames when no data links are configured', async () => {

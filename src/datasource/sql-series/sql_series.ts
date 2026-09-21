@@ -6,7 +6,7 @@ import { toTimeSeries } from './toTimeSeries';
 import { toTraces } from './toTraces';
 import { DateTime } from 'luxon';
 import { DataLink, FieldType } from '@grafana/data';
-import { DataLinkConfig } from '../datalinks';
+import { DataLinkConfig, InheritedQuerySettings } from '../datalinks';
 
 export interface Field {
   name: string;
@@ -116,6 +116,7 @@ export default class SqlSeries {
   to: any;
   dataLinks?: DataLinkConfig[];
   app?: string;
+  sourceQuery?: InheritedQuerySettings;
   logsFieldConfig: any;
 
   /** @ngInject */
@@ -129,6 +130,7 @@ export default class SqlSeries {
     this.keys = options.keys || [];
     this.dataLinks = options.dataLinks;
     this.app = options.app;
+    this.sourceQuery = options.sourceQuery;
     this.logsFieldConfig = options.logsFieldConfig;
   }
 
@@ -137,7 +139,7 @@ export default class SqlSeries {
   };
 
   toFlamegraph = (): any => {
-    return toFlamegraph(this.series, this.dataLinks, this.app);
+    return toFlamegraph(this.series, this.dataLinks, this.app, this.sourceQuery);
   };
 
   toLogs = (): any => {
@@ -156,6 +158,6 @@ export default class SqlSeries {
   };
 
   toTraces = (): any => {
-    return toTraces(this.series, this.meta, this.dataLinks, this.app);
+    return toTraces(this.series, this.meta, this.dataLinks, this.app, this.sourceQuery);
   };
 }

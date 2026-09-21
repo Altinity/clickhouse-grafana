@@ -19,6 +19,7 @@
 * add **datasource-level data links** for cross-datasource navigation, modelled after Elasticsearch and Loki — configured in *Connections → ClickHouse → Data Links* or via YAML provisioning (`jsonData.dataLinks`), closes https://github.com/Altinity/clickhouse-grafana/issues/432, partially addresses https://github.com/Altinity/clickhouse-grafana/issues/645
   * each link is attached by exact column name to results of `logs`, `traces`, `time_series`, or `flamegraph` queries
   * any datasource is a valid target (ClickHouse, Loki, Prometheus, Tempo, ...) — when the target is this plugin, the produced query shape adapts automatically
+  * ClickHouse-target link queries inherit the source query's database / table / timestamp column settings and open in the SQL editor, so `$timeFilter` and the other settings-driven macros expand in the target exactly as in the source panel instead of `"" >= toDateTime(...)`
   * `External URL` mode supports plain HTTP links (Jaeger UI, runbooks, GitHub, custom dashboards) with `${__value.raw}` and other Grafana variables interpolated at click time
   * on the `logs` format, columns referenced by a data link are auto-promoted to top-level DataFrame fields — `fieldName: trace_id` works without aliasing the column in the SELECT
   * `traces`-format CH links auto-inject `panelsState.trace.spanId` so the Grafana TraceView scrolls to and highlights the clicked span

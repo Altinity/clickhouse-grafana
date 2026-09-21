@@ -1,7 +1,8 @@
 import { DataLink } from '@grafana/data';
 import { getDataSourceSrv } from '@grafana/runtime';
+import { pick } from 'lodash';
 import { DataLinkConfig } from './types';
-import { CHQuery, DatasourceMode } from '../../types/types';
+import { CHQuery, DatasourceMode, EditorMode } from '../../types/types';
 
 const CH_PLUGIN_ID = 'vertamedia-clickhouse-datasource';
 
@@ -11,6 +12,13 @@ export function isClickHouseTarget(uid: string): boolean {
   return settings?.type === CH_PLUGIN_ID;
 }
 
+// $timeFilter/$table/$dateCol read these from the query settings, not from the SQL text — a CH-target link inherits them from the source query.
+export type InheritedQuerySettings = Partial<
+  Pick<CHQuery, 'database' | 'table' | 'dateTimeType' | 'dateColDataType' | 'dateTimeColDataType'>
+>;
+
+const INHERITED_KEYS = ['database', 'table', 'dateTimeType', 'dateColDataType', 'dateTimeColDataType'] as const;
+
 export interface BuildDataLinkOptions {
   /**
    * The Grafana app context the query was issued from (e.g. 'explore', 'dashboard').
@@ -19,6 +27,8 @@ export interface BuildDataLinkOptions {
    * Mirrors the convention used by the official Grafana ClickHouse plugin.
    */
   app?: string;
+  /** The query that produced the frame the link is attached to; see InheritedQuerySettings. */
+  sourceQuery?: InheritedQuerySettings;
 }
 
 export function buildDataLink(
@@ -37,6 +47,7 @@ export function buildDataLink(
     return { title: config.title, url: config.url, targetBlank };
   }
   if (targetIsClickHouse) {
+    const inherited = options?.sourceQuery ? pick(options.sourceQuery, INHERITED_KEYS) : {};
     const link: DataLink = {
       title: config.title,
       url: '',
@@ -50,10 +61,13 @@ export function buildDataLink(
           rawQuery: config.query,
           format: config.format ?? 'table',
           datasourceMode: DatasourceMode.Datasource,
+          // The link carries raw SQL — open the SQL editor, not the builder.
+          editorMode: EditorMode.SQL,
           extrapolate: false,
           adHocFilters: [],
           showHelp: false,
           showFormattedSQL: false,
+          ...inherited,
         } satisfies Partial<CHQuery>,
       },
     };

@@ -209,7 +209,7 @@ export const toTimeSeries = (extrapolate = true, nullifySparse = false, self): a
       { config: { links: [] }, name: seriesName, values: processedDataPoints.map((v: any) => v[0]) },
     ];
 
-    applyDataLinks(fields, self.dataLinks, { app: self.app });
+    applyDataLinks(fields, self.dataLinks, { app: self.app, sourceQuery: self.sourceQuery });
 
     timeSeries.push({
       length: processedDataPoints.length,

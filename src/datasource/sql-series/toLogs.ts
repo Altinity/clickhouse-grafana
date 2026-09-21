@@ -214,7 +214,7 @@ export const toLogs = (self: any): DataFrame[] => {
     refId: self.refId,
   });
 
-  applyDataLinks(result.fields, dataLinks, { app: self.app });
+  applyDataLinks(result.fields, dataLinks, { app: self.app, sourceQuery: self.sourceQuery });
 
   return [result]
 };

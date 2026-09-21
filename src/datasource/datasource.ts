@@ -249,6 +249,7 @@ export class CHDataSource
         meta: response.meta,
         dataLinks: this.dataLinks,
         app: this.options?.app,
+        sourceQuery: query,
       });
 
       return { data: sqlSeries.toLogs() };
@@ -299,6 +300,7 @@ export class CHDataSource
         meta: response.meta,
         dataLinks: this.dataLinks,
         app: this.options?.app,
+        sourceQuery: query,
       });
 
       return { data: sqlSeries.toLogs() };
@@ -376,6 +378,7 @@ export class CHDataSource
         to: convertTimestamp(options.range.to),
         dataLinks: this.dataLinks,
         app: options.app,
+        sourceQuery: target,
         logsFieldConfig: target.logsFieldConfig,
       });
 

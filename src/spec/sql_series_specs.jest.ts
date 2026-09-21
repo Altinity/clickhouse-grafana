@@ -861,6 +861,23 @@ describe('sql-series. toTraces data links', () => {
     expect(link?.internal?.query).toEqual({ refId: 'datalink', query });
     expect(link?.targetBlank).toBe(true);
   });
+
+  it('CH-target link inherits the source query time settings', () => {
+    const links = [
+      { fieldName: 'traceID', title: 'Open trace', targetDatasourceUid: 'x', query: 'SELECT 1', format: 'traces' },
+    ];
+    const sourceQuery = {
+      database: 'system',
+      table: 'opentelemetry_span_log',
+      dateTimeType: 'TIMESTAMP',
+      dateTimeColDataType: 'intDiv(finish_time_us,1000000)',
+    };
+
+    const out = toTraces(series as any, meta, links as any, 'explore', sourceQuery);
+    const link = out[0].fields.find((f: any) => f.name === 'traceID')?.config?.links?.[0];
+
+    expect(link?.internal?.query).toMatchObject(sourceQuery);
+  });
 });
 
 describe('sql-series. toLogs data links', () => {
@@ -924,6 +941,19 @@ describe('sql-series. toLogs data links', () => {
     const firstLabel = (labels?.values?.toArray?.() ?? labels?.values)?.[0] ?? {};
     expect(Object.keys(firstLabel)).toContain('trace_id');
   });
+
+  it('CH-target link inherits the source query time settings', () => {
+    const links = [
+      { fieldName: 'trace_id', title: 'T', targetDatasourceUid: 'x', query: 'SELECT 1 WHERE $timeFilter' },
+    ];
+    const sourceQuery = { database: 'default', table: 'logs', dateTimeType: 'DATETIME', dateTimeColDataType: 'timestamp' };
+    const self: any = { refId: 'A', series, meta, dataLinks: links, sourceQuery };
+
+    const out = toLogs(self);
+    const link = out[0].fields.find((f: any) => f.name === 'trace_id')?.config?.links?.[0];
+
+    expect(link?.internal?.query).toMatchObject(sourceQuery);
+  });
 });
 
 describe('sql-series. toFlamegraph data links', () => {
@@ -941,6 +971,18 @@ describe('sql-series. toFlamegraph data links', () => {
     const valueField = out[0].fields.find((f: any) => f.name === 'value');
     expect(labelField?.config?.links).toHaveLength(1);
     expect(valueField?.config?.links ?? []).toHaveLength(0);
+  });
+
+  it('CH-target link inherits the source query time settings', () => {
+    const links = [
+      { fieldName: 'label', title: 'Inspect', targetDatasourceUid: 'x', query: 'q' },
+    ];
+    const sourceQuery = { dateTimeType: 'DATETIME', dateTimeColDataType: 'ts' };
+
+    const out = toFlamegraph(input, links as any, 'explore', sourceQuery);
+    const link = out[0].fields.find((f: any) => f.name === 'label')?.config?.links?.[0];
+
+    expect(link?.internal?.query).toMatchObject(sourceQuery);
   });
 });
 
@@ -979,5 +1021,18 @@ describe('sql-series. toTimeSeries data links', () => {
     expect(metricField?.config?.links).toHaveLength(1);
     expect(metricField?.config?.links?.[0].title).toBe('On metric');
     expect(timeField?.config?.links ?? []).toHaveLength(0);
+  });
+
+  it('CH-target link inherits the source query time settings', () => {
+    const sourceQuery = { dateTimeType: 'DATETIME', dateTimeColDataType: 'time' };
+    const self: any = {
+      refId: 'A', series, meta, keys: [], tillNow: false, from: 0, to: 1, sourceQuery,
+      dataLinks: [{ fieldName: 'metric', title: 'On metric', targetDatasourceUid: 'x', query: 'q' }],
+    };
+
+    const out = toTimeSeries(true, false, self);
+    const link = out[0].fields.find((f: any) => f.name === 'metric')?.config?.links?.[0];
+
+    expect(link?.internal?.query).toMatchObject(sourceQuery);
   });
 });

@@ -1295,6 +1295,8 @@ Configured per datasource in the **Data Links** section of the datasource settin
 - **Query** (when External URL is empty) — the target datasource's query body. Supports Grafana data link variables: `${__value.raw}`, `${__data.fields.<name>}`, `$__from`, `$__to`, and dashboard variables. Variables are resolved by Grafana at click time.
 - **Format** (ClickHouse target only) — `logs`, `traces`, `time_series`, `flamegraph`, or `table`.
 
+When the target is ClickHouse, the link query also inherits the source query's **Database**, **Table** and **Timestamp column / type** settings, so `$timeFilter`, `$table`, `$dateCol` and the other settings-driven macros expand exactly as in the panel the link was clicked in. If the link points at a different table, do not rely on `$table`, and filter time explicitly with `$timeFilterByColumn(<column>)` or a `$__from` / `$__to` condition.
+
 Primary supported result formats: `logs`, `traces`, and `time_series`. Table format support is planned for a follow-up release. For `time_series`, attach the link to the metric (value) field by name — Grafana's time-series visualisation surfaces the popover from the clicked value, not the time axis. Dimension columns from `GROUP BY` queries are folded into series names and are not directly addressable as `fieldName` targets (see #788). Data links also work on `flamegraph` results for ClickHouse performance-debugging workflows, though this is a niche scenario.
 
 ### Logs format notes

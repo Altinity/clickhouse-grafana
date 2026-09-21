@@ -104,6 +104,45 @@ describe('buildDataLink', () => {
     const link = buildDataLink(baseConfig, true);
     expect((link.internal?.query as any).format).toBe('table');
   });
+
+  it('CH target inherits Database/Table/Timestamp settings from the source query and opens the SQL editor', () => {
+    const sourceQuery = {
+      database: 'system',
+      table: 'text_log',
+      dateTimeType: 'DATETIME',
+      dateColDataType: 'event_date',
+      dateTimeColDataType: 'event_time',
+    };
+
+    const link = buildDataLink(baseConfig, true, { sourceQuery });
+
+    expect(link.internal?.query).toMatchObject({ ...sourceQuery, editorMode: 'sql' });
+  });
+
+  it('copies only the five settings from the source query, not its SQL or refId', () => {
+    const sourceQuery: any = { refId: 'A', query: 'SELECT 1', dateTimeColDataType: 'event_time' };
+
+    const link = buildDataLink(baseConfig, true, { sourceQuery });
+
+    expect(link.internal?.query).toMatchObject({
+      refId: 'datalink',
+      query: baseConfig.query,
+      dateTimeColDataType: 'event_time',
+    });
+  });
+
+  it('adds no inherited keys when there is no source query', () => {
+    const link = buildDataLink(baseConfig, true);
+
+    expect(link.internal?.query).not.toHaveProperty('dateTimeColDataType');
+    expect(link.internal?.query).not.toHaveProperty('database');
+  });
+
+  it('non-CH target ignores the source query', () => {
+    const link = buildDataLink(baseConfig, false, { sourceQuery: { dateTimeColDataType: 'event_time' } });
+
+    expect(link.internal?.query).toEqual({ refId: 'datalink', query: baseConfig.query });
+  });
 });
 
 describe('isClickHouseTarget', () => {
@@ -219,5 +258,17 @@ describe('applyDataLinks', () => {
     applyDataLinks(fields, [cfg]);
 
     expect(fields[0].config?.links).toHaveLength(1);
+  });
+
+  it('forwards the source query to CH-target links', () => {
+    const fields: AnyField[] = [{ name: 'trace_id', config: {} }];
+    const chCfg: DataLinkConfig = { ...cfg, targetDatasourceUid: 'ch-uid' };
+
+    applyDataLinks(fields, [chCfg], { sourceQuery: { dateTimeType: 'DATETIME', dateTimeColDataType: 'event_time' } });
+
+    expect(fields[0].config?.links?.[0].internal?.query).toMatchObject({
+      dateTimeType: 'DATETIME',
+      dateTimeColDataType: 'event_time',
+    });
   });
 });

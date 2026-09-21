@@ -157,6 +157,8 @@ function buildDataLink(config: DataLinkConfig, targetIsClickHouse: boolean): Dat
 
 Fully handled by Grafana **at click time**, not at link-build time. We store the literal `${__value.raw}`, `${__data.fields.<name>}`, `$__from`, `$__to`, `${__field.name}`, dashboard variables, etc. as plain strings in the `query` and `title` fields of the `DataLink`. When the user clicks, Grafana's link supplier resolves them using the cell's raw value, the row's other field values, the dashboard time range, and template-var scope — then dispatches to the target datasource. Our parser (which runs `$timeFilter` and other CH macros) receives an already-interpolated string. No custom interpolation code is needed on our side.
 
+**Query settings are not part of the SQL text.** `$timeFilter`, `$table`, `$dateCol` read the time column, its type and the table from the query settings (`dateTimeColDataType`, `dateTimeType`, `dateColDataType`, `database`, `table`). A link built from `DataLinkConfig` alone has none of them, so the target expanded to `"" >= toDateTime(...)` (review of PR #904, 2026-09-21). A ClickHouse-target link therefore inherits those five settings from the query that produced the frame — `SqlSeries.sourceQuery` → `applyDataLinks` → `buildDataLink` — the approach the earlier `datalinks-experiments` prototype already used. Cross-table links must filter time explicitly (`$timeFilterByColumn`, `$__from`/`$__to`).
+
 ## Application in Format Converters
 
 ### Helper

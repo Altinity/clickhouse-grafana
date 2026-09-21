@@ -37,6 +37,12 @@ export interface LogsFieldConfigEntry {
   depth?: number; // expand depth; undefined => DEFAULT_EXPAND_DEPTH (1, legacy-compatible). Large number = all levels.
 }
 
+/*
+ * Internal format for the Explore logs-volume supplementary query (issue #782).
+ * Never exposed in the query editor.
+ */
+export const LOGS_VOLUME_FORMAT = 'logs_volume';
+
 export interface CHQuery extends DataQuery {
   query: string;
   format: string;
@@ -72,6 +78,9 @@ export interface CHQuery extends DataQuery {
   streamingInterval?: number;
   streamingMode?: 'delta' | 'full';
   streamingLookback?: number;
+
+  // Transient: resolved log-level column for the logs-volume supplementary query
+  _levelColumn?: string;
 }
 
 /**

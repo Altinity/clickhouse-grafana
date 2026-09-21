@@ -1,0 +1,385 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": "-- Grafana --",
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "editable": true,
+  "graphTooltip": 0,
+  "links": [
+    {
+      "asDropdown": false,
+      "icon": "external link",
+      "includeVars": false,
+      "keepTime": false,
+      "targetBlank": true,
+      "title": "Open in Explore",
+      "tooltip": "",
+      "type": "link",
+      "url": "/explore?schemaVersion=1&panes=%7B%22782%22%3A%7B%22datasource%22%3A%22P7E099F39B84EA795%22%2C%22queries%22%3A%5B%7B%22refId%22%3A%22A%22%2C%22datasource%22%3A%7B%22type%22%3A%22vertamedia-clickhouse-datasource%22%2C%22uid%22%3A%22P7E099F39B84EA795%22%7D%2C%22query%22%3A%22SELECT%20event_time%2C%20message%2C%20level%2C%20service%2C%20host%2C%20duration_ms%20FROM%20default.test_logs_volume%20WHERE%20%24timeFilter%20ORDER%20BY%20event_time%20DESC%20LIMIT%201000%22%2C%22format%22%3A%22logs%22%2C%22dateTimeColDataType%22%3A%22event_time%22%2C%22dateTimeType%22%3A%22DATETIME%22%2C%22database%22%3A%22default%22%2C%22table%22%3A%22test_logs_volume%22%2C%22extrapolate%22%3Afalse%2C%22editorMode%22%3A%22sql%22%2C%22rawQuery%22%3A%22SELECT%20event_time%2C%20message%2C%20level%2C%20service%2C%20host%2C%20duration_ms%20FROM%20default.test_logs_volume%20WHERE%20%24timeFilter%20ORDER%20BY%20event_time%20DESC%20LIMIT%201000%22%7D%5D%2C%22range%22%3A%7B%22from%22%3A%22now-24h%22%2C%22to%22%3A%22now%22%7D%7D%7D"
+    }
+  ],
+  "panels": [
+    {
+      "gridPos": {
+        "h": 5,
+        "w": 24,
+        "x": 0,
+        "y": 0
+      },
+      "id": 1,
+      "options": {
+        "mode": "markdown",
+        "content": "This dashboard demonstrates the Explore logs volume histogram for issue #782: `default.test_logs_volume` holds 270,000 log rows spread across the last 7 days, and the histogram Explore draws above the log lines is now a full-range, server-side aggregate that the plugin computes with a single ClickHouse query instead of approximating client-side from the visible page of logs.\n\n1. Open the **Application logs** panel menu below and choose **Explore**, or click the dashboard link **Open in Explore** above.\n2. The histogram above the log lines is stacked by level, and the old warning *\"This datasource does not support full-range histograms\"* no longer appears.\n3. The **Logs volume by level (server-side aggregate, same SQL Explore runs)** panel below reproduces the exact SQL the plugin sends to build that histogram."
+      },
+      "pluginVersion": "11.3.1",
+      "title": "About this demo",
+      "type": "text"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 6,
+        "x": 0,
+        "y": 5
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "textMode": "auto"
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "table",
+          "query": "SELECT count() AS rows FROM default.test_logs_volume WHERE $timeFilter",
+          "refId": "A",
+          "table": "test_logs_volume"
+        }
+      ],
+      "title": "Rows in range",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 5,
+        "w": 18,
+        "x": 6,
+        "y": 5
+      },
+      "id": 3,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": true
+        },
+        "textMode": "value_and_name"
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "table",
+          "query": "SELECT lower(level) AS level, count() AS rows FROM default.test_logs_volume WHERE $timeFilter GROUP BY level ORDER BY rows DESC",
+          "refId": "A",
+          "table": "test_logs_volume"
+        }
+      ],
+      "title": "Rows in range by level",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "drawStyle": "bars",
+            "fillOpacity": 100,
+            "lineWidth": 1,
+            "stacking": {
+              "group": "A",
+              "mode": "normal"
+            }
+          }
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "critical"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#705DA0",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "error"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#E24D42",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "warning"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#EAB839",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "info"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#1F78C1",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "debug"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#9e9e9e",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "trace"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#6ED0E0",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "unknown"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "#8e8e8e",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 24,
+        "x": 0,
+        "y": 10
+      },
+      "id": 4,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "mode": "multi",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "time_series",
+          "interval": "",
+          "query": "SELECT $timeSeries AS t,\n  sum(multiSearchAny(toString(\"level\"), ['critical','CRITICAL','Critical','fatal','FATAL','Fatal','crit','CRIT','Crit','alert','ALERT','Alert','emerg','EMERG','Emerg'])) AS critical,\n  sum(multiSearchAny(toString(\"level\"), ['error','ERROR','Error','err','ERR','Err','eror','EROR','Eror'])) AS error,\n  sum(multiSearchAny(toString(\"level\"), ['warn','WARN','Warn','warning','WARNING','Warning'])) AS warning,\n  sum(multiSearchAny(toString(\"level\"), ['info','INFO','Info','information','INFORMATION','Information','informational','INFORMATIONAL','Informational','notice','NOTICE','Notice'])) AS info,\n  sum(multiSearchAny(toString(\"level\"), ['debug','DEBUG','Debug','dbug','DBUG','Dbug'])) AS debug,\n  sum(multiSearchAny(toString(\"level\"), ['trace','TRACE','Trace'])) AS trace,\n  sum(multiSearchAny(toString(\"level\"), ['unknown','UNKNOWN','Unknown'])) AS unknown\nFROM default.test_logs_volume\nWHERE $timeFilter\nGROUP BY t ORDER BY t",
+          "refId": "A",
+          "table": "test_logs_volume"
+        }
+      ],
+      "title": "Logs volume by level (server-side aggregate, same SQL Explore runs)",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "fieldConfig": {
+        "defaults": {},
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 14,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
+      "id": 5,
+      "options": {
+        "dedupStrategy": "none",
+        "enableLogDetails": true,
+        "showTime": true,
+        "sortOrder": "Descending",
+        "wrapLogMessage": false
+      },
+      "pluginVersion": "11.3.1",
+      "targets": [
+        {
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "editorMode": "sql",
+          "extrapolate": false,
+          "format": "logs",
+          "query": "SELECT event_time, message, level, service, host, duration_ms\nFROM default.test_logs_volume\nWHERE $timeFilter\nORDER BY event_time DESC\nLIMIT 1000",
+          "refId": "A",
+          "table": "test_logs_volume"
+        }
+      ],
+      "title": "Application logs (LIMIT 1000)",
+      "type": "logs"
+    }
+  ],
+  "preload": false,
+  "schemaVersion": 40,
+  "tags": [
+    "logs",
+    "782"
+  ],
+  "templating": {
+    "list": []
+  },
+  "time": {
+    "from": "now-7d",
+    "to": "now"
+  },
+  "timepicker": {},
+  "timezone": "",
+  "title": "Logs volume histogram (issue #782)",
+  "uid": "logs-volume-782",
+  "version": 1,
+  "weekStart": ""
+}

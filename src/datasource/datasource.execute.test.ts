@@ -13,9 +13,11 @@ jest.mock('../utils/indexedDBManager', () => ({
   IndexedDBManager: { cleanupAllExpired: jest.fn().mockResolvedValue({ removedKeys: 0 }) },
 }));
 
+import { SupplementaryQueryType } from '@grafana/data';
 import { getBackendSrv, getGrafanaLiveSrv, getTemplateSrv } from '@grafana/runtime';
 import { firstValueFrom } from 'rxjs';
 import { CHDataSource } from './datasource';
+import { LOGS_VOLUME_FORMAT } from '../types/types';
 
 // fetch mock in the subscribe style _request expects: next receives {data: <json string>}
 const fetchResponding = (body: any) => jest.fn(() => ({ subscribe: (next: any) => next(body) }));
@@ -214,6 +216,107 @@ describe('query', () => {
         },
       });
       observer.next({ data: ['stream'] });
+    });
+  });
+});
+
+describe('executeQueries', () => {
+  it('builds queries from the options it receives, not from the datasource-wide this.options', async () => {
+    const ds: any = makeDatasource();
+    const createQuery = jest.spyOn(ds, 'createQuery').mockResolvedValue({ stmt: 'SELECT 1', requestId: 'rid', keys: [] });
+    jest.spyOn(ds, 'seriesQuery').mockResolvedValue({ rows: 0, meta: [], data: [] });
+
+    const passed: any = { range, targets: [], interval: '10s', scopedVars: {} };
+    // simulate an overlapping request (e.g. Explore's logs-volume request) that replaced this.options meanwhile
+    ds.options = { range, targets: [], interval: '1s', scopedVars: {} };
+
+    await ds.executeQueries([{ refId: 'A', query: 'SELECT 1', format: 'table' }], passed);
+
+    expect(createQuery).toHaveBeenCalledTimes(1);
+    expect(createQuery.mock.calls[0][0]).toBe(passed);
+  });
+});
+
+describe('supplementary queries (issue #782)', () => {
+  const logsTarget: any = {
+    refId: 'A',
+    format: 'logs',
+    query: 'SELECT ts, level, msg FROM $table WHERE $timeFilter LIMIT 10',
+    dateTimeColDataType: 'ts',
+  };
+  const makeRequest = (targets: any[]): any => ({ requestId: 'explore_1', range, targets });
+
+  it('advertises logs volume support when asked without a request', () => {
+    expect(makeDatasource().getSupportedSupplementaryQueryTypes()).toEqual([SupplementaryQueryType.LogsVolume]);
+  });
+
+  it('advertises logs volume support for a request with a usable logs target', () => {
+    expect(makeDatasource().getSupportedSupplementaryQueryTypes(makeRequest([logsTarget]))).toEqual([
+      SupplementaryQueryType.LogsVolume,
+    ]);
+  });
+
+  it('reports no support for a request without logs targets, so Explore keeps its own histogram', () => {
+    expect(
+      makeDatasource().getSupportedSupplementaryQueryTypes(makeRequest([{ ...logsTarget, format: 'table' }]))
+    ).toEqual([]);
+  });
+
+  it('reports no support for a logs target without a timestamp column', () => {
+    expect(
+      makeDatasource().getSupportedSupplementaryQueryTypes(makeRequest([{ ...logsTarget, dateTimeColDataType: '' }]))
+    ).toEqual([]);
+  });
+
+  it('rewrites a logs_volume target into the aggregate before createQuery', async () => {
+    const ds: any = makeDatasource();
+    ds.resourceClient = {
+      getMultipleAstProperties: jest
+        .fn()
+        .mockResolvedValue({ properties: { with: [], from: ['$table'], where: ['$timeFilter'] } }),
+    };
+    const createQuery = jest
+      .spyOn(ds, 'createQuery')
+      .mockResolvedValue({ stmt: 'x', requestId: 'r', keys: [] });
+    jest.spyOn(ds, 'seriesQuery').mockResolvedValue({ rows: 0, meta: [], data: [] });
+
+    const options: any = { range, targets: [], scopedVars: {} };
+    await ds.executeQueries(
+      [{ ...logsTarget, format: LOGS_VOLUME_FORMAT, _levelColumn: 'level' }],
+      options
+    );
+
+    const rewritten: any = createQuery.mock.calls[0][1];
+    expect(rewritten.query).toMatch(/^SELECT \$timeSeries AS t, sum\(multiSearchAny/);
+    expect(rewritten.query).not.toMatch(/LIMIT/i);
+  });
+
+  it('routes a logs_volume response through toLogsVolume', () => {
+    const target: any = { refId: 'A', format: LOGS_VOLUME_FORMAT };
+    const result: any = makeDatasource().processQueryResponse(
+      [
+        {
+          rows: 2,
+          meta: [
+            { name: 't', type: 'UInt64' },
+            { name: 'error', type: 'UInt64' },
+            { name: 'info', type: 'UInt64' },
+          ],
+          data: [
+            { t: '1704067200000', error: 1, info: 5 },
+            { t: '1704067260000', error: 0, info: 7 },
+          ],
+        },
+      ],
+      { targets: [target], range, rangeRaw: {} },
+      [{ keys: [] }],
+      [target]
+    );
+
+    expect(result.data).toHaveLength(2);
+    expect(result.data.map((frame: any) => frame.fields[1].labels.level)).toEqual(['error', 'info']);
+    result.data.forEach((frame: any) => {
+      expect([...frame.fields[0].values]).toEqual([1704067200000, 1704067260000]);
     });
   });
 });

@@ -68,6 +68,59 @@ INSERT INTO default.test_logs(event_time, content, level, id, label, detected_fi
 INSERT INTO default.test_logs(event_time, content, level, id, label, detected_field) SELECT toDateTime(now()+(number*10)) AS event_time, concat('Info Log line ', toString(number)) as content, 'Info' AS level, generateUUIDv4() as id, if(rand() % 2 = 1,'abc','cba') AS label, 1000000000.05 AS detected_field FROM numbers(1000);
 INSERT INTO default.test_logs(event_time, content, level, id, label, detected_field) SELECT toDateTime(now()+((500+number)*10)) AS event_time, concat('Unknown Log line ', toString(number)) as content, 'Unknown' AS level, generateUUIDv4() as id, if(rand() % 2 = 1,'abc','cba') AS label, 1000000000.05 AS detected_field FROM numbers(1000);
 
+-- issue #782: >100k rows for the Explore logs-volume histogram demo (docker/grafana/dashboards/logs_volume_histogram_782.json)
+DROP TABLE IF EXISTS default.test_logs_volume;
+CREATE TABLE default.test_logs_volume
+(
+    event_time  DateTime,
+    level       LowCardinality(String),
+    service     LowCardinality(String),
+    host        LowCardinality(String),
+    message     String,
+    duration_ms UInt32
+)
+    ENGINE = MergeTree()
+        PARTITION BY toYYYYMMDD(event_time)
+        ORDER BY (event_time, level);
+
+-- 250k rows evenly spread over the last 7 days; level/service/host derive from a per-row hash so re-seeding is reproducible
+INSERT INTO default.test_logs_volume (event_time, level, service, host, message, duration_ms)
+SELECT
+    now() - toIntervalSecond(intDiv(number * 604800, 250000))                        AS event_time,
+    multiIf(
+        h % 100 < 55, ['info', 'INFO', 'Info'][h % 3 + 1],
+        h % 100 < 75, ['debug', 'DEBUG'][h % 2 + 1],
+        h % 100 < 87, ['warn', 'WARN', 'warning', 'Warning'][h % 4 + 1],
+        h % 100 < 95, ['error', 'ERROR', 'err'][h % 3 + 1],
+        h % 100 < 97, ['trace', 'TRACE'][h % 2 + 1],
+        h % 100 < 98, ['critical', 'FATAL', 'crit'][h % 3 + 1],
+                      ['unknown', 'Unknown'][h % 2 + 1]
+    )                                                                                 AS level,
+    ['api', 'auth', 'payments', 'search', 'worker'][h % 5 + 1]                        AS service,
+    concat('node-', toString(h % 8 + 1))                                              AS host,
+    concat(service, ': ', multiIf(
+        h % 100 < 55, 'request completed',
+        h % 100 < 75, 'cache lookup',
+        h % 100 < 87, 'slow upstream response',
+        h % 100 < 95, 'request failed',
+        h % 100 < 97, 'entering handler',
+        h % 100 < 98, 'out of memory, restarting worker',
+                      'unparsed line'
+    ), ' request_id=', hex(h))                                                        AS message,
+    toUInt32(h % 2000)                                                                AS duration_ms
+FROM (SELECT number, cityHash64(number) AS h FROM numbers(250000));
+
+-- an incident: 20k ERROR rows for `payments` between now-26h and now-25h, so the histogram shows a visible spike
+INSERT INTO default.test_logs_volume (event_time, level, service, host, message, duration_ms)
+SELECT
+    now() - toIntervalSecond(93600) + toIntervalSecond(intDiv(number * 3600, 20000)) AS event_time,
+    'ERROR'                                                                           AS level,
+    'payments'                                                                        AS service,
+    concat('node-', toString(number % 3 + 1))                                        AS host,
+    concat('payments: gateway timeout request_id=', hex(cityHash64(number)))         AS message,
+    toUInt32(5000 + number % 3000)                                                    AS duration_ms
+FROM numbers(20000);
+
 DROP TABLE IF EXISTS default.test_logs_with_complex_labels;
 CREATE TABLE default.test_logs_with_complex_labels(
   `_raw` String CODEC(ZSTD(1)),

@@ -6,9 +6,11 @@ import { buildRequestOptions } from './request-options';
 
 import {
   AnnotationEvent,
+  DataQuery,
   DataQueryRequest,
   DataSourceInstanceSettings,
   DataSourceWithLogsContextSupport,
+  DataSourceWithSupplementaryQueriesSupport,
   DataSourceWithToggleableQueryFiltersSupport, FieldType,
   LiveChannelScope,
   LogRowContextOptions,
@@ -16,11 +18,13 @@ import {
   LogRowContextQueryDirection,
   LogRowModel,
   QueryFilterOptions,
+  SupplementaryQueryOptions,
+  SupplementaryQueryType,
   TypedVariableModel, VariableSupportType,
 } from '@grafana/data';
 import { BackendSrv, config, DataSourceWithBackend, getBackendSrv, getGrafanaLiveSrv, getTemplateSrv, TemplateSrv } from '@grafana/runtime';
 
-import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY} from '../types/types';
+import {CHDataSourceOptions, CHQuery, DatasourceMode, DEFAULT_QUERY, LOGS_VOLUME_FORMAT} from '../types/types';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, merge, Observable } from 'rxjs';
@@ -28,11 +32,20 @@ import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAw
 import { ClickHouseResourceClient } from './resource_handler';
 import { parseJsonResponseLossless, tryParseJson } from './losslessJson';
 import { generateQueryForTimestampBackward, generateQueryForTimestampForward } from './log-context-query';
+import {
+  buildLogsVolumeQuery,
+  getLogsVolumeSupplementaryQuery,
+  getLogsVolumeSupplementaryRequest,
+  hasLogsVolumeTargets,
+} from './logs-volume-query';
 import { IndexedDBManager } from '../utils/indexedDBManager';
 
 export class CHDataSource
   extends DataSourceWithBackend<CHQuery, CHDataSourceOptions>
-  implements DataSourceWithLogsContextSupport<CHQuery>, DataSourceWithToggleableQueryFiltersSupport<CHQuery>
+  implements
+    DataSourceWithLogsContextSupport<CHQuery>,
+    DataSourceWithToggleableQueryFiltersSupport<CHQuery>,
+    DataSourceWithSupplementaryQueriesSupport<CHQuery>
 {
   backendSrv: BackendSrv;
   templateSrv: TemplateSrv;
@@ -298,6 +311,30 @@ export class CHDataSource
     }
   }
 
+  // Explore logs-volume histogram (issue #782): the returned request is run through this.query().
+  // Explore falls back to its row-based histogram only when this returns [], so decide per request.
+  getSupportedSupplementaryQueryTypes(dsRequest?: DataQueryRequest<DataQuery>): SupplementaryQueryType[] {
+    if (dsRequest && !hasLogsVolumeTargets(dsRequest as DataQueryRequest<CHQuery>)) {
+      return [];
+    }
+    return [SupplementaryQueryType.LogsVolume];
+  }
+
+  getSupplementaryQuery(options: SupplementaryQueryOptions, query: CHQuery): CHQuery | undefined {
+    return getLogsVolumeSupplementaryQuery(options, query);
+  }
+
+  getSupplementaryRequest(
+    type: SupplementaryQueryType,
+    request: DataQueryRequest<CHQuery>,
+    options?: SupplementaryQueryOptions
+  ): DataQueryRequest<CHQuery> | undefined {
+    if (type !== SupplementaryQueryType.LogsVolume) {
+      return undefined;
+    }
+    return getLogsVolumeSupplementaryRequest(request, options);
+  }
+
   toggleQueryFilter(query: CHQuery, filter: any): any {
     let filters = [...query.adHocFilters];
     let isFilterAdded = query.adHocFilters.filter(
@@ -380,6 +417,10 @@ export class CHDataSource
             result = sqlSeries.toFlamegraph();
           } else if (target.format === 'logs') {
             result = sqlSeries.toLogs();
+          } else if (target.format === LOGS_VOLUME_FORMAT) {
+            _.each(sqlSeries.toLogsVolume(), (data) => {
+              result.push(data);
+            });
           } else if (target.refId === 'Anno') {
             result = sqlSeries.toAnnotation(response.data, response.meta);
           } else if (target.datasourceMode === DatasourceMode.Variable ) {
@@ -453,8 +494,21 @@ export class CHDataSource
   }
 
   async executeQueries (targets: any[], options: any): Promise<any> {
+    // Logs-volume targets still carry the original logs SQL: rewrite it into the per-level
+    // aggregate here, where async AST extraction is possible (the supplementary-query
+    // contract methods must stay synchronous).
+    const preparedTargets = await Promise.all(
+      targets.map(async (target) =>
+        target.format === LOGS_VOLUME_FORMAT
+          ? buildLogsVolumeQuery(target, (query, properties) =>
+              this.resourceClient.getMultipleAstProperties(query, properties)
+            )
+          : target
+      )
+    );
+
     const queries = await Promise.all(
-      targets.map(async (target) => this.createQuery(this.options, target))
+      preparedTargets.map(async (target) => this.createQuery(options, target))
     );
 
     if (!queries.length) {
@@ -488,7 +542,7 @@ export class CHDataSource
       }
     });
 
-    return this.processQueryResponse(responses, options, queries, targets)
+    return this.processQueryResponse(responses, options, queries, preparedTargets)
   }
 
 

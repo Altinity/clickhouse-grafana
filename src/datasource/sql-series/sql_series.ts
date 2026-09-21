@@ -1,6 +1,7 @@
 import { toAnnotation } from './toAnnotation';
 import { toFlamegraph } from './toFlamegraph';
 import { toLogs } from './toLogs';
+import { toLogsVolume } from './toLogsVolume';
 import { toTable } from './toTable';
 import { toTimeSeries } from './toTimeSeries';
 import { toTraces } from './toTraces';
@@ -138,6 +139,11 @@ export default class SqlSeries {
   toLogs = (): any => {
     const self = this;
     return toLogs(self);
+  };
+
+  toLogsVolume = (): any => {
+    const self = this;
+    return toLogsVolume(self);
   };
 
   toTable = (): any => {

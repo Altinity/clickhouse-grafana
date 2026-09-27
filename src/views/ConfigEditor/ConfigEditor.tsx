@@ -8,6 +8,8 @@ import { LANGUAGE_ID } from '../QueryEditor/components/QueryTextEditor/editor/in
 import { MONACO_EDITOR_OPTIONS } from '../constants';
 import { COMPRESSION_TYPE_OPTIONS } from './constants';
 import { DEFAULT_VALUES_QUERY } from '../../datasource/adhoc';
+import { DataLinksSection } from './components/DataLinks/DataLinksSection';
+import { DataLinkConfig } from '../../datasource/datalinks/types';
 
 export interface CHSecureJsonData {
   password?: string;
@@ -89,6 +91,13 @@ export function ConfigEditor(props: Props) {
   const onFieldChange = (column: SelectableValue, fieldName) => {
     jsonData[fieldName] = column.value;
     onOptionsChange({ ...options, jsonData: { ...jsonData } });
+  };
+
+  const onDataLinksChange = (dataLinks: DataLinkConfig[]) => {
+    onOptionsChange({
+      ...options,
+      jsonData: { ...jsonData, dataLinks },
+    });
   };
 
   return (
@@ -241,6 +250,10 @@ export function ConfigEditor(props: Props) {
           />
         </InlineField>
       </div>
+      <DataLinksSection
+        dataLinks={jsonData.dataLinks ?? []}
+        onChange={onDataLinksChange}
+      />
     </>
   );
 }

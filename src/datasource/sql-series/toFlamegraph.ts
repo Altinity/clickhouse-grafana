@@ -1,4 +1,6 @@
 import { Field } from './sql_series';
+import { applyDataLinks, InheritedQuerySettings } from '../datalinks';
+import { DataLinkConfig } from '../datalinks/types';
 
 interface FlamegraphData {
   label: string;
@@ -7,7 +9,12 @@ interface FlamegraphData {
   self: number;
 }
 
-export const toFlamegraph = (inputSeries): any => {
+export const toFlamegraph = (
+  inputSeries,
+  dataLinks?: DataLinkConfig[],
+  app?: string,
+  sourceQuery?: InheritedQuerySettings
+): any => {
   // interface Field {
   //   name: string;
   //   type: string;
@@ -59,9 +66,12 @@ export const toFlamegraph = (inputSeries): any => {
       fields.self.values.push(item.self);
     });
 
+    const fieldArray = Object.values(fields);
+    applyDataLinks(fieldArray, dataLinks, { app, sourceQuery });
+
     return [
       {
-        fields: Object.values(fields),
+        fields: fieldArray,
         length: inputData.length,
       },
     ];

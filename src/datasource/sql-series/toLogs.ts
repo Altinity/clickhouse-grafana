@@ -1,6 +1,7 @@
 import {createDataFrame, DataFrame, DataFrameType, FieldType} from '@grafana/data';
 import {each, find} from 'lodash';
 import {convertTimezonedDateToUTC} from './sql_series';
+import { applyDataLinks, DataLinkConfig } from '../datalinks';
 import { resolveFieldModes, transformObject, renderFieldByMode, pathStyleForType } from './logsFieldModes';
 
 // Re-export transformObject so existing imports from './toLogs' keep working
@@ -48,6 +49,12 @@ export const toLogs = (self: any): DataFrame[] => {
     return [];
   }
 
+  // Columns referenced by data-link configs are promoted to top-level fields
+  // below (instead of being folded into the `labels` map). Exclude them from
+  // `labelFields` so the value isn't duplicated in both places.
+  const dataLinks: DataLinkConfig[] = self.dataLinks ?? [];
+  const promotedColumns = new Set<string>(dataLinks.map((c) => c.fieldName).filter((n) => !!n));
+
   let types: { [key: string]: any } = {};
   let labelFields: any[] = [];
   const labelFieldsList: any[] = []
@@ -75,7 +82,8 @@ export const toLogs = (self: any): DataFrame[] => {
     const isLabelCandidate =
       (type === FieldType.number || type === FieldType.string) &&
       col.name !== messageField &&
-      !reservedFields.includes(col.name);
+      !reservedFields.includes(col.name) &&
+      !promotedColumns.has(col.name);
 
     if (isLabelCandidate && mode !== 'hide' && mode !== 'raw') {
       labelFields.push(col.name);
@@ -151,42 +159,62 @@ export const toLogs = (self: any): DataFrame[] => {
     });
   });
 
+  const baseFields = [
+    dataObjectValues[timestampKey]?.values.length && {
+      name: 'timestamp',
+      type: FieldType.time,
+      values: dataObjectValues[timestampKey]?.values,
+    },
+    (dataObjectValues['level']?.values?.length || dataObjectValues['severity']?.values?.length) && {
+      name: 'severity',
+      type: (dataObjectValues['level'] || dataObjectValues['severity'])?.type,
+      values: (dataObjectValues['level'] || dataObjectValues['severity'])?.values,
+    },
+    dataObjectValues[messageField] && {
+      name: 'body',
+      type: dataObjectValues[messageField].type,
+      values: dataObjectValues[messageField].values,
+      config: { filterable: false }
+    },
+    labelFieldsList.length && {
+      name: 'labels',
+      values: labelFieldsList,
+      type: FieldType.other,
+    },
+    dataObjectValues['id']?.values?.length &&
+    {
+      name: 'id',
+      type: (dataObjectValues['id'])?.type,
+      values: (dataObjectValues['id'])?.values,
+    },
+  ].filter(Boolean);
+
+  // Promote dataLink-referenced source columns as top-level fields when they
+  // are not already represented by the standard fields above. This lets users
+  // attach a link directly to e.g. `trace_id` even though the logs converter
+  // would otherwise fold it into the `labels` field.
+  const existingFieldNames = new Set(baseFields.map((f: any) => f.name));
+  const extraFields = Array.from(promotedColumns)
+    .filter((name) => !existingFieldNames.has(name) && dataObjectValues[name]?.values?.length)
+    .map((name) => {
+      const col: any = dataObjectValues[name];
+      let fieldType: any = col.type;
+      if (fieldType && typeof fieldType === 'object' && 'fieldType' in fieldType) {
+        fieldType = fieldType.fieldType;
+      }
+      return { name, type: fieldType, values: col.values, config: {} };
+    });
+
   const result = createDataFrame({
-    fields: [
-      dataObjectValues[timestampKey]?.values.length && {
-        name: 'timestamp',
-        type: FieldType.time,
-        values: dataObjectValues[timestampKey]?.values,
-      },
-      (dataObjectValues['level']?.values?.length || dataObjectValues['severity']?.values?.length) && {
-        name: 'severity',
-        type: (dataObjectValues['level'] || dataObjectValues['severity'])?.type,
-        values: (dataObjectValues['level'] || dataObjectValues['severity'])?.values,
-      },
-      dataObjectValues[messageField] && {
-        name: 'body',
-        type: dataObjectValues[messageField].type,
-        values: dataObjectValues[messageField].values,
-        config: { filterable: false }
-      },
-      labelFieldsList.length && {
-        name: 'labels',
-        values: labelFieldsList,
-        type: FieldType.other,
-      },
-      dataObjectValues['id']?.values?.length &&
-      {
-        name: 'id',
-        type: (dataObjectValues['id'])?.type,
-        values: (dataObjectValues['id'])?.values,
-      },
-    ].filter(Boolean),
+    fields: [...baseFields, ...extraFields],
     meta: {
       type: DataFrameType.LogLines,
       preferredVisualisationType: 'logs'
     },
     refId: self.refId,
   });
+
+  applyDataLinks(result.fields, dataLinks, { app: self.app, sourceQuery: self.sourceQuery });
 
   return [result]
 };

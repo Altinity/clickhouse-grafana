@@ -1201,7 +1201,36 @@ According to https://grafana.com/docs/grafana/latest/panels-visualizations/visua
 To render your ClickHouse data as Logs, please use special format in "Format as" dropdown in Query Editor called "Logs". This option helps Grafana recognizes data as logs and shows logs visualization automatically in Explore UI. On dashboards you can use [Logs panel](https://grafana.com/docs/grafana/latest/visualizations/logs-panel/) as well.
 
 ![Format as Logs](https://github.com/Altinity/clickhouse-grafana/raw/master/.github/images/23_logs_support.png)
-  
+
+### Logs volume histogram in Explore
+
+In Explore → Logs, Grafana shows a histogram of log volume above the log lines. Since 3.6.0 the plugin
+builds it with a separate, server-side aggregate over the **whole** selected time range (Grafana's
+"supplementary query" contract), so the histogram is no longer limited to the rows returned by your
+`LIMIT` and the warning *"This datasource does not support full-range histograms"* is gone.
+
+How it works: for every query with `Format as: Logs` the plugin takes the `FROM` and `WHERE` parts of
+your SQL (via the backend SQL parser), drops `SELECT`/`ORDER BY`/`LIMIT`, and runs
+
+```sql
+SELECT $timeSeries AS t,
+       sum(multiSearchAny(toString("level"), ['critical','fatal','crit','alert','emerg', ...])) AS critical,
+       sum(multiSearchAny(toString("level"), ['error','err','eror', ...]))                     AS error,
+       ... warning, info, debug, trace, unknown ...
+FROM <your FROM> WHERE <your WHERE> GROUP BY t ORDER BY t
+```
+
+Requirements and limits:
+
+* the query must have a **Timestamp column** configured in the query editor (`$timeSeries`/`$timeFilter` need it); for queries without it the plugin reports no supplementary-query support, so Grafana keeps its old row-based histogram and warning;
+* the log level is read from a column named `level`, or `severity` when the query mentions `severity` but not `level` (the same convention the Logs panel uses); if the query mentions neither, the histogram is a single `count()` series;
+* levels are matched with `multiSearchAny` against the usual spellings (`info`/`INFO`/`Info`, `warn`/`warning`, `err`/`error`, `fatal`/`crit`/`critical`, `debug`, `trace`, `unknown`) — it is a substring match, so a value can be counted in more than one bucket and a value matching no list is not counted at all;
+* `WITH` clauses are carried over to the aggregate; if the `FROM` clause cannot be extracted (for example a sub-query in `FROM`), the original query is wrapped as a sub-query with its trailing `LIMIT`/`ORDER BY` removed — this fallback needs the timestamp column to be part of the original `SELECT` list;
+* the histogram uses at most 100 time buckets per range, independent of the logs query interval.
+
+See `docker/grafana/dashboards/logs_volume_histogram_782.json` in the repository for a demo dashboard and a
+pre-filled Explore link.
+
 To return suitable for logs data - query should return at least one time field (assumed that it will be first field) and one text field from the ClickHouse.
 
 Plugin is also transforming all text fields, except log line, into the labels using following rules:

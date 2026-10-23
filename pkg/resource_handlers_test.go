@@ -208,6 +208,15 @@ func TestHandleApplyAdhocFilters(t *testing.T) {
 			http.StatusOK, []string{"WHERE", "b = 2"}, "",
 		},
 		{
+			"preserve IN list when injecting filters",
+			map[string]interface{}{
+				"query":        "SELECT dt FROM default.messages WHERE severity IN ('EMERGENCY','ALERT','CRITICAL')",
+				"adhocFilters": []map[string]interface{}{{"key": "environment", "operator": "=", "value": "test"}},
+				"target":       target,
+			},
+			http.StatusOK, []string{"severity IN ('EMERGENCY', 'ALERT', 'CRITICAL')", "(environment = 'test')"}, "",
+		},
+		{
 			"string value quoted",
 			map[string]interface{}{"query": "SELECT x FROM default.test", "adhocFilters": []map[string]interface{}{{"key": "b", "operator": "=", "value": "web"}}, "target": target},
 			http.StatusOK, []string{"b = 'web'"}, "",

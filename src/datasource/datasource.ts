@@ -29,7 +29,7 @@ import { DataLinkConfig } from './datalinks';
 import {QueryEditor, QueryEditorVariable} from '../views/QueryEditor/QueryEditor';
 import { getAdhocFilters } from '../views/QueryEditor/helpers/getAdHocFilters';
 import { from, merge, Observable } from 'rxjs';
-import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation, safeTemplateReplace } from './helpers';
+import { adhocFilterVariable, conditionalTest, convertTimestamp, createContextAwareInterpolation, safeTemplateReplace, toVariableFields } from './helpers';
 import { ClickHouseResourceClient } from './resource_handler';
 import { parseJsonResponseLossless, tryParseJson } from './losslessJson';
 import { generateQueryForTimestampBackward, generateQueryForTimestampForward } from './log-context-query';
@@ -470,11 +470,7 @@ export class CHDataSource
                 values: sqlSeries.series.map(item => item[valueField!].toString()),
               })
             } else if (textField) {
-              resultContent.fields.push({
-                name: 'text',
-                type: FieldType.string,
-                values: sqlSeries.series.map(item => item[textField!]),
-              })
+              resultContent.fields.push(...toVariableFields(sqlSeries.series.map(item => item[textField!])))
             } else {
               const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');
               if (getFirstStringField) {
@@ -486,11 +482,7 @@ export class CHDataSource
               } else {
                 const getFirstElement = sqlSeries.meta[0];
 
-                resultContent.fields.push({
-                  name: 'text',
-                  type: FieldType.string,
-                  values: sqlSeries.series.map(item => item[getFirstElement.name]),
-                })
+                resultContent.fields.push(...toVariableFields(sqlSeries.series.map(item => item[getFirstElement.name])))
               }
             }
 
@@ -745,11 +737,7 @@ export class CHDataSource
               values: sqlSeries.series.map(item => item[valueField!].toString()),
             })
           } else if (textField) {
-            resultContent.fields.push({
-              name: 'text',
-              type: FieldType.string,
-              values: sqlSeries.series.map(item => item[textField!]),
-            })
+            resultContent.fields.push(...toVariableFields(sqlSeries.series.map(item => item[textField!])))
           } else {
             const getFirstStringField = sqlSeries.meta.find((col: any) => col.type === 'String');
             if (getFirstStringField) {
@@ -761,11 +749,7 @@ export class CHDataSource
             } else {
               const getFirstElement = sqlSeries.meta[0];
 
-              resultContent.fields.push({
-                name: 'text',
-                type: FieldType.string,
-                values: sqlSeries.series.map(item => item[getFirstElement.name]),
-              })
+              resultContent.fields.push(...toVariableFields(sqlSeries.series.map(item => item[getFirstElement.name])))
             }
           }
 

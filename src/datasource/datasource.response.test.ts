@@ -175,6 +175,23 @@ describe('processQueryResponse', () => {
       expect(result.data[0].fields).toEqual([{ name: 'text', type: 'string', values: [7] }]);
     });
 
+    it('labels Array cells as JSON and keeps the raw arrays as values (#781)', () => {
+      const col = "array(service_name, ' test array')";
+      const result = run([{ name: col, type: 'Array(String)' }], [{ [col]: ['mysql', ' test array'] }]);
+      expect(result.data[0].fields).toEqual([
+        { name: 'text', type: 'string', values: ['["mysql"," test array"]'] },
+        { name: 'value', type: 'string', values: [['mysql', ' test array']] },
+      ]);
+    });
+
+    it('labels Map cells of a lone text column as JSON (#781)', () => {
+      const result = run([{ name: 'text', type: 'Map(String, String)' }], [{ text: { k: 'v' } }]);
+      expect(result.data[0].fields).toEqual([
+        { name: 'text', type: 'string', values: ['{"k":"v"}'] },
+        { name: 'value', type: 'string', values: [{ k: 'v' }] },
+      ]);
+    });
+
     it('yields an empty field list for empty meta', () => {
       const result = run([], []);
       expect(result.data[0].fields).toEqual([{ name: 'text', type: 'string', values: [] }]);
@@ -258,6 +275,15 @@ describe('queryVariables', () => {
     const { ds } = setup({ rows: 1, meta: [], data: [] });
     const result: any = await firstValueFrom(ds.queryVariables({ ...baseOptions, targets: [{ refId: 'A', query: 'SELECT x' }] }));
     expect(result.data[0].fields).toEqual([{ name: 'text', type: 'string', values: [] }]);
+  });
+
+  it('labels Array cells as JSON and keeps the raw arrays as values (#781)', async () => {
+    const { ds } = setup({ rows: 1, meta: [{ name: 'arr', type: 'Array(String)' }], data: [{ arr: ['mysql', ' test array'] }] });
+    const result: any = await firstValueFrom(ds.queryVariables({ ...baseOptions, targets: [{ refId: 'A', query: 'SELECT x' }] }));
+    expect(result.data[0].fields).toEqual([
+      { name: 'text', type: 'string', values: ['["mysql"," test array"]'] },
+      { name: 'value', type: 'string', values: [['mysql', ' test array']] },
+    ]);
   });
 
   it('skips responses without rows', async () => {

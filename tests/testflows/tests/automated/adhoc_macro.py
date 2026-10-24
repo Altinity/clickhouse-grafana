@@ -208,6 +208,17 @@ def adhoc_variable_text_select_in_issue_421(self):
 
 
 @TestScenario
+def adhoc_numeric_value_issue_794(self):
+    adhoc_dashboard_check_outline(
+        dashboard_name="issue 794 adhoc with numeric value",
+        panels=[
+            ("Map(String, String) key with numeric value", ["_map['map_key1'] = '200'"]),
+            ("String column with numeric value", ["country = '200'"]),
+        ],
+    )
+
+
+@TestScenario
 def default_adhoc(self):
     """Check that grafana plugin supports setting up adhoc filter in datasource setup."""
 

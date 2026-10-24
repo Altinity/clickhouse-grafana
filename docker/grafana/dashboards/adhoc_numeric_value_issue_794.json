@@ -1,0 +1,51 @@
+{
+  "uid": "issue-794-numeric-value",
+  "title": "issue 794 adhoc with numeric value",
+  "editable": true,
+  "schemaVersion": 39,
+  "time": {"from": "now-6h", "to": "now"},
+  "templating": {
+    "list": [
+      {
+        "type": "adhoc",
+        "name": "adhoc",
+        "datasource": {"type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795"},
+        "filters": [{"key": "default.test_logs_with_complex_labels._map['map_key1']", "operator": "=", "value": "200", "condition": ""}, {"key": "default.test_grafana.country", "operator": "=", "value": "200", "condition": ""}]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Map(String, String) key with numeric value",
+      "datasource": {"type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795"},
+          "format": "table",
+          "editorMode": "sql",
+          "query": "SELECT _time, _raw FROM default.test_logs_with_complex_labels"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "String column with numeric value",
+      "datasource": {"type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 8},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795"},
+          "format": "table",
+          "editorMode": "sql",
+          "query": "SELECT country, count() AS c FROM default.test_grafana GROUP BY country"
+        }
+      ]
+    }
+  ]
+}

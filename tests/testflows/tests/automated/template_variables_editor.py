@@ -150,6 +150,19 @@ def variable_dropdown(self):
                 assert variable_value in sql_editor.get_reformatted_query(query_name='A'), error()
 
 
+@TestScenario
+def array_variable_dropdown_issue_781(self):
+    with Given("I open dashboard clickhouse dashboard"):
+        dashboards.open_dashboard(dashboard_name="clickhouse dashboard")
+
+    with When("I get array_var values"):
+        with delay():
+            variable_values = panel.get_dropdown_variable_values_set(variable_name="array_var")
+
+    with Then("I check dropdown shows array values as JSON"):
+        assert {'["mysql"," test array"]', '["postgresql"," test array"]'} <= variable_values, error()
+
+
 @TestFeature
 @Name("template variable editor")
 def feature(self):

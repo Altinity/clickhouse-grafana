@@ -18,7 +18,7 @@ type AdhocFilter struct {
 // numericValueRegex matches an integer or decimal string, optionally with surrounding whitespace.
 var numericValueRegex = regexp.MustCompile(`^\s*\d+(\.\d+)?\s*$`)
 
-// formatAdhocScalar quotes a scalar value for SQL, matching legacy behavior.
+// formatAdhocScalar quotes a scalar value for SQL.
 func formatAdhocScalar(v interface{}) string {
 	switch val := v.(type) {
 	case json.Number:
@@ -26,8 +26,7 @@ func formatAdhocScalar(v interface{}) string {
 	case float64:
 		return fmt.Sprintf("%g", val)
 	case string:
-		if numericValueRegex.MatchString(val) ||
-			strings.Contains(val, "'") ||
+		if strings.Contains(val, "'") ||
 			strings.Contains(val, ", ") {
 			return val
 		}
@@ -261,7 +260,7 @@ func isNumericFamily(t string) bool {
 }
 
 // formatAdhocValue formats a filter value for SQL with type-aware quoting.
-// When leafType is "", it delegates to formatAdhocScalar (byte-identical legacy behavior).
+// When leafType is "", it delegates to formatAdhocScalar.
 func formatAdhocValue(v interface{}, leafType string) string {
 	// Fix 1: when the column's leaf type is a string family, ALL Go value types
 	// (including json.Number and float64) must be coerced to a string form and
@@ -310,7 +309,6 @@ func formatAdhocValue(v interface{}, leafType string) string {
 // When non-nil, keys whose base name matches a real column are treated as column
 // expressions (dot-path or bracket subscript) rather than db.table.col references,
 // and values are quoted according to the column type.
-// When nil or empty, behavior is byte-identical to the legacy implementation.
 func ProcessAdhocFilters(adhocFilters []AdhocFilter, targetDatabase, targetTable string, columns map[string]string) []string {
 	var adhocConditions []string
 

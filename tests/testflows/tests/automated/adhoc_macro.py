@@ -172,6 +172,16 @@ def adhoc_from_template_variable_issue_805(self):
 
 
 @TestScenario
+def adhoc_in_list_issue_941(self):
+    adhoc_dashboard_check_outline(
+        dashboard_name="issue 941 adhoc with IN list",
+        panels=[
+            ("IN list with adhoc filter", ["service_name IN ('mysql', 'postgresql')", "country = 'US'"]),
+        ],
+    )
+
+
+@TestScenario
 def adhoc_hide_table_names_issue_456(self):
     """Check that adhoc dashboard 'AdHoc with Hiding table name' shows correct SQL and data."""
 

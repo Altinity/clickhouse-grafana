@@ -276,7 +276,7 @@ class Locators:
     @property
     def alert_for_panel(self):
         driver: WebDriver = current().context.driver
-        return driver.find_element(SelectBy.XPATH, f"//span[contains(@class,'panel-header-item')]")
+        return driver.find_element(SelectBy.XPATH, f"//*[contains(@class,'panel-header-item')]")
 
     @property
     def exit_edit_button(self):

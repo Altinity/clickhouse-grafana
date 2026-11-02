@@ -2,28 +2,12 @@
 // generally used by snapshots, but can affect specific tests
 process.env.TZ = 'UTC';
 
-const { nodeModulesToTransform, grafanaESModules } = require('./.config/jest/utils');
-
-// ESM-only packages pulled in transitively by @grafana/ui / @grafana/runtime
-// (TimeRangePicker -> react-calendar -> @wojtekmaj/date-utils, get-user-locale).
-// Jest must transform them, otherwise any suite importing @grafana/ui (e.g. the
-// DataLinks editors) or @grafana/runtime fails to even load with
-// "Cannot use import statement outside a module".
-const extraESModules = [
-  'react-calendar',
-  '@wojtekmaj/date-utils',
-  'get-user-locale',
-  'memoize',
-  'mimic-function',
-];
-
 module.exports = {
   // Jest configuration provided by Grafana scaffolding
   ...require('./.config/jest.config'),
-  transformIgnorePatterns: [nodeModulesToTransform([...grafanaESModules, ...extraESModules])],
   // Async RTL tests (Advanced logs modal) do a real render + findBy* after a mocked fetch; under
-  // the full parallel suite (plus the extra ESM transforms above) the first heavy test can exceed
-  // the 5s default. Logic is verified green in isolation — raise the ceiling to avoid flaky timeouts.
+  // the full parallel suite the first heavy test can exceed the 5s default. Logic is verified green
+  // in isolation — raise the ceiling to avoid flaky timeouts.
   testTimeout: 15000,
 
   // Pin the coverage denominator to the whole frontend (issue #785).

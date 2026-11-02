@@ -23,9 +23,6 @@ echo PATH=$PATH >> $GITHUB_ENV
 
 ./tests/testflows/infra/retry.sh 60 2 "pip install -r tests/testflows/requirements.txt"
 
-sudo apt-get update
-sudo apt-get install ffmpeg libsm6 libxext6  -y
-
 sudo mkdir tests/testflows/tmp/
 sudo mkdir tests/testflows/tmp/target
 sudo chmod 777 -R tests/testflows/tmp/

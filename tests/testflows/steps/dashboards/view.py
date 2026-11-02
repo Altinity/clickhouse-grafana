@@ -19,14 +19,6 @@ def open_dashboards_endpoint(self, endpoint=None):
 
 
 @TestStep(When)
-def wait_dashboard(self, dashboard_name):
-    """Wait dashboard to be loaded."""
-    ui.wait_for_element_to_be_clickable(
-        select_type=SelectBy.LINK_TEXT, element=f"{dashboard_name}"
-    )
-
-
-@TestStep(When)
 def click_dashboard_checkmark(self, dashboard_name):
     """Click dashboard checkmark."""
     locators.check_mark(dashboard_name=dashboard_name).click()
@@ -65,15 +57,17 @@ def open_dashboard_view(self, dashboard_name):
 
 
 @TestStep(When)
-def open_dashboards_view(self, wait_dashboard_name="clickhouse dashboard"):
+def open_dashboards_view(self):
     """Open dashboards view and wait it to be loaded."""
     with When("I go to dashboards endpoint"):
         with delay():
             open_dashboards_endpoint()
 
-    with And("I wait submit button to be clickable"):
+    with And("I wait dashboards list to be loaded"):
         with delay():
-            wait_dashboard(dashboard_name=wait_dashboard_name)
+            ui.wait_for_element_to_be_clickable(
+                select_type=SelectBy.XPATH, element="//a[contains(@href, '/d/')]"
+            )
 
 
 @TestStep(When)

@@ -200,12 +200,12 @@ func TestHandleApplyAdhocFilters(t *testing.T) {
 		{
 			"inject into existing WHERE",
 			map[string]interface{}{"query": "SELECT x FROM default.test WHERE a = 1", "adhocFilters": filters, "target": target},
-			http.StatusOK, []string{"WHERE", "a = 1", "AND", "(b = 2)"}, "",
+			http.StatusOK, []string{"WHERE", "a = 1", "AND", "(b = '2')"}, "",
 		},
 		{
 			"inject creates WHERE",
 			map[string]interface{}{"query": "SELECT x FROM default.test", "adhocFilters": filters, "target": target},
-			http.StatusOK, []string{"WHERE", "b = 2"}, "",
+			http.StatusOK, []string{"WHERE", "b = '2'"}, "",
 		},
 		{
 			"string value quoted",
@@ -215,7 +215,7 @@ func TestHandleApplyAdhocFilters(t *testing.T) {
 		{
 			"adhoc macro replaced with conditions",
 			map[string]interface{}{"query": "SELECT x FROM default.test WHERE $adhoc", "adhocFilters": filters, "target": target},
-			http.StatusOK, []string{"WHERE (b = 2)"}, "",
+			http.StatusOK, []string{"WHERE (b = '2')"}, "",
 		},
 		{
 			"adhoc macro with no filters becomes 1",
@@ -225,7 +225,7 @@ func TestHandleApplyAdhocFilters(t *testing.T) {
 		{
 			"subquery FROM",
 			map[string]interface{}{"query": "SELECT x FROM (SELECT y FROM default.test)", "adhocFilters": filters, "target": target},
-			http.StatusOK, []string{"WHERE b = 2"}, "",
+			http.StatusOK, []string{"WHERE b = '2'"}, "",
 		},
 		{
 			"parse error",
@@ -377,7 +377,7 @@ func TestHandleProcessQueryBatch(t *testing.T) {
 		req["adhocFilters"] = filters
 		resp := callResource(t, "processQueryBatch", req)
 		require.Equal(t, http.StatusOK, resp.Status)
-		require.Contains(t, decodeBody(t, resp)["sql"], "(b = 2)")
+		require.Contains(t, decodeBody(t, resp)["sql"], "(b = '2')")
 	})
 
 	t.Run("adhoc macro replaced", func(t *testing.T) {
@@ -387,7 +387,7 @@ func TestHandleProcessQueryBatch(t *testing.T) {
 		resp := callResource(t, "processQueryBatch", req)
 		require.Equal(t, http.StatusOK, resp.Status)
 		sql := decodeBody(t, resp)["sql"].(string)
-		require.Contains(t, sql, "(b = 2)")
+		require.Contains(t, sql, "(b = '2')")
 		require.NotContains(t, sql, "$adhoc")
 	})
 
@@ -460,8 +460,8 @@ func TestHandleCreateQueryWithAdhoc(t *testing.T) {
 		wantErr    string
 	}{
 		{"no filters no adhoc", base(plain), nil, http.StatusOK, []string{"FROM default.test"}, ""},
-		{"filters injected", base(plain), func(m map[string]interface{}) { m["adhocFilters"] = filters }, http.StatusOK, []string{"(b = 2)"}, ""},
-		{"adhoc replaced with conditions", base(withAdhoc), func(m map[string]interface{}) { m["adhocFilters"] = filters }, http.StatusOK, []string{"(b = 2)"}, ""},
+		{"filters injected", base(plain), func(m map[string]interface{}) { m["adhocFilters"] = filters }, http.StatusOK, []string{"(b = '2')"}, ""},
+		{"adhoc replaced with conditions", base(withAdhoc), func(m map[string]interface{}) { m["adhocFilters"] = filters }, http.StatusOK, []string{"(b = '2')"}, ""},
 		{"adhoc no filters becomes 1", base(withAdhoc), nil, http.StatusOK, []string{"AND 1"}, ""},
 		{
 			"adhoc with non-matching filters becomes 1", base(withAdhoc),

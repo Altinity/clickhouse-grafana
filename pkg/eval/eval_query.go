@@ -1726,11 +1726,11 @@ func (s *EvalQueryScanner) ToAST() (*EvalAST, error) {
 				}
 				if subAST.HasOwnProperty("root") && len(subAST.Obj["root"].(*EvalAST).Arr) > 0 {
 					var subArr = subAST.Obj["root"].(*EvalAST)
-					argument += " ("
+					items := make([]string, 0, len(subArr.Arr))
 					for _, item := range subArr.Arr {
-						argument += item.(string)
+						items = append(items, item.(string))
 					}
-					argument = argument + ")"
+					argument += " (" + strings.Join(items, ", ") + ")"
 				} else {
 					argument += " (" + newLine + PrintAST(subAST, tabSize) + ")"
 					if s.RootToken != "select" {

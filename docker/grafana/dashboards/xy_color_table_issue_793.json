@@ -1,0 +1,180 @@
+{
+  "annotations": {
+    "list": [
+      {
+        "builtIn": 1,
+        "datasource": {
+          "type": "grafana"
+        },
+        "enable": true,
+        "hide": true,
+        "iconColor": "rgba(0, 211, 255, 1)",
+        "name": "Annotations & Alerts",
+        "target": {
+          "limit": 100,
+          "matchAny": false,
+          "tags": [],
+          "type": "dashboard"
+        },
+        "type": "dashboard"
+      }
+    ]
+  },
+  "description": "https://github.com/Altinity/clickhouse-grafana/issues/793",
+  "editable": true,
+  "fiscalYearStartMonth": 0,
+  "graphTooltip": 0,
+  "liveNow": false,
+  "panels": [
+    {
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "description": "https://github.com/Altinity/clickhouse-grafana/issues/793",
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "fixedColor": "red",
+            "mode": "thresholds",
+            "seriesBy": "last"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 50,
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "pointShape": "circle",
+            "pointSize": {
+              "fixed": 5
+            },
+            "pointStrokeWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "show": "points"
+          },
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green",
+                "value": 0
+              },
+              {
+                "color": "#EAB839",
+                "value": 5000
+              },
+              {
+                "color": "red",
+                "value": 50000
+              }
+            ]
+          }
+        }
+      },
+      "gridPos": {
+        "h": 9,
+        "w": 12,
+        "x": 0,
+        "y": 0
+      },
+      "id": 5,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "mapping": "auto",
+        "series": [
+          {
+            "color": {
+              "matcher": {
+                "id": "byName",
+                "options": "color"
+              }
+            },
+            "x": {
+              "matcher": {
+                "id": "byName",
+                "options": "x"
+              }
+            },
+            "y": {
+              "matcher": {
+                "id": "byName",
+                "options": "y"
+              }
+            }
+          }
+        ],
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "13.3.0",
+      "targets": [
+        {
+          "adHocFilters": [],
+          "adHocValuesQuery": "",
+          "add_metadata": true,
+          "contextWindowSize": "10",
+          "database": "default",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "dateColDataType": "",
+          "dateLoading": false,
+          "dateTimeColDataType": "dt",
+          "dateTimeType": "DATETIME",
+          "datetimeLoading": false,
+          "editorMode": "sql",
+          "extrapolate": true,
+          "format": "table",
+          "formattedQuery": "/* grafana dashboard='XY + Color Table visualization  Copy', user=admin */\nSELECT\n    x,\n    y,\n    color \nFROM default.xy_chart\n\nWHERE dt >= toDateTime(1793619081) AND dt <= toDateTime(1793640681)",
+          "interval": "",
+          "intervalFactor": 1,
+          "nullifySparse": false,
+          "query": "SELECT\n    x,\n    y,\n    color \nFROM $table\n\nWHERE $timeFilter\n",
+          "rawQuery": "SELECT\n    (intDiv(toUInt32(event_time), 20) * 20) * 1000 as t,\n    sum(too_big_value) as metric\nFROM default.test_grafana\n\nWHERE event_time >= toDateTime(1640075259) AND event_time <= toDateTime(1640096859)\n\nGROUP BY t\n\nORDER BY t",
+          "refId": "A",
+          "round": "0s",
+          "showFormattedSQL": true,
+          "skip_comments": true,
+          "table": "xy_chart",
+          "tableLoading": false,
+          "useWindowFuncForMacros": true
+        }
+      ],
+      "title": "XY + Color, table visualization",
+      "type": "xychart"
+    }
+  ],
+  "preload": false,
+  "refresh": "",
+  "schemaVersion": 42,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "timepicker": {
+    "refresh_intervals": ["5s", "10s", "30s", "1m", "5m", "15m", "30m", "1h", "2h", "1d"]
+  },
+  "timezone": "browser",
+  "title": "XY + Color Table visualization",
+  "version": 2,
+  "uid": "xy_color_table",
+  "id": 616769472745472
+}

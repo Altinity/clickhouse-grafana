@@ -172,6 +172,16 @@ def adhoc_from_template_variable_issue_805(self):
 
 
 @TestScenario
+def adhoc_in_list_issue_941(self):
+    adhoc_dashboard_check_outline(
+        dashboard_name="issue 941 adhoc with IN list",
+        panels=[
+            ("IN list with adhoc filter", ["service_name IN ('mysql', 'postgresql')", "country = 'US'"]),
+        ],
+    )
+
+
+@TestScenario
 def adhoc_hide_table_names_issue_456(self):
     """Check that adhoc dashboard 'AdHoc with Hiding table name' shows correct SQL and data."""
 
@@ -203,6 +213,17 @@ def adhoc_variable_text_select_in_issue_421(self):
         dashboard_name="$adhoc + ${variable:text} formatting",
         panels=[
             ("variable formatting $variable::text and adhoc", ["SELECT", "FROM", "default.test_grafana", "country", "NL"]),
+        ],
+    )
+
+
+@TestScenario
+def adhoc_numeric_value_issue_794(self):
+    adhoc_dashboard_check_outline(
+        dashboard_name="issue 794 adhoc with numeric value",
+        panels=[
+            ("Map(String, String) key with numeric value", ["_map['map_key1'] = '200'"]),
+            ("String column with numeric value", ["country = '200'"]),
         ],
     )
 

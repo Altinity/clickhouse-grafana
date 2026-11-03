@@ -167,63 +167,59 @@ def default_values_not_affect_url_textfield(self):
             assert datasources_altinity_edit.get_url_textfield_text() == "http://clickhouse:8123", error()
 
 
+@TestStep(When)
+def screenshot_panel_with_annotation(self, panel_name, annotation_name, screenshot_name):
+    """Open {panel_name} panel on Annotation event_time dashboard, refresh {annotation_name} and take a screenshot."""
+
+    with When("I go to Annotation event_time"):
+        with delay():
+            dashboards.open_dashboard(dashboard_name="Annotation event_time")
+
+    try:
+        with By(f"opening panel {panel_name}"):
+            with delay():
+                dashboard.open_panel(panel_name=panel_name)
+
+        with By(f"refreshing {annotation_name}"):
+            with delay():
+                panel.refresh_annotation(annotation_name=annotation_name)
+
+        with By(f"taking screenshot for visualization for {panel_name} panel"):
+            with delay():
+                panel.take_screenshot_for_visualization(screenshot_name=screenshot_name)
+
+    finally:
+        with By("discarding changes for panel"):
+            with delay(after=0.5):
+                panel.click_back_to_dashboard_button()
+
+        with By("discarding changes for dashboard"):
+            with delay(after=0.5):
+                dashboard.discard_changes_for_dashboard()
+
+
 @TestScenario
 def annotations_without_time_reformatting(self):
     """Check that grafana supports annotations query in different formats."""
 
-    with When("I go to Annotation event_time"):
-        with delay():
-            dashboards.open_dashboard(dashboard_name="Annotation event_time")
+    # Grafana's own SQLite storage sporadically answers an annotation query with
+    # "database is locked (SQLITE_BUSY)", leaving the panel without annotations;
+    # retake both screenshots instead of failing on a single transient error.
+    for attempt in retries(count=3, delay=5):
+        with attempt:
+            with When("I screenshot event_time panel"):
+                screenshot_panel_with_annotation(
+                    panel_name="event_time", annotation_name="annotation_1", screenshot_name="event_tme_panel"
+                )
 
-    with And("I screenshot event_time panel"):
-        with By("opening panel event_time"):
-            with delay():
-                dashboard.open_panel(panel_name='event_time')
+            with And("I screenshot toUInt64 panel"):
+                screenshot_panel_with_annotation(
+                    panel_name="toUInt64", annotation_name="annotation_2", screenshot_name="toUInt64_panel"
+                )
 
-        with By("refreshing annotation 1"):
-            with delay():
-                panel.refresh_annotation(annotation_name="annotation_1")
-
-        with By("taking screenshot for visualization for event_time panel"):
-            with delay():
-                panel.take_screenshot_for_visualization(screenshot_name="event_tme_panel")
-
-    with Finally("I discard changes for panel"):
-        with delay(after=0.5):
-            panel.click_back_to_dashboard_button()
-
-    with And("I discard changes for dashboard"):
-        with delay(after=0.5):
-            dashboard.discard_changes_for_dashboard()
-
-    with When("I go to Annotation event_time"):
-        with delay():
-            dashboards.open_dashboard(dashboard_name="Annotation event_time")
-
-    with And("I screenshot toUInt64 panel"):
-        with By("opening panel toUInt64"):
-            with delay():
-                dashboard.open_panel(panel_name='toUInt64')
-
-        with By("refreshing annotation 2"):
-            with delay():
-                panel.refresh_annotation(annotation_name="annotation_2")
-
-        with By("taking screenshot for visualization for toUInt64 panel"):
-            with delay():
-                panel.take_screenshot_for_visualization(screenshot_name="toUInt64_panel")
-
-    with Finally("I discard changes for panel"):
-        with delay(after=0.5):
-            panel.click_back_to_dashboard_button()
-
-    with And("I discard changes for dashboard"):
-        with delay(after=0.5):
-            dashboard.discard_changes_for_dashboard()
-
-    with Then("I compare screenshots"):
-        with delay():
-            assert actions.compare_screenshots_percent(screenshot_name_1="event_tme_panel", screenshot_name_2="toUInt64_panel") > 0.9, error()
+            with Then("I compare screenshots"):
+                with delay():
+                    assert actions.compare_screenshots_percent(screenshot_name_1="event_tme_panel", screenshot_name_2="toUInt64_panel") > 0.9, error()
 
 
 @TestScenario

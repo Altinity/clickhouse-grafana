@@ -575,7 +575,6 @@ func TestMapValueType(t *testing.T) {
 // TestFormatAdhocValue_TypeAwareNumericTypes verifies that when leafType is a
 // string family, numeric Go types (json.Number, float64) are coerced to a
 // string form and quoted — the gap that Fix 1 closes.
-// Regression cases verify nil/unknown-leaf path remains byte-identical.
 func TestFormatAdhocValue_TypeAwareNumericTypes(t *testing.T) {
 	tests := []struct {
 		name     string
@@ -588,10 +587,10 @@ func TestFormatAdhocValue_TypeAwareNumericTypes(t *testing.T) {
 		{"float64 with String leafType", float64(200), "String", "'200'"},
 		{"json.Number with FixedString leafType", json.Number("42"), "FixedString(10)", "'42'"},
 		{"float64 apostrophe value with String leafType (escape)", float64(1), "String", "'1'"},
-		// REGRESSION: nil/unknown leafType — behavior must be byte-identical to before
+		// REGRESSION: nil/unknown leafType
 		{"json.Number with empty leafType", json.Number("200"), "", "200"},
 		{"float64 with empty leafType", float64(200), "", "200"},
-		{"string '200' with empty leafType", "200", "", "200"},
+		{"string '200' with empty leafType", "200", "", "'200'"},
 	}
 
 	for _, tt := range tests {
@@ -641,6 +640,23 @@ func TestProcessAdhocFilters_StringFamilyNumericGoTypes(t *testing.T) {
 				t.Errorf("filter %q: got %q, want %q", tt.filter.Key, result[0], tt.want)
 			}
 		})
+	}
+}
+
+func TestProcessAdhocFilters_UnknownTypeNumericStringQuoted(t *testing.T) {
+	filters := []AdhocFilter{
+		{Key: "_map['code']", Operator: "=", Value: "200"},
+		{Key: "_map['code']", Operator: "!=", Value: "200"},
+		{Key: "default.logs._map['code']", Operator: "=", Value: "200"},
+		{Key: "default.logs.code", Operator: "=", Value: "200"},
+		{Key: "status", Operator: ">", Value: "1.5"},
+	}
+	want := []string{"_map['code'] = '200'", "_map['code'] != '200'", "_map['code'] = '200'", "code = '200'", "status > '1.5'"}
+
+	for _, columns := range []map[string]string{nil, {"_map": "Map(String, String)", "code": "String"}} {
+		if got := ProcessAdhocFilters(filters, "default", "logs", columns); strings.Join(got, "; ") != strings.Join(want, "; ") {
+			t.Errorf("columns %v: got %q, want %q", columns, got, want)
+		}
 	}
 }
 

@@ -462,6 +462,7 @@ SELECT
 FROM numbers(3);
 
 -- X, Y, Color - visualization,
-CREATE TABLE default.xy_chart (dt DateTime, x UInt64, y UInt64, color UInt64) ENGINE=MergeTree() ORDER BY dt;
+DROP TABLE IF EXISTS default.xy_chart;
+CREATE TABLE IF NOT EXISTS default.xy_chart (dt DateTime, x UInt64, y UInt64, color UInt64) ENGINE=MergeTree() ORDER BY dt;
 INSERT INTO default.xy_chart SELECT now()-INTERVAL number SECONDS, number*2, number*3, number*4 FROM numbers(10000);
 INSERT INTO default.xy_chart SELECT now()+INTERVAL number SECONDS, number*2, number*3, number*4 FROM numbers(10000);

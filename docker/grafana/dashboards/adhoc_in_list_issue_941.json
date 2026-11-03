@@ -1,0 +1,35 @@
+{
+  "uid": "issue-941-in-list",
+  "title": "issue 941 adhoc with IN list",
+  "editable": true,
+  "schemaVersion": 39,
+  "time": {"from": "now-6h", "to": "now"},
+  "templating": {
+    "list": [
+      {
+        "type": "adhoc",
+        "name": "adhoc",
+        "datasource": {"type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795"},
+        "filters": [{"key": "default.test_grafana.country", "operator": "=", "value": "US", "condition": ""}]
+      }
+    ]
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "IN list with adhoc filter",
+      "datasource": {"type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795"},
+      "gridPos": {"h": 8, "w": 12, "x": 0, "y": 0},
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {"type": "vertamedia-clickhouse-datasource", "uid": "P7E099F39B84EA795"},
+          "format": "table",
+          "editorMode": "sql",
+          "query": "SELECT service_name, count() AS c FROM default.test_grafana WHERE service_name IN ('mysql','postgresql') GROUP BY service_name ORDER BY service_name"
+        }
+      ]
+    }
+  ]
+}

@@ -1,4 +1,4 @@
-import { interpolateQueryExpr, interpolateQueryExprWithContext, createContextAwareInterpolation, conditionalTest } from './index';
+import { interpolateQueryExpr, interpolateQueryExprWithContext, createContextAwareInterpolation, conditionalTest, toVariableFields } from './index';
 
 describe('Variable Interpolation', () => {
   describe('interpolateQueryExpr (original)', () => {
@@ -1182,5 +1182,18 @@ describe('safeTemplateReplace', () => {
     ).toThrow('boom');
     expect(templateSrv.replace).toHaveBeenCalledTimes(2);
     expect(templateSrv.replace).toHaveBeenLastCalledWith('/* grafana dashboard=, user=admin */ SELECT $x', {}, undefined);
+  });
+});
+
+describe('toVariableFields (#781)', () => {
+  it('keeps scalar values untouched in a single text field', () => {
+    expect(toVariableFields(['a', 7, null])).toEqual([{ name: 'text', type: 'string', values: ['a', 7, null] }]);
+  });
+
+  it('labels arrays and objects as JSON and keeps them raw as values', () => {
+    expect(toVariableFields([['a', 'b'], { k: 'v' }, 'c'])).toEqual([
+      { name: 'text', type: 'string', values: ['["a","b"]', '{"k":"v"}', 'c'] },
+      { name: 'value', type: 'string', values: [['a', 'b'], { k: 'v' }, 'c'] },
+    ]);
   });
 });

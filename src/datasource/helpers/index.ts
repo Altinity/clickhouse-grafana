@@ -1,5 +1,5 @@
 import { TemplateSrv } from '@grafana/runtime';
-import { dateMath, TypedVariableModel } from '@grafana/data';
+import { dateMath, FieldType, TypedVariableModel } from '@grafana/data';
 import { each, isString, map } from 'lodash';
 
 export const conditionalTest = (query: string, templateSrv: TemplateSrv) => {
@@ -600,6 +600,17 @@ export const safeTemplateReplace = (
     // a failure unrelated to $__dashboard must surface, not degrade to un-interpolated SQL
     return templateSrv.replace(text.replace(DASHBOARD_MACRO_RE, ''), scopedVars, format);
   }
+};
+
+export const toVariableFields = (values: any[]) => {
+  const isComplex = (value: any) => value !== null && typeof value === 'object';
+  if (!values.some(isComplex)) {
+    return [{ name: 'text', type: FieldType.string, values }];
+  }
+  return [
+    { name: 'text', type: FieldType.string, values: values.map((value) => (isComplex(value) ? JSON.stringify(value) : value)) },
+    { name: 'value', type: FieldType.string, values },
+  ];
 };
 
 export const convertTimestamp = (date: any) => {

@@ -251,6 +251,46 @@ def many_categories(self):
             with delay(after=0.5):
                 dashboard.discard_changes_for_dashboard()
 
+
+@TestScenario
+def sql_expressions_issue_820(self):
+    """Check that query results can be used in Grafana SQL expressions."""
+
+    with When("I go to issue 820 dashboard"):
+        with delay():
+            dashboards.open_dashboard(dashboard_name="issue 820 SQL expressions")
+
+    for panel_name, columns in [
+        ("Table without a time column", ["table_service", "table_count"]),
+        ("Single time series", ["single_total"]),
+        ("Time series with a label column", ["label_service", "label_total"]),
+        ("Time series with two value columns", ["column_name", "column_points"]),
+        ("Time series from $columns", ["key_name", "key_total"]),
+    ]:
+        with Then(f"I check SQL expression result for panel '{panel_name}'"):
+            with delay():
+                assert panel.check_columns_in_table_view(columns=columns), error()
+
+
+@TestScenario
+def sql_expressions_browser_access_issue_820(self):
+    """Check that an SQL expression over a Browser access datasource fails: expressions run on the Grafana server."""
+
+    with When("I go to issue 820 dashboard"):
+        with delay():
+            dashboards.open_dashboard(dashboard_name="issue 820 SQL expressions")
+
+    with Then("I check the notice about server-side expressions is displayed"):
+        with delay():
+            dashboard.wait_panel(panel_name="SQL expressions run on the Grafana server")
+
+    with And("I check the panel with an SQL expression shows an error"):
+        with delay():
+            assert dashboard.check_panel_error(
+                panel_name="Browser access with an SQL expression (error expected)"
+            ), error()
+
+
 @TestFeature
 @Name("e2e")
 def feature(self):

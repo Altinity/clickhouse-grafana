@@ -117,25 +117,86 @@ func TestToFramesWithTimeStampNoLabels(t *testing.T) {
 
 var fetchUTC = func(ctx context.Context) *time.Location { return time.UTC }
 
-// TestToFramesTable covers the table branch (no timestamp column in Meta)
-// and string precision preservation for UInt64 values above 2^53
+// TestToFramesTable covers the table branch (no timestamp column in Meta),
+// a single frame with columns in SELECT order (#820) and UInt64 precision above 2^53
 func TestToFramesTable(t *testing.T) {
 	r := &Response{
 		ctx:  context.Background(),
-		Meta: []*FieldMeta{{Name: "name", Type: "String"}, {Name: "big", Type: "UInt64"}},
+		Meta: []*FieldMeta{{Name: "name", Type: "String"}, {Name: "big", Type: "UInt64"}, {Name: "cnt", Type: "UInt32"}},
 		Data: []map[string]interface{}{
-			{"name": "a", "big": json.Number("9007199254740993")},
-			{"name": "b", "big": json.Number("1")},
+			{"name": "a", "big": json.Number("9007199254740993"), "cnt": json.Number("3")},
+			{"name": "b", "big": json.Number("1"), "cnt": json.Number("4")},
 		},
 	}
 	frames, err := r.toFrames(&Query{RefId: "A"}, fetchUTC)
 	require.NoError(t, err)
-	require.Len(t, frames, 2)
-	for _, frame := range frames {
-		require.Equal(t, "A", frame.RefID)
-		require.Len(t, frame.Fields, 1)
-		require.Equal(t, data.FieldTypeString, frame.Fields[0].Type())
-		require.Equal(t, 2, frame.Fields[0].Len())
+	require.Len(t, frames, 1)
+	frame := frames[0]
+	require.Equal(t, "A", frame.RefID)
+	require.Equal(t, []string{"name", "big", "cnt"}, []string{frame.Fields[0].Name, frame.Fields[1].Name, frame.Fields[2].Name})
+	require.Equal(t, 2, frame.Rows())
+	require.Equal(t, data.FieldTypeString, frame.Fields[0].Type())
+	require.Equal(t, data.FieldTypeString, frame.Fields[1].Type())
+	require.Equal(t, "9007199254740993", frame.Fields[1].At(0))
+	require.Equal(t, data.TimeSeriesTypeNot, frame.TimeSeriesSchema().Type)
+}
+
+// TestToFramesTimeSeriesFrameType covers which time series responses declare timeseries-multi (#820)
+func TestToFramesTimeSeriesFrameType(t *testing.T) {
+	const ts = "2024-01-15 10:00:00"
+	testCases := []struct {
+		name           string
+		meta           []*FieldMeta
+		row            map[string]interface{}
+		expectedFrames int
+		expectedMulti  bool
+	}{
+		{
+			"time and one value column stay untyped",
+			[]*FieldMeta{{Name: "t", Type: "DateTime"}, {Name: "c", Type: "UInt32"}},
+			map[string]interface{}{"t": ts, "c": json.Number("1")},
+			1, false,
+		},
+		{
+			"label column",
+			[]*FieldMeta{{Name: "t", Type: "DateTime"}, {Name: "service", Type: "LowCardinality(String)"}, {Name: "c", Type: "UInt32"}},
+			map[string]interface{}{"t": ts, "service": "web", "c": json.Number("1")},
+			1, true,
+		},
+		{
+			"two value columns",
+			[]*FieldMeta{{Name: "t", Type: "DateTime"}, {Name: "c", Type: "UInt32"}, {Name: "a", Type: "Nullable(Float64)"}},
+			map[string]interface{}{"t": ts, "c": json.Number("1"), "a": 2.5},
+			2, true,
+		},
+		{
+			"series from $columns",
+			[]*FieldMeta{{Name: "t", Type: "DateTime"}, {Name: "garr", Type: "Array(Tuple(String, Float64))"}},
+			map[string]interface{}{"t": ts, "garr": []interface{}{[]interface{}{"web", 1.0}}},
+			1, true,
+		},
+		{
+			"UInt64 above 2^53 is a string value and stays untyped",
+			[]*FieldMeta{{Name: "t", Type: "DateTime"}, {Name: "big", Type: "UInt64"}, {Name: "c", Type: "UInt32"}},
+			map[string]interface{}{"t": ts, "big": json.Number("9007199254740993"), "c": json.Number("1")},
+			2, false,
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			r := &Response{ctx: context.Background(), Meta: tc.meta, Data: []map[string]interface{}{tc.row}}
+			frames, err := r.toFrames(&Query{RefId: "A"}, fetchUTC)
+			require.NoError(t, err)
+			require.Len(t, frames, tc.expectedFrames)
+			for _, frame := range frames {
+				if tc.expectedMulti {
+					// TypeVersion stays zero so that Grafana alerting keeps its non-dataplane conversion
+					require.Equal(t, &data.FrameMeta{Type: data.FrameTypeTimeSeriesMulti}, frame.Meta)
+				} else {
+					require.Nil(t, frame.Meta)
+				}
+			}
+		})
 	}
 }
 

@@ -5,7 +5,7 @@ from selenium.webdriver import ActionChains
 from steps.dashboard.locators import locators
 from selenium.webdriver.common.keys import Keys
 from selenium.webdriver.common.by import By as SelectBy
-from selenium.common.exceptions import NoSuchElementException
+from selenium.common.exceptions import NoSuchElementException, TimeoutException
 
 import steps.ui as ui
 
@@ -620,6 +620,20 @@ def check_panel_exists(self, panel_name):
             locators.panel(panel_name=panel_name)
             return True
         except NoSuchElementException:
+            return False
+
+
+@TestStep(Then)
+def check_panel_error(self, panel_name):
+    """Check panel shows an error status."""
+    with By(f"checking {panel_name} panel shows an error"):
+        try:
+            ui.wait_for_element_to_be_visible(
+                select_type=SelectBy.CSS_SELECTOR,
+                element=f"[data-testid='data-testid Panel header {panel_name}'] [data-testid='data-testid Panel status error']",
+            )
+            return True
+        except TimeoutException:
             return False
 
 

@@ -239,6 +239,124 @@
       }
     },
     {
+      "id": 10,
+      "type": "table",
+      "title": "Join of two table queries",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "table",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT service_name, count() AS c FROM $table GROUP BY service_name"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "table",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT service_name, uniq(country) AS countries FROM $table GROUP BY service_name"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "type": "sql",
+          "expression": "SELECT A.service_name AS join_service, A.c AS join_count, B.countries AS join_countries FROM A JOIN B ON A.service_name = B.service_name"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Join of a time series with a table",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "time_series",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT $timeSeries AS t, service_name, count() AS c FROM $table WHERE $timeFilter GROUP BY t, service_name ORDER BY t"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "table",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT service_name, uniq(country) AS countries FROM $table GROUP BY service_name"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "type": "sql",
+          "expression": "SELECT A.service_name AS series_service, sum(A.__value__) AS series_total, max(B.countries) AS series_countries FROM A JOIN B ON A.service_name = B.service_name GROUP BY A.service_name"
+        }
+      ]
+    },
+    {
       "id": 7,
       "type": "row",
       "title": "Browser access: ClickHouse is reachable only from the browser",
@@ -247,7 +365,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 12
+        "y": 18
       },
       "panels": []
     },
@@ -263,7 +381,7 @@
         "h": 6,
         "w": 8,
         "x": 0,
-        "y": 13
+        "y": 19
       },
       "targets": [
         {
@@ -295,7 +413,7 @@
         "h": 6,
         "w": 8,
         "x": 8,
-        "y": 13
+        "y": 19
       },
       "targets": [
         {

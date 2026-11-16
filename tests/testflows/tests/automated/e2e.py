@@ -266,6 +266,8 @@ def sql_expressions_issue_820(self):
         ("Time series with a label column", ["label_service", "label_total"]),
         ("Time series with two value columns", ["column_name", "column_points"]),
         ("Time series from $columns", ["key_name", "key_total"]),
+        ("Join of two table queries", ["join_service", "join_count", "join_countries"]),
+        ("Join of a time series with a table", ["series_service", "series_total", "series_countries"]),
     ]:
         with Then(f"I check SQL expression result for panel '{panel_name}'"):
             with delay():

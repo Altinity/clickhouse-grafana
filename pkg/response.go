@@ -160,7 +160,27 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 	for _, frame := range framesMap {
 		frames = append(frames, frame)
 	}
+	// Grafana SQL expressions reject several frames without a declared type (#820)
+	if r.isTimeSeriesMulti(timeStampFieldIdx, frames) {
+		for _, frame := range frames {
+			frame.Meta = &data.FrameMeta{Type: data.FrameTypeTimeSeriesMulti}
+		}
+	}
 	return frames, nil
+}
+
+func (r *Response) isTimeSeriesMulti(timeStampFieldIdx int, frames data.Frames) bool {
+	// A time column with one plain value column is always one series, SQL expressions read it by its column names
+	if len(r.Meta) == 2 && !seriesFromMacrosRE.MatchString(r.Meta[1-timeStampFieldIdx].Type) {
+		return false
+	}
+	// The type promises numeric values, SQL expressions silently drop the rest (UInt64 above 2^53 is a string)
+	for _, frame := range frames {
+		if !frame.Fields[1].Type().Numeric() {
+			return false
+		}
+	}
+	return true
 }
 
 func (r *Response) analyzeResponseMeta(fetchTZ FetchTZFunc) (map[string]*time.Location, map[string]string) {
@@ -281,29 +301,19 @@ func (r *Response) toFramesTable(query *Query, fetchTZ FetchTZFunc) (data.Frames
 	// Analyze which UInt64/Int64 columns need string precision
 	needsStringPrecision := r.analyzeColumnPrecisionNeeds(metaTypes)
 
-	framesMap := map[string]*data.Frame{}
-	frames := data.Frames{}
-	for _, field := range r.Meta {
-		needsString := false
-		if val, exists := needsStringPrecision[field.Name]; exists {
-			needsString = val
-		}
-		framesMap[field.Name] = data.NewFrame(field.Name, NewDataFieldByTypeOptimized(field.Name, field.Type, needsString))
-		framesMap[field.Name].RefID = query.RefId
+	// One frame with the columns in SELECT order: Grafana expressions and alerting reject one frame per column (#820)
+	fields := make([]*data.Field, len(r.Meta))
+	for idx, field := range r.Meta {
+		fields[idx] = NewDataFieldByTypeOptimized(field.Name, field.Type, needsStringPrecision[field.Name])
 	}
 	for _, row := range r.Data {
-		for fieldName, fieldValue := range row {
-			needsString := false
-			if val, exists := needsStringPrecision[fieldName]; exists {
-				needsString = val
-			}
-			framesMap[fieldName].Fields[0].Append(ParseValueOptimized(
-				fieldName, metaTypes[fieldName], timeZonesMap[fieldName], fieldValue, false, needsString,
+		for idx, field := range r.Meta {
+			fields[idx].Append(ParseValueOptimized(
+				field.Name, metaTypes[field.Name], timeZonesMap[field.Name], row[field.Name], false, needsStringPrecision[field.Name],
 			))
 		}
 	}
-	for _, frame := range framesMap {
-		frames = append(frames, frame)
-	}
-	return frames, nil
+	frame := data.NewFrame("", fields...)
+	frame.RefID = query.RefId
+	return data.Frames{frame}, nil
 }

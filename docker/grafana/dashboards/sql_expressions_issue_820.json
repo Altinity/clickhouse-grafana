@@ -1,0 +1,448 @@
+{
+  "uid": "issue-820-sql-expressions",
+  "title": "issue 820 SQL expressions",
+  "editable": true,
+  "schemaVersion": 39,
+  "time": {
+    "from": "now-6h",
+    "to": "now"
+  },
+  "panels": [
+    {
+      "id": 1,
+      "type": "table",
+      "title": "Table without a time column",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "table",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT service_name, count() AS c FROM $table GROUP BY service_name"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "type": "sql",
+          "expression": "SELECT service_name AS table_service, c AS table_count FROM A"
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "type": "table",
+      "title": "Single time series",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "time_series",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT $timeSeries AS t, count() AS c FROM $table WHERE $timeFilter GROUP BY t ORDER BY t"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "type": "sql",
+          "expression": "SELECT sum(c) AS single_total FROM A"
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "type": "table",
+      "title": "Time series with a label column",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 0
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "time_series",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT $timeSeries AS t, service_name, count() AS c FROM $table WHERE $timeFilter GROUP BY t, service_name ORDER BY t"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "type": "sql",
+          "expression": "SELECT service_name AS label_service, sum(__value__) AS label_total FROM A GROUP BY service_name"
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "type": "table",
+      "title": "Time series with two value columns",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "time_series",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT $timeSeries AS t, count() AS c, max(too_big_value) AS m FROM $table WHERE $timeFilter GROUP BY t ORDER BY t"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "type": "sql",
+          "expression": "SELECT __metric_name__ AS column_name, count(*) AS column_points FROM A GROUP BY __metric_name__"
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "type": "table",
+      "title": "Time series from $columns",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 6
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "time_series",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "$columns(service_name, count() c) FROM $table"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "type": "sql",
+          "expression": "SELECT __metric_name__ AS key_name, sum(__value__) AS key_total FROM A GROUP BY __metric_name__"
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "type": "text",
+      "title": "SQL expressions run on the Grafana server",
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 16,
+        "y": 6
+      },
+      "options": {
+        "mode": "markdown",
+        "content": "Grafana runs expressions (SQL, Reduce, Math) on the Grafana **server**: the ClickHouse query under an expression is executed by the plugin backend, not by the browser.\n\nExpressions work only when ClickHouse is reachable from the Grafana server. With the **Browser** access mode and a ClickHouse that only the browser can reach, regular panels show data, but a panel with an expression fails. See the row below."
+      }
+    },
+    {
+      "id": 10,
+      "type": "table",
+      "title": "Join of two table queries",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 0,
+        "y": 12
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "table",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT service_name, count() AS c FROM $table GROUP BY service_name"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "table",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT service_name, uniq(country) AS countries FROM $table GROUP BY service_name"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "type": "sql",
+          "expression": "SELECT A.service_name AS join_service, A.c AS join_count, B.countries AS join_countries FROM A JOIN B ON A.service_name = B.service_name"
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "type": "table",
+      "title": "Join of a time series with a table",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P7E099F39B84EA795"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 12,
+        "x": 12,
+        "y": 12
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "time_series",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT $timeSeries AS t, service_name, count() AS c FROM $table WHERE $timeFilter GROUP BY t, service_name ORDER BY t"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P7E099F39B84EA795"
+          },
+          "hide": true,
+          "format": "table",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT service_name, uniq(country) AS countries FROM $table GROUP BY service_name"
+        },
+        {
+          "refId": "C",
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "type": "sql",
+          "expression": "SELECT A.service_name AS series_service, sum(A.__value__) AS series_total, max(B.countries) AS series_countries FROM A JOIN B ON A.service_name = B.service_name GROUP BY A.service_name"
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "type": "row",
+      "title": "Browser access: ClickHouse is reachable only from the browser",
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 18
+      },
+      "panels": []
+    },
+    {
+      "id": 8,
+      "type": "table",
+      "title": "Browser access without an expression",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P788589A3A7614F2B"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 0,
+        "y": 19
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P788589A3A7614F2B"
+          },
+          "format": "table",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT service_name, count() AS c FROM $table GROUP BY service_name"
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "type": "table",
+      "title": "Browser access with an SQL expression (error expected)",
+      "datasource": {
+        "type": "vertamedia-clickhouse-datasource",
+        "uid": "P788589A3A7614F2B"
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 19
+      },
+      "targets": [
+        {
+          "refId": "A",
+          "datasource": {
+            "type": "vertamedia-clickhouse-datasource",
+            "uid": "P788589A3A7614F2B"
+          },
+          "hide": true,
+          "format": "table",
+          "database": "default",
+          "table": "test_grafana",
+          "dateTimeColDataType": "event_time",
+          "dateTimeType": "DATETIME",
+          "intervalFactor": 1,
+          "round": "0s",
+          "query": "SELECT service_name, count() AS c FROM $table GROUP BY service_name"
+        },
+        {
+          "refId": "B",
+          "datasource": {
+            "name": "Expression",
+            "type": "__expr__",
+            "uid": "__expr__"
+          },
+          "type": "sql",
+          "expression": "SELECT service_name AS direct_service, c AS direct_count FROM A"
+        }
+      ]
+    }
+  ]
+}

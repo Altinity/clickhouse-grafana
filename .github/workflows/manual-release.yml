@@ -212,8 +212,8 @@ jobs:
           run_id=""
           for _ in $(seq 1 12); do
             runs="$(gh run list -R "${repo}" --workflow release.yml \
-                     --limit 10 --json databaseId,headBranchName)"
-            filt='[.[] | select(.headBranchName==$t)][-1].databaseId'
+                     --limit 10 --json databaseId,headBranch)"
+            filt='[.[] | select(.headBranch==$t)][-1].databaseId'
             run_id="$(jq -r --arg t "${tag}" "${filt} // empty" <<<"${runs}")"
             [[ -n "${run_id}" ]] && break
             sleep 5

@@ -180,6 +180,41 @@ To trigger the workflow we need to push a version tag to github with vX.X.X form
 1. Run `npm version <major|minor|patch>`
 2. Run `git push origin main --follow-tags`
 
+## Making a release
+
+Both variants below end with a version tag pushed to the repository, which is what the
+[release workflow](./.github/workflows/release.yml) picks up to sign, package and draft
+the GitHub release.
+
+### Locally, with `./release.sh`
+
+Requires `docker compose` and a personal `.release_env` (see
+[.release_env.example](./.release_env.example)):
+
+```sh
+./release.sh patch
+```
+
+### From GitHub Actions, with Manual Release
+
+Actions tab -> **Manual Release** -> **Run workflow** -> pick `patch`, `minor` or `major`.
+The workflow ([manual-release.yml](./.github/workflows/manual-release.yml)) bumps the
+version, builds and signs the plugin, commits, tags, pushes, and finally starts the
+release workflow for that tag. It is the same sequence as `release.sh`, with a few
+differences worth knowing:
+
+* The commit is authored by whoever pressed **Run workflow** (name and email come from the
+  GitHub account, falling back to the `noreply` address), so releases stay attributed.
+  It is pushed by `github-actions[bot]` and therefore shown as *Unverified* — CI holds no
+  private key of the person who triggered it.
+* Nothing extra to install or configure: it uses the repository `GITHUB_TOKEN` plus the
+  existing `GRAFANA_ACCESS_POLICY_TOKEN` secret, and `bump-my-version` instead of the
+  end-of-life `bump2version` (the latter no longer imports on Python >= 3.12).
+* The release workflow is triggered explicitly at the end, because events created by the
+  repository's own `GITHUB_TOKEN` do not cascade into other workflows.
+* `CHANGELOG.md` is not touched by either variant — update it before releasing.
+* The **Run workflow** button only appears once this workflow file is on the default branch.
+
 
 ## Learn more
 

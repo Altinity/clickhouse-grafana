@@ -1,6 +1,5 @@
 const { FlatCompat } = require('@eslint/eslintrc');
 const js = require('@eslint/js');
-const path = require('path');
 
 const compat = new FlatCompat({
   baseDirectory: __dirname,
@@ -16,6 +15,9 @@ module.exports = [
       '.go-cache/',
       'node_modules/',
       'coverage/',
+      // виртуальные окружения testflows (см. tests/testflows/README.md)
+      'venv/',
+      '.venv/',
       '*.d.ts'
     ]
   },

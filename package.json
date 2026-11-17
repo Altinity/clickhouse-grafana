@@ -106,6 +106,9 @@
     "istanbul": {
       "glob": "5.0.15",
       "minimatch": "3.1.5"
+    },
+    "fork-ts-checker-webpack-plugin": {
+      "minimatch": "3.1.5"
     }
   }
 }

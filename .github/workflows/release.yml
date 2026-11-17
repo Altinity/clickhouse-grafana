@@ -24,7 +24,9 @@ jobs:
       - name: Setup Node.js environment
         uses: actions/setup-node@v7
         with:
-          node-version: '22'
+          # @grafana/sign-plugin 4.x needs Node >= 24.5, matching .nvmrc
+          # and the builder image
+          node-version: '24'
           cache: 'npm'
 
 

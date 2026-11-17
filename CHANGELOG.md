@@ -4,6 +4,8 @@
 * add per-field "Advanced logs fields" settings for logs queries: configure how complex ClickHouse columns (`Map`, `Array`, `Tuple`, `JSON`, `Dynamic`, `Variant`) are rendered in the Logs panel — `expand` (one label per nested key, with per-field depth 1–4/All for nested types; the default depth is 1, matching previous releases so upgrades do not change label shapes), `single` (whole value as one label), `hide`, or `raw` (appended to the message body); the modal shows a live tree preview built from a sample row, disables Save until something changes, supports reset to defaults and marks modified fields, related to https://github.com/Altinity/clickhouse-grafana/issues/678
 * type-aware label accessors for logs: `Map` columns expand with bracket subscripts (`col['key']`, chained for nested maps), `JSON`/`Tuple`/`Nested` with dot paths (`col.a.b`), so every filter click produces valid ClickHouse SQL
 * make adhoc filters column/type-aware: introspect `system.columns` (cached per datasource) to keep dot-path keys (`json.a.b`, `tuple.field`, Nested `attr.key`) as column expressions of the current table, quote values by column type (e.g. `Map(String, String)` values are always quoted, numeric leaves stay unquoted) and emit ClickHouse array literals only for `Array` columns; falls back to the legacy behavior whenever introspection is unavailable
+* upgrade frontend to `@grafana/data|ui|runtime` 13.3.0 and refresh JS/Go dependencies (`qs`, `dompurify`, `zod`, `handlebars`, `source-map-js`, `go.opentelemetry.io/otel/sdk` 1.47.0, `pillow` 13.0.0 in testflows) to fix security alerts
+* test infrastructure: bump testflows to 2.5.1 for Python 3.14 on ubuntu-26.04 runners, drop the host `ffmpeg` apt install in favor of `opencv-python-headless`, and stabilize flaky e2e tests (retry annotations screenshot compare on transient Grafana `SQLITE_BUSY`, wait for any dashboard link in the dashboards list, match the panel alert state icon as a link on Grafana 13.3)
 * preserve big-number precision for `UInt64`/`Int64` above 2^53: `output_format_json_quote_64bit_integers=1` is applied to logs queries only (no time series regression, see https://github.com/Altinity/clickhouse-grafana/issues/832), adhoc array literals parse numbers with `json.Number` and format elements by the column's ELEMENT type — string-serialized `UInt64` elements become bare numerics for `Array(UInt64)` columns, numeric-looking strings stay quoted for `Array(String)` columns
 
 ## Fixes:
@@ -11,6 +13,11 @@
 * fix adhoc filter values being corrupted: trailing text after a JSON-array prefix is no longer swallowed into an array literal, the legacy passthrough for pre-quoted / IN-list values is restored, and fully-qualified keys addressed to other tables are dropped again even when their first segment collides with a column name
 * fix responses being paired with hidden/empty targets in mixed panels (wrong format/refId applied to the visible query)
 * fix column-type cache leaking between multiple ClickHouse datasources within one Grafana process
+* fix query results being rejected by Grafana SQL expressions / transformations — a result without a time column is now returned as a single table frame with columns in `SELECT` order (instead of one frame per column), and multi-series time results declare the `timeseries-multi` frame type, fix https://github.com/Altinity/clickhouse-grafana/issues/820
+* fix ad-hoc filter application stripping commas from multi-value SQL `IN` lists during AST re-formatting, fix https://github.com/Altinity/clickhouse-grafana/issues/941
+* fix numeric-looking ad-hoc filter values being emitted unquoted when the column type is unknown, fix https://github.com/Altinity/clickhouse-grafana/issues/794
+* fix template variable dropdown rendering empty labels for options whose value is a JSON array/object, fix https://github.com/Altinity/clickhouse-grafana/issues/781
+* add regression e2e coverage for XY chart visualization from `table` format results (https://github.com/Altinity/clickhouse-grafana/issues/793); make the `xy_chart` docker init schema idempotent
 
 # 3.5.0 (2026-08-05)
 ## Breaking changes:

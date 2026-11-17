@@ -1,0 +1,223 @@
+name: Manual Release
+run-name: manual release (${{ inputs.bump }})
+
+# Ручной клон ./release.sh: bump версии -> коммит -> сборка -> подпись -> тег.
+#
+# release.sh остаётся рабочей локальной копией и не меняется.
+#
+# Отличия от ./release.sh (осознанные):
+#   * авторство берётся не из .release_env, а из актора, который нажал Run;
+#   * сборка нативными шагами раннера вместо `docker compose run *_builder`
+#     и `plugin_signer` — результат тот же: dist/ и package-lock.json;
+#   * вместо `git push --tags` пушится конкретный branch+tag (--follow-tags),
+#     чтобы случайно не унести чужие теги;
+#   * в конце явно дёргается release.yml: тег, запушенный встроенным
+#     GITHUB_TOKEN, сам по себе чужой workflow не запускает.
+#
+# Коммит будет помечен "Unverified" (приватного ключа актора в CI нет),
+# но автором числится тот, кто запустил workflow.
+
+'on':
+  workflow_dispatch:
+    inputs:
+      bump:
+        description: >-
+          Какую часть версии поднимать
+          (текущая — current_version в .bumpversion.cfg)
+        required: true
+        type: choice
+        default: patch
+        options:
+          - patch
+          - minor
+          - major
+
+# contents — коммит версии и пуш тега; actions — запуск release.yml по нему
+permissions:
+  contents: write
+  actions: write
+
+# Релизы не должны идти параллельно: второй ран ждёт первый.
+concurrency:
+  group: manual-release
+  cancel-in-progress: false
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    env:
+      # usage of GRAFANA_API_KEY is deprecated
+      GRAFANA_ACCESS_POLICY_TOKEN: ${{ secrets.GRAFANA_ACCESS_POLICY_TOKEN }}
+      GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          # Полная история и все теги: нужен предок для --follow-tags и
+          # честный `git diff-index --quiet HEAD`, как в release.sh.
+          fetch-depth: 0
+          persist-credentials: false
+
+      - name: Install system tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends jq dos2unix
+
+      - name: Configure git as the person who pressed Run
+        run: |
+          # release.sh: git config core.eol lf / core.autocrlf input
+          git config core.eol lf
+          git config core.autocrlf input
+          # release.sh берёт GITHUB_LOGIN/GITHUB_EMAIL из .release_env;
+          # здесь те же два значения — из актора запустившего workflow.
+          login="${GITHUB_ACTOR}"
+          user_json="$(gh api "users/${login}")"
+          name="$(jq -r '.name // empty' <<<"${user_json}")"
+          email="$(jq -r '.email // empty' <<<"${user_json}")"
+          if [[ -z "${email}" ]]; then
+            # Публичного email нет: берём noreply, чтобы GitHub всё равно
+            # привязал коммит к профилю.
+            id="$(jq -r '.id' <<<"${user_json}")"
+            email="${id}+${login}@users.noreply.github.com"
+          fi
+          [[ -n "${name}" ]] || name="${login}"
+          git config user.name "${name}"
+          git config user.email "${email}"
+          echo "Commit author: ${name} <${email}>"
+          # Автор — актор, пушер — github-actions[bot]: приватного PAT
+          # актора в CI нет (см. шапку файла). gh настройрует credential
+          # helper на GITHUB_TOKEN, токен не светится в remote URL.
+          gh auth setup-git
+
+      - name: Setup Node.js environment
+        uses: actions/setup-node@v7
+        with:
+          node-version: '22'
+          cache: 'npm'
+
+      - name: Setup Go environment
+        uses: actions/setup-go@v7
+        with:
+          go-version: '1.26'
+
+      - name: Install bump-my-version
+        # release.sh зовёт bump2version: он не работает на Python >= 3.12
+        # (sre_constants удалён) и больше не развивается. bump-my-version
+        # читает .bumpversion.cfg как есть и даёт тот же коммит
+        # "Bump version: X -> Y" и тот же аннотированный тег vX.Y.Z.
+        run: |
+          pipx install bump-my-version==1.8.1
+          echo "${HOME}/.local/bin" >> "${GITHUB_PATH}"
+
+      - name: Bump version (commit + tag)
+        id: bump
+        env:
+          BUMP: ${{ inputs.bump }}
+        run: |
+          # release.sh: bump2version --verbose $1
+          bump-my-version bump --verbose "${BUMP}"
+          new_version="$(sed -n 's/^current_version = //p' .bumpversion.cfg)"
+          test -n "${new_version}"
+          git rev-parse -q --verify "refs/tags/v${new_version}" >/dev/null \
+            || { echo "::error::bump не создал тег v${new_version}"; exit 1; }
+          echo "new-version=${new_version}" >> "${GITHUB_OUTPUT}"
+          summary="## Bump: **${BUMP}** -> v${new_version}"
+          echo "${summary}" >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Sync package-lock.json
+        # Внутри frontend_builder release.sh крутит `npm install`, который и
+        # обновляет version в package-lock.json — единственное, что из сборки
+        # попадает в git (dist/ в .gitignore): двухстрочный diff, как в
+        # исторических prepare-коммитах.
+        run: npm install --package-lock-only --no-audit --no-fund
+
+      - name: Install nodejs dependencies
+        run: npm ci --no-audit --no-fund
+
+      - name: Build frontend
+        run: npm run build
+
+      - name: Test frontend
+        run: npm run test:ci
+
+      - name: Build backend
+        # release.sh: docker compose run --rm backend_builder, то есть
+        # `mage -v` (Default = BuildAll из grafana-plugin-sdk-go) + chmod.
+        run: |
+          go install github.com/magefile/mage@latest
+          mage buildAll
+          chmod +rx ./dist/altinity-clickhouse-plugin*
+
+      - name: Normalize dist line endings
+        # release.sh: sudo dos2unix ./dist/* (страховка для релизов с Windows).
+        # На Linux-раннере no-op; бинари dos2unix пропускает, отсюда || true.
+        run: dos2unix ./dist/* || true
+
+      - name: Warn missing Grafana access policy token
+        if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN == '' }}
+        run: |
+          docs="https://grafana.com/docs/grafana/latest/developers"
+          docs="${docs}/plugins/sign-a-plugin/#generate-a-token"
+          echo "Please generate a Grafana access policy token: ${docs}"
+          echo "Without it the plugin will not be signed."
+
+      - name: Sign plugin
+        if: ${{ env.GRAFANA_ACCESS_POLICY_TOKEN != '' }}
+        # release.sh: docker compose run --rm plugin_signer (== npm run sign)
+        run: npx --yes @grafana/sign-plugin@latest
+
+      - name: Check package version matches the tag
+        # Копия проверки из release.yml: не отправлять тег, который релизный
+        # пайплайн всё равно отвергнет.
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
+        run: |
+          plugin_version="$(jq -r .info.version dist/plugin.json)"
+          if [[ "v${plugin_version}" != "v${NEW_VERSION}" ]]; then
+            echo "::error::plugin.json=${plugin_version} bump=${NEW_VERSION}"
+            echo "::error::расхождение версии, тег не пушим"
+            exit 1
+          fi
+
+      - name: Commit build artifacts
+        run: |
+          git add .
+          cfg="$(grep current_version .bumpversion.cfg)"
+          # ровно то же сообщение, что в release.sh
+          msg="prepare to new release, ${cfg}"
+          git diff-index --quiet HEAD || git commit -s -m "${msg}"
+
+      - name: Push commit and tag
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
+        run: |
+          git push origin "HEAD:${GITHUB_REF_NAME}" --follow-tags
+          head="$(git rev-parse --short HEAD)"
+          summary="Pushed ${head} v${NEW_VERSION} to ${GITHUB_REF_NAME}"
+          echo "${summary}" >> "${GITHUB_STEP_SUMMARY}"
+
+      - name: Trigger the Release workflow
+        # Тег запушен встроенным GITHUB_TOKEN, а такие события чужие workflow
+        # не каскадируют, поэтому запускаем release.yml вручную.
+        env:
+          NEW_VERSION: ${{ steps.bump.outputs.new-version }}
+        run: |
+          repo="${GITHUB_REPOSITORY}"
+          tag="v${NEW_VERSION}"
+          gh workflow run release.yml --ref "${tag}" -R "${repo}"
+          run_id=""
+          for _ in $(seq 1 12); do
+            runs="$(gh run list -R "${repo}" --workflow release.yml \
+                     --limit 10 --json databaseId,headBranchName)"
+            filt='[.[] | select(.headBranchName==$t)][-1].databaseId'
+            run_id="$(jq -r --arg t "${tag}" "${filt} // empty" <<<"${runs}")"
+            [[ -n "${run_id}" ]] && break
+            sleep 5
+          done
+          if [[ -n "${run_id}" ]]; then
+            url="${GITHUB_SERVER_URL}/${repo}/actions/runs/${run_id}"
+            echo "Release workflow: ${url}" >> "${GITHUB_STEP_SUMMARY}"
+            echo "Started ${url}"
+          else
+            echo "::warning::release.yml ещё не виден в очереди:"
+            echo "  gh workflow run release.yml --ref ${tag} -R ${repo}"
+          fi

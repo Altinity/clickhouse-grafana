@@ -4,8 +4,8 @@ on:
   push:
     tags:
       - v*.*.*
-  # явный запуск из Manual Release: тег пушится встроенным GITHUB_TOKEN,
-  # а такие события чужие workflow не каскадируют
+  # started explicitly by Manual Release: the tag is pushed with the
+  # repository GITHUB_TOKEN, and such events do not cascade into workflows
   workflow_dispatch: {}
 
 permissions:

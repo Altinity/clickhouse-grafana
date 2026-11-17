@@ -15,7 +15,7 @@ module.exports = [
       '.go-cache/',
       'node_modules/',
       'coverage/',
-      // виртуальные окружения testflows (см. tests/testflows/README.md)
+      // testflows virtualenvs (see tests/testflows/README.md)
       'venv/',
       '.venv/',
       '*.d.ts'

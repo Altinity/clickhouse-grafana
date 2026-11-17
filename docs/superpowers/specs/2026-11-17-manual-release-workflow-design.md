@@ -1,112 +1,117 @@
-# Ручной релиз по кнопке из GitHub Actions
+# Manual release from GitHub Actions
 
-Дата: 2026-11-17
-Статус: согласовано и реализовано (`manual-release.yml`)
+Date: 2026-11-17
+Status: approved and implemented (`.github/workflows/manual-release.yml`)
 
-Реализация проверена: `actionlint` чисто; git-последовательность прогнана локально на копии
-репы с bare-remote — bump-коммит `Bump version: 3.5.0 → 3.5.1`, аннотированный тег
-`v3.5.1`, prepare-коммит `package-lock.json | 4 ++--`, `--follow-tags` уронил и коммит, и тег.
-То же самое, что делают исторические релизные коммиты (`e1fedbd56` + `403318896`).
+Verified: `actionlint` is clean, and the git sequence was replayed locally on a copy of
+this repository against a bare remote — bump commit `Bump version: 3.5.0 → 3.5.1`,
+annotated tag `v3.5.1`, prepare commit `package-lock.json | 4 ++--`, and
+`--follow-tags` pushed both commit and tag. This matches the historical release commits
+(`403318896` + `e1fedbd56`).
 
-## Зачем
+## Why
 
-`release.sh` сегодня можно запустить только с локальной машины: он требует `docker compose`,
-`sudo`, и личный PAT в `.release_env` (файл не в гите). Хочется ту же операцию по кнопке
-в GitHub Actions с выбором `patch` / `minor` / `major`, чтобы Actions сам коммитил версию и
-ставил тег, а автором коммита считался тот, кто нажал Run.
+`release.sh` can only be run from a local machine: it needs `docker compose`, `sudo` and a
+personal token in `.release_env` (an untracked file). We want the same operation behind a
+button in GitHub Actions, with a `patch` / `minor` / `major` choice, so that Actions makes
+the version commit and the tag while the person who pressed Run stays credited as author.
 
-## Что release.sh делает сегодня (проверено по истории)
+## What release.sh does today (verified against history)
 
-1. `git config core.eol lf`, `core.autocrlf input`, `user.name`/`user.email` из `.release_env`
-2. `bump2version <level>` → коммит `Bump version: X → Y` + **аннотированный** тег `vX.Y.Z`
-   (проверено: `git cat-file -t v3.5.0` → `tag`, `tag contents:subject` → `Bump version: 3.4.12 → 3.5.0`)
-3. `docker compose run frontend_builder` / `backend_builder`, `sudo dos2unix ./dist/*`, `chmod`
-4. `docker compose run plugin_signer` (=> `npm run sign`)
+1. `git config core.eol lf`, `core.autocrlf input`, `user.name`/`user.email` from
+   `.release_env`
+2. `bump2version <level>` → commit `Bump version: X → Y` + **annotated** tag `vX.Y.Z`
+   (verified: `git cat-file -t v3.5.0` → `tag`, message `Bump version: 3.4.12 → 3.5.0`)
+3. `docker compose run frontend_builder` / `backend_builder`, `sudo dos2unix ./dist/*`,
+   `chmod`
+4. `docker compose run plugin_signer` (i.e. `npm run sign`)
 5. `git add .` + `git commit -s -m "prepare to new release, current_version = X"`
 6. `git push --tags`
 
-Важно: `dist/` в `.gitignore`, поэтому в git из шага 3–4 попадает **только** `package-lock.json`
-(исторический prepare-коммит = `package-lock.json | 4 ++--`, изменившиеся поля `version`).
-Сборка в CI нужна как pre-flight проверка («релиз собирается и подписывается до того, как тег
-улечит»), а не как содержимое коммита. Публичный релизный артефакт делает `release.yml` по тегу.
+Key point: `dist/` is gitignored, so steps 3–4 contribute **only** `package-lock.json` to
+git (the historical prepare commit is `package-lock.json | 4 ++--`, the changed `version`
+fields). The build in CI therefore acts as a pre-flight check — it proves the release
+builds and signs before the tag leaves — not as commit content. The published artifact is
+produced by `release.yml` on tag push.
 
 ## Goals
 
-- `workflow_dispatch` с dropdown `patch` / `minor` / `major`
-- коммит версии + аннотированный тег + пуш выполняются из CI
-- автор коммита = тот, кто запустил workflow
-- `release.yml` отрабатывает по новому тегу (сборка, подпись, draft GitHub release)
+- `workflow_dispatch` with a `patch` / `minor` / `major` dropdown
+- version commit + annotated tag + push performed by CI
+- the commit author is whoever started the workflow
+- `release.yml` runs for the new tag (build, sign, draft GitHub release)
 
 ## Non-goals
 
-- править `release.sh` (остаётся локальной копией, без изменений)
-- менять логику `release.yml` (только добавить триггер)
-- автовыкладка в Grafana.com, ведение CHANGELOG
+- changing `release.sh` (it stays the working local copy, untouched)
+- changing `release.yml` logic (one trigger added)
+- publishing to grafana.com, maintaining CHANGELOG
 
 ## Constraints
 
-- **GITHUB_TOKEN не каскадирует**: тег, запушенный встроенным токеном, не запускает `release.yml`.
-  Поэтому в конце явно дёргаем `gh workflow run release.yml --ref vX.Y.Z`.
-- Старый `bump2version` не запускается на Python ≥ 3.12 (`ModuleNotFoundError: sre_constants`,
-  проверено локально). `bump-my-version` читает текущий `.bumpversion.cfg` как есть и даёт
-  идентичный результат (проверено локально на копии конфига: тот же `Bump version: X → Y`
-  и аннотированный `vX.Y.Z`).
-- `master` без branch protection (проверено через API), `contents: write` достаточно.
-- Из секретов в репозитории есть только `GRAFANA_ACCESS_POLICY_TOKEN` — его хватает на подпись.
+- **GITHUB_TOKEN does not cascade**: a tag pushed with the repository token does not start
+  `release.yml`, so the workflow dispatches it explicitly at the end.
+- The old `bump2version` no longer imports on Python ≥ 3.12 (`sre_constants` was removed,
+  reproduced locally). `bump-my-version` reads the current `.bumpversion.cfg` unchanged and
+  produces an identical commit and tag (verified locally on a copy of the config).
+- `master` has no branch protection (checked over the API), so `contents: write` suffices.
+- The only secret present in the repository is `GRAFANA_ACCESS_POLICY_TOKEN` — enough to
+  sign.
 
-## Approaches и что выбрано
+## Approaches and what was chosen
 
-**1. Чьими правами пушить.** Варианты: (A) PAT актора в секрете `RELEASE_TOKEN_<actor>`
-(полная атрибуция, тег сам триггерит `release.yml`, но каждому релизеру нужно класть PAT);
-(B) GitHub App (`create-github-app-token`; author = актор, pusher = бот, без PAT, но нужна
-установка приложения); (C) встроенный `GITHUB_TOKEN`.
-→ **Выбрано C**: author/committer = актор, пушер = `github-actions[bot]`, `release.yml`
-запускается явно в конце. Цена: коммит помечен Unverified (ключа актора в CI нет) и требует
-явного запуска релиза.
+**1. Whose credentials push.** Options: (A) a per-user PAT in
+`RELEASE_TOKEN_<actor>` (full attribution, the tag itself triggers `release.yml`, but every
+releaser has to store a PAT); (B) a GitHub App token via `create-github-app-token` (author
+= actor, pusher = bot, no PAT expiry, but the app has to be installed); (C) the repository
+`GITHUB_TOKEN`.
+→ **Chosen: C.** Author/committer is the actor, pusher is `github-actions[bot]`,
+`release.yml` is started explicitly. Cost: the commit reads as Unverified and the release
+run needs an explicit dispatch.
 
-**2. Насколько буквальная копия сборки.** (A) только bump + push; (B) 1-в-1 через
-`docker compose`; (C) те же шаги нативными средствами раннера.
-→ **Выбрано C**: `npm` + `mage` + `sign-plugin`, как это уже делает `release.yml`.
+**2. How literal the build copy should be.** (A) bump + push only; (B) 1:1 through
+`docker compose`; (C) the same steps as native runner steps.
+→ **Chosen: C:** `npm` + `mage` + `sign-plugin`, the way `release.yml` already does it.
 
-## Как устроено
+## Design
 
-Новый файл `.github/workflows/manual-release.yml`, один job на `ubuntu-latest`,
-`permissions: contents: write` + `actions: write`, `concurrency.group: manual-release`
-(релизы не должны идти параллельно).
+New file `.github/workflows/manual-release.yml`, one job on `ubuntu-latest`,
+`permissions: contents: write` + `actions: write`,
+`concurrency.group: manual-release` so releases cannot overlap.
 
-| Шаг                                                                                                                                  | Соответствие release.sh                                                           |
-| ------------------------------------------------------------------------------------------------------------------------------------ | --------------------------------------------------------------------------------- |
-| `actions/checkout` c `fetch-depth: 0`, `persist-credentials: false`; `gh auth setup-git`                                             | эквивалент пуша по `origin` с токеном                                             |
-| `git config core.eol lf` + `core.autocrlf input`                                                                                     | те же две строки                                                                  |
-| `git config user.name/user.email` из `gh api users/<actor>` (фолбэк `<id>+<actor>@users.noreply.github.com`)                         | `GITHUB_LOGIN`/`GITHUB_EMAIL` из `.release_env`, но от актора                     |
-| `bump-my-version bump <input>`                                                                                                       | `bump2version <level>`                                                            |
-| `apt-get install dos2unix` + `dos2unix ./dist/*` + `chmod +rx ./dist/altinity-clickhouse-plugin*`                                    | те же команды без `sudo` (раннер-юзер админ)                                      |
-| `npx --yes @grafana/sign-plugin@latest`                                                                                              | `docker compose run plugin_signer`                                                |
-| `git add .` + `git diff-index --quiet HEAD \|\| git commit -s -m "prepare to new release, $(grep current_version .bumpversion.cfg)"` | дословно та же строка                                                             |
-| `git push origin HEAD:<branch> --follow-tags`                                                                                        | `git push --tags` (явный refspec вместо «всё подряд», тег аннотированный — уйдёт) |
+| Step | release.sh counterpart |
+|------|------------------------|
+| `actions/checkout` with `fetch-depth: 0`, `persist-credentials: false`; `gh auth setup-git` | pushing to `origin` with a token |
+| `git config core.eol lf` + `core.autocrlf input` | the same two lines |
+| `user.name`/`user.email` from `gh api users/<actor>` (fallback `<id>+<actor>@users.noreply.github.com`) | `GITHUB_LOGIN`/`GITHUB_EMAIL` from `.release_env`, taken from the actor |
+| `bump-my-version bump <level>` | `bump2version <level>` |
+| `npm install --package-lock-only` → `npm ci` → `npm run build` → `npm run test:ci` | `docker compose run --rm frontend_builder` |
+| `go install mage` → `mage buildAll` → `chmod +rx ./dist/altinity-clickhouse-plugin*` | `docker compose run --rm backend_builder` |
+| `apt-get install dos2unix`, `dos2unix ./dist/*` | `sudo dos2unix ./dist/*` |
+| `npx --yes @grafana/sign-plugin@latest` | `docker compose run --rm plugin_signer` |
+| `git add .` + `git diff-index --quiet HEAD \|\| git commit -s -m "prepare to new release, …"` | the same line |
+| `git push origin HEAD:<branch> --follow-tags` | `git push --tags` (an explicit refspec instead of "every tag", the tag is annotated so it still travels) |
 
-Сборка перед коммитом: `npm install --package-lock-only` (даёт ровно те же две строки в
-`package-lock.json`, что и `npm install` внутри `frontend_builder`; проверено локально) →
-`npm ci` → `npm run build` → `npm run test:ci` → `mage buildAll`.
+Pre-flight before pushing: `dist/plugin.json` version must equal `v$NEW_VERSION` (copied
+from `release.yml`), so we never push a tag the release pipeline would reject.
 
-Pre-flight перед пушем: `dist/plugin.json` version == `v$NEW_VERSION` (копия проверки из
-`release.yml`), чтобы не запушить тег, который релиз-пайплайн отвергнет.
+Finally: `gh workflow run release.yml --ref vX.Y.Z`, plus a link to the created run.
 
-В конце: `gh workflow run release.yml --ref vX.Y.Z` + ссылка на созданный ран.
+In `.github/workflows/release.yml`: `workflow_dispatch: {}` is added to `on:` — one entry,
+without it the explicit start is impossible.
 
-В `.github/workflows/release.yml`: в `on:` добавляется `workflow_dispatch: {}` — одна строка,
-иначе явный запуск невозможен.
+## Risks / what to be aware of
 
-## Риски / что надо знать
+- `workflow_dispatch` appears in the picker only once the file is on the default branch.
+- The tag points at the bump commit rather than the prepare commit — exactly like
+  `release.sh`.
+- Double click on Run: `concurrency` serializes the second run behind the first.
+- If `GRAFANA_ACCESS_POLICY_TOKEN` ever disappears, signing is skipped with a warning (as
+  in `release.yml`) and the tag is still pushed.
 
-- `workflow_dispatch` появится в меню только после мержа в `master`.
-- Тег указывает на bump-коммит, а не на prepare-коммит — в точности как у `release.sh`.
-- Двойной клик по Run: `concurrency` не даст пересечься, второй ран подождёт первый.
-- Если `GRAFANA_ACCESS_POLICY_TOKEN` вдруг не задан — подписка skip'нется с warning'ом
-  (как в `release.yml`), тег всё равно уйдёт.
+## Follow-ups found while implementing
 
-## На откуп реализующему
-
-- имя workflow и отображаемое `run-name`
-- порядок шагов Node/Go вокруг bump
-- формулировки warning'ов
+- `bump2version` is pinned in `overrides` through `js-yaml@3` / `js-yaml@4`; both were
+  pinned to vulnerable releases (3.15.0 / 4.3.0) and are now 3.15.2 / 4.3.2.
+- `release.yml` triggers on `v*.*.*`; `manual-release.yml` enforces the same shape before
+  pushing.

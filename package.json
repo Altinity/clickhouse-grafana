@@ -84,22 +84,28 @@
   },
   "packageManager": "npm@9.8.1",
   "overrides": {
-    "serialize-javascript": "^7.1.4",
-    "immutable": "^5.1.5",
-    "react": "$react",
-    "react-dom": "$react-dom",
-    "dompurify": "^3.4.0",
-    "js-cookie": "^3.0.7",
-    "uuid": "^11.1.1",
     "js-yaml@3": "3.15.2",
     "js-yaml@4": "4.3.2",
     "d3-interpolate": "3.0.1",
     "d3-color": "3.1.0",
     "d3-scale-chromatic": "3.1.0",
-    "minimatch@9": "11.0.5",
-    "minimatch@10": "11.0.5",
-    "glob@10": "14.0.4",
-    "glob@13": "14.0.4",
-    "test-exclude": "8.0.0"
+    "glob": "^14.0.4",
+    "minimatch": "11.0.5",
+    "@eslint/config-array": {
+      "minimatch": "3.1.5"
+    },
+    "@eslint/eslintrc": {
+      "minimatch": "3.1.5"
+    },
+    "eslint": {
+      "minimatch": "3.1.5"
+    },
+    "eslint-plugin-react": {
+      "minimatch": "3.1.5"
+    },
+    "istanbul": {
+      "glob": "5.0.15",
+      "minimatch": "3.1.5"
+    }
   }
 }

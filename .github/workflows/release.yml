@@ -29,7 +29,6 @@ jobs:
           node-version: '24'
           cache: 'npm'
 
-
       - name: Install nodejs dependencies
         run: npm ci
 
@@ -120,7 +119,7 @@ jobs:
           curl -L https://github.com/grafana/plugin-validator/raw/main/config/strict.yaml -o strict.yaml
           popd
           ./plugin-validator/plugincheck2 -config ./plugin-validator/strict.yaml ${{ steps.metadata.outputs.archive }}
-#          ./plugin-validator/plugincheck2 -config ./plugin-validator/strict.yaml -strict ${{ steps.metadata.outputs.archive }}
+      #          ./plugin-validator/plugincheck2 -config ./plugin-validator/strict.yaml -strict ${{ steps.metadata.outputs.archive }}
 
       - name: Create changelog
         id: changelog

@@ -79,18 +79,18 @@ New file `.github/workflows/manual-release.yml`, one job on `ubuntu-latest`,
 `permissions: contents: write` + `actions: write`,
 `concurrency.group: manual-release` so releases cannot overlap.
 
-| Step | release.sh counterpart |
-|------|------------------------|
-| `actions/checkout` with `fetch-depth: 0`, `persist-credentials: false`; `gh auth setup-git` | pushing to `origin` with a token |
-| `git config core.eol lf` + `core.autocrlf input` | the same two lines |
-| `user.name`/`user.email` from `gh api users/<actor>` (fallback `<id>+<actor>@users.noreply.github.com`) | `GITHUB_LOGIN`/`GITHUB_EMAIL` from `.release_env`, taken from the actor |
-| `bump-my-version bump <level>` | `bump2version <level>` |
-| `npm install --package-lock-only` → `npm ci` → `npm run build` → `npm run test:ci` | `docker compose run --rm frontend_builder` |
-| `go install mage` → `mage buildAll` → `chmod +rx ./dist/altinity-clickhouse-plugin*` | `docker compose run --rm backend_builder` |
-| `apt-get install dos2unix`, `dos2unix ./dist/*` | `sudo dos2unix ./dist/*` |
-| `npx --yes @grafana/sign-plugin@latest` | `docker compose run --rm plugin_signer` |
-| `git add .` + `git diff-index --quiet HEAD \|\| git commit -s -m "prepare to new release, …"` | the same line |
-| `git push origin HEAD:<branch> --follow-tags` | `git push --tags` (an explicit refspec instead of "every tag", the tag is annotated so it still travels) |
+| Step                                                                                                    | release.sh counterpart                                                                                   |
+| ------------------------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------------- |
+| `actions/checkout` with `fetch-depth: 0`, `persist-credentials: false`; `gh auth setup-git`             | pushing to `origin` with a token                                                                         |
+| `git config core.eol lf` + `core.autocrlf input`                                                        | the same two lines                                                                                       |
+| `user.name`/`user.email` from `gh api users/<actor>` (fallback `<id>+<actor>@users.noreply.github.com`) | `GITHUB_LOGIN`/`GITHUB_EMAIL` from `.release_env`, taken from the actor                                  |
+| `bump-my-version bump <level>`                                                                          | `bump2version <level>`                                                                                   |
+| `npm install --package-lock-only` → `npm ci` → `npm run build` → `npm run test:ci`                      | `docker compose run --rm frontend_builder`                                                               |
+| `go install mage` → `mage buildAll` → `chmod +rx ./dist/altinity-clickhouse-plugin*`                    | `docker compose run --rm backend_builder`                                                                |
+| `apt-get install dos2unix`, `dos2unix ./dist/*`                                                         | `sudo dos2unix ./dist/*`                                                                                 |
+| `npx --yes @grafana/sign-plugin@latest`                                                                 | `docker compose run --rm plugin_signer`                                                                  |
+| `git add .` + `git diff-index --quiet HEAD \|\| git commit -s -m "prepare to new release, …"`           | the same line                                                                                            |
+| `git push origin HEAD:<branch> --follow-tags`                                                           | `git push --tags` (an explicit refspec instead of "every tag", the tag is annotated so it still travels) |
 
 Pre-flight before pushing: `dist/plugin.json` version must equal `v$NEW_VERSION` (copied
 from `release.yml`), so we never push a tag the release pipeline would reject.

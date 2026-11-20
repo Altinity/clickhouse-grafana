@@ -18,16 +18,19 @@ module.exports = [
       // testflows virtualenvs (see tests/testflows/README.md)
       'venv/',
       '.venv/',
-      '*.d.ts'
-    ]
+      '*.d.ts',
+    ],
   },
   ...compat.extends('@grafana/eslint-config'),
   {
     rules: {
       'react/prop-types': 'off',
-      'object-curly-newline': ['error', {
-        'ObjectPattern': { 'multiline': true, 'minProperties': 10 }
-      }]
-    }
-  }
+      'object-curly-newline': [
+        'error',
+        {
+          ObjectPattern: { multiline: true, minProperties: 10 },
+        },
+      ],
+    },
+  },
 ];

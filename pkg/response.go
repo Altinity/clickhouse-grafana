@@ -119,6 +119,9 @@ func (r *Response) toFramesWithTimeStamp(query *Query, fetchTZ FetchTZFunc, hasL
 								for _, array := range arrays {
 									switch tuple := array.(type) {
 									case []interface{}:
+										if len(tuple) < 2 {
+											return nil, fmt.Errorf("unable to parse data section name=%s, expected [key, value] tuple, got %d elements", fieldName, len(tuple))
+										}
 										tsName := ParseValue(fieldName, labelType, timeZonesMap[fieldName], tuple[0], true)
 										tsNameString := "null"
 										switch tsName.(type) {

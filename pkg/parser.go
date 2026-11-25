@@ -218,8 +218,31 @@ func parseFloatValue(value interface{}, isNullable bool) Value {
 				}
 				return 0.0
 			}
+		case string:
+			var err error
+			fv, err = strconv.ParseFloat(v, 64)
+			if err != nil {
+				if isNullable {
+					return nil
+				}
+				return 0.0
+			}
 		default:
-			fv = reflect.ValueOf(value).Float()
+			rv := reflect.ValueOf(value)
+			switch rv.Kind() {
+			case reflect.Float32, reflect.Float64:
+				fv = rv.Float()
+			case reflect.Int, reflect.Int8, reflect.Int16, reflect.Int32, reflect.Int64:
+				fv = float64(rv.Int())
+			case reflect.Uint, reflect.Uint8, reflect.Uint16, reflect.Uint32, reflect.Uint64:
+				fv = float64(rv.Uint())
+			default:
+				backend.Logger.Debug(fmt.Sprintf("unexpected type %T for float value", value))
+				if isNullable {
+					return nil
+				}
+				return 0.0
+			}
 		}
 		if isNullable {
 			return &fv

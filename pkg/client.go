@@ -28,6 +28,27 @@ type ClickHouseClient struct {
 	settings *DatasourceSettings
 }
 
+// ClickHouseHTTPError is returned when ClickHouse replies with a non-200 HTTP status,
+// Error() returns the ClickHouse error text so it is shown in the panel
+type ClickHouseHTTPError struct {
+	StatusCode int
+	Body       string
+}
+
+func (e *ClickHouseHTTPError) Error() string {
+	return e.Body
+}
+
+// logSafeError returns a short error description for Error-level logs,
+// the full ClickHouse response body is logged only at Debug level
+func logSafeError(err error) string {
+	var httpErr *ClickHouseHTTPError
+	if errors.As(err, &httpErr) {
+		return fmt.Sprintf("clickhouse returned HTTP status %d", httpErr.StatusCode)
+	}
+	return err.Error()
+}
+
 func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Response, error) {
 
 	onErr := func(err error) (*Response, error) {
@@ -140,7 +161,9 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 	}
 
 	if resp.StatusCode != 200 {
-		return onErr(errors.New(string(body)))
+		backend.Logger.Debug("clickhouse non-200 response", "status", resp.StatusCode, "body", string(body))
+		backend.Logger.Error("clickhouse client query error", "status", resp.StatusCode)
+		return nil, &ClickHouseHTTPError{StatusCode: resp.StatusCode, Body: string(body)}
 	}
 
 	var jsonResp = &Response{ctx: ctx}
@@ -151,7 +174,9 @@ func (client *ClickHouseClient) Query(ctx context.Context, query string) (*Respo
 	decoder.UseNumber()
 	err = decoder.Decode(jsonResp)
 	if err != nil {
-		return onErr(fmt.Errorf("unable to parse json %s. Error: %w", body, err))
+		backend.Logger.Debug("clickhouse response json parse error", "error", err, "body", string(body))
+		backend.Logger.Error("clickhouse client query error: unable to parse json response", "error", err)
+		return nil, fmt.Errorf("unable to parse clickhouse json response: %w", err)
 	}
 
 	return jsonResp, nil

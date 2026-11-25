@@ -136,8 +136,9 @@ func TestCheckHealth(t *testing.T) {
 
 		res, err := ds.CheckHealth(context.Background(), &backend.CheckHealthRequest{})
 
-		require.Error(t, err)
+		require.NoError(t, err)
 		require.Equal(t, backend.HealthStatusError, res.Status)
+		require.Contains(t, res.Message, "Unable to connect to ClickHouse")
 	})
 
 	t.Run("broken instance manager", func(t *testing.T) {
@@ -145,8 +146,9 @@ func TestCheckHealth(t *testing.T) {
 
 		res, err := ds.CheckHealth(context.Background(), &backend.CheckHealthRequest{})
 
-		require.Error(t, err)
+		require.NoError(t, err)
 		require.Equal(t, backend.HealthStatusError, res.Status)
-		require.Contains(t, res.Message, "instance manager down")
+		require.Contains(t, res.Message, "Invalid datasource settings")
+		require.NotContains(t, res.Message, "instance manager down")
 	})
 }

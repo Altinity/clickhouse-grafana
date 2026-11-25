@@ -242,7 +242,8 @@ func TestClientQueryErrors(t *testing.T) {
 			_, _ = w.Write([]byte("{not json"))
 		}, nil)
 		_, err := client.Query(context.Background(), "SELECT 1")
-		require.ErrorContains(t, err, "unable to parse json")
+		require.ErrorContains(t, err, "unable to parse clickhouse json response")
+		require.NotContains(t, err.Error(), "{not json", "response body must not leak into the error")
 	})
 
 	t.Run("corrupt gzip body", func(t *testing.T) {

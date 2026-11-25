@@ -3,8 +3,10 @@ package main
 import (
 	"context"
 	"encoding/json"
+	"errors"
 	"fmt"
 	"net/http"
+	"runtime/debug"
 	"sync"
 
 	"github.com/altinity/clickhouse-grafana/pkg/eval"
@@ -31,7 +33,7 @@ func (ds *ClickHouseDatasource) getClient(ctx context.Context, pluginCtx backend
 func (ds *ClickHouseDatasource) executeQuery(pluginContext backend.PluginContext, ctx context.Context, query *Query) backend.DataResponse {
 
 	onErr := func(err error) backend.DataResponse {
-		backend.Logger.Error(fmt.Sprintf("Datasource executeQuery error: %s", err))
+		backend.Logger.Error(fmt.Sprintf("Datasource executeQuery error: %s", logSafeError(err)))
 		return backend.DataResponse{Error: err}
 	}
 
@@ -39,7 +41,10 @@ func (ds *ClickHouseDatasource) executeQuery(pluginContext backend.PluginContext
 	if err != nil {
 		return onErr(err)
 	}
-	sql := query.ApplyTimeRangeToQuery()
+	sql, err := query.ApplyTimeRangeToQuery()
+	if err != nil {
+		return onErr(err)
+	}
 	clickhouseResponse, err := client.Query(ctx, sql)
 	if err != nil {
 		return onErr(err)
@@ -75,6 +80,18 @@ func (ds *ClickHouseDatasource) evalQuery(pluginContext backend.PluginContext, c
 	return ds.executeQuery(pluginContext, ctx, &q)
 }
 
+// safeDataResponse runs fn and converts a panic into an error response,
+// so a malformed query or response can't crash the plugin process for all users
+func safeDataResponse(refId string, fn func() backend.DataResponse) (result backend.DataResponse) {
+	defer func() {
+		if r := recover(); r != nil {
+			backend.Logger.Error("query panic recovered", "refId", refId, "panic", r, "stack", string(debug.Stack()))
+			result = backend.DataResponse{Error: fmt.Errorf("internal plugin error while processing query %s: %v", refId, r)}
+		}
+	}()
+	return fn()
+}
+
 func (ds *ClickHouseDatasource) QueryData(
 	ctx context.Context,
 	req *backend.QueryDataRequest) (*backend.QueryDataResponse, error) {
@@ -97,7 +114,9 @@ func (ds *ClickHouseDatasource) QueryData(
 		evalJsonErr := json.Unmarshal(query.JSON, &evalQ)
 		if evalJsonErr == nil {
 			wg.Go(func() error {
-				result := ds.evalQuery(req.PluginContext, wgCtx, &evalQ)
+				result := safeDataResponse(evalQ.RefId, func() backend.DataResponse {
+					return ds.evalQuery(req.PluginContext, wgCtx, &evalQ)
+				})
 				mu.Lock()
 				response.Responses[evalQ.RefId] = result
 				mu.Unlock()
@@ -115,7 +134,9 @@ func (ds *ClickHouseDatasource) QueryData(
 				return onErr(fmt.Errorf("unable to parse json, to Query error: %v, to EvalQuery error: %v, source JSON: %s", jsonErr, evalJsonErr, query.JSON))
 			}
 			wg.Go(func() error {
-				result := ds.executeQuery(req.PluginContext, wgCtx, &q)
+				result := safeDataResponse(q.RefId, func() backend.DataResponse {
+					return ds.executeQuery(req.PluginContext, wgCtx, &q)
+				})
 				mu.Lock()
 				response.Responses[q.RefId] = result
 				mu.Unlock()
@@ -134,21 +155,28 @@ func (ds *ClickHouseDatasource) CheckHealth(
 	ctx context.Context,
 	req *backend.CheckHealthRequest) (*backend.CheckHealthResult, error) {
 
-	onErr := func(err error) (*backend.CheckHealthResult, error) {
-		backend.Logger.Error(fmt.Sprintf("HealthCheck error: %v", err))
+	onErr := func(message string, err error) (*backend.CheckHealthResult, error) {
+		backend.Logger.Error("HealthCheck error", "message", message, "error", logSafeError(err))
 		return &backend.CheckHealthResult{
 			Status:  backend.HealthStatusError,
-			Message: err.Error(),
-		}, err
+			Message: message,
+		}, nil
 	}
 
 	client, err := ds.getClient(ctx, req.PluginContext)
 	if err != nil {
-		return onErr(err)
+		return onErr("Invalid datasource settings, check the plugin configuration", err)
 	}
 	_, err = client.Query(ctx, DefaultQuery)
 	if err != nil {
-		return onErr(err)
+		var httpErr *ClickHouseHTTPError
+		if errors.As(err, &httpErr) {
+			if httpErr.StatusCode == http.StatusUnauthorized || httpErr.StatusCode == http.StatusForbidden {
+				return onErr("Authentication failed, check ClickHouse username and password", err)
+			}
+			return onErr(fmt.Sprintf("ClickHouse returned HTTP status %d, see Grafana server logs for details", httpErr.StatusCode), err)
+		}
+		return onErr("Unable to connect to ClickHouse, check URL and network access. See Grafana server logs for details", err)
 	}
 
 	return &backend.CheckHealthResult{

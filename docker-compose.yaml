@@ -38,6 +38,14 @@ services:
       - ./docker/clickhouse/${OPTIONS_METHOD:-options_method}.xml:/etc/clickhouse-server/config.d/options_method.xml
       - ./docker/clickhouse/profiling_config.xml:/etc/clickhouse-server/config.d/profiling_config.xml
       - ./docker/clickhouse/profiling_users.xml:/etc/clickhouse-server/users.d/profiling_users.xml
+    # init scripts run on a temporary server bound to 127.0.0.1, so probing by the
+    # service name passes only when init is done and the real server is listening
+    healthcheck:
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://clickhouse:8123/ping"]
+      interval: 2s
+      timeout: 2s
+      retries: 90
+      start_period: 5s
 
   mysql:
     image: docker.io/mysql:${MYSQL_VERSION:-latest}
@@ -78,7 +86,8 @@ services:
       # without this the plugin never sees GOCOVERDIR and writes no coverage counters
       GF_PLUGINS_FORWARD_HOST_ENV_VARS: vertamedia-clickhouse-datasource
     depends_on:
-      - clickhouse
+      clickhouse:
+        condition: service_healthy
 
     ports:
       - "3000:3000"
@@ -110,7 +119,8 @@ services:
       # no-op on 10.4.3 (forwards everything anyway), needed once the legacy pin moves past 12.4
       GF_PLUGINS_FORWARD_HOST_ENV_VARS: vertamedia-clickhouse-datasource
     depends_on:
-      - clickhouse
+      clickhouse:
+        condition: service_healthy
 
     ports:
       - "3002:3000"
@@ -130,7 +140,8 @@ services:
     ports:
       - "3001:3000"
     depends_on:
-      - clickhouse
+      clickhouse:
+        condition: service_healthy
 
   trickster:
     image: tricksterio/trickster:${TRICKSTER_VERSION:-latest}
@@ -139,7 +150,8 @@ services:
     ports:
       - "8480:8480"
     depends_on:
-      - clickhouse
+      clickhouse:
+        condition: service_healthy
 
 
   frontend_builder:

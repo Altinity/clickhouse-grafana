@@ -32,13 +32,16 @@ type Query struct {
 	To           time.Time
 }
 
-func (q *Query) ApplyTimeRangeToQuery() string {
+func (q *Query) ApplyTimeRangeToQuery() (string, error) {
 	fmtQuery := strings.Trim(q.RawQuery, ";\r\n\t ")
 
 	if !strings.HasSuffix(fmtQuery, FormatJson) {
 		fmtQuery = fmtQuery + " " + FormatJson
 	}
-	fmtQuery = q.formatNumericDateAndTimeValues(fmtQuery)
+	fmtQuery, err := q.formatNumericDateAndTimeValues(fmtQuery)
+	if err != nil {
+		return "", err
+	}
 
 	fmtQuery = q.formatTimeValue(fmtQuery, q.From, FromValueRE, false)
 	fmtQuery = q.formatTimeValue(fmtQuery, q.To, ToValueRE, false)
@@ -46,7 +49,7 @@ func (q *Query) ApplyTimeRangeToQuery() string {
 	fmtQuery = q.formatTimeValue(fmtQuery, q.From, FromMsValueRE, true)
 	fmtQuery = q.formatTimeValue(fmtQuery, q.To, ToMsValueRE, true)
 
-	return fmtQuery
+	return fmtQuery, nil
 }
 
 func (q *Query) formatTimeValue(fmtQuery string, fmtTime time.Time, fmtRE *regexp.Regexp, isMs bool) string {
@@ -68,12 +71,19 @@ func (q *Query) formatTimeValue(fmtQuery string, fmtTime time.Time, fmtRE *regex
 	return fmtQuery
 }
 
-func (q *Query) formatNumericDateAndTimeValues(fmtQuery string) string {
-	formatRegExp := func(fieldName, fieldType string, from, to time.Time) (*regexp.Regexp, string, *regexp.Regexp, string) {
+func (q *Query) formatNumericDateAndTimeValues(fmtQuery string) (string, error) {
+	formatRegExp := func(fieldName, fieldType string, from, to time.Time) (*regexp.Regexp, string, *regexp.Regexp, string, error) {
 		substitutionFrom := "$1$2$3 $4 "
 		substitutionTo := "$1$2$3 $4 "
-		fromRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(>=|>)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
-		toRE := regexp.MustCompile("([\"`]*)(" + fieldName + ")([\"`]*)\\s*(<|<=)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
+		quotedFieldName := regexp.QuoteMeta(fieldName)
+		fromRE, err := regexp.Compile("([\"`]*)(" + quotedFieldName + ")([\"`]*)\\s*(>=|>)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
+		if err != nil {
+			return nil, "", nil, "", fmt.Errorf("invalid column name %q: %w", fieldName, err)
+		}
+		toRE, err := regexp.Compile("([\"`]*)(" + quotedFieldName + ")([\"`]*)\\s*(<|<=)\\s*([a-zA-Z\\(\\)\\.,\\d]+)")
+		if err != nil {
+			return nil, "", nil, "", fmt.Errorf("invalid column name %q: %w", fieldName, err)
+		}
 		if slices.Contains([]string{"DATE", "DATE32"}, strings.ToUpper(fieldType)) {
 			substitutionFrom += fmt.Sprintf("to"+strings.Title(strings.ToLower(fieldType))+"(%d)", from.Unix())
 			substitutionTo += fmt.Sprintf("to"+strings.Title(strings.ToLower(fieldType))+"(%d)", to.Unix())
@@ -99,17 +109,23 @@ func (q *Query) formatNumericDateAndTimeValues(fmtQuery string) string {
 			substitutionFrom += fmt.Sprintf("%.3f", float64(from.UnixNano())/1000000000.0)
 			substitutionTo += fmt.Sprintf("%.3f", float64(to.UnixNano())/1000000000.0)
 		}
-		return fromRE, substitutionFrom, toRE, substitutionTo
+		return fromRE, substitutionFrom, toRE, substitutionTo, nil
 	}
 	if q.DateCol != "" {
-		dateColFromRE, dateColFromSubstitution, dateColToRE, dateColToSubstitution := formatRegExp(q.DateCol, "Date", q.From, q.To)
+		dateColFromRE, dateColFromSubstitution, dateColToRE, dateColToSubstitution, err := formatRegExp(q.DateCol, "Date", q.From, q.To)
+		if err != nil {
+			return "", err
+		}
 		fmtQuery = dateColFromRE.ReplaceAllString(fmtQuery, dateColFromSubstitution)
 		fmtQuery = dateColToRE.ReplaceAllString(fmtQuery, dateColToSubstitution)
 	}
 	if q.DateTimeCol != "" {
-		dateTimeColFromRE, dateTimeColFromSubstitution, dateTimeColToRE, dateTimeColToSubstitution := formatRegExp(q.DateTimeCol, q.DateTimeType, q.From, q.To)
+		dateTimeColFromRE, dateTimeColFromSubstitution, dateTimeColToRE, dateTimeColToSubstitution, err := formatRegExp(q.DateTimeCol, q.DateTimeType, q.From, q.To)
+		if err != nil {
+			return "", err
+		}
 		fmtQuery = dateTimeColFromRE.ReplaceAllString(fmtQuery, dateTimeColFromSubstitution)
 		fmtQuery = dateTimeColToRE.ReplaceAllString(fmtQuery, dateTimeColToSubstitution)
 	}
-	return fmtQuery
+	return fmtQuery, nil
 }

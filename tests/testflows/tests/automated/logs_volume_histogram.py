@@ -185,7 +185,7 @@ def explore_logs_histogram_runs_server_side_aggregate(self):
         query_log_filter = aggregate_in_query_log(self.context.logs_volume_started_at)
         for attempt in retries(delay=2, timeout=60):
             with attempt:
-                clickhouse_query(sql="SYSTEM FLUSH LOGS")
+                clickhouse_query(sql="SYSTEM FLUSH LOGS query_log")
                 count = clickhouse_query(
                     sql=f"SELECT count() FROM system.query_log WHERE {query_log_filter}"
                 )
@@ -211,7 +211,7 @@ def explore_logs_histogram_counts_more_than_the_logs_limit(self):
         query_log_filter = aggregate_in_query_log(self.context.logs_volume_started_at)
         for attempt in retries(delay=2, timeout=60):
             with attempt:
-                clickhouse_query(sql="SYSTEM FLUSH LOGS")
+                clickhouse_query(sql="SYSTEM FLUSH LOGS query_log")
                 aggregate_sql = clickhouse_query(
                     sql=f"SELECT query FROM system.query_log WHERE {query_log_filter} "
                     "ORDER BY event_time DESC LIMIT 1 FORMAT TabSeparatedRaw"

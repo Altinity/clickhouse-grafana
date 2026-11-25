@@ -137,7 +137,7 @@ export class CHDataSource
 
   private async performGlobalCleanup() {
     // Use a session flag to ensure cleanup runs only once per browser session
-    const cleanupKey = 'altinity_cleanup_performed';
+    const cleanupKey = 'vertamedia-clickhouse-datasource_cleanup_performed';
     const cleanupPerformed = sessionStorage.getItem(cleanupKey);
     
     if (!cleanupPerformed) {

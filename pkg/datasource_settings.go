@@ -49,7 +49,10 @@ func NewDatasourceSettings(ctx context.Context, settings backend.DataSourceInsta
 
 	for headerKey, value := range tmpMap {
 		if len(headerKey) >= 14 && headerKey[:14] == "httpHeaderName" {
-			headerName := value.(string)
+			headerName, ok := value.(string)
+			if !ok {
+				return nil, fmt.Errorf("%s must be a string, got %T", headerKey, value)
+			}
 			valueKey := strings.Replace(headerKey, "httpHeaderName", "httpHeaderValue", 1)
 			if decryptedHeaderValue, exists := settings.DecryptedSecureJSONData[valueKey]; !exists {
 				return nil, fmt.Errorf("%s not present in settings.DecryptedSecureJSONData", valueKey)

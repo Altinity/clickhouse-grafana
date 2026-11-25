@@ -13,6 +13,12 @@
 
 ## Fixes:
 
+- fix backend plugin crash for all users from a single malformed query: `dateColDataType` / `dateTimeColDataType` are escaped with `regexp.QuoteMeta` and compiled with `regexp.Compile` (an error is returned instead of a panic), query goroutines recover from panics and return an error for that query only, malformed `Float` values and `$columns`-style tuples no longer panic, non-string `httpHeaderName*` settings are rejected with an error
+- keep backend Error-level logs short: ClickHouse non-200 bodies and unparsable JSON responses are logged at Debug level only, `CheckHealth` returns fixed user-friendly messages and logs the underlying error
+- prefix the browser `sessionStorage` cleanup key with the plugin ID
+- README: drop the setup notes for unsigned plugin versions before 2.2.0, move the remaining legacy version notes to `docs/legacy-setup-notes.md`
+- test infrastructure: Grafana waits for ClickHouse init scripts via a `service_healthy` healthcheck, the logs volume histogram test flushes only `system.query_log`
+
 - fix Logs panel labels being attributed to the wrong rows when an expand-mode `Map`/`JSON` value is empty for some rows
 - fix adhoc filter values being corrupted: trailing text after a JSON-array prefix is no longer swallowed into an array literal, the legacy passthrough for pre-quoted / IN-list values is restored, and fully-qualified keys addressed to other tables are dropped again even when their first segment collides with a column name
 - fix responses being paired with hidden/empty targets in mixed panels (wrong format/refId applied to the visible query)

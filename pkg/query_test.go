@@ -42,7 +42,9 @@ func TestApplyTimeRangeToQueryNumericDateAndTimeValues(t *testing.T) {
 				"SELECT * FROM tbl WHERE d >= toDate(1640995200) AND d <= toDate(1641081600) AND ts >= %s AND ts <= %s FORMAT JSON",
 				tc.from, tc.to,
 			)
-			require.Equal(t, expected, q.ApplyTimeRangeToQuery())
+			actual, err := q.ApplyTimeRangeToQuery()
+			require.NoError(t, err)
+			require.Equal(t, expected, actual)
 		})
 	}
 }
@@ -79,7 +81,37 @@ func TestApplyTimeRangeToQueryTimeValueReplacement(t *testing.T) {
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
 			q := Query{RawQuery: tc.rawQuery, From: from, To: to}
-			require.Equal(t, tc.expected, q.ApplyTimeRangeToQuery())
+			actual, err := q.ApplyTimeRangeToQuery()
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, actual)
+		})
+	}
+}
+
+func TestApplyTimeRangeToQueryRegexpMetaInColumnNames(t *testing.T) {
+	from := time.Unix(1640995200, 0).UTC()
+	to := time.Unix(1641081600, 0).UTC()
+	testCases := []struct {
+		name     string
+		dateCol  string
+		dtCol    string
+		rawQuery string
+		expected string
+	}{
+		{"unbalanced paren must not panic", "a(", "b[", "SELECT 1", "SELECT 1 FORMAT JSON"},
+		{
+			"column with regexp meta chars is matched literally",
+			"", "toStartOfHour(ts)",
+			"SELECT * FROM tbl WHERE toStartOfHour(ts) >= now() AND toStartOfHourXtsX >= now()",
+			"SELECT * FROM tbl WHERE toStartOfHour(ts) >= toDateTime(1640995200) AND toStartOfHourXtsX >= now() FORMAT JSON",
+		},
+	}
+	for _, tc := range testCases {
+		t.Run(tc.name, func(t *testing.T) {
+			q := Query{RawQuery: tc.rawQuery, DateCol: tc.dateCol, DateTimeCol: tc.dtCol, DateTimeType: "DATETIME", From: from, To: to}
+			actual, err := q.ApplyTimeRangeToQuery()
+			require.NoError(t, err)
+			require.Equal(t, tc.expected, actual)
 		})
 	}
 }
